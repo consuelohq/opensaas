@@ -16823,8 +16823,8 @@
       }
     },
     {
-      "id": "faea74db-65a0-4905-9e4d-b6e948f7d0f5",
-      "occurred_at": "2026-05-19T17:12:32.666Z",
+      "id": "a8edc1dc-59c2-45a0-9502-cfae12246bfc",
+      "occurred_at": "2026-05-20T11:58:03.553Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -16832,15 +16832,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "96e4ea98-c34c-4896-bf0c-c964faac63bc",
-      "occurred_at": "2026-05-19T17:13:04.035Z",
+      "id": "f8d6de95-dfbd-46f0-bf06-f2610cb686c7",
+      "occurred_at": "2026-05-20T11:58:13.847Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -16848,221 +16848,157 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "ceb982ed-e660-49a5-a8cd-1bd442951a77",
-      "occurred_at": "2026-05-19T17:15:53.893Z",
+      "id": "5119a099-d6e3-46fb-b718-eef4f0f0a67a",
+      "occurred_at": "2026-05-20T11:58:22.230Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
+      "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "b87dda4e-506e-49e9-a3d5-079c8e15aedd",
-      "occurred_at": "2026-05-19T17:16:23.633Z",
+      "id": "e81799de-7a3a-4439-b792-88e9dd0393f6",
+      "occurred_at": "2026-05-20T11:58:33.048Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/src/engine/core-modules/redis-client/redis-client.service.ts",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "98e2405e-6178-45fe-866f-909812180b04",
-      "occurred_at": "2026-05-19T17:16:53.372Z",
+      "id": "ecfd58b4-0edb-4feb-9a91-39b95c79f713",
+      "occurred_at": "2026-05-20T11:58:39.864Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/src/engine/core-modules/cache-storage/services/cache-storage.service.ts",
+      "file_path": "packages/workspace/tests/server_call_test.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "02287b79-cf97-43a9-aa00-80013a6b736e",
-      "occurred_at": "2026-05-19T17:17:26.956Z",
+      "id": "94d5cac6-0f53-477a-ab97-ba2ed85cc7d3",
+      "occurred_at": "2026-05-20T11:58:52.381Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/src/engine/core-modules/session-storage/session-storage.module-factory.ts",
+      "file_path": "packages/workspace/README.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "ca196d08-bb99-4278-b303-f50fdd58410d",
-      "occurred_at": "2026-05-19T17:19:54.686Z",
+      "id": "2b5cb85e-d5be-486b-aa9d-38aad1b474a5",
+      "occurred_at": "2026-05-20T11:59:02.046Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/package.json",
+      "file_path": "packages/workspace/requirements.txt",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "2f361052-314b-4c16-9c70-5fab785e9b5a",
-      "occurred_at": "2026-05-19T17:23:48.292Z",
+      "id": "ce607031-2a7e-4a57-83ed-9c88609f7f47",
+      "occurred_at": "2026-05-20T12:01:54.104Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "edbc8a03-95e6-4e30-afa5-1aadf367cb04",
-      "occurred_at": "2026-05-19T17:24:54.134Z",
+      "id": "7c19fdc3-5f32-4af6-b4b3-bc3caf1d0c80",
+      "occurred_at": "2026-05-20T12:02:13.715Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "a0afed13-badd-41eb-8562-f0d57f03717d",
-      "occurred_at": "2026-05-19T17:25:36.448Z",
+      "id": "3d4f71c9-861d-4311-a722-34815eef60f6",
+      "occurred_at": "2026-05-20T12:03:10.087Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "package.json",
+      "file_path": "packages/workspace/tests/server_call_test.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     },
     {
-      "id": "e796e6e4-c794-4dbb-999f-162a26c3610a",
-      "occurred_at": "2026-05-19T17:26:48.258Z",
+      "id": "07b4c4f0-5861-4ef1-8318-9f2b9560503f",
+      "occurred_at": "2026-05-20T12:03:16.475Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/twenty-server/project.json",
+      "file_path": "packages/workspace/tests/server_call_test.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
+      "worktree_id": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
-      }
-    },
-    {
-      "id": "73cde02c-595d-48a7-9f67-2a59b57632b2",
-      "occurred_at": "2026-05-19T17:31:44.844Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/twenty-server/jest.config.mjs",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
-      }
-    },
-    {
-      "id": "66c3793e-a8b1-471f-9d28-855c69bdba15",
-      "occurred_at": "2026-05-19T17:36:42.690Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/twenty-server/src/engine/core-modules/graphql/utils/graphql-errors.util.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
-      }
-    },
-    {
-      "id": "9ca7376d-a327-4644-9113-6b54047b3550",
-      "occurred_at": "2026-05-19T17:37:31.945Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/twenty-server/src/engine/api/graphql/metadata.module-factory.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
-      }
-    },
-    {
-      "id": "a3c071d4-2814-420a-87b8-6313d62cf80a",
-      "occurred_at": "2026-05-20T10:47:12.591Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-redis-metadata-login-resilience",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-redis-metadata-login-resilience"
+        "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-20T10:47:12.638Z"
+  "updated_at": "2026-05-20T12:03:16.548Z"
 }

@@ -1,24 +1,22 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-redis-metadata-login-resilience",
+  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
   "base": "stream/workspace-agents",
-  "headSha": "c2252c942e495fe6364b0a5f9ae2533f57bcd653",
-  "changeHash": "f01a566ded7813222be0017a9e523b42a4658cae88dfc519741c3ee7f7e32e33",
+  "headSha": "6d8e257581761296b43d75f1e4a6012304d5afc3",
+  "changeHash": "b0bc2a9aac20bf9e80aa328b1f8e744c5e89067ebe7b5797a43d7e6656b1a6c5",
   "changedFiles": [
-    "packages/twenty-front/src/modules/apollo/utils/getTokenPair.ts",
-    "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/__tests__/use-cached-metadata.spec.ts",
-    "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
-    "packages/twenty-server/src/engine/api/graphql/metadata.module-factory.ts",
-    "packages/twenty-server/src/engine/core-modules/session-storage/__tests__/session-storage.module-factory.spec.ts",
-    "packages/twenty-server/src/engine/core-modules/session-storage/session-storage.module-factory.ts"
+    "packages/workspace/README.md",
+    "packages/workspace/requirements.txt",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
   ],
-  "verifiedAt": "2026-05-20T12:54:59.231Z",
+  "verifiedAt": "2026-05-20T12:20:51.145Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

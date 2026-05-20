@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_c29b5aca853d",
-  "tmuxSession": "opensaas-workspace-agents-fix-redis-metadata-login-resilience-c29b5aca",
+  "taskSession": "tsk_e6c8d6686c3d",
+  "tmuxSession": "opensaas-workspace-agents-switch-workspace-tracing-to-langfuse-e6c8d668",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-redis-metadata-login-resilience",
-  "branch": "task/workspace-agents/fix-redis-metadata-login-resilience",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-redis-metadata-login-resilience",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-redis-metadata-login-resilience",
-  "prNumber": 399,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/399",
-  "createdAt": "2026-05-19T17:11:02.322Z",
+  "taskBranch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
+  "prNumber": 401,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/401",
+  "createdAt": "2026-05-20T11:57:46.730Z",
   "tmuxCreated": true
 }
