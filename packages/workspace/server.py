@@ -27,25 +27,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 from tools import sandbox as sandbox_mod
 
 
-try:
-    from langsmith import Client as LSClient
-    from langsmith import traceable
-    from langsmith.run_helpers import trace as ls_trace
-
-    _ls = LSClient()
-    _tracing = True
-except Exception:
-    _tracing = False
-    ls_trace = None
-
-    def traceable(**kwargs):
-        def decorator(fn):
-            return fn
-
-        return decorator
-
-# one session ID per server process — groups all tool calls into one langsmith thread
+# one session ID per server process — groups all remote observations into one session.
 _session_id = str(uuid.uuid4())
+_OBSERVABILITY_PROVIDER = os.environ.get('WORKSPACE_OBSERVABILITY_PROVIDER', 'langfuse').lower()
+_langfuse_client: Any | None = None
+_langfuse_propagate_attributes: Any | None = None
+_langsmith_trace: Any | None = None
 
 def _estimate_tokens(text: str) -> int:
     """rough token estimate: ~4 chars per token."""
@@ -146,24 +133,113 @@ def _trace_outputs(name: str, inputs: dict[str, Any], result: Any, usage: dict[s
         'usage': usage,
     }
 
+def _observability_provider() -> str:
+    provider = os.environ.get('WORKSPACE_OBSERVABILITY_PROVIDER', _OBSERVABILITY_PROVIDER).lower()
+    if provider in {'none', 'off', 'disabled'}:
+        return 'none'
+    if provider in {'langfuse', 'langsmith'}:
+        return provider
+    if provider == 'auto':
+        if os.environ.get('LANGFUSE_PUBLIC_KEY') and os.environ.get('LANGFUSE_SECRET_KEY'):
+            return 'langfuse'
+        if os.environ.get('LANGCHAIN_TRACING_V2') and os.environ.get('LANGCHAIN_API_KEY'):
+            return 'langsmith'
+    return 'none'
+
+
+def _get_langfuse_client() -> tuple[Any | None, Any | None]:
+    global _langfuse_client, _langfuse_propagate_attributes
+    if _langfuse_client is not None:
+        return _langfuse_client, _langfuse_propagate_attributes
+    if not os.environ.get('LANGFUSE_PUBLIC_KEY') or not os.environ.get('LANGFUSE_SECRET_KEY'):
+        return None, None
+    try:
+        from langfuse import get_client, propagate_attributes
+
+        _langfuse_client = get_client()
+        _langfuse_propagate_attributes = propagate_attributes
+        return _langfuse_client, _langfuse_propagate_attributes
+    except Exception:
+        _langfuse_client = None
+        _langfuse_propagate_attributes = None
+        return None, None
+
+
+def _get_langsmith_trace() -> Any | None:
+    global _langsmith_trace
+    if _langsmith_trace is not None:
+        return _langsmith_trace
+    try:
+        from langsmith import Client as LSClient
+        from langsmith.run_helpers import trace as ls_trace
+
+        LSClient()
+        _langsmith_trace = ls_trace
+        return _langsmith_trace
+    except Exception:
+        _langsmith_trace = None
+        return None
+
+
+def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any]) -> None:
+    try:
+        observation.update(input=inputs, output=output)
+    except Exception:
+        pass
+
+
 def _traced_call(name, run_type, fn, *args, **kwargs):
-    """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
-    if not _tracing or not ls_trace:
-        return fn(*args, **kwargs)
+    """wrap a function call with the configured remote observability provider."""
+    provider = _observability_provider()
     inputs = _trace_inputs(name, args, kwargs)
     input_text = ' '.join(str(value) for value in inputs.values())
     trace_name = _trace_run_name(name, inputs)
-    with ls_trace(name=trace_name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id, 'workspaceTrace': name}) as rt:
-        result = fn(*args, **kwargs)
-        prompt_tokens = _estimate_tokens(input_text)
-        completion_tokens = _estimate_tokens(result)
-        usage = {
-            'prompt_tokens': prompt_tokens,
-            'completion_tokens': completion_tokens,
-            'total_tokens': prompt_tokens + completion_tokens,
-        }
-        rt.end(outputs=_trace_outputs(name, inputs, result, usage))
-        return result
+
+    if provider == 'langfuse':
+        langfuse, propagate_attributes = _get_langfuse_client()
+        if langfuse is None or propagate_attributes is None:
+            return fn(*args, **kwargs)
+        try:
+            observation_cm = langfuse.start_as_current_observation(as_type='span', name=trace_name)
+            propagation_cm = propagate_attributes(
+                session_id=_session_id,
+                metadata={'workspaceTrace': name, 'provider': 'langfuse'},
+                tags=['workspace'],
+                trace_name=trace_name,
+            )
+        except Exception:
+            return fn(*args, **kwargs)
+
+        with observation_cm as span:
+            with propagation_cm:
+                result = fn(*args, **kwargs)
+            prompt_tokens = _estimate_tokens(input_text)
+            completion_tokens = _estimate_tokens(result)
+            usage = {
+                'prompt_tokens': prompt_tokens,
+                'completion_tokens': completion_tokens,
+                'total_tokens': prompt_tokens + completion_tokens,
+            }
+            _finish_langfuse_observation(span, inputs, _trace_outputs(name, inputs, result, usage))
+            return result
+
+    if provider == 'langsmith':
+        ls_trace = _get_langsmith_trace()
+        if not ls_trace:
+            return fn(*args, **kwargs)
+        with ls_trace(name=trace_name, run_type=run_type, inputs=inputs, metadata={'session_id': _session_id, 'workspaceTrace': name}) as rt:
+            result = fn(*args, **kwargs)
+            prompt_tokens = _estimate_tokens(input_text)
+            completion_tokens = _estimate_tokens(result)
+            usage = {
+                'prompt_tokens': prompt_tokens,
+                'completion_tokens': completion_tokens,
+                'total_tokens': prompt_tokens + completion_tokens,
+            }
+            rt.end(outputs=_trace_outputs(name, inputs, result, usage))
+            return result
+
+    return fn(*args, **kwargs)
 
 APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
