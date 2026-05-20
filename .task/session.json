@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_019e968289fd",
-  "tmuxSession": "opensaas-dialer-fix-pr-359-review-findings-019e9682",
+  "taskSession": "tsk_376186588d53",
+  "tmuxSession": "opensaas-dialer-confirm-list-runner-call-start-metadata-routing-37618658",
   "area": "dialer",
   "stream": "stream/dialer",
-  "taskBranch": "task/dialer/fix-pr-359-review-findings",
-  "branch": "task/dialer/fix-pr-359-review-findings",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-pr-359-review-findings",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-pr-359-review-findings",
-  "prNumber": 369,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/369",
-  "createdAt": "2026-05-11T22:39:01.981Z",
+  "taskBranch": "task/dialer/confirm-list-runner-call-start-metadata-routing",
+  "branch": "task/dialer/confirm-list-runner-call-start-metadata-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing",
+  "prNumber": 407,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/407",
+  "createdAt": "2026-05-20T21:49:31.865Z",
   "tmuxCreated": true
 }
