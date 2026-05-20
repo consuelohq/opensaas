@@ -609,6 +609,15 @@ Use `fs.patch --content-file` or stdin for multiline replacements. Use inline `-
 
 The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter or inserting literal `\n` sequences into TypeScript. Treat shell-safe transport as part of correctness, not as a formatting detail.
 
+File edit primitive routing:
+
+- Use `fs.read` before editing an existing file.
+- Use `fs.patch` for targeted line-range replacement in an existing file.
+- Use `fs.write` for new files, whole-file replacement, or exact appends.
+- Use `contentFile` for multiline or large payloads. Inline `content` is only for short scalar text and single-line patch replacements.
+- Use `task.exec` to run commands inside the task worktree. Do not use `task.exec` to transport source code, scripts, or patches through a giant shell argument.
+- Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
+
 ### verification standard
 
 verification must match the change.
@@ -820,7 +829,7 @@ github principles:
 * ko should not be forced into github when another review surface can do the job better
 * branches and prs should be created through scripts
 * local-only state should be short-lived
-* show ko the review pr link, not internal task noise, unless task details matter
+* show ko the Graphite review pr link when available, not internal task noise, unless task details matter
 
 commits:
 
@@ -1080,9 +1089,9 @@ await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun",
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 
 
-## Branch-explicit final validation flow
+## Task-session final validation flow
 
-Use explicit `branch` for final validation and push commands so verify stamps and pushed commits always target the same task worktree.
+Use `taskSession` for final validation and push commands so review, verify, and pushed commits target the same task worktree. The facade resolves the session to a task branch and `TASK_WORKTREE`; workspace scripts that write task-scoped state must honor that worktree instead of reading shared root `.task/*` files.
 
 Canonical sequence:
 
@@ -1090,4 +1099,4 @@ Canonical sequence:
 2. `workspace.call({ tool: "verify", taskSession, input: {} })`
 3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
-This keeps review, verify, and push deterministic in multi-worktree sessions.
+If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to root `.task/*` state before bypassing verification.

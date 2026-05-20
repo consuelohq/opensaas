@@ -1,21 +1,20 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
-  "base": "origin/stream/workspace-agents",
-  "headSha": "605e9cc640649d21294158311a86f8147ee57519",
-  "changeHash": "8d79a3d50369b2e3ae64c25199f8902746cdcb36488870a00024c547fe65d836",
+  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+  "base": "stream/workspace-agents",
+  "headSha": "89b5672198def6beeb3b3559b11bddeb955d1b33",
+  "changeHash": "21f998110337d2d8ec2f28ef30d647f35c3369d231450fdd818b4f219c29eae1",
   "changedFiles": [
-    "packages/workspace/scripts/lib/task-session.js",
-    "packages/workspace/scripts/task-cleanup.js",
-    "packages/workspace/tests/task-session.test.js"
+    "packages/workspace/scripts/status.js",
+    "packages/workspace/scripts/task-prs.js"
   ],
-  "verifiedAt": "2026-05-09T16:31:31.835Z",
+  "verifiedAt": "2026-05-20T14:49:10.818Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

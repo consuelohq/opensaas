@@ -50,7 +50,7 @@ every change — even tiny ones — follows this flow. no exceptions.
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
- 8. bun run task:prs                                     # show both PR links (human review)
+ 8. bun run task:prs                                     # show both PR links (Graphite first, GitHub retained for API/debugging)
  9. bun run task:merge -- --pr <N> --wait                # merge + wait for deploy
 10. bun run railway:logs -- --status                     # check deploy health + logs
 11. bun run browser -- consuelo                          # verify UI in production
@@ -92,6 +92,8 @@ git status --porcelain -uall -- . ':!node_modules'
 **railway logs are truth.** don't guess about production — run `bun run railway:logs -- --errors` or `--filter "keyword"`.
 
 **SCRIPTS.md is part of the fix.** if you add or change a script, update SCRIPTS.md in the same commit.
+
+**PR links are Graphite-first for humans.** task workflow scripts keep GitHub URLs in machine metadata, and show Graphite URLs as the primary human review links when a PR number is known.
 
 ---
 
@@ -190,9 +192,9 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
 **patch**
@@ -202,7 +204,7 @@ bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement
 bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
@@ -227,9 +229,13 @@ bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
  → replaced wrong lines because you didn't read the range first
  (always: read --from N --to M → verify → then patch the same range)
 
-bad: bun run fs -- write src/deep/nested/new.ts --content "..."
+bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
  (use --mkdirs to create parent directories)
+
+bad: bun run fs -- write src/foo.ts --content "$(cat /tmp/big.ts)"
+ → command payload is too large or multiline content is corrupted by shell/argv transport
+ (use --content-file /tmp/big.ts so only the path travels through argv)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
@@ -244,6 +250,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
 - before `write --force` or `patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
+- `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
 - `patch --from N --to N` replaces line N. always read the range first
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
@@ -261,8 +268,8 @@ bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
-bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
-bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
+bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content-file /tmp/new.ts
+bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
 ```
 
 **common task:fs patterns**
@@ -360,6 +367,8 @@ bad: review fails on a file you didn't touch
 ### verify — full task safety gate
 
 runs `bun run review` + db/migration/graphql guardrails. writes `.task/verify.json` stamp on success. `task:push` requires this stamp by default.
+
+When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
 ```bash
 bun run verify                        # full verify (review + db guards + stamp)
@@ -723,7 +732,11 @@ bun run context -- list workpad       # list recent workpad memories
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories
+bun run context -- trace --status error --limit 20  # recent failed local tool traces
+bun run context -- trace --trace-id trc_abc123 --raw # exact raw payload for one trace
 ```
+
+`context trace` reads the local repo-scoped SQLite trace store at `~/Library/Application Support/OpenWorkspace/traces/<repo-hash>/traces.db` on macOS, or `~/.local/share/openworkspace/traces/<repo-hash>/traces.db` on other systems. Override with `OPENWORKSPACE_TRACE_DB` or `--db`. The server writes raw structured tool payloads into this local database after each workspace tool call and keeps the store under `OPENWORKSPACE_TRACE_DB_MAX_BYTES`, defaulting to 500 MB.
 
 **context failure modes**
 ```text
@@ -756,22 +769,41 @@ opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-bro
 bun run browser -- consuelo                 # open consuelo CRM (internal)
 bun run browser -- app                      # open app.consuelohq.com
 bun run browser -- open https://example.com # open any URL
+bun run browser -- open https://example.com --preset mobile --full
+bun run browser -- open https://example.com --preset tablet --full
+bun run browser -- open https://example.com --width 390 --height 844 --full
 bun run browser -- screenshot after-login   # take screenshot
+bun run browser -- screenshot mobile-check --preset mobile --full
 bun run browser -- snapshot                 # get accessibility tree
 bun run browser -- login consuelo --headed  # run saved login profile visibly
 bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
 ```
 
+available browser flags for responsive checks: `preset` (`desktop`, `mobile`, `tablet`, `ipad`, `iphone`), `device` (agent-browser device name), `provider` (for example `ios`), `width` + `height`, and `colorScheme` (`dark`, `light`, `no-preference`). use flags on existing browser tools instead of adding device-specific tool names. for Google SSO persistence, open `https://accounts.google.com` with `--headed` and sign in manually; the persistent profile keeps the session.
+
 facade aliases are also registered for agent use:
 
 ```bash
-workspace browser.test '{"url":"https://example.com"}'
+workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
 workspace browser.consuelo '{"headed":true}'
 workspace browser.login '{"name":"consuelo","headed":true}'
 workspace browser.reauth '{"name":"consuelo","headed":true}'
 workspace browser.snap
-workspace browser.screenshot '{"name":"after-login"}'
+workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
+workspace browser.get '{"target":"title"}'
+workspace browser.find '{"by":"role","value":"button","action":"click","name":"Submit"}'
+workspace browser.wait '{"load":"networkidle"}'
+workspace browser.download '{"ref":"@e1","path":"/tmp/download.bin"}'
+workspace browser.tabs '{"action":"list"}'
+workspace browser.cookies '{"action":"list"}'
+workspace browser.network '{"args":["requests"]}'
+workspace browser.dialog '{"action":"dismiss"}'
+workspace browser.trace '{"action":"start"}'
+workspace browser.clipboard '{"action":"read"}'
 ```
+
+
+Typed browser aliases should cover repeated primitives. Use `workspace browser.raw '{"args":[...]}'` only when an upstream `agent-browser` command is not yet represented by a typed facade alias.
 
 when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
 
@@ -1220,6 +1252,23 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 
 ---
 
+## Design publish
+
+`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
+
+Recommended Open Design target name: `design.localhost`.
+
+```bash
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
+bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
+bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
+```
+
+Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
+
+---
+
 ## CLI tools — fallbacks only
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
@@ -1293,3 +1342,34 @@ workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrap
 workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
 workspace linear.projects '{"first":50}'
 ```
+
+---
+
+## consuelo design e-guide templates
+
+Use `consueloDesign.generateDigitalEguide` or `bun run consuelo-design generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
+
+```bash
+bun run consuelo-design generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
+bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
+bun run consuelo-design generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
+```
+
+Typed facade equivalent:
+
+```ts
+await workspace.call({
+  tool: "consueloDesign.generateDigitalEguide",
+  input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
+  timeout: 600,
+})
+```
+
+Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
+
+
+## Design wiki archive
+
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+
+The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.

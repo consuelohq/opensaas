@@ -15,6 +15,25 @@ const branchField = {
 
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
+const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
+
+const browserDeviceFlags = {
+  preset: z.enum(['desktop', 'mobile', 'tablet', 'ipad', 'iphone']).optional(),
+  device: optionalString,
+  provider: optionalString,
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  colorScheme: z.enum(['dark', 'light', 'no-preference']).optional(),
+};
+
+const requireCompleteBrowserViewport = (input: { width?: number; height?: number }) => (
+  input.width === undefined && input.height === undefined
+) || (
+  input.width !== undefined && input.height !== undefined
+);
+const liveField = {
+  live: z.boolean().optional(),
+};
 
 export const EmptyInput = z.object({
   ...requestFields,
@@ -25,6 +44,22 @@ export const BranchInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+});
+
+
+export const DesignPublishInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: optionalString,
+  portlessName: optionalString,
+  path: optionalString,
+  name: optionalString,
+  category: optionalString,
+  template: digitalEguideTemplate,
+  tailscaleBin: optionalString,
+}).refine((input) => Boolean(input.target || input.portlessName), {
+  message: 'provide either target or portlessName',
+  path: ['target'],
 });
 
 export const ConsueloDesignInput = z.object({
@@ -41,8 +76,19 @@ export const ConsueloDesignUiInput = z.object({
 export const ConsueloDesignSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...liveField,
   name: optionalString,
   prompt: optionalString,
+  timeout: z.number().int().positive().optional(),
+});
+
+export const ConsueloDesignDigitalEguideInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ...liveField,
+  name: optionalString,
+  prompt: optionalString,
+  template: digitalEguideTemplate,
   timeout: z.number().int().positive().optional(),
 });
 
@@ -80,10 +126,14 @@ export const FsWriteInput = z.object({
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
-  content: z.string(),
+  content: z.string().optional(),
+  contentFile: optionalString,
   force: z.boolean().optional(),
   append: z.boolean().optional(),
   mkdirs: z.boolean().optional(),
+}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
+  message: 'provide exactly one of content or contentFile',
+  path: ['content'],
 });
 
 export const FsPatchInput = z.object({
@@ -220,6 +270,21 @@ export const ContextSaveInput = z.object({
   category: optionalString,
 });
 
+export const ContextTraceInput = z.object({
+  ...requestFields,
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  taskSession: optionalString,
+  branch: optionalString,
+  limit: z.number().int().positive().optional(),
+  raw: z.boolean().optional(),
+  db: optionalString,
+});
+
 export const ExploreInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -325,6 +390,10 @@ export const BrowserOpenInput = z.object({
   url: z.string().url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserPageInput = z.object({
@@ -332,6 +401,10 @@ export const BrowserPageInput = z.object({
   ...dryRunField,
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserScreenshotInput = z.object({
@@ -339,6 +412,10 @@ export const BrowserScreenshotInput = z.object({
   ...dryRunField,
   name: optionalString,
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserElementInput = z.object({
@@ -371,6 +448,92 @@ export const BrowserRawInput = z.object({
   ...requestFields,
   ...dryRunField,
   args: z.array(z.string().min(1)).min(1),
+});
+
+export const BrowserGetInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: z.enum(['text', 'html', 'value', 'attribute', 'title', 'url']),
+  selector: optionalString,
+  attribute: optionalString,
+});
+
+export const BrowserFindInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  by: z.enum(['role', 'text', 'label', 'placeholder', 'alt', 'title', 'testid']),
+  value: z.string().min(1),
+  action: z.enum(['click', 'fill', 'type', 'hover', 'focus', 'check', 'text']),
+  text: optionalString,
+  name: optionalString,
+}).refine(
+  (input) => !['fill', 'type'].includes(input.action) || input.text !== undefined,
+  {
+    message: 'BrowserFindInput requires text when action is fill or type',
+    path: ['text'],
+  },
+);
+
+export const BrowserWaitInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: optionalString,
+  text: optionalString,
+  url: optionalString,
+  load: optionalString,
+  conditionScript: optionalString,
+  download: z.boolean().optional(),
+});
+
+export const BrowserDownloadInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ref: z.string().min(1),
+  path: z.string().min(1),
+});
+
+export const BrowserTabsInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['list', 'new', 'select', 'switch', 'close']).optional(),
+  target: optionalString,
+  url: optionalString,
+  label: optionalString,
+});
+
+export const BrowserCookiesInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['list', 'set', 'clear']).optional(),
+  name: optionalString,
+  value: optionalString,
+});
+
+export const BrowserNetworkInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  args: z.array(z.string().min(1)).min(1),
+});
+
+export const BrowserDialogInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['accept', 'dismiss']),
+  text: optionalString,
+});
+
+export const BrowserTraceInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['start', 'stop']),
+  path: optionalString,
+});
+
+export const BrowserClipboardInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['read', 'write']),
+  text: optionalString,
 });
 
 
@@ -623,9 +786,11 @@ export const MacPortInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
+  DesignPublishInput,
   ConsueloDesignInput,
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
+  ConsueloDesignDigitalEguideInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -646,6 +811,7 @@ export const schemaRegistry = {
   ContextGetInput,
   ContextListInput,
   ContextSaveInput,
+  ContextTraceInput,
   ExploreInput,
   DecideNextInput,
   ExploitInput,
@@ -667,6 +833,16 @@ export const schemaRegistry = {
   BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
+  BrowserGetInput,
+  BrowserFindInput,
+  BrowserWaitInput,
+  BrowserDownloadInput,
+  BrowserTabsInput,
+  BrowserCookiesInput,
+  BrowserNetworkInput,
+  BrowserDialogInput,
+  BrowserTraceInput,
+  BrowserClipboardInput,
   LinearSearchInput,
   LinearIssueInput,
   LinearCreateIssueInput,
@@ -707,13 +883,15 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
-  FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -730,6 +908,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
   ContextListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextSaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
@@ -743,14 +922,24 @@ export const schemaTypeSignatures: Record<string, string> = {
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserPageInput: '{ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserScreenshotInput: '{ name?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserGetInput: '{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserFindInput: '{ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserWaitInput: '{ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserDownloadInput: '{ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserTabsInput: '{ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserCookiesInput: '{ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserNetworkInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserDialogInput: '{ action: "accept" | "dismiss"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserTraceInput: '{ action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserClipboardInput: '{ action: "read" | "write"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   LinearSearchInput: '{ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string; taskSession?: string }',
   LinearIssueInput: '{ identifier: string; requestId?: string; taskSession?: string }',
   LinearCreateIssueInput: '{ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

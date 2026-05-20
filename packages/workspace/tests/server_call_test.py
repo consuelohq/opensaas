@@ -23,7 +23,7 @@ class FakeFastMCP:
 
 
 def install_server_stubs():
-    sys.modules['langsmith'] = types.SimpleNamespace(Client=lambda *args, **kwargs: None, traceable=lambda **kwargs: (lambda fn: fn))
+    sys.modules['langsmith'] = types.SimpleNamespace(Client=lambda *args, **kwargs: None)
     sys.modules['langsmith.run_helpers'] = types.SimpleNamespace(trace=None)
     sys.modules['uvicorn'] = types.SimpleNamespace(run=lambda *args, **kwargs: None)
     sys.modules['mcp'] = types.ModuleType('mcp')
@@ -58,6 +58,11 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.module = load_server_module()
         self.tempdir = tempfile.TemporaryDirectory()
         self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')
+        self.module._TRACE_DB_MAX_BYTES = 500 * 1024 * 1024
+        os.environ['OPENWORKSPACE_TRACE_DB'] = str(Path(self.tempdir.name) / 'traces.db')
+        os.environ.pop('WORKSPACE_OBSERVABILITY_PROVIDER', None)
+        os.environ.pop('LANGFUSE_PUBLIC_KEY', None)
+        os.environ.pop('LANGFUSE_SECRET_KEY', None)
         self.worktree_root = Path(self.tempdir.name) / 'worktrees'
         self.worktree = self.worktree_root / 'task-workspace-agents-test'
         (self.worktree / '.task').mkdir(parents=True)
@@ -73,10 +78,110 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def tearDown(self):
         self.tempdir.cleanup()
         os.environ.pop('WORKSPACE_WORKTREE_ROOT', None)
+        os.environ.pop('OPENWORKSPACE_TRACE_DB', None)
+        os.environ.pop('WORKSPACE_OBSERVABILITY_PROVIDER', None)
+        os.environ.pop('LANGFUSE_PUBLIC_KEY', None)
+        os.environ.pop('LANGFUSE_SECRET_KEY', None)
 
     def assert_standard_envelope(self, result):
         for key in ['now', 'ok', 'code', 'message', 'data', 'stderr', 'exitCode', 'durationMs', 'traceId', 'apiVersion']:
             self.assertIn(key, result)
+
+    def test_traced_call_uses_langfuse_when_configured(self):
+        observations = []
+        propagated = []
+
+        class FakeObservation:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+                self.updates = []
+
+            def __enter__(self):
+                observations.append(self)
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def update(self, **kwargs):
+                self.updates.append(kwargs)
+
+        class FakeClient:
+            def start_as_current_observation(self, **kwargs):
+                return FakeObservation(**kwargs)
+
+        class FakePropagate:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+
+            def __enter__(self):
+                propagated.append(self.kwargs)
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        sys.modules['langfuse'] = types.SimpleNamespace(
+            get_client=lambda: FakeClient(),
+            propagate_attributes=lambda **kwargs: FakePropagate(**kwargs),
+        )
+        os.environ['WORKSPACE_OBSERVABILITY_PROVIDER'] = 'langfuse'
+        os.environ['LANGFUSE_PUBLIC_KEY'] = 'pk-lf-test'
+        os.environ['LANGFUSE_SECRET_KEY'] = 'sk-lf-test'
+        self.module._langfuse_client = None
+        self.module._langfuse_propagate_attributes = None
+
+        result = self.module._traced_call('workspace.call', 'tool', lambda **kwargs: {'ok': True, 'code': 'OK'}, tool='status', tool_input={}, taskSession=None, timeout=7)
+
+        self.assertEqual(result, {'ok': True, 'code': 'OK'})
+        self.assertEqual(observations[0].kwargs['as_type'], 'span')
+        self.assertEqual(observations[0].kwargs['name'], 'status')
+        self.assertEqual(observations[0].updates[0]['input']['tool'], 'status')
+        self.assertEqual(propagated[0]['session_id'], self.module._session_id)
+        self.assertEqual(propagated[0]['trace_name'], 'status')
+        self.assertEqual(observations[0].updates[0]['output']['code'], 'OK')
+
+    def test_langfuse_tracing_does_not_retry_failing_call(self):
+        calls = []
+
+        class FakeObservation:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def update(self, **kwargs):
+                pass
+
+        class FakeClient:
+            def start_as_current_observation(self, **kwargs):
+                return FakeObservation()
+
+        class FakePropagate:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        sys.modules['langfuse'] = types.SimpleNamespace(
+            get_client=lambda: FakeClient(),
+            propagate_attributes=lambda **kwargs: FakePropagate(),
+        )
+        os.environ['WORKSPACE_OBSERVABILITY_PROVIDER'] = 'langfuse'
+        os.environ['LANGFUSE_PUBLIC_KEY'] = 'pk-lf-test'
+        os.environ['LANGFUSE_SECRET_KEY'] = 'sk-lf-test'
+        self.module._langfuse_client = None
+        self.module._langfuse_propagate_attributes = None
+
+        def failing_call(**kwargs):
+            calls.append(kwargs)
+            raise RuntimeError('boom')
+
+        with self.assertRaises(RuntimeError):
+            self.module._traced_call('workspace.call', 'tool', failing_call, tool='status', tool_input={}, taskSession=None, timeout=7)
+        self.assertEqual(len(calls), 1)
 
     def test_get_steering_reads_full_steering_each_call(self):
         calls = []
@@ -257,6 +362,70 @@ class WorkspaceCallServerTest(unittest.TestCase):
             result = self.module._run_workspace_call('status', tool_input={}, timeout=7)
         self.assertTrue(result['ok'])
         self.assertEqual(captured['timeout'], 7)
+
+    def test_workspace_call_writes_raw_sqlite_trace_row(self):
+        def fake_run(args, **kwargs):
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {'answer': 1},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 3,
+                'traceId': 'trc_child_visible',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('status', tool_input={'path': 'AGENTS.md'}, timeout=7)
+
+        self.assertTrue(result['ok'])
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            row = conn.execute('SELECT trace_id, tool, status, ok, code, input_json, result_json FROM tool_traces').fetchone()
+        finally:
+            conn.close()
+        self.assertEqual(row[0], 'trc_child_visible')
+        self.assertEqual(row[1], 'status')
+        self.assertEqual(row[2], 'ok')
+        self.assertEqual(row[3], 1)
+        self.assertEqual(row[4], 'OK')
+        self.assertEqual(json.loads(row[5]), {'path': 'AGENTS.md'})
+        self.assertEqual(json.loads(row[6])['data'], {'answer': 1})
+
+    def test_safety_block_writes_blocked_sqlite_trace_row(self):
+        command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
+        result = self.module._run_workspace_call('mac.exec', tool_input={'command': command})
+        self.assertFalse(result['ok'])
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            row = conn.execute('SELECT trace_id, tool, status, code FROM tool_traces').fetchone()
+        finally:
+            conn.close()
+        self.assertEqual(row[0], result['traceId'])
+        self.assertEqual(row[1], 'mac.exec')
+        self.assertEqual(row[2], 'blocked')
+        self.assertEqual(row[3], 'SAFETY_BLOCKED')
+
+    def test_trace_db_cap_deletes_old_rows(self):
+        self.module._TRACE_DB_MAX_BYTES = 1
+        db_path = Path(os.environ['OPENWORKSPACE_TRACE_DB'])
+        conn, path_value = self.module._open_trace_db()
+        try:
+            for index in range(3):
+                conn.execute('''
+                    INSERT INTO tool_traces(id, ts, trace_id, source, tool, status, ok)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (f'id-{index}', f'2026-01-01T00:00:0{index}+00:00', f'trc_{index}', 'test', 'status', 'ok', 1))
+            conn.commit()
+            self.module._enforce_trace_db_cap(conn, path_value)
+            count = conn.execute('SELECT count(*) FROM tool_traces').fetchone()[0]
+        finally:
+            conn.close()
+        self.assertEqual(db_path, path_value)
+        self.assertEqual(count, 0)
 
     def test_safety_blocks_task_exec_destructive_command_and_writes_audit_log(self):
         self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')

@@ -201,8 +201,12 @@
         {
           "source": "content",
           "flag": "--content",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "contentFile",
+          "flag": "--content-file",
+          "kind": "value"
         },
         {
           "source": "force",
@@ -224,7 +228,7 @@
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "path": "tmp/example.txt",
-      "content": "hello",
+      "contentFile": "/tmp/example.txt",
       "dryRun": true
     },
     "sessionRequired": true
@@ -1183,6 +1187,93 @@
     "sessionRequired": false
   },
   {
+    "name": "context.trace",
+    "methodPath": [
+      "context",
+      "trace"
+    ],
+    "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
+    "category": "context",
+    "underlying": "workspace context.trace",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "traceId",
+          "flag": "--trace-id",
+          "kind": "value"
+        },
+        {
+          "source": "tool",
+          "flag": "--tool",
+          "kind": "value"
+        },
+        {
+          "source": "status",
+          "flag": "--status",
+          "kind": "value"
+        },
+        {
+          "source": "since",
+          "flag": "--since",
+          "kind": "value"
+        },
+        {
+          "source": "until",
+          "flag": "--until",
+          "kind": "value"
+        },
+        {
+          "source": "contains",
+          "flag": "--contains",
+          "kind": "value"
+        },
+        {
+          "source": "taskSession",
+          "flag": "--task-session",
+          "kind": "value"
+        },
+        {
+          "source": "branch",
+          "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "raw",
+          "flag": "--raw",
+          "kind": "boolean"
+        },
+        {
+          "source": "db",
+          "flag": "--db",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "status": "error",
+      "limit": 20
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "explore",
     "methodPath": [
       "explore"
@@ -1870,11 +1961,43 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "url": "https://example.com",
+      "preset": "mobile",
+      "full": true,
       "dryRun": true
     },
     "sessionRequired": false
@@ -1916,11 +2039,43 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "url": "https://example.com",
+      "preset": "mobile",
+      "full": true,
       "dryRun": true
     },
     "sessionRequired": false
@@ -1957,10 +2112,41 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
+      "preset": "desktop",
       "dryRun": true
     },
     "sessionRequired": false
@@ -1997,10 +2183,41 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
+      "preset": "desktop",
       "dryRun": true
     },
     "sessionRequired": false
@@ -2036,11 +2253,42 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
-      "name": "after-login",
+      "name": "mobile-check",
+      "preset": "mobile",
       "dryRun": true
     },
     "sessionRequired": false
@@ -2336,6 +2584,459 @@
       "arguments": []
     },
     "exampleInput": {
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.get",
+    "methodPath": [
+      "browser",
+      "get"
+    ],
+    "description": "get text, html, value, attributes, title, or URL from the current page",
+    "category": "utilities",
+    "underlying": "workspace browser.get",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserGetInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "get",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "target",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "selector",
+          "kind": "value"
+        },
+        {
+          "source": "attribute",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "target": "title",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.find",
+    "methodPath": [
+      "browser",
+      "find"
+    ],
+    "description": "find an element by role, text, label, placeholder, alt text, title, or test id and run an action",
+    "category": "utilities",
+    "underlying": "workspace browser.find",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserFindInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "find",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "by",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "value",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "by": "role",
+      "value": "button",
+      "action": "click",
+      "name": "Submit",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.wait",
+    "methodPath": [
+      "browser",
+      "wait"
+    ],
+    "description": "wait for a selector, duration, text, URL, load state, JavaScript condition, or download",
+    "category": "utilities",
+    "underlying": "workspace browser.wait",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserWaitInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "wait",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "target",
+          "kind": "value"
+        },
+        {
+          "source": "text",
+          "flag": "--text",
+          "kind": "value"
+        },
+        {
+          "source": "url",
+          "flag": "--url",
+          "kind": "value"
+        },
+        {
+          "source": "load",
+          "flag": "--load",
+          "kind": "value"
+        },
+        {
+          "source": "conditionScript",
+          "flag": "--fn",
+          "kind": "value"
+        },
+        {
+          "source": "download",
+          "flag": "--download",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "load": "networkidle",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.download",
+    "methodPath": [
+      "browser",
+      "download"
+    ],
+    "description": "click an element and save the triggered download to a path",
+    "category": "utilities",
+    "underlying": "workspace browser.download",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserDownloadInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "download",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "ref",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "path",
+          "kind": "value",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "ref": "@e1",
+      "path": "/tmp/download.bin",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.tabs",
+    "methodPath": [
+      "browser",
+      "tabs"
+    ],
+    "description": "list, create, select, or close browser tabs with stable labels when needed",
+    "category": "utilities",
+    "underlying": "workspace browser.tabs",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserTabsInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "tabs",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value"
+        },
+        {
+          "source": "target",
+          "kind": "value"
+        },
+        {
+          "source": "url",
+          "kind": "value"
+        },
+        {
+          "source": "label",
+          "flag": "--label",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "list",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.cookies",
+    "methodPath": [
+      "browser",
+      "cookies"
+    ],
+    "description": "list, set, or clear browser cookies for the current browser session",
+    "category": "utilities",
+    "underlying": "workspace browser.cookies",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserCookiesInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "cookies",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "kind": "value"
+        },
+        {
+          "source": "value",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "list",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.network",
+    "methodPath": [
+      "browser",
+      "network"
+    ],
+    "description": "inspect or manage browser network requests, routes, and HAR capture",
+    "category": "utilities",
+    "underlying": "workspace browser.network",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserNetworkInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "network",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "args",
+          "kind": "array",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "args": [
+        "requests"
+      ],
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.dialog",
+    "methodPath": [
+      "browser",
+      "dialog"
+    ],
+    "description": "accept or dismiss browser dialogs",
+    "category": "utilities",
+    "underlying": "workspace browser.dialog",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserDialogInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "dialog",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "dismiss",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.trace",
+    "methodPath": [
+      "browser",
+      "trace"
+    ],
+    "description": "start or stop browser tracing and optionally write a trace file",
+    "category": "utilities",
+    "underlying": "workspace browser.trace",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "path",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "start",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.clipboard",
+    "methodPath": [
+      "browser",
+      "clipboard"
+    ],
+    "description": "read from or write to the browser clipboard",
+    "category": "utilities",
+    "underlying": "workspace browser.clipboard",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserClipboardInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "clipboard",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "read",
       "dryRun": true
     },
     "sessionRequired": false
@@ -4024,6 +4725,75 @@
     "sessionRequired": false
   },
   {
+    "name": "design.publish",
+    "methodPath": [
+      "design",
+      "publish"
+    ],
+    "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design publish",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "DesignPublishInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "publish",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "target",
+          "flag": "--target",
+          "kind": "value"
+        },
+        {
+          "source": "portlessName",
+          "flag": "--portless-name",
+          "kind": "value"
+        },
+        {
+          "source": "path",
+          "flag": "--path",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "category",
+          "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
+          "kind": "value"
+        },
+        {
+          "source": "tailscaleBin",
+          "flag": "--tailscale-bin",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "portlessName": "design.localhost",
+      "path": "/daily-deep-idea/example",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "consueloDesign.run",
     "methodPath": [
       "consueloDesign",
@@ -4234,7 +5004,7 @@
       "consueloDesign",
       "generateWebsite"
     ],
-    "description": "start or open a live Open Design website working session",
+    "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-website",
     "capabilities": {
@@ -4262,6 +5032,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4276,7 +5051,7 @@
       "consueloDesign",
       "generateDemo"
     ],
-    "description": "start or open a live Open Design demo working session",
+    "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-demo",
     "capabilities": {
@@ -4304,6 +5079,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4318,7 +5098,7 @@
       "consueloDesign",
       "generateImageBrief"
     ],
-    "description": "start or open a live Open Design image/media working session",
+    "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-image-brief",
     "capabilities": {
@@ -4346,6 +5126,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4360,7 +5145,7 @@
       "consueloDesign",
       "generateDigitalEguide"
     ],
-    "description": "start or open a live Open Design digital e-guide working session",
+    "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-digital-eguide",
     "capabilities": {
@@ -4370,7 +5155,7 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "ConsueloDesignDigitalEguideInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "consuelo-design",
@@ -4388,6 +5173,16 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
+          "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4402,7 +5197,7 @@
       "consueloDesign",
       "generateEmail"
     ],
-    "description": "start or open a live Open Design email working session",
+    "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-email",
     "capabilities": {
@@ -4430,6 +5225,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4444,7 +5244,7 @@
       "consueloDesign",
       "generateMotionFrame"
     ],
-    "description": "start or open a live Open Design motion-frame working session",
+    "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-motion-frame",
     "capabilities": {
@@ -4472,6 +5272,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4486,7 +5291,7 @@
       "consueloDesign",
       "renderHyperframes"
     ],
-    "description": "start or open a live Open Design HyperFrames render working session",
+    "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design render-hyperframes",
     "capabilities": {
@@ -4514,6 +5319,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
