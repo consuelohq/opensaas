@@ -1,28 +1,24 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-context-trace-sqlite-store",
+  "branch": "task/workspace-agents/fix-redis-metadata-login-resilience",
   "base": "stream/workspace-agents",
-  "headSha": "95ee535cfb8c499bac59a35dccf3d8ec3f526ec5",
-  "changeHash": "6fc348a38792512ea28c22ac179dd0c839ae736ad7c02447be43238154be716f",
+  "headSha": "c2252c942e495fe6364b0a5f9ae2533f57bcd653",
+  "changeHash": "f01a566ded7813222be0017a9e523b42a4658cae88dfc519741c3ee7f7e32e33",
   "changedFiles": [
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/context.js",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/server.py",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/context-trace.test.js",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
-    "packages/workspace/tests/server_call_test.py",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/twenty-front/src/modules/apollo/utils/getTokenPair.ts",
+    "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/__tests__/use-cached-metadata.spec.ts",
+    "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
+    "packages/twenty-server/src/engine/api/graphql/metadata.module-factory.ts",
+    "packages/twenty-server/src/engine/core-modules/session-storage/__tests__/session-storage.module-factory.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/session-storage/session-storage.module-factory.ts"
   ],
-  "verifiedAt": "2026-05-13T12:30:31.196Z",
+  "verifiedAt": "2026-05-20T12:54:59.231Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

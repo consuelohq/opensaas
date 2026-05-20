@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_4a7f4887fe7a",
-  "tmuxSession": "opensaas-workspace-agents-add-context-trace-sqlite-store-4a7f4887",
+  "taskSession": "tsk_c29b5aca853d",
+  "tmuxSession": "opensaas-workspace-agents-fix-redis-metadata-login-resilience-c29b5aca",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-context-trace-sqlite-store",
-  "branch": "task/workspace-agents/add-context-trace-sqlite-store",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store",
-  "prNumber": 398,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/398",
-  "createdAt": "2026-05-13T12:12:10.424Z",
+  "taskBranch": "task/workspace-agents/fix-redis-metadata-login-resilience",
+  "branch": "task/workspace-agents/fix-redis-metadata-login-resilience",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-redis-metadata-login-resilience",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-redis-metadata-login-resilience",
+  "prNumber": 399,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/399",
+  "createdAt": "2026-05-19T17:11:02.322Z",
   "tmuxCreated": true
 }

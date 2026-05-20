@@ -68,13 +68,18 @@
     "packages/twenty-front/src/pages/home/HomePage.tsx",
     "packages/twenty-front/src/pages/home/home-page.styles.ts",
     "packages/twenty-server/jest.config.mjs",
+    "packages/twenty-server/package.json",
+    "packages/twenty-server/project.json",
     "packages/twenty-server/src/database/typeorm/core/migrations/common/1774090000000-create-consuelo-dialer-runtime-tables.ts",
     "packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts",
+    "packages/twenty-server/src/engine/api/graphql/graphql-config/hooks/use-cached-metadata.ts",
+    "packages/twenty-server/src/engine/api/graphql/metadata.module-factory.ts",
     "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
     "packages/twenty-server/src/engine/core-modules/auth/dto/auth-token-pair.dto.ts",
     "packages/twenty-server/src/engine/core-modules/auth/dto/auth-tokens.dto.ts",
     "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces-and-access-tokens.output.ts",
     "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces.output.ts",
+    "packages/twenty-server/src/engine/core-modules/cache-storage/services/cache-storage.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/calls.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
@@ -91,8 +96,11 @@
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
     "packages/twenty-server/src/engine/core-modules/core-engine.module.ts",
+    "packages/twenty-server/src/engine/core-modules/graphql/utils/graphql-errors.util.ts",
     "packages/twenty-server/src/engine/core-modules/knowledge-base/knowledge-base.module.ts",
     "packages/twenty-server/src/engine/core-modules/knowledge-base/knowledge-base.resolver.ts",
+    "packages/twenty-server/src/engine/core-modules/redis-client/redis-client.service.ts",
+    "packages/twenty-server/src/engine/core-modules/session-storage/session-storage.module-factory.ts",
     "packages/twenty-server/src/engine/core-modules/workspace/dtos/workspace-urls.dto.ts",
     "packages/twenty-server/src/engine/decorators/auth/auth-user-workspace-id.decorator.ts",
     "packages/twenty-server/src/engine/decorators/auth/auth-user.decorator.ts",
@@ -172,5 +180,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T12:27:50.596Z"
+  "updatedAt": "2026-05-20T10:47:12.543Z"
 }
