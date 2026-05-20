@@ -121,7 +121,7 @@ function main() {
     return;
   }
 
-  const taskPrNumber = meta.prNumber || meta.taskPrNumber;
+  const taskPrNumber = meta.taskPrNumber || meta.prNumber;
   const taskGitHubUrl = meta.taskPrUrl || meta.githubPrUrl || (String(meta.prUrl || '').includes('/pull/') ? meta.prUrl : null);
   const taskGraphiteUrl = meta.taskGraphitePrUrl || buildGraphitePullRequestUrl('consuelohq/opensaas', taskPrNumber, getBranchSlug(meta.taskBranch));
   const result = {
