@@ -1,16 +1,20 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "branch": "task/workspace-agents/prefer-graphite-pr-links",
   "base": "stream/workspace-agents",
-  "headSha": "6d8e257581761296b43d75f1e4a6012304d5afc3",
-  "changeHash": "b0bc2a9aac20bf9e80aa328b1f8e744c5e89067ebe7b5797a43d7e6656b1a6c5",
+  "headSha": "a911d4116a4f8eef5adc2b73d491aa6d4eb3a961",
+  "changeHash": "684c9ec7a70eab686693eb61c64815eb5d099830e6e953b1a2556855f77d3613",
   "changedFiles": [
-    "packages/workspace/README.md",
-    "packages/workspace/requirements.txt",
-    "packages/workspace/server.py",
-    "packages/workspace/tests/server_call_test.py"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/lib/pr-links.js",
+    "packages/workspace/scripts/status.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-prs.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/pr-links.test.js"
   ],
-  "verifiedAt": "2026-05-20T12:20:51.145Z",
+  "verifiedAt": "2026-05-20T14:35:35.570Z",
   "review": {
     "skipped": true,
     "passed": true

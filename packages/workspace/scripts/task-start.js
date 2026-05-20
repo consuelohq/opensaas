@@ -34,6 +34,7 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 
 const DEFAULT_START_FROM = 'main';
@@ -187,6 +188,7 @@ function printResult(result, useJson) {
   writeStdout(`tmux session: ${result.tmuxSession}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
+  writeStdout(`github: ${result.githubPrUrl}`);
 }
 
 function resolveSourceBranch(startFrom, stream) {
@@ -445,6 +447,8 @@ async function main() {
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
+    const taskSlug = taskBranch.split('/').pop();
+    const graphitePrUrl = buildGraphitePullRequestUrl(args.repo, pullRequest.number, taskSlug);
 
     const taskMeta = {
       area,
@@ -455,6 +459,10 @@ async function main() {
       startFrom: args.startFrom,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
+      githubPrUrl: pullRequest.html_url,
+      graphitePrUrl,
+      taskPrUrl: pullRequest.html_url,
+      taskGraphitePrUrl: graphitePrUrl,
       worktreePath,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
@@ -477,13 +485,13 @@ async function main() {
 
     // create fresh workpad — always overwrite, never reuse from previous task
     const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
-    const slug = taskBranch.split('/').pop();
     const workpad = [
       `# ${args.title}`,
       '',
       `branch: \`${taskBranch}\``,
       `stream: \`${stream}\``,
-      `pr: ${pullRequest.html_url}`,
+      `pr: ${graphitePrUrl}`,
+      `github pr: ${pullRequest.html_url}`,
       `started: ${new Date().toISOString().slice(0, 10)}`,
       '',
       '## acceptance criteria',
@@ -536,7 +544,9 @@ async function main() {
         branch: taskBranch,
         worktreePath,
         prNumber: pullRequest.number,
-        prUrl: pullRequest.html_url,
+        prUrl: graphitePrUrl,
+        githubPrUrl: pullRequest.html_url,
+        graphitePrUrl,
         taskSession: taskSessionMeta.taskSession,
         tmuxSession: taskSessionMeta.tmuxSession,
         createdBranch: remoteTaskDetails.created,
