@@ -1,16 +1,14 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
   "base": "stream/workspace-agents",
-  "headSha": "6d8e257581761296b43d75f1e4a6012304d5afc3",
-  "changeHash": "b0bc2a9aac20bf9e80aa328b1f8e744c5e89067ebe7b5797a43d7e6656b1a6c5",
+  "headSha": "89b5672198def6beeb3b3559b11bddeb955d1b33",
+  "changeHash": "21f998110337d2d8ec2f28ef30d647f35c3369d231450fdd818b4f219c29eae1",
   "changedFiles": [
-    "packages/workspace/README.md",
-    "packages/workspace/requirements.txt",
-    "packages/workspace/server.py",
-    "packages/workspace/tests/server_call_test.py"
+    "packages/workspace/scripts/status.js",
+    "packages/workspace/scripts/task-prs.js"
   ],
-  "verifiedAt": "2026-05-20T12:20:51.145Z",
+  "verifiedAt": "2026-05-20T14:49:10.818Z",
   "review": {
     "skipped": true,
     "passed": true

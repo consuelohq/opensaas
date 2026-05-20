@@ -143,6 +143,7 @@
     "packages/workspace/scripts/lib/index/chunker.js",
     "packages/workspace/scripts/lib/index/store.js",
     "packages/workspace/scripts/lib/paths.js",
+    "packages/workspace/scripts/lib/pr-links.js",
     "packages/workspace/scripts/lib/search/retriever.js",
     "packages/workspace/scripts/lib/state/evidence-log.js",
     "packages/workspace/scripts/lib/state/explore-state.js",
@@ -155,8 +156,11 @@
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
     "packages/workspace/scripts/sentry.js",
+    "packages/workspace/scripts/status.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-prs.js",
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/task-start.js",
     "packages/workspace/scripts/tmp.js",
@@ -167,6 +171,7 @@
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/server_call_test.py",
     "packages/workspace/tests/task-session.test.js",
@@ -174,5 +179,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-20T12:03:16.406Z"
+  "updatedAt": "2026-05-20T14:44:04.735Z"
 }

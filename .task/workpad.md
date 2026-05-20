@@ -1,8 +1,8 @@
-# switch workspace tracing to langfuse
+# fix graphite pr link metadata compatibility
 
-branch: `task/workspace-agents/switch-workspace-tracing-to-langfuse`
+branch: `task/workspace-agents/fix-graphite-pr-link-metadata-compatibility`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/401
+pr: https://github.com/consuelohq/opensaas/pull/405
 started: 2026-05-20
 
 ## acceptance criteria
@@ -42,11 +42,3 @@ bun run task:push -- --message "type(workspace-agents): description" --changed
 bun run task:pr
 bun run task:finish
 ```
-
-## Langfuse workspace observability
-
-- [x] Explored existing LangSmith wrapper in `packages/workspace/server.py`.
-- [x] Checked current Langfuse SDK docs for `get_client`, `start_as_current_observation`, and `propagate_attributes`.
-- [x] Keep local `context.trace` SQLite as fallback/local truth.
-- [ ] Replace default remote provider with Langfuse and keep LangSmith only behind explicit provider flag.
-- [ ] Update docs, requirements, and tests.

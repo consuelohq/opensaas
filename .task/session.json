@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_e6c8d6686c3d",
-  "tmuxSession": "opensaas-workspace-agents-switch-workspace-tracing-to-langfuse-e6c8d668",
+  "taskSession": "tsk_9a63367f0f57",
+  "tmuxSession": "opensaas-workspace-agents-fix-graphite-pr-link-metadata-compatibility-9a63367f",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
-  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
-  "prNumber": 401,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/401",
-  "createdAt": "2026-05-20T11:57:46.730Z",
+  "taskBranch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility",
+  "prNumber": 405,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/405",
+  "createdAt": "2026-05-20T14:41:39.569Z",
   "tmuxCreated": true
 }
