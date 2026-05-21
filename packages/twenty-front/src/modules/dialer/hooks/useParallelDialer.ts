@@ -83,6 +83,8 @@ export const useParallelDialer = () => {
         (item) => item.status === 'pending' || item.status === 'calling',
       );
 
+      const runtimeQueueId = pendingItems[0]?.queueId ?? activeQueue.id;
+
       if (pendingItems.length === 0) {
         return { status: 'skipped', reason: 'insufficient-dialable-items' };
       }
@@ -99,7 +101,7 @@ export const useParallelDialer = () => {
           source: 'queue',
           selectionStrategy: 'predictive',
           requestedFanout,
-          queueId: activeQueue.id,
+          queueId: runtimeQueueId,
         });
         const calls: ParallelCall[] = result.calls.map((call) => ({
           callSid: call.callSid,
@@ -155,7 +157,7 @@ export const useParallelDialer = () => {
           extra: {
             context: 'startParallelBatch',
             currentQueueIndex,
-            queueId: activeQueue?.id,
+            queueId: runtimeQueueId,
           },
         });
         playErrorSound();
