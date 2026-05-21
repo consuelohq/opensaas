@@ -92,6 +92,15 @@ export const ConsueloDesignDigitalEguideInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const CodeRunInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  code: z.string().min(1),
+  mode: z.enum(['read', 'edit', 'verify']).optional(),
+  timeout: z.number().int().positive().optional(),
+  memoryLimit: z.number().int().positive().optional(),
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -791,6 +800,7 @@ export const schemaRegistry = {
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
+  CodeRunInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -888,6 +898,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',

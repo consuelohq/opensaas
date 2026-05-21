@@ -4669,6 +4669,60 @@
     "sessionRequired": false
   },
   {
+    "name": "code.run",
+    "methodPath": [
+      "code",
+      "run"
+    ],
+    "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+    "category": "codemode",
+    "underlying": "workspace code.run",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "CodeRunInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "code-run",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "taskSession",
+          "kind": "value"
+        },
+        {
+          "source": "code",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "mode",
+          "flag": "--mode",
+          "kind": "value"
+        },
+        {
+          "source": "timeout",
+          "flag": "--timeout",
+          "kind": "value"
+        },
+        {
+          "source": "memoryLimit",
+          "flag": "--memory-limit",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "code": "return await fs_read({ path: \"AGENTS.md\" })"
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "generate.docs",
     "methodPath": [
       "generate",
