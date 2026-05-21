@@ -1,4 +1,4 @@
-# Runbooks
+# Skills
 
 The default tool manifest is the agent-facing source of truth:
 
@@ -6,7 +6,7 @@ The default tool manifest is the agent-facing source of truth:
 packages/os/tooling/tool-manifest.json
 ```
 
-Runtime implementations live in `packages/os/scripts/`. The current smoke runbook is implemented at `packages/os/scripts/revenue/daily-revenue-brief.ts`.
+Runtime implementations live in `packages/os/scripts/`. The current smoke skill is implemented at `packages/os/scripts/revenue/daily-revenue-brief.ts`.
 
 ## daily-revenue-brief
 
@@ -58,4 +58,4 @@ Failure modes:
 | `not_configured` | GraphQL responded with an expected schema/data-model gap. |
 | `query_failed` | The proof query failed for another safe reason. |
 
-The runbook should keep returning structured output even when the current data model is incomplete.
+The skill should keep returning structured output even when the current data model is incomplete.

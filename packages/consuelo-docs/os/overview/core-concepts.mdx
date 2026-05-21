@@ -11,19 +11,19 @@ Managed operating layer agents use to work inside a revenue business.
 
 ## Workspace
 
-Customer-scoped environment containing users, data, files, integrations, runbooks, permissions, artifacts, and logs.
+Customer-scoped environment containing users, data, files, integrations, skills, permissions, artifacts, and logs.
 
 ## Data Model
 
 The OS ontology: business objects agents can reason about and act on.
 
-## Runbook
+## Skill
 
 Documented business capability behind `call`.
 
 ## Tool Manifest
 
-Runbook registry with capability metadata, permissions, inputs, outputs, env, and integrations.
+Skill registry with capability metadata, permissions, inputs, outputs, env, and integrations.
 
 ## Steering
 
@@ -31,7 +31,7 @@ Context an agent reads before acting. `get_steering` is business steering; `get_
 
 ## Artifact
 
-Durable runbook output such as a report, brief, draft, call summary, script, or run output.
+Durable skill output such as a report, brief, draft, call summary, script, or run output.
 
 ## Sandbox
 
@@ -47,16 +47,16 @@ Internal Consuelo role or admin script for provisioning, debugging, configuratio
 
 ## Permission Level
 
-What a runbook can do: `read`, `draft`, `write`, `execute`, `external`, or `admin`.
+What a skill can do: `read`, `draft`, `write`, `execute`, `external`, or `admin`.
 
 ## Filesystem
 
-Workspace path surface for runbooks and agents; local in development, S3 Files-mounted in production.
+Workspace path surface for skills and agents; local in development, S3 Files-mounted in production.
 
 ## GraphQL Facade
 
-Stable data access layer so runbooks avoid scattered raw GraphQL queries.
+Stable data access layer so skills avoid scattered raw GraphQL queries.
 
 ## Decision Engine
 
-Combines structured facts, vectorized context, business rules, runbook logic, and outcomes to recommend next action.
+Combines structured facts, vectorized context, business rules, skill logic, and outcomes to recommend next action.

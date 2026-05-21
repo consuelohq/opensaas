@@ -2,7 +2,7 @@
 
 The current internal Consuelo workspace data model is still evolving toward the output shape expected by Consuelo OS.
 
-Runbooks must handle this gap gracefully. A runbook should return `not_configured` or `query_failed` for missing schema/data-model support instead of crashing the OS runtime.
+Skills must handle this gap gracefully. A skill should return `not_configured` or `query_failed` for missing schema/data-model support instead of crashing the OS runtime.
 
 ## Early GraphQL proof
 
@@ -18,7 +18,7 @@ Optional identity environment variables:
 - `CONSUELO_WORKSPACE_ID`
 - `CONSUELO_USER_ID`
 
-The runbook should report only:
+The skill should report only:
 
 - whether the env var exists
 - GraphQL URL host

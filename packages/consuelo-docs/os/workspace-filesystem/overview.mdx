@@ -1,13 +1,13 @@
 ---
 title: Workspace Filesystem
-description: The workspace filesystem is the file surface for OS runbooks and agents.
+description: The workspace filesystem is the file surface for OS skills and agents.
 ---
 
-> The workspace filesystem is the file surface for OS runbooks and agents.
+> The workspace filesystem is the file surface for OS skills and agents.
 
 ## Decision
 
-Consuelo OS needs a mounted Linux workspace filesystem for runbooks and agents.
+Consuelo OS needs a mounted Linux workspace filesystem for skills and agents.
 
 Targets:
 
@@ -23,7 +23,7 @@ Targets:
   /business
   /files
   /artifacts
-  /runbook-runs
+  /skill-runs
   /campaigns
   /landing-pages
   /ads
@@ -34,4 +34,4 @@ Targets:
 
 ## Rule
 
-Runbooks should use workspace paths and filesystem/artifact APIs. Avoid raw object keys and random machine-local paths in runbook logic.
+Skills should use workspace paths and filesystem/artifact APIs. Avoid raw object keys and random machine-local paths in skill logic.

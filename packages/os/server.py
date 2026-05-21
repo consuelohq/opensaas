@@ -32,7 +32,7 @@ STEERING_FILES = [
     APP_DIR / 'data-model.md',
     APP_DIR / 'permissions.md',
     APP_DIR / 'integrations.md',
-    APP_DIR / 'runbooks.md',
+    APP_DIR / 'skills.md',
 ]
 MANIFEST_FILE = APP_DIR / 'tooling' / 'tool-manifest.json'
 DEV_STEERING_FILE = APP_DIR / 'dev-steering.md'
@@ -135,7 +135,7 @@ def call(
     workspaceId: str | None = None,
     userId: str | None = None,
 ) -> dict[str, Any]:
-    """Execute a named OS runbook through the Bun runtime."""
+    """Execute a named OS skill through the Bun runtime."""
     started = time.time()
     trace_id = _trace_id()
     payload = {
@@ -163,7 +163,7 @@ def call(
             'ok': False,
             'name': name,
             'permission': 'read',
-            'error': {'code': 'TIMEOUT', 'message': 'runbook timed out'},
+            'error': {'code': 'TIMEOUT', 'message': 'skill timed out'},
             'traceId': trace_id,
             'durationMs': int((time.time() - started) * 1000),
         }
@@ -175,7 +175,7 @@ def call(
             'ok': False,
             'name': name,
             'permission': 'read',
-            'error': {'code': 'PARSE_ERROR', 'message': 'runbook returned non-JSON output'},
+            'error': {'code': 'PARSE_ERROR', 'message': 'skill returned non-JSON output'},
             'traceId': trace_id,
             'durationMs': int((time.time() - started) * 1000),
         }
@@ -189,7 +189,7 @@ def call(
         'ok': False,
         'name': name,
         'permission': 'read',
-        'error': {'code': 'PARSE_ERROR', 'message': 'runbook output was not an object'},
+        'error': {'code': 'PARSE_ERROR', 'message': 'skill output was not an object'},
         'traceId': trace_id,
         'durationMs': int((time.time() - started) * 1000),
     }

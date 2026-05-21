@@ -2,15 +2,15 @@
 
 Consuelo OS is a managed AI operating system for revenue teams.
 
-It gives ChatGPT, Claude, and other agents a small role-aware interface into a customer workspace:
+It gives ChatGPT, Claude, and other agents a small role-aware portal into a customer workspace:
 
 - `get_steering`
 - `get_dev_steering`
 - `call`
 
-## Why a small MCP surface
+## Why a small OS portal
 
-The MCP surface stays small so agents get one stable operating contract. Customer capabilities are runbooks behind `call`, not separate MCP tools.
+The OS portal stays small so agents get one stable operating contract. Customer capabilities are skills behind `call`, not separate OS portal entrypoints.
 
 This keeps the agent map small while the Bun scripts own runtime behavior, permission checks, and future approval enforcement.
 
@@ -24,7 +24,7 @@ This keeps the agent map small while the Bun scripts own runtime behavior, permi
 - data model notes
 - permission rules
 - integration notes
-- available runbooks
+- available skills
 - raw default tool manifest
 - docs pointers
 
@@ -36,7 +36,7 @@ Use it for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, fi
 
 ## call
 
-`call` executes a named runbook.
+`call` executes a named skill.
 
 Example:
 
@@ -48,18 +48,18 @@ Example:
 }
 ```
 
-## Runbooks
+## Skills
 
-Runbooks are Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
+Skills are Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
 
 Each default manifest entry declares name, title, description, permission level, approval rules, write/external side effect flags, required env, required integrations, and input/output schema hints.
 
-## Smoke runbook
+## Smoke skill
 
 `daily-revenue-brief` proves:
 
 ```text
-call("daily-revenue-brief") -> Bun runbook -> optional GraphQL proof query -> structured result
+call("daily-revenue-brief") -> Bun skill -> optional GraphQL proof query -> structured result
 ```
 
 It returns scaffold status, GraphQL status, future wiring steps, and an artifact descriptor.

@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_ab903187e907",
-  "tmuxSession": "opensaas-os-align-os-manifest-and-script-runtime-ab903187",
+  "taskSession": "tsk_1d8a3f71c4f7",
+  "tmuxSession": "opensaas-os-rename-os-docs-terminology-to-skills-1d8a3f71",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/align-os-manifest-and-script-runtime",
-  "branch": "task/os/align-os-manifest-and-script-runtime",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime",
-  "prNumber": 364,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/364",
-  "createdAt": "2026-05-11T09:55:12.082Z",
+  "taskBranch": "task/os/rename-os-docs-terminology-to-skills",
+  "branch": "task/os/rename-os-docs-terminology-to-skills",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-os-docs-terminology-to-skills",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-os-docs-terminology-to-skills",
+  "prNumber": 412,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/412",
+  "createdAt": "2026-05-21T01:30:45.541Z",
   "tmuxCreated": true
 }

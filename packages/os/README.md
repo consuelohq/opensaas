@@ -1,20 +1,20 @@
 # Consuelo OS
 
-Consuelo OS is a customer-facing runtime seeded from the proven `packages/workspace` MCP pattern.
+Consuelo OS is a customer-facing runtime seeded from the proven `packages/workspace` OS portal pattern.
 
 This scaffold proves one narrow spine:
 
 ```text
-get_steering -> call -> Bun runbook -> structured result
+get_steering -> call -> Bun skill -> structured result
 ```
 
-The MCP surface exposes exactly three tools:
+The OS portal exposes exactly three tools:
 
 - `get_steering`
 - `get_dev_steering`
 - `call`
 
-Runbooks live behind `call` as Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
+Skills live behind `call` as Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
 
 The original workspace/operator tool surface is preserved in `tooling/dev-tool-manifest.json` and returned through `get_dev_steering` with a short OS-specific preface.
 
@@ -44,7 +44,7 @@ Return dev/operator steering:
 bun --cwd packages/os ./scripts/os.ts get-dev-steering
 ```
 
-Run the smoke runbook:
+Run the smoke skill:
 
 ```bash
 bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
@@ -52,7 +52,7 @@ bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
 
 With GraphQL env configured, the same command attempts a harmless connectivity proof.
 
-## MCP server
+## OS portal
 
 Start the server:
 
@@ -64,10 +64,10 @@ cd packages/os
 The server exposes:
 
 - `/health`
-- MCP streamable HTTP at `/`
+- OS portal transport at `/`
 
-The MCP `call` tool delegates into the Bun runbook runtime.
+The `call` portal entrypoint delegates into the Bun skill runtime.
 
 ## Current boundary
 
-This is packaging, not full product completion. The scaffold intentionally includes one runbook and docs for the shape future runbooks should follow.
+This is packaging, not full product completion. The scaffold intentionally includes one skill and docs for the shape future skills should follow.

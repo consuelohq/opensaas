@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { findManifestEntry, getPackageRoot, readManifest } from './lib/manifest';
-import type { CallInput, CallOutput, RunbookContext } from './lib/types';
+import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
@@ -40,7 +40,7 @@ function getSteering(): string {
     'data-model.md',
     'permissions.md',
     'integrations.md',
-    'runbooks.md',
+    'skills.md',
   ];
   const sections = [
     '# Consuelo OS runtime context',
@@ -86,8 +86,8 @@ function notFound(name: string): CallOutput {
     name,
     permission: 'read',
     error: {
-      code: 'RUNBOOK_NOT_FOUND',
-      message: `Runbook "${name}" is not defined in the manifest.`,
+      code: 'SKILL_NOT_FOUND',
+      message: `Skill "${name}" is not defined in the manifest.`,
     },
   };
 }
@@ -96,7 +96,7 @@ async function executeCall(callInput: CallInput): Promise<CallOutput> {
   const entry = findManifestEntry(callInput.name);
   if (!entry) return notFound(callInput.name);
 
-  const context: RunbookContext = {
+  const context: SkillContext = {
     workspaceId: callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID,
     userId: callInput.userId ?? process.env.CONSUELO_USER_ID,
     manifestEntry: entry,
@@ -112,8 +112,8 @@ async function executeCall(callInput: CallInput): Promise<CallOutput> {
         permission: entry.permission,
         requiresApproval: entry.requiresApproval,
         error: {
-          code: 'RUNBOOK_EXECUTION_FAILED',
-          message: error instanceof Error ? error.message.slice(0, 240) : 'Runbook execution failed.',
+          code: 'SKILL_EXECUTION_FAILED',
+          message: error instanceof Error ? error.message.slice(0, 240) : 'Skill execution failed.',
         },
       };
     }
@@ -125,8 +125,8 @@ async function executeCall(callInput: CallInput): Promise<CallOutput> {
     permission: entry.permission,
     requiresApproval: entry.requiresApproval,
     error: {
-      code: 'RUNBOOK_NOT_IMPLEMENTED',
-      message: `Runbook "${entry.name}" is declared but has no runner yet.`,
+      code: 'SKILL_NOT_IMPLEMENTED',
+      message: `Skill "${entry.name}" is declared but has no runner yet.`,
     },
   };
 }

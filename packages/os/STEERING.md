@@ -2,18 +2,18 @@
 
 Consuelo OS is a managed AI operating system for revenue teams.
 
-The runtime exposes exactly three MCP tools:
+The runtime exposes exactly three OS portal entrypoints:
 
 - `get_steering`
 - `get_dev_steering`
 - `call`
 
-All customer-facing work happens through named runbooks behind `call`. Do not add one-off MCP tools for CRM queries, people search, task creation, call history, ad reviews, or revenue reports. Those belong in the runbook manifest and Bun runtime.
+All customer-facing work happens through named skills behind `call`. Do not add one-off OS portal entrypoints for CRM queries, people search, task creation, call history, ad reviews, or revenue reports. Those belong in the skill manifest and Bun runtime.
 
 The spine this scaffold proves is:
 
 ```text
-get_steering -> call -> Bun runbook -> structured result
+get_steering -> call -> Bun skill -> structured result
 ```
 
 ## Identity
@@ -25,7 +25,7 @@ The agent should think in customer workspace terms:
 - customer workspace
 - business context
 - data model context
-- runbooks
+- skills
 - permissions
 - integrations
 - workspace files
@@ -52,13 +52,13 @@ The agent should avoid development-workspace assumptions:
 - data model notes
 - permission rules
 - integration notes
-- available runbooks
+- available skills
 - raw default tool manifest
 - docs pointers
 
 `get_dev_steering` gives build, design, deployment, debugging, and internal operator agents the original proven workspace steering pattern with an OS preface. Use it for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.
 
-`call` executes exactly one named runbook:
+`call` executes exactly one named skill:
 
 ```json
 {
@@ -69,11 +69,11 @@ The agent should avoid development-workspace assumptions:
 }
 ```
 
-Every `call` result must be structured. Runbooks should return safe failures when integrations or data model fields are missing.
+Every `call` result must be structured. Skills should return safe failures when integrations or data model fields are missing.
 
 ## Permission levels
 
-Every runbook must declare one permission level:
+Every skill must declare one permission level:
 
 - `read`
 - `draft`
@@ -82,13 +82,13 @@ Every runbook must declare one permission level:
 - `external`
 - `admin`
 
-Runbooks that write records, trigger external side effects, or require elevated access must declare approval requirements in the manifest.
+Skills that write records, trigger external side effects, or require elevated access must declare approval requirements in the manifest.
 
 ## Files and artifacts
 
 The OS should think in terms of workspace files and artifacts. Local files are one storage backend. S3 can be another storage backend later.
 
-Runbooks should return artifact descriptors instead of assuming a specific machine path is the product interface:
+Skills should return artifact descriptors instead of assuming a specific machine path is the product surface:
 
 ```json
 {

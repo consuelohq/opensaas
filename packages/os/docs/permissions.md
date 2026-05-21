@@ -1,6 +1,6 @@
 # Permissions
 
-Every Consuelo OS runbook declares a permission level in the manifest.
+Every Consuelo OS skill declares a permission level in the manifest.
 
 | Level | Meaning | Approval |
 | --- | --- | --- |
@@ -22,5 +22,5 @@ Manifest fields:
 }
 ```
 
-Approval policy should be visible before execution. Runbooks that need approval should return proposed writes or proposed actions before committing changes.
+Approval policy should be visible before execution. Skills that need approval should return proposed writes or proposed actions before committing changes.
 

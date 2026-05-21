@@ -15,12 +15,12 @@ Consuelo OS uses manifest-declared permission levels.
 
 ## Manifest fields
 
-Every runbook entry must declare:
+Every skill entry must declare:
 
 - `permission`
 - `requiresApproval`
 - `writesRecords`
 - `externalSideEffects`
 
-These fields make the permission decision visible before a runbook executes.
+These fields make the permission decision visible before a skill executes.
 
