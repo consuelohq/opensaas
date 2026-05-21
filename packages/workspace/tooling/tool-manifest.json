@@ -4686,11 +4686,23 @@
           "source": "memoryLimit",
           "flag": "--memory-limit",
           "kind": "value"
+        },
+        {
+          "source": "maxOperations",
+          "flag": "--max-operations",
+          "kind": "value"
+        },
+        {
+          "source": "maxResultChars",
+          "flag": "--max-result-chars",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
-      "code": "return await fs_read({ path: \"AGENTS.md\" })"
+      "code": "return await workspace_call(\"status\", {})",
+      "maxOperations": 25,
+      "maxResultChars": 20000
     },
     "sessionRequired": false
   },

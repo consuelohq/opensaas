@@ -25,6 +25,7 @@ export type ExecutorConfig = {
   memoryLimit: number;
   timeout: number;
   workingDirectory: string;
+  maxOperations: number;
 };
 
 // MCP tool input schema

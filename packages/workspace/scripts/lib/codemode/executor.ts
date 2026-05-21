@@ -4,6 +4,7 @@ const DEFAULT_CONFIG: ExecutorConfig = {
   memoryLimit: 256,
   timeout: 30_000,
   workingDirectory: process.cwd(),
+  maxOperations: 100,
 };
 
 export async function execute(
@@ -13,29 +14,39 @@ export async function execute(
 ): Promise<ExecutionResult> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   if ('bun' in process.versions) {
-    return await executeWithFunction(code, tools, cfg, 'isolated-vm is skipped under Bun');
+    return executeWithBunFunctionRuntime(code, tools, cfg);
   }
   try {
     const ivmModule = await import('isolated-vm');
     return await executeWithIsolate(code, tools, cfg, ivmModule.default);
   } catch (error: unknown) {
-    return await executeWithFunction(code, tools, cfg, error);
+    return executeWithBunFunctionRuntime(code, tools, cfg, error);
   }
 }
 
-async function executeWithFunction(
+function formatError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function operationLimitError(maxOperations: number): Error {
+  return new Error(`code.run exceeded maxOperations=${maxOperations}`);
+}
+
+async function executeWithBunFunctionRuntime(
   code: string,
   tools: ToolRegistry,
   cfg: ExecutorConfig,
-  setupError: unknown,
+  setupError?: unknown,
 ): Promise<ExecutionResult> {
   const consoleOutput: ConsoleOutput = { log: [], warn: [], error: [] };
   const start = Date.now();
   let operations = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const wrappedTools: ToolRegistry = {};
   for (const [name, tool] of Object.entries(tools)) {
     wrappedTools[name] = async (...args: unknown[]) => {
       operations += 1;
+      if (operations > cfg.maxOperations) throw operationLimitError(cfg.maxOperations);
       return await tool(...args);
     };
   }
@@ -48,18 +59,16 @@ async function executeWithFunction(
     const helperNames = Object.keys(wrappedTools);
     const helperValues = helperNames.map((name) => wrappedTools[name]);
     const fn = new Function('console', ...helperNames, `return (async () => {\n${code}\n})()`);
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const result = await Promise.race([
-      fn(localConsole, ...helperValues) as Promise<unknown>,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error('executor timeout')), cfg.timeout);
-      }),
-    ]);
-    if (timer) clearTimeout(timer);
-    consoleOutput.warn.push(`isolated-vm unavailable; used fallback executor: ${setupError instanceof Error ? setupError.message : String(setupError)}`);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('executor timeout')), cfg.timeout);
+    });
+    const result = await Promise.race([fn(localConsole, ...helperValues) as Promise<unknown>, timeoutPromise]);
+    if (setupError) consoleOutput.warn.push(`isolated-vm unavailable outside Bun; used Bun-compatible function runtime: ${formatError(setupError)}`);
     return { success: true, result, console: consoleOutput, duration: Date.now() - start, operations };
   } catch (error: unknown) {
-    return { success: false, result: error instanceof Error ? error.message : String(error), console: consoleOutput, duration: Date.now() - start, operations };
+    return { success: false, result: formatError(error), console: consoleOutput, duration: Date.now() - start, operations };
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -83,20 +92,23 @@ async function executeWithIsolate(
       await jail.set(`__tool_${name}`, new ivm.Reference(async (...args: unknown[]) => {
         try {
           operations += 1;
+          if (operations > cfg.maxOperations) {
+            return new ivm.ExternalCopy({ __codeRunOperationLimit: operationLimitError(cfg.maxOperations).message }).copyInto();
+          }
           const result = await fn(...args);
           return new ivm.ExternalCopy(result).copyInto();
         } catch (error: unknown) {
-          return new ivm.ExternalCopy({ ok: false, error: error instanceof Error ? error.message : String(error) }).copyInto();
+          return new ivm.ExternalCopy({ ok: false, error: formatError(error) }).copyInto();
         }
       }));
     }
-    const wrappers = Object.keys(tools).map((name) => `const ${name} = (...args) => __tool_${name}.apply(undefined, args, { arguments: { copy: true }, result: { promise: true, copy: true } });`).join('\n');
+    const wrappers = Object.keys(tools).map((name) => `const ${name} = (...args) => __tool_${name}.apply(undefined, args, { arguments: { copy: true }, result: { promise: true, copy: true } }).then((value) => { if (value && value.__codeRunOperationLimit) throw new Error(value.__codeRunOperationLimit); return value; });`).join('\n');
     await context.eval(`const console = { log: (...args) => __console_log(...args), warn: (...args) => __console_warn(...args), error: (...args) => __console_error(...args) };\n${wrappers}`);
     const catchKeyword = 'cat' + 'ch';
     const result = await context.eval(`(async () => {\ntry {\n${code}\n} ${catchKeyword} (error) {\nreturn { __codeRunThrown: error instanceof Error ? error.message : String(error) };\n}\n})()`, { timeout: cfg.timeout, promise: true, copy: true });
     return { success: true, result, console: consoleOutput, duration: Date.now() - start, operations };
   } catch (error: unknown) {
-    return { success: false, result: error instanceof Error ? error.message : String(error), console: consoleOutput, duration: Date.now() - start, operations };
+    return { success: false, result: formatError(error), console: consoleOutput, duration: Date.now() - start, operations };
   } finally {
     isolate.dispose();
   }
