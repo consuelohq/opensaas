@@ -159,7 +159,7 @@ export async function executeTool<TData = unknown>(
       const result = createToolResult({
         ok: false,
         code: 'TASK_SESSION_REQUIRED',
-        message: `${toolName} requires taskSession. Use the taskSession returned by task.start.`,
+        message: `${toolName} requires taskSession. Start a task with task.start and pass data.taskSession; do not rely on task.pin or root .task/current.json.`,
         data: null,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
@@ -343,7 +343,6 @@ async function executeInternalTool<TData>(
     const task = getCurrentTask({
       cwd: context.cwd,
       env: context.env,
-      pinnedBranch: context.options.pinnedBranch,
       currentTask: context.options.currentTask,
       candidates: context.options.candidates,
     });
@@ -360,56 +359,6 @@ async function executeInternalTool<TData>(
     return result as ToolResult<TData>;
   }
 
-  if (internal === 'task.pin') {
-    const resolution = resolveBranchIfNeeded(
-      { ...entry, command: { ...entry.command, branchMode: 'required' } },
-      input,
-      context.cwd,
-      context.env,
-      context.options,
-    );
-    if (!resolution.ok) {
-      const result = createToolResult({
-        ok: false,
-        code: resolution.code,
-        message: resolution.message,
-        data: { candidates: resolution.candidates },
-        durationMs: elapsedMs(context.startedAt, context.options.now),
-        traceId: context.traceId,
-        requestId: context.requestId,
-        now: options.now,
-      });
-      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
-      return result as ToolResult<TData>;
-    }
-
-    context.options.setPinnedBranch?.(resolution.branch);
-
-    // persist pin to repo root .task/current.json so it survives across CLI calls
-    try {
-      const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], {
-        cwd: context.cwd,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      const metaDir = path.join(repoRoot, ".task");
-      fs.mkdirSync(metaDir, { recursive: true });
-      const area = getAreaFromBranch(resolution.branch) || "unknown";
-      const meta = { area, taskBranch: resolution.branch, pinnedAt: new Date().toISOString() };
-      fs.writeFileSync(path.join(metaDir, "current.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
-    } catch { /* non-critical — in-memory pin still works for this session */ }
-    const result = createToolResult({
-      ok: true,
-      code: 'OK',
-      message: 'task branch pinned',
-      data: { branch: resolution.branch },
-      durationMs: elapsedMs(context.startedAt, context.options.now),
-      traceId: context.traceId,
-      requestId: context.requestId,
-    });
-    logResult(entry, entry.name, result, entry.underlying, resolution.branch, undefined, context.options.logMode);
-    return result as ToolResult<TData>;
-  }
 
   if (internal === 'task.ensureSynced') {
     const resolution = resolveBranchIfNeeded(
@@ -485,14 +434,14 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   if (typeof input.branch === 'string') return {
     ok: false,
     code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or branch, not both.',
+    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
   };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
     ok: false,
     code: 'TASK_SESSION_NOT_FOUND',
-    message: 'taskSession was not found. Use the taskSession returned by task.start.',
+    message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
   };
 
   const branch = metadata.branch || metadata.taskBranch;
@@ -554,7 +503,6 @@ function resolveBranchIfNeeded(
     explicitBranch,
     cwd,
     env,
-    pinnedBranch: options.pinnedBranch,
     currentTask: options.currentTask,
     candidates: options.candidates,
   });

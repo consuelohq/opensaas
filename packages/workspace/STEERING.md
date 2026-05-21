@@ -495,6 +495,8 @@ the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines eve
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
+For task work, `taskSession` is the source of truth. Capture `data.taskSession` from `task.start` and pass it to every task-scoped `workspace.call`. Avoid shared root task metadata as task truth; it is unsafe for parallel agents.
+
 After one successful workspace.get_steering call in a conversation, treat steering as loaded.
 Do not call get_steering again unless:
 - ko explicitly asks to refresh steering

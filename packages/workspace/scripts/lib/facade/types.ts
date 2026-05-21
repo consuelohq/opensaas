@@ -102,7 +102,6 @@ export type BranchResolver = (input: {
   explicitBranch?: string;
   cwd: string;
   env: NodeJS.ProcessEnv;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
 }) => BranchResolution;
@@ -114,10 +113,8 @@ export type ExecuteToolOptions = {
   env?: NodeJS.ProcessEnv;
   runner?: ToolRunner;
   branchResolver?: BranchResolver;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
-  setPinnedBranch?: (branch: string) => void;
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;

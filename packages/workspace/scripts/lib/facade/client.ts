@@ -12,30 +12,15 @@ export type WorkspaceClient = WorkspaceTree & {
 };
 
 export function createWorkspaceClient(options: ExecuteToolOptions = {}): WorkspaceClient {
-  let pinnedBranch = options.pinnedBranch;
   const root: WorkspaceTree = {};
 
   for (const entry of manifestEntries) {
-    attach(root, entry.methodPath, async (input: ToolInput = {}) => executeTool(entry.name, input, {
-      ...options,
-      pinnedBranch,
-      setPinnedBranch: (branch) => {
-        pinnedBranch = branch;
-        options.setPinnedBranch?.(branch);
-      },
-    }));
+    attach(root, entry.methodPath, async (input: ToolInput = {}) => executeTool(entry.name, input, options));
   }
 
   return {
     ...root,
-    batch: (steps: BatchStep[]) => runBatch(steps, {
-      ...options,
-      pinnedBranch,
-      setPinnedBranch: (branch) => {
-        pinnedBranch = branch;
-        options.setPinnedBranch?.(branch);
-      },
-    }),
+    batch: (steps: BatchStep[]) => runBatch(steps, options),
   } as WorkspaceClient;
 }
 

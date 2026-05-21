@@ -4658,62 +4658,6 @@ example error envelope:
 }
 ```
 
-### task.pin
-
-pin a task branch for a programmatic workspace client
-
-- signature: `workspace.task.pin({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string }>>`
-- wraps: `client session state`
-- capabilities: readOnly=false, mutating=false, safeToRetry=true
-- default timeout: 30000ms
-
-example call:
-
-```ts
-await workspace.call({
-  "tool": "task.pin",
-  "input": {
-    "branch": "task/workspace-agents/example"
-  }
-});
-```
-
-example success envelope:
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-example error envelope:
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### task.pr
 
 merge task to stream and create or refresh the stream review PR
@@ -6903,7 +6847,7 @@ Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `ar
 
 ## branch resolution
 
-Branch resolution order is: explicit `branch`, pinned branch from `workspace.task.pin`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
+Task-scoped work should pass `taskSession`. Branch fallback resolution is for diagnostics/manual commands only: explicit `branch`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
 
 ## dry-run
 
