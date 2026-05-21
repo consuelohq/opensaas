@@ -6,6 +6,8 @@
     ".task/handoff.md",
     ".task/verify.json",
     ".task/workpad.md",
+    "/Users/kokayi/Dev/opensaas/AGENTS.md",
+    "/Users/kokayi/Dev/opensaas/CODING-STANDARDS.md",
     "AGENTS.md",
     "CODING-STANDARDS.md",
     "areas/website/AGENTS.md",
@@ -143,5 +145,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T10:13:50.950Z"
+  "updatedAt": "2026-05-21T02:11:05.741Z"
 }
