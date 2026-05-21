@@ -1,10 +1,15 @@
 {
   "files": [
     ".task/code-run-smoke.txt",
+    ".task/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
     "packages/workspace/package.json",
     "packages/workspace/scripts/lib/codemode/executor.ts",
     "packages/workspace/scripts/lib/facade/executor.ts",
-    "packages/workspace/scripts/lib/facade/types.ts"
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
   ],
-  "updatedAt": "2026-05-21T08:24:05.532Z"
+  "updatedAt": "2026-05-21T09:28:35.818Z"
 }

@@ -1,21 +1,20 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "base": "origin/task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "headSha": "e16d4361248cda78451d38902bfb238a7e03baec",
-  "changeHash": "20dd9f6096f0931105443398e5c07de19d9717d74e2864eb0a7e4a8b77eba628",
+  "branch": "task/workspace-agents/keep-workspace-server-responsive-during-long-tool-calls",
+  "base": "origin/task/workspace-agents/keep-workspace-server-responsive-during-long-tool-calls",
+  "headSha": "08936b249736d1b0994921fc3f2fb2cf74d9fa07",
+  "changeHash": "e82224d72bf2f45cf373e96a29bb500ee53b35b71289ee7977d5a546ec91c183",
   "changedFiles": [
-    "packages/workspace/scripts/lib/codemode/tools/index.ts",
-    "packages/workspace/scripts/lib/facade/executor.ts",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
   ],
-  "verifiedAt": "2026-05-21T08:25:29.631Z",
+  "verifiedAt": "2026-05-21T09:49:05.596Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []
