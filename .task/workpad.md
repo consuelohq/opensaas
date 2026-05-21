@@ -45,3 +45,4 @@ started: 2026-05-21
 - English OS nav path check: 45 paths, all exist.
 - Grep for `consuelo-os-v1`, `os/pilot`, `pilot/`, `Pilot`, `pilot`: no matches in searched OS docs/package docs/nav.
 - `git diff --check`: passed.
+- `workspace verify --base origin/stream/os --no-db`: timed out twice after targeted validation passed.
