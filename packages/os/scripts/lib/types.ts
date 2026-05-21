@@ -1,6 +1,6 @@
 export type PermissionLevel = 'read' | 'draft' | 'write' | 'execute' | 'external' | 'admin';
 
-export type SkillManifestEntry = {
+export type OsManifestEntry = {
   name: string;
   title: string;
   description: string;
@@ -22,6 +22,7 @@ export type CallInput = {
   input?: unknown;
   workspaceId?: string;
   userId?: string;
+  traceId?: string;
 };
 
 export type ArtifactDescriptor = {
@@ -35,6 +36,8 @@ export type CallOutput = {
   ok: boolean;
   name: string;
   permission: PermissionLevel;
+  traceId?: string;
+  durationMs?: number;
   result?: unknown;
   artifacts?: ArtifactDescriptor[];
   proposedWrites?: unknown[];
@@ -49,6 +52,5 @@ export type CallOutput = {
 export type SkillContext = {
   workspaceId?: string;
   userId?: string;
-  manifestEntry: SkillManifestEntry;
+  manifestEntry: OsManifestEntry;
 };
-

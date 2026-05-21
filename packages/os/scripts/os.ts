@@ -2,8 +2,15 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 import { findManifestEntry, getPackageRoot, readManifest } from './lib/manifest';
+import {
+  ensureRuntimePaths,
+  getRuntimePaths,
+  recordExecutionFinished,
+  recordExecutionStarted,
+} from './lib/runtime-state';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -22,17 +29,26 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
+function createTraceId(): string {
+  return `trc_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
+}
+
 function envPresence(): Record<string, unknown> {
   const graphqlUrl = process.env.CONSUELO_GRAPHQL_URL;
+  const paths = getRuntimePaths();
   return {
     workspaceId: process.env.CONSUELO_WORKSPACE_ID ?? null,
     userId: process.env.CONSUELO_USER_ID ?? null,
     graphqlUrlHost: graphqlUrl ? new URL(graphqlUrl).host : null,
     hasGraphqlApiKey: Boolean(process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY),
+    consueloHome: paths.home,
+    sqlitePath: paths.dbPath,
+    artifactStorage: 'local',
   };
 }
 
-function getSteering(): string {
+export function getSteering(): string {
+  ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const files = [
     'STEERING.md',
@@ -61,14 +77,15 @@ function getSteering(): string {
   return sections.join('\n');
 }
 
-function getDevSteering(): string {
+export function getDevSteering(): string {
+  ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
     '# Consuelo OS dev/operator steering',
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-    'Use this context for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.',
+    'Use this context for landing pages, Consuelo Design, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
   const devSteering = readIfExists(path.join(packageRoot, 'dev-steering.md'));
@@ -92,7 +109,7 @@ function notFound(name: string): CallOutput {
   };
 }
 
-async function executeCall(callInput: CallInput): Promise<CallOutput> {
+async function runSkill(callInput: CallInput): Promise<CallOutput> {
   const entry = findManifestEntry(callInput.name);
   if (!entry) return notFound(callInput.name);
 
@@ -131,7 +148,55 @@ async function executeCall(callInput: CallInput): Promise<CallOutput> {
   };
 }
 
-function parseCallInput(rawInput: string | undefined): CallInput {
+export async function executeCall(callInput: CallInput): Promise<CallOutput> {
+  ensureRuntimePaths();
+  const started = Date.now();
+  const traceId = callInput.traceId ?? createTraceId();
+  const workspaceId = callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
+  const userId = callInput.userId ?? process.env.CONSUELO_USER_ID;
+
+  recordExecutionStarted({
+    traceId,
+    name: callInput.name,
+    workspaceId,
+    userId,
+    input: callInput.input,
+  });
+
+  try {
+    const output = await runSkill({ ...callInput, traceId, workspaceId, userId });
+    output.traceId = traceId;
+    output.durationMs = Date.now() - started;
+    recordExecutionFinished({
+      traceId,
+      status: output.ok ? 'succeeded' : 'failed',
+      output,
+      durationMs: output.durationMs,
+    });
+    return output;
+  } catch (error: unknown) {
+    const output: CallOutput = {
+      ok: false,
+      name: callInput.name,
+      permission: 'read',
+      traceId,
+      durationMs: Date.now() - started,
+      error: {
+        code: 'CALL_FAILED',
+        message: error instanceof Error ? error.message.slice(0, 240) : 'OS call failed.',
+      },
+    };
+    recordExecutionFinished({
+      traceId,
+      status: 'failed',
+      output,
+      durationMs: output.durationMs ?? Date.now() - started,
+    });
+    return output;
+  }
+}
+
+export function parseCallInput(rawInput: string | undefined): CallInput {
   if (!rawInput) {
     throw new Error('call requires JSON input');
   }
@@ -160,9 +225,14 @@ async function main(): Promise<void> {
   }
 
   if (command === 'call') {
-    const result = await executeCall(parseCallInput(rawInput));
-    writeStdout(`${safeJson(result)}\n`);
-    if (!result.ok) process.exitCode = 1;
+    try {
+      const result = await executeCall(parseCallInput(rawInput));
+      writeStdout(`${safeJson(result)}\n`);
+      if (!result.ok) process.exitCode = 1;
+    } catch (error: unknown) {
+      writeStderr(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
     return;
   }
 
@@ -175,7 +245,9 @@ async function main(): Promise<void> {
   ].join('\n'));
 }
 
-main().catch((error: unknown) => {
-  writeStderr(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    writeStderr(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

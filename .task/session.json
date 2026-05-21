@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_dc3fad72a06d",
-  "tmuxSession": "opensaas-os-add-os-docs-navigation-skeleton-dc3fad72",
+  "taskSession": "tsk_4bf4a8a6706f",
+  "tmuxSession": "opensaas-os-plan-bun-runtime-switch-for-consuelo-os-4bf4a8a6",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/add-os-docs-navigation-skeleton",
-  "branch": "task/os/add-os-docs-navigation-skeleton",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton",
-  "prNumber": 420,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/420",
-  "createdAt": "2026-05-21T04:43:37.172Z",
+  "taskBranch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
+  "branch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
+  "prNumber": 419,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/419",
+  "createdAt": "2026-05-21T03:51:45.659Z",
   "tmuxCreated": true
 }

@@ -47,7 +47,10 @@
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
     "typecheck": "node ./scripts/check-syntax.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "server": "bun ./scripts/server.js",
+    "server:run": "bun ./scripts/server.ts",
+    "smoke:server": "bun ./scripts/server.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
