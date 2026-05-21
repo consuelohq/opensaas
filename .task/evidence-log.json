@@ -11256,8 +11256,184 @@
         "source": "task:fs",
         "task_branch": "task/dialer/fix-pr-359-review-findings"
       }
+    },
+    {
+      "id": "3a5be239-e6a1-4795-932a-dbb925621c37",
+      "occurred_at": "2026-05-21T01:36:33.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "d0557555-a51d-4fc4-8555-8c37415d38c1",
+      "occurred_at": "2026-05-21T01:36:40.185Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "28d2b316-2642-4d9f-9552-15741cf2019e",
+      "occurred_at": "2026-05-21T01:36:46.488Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "55ae2a34-c3a8-499c-8e50-bcd36a489954",
+      "occurred_at": "2026-05-21T01:37:35.612Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "fcb10058-8ed2-4bea-a4b9-ca48f5061fc3",
+      "occurred_at": "2026-05-21T01:37:57.509Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "889bb13b-121c-44b8-b8b7-fdb3dae7456d",
+      "occurred_at": "2026-05-21T01:38:40.133Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "b3d4d65e-d899-4bf4-8f05-7643af9f81ca",
+      "occurred_at": "2026-05-21T01:39:12.703Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "630bc085-1796-4575-a48d-49e6cf35e37f",
+      "occurred_at": "2026-05-21T01:39:19.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "df44c940-d126-48bd-937f-cf20e6fd180b",
+      "occurred_at": "2026-05-21T01:39:26.459Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "57fc75c5-ea02-4a3b-9b94-0a2c2cffc70b",
+      "occurred_at": "2026-05-21T01:39:33.657Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
+    },
+    {
+      "id": "932aac6a-b368-49f7-aefa-9c7f1d167727",
+      "occurred_at": "2026-05-21T01:39:38.339Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-id"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-11T22:39:47.173Z"
+  "updated_at": "2026-05-21T01:39:38.387Z"
 }

@@ -51,6 +51,7 @@
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/components/DialerSidebar.tsx",
     "packages/twenty-front/src/modules/dialer/graphql/mutations/startDialerCall.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
     "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
@@ -153,5 +154,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T22:39:47.071Z"
+  "updatedAt": "2026-05-21T01:39:38.292Z"
 }

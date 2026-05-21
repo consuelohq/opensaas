@@ -1,32 +1,26 @@
-# confirm list runner call start metadata routing
+# fix queue id
 
-branch: `task/dialer/confirm-list-runner-call-start-metadata-routing`
+branch: `task/dialer/fix-queue-id`
 stream: `stream/dialer`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/407/confirm-list-runner-call-start-metadata-routing
-github pr: https://github.com/consuelohq/opensaas/pull/407
-started: 2026-05-20
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/413/fix-queue-id
+github pr: https://github.com/consuelohq/opensaas/pull/413
+started: 2026-05-21
 
 ## acceptance criteria
 
-- [x] Confirm `stream/dialer` already contains the metadata-client fix for `useStartDialerCall`.
-- [x] Confirm the regression test guarding against `useApolloCoreClient` exists on `stream/dialer`.
-- [x] Validate the dialer hook test surface before publishing stream to main.
+- [ ] Define explicit task acceptance criteria before coding.
 
 ## plan
 
-1. Start clean task branch from `stream/dialer`.
-2. Verify `useStartDialerCall` no longer injects `useApolloCoreClient`.
-3. Verify the regression test exists and passes.
-4. Publish the stream task and finish the stream→main review flow.
+1. Read the relevant code and update this plan before editing.
 
 ## files changed
 
-- No code delta was needed in this replacement branch because `stream/dialer` already contains the confirmed fix from the earlier stream task.
-- PR #406 was left unmerged because it was bootstrapped from `main` and conflicted with stream metadata; replacement PR #407 was started from `stream/dialer`.
+- none yet
 
 ## key decisions
 
-- The production failure remains fixed by shipping the existing stream code to `main`: `StartDialerCall`/`TerminateDialerCall` must use the metadata Apollo provider, not the core/workspace Apollo client.
+- none yet
 
 ## notes for ko
 
@@ -34,14 +28,11 @@ started: 2026-05-20
 
 ## improvements noticed
 
-- `npx prettier --check packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx`: passed.
-- `git diff --check`: passed.
-- `npx jest --config=packages/twenty-front/jest.config.mjs --runInBand packages/twenty-front/src/modules/dialer/hooks/__tests__`: passed, 5 suites / 32 tests.
-- `workspace review.run --base origin/stream/dialer --noTests`: timed out; targeted validation above passed.
+- none yet
 
 ## errors i ran into
 
-- PR #406 was not mergeable because it was created from `main` and would carry unrelated main/workspace divergence into `stream/dialer`; replacement PR #407 is stream-based.
+- none yet
 
 ---
 
@@ -52,3 +43,12 @@ bun run task:push -- --message "type(dialer): description" --changed
 bun run task:pr
 bun run task:finish
 ```
+
+- 2026-05-21 01:37:25 patch lines 82-88: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:37:30 patch lines 103-103: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:37:46 patch lines 100-105: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:37:50 patch lines 157-157: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:38:15 patch lines 157-157: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:38:48 patch lines 160-160: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 01:38:55 patch lines 69-69: `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
+- 2026-05-21 01:39:00 patch lines 136-136: `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
