@@ -6,6 +6,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { findTaskMeta: findTaskMetaRecord } = require('./lib/task-meta');
 
 const REPO = 'consuelohq/opensaas';
 
@@ -18,17 +19,7 @@ function gh(args) {
 
 function findTaskMeta() {
   const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-  let dir = process.cwd();
-  while (dir !== '/') {
-    const p = path.join(dir, '.task', 'current.json');
-    if (fs.existsSync(p)) {
-      const data = JSON.parse(fs.readFileSync(p, 'utf8'));
-      if (data.taskBranch && currentBranch && data.taskBranch !== currentBranch) return null;
-      return data;
-    }
-    dir = path.dirname(dir);
-  }
-  return null;
+  return findTaskMetaRecord(process.cwd(), { currentBranch })?.data || null;
 }
 
 function printHelp() {

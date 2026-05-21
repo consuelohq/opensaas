@@ -553,8 +553,7 @@ the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines eve
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
-For task work, `taskSession` is the source of truth. Capture `data.taskSession` from `task.start` and pass it to every task-scoped `workspace.call`. Avoid shared root task metadata as task truth; it is unsafe for parallel agents.
-
+For task work, `taskSession` is the source of truth. Capture `data.taskSession` from `task.start` and pass it to every task-scoped `workspace.call`. Task-local review and decision metadata belongs under `.task/<area>/<slug>/`; avoid shared root task metadata as task truth because it is unsafe for parallel agents.
 After one successful workspace.get_steering call in a conversation, treat steering as loaded.
 Do not call get_steering again unless:
 - ko explicitly asks to refresh steering
@@ -721,11 +720,11 @@ Task-local generated identifiers should include the task session id or branch sl
 - trace correlation
 - generated handoff/context files
 
-No task-scoped script should use a global filename as task truth. Global files may list tasks, but they must not define the current task for a task-scoped operation.
+No task-scoped script should use a global filename as task truth. Task-local metadata must live under `.task/<area>/<slug>/`, for example `.task/workspace-agents/namespace-task-metadata-by-task-path/workpad.md`. Global files may list tasks, but they must not define the current task for a task-scoped operation.
 
 When `taskSession` exists, all task-scoped paths must derive from:
 
-taskSession → session metadata → task worktree → task-local files
+taskSession → session metadata → task worktree → `.task/<area>/<slug>/` task-local files
 
 The root repo may be used for global diagnostics only.
 
@@ -1204,7 +1203,7 @@ If any validation step fails because of existing repository drift, record the dr
 
 ## Task-session final validation flow
 
-Use `taskSession` for final validation and push commands so review, verify, and pushed commits target the same task worktree. The facade resolves the session to a task branch and `TASK_WORKTREE`; workspace scripts that write task-scoped state must honor that worktree instead of reading shared root `.task/*` files.
+Use `taskSession` for final validation and push commands so review, verify, and pushed commits target the same task worktree. The facade resolves the session to a task branch and `TASK_WORKTREE`; workspace scripts that write task-scoped state must honor that worktree and write under `.task/<area>/<slug>/` instead of reading or writing shared root `.task/*` files.
 
 Canonical sequence:
 
@@ -1212,4 +1211,4 @@ Canonical sequence:
 2. `workspace.call({ tool: "verify", taskSession, input: {} })`
 3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
-If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to root `.task/*` state before bypassing verification.
+If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to legacy root `.task/*` state before bypassing verification.
