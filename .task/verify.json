@@ -1,21 +1,26 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "base": "origin/task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "headSha": "e16d4361248cda78451d38902bfb238a7e03baec",
-  "changeHash": "20dd9f6096f0931105443398e5c07de19d9717d74e2864eb0a7e4a8b77eba628",
+  "branch": "task/workspace-agents/harden-code-run-bun-orchestration",
+  "base": "origin/main",
+  "headSha": "1efbbe7cf8b2b2ceaa94874e67e37ec74ab7c622",
+  "changeHash": "e6d8bddf22874d01859be9d8cbf05bdc18dbf931c629e618d334456bff0edfc4",
   "changedFiles": [
-    "packages/workspace/scripts/lib/codemode/tools/index.ts",
-    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/code-run.ts",
+    "packages/workspace/scripts/lib/codemode/executor.ts",
+    "packages/workspace/scripts/lib/codemode/types.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/tests/codemode.test.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-21T08:25:29.631Z",
+  "verifiedAt": "2026-05-21T17:58:27.166Z",
   "review": {
     "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

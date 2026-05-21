@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_7f59ac9f58bb",
-  "tmuxSession": "opensaas-workspace-agents-fix-code-run-workspace-tooling-orchestration-7f59ac9f",
+  "taskSession": "tsk_0b77310d9ab5",
+  "tmuxSession": "opensaas-workspace-agents-harden-code-run-bun-orchestration-0b77310d",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "branch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-workspace-tooling-orchestration",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-workspace-tooling-orchestration",
-  "prNumber": 429,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/429",
-  "createdAt": "2026-05-21T08:19:00.441Z",
-  "tmuxCreated": true
+  "taskBranch": "task/workspace-agents/harden-code-run-bun-orchestration",
+  "branch": "task/workspace-agents/harden-code-run-bun-orchestration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-code-run-bun-orchestration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-code-run-bun-orchestration",
+  "prNumber": 439,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/439",
+  "createdAt": "2026-05-21T09:47:49.675Z",
+  "tmuxCreated": false
 }

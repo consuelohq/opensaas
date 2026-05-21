@@ -17365,8 +17365,136 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration"
       }
+    },
+    {
+      "id": "eef08903-0b0b-489e-a9a6-7cbb18e8facf",
+      "occurred_at": "2026-05-21T09:48:17.762Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/codemode/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "8ba6f508-269c-4c01-92d7-40314cb9448d",
+      "occurred_at": "2026-05-21T09:48:25.377Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "caff0601-e8b3-481e-b35f-5e12be6c5e0a",
+      "occurred_at": "2026-05-21T09:50:09.617Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "c516acb3-373b-4d92-bb51-a7cfa72c04a9",
+      "occurred_at": "2026-05-21T09:52:27.495Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "a0595db4-5010-4cf1-94f9-87ca96b6cf0a",
+      "occurred_at": "2026-05-21T09:53:12.591Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "304681b2-948f-407f-b77e-0bce8f2708a3",
+      "occurred_at": "2026-05-21T17:37:20.873Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "14af7e82-6f97-4f8e-9d85-6b9ace3b564c",
+      "occurred_at": "2026-05-21T17:49:09.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
+    },
+    {
+      "id": "26152904-aff4-4270-89f7-dc1aee243637",
+      "occurred_at": "2026-05-21T17:52:04.573Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T08:24:05.567Z"
+  "updated_at": "2026-05-21T17:52:04.626Z"
 }
