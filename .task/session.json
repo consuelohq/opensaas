@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_376186588d53",
-  "tmuxSession": "opensaas-dialer-confirm-list-runner-call-start-metadata-routing-37618658",
+  "taskSession": "tsk_349368e04d7d",
+  "tmuxSession": "opensaas-dialer-fix-queue-id-349368e0",
   "area": "dialer",
   "stream": "stream/dialer",
-  "taskBranch": "task/dialer/confirm-list-runner-call-start-metadata-routing",
-  "branch": "task/dialer/confirm-list-runner-call-start-metadata-routing",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing",
-  "prNumber": 407,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/407",
-  "createdAt": "2026-05-20T21:49:31.865Z",
+  "taskBranch": "task/dialer/fix-queue-id",
+  "branch": "task/dialer/fix-queue-id",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-id",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-id",
+  "prNumber": 413,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/413",
+  "createdAt": "2026-05-21T01:36:19.244Z",
   "tmuxCreated": true
 }
