@@ -1,9 +1,9 @@
-# ship explicit runtime queue id
+# fix queue eligibility
 
-branch: `task/dialer/ship-explicit-runtime-queue-id`
+branch: `task/dialer/fix-queue-eligibility`
 stream: `stream/dialer`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/417/ship-explicit-runtime-queue-id
-github pr: https://github.com/consuelohq/opensaas/pull/417
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/425/fix-queue-eligibility
+github pr: https://github.com/consuelohq/opensaas/pull/425
 started: 2026-05-21
 
 ## acceptance criteria
