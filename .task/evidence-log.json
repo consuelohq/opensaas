@@ -13192,8 +13192,152 @@
         "source": "task:fs",
         "task_branch": "task/os/replace-shallow-os-docs-with-real-docs"
       }
+    },
+    {
+      "id": "5afeb888-6c62-4aa6-874a-377cdfe0ad38",
+      "occurred_at": "2026-05-21T08:28:44.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/runtime-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "dba910f7-a70e-4488-8e68-ee9cbdc2f942",
+      "occurred_at": "2026-05-21T08:28:44.893Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "86b56b0d-4813-4077-9319-cca2c9e1f8d6",
+      "occurred_at": "2026-05-21T08:28:45.217Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "c9ff7a7a-8d09-4d89-934b-6f84af965095",
+      "occurred_at": "2026-05-21T08:28:45.531Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/revenue/daily-revenue-brief.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "28b15430-d97d-4224-bac5-f5c1473ebc80",
+      "occurred_at": "2026-05-21T08:28:45.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "2fababca-46df-4bc4-b30e-5cfe94895844",
+      "occurred_at": "2026-05-21T08:28:46.148Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "2a071167-9a91-476f-bb31-d23a656e8f7a",
+      "occurred_at": "2026-05-21T08:30:37.640Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "9a49ee5b-d17b-4630-a1b8-ad104d064391",
+      "occurred_at": "2026-05-21T08:30:54.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
+    },
+    {
+      "id": "54f51357-4f6d-4e0d-b2ec-123cf4fedd55",
+      "occurred_at": "2026-05-21T08:30:54.399Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-skill-artifacts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-skill-artifacts"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T05:56:38.509Z"
+  "updated_at": "2026-05-21T08:30:54.454Z"
 }

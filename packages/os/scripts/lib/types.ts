@@ -26,10 +26,19 @@ export type CallInput = {
 };
 
 export type ArtifactDescriptor = {
+  id?: string;
   name: string;
+  title?: string;
   path?: string;
+  localPath?: string;
   url?: string;
   type?: string;
+  format?: string;
+  status?: string;
+  storageMode?: 'local' | 's3' | 'external';
+  traceId?: string;
+  skillName?: string;
+  createdAt?: string;
 };
 
 export type CallOutput = {
@@ -50,6 +59,7 @@ export type CallOutput = {
 };
 
 export type SkillContext = {
+  traceId: string;
   workspaceId?: string;
   userId?: string;
   manifestEntry: OsManifestEntry;

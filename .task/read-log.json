@@ -79,6 +79,7 @@
     "packages/os/scripts/server.js",
     "packages/os/server.py",
     "packages/os/setup.sh",
+    "packages/os/tests/facade/facade.test.ts",
     "packages/os/tooling/dev-tool-manifest.json",
     "packages/os/tooling/runbook-manifest.json",
     "packages/os/tooling/tool-manifest.json",
@@ -157,5 +158,5 @@
     "tmp/edit-flow-smoke.txt",
     "yarn.lock"
   ],
-  "updatedAt": "2026-05-21T05:56:38.393Z"
+  "updatedAt": "2026-05-21T08:30:54.347Z"
 }

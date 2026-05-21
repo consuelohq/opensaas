@@ -1,30 +1,24 @@
 {
   "result": "pass",
-  "branch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
-  "base": "origin/task/os/plan-bun-runtime-switch-for-consuelo-os",
-  "headSha": "176c933fa74afe11d68a65a21ef077cc9adc283a",
-  "changeHash": "863e473463f5f8d2ec50958fab6ed0b0d0f7a1358c26f7cbf19f7eefdb4aee52",
+  "branch": "task/os/persist-skill-artifacts",
+  "base": "origin/task/os/persist-skill-artifacts",
+  "headSha": "615aea87596fbc8801c095172fb1695c6137a559",
+  "changeHash": "9b9ff5a43d511c0b71f715c2e52ad0f9f0c3fc5f41f9f907b5a9944a8748c674",
   "changedFiles": [
-    "packages/os/.env.example",
-    "packages/os/README.md",
-    "packages/os/docs/runtime-surfaces.md",
-    "packages/os/package.json",
-    "packages/os/scripts/lib/manifest.ts",
-    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/scripts/lib/artifacts.ts",
     "packages/os/scripts/lib/types.ts",
     "packages/os/scripts/os.ts",
-    "packages/os/scripts/server.js",
-    "packages/os/scripts/server.ts",
-    "packages/os/server.py",
-    "packages/os/setup.sh"
+    "packages/os/scripts/revenue/daily-revenue-brief.ts",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/os-call-artifacts.test.ts"
   ],
-  "verifiedAt": "2026-05-21T05:44:15.405Z",
+  "verifiedAt": "2026-05-21T08:35:13.594Z",
   "review": {
     "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

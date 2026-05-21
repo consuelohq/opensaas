@@ -114,6 +114,7 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
   if (!entry) return notFound(callInput.name);
 
   const context: SkillContext = {
+    traceId: callInput.traceId ?? createTraceId(),
     workspaceId: callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID,
     userId: callInput.userId ?? process.env.CONSUELO_USER_ID,
     manifestEntry: entry,
