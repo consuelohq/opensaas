@@ -1,0 +1,18 @@
+---
+title: Integrations and Capabilities
+description: How Consuelo OS adds capabilities without blocking setup.
+---
+
+# Integrations and capabilities
+
+Consuelo OS starts with a small local core and adds capabilities as you connect them.
+
+The local core is Bun, SQLite, the OS home folder, the OS portal, and at least one connected agent.
+
+Integrations are capabilities, not setup blockers. Missing integrations should disable only the skills that need them.
+
+## Capability health
+
+The OS should report capability health in terms users understand, such as connected, missing, not configured, or unhealthy.
+
+Skills should fail with clear capability errors instead of low-level environment errors whenever possible.

@@ -1,0 +1,35 @@
+---
+title: Install Locally
+description: Install Consuelo OS on your machine.
+---
+
+# Install Consuelo OS locally
+
+Local OS runs on your computer and creates a private OS home under your Consuelo folder.
+
+```bash
+curl -fsSL https://install.consuelo.ai/os | bash
+```
+
+The installer sets up the local runtime, prepares the OS home, and starts the onboarding wizard.
+
+## What local install creates
+
+```text
+~/.consuelo/os/
+  config.json
+  consuelo.db
+  artifacts/
+  logs/
+  runs/
+  cache/
+  tmp/
+```
+
+The database stores local metadata such as skill executions, artifact records, approval requests, memory metadata, and integration health. Raw files live in the local folders.
+
+## Requirements
+
+Local OS needs Bun, SQLite, a Consuelo OS home folder, and at least one connected agent.
+
+Consuelo OS does not replace your agent. It gives your agent a safe portal into the workspace.

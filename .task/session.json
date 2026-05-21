@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_0d2cf288c12b",
-  "tmuxSession": "opensaas-os-remove-misplaced-os-v1-package-doc-0d2cf288",
+  "taskSession": "tsk_dc3fad72a06d",
+  "tmuxSession": "opensaas-os-add-os-docs-navigation-skeleton-dc3fad72",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/remove-misplaced-os-v1-package-doc",
-  "branch": "task/os/remove-misplaced-os-v1-package-doc",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc",
-  "prNumber": 415,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/415",
-  "createdAt": "2026-05-21T02:10:47.097Z",
+  "taskBranch": "task/os/add-os-docs-navigation-skeleton",
+  "branch": "task/os/add-os-docs-navigation-skeleton",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton",
+  "prNumber": 420,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/420",
+  "createdAt": "2026-05-21T04:43:37.172Z",
   "tmuxCreated": true
 }
