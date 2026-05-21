@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_9a63367f0f57",
-  "tmuxSession": "opensaas-workspace-agents-fix-graphite-pr-link-metadata-compatibility-9a63367f",
+  "taskSession": "tsk_7f59ac9f58bb",
+  "tmuxSession": "opensaas-workspace-agents-fix-code-run-workspace-tooling-orchestration-7f59ac9f",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
-  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility",
-  "prNumber": 405,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/405",
-  "createdAt": "2026-05-20T14:41:39.569Z",
+  "taskBranch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
+  "branch": "task/workspace-agents/fix-code-run-workspace-tooling-orchestration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-workspace-tooling-orchestration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-workspace-tooling-orchestration",
+  "prNumber": 429,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/429",
+  "createdAt": "2026-05-21T08:19:00.441Z",
   "tmuxCreated": true
 }
