@@ -1,8 +1,10 @@
+import asyncio
 import importlib.util
 import json
 import os
 import sys
 import tempfile
+import time
 import types
 import unittest
 from unittest.mock import patch
@@ -191,11 +193,31 @@ class WorkspaceCallServerTest(unittest.TestCase):
             return f'full steering {len(calls)}'
 
         self.module._read_steering = fake_read_steering
-        first = self.module.get_steering()
-        second = self.module.get_steering()
+        first = asyncio.run(self.module.get_steering())
+        second = asyncio.run(self.module.get_steering())
         self.assertEqual(first, 'full steering 1')
         self.assertEqual(second, 'full steering 2')
         self.assertEqual(calls, [1, 2])
+
+    def test_call_runs_workspace_execution_off_event_loop(self):
+        events = []
+
+        def fake_traced_call(*args, **kwargs):
+            time.sleep(0.05)
+            events.append('call-done')
+            return {'ok': True, 'code': 'OK'}
+
+        self.module._traced_call = fake_traced_call
+
+        async def run_call_with_timer():
+            task = asyncio.create_task(self.module.call(tool='status', input={}, timeout=7))
+            await asyncio.sleep(0.005)
+            events.append('event-loop-free')
+            return await task
+
+        result = asyncio.run(run_call_with_timer())
+        self.assertEqual(result, {'ok': True, 'code': 'OK'})
+        self.assertEqual(events, ['event-loop-free', 'call-done'])
 
     def test_task_scoped_tools_require_task_session(self):
         manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))

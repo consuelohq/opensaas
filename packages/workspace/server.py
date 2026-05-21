@@ -1,5 +1,6 @@
 """openworkspace MCP server — local workspace tools with optional memory and observability."""
 
+import asyncio
 import contextlib
 import datetime
 import hashlib
@@ -292,11 +293,10 @@ def _read_steering() -> str:
     return content
 
 
-
 @mcp.tool(annotations=RO)
-def get_steering() -> str:
-    """mandatory bootstrap call. always returns full current steering."""
-    return _traced_call('get_steering', 'tool', _read_steering)
+async def get_steering() -> str:
+    """return current workspace steering and tool manifest."""
+    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _read_steering)
 
 
 def _workspace_root() -> Path:
@@ -944,9 +944,8 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         traceId=trace_id,
     ), resolved_input, metadata)
 
-
 @mcp.tool(annotations=CALL_TOOL)
-def call(
+async def call(
     tool: str,
     input: Any | None = None,
     taskSession: str | None = None,
@@ -954,7 +953,8 @@ def call(
 ) -> dict[str, Any]:
     """run a typed workspace tool through the facade. taskSession scopes task work."""
     tool_input = input
-    return _traced_call(
+    return await asyncio.to_thread(
+        _traced_call,
         'workspace.call',
         'tool',
         _run_workspace_call,
