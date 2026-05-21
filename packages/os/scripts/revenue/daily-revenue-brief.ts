@@ -1,4 +1,4 @@
-import { createWorkspaceArtifactDescriptor } from '../lib/artifacts';
+import { createWorkspaceArtifact } from '../lib/artifacts';
 import { proveGraphQLConnectivity } from '../lib/graphql-client';
 import type { CallOutput, SkillContext } from '../lib/types';
 
@@ -17,30 +17,48 @@ export async function runDailyRevenueBrief(input: unknown, context: SkillContext
     ? 'workspace_configured'
     : 'workspace_not_provided';
 
+  const result = {
+    summary: 'Daily revenue brief scaffold executed.',
+    workspaceStatus,
+    graphqlStatus: graphqlProof.status,
+    graphql: {
+      urlHost: graphqlProof.urlHost,
+      hasApiKey: graphqlProof.hasApiKey,
+      safeMessage: graphqlProof.safeMessage,
+    },
+    receivedInput: input,
+    nextSteps: [
+      'Wire real call analytics',
+      'Wire lead prioritization',
+      'Wire artifact output',
+    ],
+  };
+
+  const artifact = createWorkspaceArtifact({
+    traceId: context.traceId,
+    workspaceId: context.workspaceId,
+    createdByUserId: context.userId,
+    skillName: context.manifestEntry.name,
+    title: 'Daily Revenue Brief',
+    fileName: 'daily-revenue-brief.json',
+    type: 'brief',
+    format: 'json',
+    content: {
+      generatedAt: new Date().toISOString(),
+      traceId: context.traceId,
+      skillName: context.manifestEntry.name,
+      result,
+    },
+    inputSummary: input,
+  });
+
   return {
     ok: true,
     name: context.manifestEntry.name,
     permission: context.manifestEntry.permission,
     requiresApproval: context.manifestEntry.requiresApproval,
-    result: {
-      summary: 'Daily revenue brief scaffold executed.',
-      workspaceStatus,
-      graphqlStatus: graphqlProof.status,
-      graphql: {
-        urlHost: graphqlProof.urlHost,
-        hasApiKey: graphqlProof.hasApiKey,
-        safeMessage: graphqlProof.safeMessage,
-      },
-      receivedInput: input,
-      nextSteps: [
-        'Wire real call analytics',
-        'Wire lead prioritization',
-        'Wire artifact output',
-      ],
-    },
-    artifacts: [
-      createWorkspaceArtifactDescriptor('daily-revenue-brief.json', 'json'),
-    ],
+    result,
+    artifacts: [artifact],
     proposedWrites: [],
   };
 }
