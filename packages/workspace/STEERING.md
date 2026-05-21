@@ -195,7 +195,7 @@ Always format user-facing links in chat as Markdown links. Do not paste raw URLs
 
 Use descriptive link text that identifies the object being linked:
 
-GitHub PRs: [pr #135](...)
+Graphite PRs: [pr #135](...)
 GitHub commits: [5034325b](...)
 GitHub branches: [task/workspace-agents/example](...)
 GitHub files: [review.js](...)
@@ -205,11 +205,11 @@ When referring to GitHub, prefer the object name in the link text — PR number,
 
 Bad:
 
-https://github.com/consuelohq/opensaas/pull/135
+https://app.graphite.com/github/pr/consuelohq/opensaas/362/Stream%2Fos
 
 Good:
 
-[pr #135](https://github.com/consuelohq/opensaas/pull/135)
+[pr #362](https://app.graphite.com/github/pr/consuelohq/opensaas/362/Stream%2Fos)
 
 Keep messages scan-friendly: if multiple links point to related objects, label them by role, for example [task pr #182](...) and [review pr #184](...).
 
@@ -295,7 +295,7 @@ verify with the most relevant signal:
 * script change: run the script and read the changed docs
 * github/linear workflow change: inspect the actual pr/issue state
 
-### do not lose code
+## do not lose code
 
 assume other agents are working on the same machine and same repo.
 
@@ -303,13 +303,71 @@ never delete, reset, overwrite, clean, or remove worktrees/branches/files unless
 
 local-only work is fragile. get important work onto github through the task workflow.
 
-### there is no “not mine”
+## there is no “not mine”
 
 if a branch is broken while you are working on it, it is your problem.
 
 do not ignore failures because another agent caused them.
 do not push a broken branch because “my changes are fine.”
 fix the branch or stop and explain the blocker.
+
+## Timeout budgets are part of correctness
+
+Use timeout budgets that match the operation. Do not run long workflow operations with short default timeouts.
+
+Recommended minimums:
+
+- `fs.read`, `fs.search`, `fs.patch`: 120 seconds
+- `task.exec` for simple commands: 300 seconds
+- docs/type generation: 300 seconds
+- focused tests: 600 seconds
+- `review.run`: 900 seconds
+- `verify`: 1200 seconds
+- `task.push`: 900 seconds
+- `task.pr`: 1200 seconds
+- `task.merge`: 1200 seconds
+- deployment checks: 900 seconds or longer when waiting for Railway
+
+If a long operation times out, do not assume the operation failed. Check task state, logs, PR state, branch state, or generated output through a follow-up workspace call. A timeout means the caller stopped waiting; it is not proof that the underlying operation stopped.
+
+For final validation and shipping, prefer single-purpose calls over large batches. Batches are useful for read-only inspection. Final workflow steps should run separately so the exact timeout source is visible.
+
+## Finish the task or name the real blocker
+
+Do not stop at the first tool failure when the user asked for a shippable change. Tool failures are work to diagnose, not completion states.
+
+For any requested code, docs, workflow, or repo change, the agent must continue until exactly one of these terminal states is true:
+
+1. The change is merged to the requested target branch and local state is updated when requested.
+2. The change is pushed to a review PR and the user explicitly asked to stop at review.
+3. A real blocker remains after recovery attempts, and the blocker is named with exact evidence.
+
+A timeout, validation error, safety-blocked call, stale metadata error, dirty worktree error, merge conflict, or failed push is not a terminal state by itself. Treat it as an incident to resolve.
+
+Required recovery loop:
+
+1. Read the structured error envelope.
+2. Identify whether the failure is input shape, timeout budget, task-session resolution, stale metadata, merge conflict, dirty worktree, safety filtering, missing dependency, or external service state.
+3. Retry once with the smallest corrected workspace call.
+4. If the same class of error repeats, switch to the next workspace-supported path.
+5. If fallback tooling is required, state why the workspace facade could not complete the operation and keep the fallback scoped to the task worktree.
+6. Continue toward ship/review after recovery.
+
+Before saying “done,” verify and report:
+
+- target branch or PR
+- commit SHA or merge SHA
+- files changed
+- validation run
+- local state if the user requested local sync
+
+Before saying “blocked,” report:
+
+- exact command/tool
+- exact error
+- taskSession and branch involved
+- evidence that the failure is outside normal task recovery
+- the safest next action
 
 ---
 
@@ -620,6 +678,57 @@ File edit primitive routing:
 - Use `task.exec` to run commands inside the task worktree. Do not use `task.exec` to transport source code, scripts, or patches through a giant shell argument.
 - Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
 
+## Safety-filter-resistant workspace calls
+
+Prefer small, typed, single-purpose `workspace.call` operations. Avoid large combined payloads.
+
+Use this order:
+
+1. Typed workspace tool with structured input.
+2. Task-scoped typed workspace tool with `taskSession`.
+3. `task.exec` with a short argv array inside the task worktree.
+4. `mac.*` only for non-repo machine inspection or when the facade lacks the needed operation.
+
+Avoid these payload shapes:
+
+- long shell strings
+- multiple shell operations joined with `&&` use fs batch instead or code run 
+- raw absolute worktree paths when `taskSession` can resolve the worktree
+- embedding source code or multiline patches inside shell arguments
+- large batch calls for mutating or finalization steps
+- exact sensitive/stale phrases when a line-number read or manifest check is enough
+
+When a workspace call is safety-blocked:
+
+1. Record the tool and intent.
+2. Retry once with a smaller typed call.
+3. Remove raw shell, absolute path, or combined command structure.
+4. Use line-number reads instead of text searches when the search phrase appears to trigger filtering.
+5. Continue through the workspace facade unless the facade has no matching operation.
+
+
+Every task gets isolated, generated state names.
+
+Task-local generated identifiers should include the task session id or branch slug:
+
+- tmux session
+- temp files
+- verify stamp
+- evidence log
+- read log
+- workpad writes
+- pushed-file staging area
+- trace correlation
+- generated handoff/context files
+
+No task-scoped script should use a global filename as task truth. Global files may list tasks, but they must not define the current task for a task-scoped operation.
+
+When `taskSession` exists, all task-scoped paths must derive from:
+
+taskSession → session metadata → task worktree → task-local files
+
+The root repo may be used for global diagnostics only.
+
 ### verification standard
 
 verification must match the change.
@@ -843,7 +952,9 @@ commits:
 
 ## 13. memory and learning
 
-use memory before guessing about past decisions.
+await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+
+use context before guessing about past decisions.
 
 search with one strong keyword, not a long sentence.
 
