@@ -1,9 +1,9 @@
-# ship explicit runtime queue id
+# fix contact ids
 
-branch: `task/dialer/ship-explicit-runtime-queue-id`
+branch: `task/dialer/fix-contact-ids`
 stream: `stream/dialer`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/417/ship-explicit-runtime-queue-id
-github pr: https://github.com/consuelohq/opensaas/pull/417
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/427/fix-contact-ids
+github pr: https://github.com/consuelohq/opensaas/pull/427
 started: 2026-05-21
 
 ## acceptance criteria
