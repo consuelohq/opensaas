@@ -39,7 +39,8 @@
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/consuelo-design.ts"
+    "consuelo-design": "bun ./scripts/consuelo-design.ts",
+    "code-run": "bun ./scripts/code-run.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

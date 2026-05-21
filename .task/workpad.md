@@ -1,10 +1,9 @@
-# ship explicit runtime queue id
+# fix graphite pr link metadata compatibility
 
-branch: `task/dialer/ship-explicit-runtime-queue-id`
-stream: `stream/dialer`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/417/ship-explicit-runtime-queue-id
-github pr: https://github.com/consuelohq/opensaas/pull/417
-started: 2026-05-21
+branch: `task/workspace-agents/fix-graphite-pr-link-metadata-compatibility`
+stream: `stream/workspace-agents`
+pr: https://github.com/consuelohq/opensaas/pull/405
+started: 2026-05-20
 
 ## acceptance criteria
 
@@ -39,7 +38,7 @@ started: 2026-05-21
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "type(dialer): description" --changed
+bun run task:push -- --message "type(workspace-agents): description" --changed
 bun run task:pr
 bun run task:finish
 ```
