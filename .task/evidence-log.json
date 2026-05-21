@@ -13336,8 +13336,392 @@
         "source": "task:fs",
         "task_branch": "task/os/persist-skill-artifacts"
       }
+    },
+    {
+      "id": "6f573e2d-97eb-4480-bef2-0281112a2a1f",
+      "occurred_at": "2026-05-21T20:38:20.850Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "2d93f8f4-7ef6-4b34-ab80-87af9ec35b4f",
+      "occurred_at": "2026-05-21T20:38:22.296Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "065f1d4d-254c-4791-8892-96da9616c3b3",
+      "occurred_at": "2026-05-21T20:38:23.826Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "4fbb018f-e96d-4a76-80b8-3754dc41aa20",
+      "occurred_at": "2026-05-21T20:38:25.067Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "dcc038eb-ef35-45b7-b1b2-9e7d927f11d3",
+      "occurred_at": "2026-05-21T20:38:38.222Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-call-artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "83242a4f-05eb-4ca1-8f53-dcc615924d46",
+      "occurred_at": "2026-05-21T20:38:39.535Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "65d2843a-6be3-45f4-88a5-f7e309fd780a",
+      "occurred_at": "2026-05-21T20:38:40.839Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "27fe76a0-8492-4524-a4c9-e77e17220346",
+      "occurred_at": "2026-05-21T20:38:53.178Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "6a9bad4d-df93-426b-9f55-a2ace5281ce2",
+      "occurred_at": "2026-05-21T20:38:54.246Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "90cff725-3237-4229-97b4-ae1c2cd62906",
+      "occurred_at": "2026-05-21T20:38:55.298Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "15280cd0-84c2-418a-af6f-1928ace3c7f6",
+      "occurred_at": "2026-05-21T20:38:57.572Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "e268412f-bd2d-4de9-8ad0-bbe1e3141792",
+      "occurred_at": "2026-05-21T20:39:23.583Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "4cc1c81c-77df-46ee-8ebc-3ac6c1afa87d",
+      "occurred_at": "2026-05-21T20:41:35.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "caa1670b-65c3-47ab-a962-3e5707e5de39",
+      "occurred_at": "2026-05-21T20:43:35.395Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "82bbb1ee-946b-4f67-95b1-bf9a2b382321",
+      "occurred_at": "2026-05-21T20:44:20.477Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/commands/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "2c8c1f64-5e8f-4d5b-b78d-b1b2a232466c",
+      "occurred_at": "2026-05-21T20:46:42.872Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "2126977e-bcc1-4dcc-a637-07c840030226",
+      "occurred_at": "2026-05-21T20:46:59.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "707c23c0-fa57-4430-87b5-1c11d930f2b8",
+      "occurred_at": "2026-05-21T20:47:21.630Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "d301087a-0d2a-4f4a-9ce1-4d4741849d57",
+      "occurred_at": "2026-05-21T20:48:37.259Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/commands/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "99ca04f6-d8d7-4aef-bae5-ada6b8ad9613",
+      "occurred_at": "2026-05-21T20:48:38.393Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "a0f39f5c-a0de-46b3-a541-6986e0074fbc",
+      "occurred_at": "2026-05-21T20:48:42.819Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "6241a293-f542-4f96-a8c2-ba28afae5964",
+      "occurred_at": "2026-05-21T20:49:12.094Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/commands/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "373a5bb2-f013-4712-acbb-0df74d536887",
+      "occurred_at": "2026-05-21T20:49:13.214Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
+    },
+    {
+      "id": "3ea2be30-4261-4d4f-a07d-12978354156d",
+      "occurred_at": "2026-05-21T20:49:19.274Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-local-install-wizard-and-cli-front-door",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T08:30:54.454Z"
+  "updated_at": "2026-05-21T20:49:19.328Z"
 }

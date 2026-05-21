@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_c81010ba1ced",
-  "tmuxSession": "opensaas-os-persist-skill-artifacts-c81010ba",
+  "taskSession": "tsk_f06a2df7c59c",
+  "tmuxSession": "opensaas-os-add-local-install-wizard-and-cli-front-door-f06a2df7",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/persist-skill-artifacts",
-  "branch": "task/os/persist-skill-artifacts",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-skill-artifacts",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-skill-artifacts",
-  "prNumber": 432,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/432",
-  "createdAt": "2026-05-21T08:28:38.368Z",
+  "taskBranch": "task/os/add-local-install-wizard-and-cli-front-door",
+  "branch": "task/os/add-local-install-wizard-and-cli-front-door",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-local-install-wizard-and-cli-front-door",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-local-install-wizard-and-cli-front-door",
+  "prNumber": 443,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/443",
+  "createdAt": "2026-05-21T20:38:09.678Z",
   "tmuxCreated": true
 }
