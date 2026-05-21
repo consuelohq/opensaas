@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/confirm-list-runner-call-start-metadata-routing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 407,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/407",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/407",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/407/confirm-list-runner-call-start-metadata-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/407",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/407/confirm-list-runner-call-start-metadata-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing",
+  "taskSession": "tsk_376186588d53",
+  "tmuxSession": "opensaas-dialer-confirm-list-runner-call-start-metadata-routing-37618658",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-confirm-list-runner-call-start-metadata-routing/.task/session.json",
+  "createdAt": "2026-05-20T21:49:31.866Z"
+}
