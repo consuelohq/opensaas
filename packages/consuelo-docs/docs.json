@@ -495,16 +495,6 @@
                   "os/integrations/stripe",
                   "os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "os/pilot/insurance-revenue-workspace",
-                  "os/pilot/setup-checklist",
-                  "os/pilot/demo-flow",
-                  "os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -702,7 +692,7 @@
                 "pages": [
                   "l/fr/user-guide/introduction",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/fr/user-guide/getting-started/capabilities/implementation-services",
@@ -721,12 +711,12 @@
                 ]
               },
               {
-                "group": "Modèle de données",
+                "group": "Mod\u00e8le de donn\u00e9es",
                 "icon": "database",
                 "pages": [
                   "l/fr/user-guide/data-model/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/data-model/capabilities/objects",
                       "l/fr/user-guide/data-model/capabilities/fields",
@@ -747,12 +737,12 @@
                 ]
               },
               {
-                "group": "Migration de données",
+                "group": "Migration de donn\u00e9es",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/fr/user-guide/data-migration/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/data-migration/capabilities/file-formats",
                       "l/fr/user-guide/data-migration/capabilities/field-mapping",
@@ -806,7 +796,7 @@
                 "pages": [
                   "l/fr/user-guide/calendar-emails/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/calendar-emails/capabilities/mailbox",
                       "l/fr/user-guide/calendar-emails/capabilities/calendar"
@@ -831,7 +821,7 @@
                 "pages": [
                   "l/fr/user-guide/workflows/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/workflows/capabilities/workflow-triggers",
                       "l/fr/user-guide/workflows/capabilities/workflow-actions",
@@ -860,7 +850,7 @@
                         ]
                       },
                       {
-                        "group": "Connexion à d'autres outils",
+                        "group": "Connexion \u00e0 d'autres outils",
                         "pages": [
                           "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -870,7 +860,7 @@
                         ]
                       },
                       {
-                        "group": "Configurations avancées",
+                        "group": "Configurations avanc\u00e9es",
                         "pages": [
                           "l/fr/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
@@ -893,7 +883,7 @@
                 "pages": [
                   "l/fr/user-guide/ai/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/ai/capabilities/ai-chatbot",
                       "l/fr/user-guide/ai/capabilities/ai-agents",
@@ -914,7 +904,7 @@
                 "pages": [
                   "l/fr/user-guide/views-pipelines/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/views-pipelines/capabilities/table-views",
                       "l/fr/user-guide/views-pipelines/capabilities/kanban-views",
@@ -944,7 +934,7 @@
                 "pages": [
                   "l/fr/user-guide/dashboards/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/dashboards/capabilities/dashboards",
                       "l/fr/user-guide/dashboards/capabilities/widgets",
@@ -961,12 +951,12 @@
                 ]
               },
               {
-                "group": "Autorisations et accès",
+                "group": "Autorisations et acc\u00e8s",
                 "icon": "lock",
                 "pages": [
                   "l/fr/user-guide/permissions-access/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/permissions-access/capabilities/permissions",
                       "l/fr/user-guide/permissions-access/capabilities/sso-configuration"
@@ -986,7 +976,7 @@
                 "pages": [
                   "l/fr/user-guide/billing/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/billing/capabilities/pricing-plans",
                       "l/fr/user-guide/billing/capabilities/workflow-credits"
@@ -1034,12 +1024,12 @@
                 ]
               },
               {
-                "group": "Paramètres",
+                "group": "Param\u00e8tres",
                 "icon": "gear",
                 "pages": [
                   "l/fr/user-guide/settings/overview",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/user-guide/settings/capabilities/workspace-settings",
                       "l/fr/user-guide/settings/capabilities/member-management",
@@ -1148,35 +1138,25 @@
                   "l/fr/os/integrations/stripe",
                   "l/fr/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/fr/os/pilot/insurance-revenue-workspace",
-                  "l/fr/os/pilot/setup-checklist",
-                  "l/fr/os/pilot/demo-flow",
-                  "l/fr/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "Développeurs",
+            "tab": "D\u00e9veloppeurs",
             "groups": [
               {
-                "group": "Développeurs",
+                "group": "D\u00e9veloppeurs",
                 "pages": [
                   "l/fr/developers/introduction"
                 ]
               },
               {
-                "group": "Étendre",
+                "group": "\u00c9tendre",
                 "icon": "plug",
                 "pages": [
                   "l/fr/developers/extend/extend",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/developers/extend/capabilities/apis",
                       "l/fr/developers/extend/capabilities/webhooks",
@@ -1186,12 +1166,12 @@
                 ]
               },
               {
-                "group": "Auto-hébergement",
+                "group": "Auto-h\u00e9bergement",
                 "icon": "desktop",
                 "pages": [
                   "l/fr/developers/self-host/self-host",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/developers/self-host/capabilities/docker-compose",
                       "l/fr/developers/self-host/capabilities/setup",
@@ -1208,12 +1188,12 @@
                 "pages": [
                   "l/fr/developers/contribute/contribute",
                   {
-                    "group": "Capacités",
+                    "group": "Capacit\u00e9s",
                     "pages": [
                       "l/fr/developers/contribute/capabilities/local-setup",
                       "l/fr/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "Développement frontend",
+                        "group": "D\u00e9veloppement frontend",
                         "pages": [
                           "l/fr/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -1238,7 +1218,7 @@
                                 ]
                               },
                               {
-                                "group": "Entrée ",
+                                "group": "Entr\u00e9e ",
                                 "pages": [
                                   "l/fr/consuelo-ui/input/buttons",
                                   "l/fr/consuelo-ui/input/color-scheme",
@@ -1274,7 +1254,7 @@
                         ]
                       },
                       {
-                        "group": "Développement backend",
+                        "group": "D\u00e9veloppement backend",
                         "pages": [
                           "l/fr/developers/contribute/capabilities/backend-development/server-commands",
                           "l/fr/developers/contribute/capabilities/backend-development/feature-flags",
@@ -1347,7 +1327,7 @@
         "language": "ar",
         "tabs": [
           {
-            "tab": "دليل المستخدم",
+            "tab": "\u062f\u0644\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645",
             "groups": [
               {
                 "group": "Discover Consuelo",
@@ -1355,7 +1335,7 @@
                 "pages": [
                   "l/ar/user-guide/introduction",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ar/user-guide/getting-started/capabilities/implementation-services",
@@ -1364,7 +1344,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/getting-started/how-tos/create-workspace",
                       "l/ar/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -1374,12 +1354,12 @@
                 ]
               },
               {
-                "group": "نموذج البيانات",
+                "group": "\u0646\u0645\u0648\u0630\u062c \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a",
                 "icon": "database",
                 "pages": [
                   "l/ar/user-guide/data-model/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/data-model/capabilities/objects",
                       "l/ar/user-guide/data-model/capabilities/fields",
@@ -1387,7 +1367,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/data-model/how-tos/create-custom-objects",
                       "l/ar/user-guide/data-model/how-tos/create-custom-fields",
@@ -1400,12 +1380,12 @@
                 ]
               },
               {
-                "group": "ترحيل البيانات",
+                "group": "\u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/ar/user-guide/data-migration/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/data-migration/capabilities/file-formats",
                       "l/ar/user-guide/data-migration/capabilities/field-mapping",
@@ -1415,7 +1395,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/ar/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -1454,19 +1434,19 @@
                 ]
               },
               {
-                "group": "التقويم والبريد الإلكتروني",
+                "group": "\u0627\u0644\u062a\u0642\u0648\u064a\u0645 \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a",
                 "icon": "envelope",
                 "pages": [
                   "l/ar/user-guide/calendar-emails/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/calendar-emails/capabilities/mailbox",
                       "l/ar/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ar/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -1479,12 +1459,12 @@
                 ]
               },
               {
-                "group": "سير العمل",
+                "group": "\u0633\u064a\u0631 \u0627\u0644\u0639\u0645\u0644",
                 "icon": "bolt",
                 "pages": [
                   "l/ar/user-guide/workflows/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/workflows/capabilities/workflow-triggers",
                       "l/ar/user-guide/workflows/capabilities/workflow-actions",
@@ -1498,10 +1478,10 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       {
-                        "group": "أتمتة إدارة علاقات العملاء",
+                        "group": "\u0623\u062a\u0645\u062a\u0629 \u0625\u062f\u0627\u0631\u0629 \u0639\u0644\u0627\u0642\u0627\u062a \u0627\u0644\u0639\u0645\u0644\u0627\u0621",
                         "pages": [
                           "l/ar/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/ar/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -1513,7 +1493,7 @@
                         ]
                       },
                       {
-                        "group": "الاتصال بأدوات أخرى",
+                        "group": "\u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0623\u062f\u0648\u0627\u062a \u0623\u062e\u0631\u0649",
                         "pages": [
                           "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -1523,13 +1503,13 @@
                         ]
                       },
                       {
-                        "group": "التكوينات المتقدمة",
+                        "group": "\u0627\u0644\u062a\u0643\u0648\u064a\u0646\u0627\u062a \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629",
                         "pages": [
                           "l/ar/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "المزيد من المساعدة",
+                        "group": "\u0627\u0644\u0645\u0632\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629",
                         "pages": [
                           "l/ar/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/ar/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -1541,12 +1521,12 @@
                 ]
               },
               {
-                "group": "الذكاء الاصطناعي",
+                "group": "\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a",
                 "icon": "robot",
                 "pages": [
                   "l/ar/user-guide/ai/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/ai/capabilities/ai-chatbot",
                       "l/ar/user-guide/ai/capabilities/ai-agents",
@@ -1554,7 +1534,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -1562,12 +1542,12 @@
                 ]
               },
               {
-                "group": "طرق العرض والمسارات",
+                "group": "\u0637\u0631\u0642 \u0627\u0644\u0639\u0631\u0636 \u0648\u0627\u0644\u0645\u0633\u0627\u0631\u0627\u062a",
                 "icon": "table",
                 "pages": [
                   "l/ar/user-guide/views-pipelines/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/views-pipelines/capabilities/table-views",
                       "l/ar/user-guide/views-pipelines/capabilities/kanban-views",
@@ -1578,7 +1558,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/ar/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -1592,12 +1572,12 @@
                 ]
               },
               {
-                "group": "لوحات القيادة",
+                "group": "\u0644\u0648\u062d\u0627\u062a \u0627\u0644\u0642\u064a\u0627\u062f\u0629",
                 "icon": "chart-bar",
                 "pages": [
                   "l/ar/user-guide/dashboards/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/dashboards/capabilities/dashboards",
                       "l/ar/user-guide/dashboards/capabilities/widgets",
@@ -1605,7 +1585,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/ar/user-guide/dashboards/how-tos/widget-faq"
@@ -1614,19 +1594,19 @@
                 ]
               },
               {
-                "group": "الصلاحيات والوصول",
+                "group": "\u0627\u0644\u0635\u0644\u0627\u062d\u064a\u0627\u062a \u0648\u0627\u0644\u0648\u0635\u0648\u0644",
                 "icon": "lock",
                 "pages": [
                   "l/ar/user-guide/permissions-access/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/permissions-access/capabilities/permissions",
                       "l/ar/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -1634,19 +1614,19 @@
                 ]
               },
               {
-                "group": "الفوترة",
+                "group": "\u0627\u0644\u0641\u0648\u062a\u0631\u0629",
                 "icon": "credit-card",
                 "pages": [
                   "l/ar/user-guide/billing/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/billing/capabilities/pricing-plans",
                       "l/ar/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -1687,12 +1667,12 @@
                 ]
               },
               {
-                "group": "\\ا\\ل\\إ\\ع\\د\\ا\\د\\ا\\ت",
+                "group": "\\\u0627\\\u0644\\\u0625\\\u0639\\\u062f\\\u0627\\\u062f\\\u0627\\\u062a",
                 "icon": "gear",
                 "pages": [
                   "l/ar/user-guide/settings/overview",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/settings/capabilities/workspace-settings",
                       "l/ar/user-guide/settings/capabilities/member-management",
@@ -1703,7 +1683,7 @@
                     ]
                   },
                   {
-                    "group": "الإرشادات",
+                    "group": "\u0627\u0644\u0625\u0631\u0634\u0627\u062f\u0627\u062a",
                     "pages": [
                       "l/ar/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -1801,35 +1781,25 @@
                   "l/ar/os/integrations/stripe",
                   "l/ar/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ar/os/pilot/insurance-revenue-workspace",
-                  "l/ar/os/pilot/setup-checklist",
-                  "l/ar/os/pilot/demo-flow",
-                  "l/ar/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "المطورون",
+            "tab": "\u0627\u0644\u0645\u0637\u0648\u0631\u0648\u0646",
             "groups": [
               {
-                "group": "المطورون",
+                "group": "\u0627\u0644\u0645\u0637\u0648\u0631\u0648\u0646",
                 "pages": [
                   "l/ar/developers/introduction"
                 ]
               },
               {
-                "group": "التوسيع",
+                "group": "\u0627\u0644\u062a\u0648\u0633\u064a\u0639",
                 "icon": "plug",
                 "pages": [
                   "l/ar/developers/extend/extend",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/developers/extend/capabilities/apis",
                       "l/ar/developers/extend/capabilities/webhooks",
@@ -1839,12 +1809,12 @@
                 ]
               },
               {
-                "group": "الاستضافة الذاتية",
+                "group": "\u0627\u0644\u0627\u0633\u062a\u0636\u0627\u0641\u0629 \u0627\u0644\u0630\u0627\u062a\u064a\u0629",
                 "icon": "desktop",
                 "pages": [
                   "l/ar/developers/self-host/self-host",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/developers/self-host/capabilities/docker-compose",
                       "l/ar/developers/self-host/capabilities/setup",
@@ -1856,17 +1826,17 @@
                 ]
               },
               {
-                "group": "المساهمة",
+                "group": "\u0627\u0644\u0645\u0633\u0627\u0647\u0645\u0629",
                 "icon": "github",
                 "pages": [
                   "l/ar/developers/contribute/contribute",
                   {
-                    "group": "القدرات",
+                    "group": "\u0627\u0644\u0642\u062f\u0631\u0627\u062a",
                     "pages": [
                       "l/ar/developers/contribute/capabilities/local-setup",
                       "l/ar/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "تطوير الواجهة الأمامية",
+                        "group": "\u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0648\u0627\u062c\u0647\u0629 \u0627\u0644\u0623\u0645\u0627\u0645\u064a\u0629",
                         "pages": [
                           "l/ar/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -1874,7 +1844,7 @@
                             "pages": [
                               "l/ar/consuelo-ui/introduction",
                               {
-                                "group": "عرض",
+                                "group": "\u0639\u0631\u0636",
                                 "pages": [
                                   "l/ar/consuelo-ui/display/checkmark",
                                   "l/ar/consuelo-ui/display/chip",
@@ -1885,13 +1855,13 @@
                                 ]
                               },
                               {
-                                "group": "التغذية الراجعة",
+                                "group": "\u0627\u0644\u062a\u063a\u0630\u064a\u0629 \u0627\u0644\u0631\u0627\u062c\u0639\u0629",
                                 "pages": [
                                   "l/ar/consuelo-ui/progress-bar"
                                 ]
                               },
                               {
-                                "group": "إدخال",
+                                "group": "\u0625\u062f\u062e\u0627\u0644",
                                 "pages": [
                                   "l/ar/consuelo-ui/input/buttons",
                                   "l/ar/consuelo-ui/input/color-scheme",
@@ -1906,7 +1876,7 @@
                                 ]
                               },
                               {
-                                "group": "التنقل",
+                                "group": "\u0627\u0644\u062a\u0646\u0642\u0644",
                                 "pages": [
                                   "l/ar/consuelo-ui/navigation",
                                   "l/ar/consuelo-ui/navigation/breadcrumb",
@@ -1927,7 +1897,7 @@
                         ]
                       },
                       {
-                        "group": "تطوير الواجهة الخلفية",
+                        "group": "\u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0648\u0627\u062c\u0647\u0629 \u0627\u0644\u062e\u0644\u0641\u064a\u0629",
                         "pages": [
                           "l/ar/developers/contribute/capabilities/backend-development/server-commands",
                           "l/ar/developers/contribute/capabilities/backend-development/feature-flags",
@@ -2000,7 +1970,7 @@
         "language": "cs",
         "tabs": [
           {
-            "tab": "Uživatelská příručka",
+            "tab": "U\u017eivatelsk\u00e1 p\u0159\u00edru\u010dka",
             "groups": [
               {
                 "group": "Discover Consuelo",
@@ -2008,7 +1978,7 @@
                 "pages": [
                   "l/cs/user-guide/introduction",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/cs/user-guide/getting-started/capabilities/implementation-services",
@@ -2017,7 +1987,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/getting-started/how-tos/create-workspace",
                       "l/cs/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -2027,12 +1997,12 @@
                 ]
               },
               {
-                "group": "Datový model",
+                "group": "Datov\u00fd model",
                 "icon": "database",
                 "pages": [
                   "l/cs/user-guide/data-model/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/data-model/capabilities/objects",
                       "l/cs/user-guide/data-model/capabilities/fields",
@@ -2040,7 +2010,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/data-model/how-tos/create-custom-objects",
                       "l/cs/user-guide/data-model/how-tos/create-custom-fields",
@@ -2058,7 +2028,7 @@
                 "pages": [
                   "l/cs/user-guide/data-migration/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/data-migration/capabilities/file-formats",
                       "l/cs/user-guide/data-migration/capabilities/field-mapping",
@@ -2068,7 +2038,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/cs/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -2107,19 +2077,19 @@
                 ]
               },
               {
-                "group": "Kalendář a e-maily",
+                "group": "Kalend\u00e1\u0159 a e-maily",
                 "icon": "envelope",
                 "pages": [
                   "l/cs/user-guide/calendar-emails/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/calendar-emails/capabilities/mailbox",
                       "l/cs/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/cs/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -2132,12 +2102,12 @@
                 ]
               },
               {
-                "group": "Pracovní postupy",
+                "group": "Pracovn\u00ed postupy",
                 "icon": "bolt",
                 "pages": [
                   "l/cs/user-guide/workflows/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/workflows/capabilities/workflow-triggers",
                       "l/cs/user-guide/workflows/capabilities/workflow-actions",
@@ -2151,7 +2121,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       {
                         "group": "Automatizace CRM",
@@ -2166,7 +2136,7 @@
                         ]
                       },
                       {
-                        "group": "Propojení s dalšími nástroji",
+                        "group": "Propojen\u00ed s dal\u0161\u00edmi n\u00e1stroji",
                         "pages": [
                           "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -2176,13 +2146,13 @@
                         ]
                       },
                       {
-                        "group": "Pokročilá nastavení",
+                        "group": "Pokro\u010dil\u00e1 nastaven\u00ed",
                         "pages": [
                           "l/cs/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "Potřebujete další pomoc",
+                        "group": "Pot\u0159ebujete dal\u0161\u00ed pomoc",
                         "pages": [
                           "l/cs/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/cs/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -2199,7 +2169,7 @@
                 "pages": [
                   "l/cs/user-guide/ai/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/ai/capabilities/ai-chatbot",
                       "l/cs/user-guide/ai/capabilities/ai-agents",
@@ -2207,7 +2177,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -2215,12 +2185,12 @@
                 ]
               },
               {
-                "group": "Zobrazení a pipeline",
+                "group": "Zobrazen\u00ed a pipeline",
                 "icon": "table",
                 "pages": [
                   "l/cs/user-guide/views-pipelines/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/views-pipelines/capabilities/table-views",
                       "l/cs/user-guide/views-pipelines/capabilities/kanban-views",
@@ -2231,7 +2201,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/cs/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -2250,7 +2220,7 @@
                 "pages": [
                   "l/cs/user-guide/dashboards/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/dashboards/capabilities/dashboards",
                       "l/cs/user-guide/dashboards/capabilities/widgets",
@@ -2258,7 +2228,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/cs/user-guide/dashboards/how-tos/widget-faq"
@@ -2267,19 +2237,19 @@
                 ]
               },
               {
-                "group": "Oprávnění a přístup",
+                "group": "Opr\u00e1vn\u011bn\u00ed a p\u0159\u00edstup",
                 "icon": "lock",
                 "pages": [
                   "l/cs/user-guide/permissions-access/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/permissions-access/capabilities/permissions",
                       "l/cs/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -2292,14 +2262,14 @@
                 "pages": [
                   "l/cs/user-guide/billing/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/billing/capabilities/pricing-plans",
                       "l/cs/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -2340,12 +2310,12 @@
                 ]
               },
               {
-                "group": "Nastavení",
+                "group": "Nastaven\u00ed",
                 "icon": "gear",
                 "pages": [
                   "l/cs/user-guide/settings/overview",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/user-guide/settings/capabilities/workspace-settings",
                       "l/cs/user-guide/settings/capabilities/member-management",
@@ -2356,7 +2326,7 @@
                     ]
                   },
                   {
-                    "group": "Návody",
+                    "group": "N\u00e1vody",
                     "pages": [
                       "l/cs/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -2454,35 +2424,25 @@
                   "l/cs/os/integrations/stripe",
                   "l/cs/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/cs/os/pilot/insurance-revenue-workspace",
-                  "l/cs/os/pilot/setup-checklist",
-                  "l/cs/os/pilot/demo-flow",
-                  "l/cs/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "Vývojáři",
+            "tab": "V\u00fdvoj\u00e1\u0159i",
             "groups": [
               {
-                "group": "Vývojáři",
+                "group": "V\u00fdvoj\u00e1\u0159i",
                 "pages": [
                   "l/cs/developers/introduction"
                 ]
               },
               {
-                "group": "Rozšíření",
+                "group": "Roz\u0161\u00ed\u0159en\u00ed",
                 "icon": "plug",
                 "pages": [
                   "l/cs/developers/extend/extend",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/developers/extend/capabilities/apis",
                       "l/cs/developers/extend/capabilities/webhooks",
@@ -2492,12 +2452,12 @@
                 ]
               },
               {
-                "group": "Vlastní hosting",
+                "group": "Vlastn\u00ed hosting",
                 "icon": "desktop",
                 "pages": [
                   "l/cs/developers/self-host/self-host",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/developers/self-host/capabilities/docker-compose",
                       "l/cs/developers/self-host/capabilities/setup",
@@ -2509,17 +2469,17 @@
                 ]
               },
               {
-                "group": "Přispět",
+                "group": "P\u0159isp\u011bt",
                 "icon": "github",
                 "pages": [
                   "l/cs/developers/contribute/contribute",
                   {
-                    "group": "Možnosti",
+                    "group": "Mo\u017enosti",
                     "pages": [
                       "l/cs/developers/contribute/capabilities/local-setup",
                       "l/cs/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "Vývoj frontendu",
+                        "group": "V\u00fdvoj frontendu",
                         "pages": [
                           "l/cs/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -2538,7 +2498,7 @@
                                 ]
                               },
                               {
-                                "group": "Zpětná vazba",
+                                "group": "Zp\u011btn\u00e1 vazba",
                                 "pages": [
                                   "l/cs/consuelo-ui/progress-bar"
                                 ]
@@ -2580,7 +2540,7 @@
                         ]
                       },
                       {
-                        "group": "Vývoj backendu",
+                        "group": "V\u00fdvoj backendu",
                         "pages": [
                           "l/cs/developers/contribute/capabilities/backend-development/server-commands",
                           "l/cs/developers/contribute/capabilities/backend-development/feature-flags",
@@ -3107,16 +3067,6 @@
                   "l/de/os/integrations/stripe",
                   "l/de/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/de/os/pilot/insurance-revenue-workspace",
-                  "l/de/os/pilot/setup-checklist",
-                  "l/de/os/pilot/demo-flow",
-                  "l/de/os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -3191,7 +3141,7 @@
                                 ]
                               },
                               {
-                                "group": "Rückmeldung",
+                                "group": "R\u00fcckmeldung",
                                 "pages": [
                                   "l/de/consuelo-ui/progress-bar"
                                 ]
@@ -3306,7 +3256,7 @@
         "language": "es",
         "tabs": [
           {
-            "tab": "Guía de usuario",
+            "tab": "Gu\u00eda de usuario",
             "groups": [
               {
                 "group": "Discover Consuelo",
@@ -3323,7 +3273,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/getting-started/how-tos/create-workspace",
                       "l/es/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -3346,7 +3296,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/data-model/how-tos/create-custom-objects",
                       "l/es/user-guide/data-model/how-tos/create-custom-fields",
@@ -3359,7 +3309,7 @@
                 ]
               },
               {
-                "group": "Migración de datos",
+                "group": "Migraci\u00f3n de datos",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/es/user-guide/data-migration/overview",
@@ -3374,7 +3324,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/es/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -3413,7 +3363,7 @@
                 ]
               },
               {
-                "group": "Calendario y correos electrónicos",
+                "group": "Calendario y correos electr\u00f3nicos",
                 "icon": "envelope",
                 "pages": [
                   "l/es/user-guide/calendar-emails/overview",
@@ -3425,7 +3375,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/es/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -3457,7 +3407,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       {
                         "group": "Automatizaciones de CRM",
@@ -3488,7 +3438,7 @@
                         ]
                       },
                       {
-                        "group": "¿Necesitas más ayuda?",
+                        "group": "\u00bfNecesitas m\u00e1s ayuda?",
                         "pages": [
                           "l/es/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/es/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -3513,7 +3463,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -3537,7 +3487,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/es/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -3564,7 +3514,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/es/user-guide/dashboards/how-tos/widget-faq"
@@ -3585,7 +3535,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -3593,7 +3543,7 @@
                 ]
               },
               {
-                "group": "Facturación",
+                "group": "Facturaci\u00f3n",
                 "icon": "credit-card",
                 "pages": [
                   "l/es/user-guide/billing/overview",
@@ -3605,7 +3555,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -3646,7 +3596,7 @@
                 ]
               },
               {
-                "group": "Configuración",
+                "group": "Configuraci\u00f3n",
                 "icon": "gear",
                 "pages": [
                   "l/es/user-guide/settings/overview",
@@ -3662,7 +3612,7 @@
                     ]
                   },
                   {
-                    "group": "Guías prácticas",
+                    "group": "Gu\u00edas pr\u00e1cticas",
                     "pages": [
                       "l/es/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -3760,16 +3710,6 @@
                   "l/es/os/integrations/stripe",
                   "l/es/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/es/os/pilot/insurance-revenue-workspace",
-                  "l/es/os/pilot/setup-checklist",
-                  "l/es/os/pilot/demo-flow",
-                  "l/es/os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -3844,7 +3784,7 @@
                                 ]
                               },
                               {
-                                "group": "Retroalimentación",
+                                "group": "Retroalimentaci\u00f3n",
                                 "pages": [
                                   "l/es/consuelo-ui/progress-bar"
                                 ]
@@ -3865,7 +3805,7 @@
                                 ]
                               },
                               {
-                                "group": "Navegación",
+                                "group": "Navegaci\u00f3n",
                                 "pages": [
                                   "l/es/consuelo-ui/navigation",
                                   "l/es/consuelo-ui/navigation/breadcrumb",
@@ -3967,7 +3907,7 @@
                 "pages": [
                   "l/it/user-guide/introduction",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/it/user-guide/getting-started/capabilities/implementation-services",
@@ -3991,7 +3931,7 @@
                 "pages": [
                   "l/it/user-guide/data-model/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/data-model/capabilities/objects",
                       "l/it/user-guide/data-model/capabilities/fields",
@@ -4017,7 +3957,7 @@
                 "pages": [
                   "l/it/user-guide/data-migration/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/data-migration/capabilities/file-formats",
                       "l/it/user-guide/data-migration/capabilities/field-mapping",
@@ -4071,7 +4011,7 @@
                 "pages": [
                   "l/it/user-guide/calendar-emails/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/calendar-emails/capabilities/mailbox",
                       "l/it/user-guide/calendar-emails/capabilities/calendar"
@@ -4096,7 +4036,7 @@
                 "pages": [
                   "l/it/user-guide/workflows/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/workflows/capabilities/workflow-triggers",
                       "l/it/user-guide/workflows/capabilities/workflow-actions",
@@ -4158,7 +4098,7 @@
                 "pages": [
                   "l/it/user-guide/ai/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/ai/capabilities/ai-chatbot",
                       "l/it/user-guide/ai/capabilities/ai-agents",
@@ -4179,7 +4119,7 @@
                 "pages": [
                   "l/it/user-guide/views-pipelines/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/views-pipelines/capabilities/table-views",
                       "l/it/user-guide/views-pipelines/capabilities/kanban-views",
@@ -4209,7 +4149,7 @@
                 "pages": [
                   "l/it/user-guide/dashboards/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/dashboards/capabilities/dashboards",
                       "l/it/user-guide/dashboards/capabilities/widgets",
@@ -4231,7 +4171,7 @@
                 "pages": [
                   "l/it/user-guide/permissions-access/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/permissions-access/capabilities/permissions",
                       "l/it/user-guide/permissions-access/capabilities/sso-configuration"
@@ -4251,7 +4191,7 @@
                 "pages": [
                   "l/it/user-guide/billing/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/billing/capabilities/pricing-plans",
                       "l/it/user-guide/billing/capabilities/workflow-credits"
@@ -4304,7 +4244,7 @@
                 "pages": [
                   "l/it/user-guide/settings/overview",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/user-guide/settings/capabilities/workspace-settings",
                       "l/it/user-guide/settings/capabilities/member-management",
@@ -4413,16 +4353,6 @@
                   "l/it/os/integrations/stripe",
                   "l/it/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/it/os/pilot/insurance-revenue-workspace",
-                  "l/it/os/pilot/setup-checklist",
-                  "l/it/os/pilot/demo-flow",
-                  "l/it/os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -4441,7 +4371,7 @@
                 "pages": [
                   "l/it/developers/extend/extend",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/developers/extend/capabilities/apis",
                       "l/it/developers/extend/capabilities/webhooks",
@@ -4456,7 +4386,7 @@
                 "pages": [
                   "l/it/developers/self-host/self-host",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/developers/self-host/capabilities/docker-compose",
                       "l/it/developers/self-host/capabilities/setup",
@@ -4473,7 +4403,7 @@
                 "pages": [
                   "l/it/developers/contribute/contribute",
                   {
-                    "group": "Funzionalità",
+                    "group": "Funzionalit\u00e0",
                     "pages": [
                       "l/it/developers/contribute/capabilities/local-setup",
                       "l/it/developers/contribute/capabilities/bug-and-requests",
@@ -4612,15 +4542,15 @@
         "language": "ja",
         "tabs": [
           {
-            "tab": "ユーザーガイド",
+            "tab": "\u30e6\u30fc\u30b6\u30fc\u30ac\u30a4\u30c9",
             "groups": [
               {
-                "group": "Consuelo を知る",
+                "group": "Consuelo \u3092\u77e5\u308b",
                 "icon": "rocket",
                 "pages": [
                   "l/ja/user-guide/introduction",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ja/user-guide/getting-started/capabilities/implementation-services",
@@ -4629,7 +4559,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/getting-started/how-tos/create-workspace",
                       "l/ja/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -4639,12 +4569,12 @@
                 ]
               },
               {
-                "group": "データモデル",
+                "group": "\u30c7\u30fc\u30bf\u30e2\u30c7\u30eb",
                 "icon": "database",
                 "pages": [
                   "l/ja/user-guide/data-model/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/data-model/capabilities/objects",
                       "l/ja/user-guide/data-model/capabilities/fields",
@@ -4652,7 +4582,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/data-model/how-tos/create-custom-objects",
                       "l/ja/user-guide/data-model/how-tos/create-custom-fields",
@@ -4665,12 +4595,12 @@
                 ]
               },
               {
-                "group": "データ移行",
+                "group": "\u30c7\u30fc\u30bf\u79fb\u884c",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/ja/user-guide/data-migration/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/data-migration/capabilities/file-formats",
                       "l/ja/user-guide/data-migration/capabilities/field-mapping",
@@ -4680,7 +4610,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/ja/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -4719,19 +4649,19 @@
                 ]
               },
               {
-                "group": "カレンダーとメール",
+                "group": "\u30ab\u30ec\u30f3\u30c0\u30fc\u3068\u30e1\u30fc\u30eb",
                 "icon": "envelope",
                 "pages": [
                   "l/ja/user-guide/calendar-emails/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/calendar-emails/capabilities/mailbox",
                       "l/ja/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ja/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -4744,12 +4674,12 @@
                 ]
               },
               {
-                "group": "ワークフロー",
+                "group": "\u30ef\u30fc\u30af\u30d5\u30ed\u30fc",
                 "icon": "bolt",
                 "pages": [
                   "l/ja/user-guide/workflows/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/workflows/capabilities/workflow-triggers",
                       "l/ja/user-guide/workflows/capabilities/workflow-actions",
@@ -4763,10 +4693,10 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       {
-                        "group": "CRM の自動化",
+                        "group": "CRM \u306e\u81ea\u52d5\u5316",
                         "pages": [
                           "l/ja/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/ja/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -4778,7 +4708,7 @@
                         ]
                       },
                       {
-                        "group": "他のツールと連携",
+                        "group": "\u4ed6\u306e\u30c4\u30fc\u30eb\u3068\u9023\u643a",
                         "pages": [
                           "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -4788,13 +4718,13 @@
                         ]
                       },
                       {
-                        "group": "高度な設定",
+                        "group": "\u9ad8\u5ea6\u306a\u8a2d\u5b9a",
                         "pages": [
                           "l/ja/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "さらにヘルプが必要な場合",
+                        "group": "\u3055\u3089\u306b\u30d8\u30eb\u30d7\u304c\u5fc5\u8981\u306a\u5834\u5408",
                         "pages": [
                           "l/ja/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/ja/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -4811,7 +4741,7 @@
                 "pages": [
                   "l/ja/user-guide/ai/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/ai/capabilities/ai-chatbot",
                       "l/ja/user-guide/ai/capabilities/ai-agents",
@@ -4819,7 +4749,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -4827,12 +4757,12 @@
                 ]
               },
               {
-                "group": "ビューとパイプライン",
+                "group": "\u30d3\u30e5\u30fc\u3068\u30d1\u30a4\u30d7\u30e9\u30a4\u30f3",
                 "icon": "table",
                 "pages": [
                   "l/ja/user-guide/views-pipelines/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/views-pipelines/capabilities/table-views",
                       "l/ja/user-guide/views-pipelines/capabilities/kanban-views",
@@ -4843,7 +4773,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/ja/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -4857,12 +4787,12 @@
                 ]
               },
               {
-                "group": "ダッシュボード",
+                "group": "\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9",
                 "icon": "chart-bar",
                 "pages": [
                   "l/ja/user-guide/dashboards/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/dashboards/capabilities/dashboards",
                       "l/ja/user-guide/dashboards/capabilities/widgets",
@@ -4870,7 +4800,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/ja/user-guide/dashboards/how-tos/widget-faq"
@@ -4879,19 +4809,19 @@
                 ]
               },
               {
-                "group": "権限とアクセス",
+                "group": "\u6a29\u9650\u3068\u30a2\u30af\u30bb\u30b9",
                 "icon": "lock",
                 "pages": [
                   "l/ja/user-guide/permissions-access/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/permissions-access/capabilities/permissions",
                       "l/ja/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -4899,19 +4829,19 @@
                 ]
               },
               {
-                "group": "請求",
+                "group": "\u8acb\u6c42",
                 "icon": "credit-card",
                 "pages": [
                   "l/ja/user-guide/billing/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/billing/capabilities/pricing-plans",
                       "l/ja/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -4952,12 +4882,12 @@
                 ]
               },
               {
-                "group": "設定",
+                "group": "\u8a2d\u5b9a",
                 "icon": "gear",
                 "pages": [
                   "l/ja/user-guide/settings/overview",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/user-guide/settings/capabilities/workspace-settings",
                       "l/ja/user-guide/settings/capabilities/member-management",
@@ -4968,7 +4898,7 @@
                     ]
                   },
                   {
-                    "group": "ハウツー",
+                    "group": "\u30cf\u30a6\u30c4\u30fc",
                     "pages": [
                       "l/ja/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -5066,35 +4996,25 @@
                   "l/ja/os/integrations/stripe",
                   "l/ja/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ja/os/pilot/insurance-revenue-workspace",
-                  "l/ja/os/pilot/setup-checklist",
-                  "l/ja/os/pilot/demo-flow",
-                  "l/ja/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "開発者",
+            "tab": "\u958b\u767a\u8005",
             "groups": [
               {
-                "group": "開発者",
+                "group": "\u958b\u767a\u8005",
                 "pages": [
                   "l/ja/developers/introduction"
                 ]
               },
               {
-                "group": "拡張",
+                "group": "\u62e1\u5f35",
                 "icon": "plug",
                 "pages": [
                   "l/ja/developers/extend/extend",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/developers/extend/capabilities/apis",
                       "l/ja/developers/extend/capabilities/webhooks",
@@ -5104,12 +5024,12 @@
                 ]
               },
               {
-                "group": "セルフホスト",
+                "group": "\u30bb\u30eb\u30d5\u30db\u30b9\u30c8",
                 "icon": "desktop",
                 "pages": [
                   "l/ja/developers/self-host/self-host",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/developers/self-host/capabilities/docker-compose",
                       "l/ja/developers/self-host/capabilities/setup",
@@ -5121,17 +5041,17 @@
                 ]
               },
               {
-                "group": "貢献",
+                "group": "\u8ca2\u732e",
                 "icon": "github",
                 "pages": [
                   "l/ja/developers/contribute/contribute",
                   {
-                    "group": "機能",
+                    "group": "\u6a5f\u80fd",
                     "pages": [
                       "l/ja/developers/contribute/capabilities/local-setup",
                       "l/ja/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "フロントエンド開発",
+                        "group": "\u30d5\u30ed\u30f3\u30c8\u30a8\u30f3\u30c9\u958b\u767a",
                         "pages": [
                           "l/ja/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -5139,7 +5059,7 @@
                             "pages": [
                               "l/ja/consuelo-ui/introduction",
                               {
-                                "group": "表示",
+                                "group": "\u8868\u793a",
                                 "pages": [
                                   "l/ja/consuelo-ui/display/checkmark",
                                   "l/ja/consuelo-ui/display/chip",
@@ -5150,13 +5070,13 @@
                                 ]
                               },
                               {
-                                "group": "フィードバック",
+                                "group": "\u30d5\u30a3\u30fc\u30c9\u30d0\u30c3\u30af",
                                 "pages": [
                                   "l/ja/consuelo-ui/progress-bar"
                                 ]
                               },
                               {
-                                "group": "入力",
+                                "group": "\u5165\u529b",
                                 "pages": [
                                   "l/ja/consuelo-ui/input/buttons",
                                   "l/ja/consuelo-ui/input/color-scheme",
@@ -5171,7 +5091,7 @@
                                 ]
                               },
                               {
-                                "group": "ナビゲーション",
+                                "group": "\u30ca\u30d3\u30b2\u30fc\u30b7\u30e7\u30f3",
                                 "pages": [
                                   "l/ja/consuelo-ui/navigation",
                                   "l/ja/consuelo-ui/navigation/breadcrumb",
@@ -5192,7 +5112,7 @@
                         ]
                       },
                       {
-                        "group": "バックエンド開発",
+                        "group": "\u30d0\u30c3\u30af\u30a8\u30f3\u30c9\u958b\u767a",
                         "pages": [
                           "l/ja/developers/contribute/capabilities/backend-development/server-commands",
                           "l/ja/developers/contribute/capabilities/backend-development/feature-flags",
@@ -5265,15 +5185,15 @@
         "language": "ko",
         "tabs": [
           {
-            "tab": "사용자 안내서",
+            "tab": "\uc0ac\uc6a9\uc790 \uc548\ub0b4\uc11c",
             "groups": [
               {
-                "group": "Consuelo 알아보기",
+                "group": "Consuelo \uc54c\uc544\ubcf4\uae30",
                 "icon": "rocket",
                 "pages": [
                   "l/ko/user-guide/introduction",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ko/user-guide/getting-started/capabilities/implementation-services",
@@ -5282,7 +5202,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/getting-started/how-tos/create-workspace",
                       "l/ko/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -5292,12 +5212,12 @@
                 ]
               },
               {
-                "group": "데이터 모델",
+                "group": "\ub370\uc774\ud130 \ubaa8\ub378",
                 "icon": "database",
                 "pages": [
                   "l/ko/user-guide/data-model/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/data-model/capabilities/objects",
                       "l/ko/user-guide/data-model/capabilities/fields",
@@ -5305,7 +5225,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/data-model/how-tos/create-custom-objects",
                       "l/ko/user-guide/data-model/how-tos/create-custom-fields",
@@ -5318,12 +5238,12 @@
                 ]
               },
               {
-                "group": "데이터 마이그레이션",
+                "group": "\ub370\uc774\ud130 \ub9c8\uc774\uadf8\ub808\uc774\uc158",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/ko/user-guide/data-migration/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/data-migration/capabilities/file-formats",
                       "l/ko/user-guide/data-migration/capabilities/field-mapping",
@@ -5333,7 +5253,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/ko/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -5372,19 +5292,19 @@
                 ]
               },
               {
-                "group": "캘린더 및 이메일",
+                "group": "\uce98\ub9b0\ub354 \ubc0f \uc774\uba54\uc77c",
                 "icon": "envelope",
                 "pages": [
                   "l/ko/user-guide/calendar-emails/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/calendar-emails/capabilities/mailbox",
                       "l/ko/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ko/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -5397,12 +5317,12 @@
                 ]
               },
               {
-                "group": "워크플로우",
+                "group": "\uc6cc\ud06c\ud50c\ub85c\uc6b0",
                 "icon": "bolt",
                 "pages": [
                   "l/ko/user-guide/workflows/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/workflows/capabilities/workflow-triggers",
                       "l/ko/user-guide/workflows/capabilities/workflow-actions",
@@ -5416,10 +5336,10 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       {
-                        "group": "CRM 자동화",
+                        "group": "CRM \uc790\ub3d9\ud654",
                         "pages": [
                           "l/ko/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/ko/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -5431,7 +5351,7 @@
                         ]
                       },
                       {
-                        "group": "다른 도구에 연결하기",
+                        "group": "\ub2e4\ub978 \ub3c4\uad6c\uc5d0 \uc5f0\uacb0\ud558\uae30",
                         "pages": [
                           "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -5441,13 +5361,13 @@
                         ]
                       },
                       {
-                        "group": "고급 설정",
+                        "group": "\uace0\uae09 \uc124\uc815",
                         "pages": [
                           "l/ko/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "추가 도움이 필요하십니까",
+                        "group": "\ucd94\uac00 \ub3c4\uc6c0\uc774 \ud544\uc694\ud558\uc2ed\ub2c8\uae4c",
                         "pages": [
                           "l/ko/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/ko/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -5464,7 +5384,7 @@
                 "pages": [
                   "l/ko/user-guide/ai/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/ai/capabilities/ai-chatbot",
                       "l/ko/user-guide/ai/capabilities/ai-agents",
@@ -5472,7 +5392,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -5480,12 +5400,12 @@
                 ]
               },
               {
-                "group": "뷰 및 파이프라인",
+                "group": "\ubdf0 \ubc0f \ud30c\uc774\ud504\ub77c\uc778",
                 "icon": "table",
                 "pages": [
                   "l/ko/user-guide/views-pipelines/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/views-pipelines/capabilities/table-views",
                       "l/ko/user-guide/views-pipelines/capabilities/kanban-views",
@@ -5496,7 +5416,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/ko/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -5510,12 +5430,12 @@
                 ]
               },
               {
-                "group": "대시보드",
+                "group": "\ub300\uc2dc\ubcf4\ub4dc",
                 "icon": "chart-bar",
                 "pages": [
                   "l/ko/user-guide/dashboards/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/dashboards/capabilities/dashboards",
                       "l/ko/user-guide/dashboards/capabilities/widgets",
@@ -5523,7 +5443,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/ko/user-guide/dashboards/how-tos/widget-faq"
@@ -5532,19 +5452,19 @@
                 ]
               },
               {
-                "group": "권한 및 접근",
+                "group": "\uad8c\ud55c \ubc0f \uc811\uadfc",
                 "icon": "lock",
                 "pages": [
                   "l/ko/user-guide/permissions-access/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/permissions-access/capabilities/permissions",
                       "l/ko/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -5552,19 +5472,19 @@
                 ]
               },
               {
-                "group": "청구",
+                "group": "\uccad\uad6c",
                 "icon": "credit-card",
                 "pages": [
                   "l/ko/user-guide/billing/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/billing/capabilities/pricing-plans",
                       "l/ko/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -5605,12 +5525,12 @@
                 ]
               },
               {
-                "group": "설정",
+                "group": "\uc124\uc815",
                 "icon": "gear",
                 "pages": [
                   "l/ko/user-guide/settings/overview",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/user-guide/settings/capabilities/workspace-settings",
                       "l/ko/user-guide/settings/capabilities/member-management",
@@ -5621,7 +5541,7 @@
                     ]
                   },
                   {
-                    "group": "사용 방법",
+                    "group": "\uc0ac\uc6a9 \ubc29\ubc95",
                     "pages": [
                       "l/ko/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -5719,35 +5639,25 @@
                   "l/ko/os/integrations/stripe",
                   "l/ko/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ko/os/pilot/insurance-revenue-workspace",
-                  "l/ko/os/pilot/setup-checklist",
-                  "l/ko/os/pilot/demo-flow",
-                  "l/ko/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "개발자",
+            "tab": "\uac1c\ubc1c\uc790",
             "groups": [
               {
-                "group": "개발자",
+                "group": "\uac1c\ubc1c\uc790",
                 "pages": [
                   "l/ko/developers/introduction"
                 ]
               },
               {
-                "group": "확장",
+                "group": "\ud655\uc7a5",
                 "icon": "plug",
                 "pages": [
                   "l/ko/developers/extend/extend",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/developers/extend/capabilities/apis",
                       "l/ko/developers/extend/capabilities/webhooks",
@@ -5757,12 +5667,12 @@
                 ]
               },
               {
-                "group": "셀프 호스팅",
+                "group": "\uc140\ud504 \ud638\uc2a4\ud305",
                 "icon": "desktop",
                 "pages": [
                   "l/ko/developers/self-host/self-host",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/developers/self-host/capabilities/docker-compose",
                       "l/ko/developers/self-host/capabilities/setup",
@@ -5774,17 +5684,17 @@
                 ]
               },
               {
-                "group": "기여",
+                "group": "\uae30\uc5ec",
                 "icon": "github",
                 "pages": [
                   "l/ko/developers/contribute/contribute",
                   {
-                    "group": "기능",
+                    "group": "\uae30\ub2a5",
                     "pages": [
                       "l/ko/developers/contribute/capabilities/local-setup",
                       "l/ko/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "프론트엔드 개발",
+                        "group": "\ud504\ub860\ud2b8\uc5d4\ub4dc \uac1c\ubc1c",
                         "pages": [
                           "l/ko/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -5792,7 +5702,7 @@
                             "pages": [
                               "l/ko/consuelo-ui/introduction",
                               {
-                                "group": "표시",
+                                "group": "\ud45c\uc2dc",
                                 "pages": [
                                   "l/ko/consuelo-ui/display/checkmark",
                                   "l/ko/consuelo-ui/display/chip",
@@ -5803,13 +5713,13 @@
                                 ]
                               },
                               {
-                                "group": "피드백",
+                                "group": "\ud53c\ub4dc\ubc31",
                                 "pages": [
                                   "l/ko/consuelo-ui/progress-bar"
                                 ]
                               },
                               {
-                                "group": "입력",
+                                "group": "\uc785\ub825",
                                 "pages": [
                                   "l/ko/consuelo-ui/input/buttons",
                                   "l/ko/consuelo-ui/input/color-scheme",
@@ -5824,7 +5734,7 @@
                                 ]
                               },
                               {
-                                "group": "네비게이션",
+                                "group": "\ub124\ube44\uac8c\uc774\uc158",
                                 "pages": [
                                   "l/ko/consuelo-ui/navigation",
                                   "l/ko/consuelo-ui/navigation/breadcrumb",
@@ -5845,7 +5755,7 @@
                         ]
                       },
                       {
-                        "group": "백엔드 개발",
+                        "group": "\ubc31\uc5d4\ub4dc \uac1c\ubc1c",
                         "pages": [
                           "l/ko/developers/contribute/capabilities/backend-development/server-commands",
                           "l/ko/developers/contribute/capabilities/backend-development/feature-flags",
@@ -6133,7 +6043,7 @@
                 ]
               },
               {
-                "group": "Visualizações e pipelines",
+                "group": "Visualiza\u00e7\u00f5es e pipelines",
                 "icon": "table",
                 "pages": [
                   "l/pt/user-guide/views-pipelines/overview",
@@ -6163,7 +6073,7 @@
                 ]
               },
               {
-                "group": "Painéis",
+                "group": "Pain\u00e9is",
                 "icon": "chart-bar",
                 "pages": [
                   "l/pt/user-guide/dashboards/overview",
@@ -6205,7 +6115,7 @@
                 ]
               },
               {
-                "group": "Faturação",
+                "group": "Fatura\u00e7\u00e3o",
                 "icon": "credit-card",
                 "pages": [
                   "l/pt/user-guide/billing/overview",
@@ -6258,7 +6168,7 @@
                 ]
               },
               {
-                "group": "Configurações",
+                "group": "Configura\u00e7\u00f5es",
                 "icon": "gear",
                 "pages": [
                   "l/pt/user-guide/settings/overview",
@@ -6372,16 +6282,6 @@
                   "l/pt/os/integrations/stripe",
                   "l/pt/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/pt/os/pilot/insurance-revenue-workspace",
-                  "l/pt/os/pilot/setup-checklist",
-                  "l/pt/os/pilot/demo-flow",
-                  "l/pt/os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -6477,7 +6377,7 @@
                                 ]
                               },
                               {
-                                "group": "Navegação",
+                                "group": "Navega\u00e7\u00e3o",
                                 "pages": [
                                   "l/pt/consuelo-ui/navigation",
                                   "l/pt/consuelo-ui/navigation/breadcrumb",
@@ -6786,7 +6686,7 @@
                 ]
               },
               {
-                "group": "Vizualizări și fluxuri",
+                "group": "Vizualiz\u0103ri \u0219i fluxuri",
                 "icon": "table",
                 "pages": [
                   "l/ro/user-guide/views-pipelines/overview",
@@ -6911,7 +6811,7 @@
                 ]
               },
               {
-                "group": "Setări",
+                "group": "Set\u0103ri",
                 "icon": "gear",
                 "pages": [
                   "l/ro/user-guide/settings/overview",
@@ -7025,16 +6925,6 @@
                   "l/ro/os/integrations/stripe",
                   "l/ro/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ro/os/pilot/insurance-revenue-workspace",
-                  "l/ro/os/pilot/setup-checklist",
-                  "l/ro/os/pilot/demo-flow",
-                  "l/ro/os/pilot/success-criteria"
-                ]
               }
             ]
           },
@@ -7098,7 +6988,7 @@
                             "pages": [
                               "l/ro/consuelo-ui/introduction",
                               {
-                                "group": "Afișare",
+                                "group": "Afi\u0219are",
                                 "pages": [
                                   "l/ro/consuelo-ui/display/checkmark",
                                   "l/ro/consuelo-ui/display/chip",
@@ -7224,15 +7114,15 @@
         "language": "ru",
         "tabs": [
           {
-            "tab": "Руководство пользователя",
+            "tab": "\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
             "groups": [
               {
-                "group": "Откройте Consuelo",
+                "group": "\u041e\u0442\u043a\u0440\u043e\u0439\u0442\u0435 Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ru/user-guide/introduction",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ru/user-guide/getting-started/capabilities/implementation-services",
@@ -7241,7 +7131,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/getting-started/how-tos/create-workspace",
                       "l/ru/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -7251,12 +7141,12 @@
                 ]
               },
               {
-                "group": "Модель данных",
+                "group": "\u041c\u043e\u0434\u0435\u043b\u044c \u0434\u0430\u043d\u043d\u044b\u0445",
                 "icon": "database",
                 "pages": [
                   "l/ru/user-guide/data-model/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/data-model/capabilities/objects",
                       "l/ru/user-guide/data-model/capabilities/fields",
@@ -7264,7 +7154,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/data-model/how-tos/create-custom-objects",
                       "l/ru/user-guide/data-model/how-tos/create-custom-fields",
@@ -7277,12 +7167,12 @@
                 ]
               },
               {
-                "group": "Миграция данных",
+                "group": "\u041c\u0438\u0433\u0440\u0430\u0446\u0438\u044f \u0434\u0430\u043d\u043d\u044b\u0445",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/ru/user-guide/data-migration/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/data-migration/capabilities/file-formats",
                       "l/ru/user-guide/data-migration/capabilities/field-mapping",
@@ -7292,7 +7182,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/ru/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -7331,19 +7221,19 @@
                 ]
               },
               {
-                "group": "Календарь и электронная почта",
+                "group": "\u041a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044c \u0438 \u044d\u043b\u0435\u043a\u0442\u0440\u043e\u043d\u043d\u0430\u044f \u043f\u043e\u0447\u0442\u0430",
                 "icon": "envelope",
                 "pages": [
                   "l/ru/user-guide/calendar-emails/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/calendar-emails/capabilities/mailbox",
                       "l/ru/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ru/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -7356,12 +7246,12 @@
                 ]
               },
               {
-                "group": "Рабочие процессы",
+                "group": "\u0420\u0430\u0431\u043e\u0447\u0438\u0435 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u044b",
                 "icon": "bolt",
                 "pages": [
                   "l/ru/user-guide/workflows/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/workflows/capabilities/workflow-triggers",
                       "l/ru/user-guide/workflows/capabilities/workflow-actions",
@@ -7375,10 +7265,10 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       {
-                        "group": "Автоматизации CRM",
+                        "group": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0437\u0430\u0446\u0438\u0438 CRM",
                         "pages": [
                           "l/ru/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/ru/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -7390,7 +7280,7 @@
                         ]
                       },
                       {
-                        "group": "Подключение к другим инструментам",
+                        "group": "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043a \u0434\u0440\u0443\u0433\u0438\u043c \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u0430\u043c",
                         "pages": [
                           "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -7400,13 +7290,13 @@
                         ]
                       },
                       {
-                        "group": "Расширенные настройки",
+                        "group": "\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043d\u043d\u044b\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438",
                         "pages": [
                           "l/ru/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "Нужна дополнительная помощь",
+                        "group": "\u041d\u0443\u0436\u043d\u0430 \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u043f\u043e\u043c\u043e\u0449\u044c",
                         "pages": [
                           "l/ru/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/ru/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -7418,12 +7308,12 @@
                 ]
               },
               {
-                "group": "ИИ",
+                "group": "\u0418\u0418",
                 "icon": "robot",
                 "pages": [
                   "l/ru/user-guide/ai/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/ai/capabilities/ai-chatbot",
                       "l/ru/user-guide/ai/capabilities/ai-agents",
@@ -7431,7 +7321,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -7439,12 +7329,12 @@
                 ]
               },
               {
-                "group": "Представления и воронки",
+                "group": "\u041f\u0440\u0435\u0434\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u0438\u044f \u0438 \u0432\u043e\u0440\u043e\u043d\u043a\u0438",
                 "icon": "table",
                 "pages": [
                   "l/ru/user-guide/views-pipelines/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/views-pipelines/capabilities/table-views",
                       "l/ru/user-guide/views-pipelines/capabilities/kanban-views",
@@ -7455,7 +7345,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/ru/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -7469,12 +7359,12 @@
                 ]
               },
               {
-                "group": "Панели управления",
+                "group": "\u041f\u0430\u043d\u0435\u043b\u0438 \u0443\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f",
                 "icon": "chart-bar",
                 "pages": [
                   "l/ru/user-guide/dashboards/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/dashboards/capabilities/dashboards",
                       "l/ru/user-guide/dashboards/capabilities/widgets",
@@ -7482,7 +7372,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/ru/user-guide/dashboards/how-tos/widget-faq"
@@ -7491,19 +7381,19 @@
                 ]
               },
               {
-                "group": "Разрешения и доступ",
+                "group": "\u0420\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u044f \u0438 \u0434\u043e\u0441\u0442\u0443\u043f",
                 "icon": "lock",
                 "pages": [
                   "l/ru/user-guide/permissions-access/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/permissions-access/capabilities/permissions",
                       "l/ru/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -7511,19 +7401,19 @@
                 ]
               },
               {
-                "group": "Биллинг",
+                "group": "\u0411\u0438\u043b\u043b\u0438\u043d\u0433",
                 "icon": "credit-card",
                 "pages": [
                   "l/ru/user-guide/billing/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/billing/capabilities/pricing-plans",
                       "l/ru/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -7564,12 +7454,12 @@
                 ]
               },
               {
-                "group": "Настройки",
+                "group": "\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438",
                 "icon": "gear",
                 "pages": [
                   "l/ru/user-guide/settings/overview",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/user-guide/settings/capabilities/workspace-settings",
                       "l/ru/user-guide/settings/capabilities/member-management",
@@ -7580,7 +7470,7 @@
                     ]
                   },
                   {
-                    "group": "Инструкции",
+                    "group": "\u0418\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438",
                     "pages": [
                       "l/ru/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -7678,35 +7568,25 @@
                   "l/ru/os/integrations/stripe",
                   "l/ru/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ru/os/pilot/insurance-revenue-workspace",
-                  "l/ru/os/pilot/setup-checklist",
-                  "l/ru/os/pilot/demo-flow",
-                  "l/ru/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "Разработчики",
+            "tab": "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0438",
             "groups": [
               {
-                "group": "Разработчики",
+                "group": "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0438",
                 "pages": [
                   "l/ru/developers/introduction"
                 ]
               },
               {
-                "group": "Расширяйте",
+                "group": "\u0420\u0430\u0441\u0448\u0438\u0440\u044f\u0439\u0442\u0435",
                 "icon": "plug",
                 "pages": [
                   "l/ru/developers/extend/extend",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/developers/extend/capabilities/apis",
                       "l/ru/developers/extend/capabilities/webhooks",
@@ -7716,12 +7596,12 @@
                 ]
               },
               {
-                "group": "Самостоятельный хостинг",
+                "group": "\u0421\u0430\u043c\u043e\u0441\u0442\u043e\u044f\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u0445\u043e\u0441\u0442\u0438\u043d\u0433",
                 "icon": "desktop",
                 "pages": [
                   "l/ru/developers/self-host/self-host",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/developers/self-host/capabilities/docker-compose",
                       "l/ru/developers/self-host/capabilities/setup",
@@ -7733,17 +7613,17 @@
                 ]
               },
               {
-                "group": "Внести вклад",
+                "group": "\u0412\u043d\u0435\u0441\u0442\u0438 \u0432\u043a\u043b\u0430\u0434",
                 "icon": "github",
                 "pages": [
                   "l/ru/developers/contribute/contribute",
                   {
-                    "group": "Возможности",
+                    "group": "\u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442\u0438",
                     "pages": [
                       "l/ru/developers/contribute/capabilities/local-setup",
                       "l/ru/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "Разработка интерфейса",
+                        "group": "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u0438\u043d\u0442\u0435\u0440\u0444\u0435\u0439\u0441\u0430",
                         "pages": [
                           "l/ru/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -7751,7 +7631,7 @@
                             "pages": [
                               "l/ru/consuelo-ui/introduction",
                               {
-                                "group": "Отображение",
+                                "group": "\u041e\u0442\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435",
                                 "pages": [
                                   "l/ru/consuelo-ui/display/checkmark",
                                   "l/ru/consuelo-ui/display/chip",
@@ -7762,13 +7642,13 @@
                                 ]
                               },
                               {
-                                "group": "Обратная связь",
+                                "group": "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0441\u0432\u044f\u0437\u044c",
                                 "pages": [
                                   "l/ru/consuelo-ui/progress-bar"
                                 ]
                               },
                               {
-                                "group": "Ввод",
+                                "group": "\u0412\u0432\u043e\u0434",
                                 "pages": [
                                   "l/ru/consuelo-ui/input/buttons",
                                   "l/ru/consuelo-ui/input/color-scheme",
@@ -7783,7 +7663,7 @@
                                 ]
                               },
                               {
-                                "group": "Навигация",
+                                "group": "\u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f",
                                 "pages": [
                                   "l/ru/consuelo-ui/navigation",
                                   "l/ru/consuelo-ui/navigation/breadcrumb",
@@ -7804,7 +7684,7 @@
                         ]
                       },
                       {
-                        "group": "Разработка серверной части",
+                        "group": "\u0420\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u043d\u043e\u0439 \u0447\u0430\u0441\u0442\u0438",
                         "pages": [
                           "l/ru/developers/contribute/capabilities/backend-development/server-commands",
                           "l/ru/developers/contribute/capabilities/backend-development/feature-flags",
@@ -7877,10 +7757,10 @@
         "language": "tr",
         "tabs": [
           {
-            "tab": "Kullanıcı Rehberi",
+            "tab": "Kullan\u0131c\u0131 Rehberi",
             "groups": [
               {
-                "group": "Consuelo'yi Keşfedin",
+                "group": "Consuelo'yi Ke\u015ffedin",
                 "icon": "rocket",
                 "pages": [
                   "l/tr/user-guide/introduction",
@@ -7894,7 +7774,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/getting-started/how-tos/create-workspace",
                       "l/tr/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -7917,7 +7797,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/data-model/how-tos/create-custom-objects",
                       "l/tr/user-guide/data-model/how-tos/create-custom-fields",
@@ -7930,7 +7810,7 @@
                 ]
               },
               {
-                "group": "Veri Geçişi",
+                "group": "Veri Ge\u00e7i\u015fi",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/tr/user-guide/data-migration/overview",
@@ -7945,7 +7825,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/tr/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -7996,7 +7876,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/tr/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -8009,7 +7889,7 @@
                 ]
               },
               {
-                "group": "İş Akışları",
+                "group": "\u0130\u015f Ak\u0131\u015flar\u0131",
                 "icon": "bolt",
                 "pages": [
                   "l/tr/user-guide/workflows/overview",
@@ -8028,10 +7908,10 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       {
-                        "group": "CRM Otomasyonları",
+                        "group": "CRM Otomasyonlar\u0131",
                         "pages": [
                           "l/tr/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/tr/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -8043,7 +7923,7 @@
                         ]
                       },
                       {
-                        "group": "Diğer Araçlara Bağlan",
+                        "group": "Di\u011fer Ara\u00e7lara Ba\u011flan",
                         "pages": [
                           "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -8053,13 +7933,13 @@
                         ]
                       },
                       {
-                        "group": "Gelişmiş Yapılandırmalar",
+                        "group": "Geli\u015fmi\u015f Yap\u0131land\u0131rmalar",
                         "pages": [
                           "l/tr/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "Daha Fazla Yardım mı İhtiyacınız Var",
+                        "group": "Daha Fazla Yard\u0131m m\u0131 \u0130htiyac\u0131n\u0131z Var",
                         "pages": [
                           "l/tr/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/tr/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -8084,7 +7964,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -8092,7 +7972,7 @@
                 ]
               },
               {
-                "group": "Görünümler ve Boru Hatları",
+                "group": "G\u00f6r\u00fcn\u00fcmler ve Boru Hatlar\u0131",
                 "icon": "table",
                 "pages": [
                   "l/tr/user-guide/views-pipelines/overview",
@@ -8108,7 +7988,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/tr/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -8122,7 +8002,7 @@
                 ]
               },
               {
-                "group": "Gösterge Panelleri",
+                "group": "G\u00f6sterge Panelleri",
                 "icon": "chart-bar",
                 "pages": [
                   "l/tr/user-guide/dashboards/overview",
@@ -8135,7 +8015,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/tr/user-guide/dashboards/how-tos/widget-faq"
@@ -8144,7 +8024,7 @@
                 ]
               },
               {
-                "group": "İzinler ve Erişim",
+                "group": "\u0130zinler ve Eri\u015fim",
                 "icon": "lock",
                 "pages": [
                   "l/tr/user-guide/permissions-access/overview",
@@ -8156,7 +8036,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -8164,7 +8044,7 @@
                 ]
               },
               {
-                "group": "Faturalandırma",
+                "group": "Faturaland\u0131rma",
                 "icon": "credit-card",
                 "pages": [
                   "l/tr/user-guide/billing/overview",
@@ -8176,7 +8056,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -8233,7 +8113,7 @@
                     ]
                   },
                   {
-                    "group": "Nasıl Yapılırlar",
+                    "group": "Nas\u0131l Yap\u0131l\u0131rlar",
                     "pages": [
                       "l/tr/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -8331,30 +8211,20 @@
                   "l/tr/os/integrations/stripe",
                   "l/tr/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/tr/os/pilot/insurance-revenue-workspace",
-                  "l/tr/os/pilot/setup-checklist",
-                  "l/tr/os/pilot/demo-flow",
-                  "l/tr/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "Geliştiriciler",
+            "tab": "Geli\u015ftiriciler",
             "groups": [
               {
-                "group": "Geliştiriciler",
+                "group": "Geli\u015ftiriciler",
                 "pages": [
                   "l/tr/developers/introduction"
                 ]
               },
               {
-                "group": "Genişlet",
+                "group": "Geni\u015flet",
                 "icon": "plug",
                 "pages": [
                   "l/tr/developers/extend/extend",
@@ -8369,7 +8239,7 @@
                 ]
               },
               {
-                "group": "Kendi Kendine Barındırma",
+                "group": "Kendi Kendine Bar\u0131nd\u0131rma",
                 "icon": "desktop",
                 "pages": [
                   "l/tr/developers/self-host/self-host",
@@ -8386,7 +8256,7 @@
                 ]
               },
               {
-                "group": "Katkıda Bulunun",
+                "group": "Katk\u0131da Bulunun",
                 "icon": "github",
                 "pages": [
                   "l/tr/developers/contribute/contribute",
@@ -8396,7 +8266,7 @@
                       "l/tr/developers/contribute/capabilities/local-setup",
                       "l/tr/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "Frontend Geliştirme",
+                        "group": "Frontend Geli\u015ftirme",
                         "pages": [
                           "l/tr/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -8404,7 +8274,7 @@
                             "pages": [
                               "l/tr/consuelo-ui/introduction",
                               {
-                                "group": "Görüntüle",
+                                "group": "G\u00f6r\u00fcnt\u00fcle",
                                 "pages": [
                                   "l/tr/consuelo-ui/display/checkmark",
                                   "l/tr/consuelo-ui/display/chip",
@@ -8457,7 +8327,7 @@
                         ]
                       },
                       {
-                        "group": "Backend Geliştirme",
+                        "group": "Backend Geli\u015ftirme",
                         "pages": [
                           "l/tr/developers/contribute/capabilities/backend-development/server-commands",
                           "l/tr/developers/contribute/capabilities/backend-development/feature-flags",
@@ -8530,15 +8400,15 @@
         "language": "zh",
         "tabs": [
           {
-            "tab": "用户指南",
+            "tab": "\u7528\u6237\u6307\u5357",
             "groups": [
               {
-                "group": "发现 Consuelo",
+                "group": "\u53d1\u73b0 Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/zh/user-guide/introduction",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/zh/user-guide/getting-started/capabilities/implementation-services",
@@ -8547,7 +8417,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/getting-started/how-tos/create-workspace",
                       "l/zh/user-guide/getting-started/how-tos/navigate-around-consuelo",
@@ -8557,12 +8427,12 @@
                 ]
               },
               {
-                "group": "数据模型",
+                "group": "\u6570\u636e\u6a21\u578b",
                 "icon": "database",
                 "pages": [
                   "l/zh/user-guide/data-model/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/data-model/capabilities/objects",
                       "l/zh/user-guide/data-model/capabilities/fields",
@@ -8570,7 +8440,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/data-model/how-tos/create-custom-objects",
                       "l/zh/user-guide/data-model/how-tos/create-custom-fields",
@@ -8583,12 +8453,12 @@
                 ]
               },
               {
-                "group": "数据迁移",
+                "group": "\u6570\u636e\u8fc1\u79fb",
                 "icon": "cloud-arrow-up",
                 "pages": [
                   "l/zh/user-guide/data-migration/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/data-migration/capabilities/file-formats",
                       "l/zh/user-guide/data-migration/capabilities/field-mapping",
@@ -8598,7 +8468,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/data-migration/how-tos/prepare-your-csv-files",
                       "l/zh/user-guide/data-migration/how-tos/import-companies-via-csv",
@@ -8637,19 +8507,19 @@
                 ]
               },
               {
-                "group": "日历与电子邮件",
+                "group": "\u65e5\u5386\u4e0e\u7535\u5b50\u90ae\u4ef6",
                 "icon": "envelope",
                 "pages": [
                   "l/zh/user-guide/calendar-emails/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/calendar-emails/capabilities/mailbox",
                       "l/zh/user-guide/calendar-emails/capabilities/calendar"
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/zh/user-guide/calendar-emails/how-tos/limit-emails-imported",
@@ -8662,12 +8532,12 @@
                 ]
               },
               {
-                "group": "工作流",
+                "group": "\u5de5\u4f5c\u6d41",
                 "icon": "bolt",
                 "pages": [
                   "l/zh/user-guide/workflows/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/workflows/capabilities/workflow-triggers",
                       "l/zh/user-guide/workflows/capabilities/workflow-actions",
@@ -8681,10 +8551,10 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       {
-                        "group": "CRM 自动化",
+                        "group": "CRM \u81ea\u52a8\u5316",
                         "pages": [
                           "l/zh/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
                           "l/zh/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
@@ -8696,7 +8566,7 @@
                         ]
                       },
                       {
-                        "group": "连接到其他工具",
+                        "group": "\u8fde\u63a5\u5230\u5176\u4ed6\u5de5\u5177",
                         "pages": [
                           "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
                           "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
@@ -8706,13 +8576,13 @@
                         ]
                       },
                       {
-                        "group": "高级配置",
+                        "group": "\u9ad8\u7ea7\u914d\u7f6e",
                         "pages": [
                           "l/zh/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
                         ]
                       },
                       {
-                        "group": "需要更多帮助",
+                        "group": "\u9700\u8981\u66f4\u591a\u5e2e\u52a9",
                         "pages": [
                           "l/zh/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                           "l/zh/user-guide/workflows/how-tos/need-more-help/workflows-faq",
@@ -8729,7 +8599,7 @@
                 "pages": [
                   "l/zh/user-guide/ai/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/ai/capabilities/ai-chatbot",
                       "l/zh/user-guide/ai/capabilities/ai-agents",
@@ -8737,7 +8607,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/ai/how-tos/ai-faq"
                     ]
@@ -8745,12 +8615,12 @@
                 ]
               },
               {
-                "group": "视图与管道",
+                "group": "\u89c6\u56fe\u4e0e\u7ba1\u9053",
                 "icon": "table",
                 "pages": [
                   "l/zh/user-guide/views-pipelines/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/views-pipelines/capabilities/table-views",
                       "l/zh/user-guide/views-pipelines/capabilities/kanban-views",
@@ -8761,7 +8631,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping",
                       "l/zh/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects",
@@ -8775,12 +8645,12 @@
                 ]
               },
               {
-                "group": "仪表板",
+                "group": "\u4eea\u8868\u677f",
                 "icon": "chart-bar",
                 "pages": [
                   "l/zh/user-guide/dashboards/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/dashboards/capabilities/dashboards",
                       "l/zh/user-guide/dashboards/capabilities/widgets",
@@ -8788,7 +8658,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/dashboards/how-tos/dashboards-faq",
                       "l/zh/user-guide/dashboards/how-tos/widget-faq"
@@ -8797,19 +8667,19 @@
                 ]
               },
               {
-                "group": "权限与访问",
+                "group": "\u6743\u9650\u4e0e\u8bbf\u95ee",
                 "icon": "lock",
                 "pages": [
                   "l/zh/user-guide/permissions-access/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/permissions-access/capabilities/permissions",
                       "l/zh/user-guide/permissions-access/capabilities/sso-configuration"
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
@@ -8817,19 +8687,19 @@
                 ]
               },
               {
-                "group": "账单",
+                "group": "\u8d26\u5355",
                 "icon": "credit-card",
                 "pages": [
                   "l/zh/user-guide/billing/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/billing/capabilities/pricing-plans",
                       "l/zh/user-guide/billing/capabilities/workflow-credits"
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/billing/how-tos/billing-faq"
                     ]
@@ -8870,12 +8740,12 @@
                 ]
               },
               {
-                "group": "设置",
+                "group": "\u8bbe\u7f6e",
                 "icon": "gear",
                 "pages": [
                   "l/zh/user-guide/settings/overview",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/user-guide/settings/capabilities/workspace-settings",
                       "l/zh/user-guide/settings/capabilities/member-management",
@@ -8886,7 +8756,7 @@
                     ]
                   },
                   {
-                    "group": "操作指南",
+                    "group": "\u64cd\u4f5c\u6307\u5357",
                     "pages": [
                       "l/zh/user-guide/settings/how-tos/settings-faq"
                     ]
@@ -8984,35 +8854,25 @@
                   "l/zh/os/integrations/stripe",
                   "l/zh/os/integrations/sentry-posthog"
                 ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/zh/os/pilot/insurance-revenue-workspace",
-                  "l/zh/os/pilot/setup-checklist",
-                  "l/zh/os/pilot/demo-flow",
-                  "l/zh/os/pilot/success-criteria"
-                ]
               }
             ]
           },
           {
-            "tab": "开发者",
+            "tab": "\u5f00\u53d1\u8005",
             "groups": [
               {
-                "group": "开发者",
+                "group": "\u5f00\u53d1\u8005",
                 "pages": [
                   "l/zh/developers/introduction"
                 ]
               },
               {
-                "group": "扩展",
+                "group": "\u6269\u5c55",
                 "icon": "plug",
                 "pages": [
                   "l/zh/developers/extend/extend",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/developers/extend/capabilities/apis",
                       "l/zh/developers/extend/capabilities/webhooks",
@@ -9022,12 +8882,12 @@
                 ]
               },
               {
-                "group": "自托管",
+                "group": "\u81ea\u6258\u7ba1",
                 "icon": "desktop",
                 "pages": [
                   "l/zh/developers/self-host/self-host",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/developers/self-host/capabilities/docker-compose",
                       "l/zh/developers/self-host/capabilities/setup",
@@ -9039,17 +8899,17 @@
                 ]
               },
               {
-                "group": "贡献",
+                "group": "\u8d21\u732e",
                 "icon": "github",
                 "pages": [
                   "l/zh/developers/contribute/contribute",
                   {
-                    "group": "功能",
+                    "group": "\u529f\u80fd",
                     "pages": [
                       "l/zh/developers/contribute/capabilities/local-setup",
                       "l/zh/developers/contribute/capabilities/bug-and-requests",
                       {
-                        "group": "前端开发",
+                        "group": "\u524d\u7aef\u5f00\u53d1",
                         "pages": [
                           "l/zh/developers/contribute/capabilities/frontend-development/storybook",
                           {
@@ -9057,7 +8917,7 @@
                             "pages": [
                               "l/zh/consuelo-ui/introduction",
                               {
-                                "group": "展示",
+                                "group": "\u5c55\u793a",
                                 "pages": [
                                   "l/zh/consuelo-ui/display/checkmark",
                                   "l/zh/consuelo-ui/display/chip",
@@ -9068,13 +8928,13 @@
                                 ]
                               },
                               {
-                                "group": "反馈",
+                                "group": "\u53cd\u9988",
                                 "pages": [
                                   "l/zh/consuelo-ui/progress-bar"
                                 ]
                               },
                               {
-                                "group": "输入",
+                                "group": "\u8f93\u5165",
                                 "pages": [
                                   "l/zh/consuelo-ui/input/buttons",
                                   "l/zh/consuelo-ui/input/color-scheme",
@@ -9089,7 +8949,7 @@
                                 ]
                               },
                               {
-                                "group": "导航",
+                                "group": "\u5bfc\u822a",
                                 "pages": [
                                   "l/zh/consuelo-ui/navigation",
                                   "l/zh/consuelo-ui/navigation/breadcrumb",
@@ -9110,7 +8970,7 @@
                         ]
                       },
                       {
-                        "group": "后端开发",
+                        "group": "\u540e\u7aef\u5f00\u53d1",
                         "pages": [
                           "l/zh/developers/contribute/capabilities/backend-development/server-commands",
                           "l/zh/developers/contribute/capabilities/backend-development/feature-flags",
@@ -9670,7 +9530,7 @@
       "destination": "/user-guide/billing/how-tos/billing-faq"
     }
   ],
-  "description": "Documentation for Consuelo — open-source sales infrastructure with power dialer, AI coaching, CRM, and automation. Everything your sales team needs in one platform.",
+  "description": "Documentation for Consuelo \u2014 open-source sales infrastructure with power dialer, AI coaching, CRM, and automation. Everything your sales team needs in one platform.",
   "search": {
     "prompt": "Search docs..."
   }
