@@ -1275,7 +1275,9 @@ export const useOpportunityQueueWorkspace = ({
       const autoStartedItemId = currentQueueItem.id;
       autoStartedItemIdRef.current = autoStartedItemId;
 
-      void startParallelBatch()
+      void startParallelBatch({
+        queueId: backendQueue?.id ?? currentQueueItem.queueId,
+      })
         .then((result) => {
           if (result.status === 'blocked' || result.status === 'failed') {
             return;
@@ -1303,6 +1305,7 @@ export const useOpportunityQueueWorkspace = ({
     void startCurrentQueueItem();
   }, [
     callState.status,
+    backendQueue?.id,
     currentQueueItem,
     listId,
     listStatus,
