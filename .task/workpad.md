@@ -12,8 +12,13 @@ started: 2026-05-21
 - [x] Read root `AGENTS.md` and `CODING-STANDARDS.md` before proposing code changes.
 - [x] Inspect the actual OS package runtime files before asking Ko for approval.
 - [x] Preserve the distinction that manifests are manifests and skills are skills.
-- [ ] Ko approves the targeted Bun runtime switch plan before code changes begin.
-- [ ] After approval, implement only the approved runtime scope.
+- [x] Ko approves the targeted Bun runtime switch plan before code changes begin.
+- [x] Implement only the approved runtime scope.
+- [x] Keep manifest files intact.
+- [x] Add Bun/TypeScript server path.
+- [x] Add minimal local runtime state with SQLite and `CONSUELO_HOME`.
+- [x] Keep Python server as temporary compatibility wrapper instead of deleting it.
+- [x] Validate Bun CLI smoke, server smoke, review, and verify.
 
 ## investigated files
 
@@ -36,141 +41,100 @@ started: 2026-05-21
 
 ## current runtime findings
 
-- The OS package already has a Bun CLI spine in `packages/os/scripts/os.ts` with `get-steering`, `get-dev-steering`, and `call` commands.
-- `packages/os/server.py` is the remaining Python/FastMCP transport wrapper. It exposes `get_steering`, `get_dev_steering`, and `call`, then shells out to Bun for `call`.
-- `server.py` currently defaults `PORT` to `8851`, while setup and copied workspace server scripts mostly use `8850`.
-- `server.py` currently defaults `BUN_BIN` to `/opt/homebrew/bin/bun`, which is machine-specific.
-- `tooling/tool-manifest.json` is small and currently declares `daily-revenue-brief` only. It should stay a manifest.
-- `tooling/dev-tool-manifest.json` preserves the copied workspace/operator typed facade registry for `get_dev_steering`.
-- The current TypeScript type name `SkillManifestEntry` is confusing because the file is a manifest entry, and Ko clarified that manifests are not skills.
+- The OS package already had a Bun CLI spine in `packages/os/scripts/os.ts` with `get-steering`, `get-dev-steering`, and `call` commands.
+- `packages/os/server.py` was the remaining Python/FastMCP transport wrapper. It exposed `get_steering`, `get_dev_steering`, and `call`, then shelled out to Bun for `call`.
+- `server.py` defaulted `PORT` to `8851`, while setup and copied workspace server scripts mostly used `8850`.
+- `server.py` defaulted `BUN_BIN` to `/opt/homebrew/bin/bun`, which was machine-specific.
+- `tooling/tool-manifest.json` is small and currently declares `daily-revenue-brief` only. It stayed a manifest.
+- `tooling/dev-tool-manifest.json` preserves the copied workspace/operator typed facade registry for `get_dev_steering`. It stayed intact.
+- The old TypeScript type name `SkillManifestEntry` blurred the manifest/skill boundary.
 - `daily-revenue-brief` is already a Bun script and calls the GraphQL connectivity proof.
-- Artifacts are currently descriptors only; no local OS home, SQLite, or persisted run record exists yet.
-- Docker is Python-first and currently exposes `8000`, while local scripts expect `8850`.
-- `setup.sh`, `scripts/server.js`, `start-brain*`, daemon scripts, and Docker are copied workspace bootstrap surfaces and still carry Python/MCP/workspace wording.
+- Artifacts were descriptors only; no local OS home, SQLite, or persisted run record existed before this task.
+- Docker is Python-first and currently exposes `8000`. Docker was documented as out of local runtime scope.
 
-## locked product constraints
+## implemented
 
-- Product docs and user-facing language say OS and portal.
-- Public portal shape is `get_steering` and `call`.
-- `get_dev_steering` is internal/dev/operator only.
-- Use skills as the product capability concept.
-- Use scripts for executable implementation.
-- Manifests stay manifests. Do not rename manifests to skills.
-- Local OS should not require Docker.
-- Local OS should use Bun, SQLite, and a Consuelo home folder.
-- Hosted/team OS should stay in the regular OpenSaaS repo/deployment path first.
-
-## targeted approval plan
-
-### phase 1: replace the Python transport wrapper with a Bun transport wrapper
-
-Build a Bun/TypeScript server entrypoint for the OS portal and route it to the existing Bun CLI/runtime code instead of continuing to run `server.py` as the product path.
-
-Target files likely touched:
-
-- `packages/os/package.json`
-- `packages/os/scripts/os.ts`
-- new `packages/os/scripts/server.ts` or `packages/os/src/server.ts`
-- `packages/os/scripts/server.js`
-- `packages/os/README.md`
-- `packages/os/docs/runtime-surfaces.md`
-
-Rules:
-
-- Keep `tooling/tool-manifest.json` intact as a manifest.
-- Keep `tooling/dev-tool-manifest.json` intact as the internal/operator manifest.
-- Do not rename manifest files.
-- Do not delete `server.py` until Ko approves deletion after the Bun server smoke passes.
-- Do not change docs navigation in this runtime task.
-
-### phase 2: clean runtime defaults
-
-- Standardize local default port to `8850`.
-- Add `CONSUELO_OS_PORT` as the OS-specific override.
-- Use `bun` from `PATH`; remove `/opt/homebrew/bin/bun` as the default path.
-- Keep `BUN_BIN` only as an override if still needed for compatibility.
-
-### phase 3: add minimal local runtime state
-
-Add the smallest useful local state layer for observability:
-
-- `CONSUELO_HOME`, defaulting to `~/.consuelo/os`.
-- local folders for `runs`, `logs`, `artifacts`, and `tmp`.
-- SQLite file at `~/.consuelo/os/consuelo.db`.
-- execution table/event table for `call` records.
-
-The first implementation records execution metadata and events. Artifact bytes and versioning can stay descriptor-only until the artifact service task.
-
-### phase 4: fix naming inside TS types without touching manifest files
-
-Rename code types away from `SkillManifestEntry` to a neutral manifest name such as `OsManifestEntry` or `PortalManifestEntry`.
-
-Keep skill language where it describes the product capability being run, such as error codes and user-facing messages.
-
-### phase 5: update internal docs for runtime truth
-
-Update only package/runtime docs touched by the runtime change:
-
-- Bun is the product runtime path.
-- Python/FastMCP is bootstrap/legacy during transition.
-- Docker is deferred for local use.
-- `get_dev_steering` is internal-only.
-- manifests remain manifests.
-
-## out of scope until separate approval
-
-- Rename manifest files.
-- Change public docs navigation.
-- Delete Python files outright.
-- Implement Slack/Discord approvals.
-- Implement S3 artifact storage.
-- Implement hosted/cloud deployment split.
-- Rebuild the copied workspace operator scripts.
-- Rewrite the internal workspace app runtime.
-
-## stop conditions
-
-- Ask Ko before deleting `server.py`, `requirements.txt`, or Python tests.
-- Ask Ko before changing `tooling/tool-manifest.json` shape.
-- Ask Ko before changing `tooling/dev-tool-manifest.json`.
-- Ask Ko before changing docs navigation.
-- Ask Ko before adding Docker or hosted deployment work.
-- Ask Ko if the Bun transport requires introducing a new transport dependency with unclear long-term fit.
-
-## validation plan after approval
-
-- `cd packages/os && bun run smoke:steering`
-- `cd packages/os && bun run smoke:daily-revenue-brief`
-- `cd packages/os && bun run typecheck`
-- local health check against `127.0.0.1:8850/health`
-- `workspace check-files` for touched TS files
-- `workspace review.run --base origin/stream/os --no-tests`
-- `workspace verify --base origin/stream/os --no-db` if no DB migrations are added
+- Added `packages/os/scripts/server.ts` as the Bun/TypeScript local OS server.
+  - Exposes `/health`, `/get_steering`, `/get_dev_steering`, and `/call`.
+  - Uses `127.0.0.1` and `CONSUELO_OS_PORT`, defaulting to `8850`.
+  - Supports `CONSUELO_OS_BEARER_TOKEN` and legacy `MCP_BEARER_TOKEN` for compatibility.
+- Updated `packages/os/scripts/os.ts`.
+  - Exports `getSteering`, `getDevSteering`, `executeCall`, and `parseCallInput`.
+  - Adds trace IDs and duration to call output.
+  - Records execution start/finish events through local runtime state.
+  - Includes `CONSUELO_HOME`, SQLite path, and artifact storage mode in runtime identity.
+- Added `packages/os/scripts/lib/runtime-state.ts`.
+  - Defaults `CONSUELO_HOME` to `~/.consuelo/os`.
+  - Creates `artifacts`, `logs`, `runs`, and `tmp` folders.
+  - Creates `consuelo.db` with `skill_executions` and `execution_events` tables.
+- Renamed the confusing TS type `SkillManifestEntry` to `OsManifestEntry` without changing manifest files or manifest shape.
+- Updated `packages/os/scripts/server.js` to manage the Bun server instead of Python.
+- Updated `packages/os/server.py` as a temporary legacy wrapper.
+  - Defaults to port `8850`.
+  - Defaults `BUN_BIN` to `bun` from `PATH`.
+  - Supports `CONSUELO_OS_BEARER_TOKEN` while keeping legacy `MCP_BEARER_TOKEN` compatibility.
+- Updated `packages/os/.env.example` to OS-specific env names.
+- Updated `packages/os/setup.sh` to require Bun, initialize local OS folders, and verify the Bun spine instead of creating a Python venv.
+- Updated `packages/os/README.md` and `packages/os/docs/runtime-surfaces.md` for Bun-first runtime truth.
 
 ## files changed
 
+- `packages/os/.env.example`
+- `packages/os/README.md`
+- `packages/os/docs/runtime-surfaces.md`
+- `packages/os/package.json`
+- `packages/os/scripts/lib/manifest.ts`
+- `packages/os/scripts/lib/runtime-state.ts`
+- `packages/os/scripts/lib/types.ts`
+- `packages/os/scripts/os.ts`
+- `packages/os/scripts/server.js`
+- `packages/os/scripts/server.ts`
+- `packages/os/server.py`
+- `packages/os/setup.sh`
 - `.task/workpad.md`
 
 ## key decisions
 
-- No implementation has started.
-- This task is waiting for Ko approval of the targeted runtime plan.
+- Bun/TypeScript is now the product runtime path.
+- Python remains temporarily as a compatibility wrapper; it was not deleted.
+- Manifests remain manifests.
+- `tooling/tool-manifest.json` and `tooling/dev-tool-manifest.json` were not renamed and their shape was not changed.
+- Local OS state defaults to `~/.consuelo/os`.
+- The local server default port is `8850`.
+- Local OS does not require Docker.
 
 ## notes for ko
 
-- The earlier plan incorrectly implied manifests could be renamed/reframed as skills. This workpad preserves the correction: manifests are manifests; skills are skills.
-- Current code already has a Bun CLI runtime. The targeted switch is mainly replacing the Python server/transport wrapper and adding local runtime state, not rewriting all scripts.
+- Current Bun server is HTTP portal-shaped, not a full replacement for every behind-the-scenes agent transport mode. The old Python transport stays as compatibility while the Bun path becomes the product runtime foundation.
+- A Python process was already listening on local port `8850` during validation, so the Bun server smoke used alternate test ports `8899`, `8900`, `8901`, `8902`, and `8903`.
+- The earlier plan incorrectly implied manifests could be renamed/reframed as skills. This work preserves the correction: manifests are manifests; skills are skills.
 
 ## improvements noticed
 
-- `server.py` and local setup disagree on default port.
-- `BUN_BIN` default is machine-specific.
-- Docker is Python-first and misaligned with the local Bun direction.
-- `SkillManifestEntry` type name blurs the manifest/skill boundary.
+- Docker remains Python-first and misaligned with the Bun/local runtime direction. This belongs in a separate deployment task.
+- Agent transport compatibility should be its own task if the Bun server needs to speak an SDK-backed protocol instead of plain HTTP portal routes.
+- Artifact descriptors now have execution provenance through SQLite, but artifact bytes are still not written through a full artifact service.
 
 ## errors i ran into
 
 - A batch read attempt failed because this workspace facade session did not accept the batch input shape. I switched to individual `fs.read` calls.
+- `fs.patch` rejected multiline inline content as expected. I used task-scoped commands for multiline edits.
+- First server `/call` smoke returned `401` because the workspace environment included `MCP_BEARER_TOKEN`; reran with auth env unset for the local smoke.
+- First `verify` failed because review flagged issues in the new files. Fixed SQL query literal style and replaced `console.*` in the changed server manager.
+
+## validation commands and results
+
+- `cd packages/os && CONSUELO_HOME=$(mktemp -d)/os bun ./scripts/os.ts call '{"name":"daily-revenue-brief"}'`: passed, returned `ok: true`, trace ID, duration, artifact descriptor, and `graphqlStatus: missing_env`.
+- `cd packages/os && CONSUELO_HOME=$(mktemp -d)/os bun run smoke:steering`: passed.
+- `cd packages/os && CONSUELO_HOME=$(mktemp -d)/os bun run smoke:daily-revenue-brief | python3 -m json.tool`: passed.
+- Bun server health smoke on port `8899`: passed, returned `runtime: bun`, `tools: 3`.
+- Bun server `/call` smoke on port `8903` with auth env unset: passed and created local `consuelo.db`.
+- `cd packages/os && bun run typecheck`: passed.
+- `workspace checkFiles` for touched TS/JS runtime files: passed.
+- `python3 -m py_compile packages/os/server.py`: passed.
+- `git diff --check`: passed.
+- `workspace review.run --base origin/stream/os --no-tests`: passed with no `yours` or `preExisting` findings after fixes.
+- `workspace verify --base origin/stream/os --no-db`: passed.
 
 ---
 
@@ -182,4 +146,4 @@ bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-21 03:54:02 write: `.task/workpad.md`
+- 2026-05-21 04:32:55 write: `.task/workpad.md`

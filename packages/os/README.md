@@ -1,22 +1,55 @@
 # Consuelo OS
 
-Consuelo OS is a customer-facing runtime seeded from the proven `packages/workspace` OS portal pattern.
+Consuelo OS is the local and hosted runtime that turns a company into an agent-ready workspace.
 
-This scaffold proves one narrow spine:
+The current package proves this spine:
 
 ```text
-get_steering -> call -> Bun skill -> structured result
+get_steering -> call -> Bun skill -> structured result -> local execution record
 ```
 
-The OS portal exposes exactly three tools:
+The product runtime path is Bun/TypeScript. Python files remain only as temporary compatibility/bootstrap surfaces until the Bun server fully replaces transport needs.
+
+## OS portal
+
+The OS portal exposes three package entrypoints:
 
 - `get_steering`
 - `get_dev_steering`
 - `call`
 
-Skills live behind `call` as Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
+The customer-facing portal is `get_steering` and `call`. `get_dev_steering` is internal/dev/operator context.
 
-The original workspace/operator tool surface is preserved in `tooling/dev-tool-manifest.json` and returned through `get_dev_steering` with a short OS-specific preface.
+Skills live behind `call` as Bun scripts under `scripts/`. They are exposed through manifests in `tooling/`.
+
+Manifests are manifests. Skills are the capabilities that agents can run. Scripts are the executable implementation behind those skills.
+
+## Local runtime state
+
+Local OS state defaults to:
+
+```text
+~/.consuelo/os
+```
+
+Override it with:
+
+```bash
+export CONSUELO_HOME="/path/to/consuelo-os"
+```
+
+The runtime creates:
+
+```text
+~/.consuelo/os/
+  consuelo.db
+  artifacts/
+  logs/
+  runs/
+  tmp/
+```
+
+SQLite stores execution metadata and events. Raw artifact bytes stay in the artifact folder until the artifact service moves them to cloud storage.
 
 ## Environment
 
@@ -52,22 +85,39 @@ bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
 
 With GraphQL env configured, the same command attempts a harmless connectivity proof.
 
-## OS portal
+## Bun server
 
-Start the server:
+Start the local OS server:
 
 ```bash
 cd packages/os
-.venv/bin/python3 server.py
+bun run server:run
+```
+
+The server listens on `127.0.0.1:8850` by default.
+
+Override the port with:
+
+```bash
+export CONSUELO_OS_PORT=8851
 ```
 
 The server exposes:
 
 - `/health`
-- OS portal transport at `/`
+- `/get_steering`
+- `/get_dev_steering`
+- `/call`
 
-The `call` portal entrypoint delegates into the Bun skill runtime.
+Manage the background server through:
+
+```bash
+cd packages/os
+bun run server -- status
+bun run server -- restart
+bun run server -- stop
+```
 
 ## Current boundary
 
-This is packaging, not full product completion. The scaffold intentionally includes one skill and docs for the shape future skills should follow.
+This is runtime foundation work. The scaffold intentionally includes one skill and docs for the shape future skills should follow. Docker, S3 storage, approval delivery, and hosted deployment hardening are separate tasks.

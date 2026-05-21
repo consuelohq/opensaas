@@ -1,9 +1,7 @@
-"""Consuelo OS MCP server.
+"""Legacy Consuelo OS Python transport wrapper.
 
-The public MCP surface stays intentionally tiny:
-- get_steering
-- get_dev_steering
-- call
+The product runtime path is Bun/TypeScript. This file remains temporarily as a
+compatibility wrapper until the Bun server fully replaces Python transport needs.
 """
 
 import json
@@ -22,9 +20,9 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
 APP_DIR = Path(__file__).parent
-PORT = int(os.environ.get('PORT', 8851))
-SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'consuelo-os')
-BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
+PORT = int(os.environ.get('CONSUELO_OS_PORT') or os.environ.get('PORT', 8850))
+SERVER_NAME = os.environ.get('CONSUELO_OS_SERVER_NAME') or os.environ.get('MCP_SERVER_NAME', 'consuelo-os')
+BUN_BIN = os.environ.get('BUN_BIN', 'bun')
 
 STEERING_FILES = [
     APP_DIR / 'STEERING.md',
@@ -201,7 +199,7 @@ async def health(request):
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        token = os.environ.get('MCP_BEARER_TOKEN', '')
+        token = os.environ.get('CONSUELO_OS_BEARER_TOKEN') or os.environ.get('MCP_BEARER_TOKEN', '')
         if request.url.path == '/health':
             return await call_next(request)
         if token:
@@ -215,7 +213,7 @@ if __name__ == '__main__':
     mcp_app = mcp.streamable_http_app()
     app = Starlette(
         routes=[Route('/health', health), Mount('/', app=mcp_app)],
-        middleware=[Middleware(AuthMiddleware)] if os.environ.get('MCP_BEARER_TOKEN') else [],
+        middleware=[Middleware(AuthMiddleware)] if (os.environ.get('CONSUELO_OS_BEARER_TOKEN') or os.environ.get('MCP_BEARER_TOKEN')) else [],
     )
     import uvicorn
 
