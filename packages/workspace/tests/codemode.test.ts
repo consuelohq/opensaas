@@ -7,6 +7,8 @@ import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { execute } from '../scripts/lib/codemode/executor';
+import { buildToolRegistry } from '../scripts/lib/codemode/tools';
+import type { CodeRunRegistryState } from '../scripts/lib/codemode/tools';
 
 type ToolResultLike = {
   ok: boolean;
@@ -25,13 +27,51 @@ describe('codemode executor', () => {
     expect(result.console.warn).toEqual([]);
   });
 
-  it('enforces maxOperations across helper calls', async () => {
+  it('enforces maxOperations across flat helper calls', async () => {
     const result = await execute('await ping(); await ping(); return true', {
       ping: async () => ({ ok: true }),
     }, { maxOperations: 1 });
     expect(result.success).toBe(false);
     expect(String(result.result)).toContain('maxOperations=1');
     expect(result.operations).toBe(2);
+  });
+
+  it('passes nested workspace namespace helpers into code', async () => {
+    const result = await execute('const r = await workspace.fs.read({ path: "AGENTS.md" }); return { ok: r.ok, source: r.source };', {
+      workspace: {
+        fs: {
+          read: async () => ({ ok: true, source: 'nested' }),
+        },
+      },
+    }, { maxOperations: 5 });
+    expect(result.success).toBe(true);
+    expect(result.result).toEqual({ ok: true, source: 'nested' });
+    expect(result.operations).toBe(1);
+  });
+
+  it('enforces maxOperations across nested workspace namespace calls', async () => {
+    const result = await execute('await workspace.fs.read({}); await workspace.fs.read({}); return true;', {
+      workspace: {
+        fs: {
+          read: async () => ({ ok: true }),
+        },
+      },
+    }, { maxOperations: 1 });
+    expect(result.success).toBe(false);
+    expect(String(result.result)).toContain('maxOperations=1');
+    expect(result.operations).toBe(2);
+  });
+});
+
+describe('codemode tool registry', () => {
+  it('exposes manifest tools through nested workspace namespaces', () => {
+    const state: CodeRunRegistryState = { operations: [], blockedTools: [], changedFiles: new Set<string>() };
+    const registry = buildToolRegistry(process.cwd(), { state });
+    const workspace = registry.workspace as Record<string, unknown>;
+    expect(typeof workspace.status).toBe('function');
+    expect(typeof (workspace.fs as Record<string, unknown>).read).toBe('function');
+    expect(typeof (workspace.task as Record<string, unknown>).current).toBe('function');
+    expect(typeof (workspace.context as Record<string, unknown>).search).toBe('function');
   });
 });
 

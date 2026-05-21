@@ -1,9 +1,8 @@
 {
   "files": [
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/lib/facade/errors.ts",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/tests/facade/facade.test.ts"
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/codemode/executor.ts"
   ],
-  "updatedAt": "2026-05-21T17:52:04.520Z"
+  "updatedAt": "2026-05-21T19:09:04.430Z"
 }

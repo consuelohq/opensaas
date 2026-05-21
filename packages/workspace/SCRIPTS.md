@@ -42,14 +42,16 @@ do not answer architecture questions from memory. search memory, read files, the
 
 `code.run` is the primary orchestration surface for multi-step workspace work. Use it when a workflow needs several related typed workspace tool calls in one pass: read files, search context, inspect status, run task-scoped commands, write targeted files, validate, and return a compact structured summary.
 
-Prefer calling facade tools inside code mode:
+Prefer the nested typed workspace namespace inside code mode:
 
 ```js
-const status = await workspace_call("status", {});
-const file = await workspace_call("fs.read", { path: "AGENTS.md", from: 1, to: 40 });
-const current = await task_current({});
+const status = await workspace.status({});
+const file = await workspace.fs.read({ path: "AGENTS.md", from: 1, to: 40 });
+const current = await workspace.task.current({});
 const exact = await readFile("packages/workspace/package.json", 1, 5);
 ```
+
+Use `workspace_call("tool.name", input)` when constructing tool names dynamically. Sanitized helpers like `fs_read`, `task_current`, and aliases like `readFile` remain available, but the nested `workspace.*` namespace is the preferred default because it mirrors the typed facade.
 
 Always pass `taskSession` when task work is involved. The facade resolves the task branch and worktree; do not reconstruct task paths manually.
 
@@ -1408,4 +1410,5 @@ Template names are `research`, `spec`, and `plan`. The selected template is inje
 Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
 
 The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
+
 

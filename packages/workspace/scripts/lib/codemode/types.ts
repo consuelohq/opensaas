@@ -1,8 +1,12 @@
 // tool function signature — all tool functions are async
 export type ToolFunction = (...args: unknown[]) => Promise<unknown>;
 
-// registry of all tool functions available in the isolate
-export type ToolRegistry = Record<string, ToolFunction>;
+// nested namespace of tool functions, such as workspace.fs.read
+export type ToolNamespace = { [key: string]: ToolValue };
+export type ToolValue = ToolFunction | ToolNamespace;
+
+// registry of all helper values available in code.run
+export type ToolRegistry = Record<string, ToolValue>;
 
 // captured console output from the isolate
 export type ConsoleOutput = {
