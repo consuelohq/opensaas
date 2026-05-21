@@ -7,16 +7,84 @@ description: Consuelo OS turns your company into an agent-ready workspace.
 
 Consuelo OS turns your company into an agent-ready workspace.
 
-It is the operating layer that gives agents safe access to context, tools, memory, permissions, and approved workflows.
+It is the operating layer that gives agents safe access to context, tools, memory, permissions, and approved workflows. Agents do not get raw access to your systems. They work through a portal that tells them what they need to know and lets them run only the skills your workspace has approved.
 
-Agents do not get direct access to your company systems. They work through the Consuelo OS portal: one entry point to understand the workspace and one entry point to run approved skills.
+Use this section to understand the product model before reading setup guides or implementation reference.
 
-## What OS provides
+## Start here
 
-- Workspace context agents can understand
-- Skills agents can run safely
-- Scripts that implement those skills
-- Files and app-native artifacts
-- Approval guardrails for high-impact actions
-- Local and cloud runtime options
-- Execution logs and trace IDs
+If you need to... | Read this first | Then read
+--- | --- | ---
+Understand the product | This page | [How Consuelo OS works](/os/how-it-works)
+Install OS locally | [Install locally](/get-started/install-local) | [Connect agents](/get-started/connect-agents)
+Explain the agent surface | [OS portal](/os/concepts/portal) | [Skills](/os/concepts/skills)
+Understand outputs | [Files and artifacts](/os/concepts/files-and-artifacts) | [Observability](/os/concepts/observability)
+Design safe actions | [Approvals](/os/concepts/approvals) | [Integrations and capabilities](/os/concepts/integrations-and-capabilities)
+Understand data access | [Data model and GraphQL](/os/concepts/data-model-and-graphql) | [Context and memory](/os/concepts/context-and-memory)
+
+## The core idea
+
+Most agents are useful but unsafe by default. They can reason, write, and decide, but they do not know which company systems they may touch, which context is authoritative, which actions need approval, or where outputs should be stored.
+
+Consuelo OS adds that missing operating layer.
+
+```text
+agent
+  -> Consuelo OS portal
+    -> workspace context
+    -> approved skills
+    -> executable scripts
+    -> app-native artifacts
+    -> approval guardrails
+    -> execution logs
+```
+
+The agent brings intelligence. Consuelo OS brings the workspace boundary.
+
+## What Consuelo OS gives agents
+
+Capability | What it means
+--- | ---
+Context | The agent can understand the workspace, available skills, connected capabilities, and relevant company state.
+Skills | The agent can run approved workflows instead of improvising raw system actions.
+Scripts | Builders can implement skills as executable code without exposing every implementation detail to the agent.
+Artifacts | Generated outputs are tracked as app-native records, not random files.
+Approvals | High-impact actions pause for a human decision before continuing.
+Memory | Reusable context can be kept without making memory the source of truth for structured records.
+Observability | Each execution can be traced, debugged, and audited.
+
+## What Consuelo OS is not
+
+Consuelo OS is not a generic chat UI. It is not a dashboard. It is not a CRM clone. It is not a permission matrix product. It is not a random collection of scripts.
+
+The point is narrower and more useful: give agents a safe portal into the company so they can work with real context, use approved workflows, and leave a trace.
+
+## Local OS and cloud OS
+
+Consuelo OS can run locally or in the cloud.
+
+Local OS runs on a user machine. It is useful for solo operators, founders, internal builders, and anyone who wants their agent connected to local tools, files, and workspace context.
+
+Cloud OS is for teams. It uses hosted storage, shared access, app-native artifact records, managed workspace connections, and hosted observability.
+
+The product model stays the same in both modes: portal, skills, scripts, artifacts, approvals, and traceable executions.
+
+## Naming rules
+
+Use these terms consistently:
+
+- Say **OS**, not transport-layer implementation terms.
+- Say **portal**, not interface.
+- Say **skills**, not legacy workflow docs.
+- Say **scripts** only for executable implementation.
+- Say **capabilities**, not piles of environment variables.
+- Say **artifacts**, not loose files.
+- Say **approvals** or **guardrails**, not permission framework.
+
+## Related
+
+- [How Consuelo OS works](/os/how-it-works)
+- [Install locally](/get-started/install-local)
+- [OS portal](/os/concepts/portal)
+- [Skills](/os/concepts/skills)
+- [Files and artifacts](/os/concepts/files-and-artifacts)

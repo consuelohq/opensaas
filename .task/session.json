@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_4bf4a8a6706f",
-  "tmuxSession": "opensaas-os-plan-bun-runtime-switch-for-consuelo-os-4bf4a8a6",
+  "taskSession": "tsk_f6c92e275fe0",
+  "tmuxSession": "opensaas-os-replace-shallow-os-docs-with-real-docs-f6c92e27",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
-  "branch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
-  "prNumber": 419,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/419",
-  "createdAt": "2026-05-21T03:51:45.659Z",
+  "taskBranch": "task/os/replace-shallow-os-docs-with-real-docs",
+  "branch": "task/os/replace-shallow-os-docs-with-real-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-shallow-os-docs-with-real-docs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-shallow-os-docs-with-real-docs",
+  "prNumber": 423,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/423",
+  "createdAt": "2026-05-21T05:56:20.951Z",
   "tmuxCreated": true
 }
