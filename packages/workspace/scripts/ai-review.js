@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync, execFileSync } = require('child_process');
+const { findTaskMeta: findTaskMetaRecord, getTaskReviewsDir } = require('./lib/task-meta');
 
 const PI_PROXY_URL = 'http://127.0.0.1:11434/v1/chat/completions';
 const REVIEW_MODEL = 'google/gemma-4-31b-it';
@@ -58,13 +59,9 @@ function gitRoot() {
 }
 
 function detectPrNumber() {
-  const taskFile = path.join(process.cwd(), '.task', 'current.json');
-  if (!fs.existsSync(taskFile)) return null;
-  try {
-    const data = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
-    const m = (data.prUrl || '').match(/\/pull\/(\d+)/);
-    return m ? parseInt(m[1], 10) : null;
-  } catch { return null; }
+  const record = findTaskMetaRecord(process.cwd(), { currentBranch: run('git branch --show-current') });
+  const m = (record?.data?.prUrl || '').match(/\/pull\/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
 }
 
 function getDiff(prNumber) {
@@ -230,16 +227,9 @@ ${diff}
 }
 
 function writeReviewFile(root, prNumber, content) {
-  // write to .task/reviews/ if in a task worktree, otherwise /tmp
-  const taskDir = path.join(root, '.task', 'reviews');
+  const taskRecord = findTaskMetaRecord(root, { currentBranch: run('git branch --show-current', { cwd: root }) });
   const tmpDir = '/tmp';
-  let outDir;
-
-  if (fs.existsSync(path.join(root, '.task'))) {
-    outDir = taskDir;
-  } else {
-    outDir = tmpDir;
-  }
+  const outDir = taskRecord?.data ? getTaskReviewsDir(taskRecord.dir, taskRecord.data) : tmpDir;
 
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `ai-${prNumber}.md`);

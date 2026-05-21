@@ -1,0 +1,458 @@
+{
+  "query": "addObjectMemberChunks symbolPath nodeType parentName",
+  "budget": 5,
+  "results": [
+    {
+      "path": "packages/workspace/scripts/lib/index/chunker.js",
+      "score": 1,
+      "belief_prior": 0.75,
+      "symbol": "addObjectMemberChunks",
+      "chunk_type": "function",
+      "file_outline": "contentHash getLines getNodeContent getNodeName withChunkMetadata createChunk createLineChunk splitLineRange splitLiteralContent splitOversizedChunk createChunksForNode createClassShellChunk getParserForPath addCoveredLines groupImportChunks getPropertyName joinSymbolPath isFunctionLikeNode getDeclaratorValue getFunctionDeclarators getObjectDeclarators addFunctionDeclaratorChunks addObjectMemberChunks addObjectDeclaratorChunks getCallName getFirstStringArgument addTestCallChunk addClassChunks addDeclarationChunks addTopLevelNodeChunks chunkTreeSitterFile chunkMarkdown chunkJson chunkFile",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/index/embedder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/indexer.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/embedder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/indexer.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/store.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 19463,
+      "chunk_count": 36,
+      "last_modified": 1777427306,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": "read",
+      "information_value": 0.7,
+      "reason": "semantic match: function addObjectMemberChunks",
+      "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/index/embedder.js",
+        "packages/workspace/scripts/lib/index/graph-builder.js",
+        "packages/workspace/scripts/lib/index/indexer.js",
+        "packages/workspace/scripts/lib/index/store.js"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 348,
+        "end": 385
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/index/chunker.js:function:addObjectMemberChunks:348-385",
+        "path": "packages/workspace/scripts/lib/index/chunker.js",
+        "kind": "function",
+        "name": "addObjectMemberChunks",
+        "symbol_path": "addObjectMemberChunks",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 348,
+          "end": 385
+        },
+        "content_hash": "3b412d911a3094d054733e8869604597546539537755e31ad461678ec6ee99a0",
+        "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {"
+      },
+      "score_parts": {
+        "boost": 1.37,
+        "embeddingSimilarity": 0.8705638744792026,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.07,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.5,
+        "nameMatch": 0,
+        "rawScore": 1.1926725080365077,
+        "weightedEdges": 2.1
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/index/store.js",
+      "score": 1,
+      "belief_prior": 0.7144,
+      "symbol": "createStore part 3",
+      "chunk_type": "function",
+      "file_outline": "normalizePath sha256 getRepoIdentifier getRepoHash getCacheRoot vectorToBuffer bufferToVector createStore part 1 createStore part 1 createStore part 2 createStore part 2 createStore part 3 createStore part 3 createStore part 4",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/index/chunker.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/embedder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 18590,
+      "chunk_count": 16,
+      "last_modified": 1778657750,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": "read",
+      "information_value": 0.7426,
+      "reason": "semantic match: function createStore part 3",
+      "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/index/chunker.js",
+        "packages/workspace/scripts/lib/index/embedder.js",
+        "packages/workspace/scripts/lib/index/graph-builder.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 340,
+        "end": 442
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/index/store.js:function:createStore part 3:340-442",
+        "path": "packages/workspace/scripts/lib/index/store.js",
+        "kind": "function",
+        "name": "createStore part 3",
+        "symbol_path": "createStore part 3",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 340,
+          "end": 442
+        },
+        "content_hash": "ce8c53d516f4d7b353079f383d4d5fa965bf6d2d012808f5aca4f07629f6cc0e",
+        "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type"
+      },
+      "score_parts": {
+        "boost": 1.4520000000000002,
+        "embeddingSimilarity": 0.7563515857345342,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 0,
+        "rawScore": 1.0982225024865437,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/explore.js",
+      "score": 1,
+      "belief_prior": 0.7109,
+      "symbol": "targetKey",
+      "chunk_type": "function",
+      "file_outline": "writeStdout writeStderr printHelp parseArgs getPackage hasTestEdge isTestPath computeInformationValue targetKey buildTarget buildEvidenceStateMap toJsonResult printHuman main",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 10723,
+      "chunk_count": 16,
+      "last_modified": 1778657750,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": "read",
+      "information_value": 0.7517,
+      "reason": "semantic match: function targetKey",
+      "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 112,
+        "end": 118
+      },
+      "target": {
+        "key": "packages/workspace/scripts/explore.js:function:targetKey:112-118",
+        "path": "packages/workspace/scripts/explore.js",
+        "kind": "function",
+        "name": "targetKey",
+        "symbol_path": "targetKey",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 112,
+          "end": 118
+        },
+        "content_hash": "8f13a9b9a62d3813075c34fbe87f3d7cee24bfacfba025f5a76f4c7f96035536",
+        "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';"
+      },
+      "score_parts": {
+        "boost": 1.4520000000000002,
+        "embeddingSimilarity": 0.7500823668336665,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 0,
+        "rawScore": 1.0891195966424838,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/search/retriever.js",
+      "score": 1,
+      "belief_prior": 0.7094,
+      "symbol": "attachCandidateMetadata",
+      "chunk_type": "function",
+      "file_outline": "distanceToSimilarity buildRecencyLookup toPreview buildBestChunk applyBestChunk mergeSearchRows getChunkTypePriority shouldReplaceBestChunk expandGraph hydrateGraphCandidates attachCandidateMetadata tokenizeQuery pathMatchesQuery getClusterConnectedPaths scoreCandidates retrieve",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/search/ranker.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/search/ranker.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 12270,
+      "chunk_count": 18,
+      "last_modified": 1778657750,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": "read",
+      "information_value": 0.6393,
+      "reason": "semantic match: function attachCandidateMetadata",
+      "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/search/ranker.js"
+      ],
+      "graph_connection_count": 1,
+      "lines": {
+        "start": 214,
+        "end": 261
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/search/retriever.js:function:attachCandidateMetadata:214-261",
+        "path": "packages/workspace/scripts/lib/search/retriever.js",
+        "kind": "function",
+        "name": "attachCandidateMetadata",
+        "symbol_path": "attachCandidateMetadata",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 214,
+          "end": 261
+        },
+        "content_hash": "567342ab490c26484c10c38fc2a7d580125ce5e4cc0630bc6a6cd9a4c410a569",
+        "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;"
+      },
+      "score_parts": {
+        "boost": 1.4520000000000002,
+        "embeddingSimilarity": 0.7472585197629904,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.02,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 0,
+        "rawScore": 1.0850193706958622,
+        "weightedEdges": 0.6
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/index/embedder.js",
+      "score": 0.814,
+      "belief_prior": 0.6071,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": "getApiKey getErrorMessage normalizeVector truncateVector getEmbeddingContextCount createEmbeddingContexts getEmbeddingContext embedText embedTextApi embedTextLocal",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/index/chunker.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/chunker.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/indexer.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/indexer.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/index/store.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 5899,
+      "chunk_count": 13,
+      "last_modified": 1777473794,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.1001,
+      "reason": "semantic match: block chunk",
+      "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/index/chunker.js",
+        "packages/workspace/scripts/lib/index/graph-builder.js",
+        "packages/workspace/scripts/lib/index/indexer.js",
+        "packages/workspace/scripts/lib/index/store.js"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 1,
+        "end": 16
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/index/embedder.js:block:anonymous:1-16",
+        "path": "packages/workspace/scripts/lib/index/embedder.js",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 16
+        },
+        "content_hash": "e39564053df59a4e56bcdcf9cfd00969ea7d959d7e89b99d3493e66bdefa436f",
+        "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');"
+      },
+      "score_parts": {
+        "boost": 1.1,
+        "embeddingSimilarity": 0.7399792933073222,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.07,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 0.5,
+        "nameMatch": 0,
+        "rawScore": 0.8139772226380544,
+        "weightedEdges": 2.1
+      }
+    }
+  ],
+  "index_stats": {
+    "total_files": 14567,
+    "total_chunks": 59873,
+    "last_indexed": "2026-05-13T08:14:34.212Z",
+    "last_full_index": "2026-04-29T01:40:26.658Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+    "files_indexed": 0,
+    "chunks_embedded": 1
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/lib/index/chunker.js": {
+      "prior": 0.75,
+      "posterior": 0.75,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/index/store.js": {
+      "prior": 0.7144,
+      "posterior": 0.7144,
+      "observations": []
+    },
+    "packages/workspace/scripts/explore.js": {
+      "prior": 0.7109,
+      "posterior": 0.7109,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/search/retriever.js": {
+      "prior": 0.7094,
+      "posterior": 0.7095,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/index/embedder.js": {
+      "prior": 0.6071,
+      "posterior": 0.6071,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+  "mode": "exploring",
+  "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+  "updated_at": "2026-05-13T08:15:36.834Z"
+}

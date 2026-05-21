@@ -33,7 +33,7 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
-const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { getTaskWorkpadPath, readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 
@@ -466,17 +466,17 @@ async function main() {
       worktreePath,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
-      sessionPath: path.join(worktreePath, '.task', 'session.json'),
+      sessionPath: taskSessionMeta.sessionPath,
       createdAt: new Date().toISOString(),
     };
 
     writeTaskMeta(worktreePath, taskMeta);
 
-    // guard 2: verify .task/current.json was written correctly
+    // guard 2: verify task metadata was written correctly
     const verifyMeta = readTaskMeta(worktreePath);
     if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
       throw new Error(
-        `.task/current.json verification failed in ${worktreePath}.\n` +
+        `task metadata verification failed in ${worktreePath}.\n` +
         'the file was not written correctly. check disk permissions.',
       );
     }
@@ -484,7 +484,7 @@ async function main() {
     await saveTaskMetaMemory(taskMeta);
 
     // create fresh workpad — always overwrite, never reuse from previous task
-    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+    const workpadPath = getTaskWorkpadPath(worktreePath, taskMeta);
     const workpad = [
       `# ${args.title}`,
       '',

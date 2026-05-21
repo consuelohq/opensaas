@@ -878,10 +878,10 @@ async function main() {
 
     // kick off ai review in tmux background if a PR exists
     try {
-      const taskFile = path.join(root, '.task', 'current.json');
-      if (fs.existsSync(taskFile)) {
-        const taskData = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
-        const prMatch = (taskData.prUrl || '').match(/\/pull\/(\d+)/);
+      const { findTaskMeta: findTaskMetaRecord } = require('./lib/task-meta');
+      const taskRecord = findTaskMetaRecord(root, { currentBranch: branch });
+      if (taskRecord?.data) {
+        const prMatch = (taskRecord.data.prUrl || '').match(/\/pull\/(\d+)/);
         if (prMatch) {
           const prNum = prMatch[1];
           const aiScript = path.join(root, 'packages/workspace/scripts/ai-review.js');

@@ -377,8 +377,7 @@ async function main() {
       commandVersion: 1,
     };
 
-    writeVerifyStamp(repoRoot, stamp);
-    stampPath = path.join(repoRoot, '.task', 'verify.json');
+    stampPath = writeVerifyStamp(repoRoot, stamp);
   }
 
   const result = {

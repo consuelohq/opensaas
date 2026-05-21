@@ -32,7 +32,7 @@ const {
   assertTaskBranchName,
   isStreamBranchName,
 } = require('./lib/validation');
-const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
+const { collectTaskMetaFiles, findTaskMeta, getTaskCurrentMetaPath, getTaskWorkpadPath, validateBranchMatch } = require('./lib/task-meta');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
 
@@ -178,7 +178,7 @@ function getSelectedTaskContext(args, startDirectory) {
     taskMeta: {
       dir: selected.task.worktreePath,
       data: selected.task.meta,
-      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+      path: getTaskCurrentMetaPath(selected.task.worktreePath, selected.task.meta),
     },
   };
 }
@@ -403,7 +403,7 @@ async function main() {
   const userFiles = resolveFiles(args, repoRoot);
 
   // update workpad "files changed" section with the actual files being pushed
-  const workpadPath = path.join(repoRoot, '.task', 'workpad.md');
+  const workpadPath = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadPath)) {
     const nonMetaFiles = userFiles.filter((f) => !f.path.startsWith('.task/'));
     if (nonMetaFiles.length > 0) {
@@ -501,7 +501,7 @@ async function main() {
   });
 
   // save workpad to supabase memories for future agent context
-  const workpadFile = path.join(repoRoot, '.task', 'workpad.md');
+  const workpadFile = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadFile)) {
     try {
       const dotenvPath = path.join(__dirname, '..', '..', '.env');

@@ -37,6 +37,7 @@ const {
 } = require('./lib/validation');
 const {
   findTaskMeta,
+  getTaskCurrentMetaPath,
   isOnlyTaskMetadataConflict,
   resolveTaskMetadataConflicts,
   validateBranchMatch,
@@ -263,7 +264,7 @@ function getSelectedPrContext(args) {
     taskMeta: {
       dir: selected.task.worktreePath,
       data: selected.task.meta,
-      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+      path: getTaskCurrentMetaPath(selected.task.worktreePath, selected.task.meta),
     },
   };
 }

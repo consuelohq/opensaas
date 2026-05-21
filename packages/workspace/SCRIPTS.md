@@ -83,7 +83,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 
 the verify → push dependency:
 ```text
-verify ✓ → writes .task/verify.json stamp → task:push reads stamp → push succeeds
+verify ✓ → writes .task/<area>/<slug>/verify.json stamp → task:push reads stamp → push succeeds
 no verify → no stamp → task:push rejects (unless --no-verify)
 ```
 
@@ -93,17 +93,17 @@ always use this flow even if the change seems tiny. when in doubt, start from th
 
 ## things to remember
 
-**stale .task/current.json is the #1 cause of script failures.** branch-aware task scripts now ignore metadata when `taskBranch` does not match the actual worktree branch. if `task:pr`, `task:finish`, `task:push`, or `task:prs` still need explicit repair, fix the known worktree only:
+**stale root task metadata is the #1 cause of script failures.** task metadata is now task-scoped under `.task/<area>/<slug>/`. branch-aware task scripts still read legacy root `.task/current.json` only as a compatibility fallback when `taskBranch` matches the actual worktree branch. if `task:pr`, `task:finish`, `task:push`, or `task:prs` still need explicit repair, fix the known worktree only:
 
 ```bash
 bun run task:init -- --area <area> --branch <branch> --pr <N>
 ```
 
-do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
+do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/<area>/<slug>/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
 **never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
 
-**when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
+**when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/<area>/<slug>/current.json`, `.task/<area>/<slug>/workpad.md`, or legacy root `.task/current.json` / `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
 **after any write or patch, verify immediately:**
 ```bash
@@ -131,7 +131,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
 | "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
-| task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
+| task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --branch <task-branch> read .task/<area>/<slug>/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
 
@@ -277,7 +277,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 - `write --append` is exact — include `\n` yourself
 - `patch --from N --to N` replaces line N. always read the range first
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
-- write and patch log touched files to `.task/workpad.md`
+- write and patch log touched files to `.task/<area>/<slug>/workpad.md`
 - after any write or patch, immediately verify: read the changed range, `node --check`, `git status`
 
 ---
@@ -297,16 +297,16 @@ bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --t
 
 **common task:fs patterns**
 ```bash
-bun run task:fs -- --area dialer read .task/workpad.md          # acceptance criteria, progress
-bun run task:fs -- --area dialer read .task/current.json        # task metadata
-bun run task:fs -- --area dialer list .task/                    # task directory
+bun run task:fs -- --branch task/dialer/fix-thing read .task/dialer/fix-thing/workpad.md          # acceptance criteria, progress
+bun run task:fs -- --branch task/dialer/fix-thing read .task/dialer/fix-thing/current.json        # task metadata
+bun run task:fs -- --branch task/dialer/fix-thing list .task/dialer/fix-thing/                    # task directory
 bun run task:fs -- --area dialer search "transferCall" packages/dialer/src/
-bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed the thing"
+bun run task:fs -- --branch task/dialer/fix-thing write .task/dialer/fix-thing/workpad.md --append "\n- [x] fixed the thing"
 ```
 
-task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch <task-branch>` or `--pr <number>`.
+task:fs only considers active worktrees whose task-scoped `.task/<area>/<slug>/current.json.taskBranch` matches the actual git worktree branch. stale legacy root metadata and stream sync scratch worktrees are ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch <task-branch>` or `--pr <number>`.
 
-successful `task:fs read <file>` calls also append a `file.read` event to `.task/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
+successful `task:fs read <file>` calls also append a `file.read` event to `.task/<area>/<slug>/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
 
 **task:fs failure modes**
 ```bash
@@ -389,9 +389,9 @@ bad: review fails on a file you didn't touch
 
 ### verify — full task safety gate
 
-runs `bun run review` + db/migration/graphql guardrails. writes `.task/verify.json` stamp on success. `task:push` requires this stamp by default.
+runs `bun run review` + db/migration/graphql guardrails. writes `.task/<area>/<slug>/verify.json` stamp on success. `task:push` requires this stamp by default.
 
-When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
+When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
 ```bash
 bun run verify                        # full verify (review + db guards + stamp)
@@ -418,7 +418,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/<area>/<slug>/explore-state.json` beliefs; embeddings are the prior, not proof.
 
 `packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
 
@@ -446,11 +446,11 @@ bad: embedding model not found
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/<area>/<slug>/explore-state.json` plus `.task/<area>/<slug>/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next
-bun run decide-next -- --context .task/workpad.md
+bun run decide-next -- --context .task/<area>/<slug>/workpad.md
 bun run decide-next -- --mark-read packages/dialer/src/queue.ts
 bun run decide-next -- --mark-relevant packages/dialer/src/dialer.ts
 bun run decide-next -- --mark-irrelevant packages/dialer/src/types.ts
@@ -551,8 +551,8 @@ bad: bun run task:start
 
 bad: bun run task:start -- --area dialer --title "fix thing"
  → error: worktree already exists at <worktree-root>/task-dialer-fix-thing
- (check if the old task is still needed: bun run task:fs -- --branch task/dialer/fix-thing read .task/current.json
-  if not needed: bun run task:finish or bun run task:cleanup -- --preview first)
+ (check task metadata with: bun run task:fs -- --branch task/dialer/fix-thing read .task/dialer/fix-thing/current.json
+  then run task:finish or task:cleanup when the old task is no longer active)
 ```
 
 ---
@@ -572,8 +572,8 @@ bun run task:pr -- --json
 
 **task:pr failure modes**
 ```bash
-bad: bun run task:pr (with stale .task/current.json)
- → error: .task/current.json belongs to branch X, but current branch is main
+bad: bun run task:pr (with stale root task metadata)
+ → error: task metadata belongs to branch X, but current branch is main
  (fix the metadata: bun run task:init -- --area <area> --branch <branch> --pr <N>)
 ```
 
@@ -610,16 +610,16 @@ bun run task:finish -- --pr 213 --json
 
 **task:finish failure modes**
 ```bash
-bad: bun run task:finish (with stale .task/current.json)
+bad: bun run task:finish (with stale root task metadata)
  → runs against stale metadata. may report "finished" for an old task.
  (fix the metadata first: bun run task:init -- --area <area> --branch <branch> --pr <N>)
 ```
 
 ---
 
-### task:init — fix stale or missing .task/current.json
+### task:init — fix stale or missing task metadata
 
-writes a fresh `.task/current.json` for an existing worktree. does NOT create branches or worktrees — use `task:start` for that. use this when metadata is stale, wrong, or missing.
+writes a fresh `.task/<area>/<slug>/current.json` for an existing worktree. does NOT create branches or worktrees — use `task:start` for that. use this when metadata is stale, wrong, or missing.
 
 ```bash
 bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173
@@ -641,7 +641,7 @@ bun run task:cleanup -- --force       # force removal
 bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 ```
 
-when cleanup removes a task worktree, it reads `.task/session.json` and `.task/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
+when cleanup removes a task worktree, it reads `.task/<area>/<slug>/session.json` and `.task/<area>/<slug>/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
 
 ---
 
@@ -685,11 +685,11 @@ bun run stream:context -- --json
 
 ### pr-review — fetch all review comments from a PR
 
-pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans. writes a structured file to `.task/reviews/<pr>.md` with file attention map, action items, and task loop reminder.
+pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans. writes a structured file to `.task/<area>/<slug>/reviews/<pr>.md` with file attention map, action items, and task loop reminder.
 
 ```bash
 bun run pr-review -- 173              # fetch reviews for PR #173
-bun run pr-review                     # auto-detect PR from .task/current.json
+bun run pr-review                     # auto-detect PR from task-scoped current.json
 bun run pr-review -- 173 --stdout     # print to stdout instead of file
 bun run pr-review -- 173 --json
 ```
@@ -721,7 +721,7 @@ bun run ai-review -- 173 --no-post --json
 
 ### gh — common github commands
 
-wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. all commands auto-detect PR from `.task/current.json` when no PR number given.
+wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. all commands auto-detect PR from task-scoped current metadata when no PR number is given.
 
 ```bash
 bun run gh -- prs                     # list open PRs
@@ -1271,7 +1271,7 @@ bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
 
 ### stream conflicts
 
-when resolving stream merge conflicts, stop and ask ko unless every conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are resolved by choosing the metadata for the current stream/task when possible, then the newest valid task metadata. the matching workpad follows the selected task branch. code/docs conflicts still need human judgment.
+when resolving stream merge conflicts, stop and ask ko unless every conflict is in metadata files (`.task/<area>/<slug>/current.json`, `.task/<area>/<slug>/workpad.md`, or legacy root `.task/current.json` / `.task/workpad.md`). metadata-only conflicts are resolved by choosing the metadata for the current stream/task when possible, then the newest valid task metadata. the matching workpad follows the selected task branch. code/docs conflicts still need human judgment.
 
 ### task metadata smoke check
 

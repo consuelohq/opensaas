@@ -157,6 +157,9 @@ async function executeWithIsolate(
     await context.eval(`const console = { log: (...args) => __console_log(...args), warn: (...args) => __console_warn(...args), error: (...args) => __console_error(...args) };\n${wrappers}`);
     const catchKeyword = 'cat' + 'ch';
     const result = await context.eval(`(async () => {\ntry {\n${code}\n} ${catchKeyword} (error) {\nreturn { __codeRunThrown: error instanceof Error ? error.message : String(error) };\n}\n})()`, { timeout: cfg.timeout, promise: true, copy: true });
+    if (typeof result === 'object' && result !== null && '__codeRunThrown' in result) {
+      return { success: false, result: String((result as { __codeRunThrown: unknown }).__codeRunThrown), console: consoleOutput, duration: Date.now() - start, operations };
+    }
     return { success: true, result, console: consoleOutput, duration: Date.now() - start, operations };
   } catch (error: unknown) {
     return { success: false, result: formatError(error), console: consoleOutput, duration: Date.now() - start, operations };
