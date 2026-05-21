@@ -1,15 +1,8 @@
 {
   "files": [
-    ".task/code-run-smoke.txt",
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/STEERING.md",
     "packages/workspace/package.json",
-    "packages/workspace/scripts/fs.js",
-    "packages/workspace/scripts/lib/codemode/executor.ts",
-    "packages/workspace/scripts/lib/facade/executor.ts",
-    "packages/workspace/scripts/lib/facade/types.ts",
-    "packages/workspace/scripts/lib/state/evidence-log.js",
-    "packages/workspace/scripts/lib/state/explore-state.js"
+    "packages/workspace/scripts/lib/codemode/executor.ts"
   ],
-  "updatedAt": "2026-05-21T19:13:58.347Z"
+  "updatedAt": "2026-05-21T19:09:04.430Z"
 }
