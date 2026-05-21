@@ -30,6 +30,10 @@ type StartParallelBatchResult =
     }
   | { status: 'failed'; responseStatus?: number };
 
+type StartParallelBatchOptions = {
+  queueId?: string;
+};
+
 const toParallelCallStatus = (status: string): ParallelCall['status'] => {
   if (
     status === 'dialing' ||
@@ -69,8 +73,10 @@ export const useParallelDialer = () => {
     );
   }, [setActiveQueue]);
 
-  const startParallelBatch =
-    useCallback(async (): Promise<StartParallelBatchResult> => {
+  const startParallelBatch = useCallback(
+    async (
+      options: StartParallelBatchOptions = {},
+    ): Promise<StartParallelBatchResult> => {
       if (!activeQueue?.parallelDialingEnabled) {
         return { status: 'skipped', reason: 'disabled' };
       }
@@ -83,7 +89,8 @@ export const useParallelDialer = () => {
         (item) => item.status === 'pending' || item.status === 'calling',
       );
 
-      const runtimeQueueId = pendingItems[0]?.queueId ?? activeQueue.id;
+      const runtimeQueueId =
+        options.queueId ?? pendingItems[0]?.queueId ?? activeQueue.id;
 
       if (pendingItems.length === 0) {
         return { status: 'skipped', reason: 'insufficient-dialable-items' };
@@ -165,7 +172,8 @@ export const useParallelDialer = () => {
 
         return { status: 'failed' };
       }
-    }, [
+    },
+    [
       activeQueue,
       clearParallelState,
       currentQueueIndex,
@@ -174,7 +182,8 @@ export const useParallelDialer = () => {
       setActiveQueue,
       setQueueItems,
       startDialerCall,
-    ]);
+    ],
+  );
 
   const cancelParallelDial = useCallback(async () => {
     const groupId = activeQueue?.parallelGroupId;
