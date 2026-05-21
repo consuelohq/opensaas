@@ -420,32 +420,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "os/agent-interface/get-steering",
-                  "os/agent-interface/get-dev-steering",
-                  "os/agent-interface/call",
-                  "os/agent-interface/steering-files",
-                  "os/agent-interface/tool-manifest",
-                  "os/agent-interface/permissions"
+                  "os/portal/get-steering",
+                  "os/portal/get-dev-steering",
+                  "os/portal/call",
+                  "os/portal/steering-files",
+                  "os/portal/tool-manifest",
+                  "os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "os/runbooks/overview",
-                  "os/runbooks/daily-revenue-brief",
-                  "os/runbooks/lead-prioritizer",
-                  "os/runbooks/post-call-analysis",
-                  "os/runbooks/sales-coaching",
-                  "os/runbooks/follow-up-generator",
-                  "os/runbooks/landing-page-builder",
-                  "os/runbooks/meta-ads-review",
-                  "os/runbooks/google-ads-review",
-                  "os/runbooks/campaign-brief",
-                  "os/runbooks/weekly-manager-report"
+                  "os/skills/overview",
+                  "os/skills/daily-revenue-brief",
+                  "os/skills/lead-prioritizer",
+                  "os/skills/post-call-analysis",
+                  "os/skills/sales-coaching",
+                  "os/skills/follow-up-generator",
+                  "os/skills/landing-page-builder",
+                  "os/skills/meta-ads-review",
+                  "os/skills/google-ads-review",
+                  "os/skills/campaign-brief",
+                  "os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -457,7 +457,7 @@
                   "os/workspace-filesystem/s3-files-production-target",
                   "os/workspace-filesystem/artifacts",
                   "os/workspace-filesystem/reports",
-                  "os/workspace-filesystem/runbook-outputs"
+                  "os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -477,9 +477,9 @@
                 "pages": [
                   "os/runtime/bun-runtime",
                   "os/runtime/sandbox-executor",
-                  "os/runtime/package-scripts-vs-mcp-tools",
+                  "os/runtime/package-scripts-vs-os-portal",
                   "os/runtime/operator-scripts",
-                  "os/runtime/scheduled-runbooks"
+                  "os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -1073,32 +1073,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/fr/os/agent-interface/get-steering",
-                  "l/fr/os/agent-interface/get-dev-steering",
-                  "l/fr/os/agent-interface/call",
-                  "l/fr/os/agent-interface/steering-files",
-                  "l/fr/os/agent-interface/tool-manifest",
-                  "l/fr/os/agent-interface/permissions"
+                  "l/fr/os/portal/get-steering",
+                  "l/fr/os/portal/get-dev-steering",
+                  "l/fr/os/portal/call",
+                  "l/fr/os/portal/steering-files",
+                  "l/fr/os/portal/tool-manifest",
+                  "l/fr/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/fr/os/runbooks/overview",
-                  "l/fr/os/runbooks/daily-revenue-brief",
-                  "l/fr/os/runbooks/lead-prioritizer",
-                  "l/fr/os/runbooks/post-call-analysis",
-                  "l/fr/os/runbooks/sales-coaching",
-                  "l/fr/os/runbooks/follow-up-generator",
-                  "l/fr/os/runbooks/landing-page-builder",
-                  "l/fr/os/runbooks/meta-ads-review",
-                  "l/fr/os/runbooks/google-ads-review",
-                  "l/fr/os/runbooks/campaign-brief",
-                  "l/fr/os/runbooks/weekly-manager-report"
+                  "l/fr/os/skills/overview",
+                  "l/fr/os/skills/daily-revenue-brief",
+                  "l/fr/os/skills/lead-prioritizer",
+                  "l/fr/os/skills/post-call-analysis",
+                  "l/fr/os/skills/sales-coaching",
+                  "l/fr/os/skills/follow-up-generator",
+                  "l/fr/os/skills/landing-page-builder",
+                  "l/fr/os/skills/meta-ads-review",
+                  "l/fr/os/skills/google-ads-review",
+                  "l/fr/os/skills/campaign-brief",
+                  "l/fr/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -1110,7 +1110,7 @@
                   "l/fr/os/workspace-filesystem/s3-files-production-target",
                   "l/fr/os/workspace-filesystem/artifacts",
                   "l/fr/os/workspace-filesystem/reports",
-                  "l/fr/os/workspace-filesystem/runbook-outputs"
+                  "l/fr/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -1130,9 +1130,9 @@
                 "pages": [
                   "l/fr/os/runtime/bun-runtime",
                   "l/fr/os/runtime/sandbox-executor",
-                  "l/fr/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/fr/os/runtime/package-scripts-vs-os-portal",
                   "l/fr/os/runtime/operator-scripts",
-                  "l/fr/os/runtime/scheduled-runbooks"
+                  "l/fr/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -1726,32 +1726,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/ar/os/agent-interface/get-steering",
-                  "l/ar/os/agent-interface/get-dev-steering",
-                  "l/ar/os/agent-interface/call",
-                  "l/ar/os/agent-interface/steering-files",
-                  "l/ar/os/agent-interface/tool-manifest",
-                  "l/ar/os/agent-interface/permissions"
+                  "l/ar/os/portal/get-steering",
+                  "l/ar/os/portal/get-dev-steering",
+                  "l/ar/os/portal/call",
+                  "l/ar/os/portal/steering-files",
+                  "l/ar/os/portal/tool-manifest",
+                  "l/ar/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/ar/os/runbooks/overview",
-                  "l/ar/os/runbooks/daily-revenue-brief",
-                  "l/ar/os/runbooks/lead-prioritizer",
-                  "l/ar/os/runbooks/post-call-analysis",
-                  "l/ar/os/runbooks/sales-coaching",
-                  "l/ar/os/runbooks/follow-up-generator",
-                  "l/ar/os/runbooks/landing-page-builder",
-                  "l/ar/os/runbooks/meta-ads-review",
-                  "l/ar/os/runbooks/google-ads-review",
-                  "l/ar/os/runbooks/campaign-brief",
-                  "l/ar/os/runbooks/weekly-manager-report"
+                  "l/ar/os/skills/overview",
+                  "l/ar/os/skills/daily-revenue-brief",
+                  "l/ar/os/skills/lead-prioritizer",
+                  "l/ar/os/skills/post-call-analysis",
+                  "l/ar/os/skills/sales-coaching",
+                  "l/ar/os/skills/follow-up-generator",
+                  "l/ar/os/skills/landing-page-builder",
+                  "l/ar/os/skills/meta-ads-review",
+                  "l/ar/os/skills/google-ads-review",
+                  "l/ar/os/skills/campaign-brief",
+                  "l/ar/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -1763,7 +1763,7 @@
                   "l/ar/os/workspace-filesystem/s3-files-production-target",
                   "l/ar/os/workspace-filesystem/artifacts",
                   "l/ar/os/workspace-filesystem/reports",
-                  "l/ar/os/workspace-filesystem/runbook-outputs"
+                  "l/ar/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -1783,9 +1783,9 @@
                 "pages": [
                   "l/ar/os/runtime/bun-runtime",
                   "l/ar/os/runtime/sandbox-executor",
-                  "l/ar/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ar/os/runtime/package-scripts-vs-os-portal",
                   "l/ar/os/runtime/operator-scripts",
-                  "l/ar/os/runtime/scheduled-runbooks"
+                  "l/ar/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -2379,32 +2379,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/cs/os/agent-interface/get-steering",
-                  "l/cs/os/agent-interface/get-dev-steering",
-                  "l/cs/os/agent-interface/call",
-                  "l/cs/os/agent-interface/steering-files",
-                  "l/cs/os/agent-interface/tool-manifest",
-                  "l/cs/os/agent-interface/permissions"
+                  "l/cs/os/portal/get-steering",
+                  "l/cs/os/portal/get-dev-steering",
+                  "l/cs/os/portal/call",
+                  "l/cs/os/portal/steering-files",
+                  "l/cs/os/portal/tool-manifest",
+                  "l/cs/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/cs/os/runbooks/overview",
-                  "l/cs/os/runbooks/daily-revenue-brief",
-                  "l/cs/os/runbooks/lead-prioritizer",
-                  "l/cs/os/runbooks/post-call-analysis",
-                  "l/cs/os/runbooks/sales-coaching",
-                  "l/cs/os/runbooks/follow-up-generator",
-                  "l/cs/os/runbooks/landing-page-builder",
-                  "l/cs/os/runbooks/meta-ads-review",
-                  "l/cs/os/runbooks/google-ads-review",
-                  "l/cs/os/runbooks/campaign-brief",
-                  "l/cs/os/runbooks/weekly-manager-report"
+                  "l/cs/os/skills/overview",
+                  "l/cs/os/skills/daily-revenue-brief",
+                  "l/cs/os/skills/lead-prioritizer",
+                  "l/cs/os/skills/post-call-analysis",
+                  "l/cs/os/skills/sales-coaching",
+                  "l/cs/os/skills/follow-up-generator",
+                  "l/cs/os/skills/landing-page-builder",
+                  "l/cs/os/skills/meta-ads-review",
+                  "l/cs/os/skills/google-ads-review",
+                  "l/cs/os/skills/campaign-brief",
+                  "l/cs/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -2416,7 +2416,7 @@
                   "l/cs/os/workspace-filesystem/s3-files-production-target",
                   "l/cs/os/workspace-filesystem/artifacts",
                   "l/cs/os/workspace-filesystem/reports",
-                  "l/cs/os/workspace-filesystem/runbook-outputs"
+                  "l/cs/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -2436,9 +2436,9 @@
                 "pages": [
                   "l/cs/os/runtime/bun-runtime",
                   "l/cs/os/runtime/sandbox-executor",
-                  "l/cs/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/cs/os/runtime/package-scripts-vs-os-portal",
                   "l/cs/os/runtime/operator-scripts",
-                  "l/cs/os/runtime/scheduled-runbooks"
+                  "l/cs/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -3032,32 +3032,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/de/os/agent-interface/get-steering",
-                  "l/de/os/agent-interface/get-dev-steering",
-                  "l/de/os/agent-interface/call",
-                  "l/de/os/agent-interface/steering-files",
-                  "l/de/os/agent-interface/tool-manifest",
-                  "l/de/os/agent-interface/permissions"
+                  "l/de/os/portal/get-steering",
+                  "l/de/os/portal/get-dev-steering",
+                  "l/de/os/portal/call",
+                  "l/de/os/portal/steering-files",
+                  "l/de/os/portal/tool-manifest",
+                  "l/de/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/de/os/runbooks/overview",
-                  "l/de/os/runbooks/daily-revenue-brief",
-                  "l/de/os/runbooks/lead-prioritizer",
-                  "l/de/os/runbooks/post-call-analysis",
-                  "l/de/os/runbooks/sales-coaching",
-                  "l/de/os/runbooks/follow-up-generator",
-                  "l/de/os/runbooks/landing-page-builder",
-                  "l/de/os/runbooks/meta-ads-review",
-                  "l/de/os/runbooks/google-ads-review",
-                  "l/de/os/runbooks/campaign-brief",
-                  "l/de/os/runbooks/weekly-manager-report"
+                  "l/de/os/skills/overview",
+                  "l/de/os/skills/daily-revenue-brief",
+                  "l/de/os/skills/lead-prioritizer",
+                  "l/de/os/skills/post-call-analysis",
+                  "l/de/os/skills/sales-coaching",
+                  "l/de/os/skills/follow-up-generator",
+                  "l/de/os/skills/landing-page-builder",
+                  "l/de/os/skills/meta-ads-review",
+                  "l/de/os/skills/google-ads-review",
+                  "l/de/os/skills/campaign-brief",
+                  "l/de/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -3069,7 +3069,7 @@
                   "l/de/os/workspace-filesystem/s3-files-production-target",
                   "l/de/os/workspace-filesystem/artifacts",
                   "l/de/os/workspace-filesystem/reports",
-                  "l/de/os/workspace-filesystem/runbook-outputs"
+                  "l/de/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -3089,9 +3089,9 @@
                 "pages": [
                   "l/de/os/runtime/bun-runtime",
                   "l/de/os/runtime/sandbox-executor",
-                  "l/de/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/de/os/runtime/package-scripts-vs-os-portal",
                   "l/de/os/runtime/operator-scripts",
-                  "l/de/os/runtime/scheduled-runbooks"
+                  "l/de/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -3685,32 +3685,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/es/os/agent-interface/get-steering",
-                  "l/es/os/agent-interface/get-dev-steering",
-                  "l/es/os/agent-interface/call",
-                  "l/es/os/agent-interface/steering-files",
-                  "l/es/os/agent-interface/tool-manifest",
-                  "l/es/os/agent-interface/permissions"
+                  "l/es/os/portal/get-steering",
+                  "l/es/os/portal/get-dev-steering",
+                  "l/es/os/portal/call",
+                  "l/es/os/portal/steering-files",
+                  "l/es/os/portal/tool-manifest",
+                  "l/es/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/es/os/runbooks/overview",
-                  "l/es/os/runbooks/daily-revenue-brief",
-                  "l/es/os/runbooks/lead-prioritizer",
-                  "l/es/os/runbooks/post-call-analysis",
-                  "l/es/os/runbooks/sales-coaching",
-                  "l/es/os/runbooks/follow-up-generator",
-                  "l/es/os/runbooks/landing-page-builder",
-                  "l/es/os/runbooks/meta-ads-review",
-                  "l/es/os/runbooks/google-ads-review",
-                  "l/es/os/runbooks/campaign-brief",
-                  "l/es/os/runbooks/weekly-manager-report"
+                  "l/es/os/skills/overview",
+                  "l/es/os/skills/daily-revenue-brief",
+                  "l/es/os/skills/lead-prioritizer",
+                  "l/es/os/skills/post-call-analysis",
+                  "l/es/os/skills/sales-coaching",
+                  "l/es/os/skills/follow-up-generator",
+                  "l/es/os/skills/landing-page-builder",
+                  "l/es/os/skills/meta-ads-review",
+                  "l/es/os/skills/google-ads-review",
+                  "l/es/os/skills/campaign-brief",
+                  "l/es/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -3722,7 +3722,7 @@
                   "l/es/os/workspace-filesystem/s3-files-production-target",
                   "l/es/os/workspace-filesystem/artifacts",
                   "l/es/os/workspace-filesystem/reports",
-                  "l/es/os/workspace-filesystem/runbook-outputs"
+                  "l/es/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -3742,9 +3742,9 @@
                 "pages": [
                   "l/es/os/runtime/bun-runtime",
                   "l/es/os/runtime/sandbox-executor",
-                  "l/es/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/es/os/runtime/package-scripts-vs-os-portal",
                   "l/es/os/runtime/operator-scripts",
-                  "l/es/os/runtime/scheduled-runbooks"
+                  "l/es/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -4338,32 +4338,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/it/os/agent-interface/get-steering",
-                  "l/it/os/agent-interface/get-dev-steering",
-                  "l/it/os/agent-interface/call",
-                  "l/it/os/agent-interface/steering-files",
-                  "l/it/os/agent-interface/tool-manifest",
-                  "l/it/os/agent-interface/permissions"
+                  "l/it/os/portal/get-steering",
+                  "l/it/os/portal/get-dev-steering",
+                  "l/it/os/portal/call",
+                  "l/it/os/portal/steering-files",
+                  "l/it/os/portal/tool-manifest",
+                  "l/it/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/it/os/runbooks/overview",
-                  "l/it/os/runbooks/daily-revenue-brief",
-                  "l/it/os/runbooks/lead-prioritizer",
-                  "l/it/os/runbooks/post-call-analysis",
-                  "l/it/os/runbooks/sales-coaching",
-                  "l/it/os/runbooks/follow-up-generator",
-                  "l/it/os/runbooks/landing-page-builder",
-                  "l/it/os/runbooks/meta-ads-review",
-                  "l/it/os/runbooks/google-ads-review",
-                  "l/it/os/runbooks/campaign-brief",
-                  "l/it/os/runbooks/weekly-manager-report"
+                  "l/it/os/skills/overview",
+                  "l/it/os/skills/daily-revenue-brief",
+                  "l/it/os/skills/lead-prioritizer",
+                  "l/it/os/skills/post-call-analysis",
+                  "l/it/os/skills/sales-coaching",
+                  "l/it/os/skills/follow-up-generator",
+                  "l/it/os/skills/landing-page-builder",
+                  "l/it/os/skills/meta-ads-review",
+                  "l/it/os/skills/google-ads-review",
+                  "l/it/os/skills/campaign-brief",
+                  "l/it/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -4375,7 +4375,7 @@
                   "l/it/os/workspace-filesystem/s3-files-production-target",
                   "l/it/os/workspace-filesystem/artifacts",
                   "l/it/os/workspace-filesystem/reports",
-                  "l/it/os/workspace-filesystem/runbook-outputs"
+                  "l/it/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -4395,9 +4395,9 @@
                 "pages": [
                   "l/it/os/runtime/bun-runtime",
                   "l/it/os/runtime/sandbox-executor",
-                  "l/it/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/it/os/runtime/package-scripts-vs-os-portal",
                   "l/it/os/runtime/operator-scripts",
-                  "l/it/os/runtime/scheduled-runbooks"
+                  "l/it/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -4991,32 +4991,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/ja/os/agent-interface/get-steering",
-                  "l/ja/os/agent-interface/get-dev-steering",
-                  "l/ja/os/agent-interface/call",
-                  "l/ja/os/agent-interface/steering-files",
-                  "l/ja/os/agent-interface/tool-manifest",
-                  "l/ja/os/agent-interface/permissions"
+                  "l/ja/os/portal/get-steering",
+                  "l/ja/os/portal/get-dev-steering",
+                  "l/ja/os/portal/call",
+                  "l/ja/os/portal/steering-files",
+                  "l/ja/os/portal/tool-manifest",
+                  "l/ja/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/ja/os/runbooks/overview",
-                  "l/ja/os/runbooks/daily-revenue-brief",
-                  "l/ja/os/runbooks/lead-prioritizer",
-                  "l/ja/os/runbooks/post-call-analysis",
-                  "l/ja/os/runbooks/sales-coaching",
-                  "l/ja/os/runbooks/follow-up-generator",
-                  "l/ja/os/runbooks/landing-page-builder",
-                  "l/ja/os/runbooks/meta-ads-review",
-                  "l/ja/os/runbooks/google-ads-review",
-                  "l/ja/os/runbooks/campaign-brief",
-                  "l/ja/os/runbooks/weekly-manager-report"
+                  "l/ja/os/skills/overview",
+                  "l/ja/os/skills/daily-revenue-brief",
+                  "l/ja/os/skills/lead-prioritizer",
+                  "l/ja/os/skills/post-call-analysis",
+                  "l/ja/os/skills/sales-coaching",
+                  "l/ja/os/skills/follow-up-generator",
+                  "l/ja/os/skills/landing-page-builder",
+                  "l/ja/os/skills/meta-ads-review",
+                  "l/ja/os/skills/google-ads-review",
+                  "l/ja/os/skills/campaign-brief",
+                  "l/ja/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -5028,7 +5028,7 @@
                   "l/ja/os/workspace-filesystem/s3-files-production-target",
                   "l/ja/os/workspace-filesystem/artifacts",
                   "l/ja/os/workspace-filesystem/reports",
-                  "l/ja/os/workspace-filesystem/runbook-outputs"
+                  "l/ja/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -5048,9 +5048,9 @@
                 "pages": [
                   "l/ja/os/runtime/bun-runtime",
                   "l/ja/os/runtime/sandbox-executor",
-                  "l/ja/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ja/os/runtime/package-scripts-vs-os-portal",
                   "l/ja/os/runtime/operator-scripts",
-                  "l/ja/os/runtime/scheduled-runbooks"
+                  "l/ja/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -5644,32 +5644,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/ko/os/agent-interface/get-steering",
-                  "l/ko/os/agent-interface/get-dev-steering",
-                  "l/ko/os/agent-interface/call",
-                  "l/ko/os/agent-interface/steering-files",
-                  "l/ko/os/agent-interface/tool-manifest",
-                  "l/ko/os/agent-interface/permissions"
+                  "l/ko/os/portal/get-steering",
+                  "l/ko/os/portal/get-dev-steering",
+                  "l/ko/os/portal/call",
+                  "l/ko/os/portal/steering-files",
+                  "l/ko/os/portal/tool-manifest",
+                  "l/ko/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/ko/os/runbooks/overview",
-                  "l/ko/os/runbooks/daily-revenue-brief",
-                  "l/ko/os/runbooks/lead-prioritizer",
-                  "l/ko/os/runbooks/post-call-analysis",
-                  "l/ko/os/runbooks/sales-coaching",
-                  "l/ko/os/runbooks/follow-up-generator",
-                  "l/ko/os/runbooks/landing-page-builder",
-                  "l/ko/os/runbooks/meta-ads-review",
-                  "l/ko/os/runbooks/google-ads-review",
-                  "l/ko/os/runbooks/campaign-brief",
-                  "l/ko/os/runbooks/weekly-manager-report"
+                  "l/ko/os/skills/overview",
+                  "l/ko/os/skills/daily-revenue-brief",
+                  "l/ko/os/skills/lead-prioritizer",
+                  "l/ko/os/skills/post-call-analysis",
+                  "l/ko/os/skills/sales-coaching",
+                  "l/ko/os/skills/follow-up-generator",
+                  "l/ko/os/skills/landing-page-builder",
+                  "l/ko/os/skills/meta-ads-review",
+                  "l/ko/os/skills/google-ads-review",
+                  "l/ko/os/skills/campaign-brief",
+                  "l/ko/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -5681,7 +5681,7 @@
                   "l/ko/os/workspace-filesystem/s3-files-production-target",
                   "l/ko/os/workspace-filesystem/artifacts",
                   "l/ko/os/workspace-filesystem/reports",
-                  "l/ko/os/workspace-filesystem/runbook-outputs"
+                  "l/ko/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -5701,9 +5701,9 @@
                 "pages": [
                   "l/ko/os/runtime/bun-runtime",
                   "l/ko/os/runtime/sandbox-executor",
-                  "l/ko/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ko/os/runtime/package-scripts-vs-os-portal",
                   "l/ko/os/runtime/operator-scripts",
-                  "l/ko/os/runtime/scheduled-runbooks"
+                  "l/ko/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -6297,32 +6297,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/pt/os/agent-interface/get-steering",
-                  "l/pt/os/agent-interface/get-dev-steering",
-                  "l/pt/os/agent-interface/call",
-                  "l/pt/os/agent-interface/steering-files",
-                  "l/pt/os/agent-interface/tool-manifest",
-                  "l/pt/os/agent-interface/permissions"
+                  "l/pt/os/portal/get-steering",
+                  "l/pt/os/portal/get-dev-steering",
+                  "l/pt/os/portal/call",
+                  "l/pt/os/portal/steering-files",
+                  "l/pt/os/portal/tool-manifest",
+                  "l/pt/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/pt/os/runbooks/overview",
-                  "l/pt/os/runbooks/daily-revenue-brief",
-                  "l/pt/os/runbooks/lead-prioritizer",
-                  "l/pt/os/runbooks/post-call-analysis",
-                  "l/pt/os/runbooks/sales-coaching",
-                  "l/pt/os/runbooks/follow-up-generator",
-                  "l/pt/os/runbooks/landing-page-builder",
-                  "l/pt/os/runbooks/meta-ads-review",
-                  "l/pt/os/runbooks/google-ads-review",
-                  "l/pt/os/runbooks/campaign-brief",
-                  "l/pt/os/runbooks/weekly-manager-report"
+                  "l/pt/os/skills/overview",
+                  "l/pt/os/skills/daily-revenue-brief",
+                  "l/pt/os/skills/lead-prioritizer",
+                  "l/pt/os/skills/post-call-analysis",
+                  "l/pt/os/skills/sales-coaching",
+                  "l/pt/os/skills/follow-up-generator",
+                  "l/pt/os/skills/landing-page-builder",
+                  "l/pt/os/skills/meta-ads-review",
+                  "l/pt/os/skills/google-ads-review",
+                  "l/pt/os/skills/campaign-brief",
+                  "l/pt/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -6334,7 +6334,7 @@
                   "l/pt/os/workspace-filesystem/s3-files-production-target",
                   "l/pt/os/workspace-filesystem/artifacts",
                   "l/pt/os/workspace-filesystem/reports",
-                  "l/pt/os/workspace-filesystem/runbook-outputs"
+                  "l/pt/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -6354,9 +6354,9 @@
                 "pages": [
                   "l/pt/os/runtime/bun-runtime",
                   "l/pt/os/runtime/sandbox-executor",
-                  "l/pt/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/pt/os/runtime/package-scripts-vs-os-portal",
                   "l/pt/os/runtime/operator-scripts",
-                  "l/pt/os/runtime/scheduled-runbooks"
+                  "l/pt/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -6950,32 +6950,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/ro/os/agent-interface/get-steering",
-                  "l/ro/os/agent-interface/get-dev-steering",
-                  "l/ro/os/agent-interface/call",
-                  "l/ro/os/agent-interface/steering-files",
-                  "l/ro/os/agent-interface/tool-manifest",
-                  "l/ro/os/agent-interface/permissions"
+                  "l/ro/os/portal/get-steering",
+                  "l/ro/os/portal/get-dev-steering",
+                  "l/ro/os/portal/call",
+                  "l/ro/os/portal/steering-files",
+                  "l/ro/os/portal/tool-manifest",
+                  "l/ro/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/ro/os/runbooks/overview",
-                  "l/ro/os/runbooks/daily-revenue-brief",
-                  "l/ro/os/runbooks/lead-prioritizer",
-                  "l/ro/os/runbooks/post-call-analysis",
-                  "l/ro/os/runbooks/sales-coaching",
-                  "l/ro/os/runbooks/follow-up-generator",
-                  "l/ro/os/runbooks/landing-page-builder",
-                  "l/ro/os/runbooks/meta-ads-review",
-                  "l/ro/os/runbooks/google-ads-review",
-                  "l/ro/os/runbooks/campaign-brief",
-                  "l/ro/os/runbooks/weekly-manager-report"
+                  "l/ro/os/skills/overview",
+                  "l/ro/os/skills/daily-revenue-brief",
+                  "l/ro/os/skills/lead-prioritizer",
+                  "l/ro/os/skills/post-call-analysis",
+                  "l/ro/os/skills/sales-coaching",
+                  "l/ro/os/skills/follow-up-generator",
+                  "l/ro/os/skills/landing-page-builder",
+                  "l/ro/os/skills/meta-ads-review",
+                  "l/ro/os/skills/google-ads-review",
+                  "l/ro/os/skills/campaign-brief",
+                  "l/ro/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -6987,7 +6987,7 @@
                   "l/ro/os/workspace-filesystem/s3-files-production-target",
                   "l/ro/os/workspace-filesystem/artifacts",
                   "l/ro/os/workspace-filesystem/reports",
-                  "l/ro/os/workspace-filesystem/runbook-outputs"
+                  "l/ro/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -7007,9 +7007,9 @@
                 "pages": [
                   "l/ro/os/runtime/bun-runtime",
                   "l/ro/os/runtime/sandbox-executor",
-                  "l/ro/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ro/os/runtime/package-scripts-vs-os-portal",
                   "l/ro/os/runtime/operator-scripts",
-                  "l/ro/os/runtime/scheduled-runbooks"
+                  "l/ro/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -7603,32 +7603,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/ru/os/agent-interface/get-steering",
-                  "l/ru/os/agent-interface/get-dev-steering",
-                  "l/ru/os/agent-interface/call",
-                  "l/ru/os/agent-interface/steering-files",
-                  "l/ru/os/agent-interface/tool-manifest",
-                  "l/ru/os/agent-interface/permissions"
+                  "l/ru/os/portal/get-steering",
+                  "l/ru/os/portal/get-dev-steering",
+                  "l/ru/os/portal/call",
+                  "l/ru/os/portal/steering-files",
+                  "l/ru/os/portal/tool-manifest",
+                  "l/ru/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/ru/os/runbooks/overview",
-                  "l/ru/os/runbooks/daily-revenue-brief",
-                  "l/ru/os/runbooks/lead-prioritizer",
-                  "l/ru/os/runbooks/post-call-analysis",
-                  "l/ru/os/runbooks/sales-coaching",
-                  "l/ru/os/runbooks/follow-up-generator",
-                  "l/ru/os/runbooks/landing-page-builder",
-                  "l/ru/os/runbooks/meta-ads-review",
-                  "l/ru/os/runbooks/google-ads-review",
-                  "l/ru/os/runbooks/campaign-brief",
-                  "l/ru/os/runbooks/weekly-manager-report"
+                  "l/ru/os/skills/overview",
+                  "l/ru/os/skills/daily-revenue-brief",
+                  "l/ru/os/skills/lead-prioritizer",
+                  "l/ru/os/skills/post-call-analysis",
+                  "l/ru/os/skills/sales-coaching",
+                  "l/ru/os/skills/follow-up-generator",
+                  "l/ru/os/skills/landing-page-builder",
+                  "l/ru/os/skills/meta-ads-review",
+                  "l/ru/os/skills/google-ads-review",
+                  "l/ru/os/skills/campaign-brief",
+                  "l/ru/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -7640,7 +7640,7 @@
                   "l/ru/os/workspace-filesystem/s3-files-production-target",
                   "l/ru/os/workspace-filesystem/artifacts",
                   "l/ru/os/workspace-filesystem/reports",
-                  "l/ru/os/workspace-filesystem/runbook-outputs"
+                  "l/ru/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -7660,9 +7660,9 @@
                 "pages": [
                   "l/ru/os/runtime/bun-runtime",
                   "l/ru/os/runtime/sandbox-executor",
-                  "l/ru/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ru/os/runtime/package-scripts-vs-os-portal",
                   "l/ru/os/runtime/operator-scripts",
-                  "l/ru/os/runtime/scheduled-runbooks"
+                  "l/ru/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -8256,32 +8256,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/tr/os/agent-interface/get-steering",
-                  "l/tr/os/agent-interface/get-dev-steering",
-                  "l/tr/os/agent-interface/call",
-                  "l/tr/os/agent-interface/steering-files",
-                  "l/tr/os/agent-interface/tool-manifest",
-                  "l/tr/os/agent-interface/permissions"
+                  "l/tr/os/portal/get-steering",
+                  "l/tr/os/portal/get-dev-steering",
+                  "l/tr/os/portal/call",
+                  "l/tr/os/portal/steering-files",
+                  "l/tr/os/portal/tool-manifest",
+                  "l/tr/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/tr/os/runbooks/overview",
-                  "l/tr/os/runbooks/daily-revenue-brief",
-                  "l/tr/os/runbooks/lead-prioritizer",
-                  "l/tr/os/runbooks/post-call-analysis",
-                  "l/tr/os/runbooks/sales-coaching",
-                  "l/tr/os/runbooks/follow-up-generator",
-                  "l/tr/os/runbooks/landing-page-builder",
-                  "l/tr/os/runbooks/meta-ads-review",
-                  "l/tr/os/runbooks/google-ads-review",
-                  "l/tr/os/runbooks/campaign-brief",
-                  "l/tr/os/runbooks/weekly-manager-report"
+                  "l/tr/os/skills/overview",
+                  "l/tr/os/skills/daily-revenue-brief",
+                  "l/tr/os/skills/lead-prioritizer",
+                  "l/tr/os/skills/post-call-analysis",
+                  "l/tr/os/skills/sales-coaching",
+                  "l/tr/os/skills/follow-up-generator",
+                  "l/tr/os/skills/landing-page-builder",
+                  "l/tr/os/skills/meta-ads-review",
+                  "l/tr/os/skills/google-ads-review",
+                  "l/tr/os/skills/campaign-brief",
+                  "l/tr/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -8293,7 +8293,7 @@
                   "l/tr/os/workspace-filesystem/s3-files-production-target",
                   "l/tr/os/workspace-filesystem/artifacts",
                   "l/tr/os/workspace-filesystem/reports",
-                  "l/tr/os/workspace-filesystem/runbook-outputs"
+                  "l/tr/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -8313,9 +8313,9 @@
                 "pages": [
                   "l/tr/os/runtime/bun-runtime",
                   "l/tr/os/runtime/sandbox-executor",
-                  "l/tr/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/tr/os/runtime/package-scripts-vs-os-portal",
                   "l/tr/os/runtime/operator-scripts",
-                  "l/tr/os/runtime/scheduled-runbooks"
+                  "l/tr/os/runtime/scheduled-skills"
                 ]
               },
               {
@@ -8909,32 +8909,32 @@
                 ]
               },
               {
-                "group": "Agent Interface",
+                "group": "Portal",
                 "icon": "terminal",
                 "pages": [
-                  "l/zh/os/agent-interface/get-steering",
-                  "l/zh/os/agent-interface/get-dev-steering",
-                  "l/zh/os/agent-interface/call",
-                  "l/zh/os/agent-interface/steering-files",
-                  "l/zh/os/agent-interface/tool-manifest",
-                  "l/zh/os/agent-interface/permissions"
+                  "l/zh/os/portal/get-steering",
+                  "l/zh/os/portal/get-dev-steering",
+                  "l/zh/os/portal/call",
+                  "l/zh/os/portal/steering-files",
+                  "l/zh/os/portal/tool-manifest",
+                  "l/zh/os/portal/permissions"
                 ]
               },
               {
-                "group": "Runbooks",
+                "group": "Skills",
                 "icon": "bolt",
                 "pages": [
-                  "l/zh/os/runbooks/overview",
-                  "l/zh/os/runbooks/daily-revenue-brief",
-                  "l/zh/os/runbooks/lead-prioritizer",
-                  "l/zh/os/runbooks/post-call-analysis",
-                  "l/zh/os/runbooks/sales-coaching",
-                  "l/zh/os/runbooks/follow-up-generator",
-                  "l/zh/os/runbooks/landing-page-builder",
-                  "l/zh/os/runbooks/meta-ads-review",
-                  "l/zh/os/runbooks/google-ads-review",
-                  "l/zh/os/runbooks/campaign-brief",
-                  "l/zh/os/runbooks/weekly-manager-report"
+                  "l/zh/os/skills/overview",
+                  "l/zh/os/skills/daily-revenue-brief",
+                  "l/zh/os/skills/lead-prioritizer",
+                  "l/zh/os/skills/post-call-analysis",
+                  "l/zh/os/skills/sales-coaching",
+                  "l/zh/os/skills/follow-up-generator",
+                  "l/zh/os/skills/landing-page-builder",
+                  "l/zh/os/skills/meta-ads-review",
+                  "l/zh/os/skills/google-ads-review",
+                  "l/zh/os/skills/campaign-brief",
+                  "l/zh/os/skills/weekly-manager-report"
                 ]
               },
               {
@@ -8946,7 +8946,7 @@
                   "l/zh/os/workspace-filesystem/s3-files-production-target",
                   "l/zh/os/workspace-filesystem/artifacts",
                   "l/zh/os/workspace-filesystem/reports",
-                  "l/zh/os/workspace-filesystem/runbook-outputs"
+                  "l/zh/os/workspace-filesystem/skill-outputs"
                 ]
               },
               {
@@ -8966,9 +8966,9 @@
                 "pages": [
                   "l/zh/os/runtime/bun-runtime",
                   "l/zh/os/runtime/sandbox-executor",
-                  "l/zh/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/zh/os/runtime/package-scripts-vs-os-portal",
                   "l/zh/os/runtime/operator-scripts",
-                  "l/zh/os/runtime/scheduled-runbooks"
+                  "l/zh/os/runtime/scheduled-skills"
                 ]
               },
               {

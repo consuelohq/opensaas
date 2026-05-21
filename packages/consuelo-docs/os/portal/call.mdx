@@ -1,0 +1,26 @@
+---
+title: call
+description: The single execution gateway for Consuelo OS skills.
+---
+
+> The single execution gateway for Consuelo OS skills.
+
+## Purpose
+
+`call` executes a named skill through the OS runtime.
+
+OS portal entrypoints are entrypoints. Skills are capabilities. Package scripts power the OS.
+
+## Input shape
+
+```json
+{"name":"daily-revenue-brief","input":{},"workspaceId":"optional","userId":"optional"}
+```
+
+## Responsibilities
+
+`call` should resolve the skill, validate input, check permission metadata, route to Bun, call GraphQL facades, use filesystem/artifacts, use sandbox execution when needed, return structured output, log enough metadata to debug, and avoid leaking secrets.
+
+## Constraint
+
+Do not expose each skill as a separate OS portal entrypoint. Keep the public OS portal stable and route business capabilities through `call`.

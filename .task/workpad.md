@@ -1,91 +1,68 @@
-# align os manifest and script runtime
+# Rename OS docs terminology to skills
 
-branch: `task/os/align-os-manifest-and-script-runtime`
+branch: `task/os/rename-os-docs-terminology-to-skills`
 stream: `stream/os`
-pr: https://github.com/consuelohq/opensaas/pull/364
-started: 2026-05-11
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/412/rename-os-docs-terminology-to-skills
+github pr: https://github.com/consuelohq/opensaas/pull/412
+started: 2026-05-21
 
 ## acceptance criteria
 
-- [x] Keep `scripts/` as the OS runtime/runbook implementation layer.
-- [x] Move `daily-revenue-brief` to `packages/os/scripts/revenue/daily-revenue-brief.ts`.
-- [x] Make `packages/os/tooling/tool-manifest.json` the default revenue/business agent map.
-- [x] Preserve the restored workspace/operator typed facade registry in `packages/os/tooling/dev-tool-manifest.json`.
-- [x] Retarget copied operator facade generation/execution to `dev-tool-manifest.json`.
-- [x] Validate get_steering, get_dev_steering, call, and restored operator facade behavior.
+- [x] Rename user-facing OS docs from runbooks to skills.
+- [x] Rename top-level docs paths/navigation from `os/runbooks` to `os/skills`.
+- [x] Rename OS portal docs paths/navigation from `agent-interface` to `portal`.
+- [x] Remove user-facing MCP terminology from OS docs touched by this pass.
+- [x] Keep runtime behavior intact.
 
-## plan
+## implementation plan
 
-1. Read steering, decision, manifest, runtime, docs, and moved script paths through the workspace Bun facade.
-2. Align manifests and runtime paths without deleting operator capabilities.
-3. Regenerate operator docs/types from the dev/operator manifest.
-4. Run smoke commands and focused syntax checks.
-5. Record product friction from dogfooding the workspace scripts.
+1. Start a clean task branch from `stream/os`.
+2. Rename docs directories/files and update `packages/consuelo-docs/docs.json` references.
+3. Update package-level OS steering/docs and runtime file lists from `runbooks.md` to `skills.md`.
+4. Rename small runtime type/error labels from `Runbook*`/`RUNBOOK_*` to `Skill*`/`SKILL_*`.
+5. Validate docs JSON, nav paths, Python syntax, and OS smoke calls.
 
 ## files changed
 
-- packages/os/tooling/tool-manifest.json
-- packages/os/tooling/runbook-manifest.json (removed)
-- packages/os/scripts/revenue/daily-revenue-brief.ts
-- packages/os/runbooks/daily-revenue-brief.ts (moved)
-- packages/os/scripts/os.ts
-- packages/os/scripts/lib/manifest.ts
-- packages/os/scripts/lib/facade/executor.ts
-- packages/os/scripts/generate-docs.ts
-- packages/os/scripts/generate-types.ts
-- packages/os/server.py
-- packages/os docs/steering pages that referenced the old runbook manifest
+- `packages/consuelo-docs/os/runbooks/*` -> `packages/consuelo-docs/os/skills/*`
+- `packages/consuelo-docs/os/agent-interface/*` -> `packages/consuelo-docs/os/portal/*`
+- `packages/consuelo-docs/os/workspace-filesystem/runbook-outputs.mdx` -> `skill-outputs.mdx`
+- `packages/consuelo-docs/os/runtime/scheduled-runbooks.mdx` -> `scheduled-skills.mdx`
+- `packages/consuelo-docs/os/runtime/package-scripts-vs-mcp-tools.mdx` -> `package-scripts-vs-os-portal.mdx`
+- `packages/os/runbooks.md` -> `packages/os/skills.md`
+- `packages/os/docs/runbooks.md` -> `packages/os/docs/skills.md`
+- Updated OS docs/navigation/steering text to use skills and portal wording.
+- Updated small runtime type names and error codes to `Skill*`/`SKILL_*`.
 
 ## key decisions
 
-- `tool-manifest.json` is now the default business/revenue AI-agent manifest.
-- `dev-tool-manifest.json` remains the restored dev/operator typed facade registry.
-- Runtime implementation stays in Bun scripts; the manifest exposes agent-facing discovery metadata rather than owning runtime behavior.
-- `get_dev_steering` continues returning the original workspace steering/decision/tool manifest with a short OS preface.
+- Use `skill` as the product/docs name for packaged OS capabilities.
+- Use `script` for executable implementation behind a skill.
+- Use `portal` for the public OS entrypoint concept.
+- Keep low-level transport details out of user-facing OS docs.
 
-## notes for ko
+## notes for Ko
 
-- I initially used direct shell/apply_patch for the file move and first edits; after your reminder I switched back to the Bun workspace facade for reads/searches/workpad updates/validation.
-- The generated operator docs/types now read from `dev-tool-manifest.json`, so shrinking `tool-manifest.json` no longer breaks the copied facade.
+- This PR intentionally does not delete the existing `pilot` docs section; it only updates terminology inside it where needed. The no-pilot docs cleanup should be its own focused docs pass.
+- The runtime still uses `tool-manifest.json`; this pass changes the docs language to skill/capability language without renaming the manifest file.
+- PR #411 was an earlier bootstrap attempt from `main`. Do not use it. PR #412 is the clean stream-based PR.
 
 ## improvements noticed
 
-- Decision engine evidence appears rooted in the controller checkout/global ledger rather than this task worktree, so `decideNext` and `confidenceScore` kept reporting stale failed validation evidence. OS should isolate decision evidence by taskSession/worktree.
-- The raw Bun bridge requires `taskSession` inside each batch child input; native MCP propagation is cleaner. This is worth preserving/improving for the productized OS.
-- `status` with a raw `taskSession` input reported root `main` state instead of the task worktree, while `task.exec git status` worked. That mismatch should be tightened.
-- `fs.patch` correctly rejected multiline inline content and required `--content-file`; that guardrail is useful for productized file edits.
+- The docs still need a deeper copy pass to replace scaffold/V1 language with the locked product language.
+- A future cleanup can decide whether `tool-manifest.json` should become `skill-manifest.json`; this patch does not rename it.
 
-## errors i ran into
+## errors or blockers
 
-- One `rg` search returned `COMMAND_FAILED` only because no matches were found; I reran with `|| true` and confirmed old runbook-manifest references were gone.
-- `decideNext`/`confidenceScore` were not useful for this fresh OS package diff because of stale evidence and missing task-local indexing.
+- The first task bootstrap started from `main`, so I restarted cleanly with `startFrom: stream` and created PR #412.
 
-## validation
+## validation commands and results
 
-- `cd packages/os && bun ./scripts/os.ts get-steering | rg ...` passed and showed the raw default manifest with `scripts/revenue/daily-revenue-brief.ts`.
-- `cd packages/os && bun ./scripts/os.ts get-dev-steering | rg ...` passed and showed the original workspace tool manifest plus `fs.read` and Consuelo Design entries.
-- `cd packages/os && bun ./scripts/os.ts call '{"name":"daily-revenue-brief"}'` passed with structured `ok: true`, permission `read`, and `graphqlStatus: missing_env`.
-- `python3 -m py_compile packages/os/server.py` passed.
-- `cd packages/os && bun ./scripts/workspace.ts fs.read ...` passed, proving the restored operator facade still reads through `dev-tool-manifest.json`.
-- `workspace check-files` passed for touched TS files.
-- `workspace review.run` against `origin/stream/os` with `noTests: true` passed with no `yours` or `preExisting` findings after hardening the copied `os.ts` call path.
-- `cd packages/workspace && bun ./scripts/verify.js --base origin/stream/os --no-db --json` passed from inside the task worktree; DB checks were intentionally skipped because this task has no DB/migration changes.
-
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "type(os): description" --changed
-bun run task:pr
-bun run task:finish
-```
-
-- 2026-05-11 10:01:07 patch lines 8-33: `.task/workpad.md`
-- 2026-05-11 10:01:57 patch lines 8-61: `.task/workpad.md`
-- 2026-05-11 10:02:51 patch lines 5-6: `packages/os/scripts/revenue/daily-revenue-brief.ts`
-- 2026-05-11 10:02:56 patch lines 6-6: `packages/os/scripts/revenue/daily-revenue-brief.ts`
-- 2026-05-11 10:03:23 patch lines 65-70: `.task/workpad.md`
-- 2026-05-11 10:12:41 patch lines 104-107: `packages/os/scripts/os.ts`
-- 2026-05-11 10:13:04 patch lines 121-123: `packages/os/scripts/os.ts`
-- 2026-05-11 10:13:40 patch lines 71-71: `.task/workpad.md`
+- `python3 -m json.tool packages/consuelo-docs/docs.json >/dev/null`: passed.
+- English OS nav path check against `packages/consuelo-docs/docs.json`: 49 paths, all exist.
+- Public docs grep for `runbook`, `Runbook`, `RUNBOOK`: no matches in OS docs/package docs searched.
+- Public docs grep for `MCP`, `mcp`, `agent-interface`, `Agent Interface`: no matches in OS docs/package docs searched.
+- `git diff --check`: passed.
+- `python3 -m py_compile packages/os/server.py`: passed.
+- `cd packages/os && bun run smoke:steering`: passed; steering loads `skills.md` and uses OS portal/skills wording.
+- `cd packages/os && bun run smoke:daily-revenue-brief`: passed; returned structured `ok: true` scaffold output with `graphqlStatus: missing_env`.

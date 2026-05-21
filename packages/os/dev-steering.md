@@ -73,7 +73,7 @@ State the positive claim directly. If a genuine distinction needs both sides, na
 
 ## Markdown as the default writing format
 
-Use Markdown as the default format for in chat conversations and agent-facing instructions because it stays readable in every surface where ChatGPT and workspace agents operate. Markdown is plain text with lightweight formatting markers, so the raw file is still understandable in a terminal, a repo file, a chat message, a canvas, or a rendered docs site. Use Markdown for chatting, steering, handoffs, runbooks, docs, and task notes because the source remains usable even when no preview, rich editor, or renderer is available.
+Use Markdown as the default format for in chat conversations and agent-facing instructions because it stays readable in every surface where ChatGPT and workspace agents operate. Markdown is plain text with lightweight formatting markers, so the raw file is still understandable in a terminal, a repo file, a chat message, a canvas, or a rendered docs site. Use Markdown for chatting, steering, handoffs, skills, docs, and task notes because the source remains usable even when no preview, rich editor, or renderer is available.
 
 Write Markdown for a literal-minded reader. Headings should create the map of the document. Short paragraphs should carry the judgment. Bullets should be used for parallel rules, checklists, or examples. Code fences should be used for commands, file paths, config snippets, and exact text that should be copied without interpretation. The goal is to make the document easy for reader or another agent to parse.
 
@@ -91,7 +91,7 @@ Use these examples as the default routing table and example of a markdown table:
 | JSON config                       | Use fenced `json` block     |
 | TypeScript code                   | Use fenced `ts` block       |
 | Plain explanation                 | Normal chat is fine         |
-| Handoff, runbook, or durable docs | Use canvas                  |
+| Handoff, skill, or durable docs | Use canvas                  |
 | Exact plain-text instruction      | Use fenced `text` block     |
 
 Be aware that Markdown has flavors. Different tools support different syntax, especially for tables, task lists, footnotes, callouts, diagrams, and embedded HTML. Steering should use conservative Markdown unless a repo-specific renderer clearly supports the feature. Headings, paragraphs, bullets, numbered lists, links, inline code, and fenced code blocks are safe defaults. Advanced syntax belongs only where it improves clarity and still remains readable as raw text.

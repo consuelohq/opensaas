@@ -1,10 +1,10 @@
 # Runtime Surfaces
 
-Consuelo OS keeps a small MCP surface while preserving powerful package capabilities behind it.
+Consuelo OS keeps a small OS portal while preserving powerful package capabilities behind it.
 
-## MCP tools
+## OS portal entrypoints
 
-MCP tools are the public agent entrypoints:
+OS portal entrypoints are the public agent entrypoints:
 
 - `get_steering`
 - `get_dev_steering`
@@ -14,11 +14,11 @@ Business/revenue agents should start with `get_steering`.
 
 Build, design, deployment, and internal operator agents should start with `get_dev_steering`.
 
-All operational work should run through `call` when it is a named runbook/capability.
+All operational work should run through `call` when it is a named skill/capability.
 
-## Runbooks
+## Skills
 
-Runbooks are approved OS capabilities behind `call`.
+Skills are approved OS capabilities behind `call`.
 
 Examples:
 
@@ -37,11 +37,11 @@ The default/revenue tool manifest is:
 packages/os/tooling/tool-manifest.json
 ```
 
-Each exposed runbook declares permission metadata, approval rules, required env, and integration requirements for agent steering. Runtime behavior lives in the Bun script itself.
+Each exposed skill declares permission metadata, approval rules, required env, and integration requirements for agent steering. Runtime behavior lives in the Bun script itself.
 
 ## Package and operator scripts
 
-Package scripts are internal/runtime/operator commands. They can be numerous because they power the OS behind the small MCP surface.
+Package scripts are internal/runtime/operator commands. They can be numerous because they power the OS behind the small OS portal.
 
 Examples include:
 
@@ -52,7 +52,7 @@ Examples include:
 - deployment/logging helpers
 - operator debugging commands
 
-These scripts are not automatically customer-facing runbooks. Preserve them, classify them, and expose them through role-aware steering or runbook wrappers when appropriate.
+These scripts are not automatically customer-facing skills. Preserve them, classify them, and expose them through role-aware steering or skill wrappers when appropriate.
 
 ## Tool manifests
 
@@ -64,5 +64,5 @@ There are two manifest surfaces in this scaffold:
 The principle is:
 
 ```text
-small MCP entrypoints, powerful classified OS runtime behind them
+small OS portal entrypoints, powerful classified OS runtime behind them
 ```

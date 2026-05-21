@@ -17,5 +17,5 @@ The key must be provided through local/server environment only.
 
 The OS should model files as workspace files, reports, outputs, and artifacts.
 
-Local filesystem is the first backend. S3 storage is a future backend. Runbooks should return artifact descriptors so the storage backend can change without changing the agent contract.
+Local filesystem is the first backend. S3 storage is a future backend. Skills should return artifact descriptors so the storage backend can change without changing the agent contract.
 

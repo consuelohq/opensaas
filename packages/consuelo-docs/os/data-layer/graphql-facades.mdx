@@ -1,23 +1,23 @@
 ---
 title: GraphQL Facades
-description: GraphQL facades centralize backend data access for runbooks.
+description: GraphQL facades centralize backend data access for skills.
 ---
 
-> GraphQL facades centralize backend data access for runbooks.
+> GraphQL facades centralize backend data access for skills.
 
 ## Purpose
 
-GraphQL facades give runbooks a stable internal API for workspace data.
+GraphQL facades give skills a stable internal API for workspace data.
 
 ## Rule
 
-Runbooks should not scatter raw GraphQL queries everywhere.
+Skills should not scatter raw GraphQL queries everywhere.
 
 Use facades for workspace context, people, companies, lists, calls, tasks, files, workflows, dashboards, and analytics.
 
 ## Early proof
 
-The first smoke runbook can use internal GraphQL credentials through env to prove connectivity.
+The first smoke skill can use internal GraphQL credentials through env to prove connectivity.
 
 Required env names from the OS scaffold:
 

@@ -1,6 +1,6 @@
 export type PermissionLevel = 'read' | 'draft' | 'write' | 'execute' | 'external' | 'admin';
 
-export type RunbookManifestEntry = {
+export type SkillManifestEntry = {
   name: string;
   title: string;
   description: string;
@@ -46,9 +46,9 @@ export type CallOutput = {
   };
 };
 
-export type RunbookContext = {
+export type SkillContext = {
   workspaceId?: string;
   userId?: string;
-  manifestEntry: RunbookManifestEntry;
+  manifestEntry: SkillManifestEntry;
 };
 

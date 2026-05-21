@@ -1,8 +1,8 @@
 import { createWorkspaceArtifactDescriptor } from '../lib/artifacts';
 import { proveGraphQLConnectivity } from '../lib/graphql-client';
-import type { CallOutput, RunbookContext } from '../lib/types';
+import type { CallOutput, SkillContext } from '../lib/types';
 
-export async function runDailyRevenueBrief(input: unknown, context: RunbookContext): Promise<CallOutput> {
+export async function runDailyRevenueBrief(input: unknown, context: SkillContext): Promise<CallOutput> {
   let graphqlProof: Awaited<ReturnType<typeof proveGraphQLConnectivity>>;
   try {
     graphqlProof = await proveGraphQLConnectivity();

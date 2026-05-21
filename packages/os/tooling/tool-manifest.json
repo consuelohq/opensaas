@@ -2,7 +2,7 @@
   {
     "name": "daily-revenue-brief",
     "title": "Daily Revenue Brief",
-    "description": "Scaffold runbook that proves get_steering -> call -> Bun runbook -> optional GraphQL proof query -> structured result.",
+    "description": "Scaffold skill that proves get_steering -> call -> Bun skill -> optional GraphQL proof query -> structured result.",
     "permission": "read",
     "requiresApproval": false,
     "writesRecords": false,
