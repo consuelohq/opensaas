@@ -287,9 +287,7 @@ def _read_steering() -> str:
     if manifest:
         content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
 
-    decision = _read_optional_file(DECISION_PROCESS_FILE)
-    if decision:
-        content += '\n\n' + decision
+    # Keep decision-engine doctrine in decision.md without injecting it into bootstrap steering.
 
     return content
 

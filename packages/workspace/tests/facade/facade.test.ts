@@ -468,22 +468,6 @@ describe('typed facade executor', () => {
 });
 
 describe('branch resolver', () => {
-  it('resolves pinned branch before current metadata', () => {
-    const result = resolveTaskBranch({
-      pinnedBranch: 'task/workspace-agents/pinned',
-      currentTask: {
-        branch: TEST_BRANCH,
-        area: 'workspace-agents',
-        worktree: '/tmp/worktree',
-      },
-    });
-    expect(result).toEqual({
-      ok: true,
-      branch: 'task/workspace-agents/pinned',
-      source: 'pinned',
-    });
-  });
-
   it('resolves current metadata when present', () => {
     const result = resolveTaskBranch({
       currentTask: {
@@ -526,7 +510,7 @@ describe('branch resolver', () => {
     expect(result).toEqual({
       ok: false,
       code: 'WORKTREE_NOT_FOUND',
-      message: 'no active task worktree found; run task:start first or pass branch',
+      message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
       candidates: [],
     });
   });

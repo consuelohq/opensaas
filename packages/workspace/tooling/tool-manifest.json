@@ -858,34 +858,6 @@
     "sessionRequired": false
   },
   {
-    "name": "task.pin",
-    "methodPath": [
-      "task",
-      "pin"
-    ],
-    "description": "pin a task branch for a programmatic workspace client",
-    "category": "task lifecycle",
-    "underlying": "client session state",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": false,
-      "deterministic": true,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 30000,
-    "inputSchema": "BranchInput",
-    "outputSchema": "TaskPinOutput",
-    "command": {
-      "script": "internal",
-      "internal": "task.pin",
-      "arguments": []
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example"
-    },
-    "sessionRequired": false
-  },
-  {
     "name": "task.ensureSynced",
     "methodPath": [
       "task",

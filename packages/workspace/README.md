@@ -120,7 +120,7 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 |------|---------|
 | `get_steering` | bootstrap steering once per server process |
 | `call` | run a manifest-backed typed workspace tool with `{ tool, input, taskSession, timeout }` |
-| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to `workspace.call` for task-scoped work |
+| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to every task-scoped `workspace.call` instead of relying on shared root task metadata |
 
 ## contributed files in this package
 

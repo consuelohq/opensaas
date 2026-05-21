@@ -16,18 +16,17 @@ these three rules apply to every script, every task, every session. read them fi
 
 ### rule 0 — where to run
 
-always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start` and accessed through `task:fs` and `task:exec`.
+always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start`; agents should use the returned task session through `workspace.call`, which resolves the exact task branch and worktree.
 
 ```bash
 bad: cd /private/tmp/opensaas-worktrees/task-dialer-queue && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
 
-good: bun run task:fs -- --branch task/dialer/queue read src/foo.ts
- → reads from the exact task worktree without leaving repo root
+good: workspace.call({ tool: "fs.read", taskSession, input: { path: "src/foo.ts" } })
+ → reads from the exact task worktree without relying on shared root metadata
 ```
 
 ### rule 1 — response contract
-
 when answering questions or reporting results, use this format:
 
 - **tl;dr** → one-line answer or status
@@ -46,7 +45,7 @@ every change — even tiny ones — follows this flow. no exceptions.
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
  3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
- 4. (make changes via task:fs and task:exec)
+ 4. (make changes through task-scoped `workspace.call` using `taskSession`)
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
  7. bun run task:pr                                      # merge task→stream, create stream→main PR

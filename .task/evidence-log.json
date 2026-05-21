@@ -11448,8 +11448,408 @@
         "source": "task:fs",
         "task_branch": "task/dialer/ship-explicit-runtime-queue-id"
       }
+    },
+    {
+      "id": "cadc0f9a-2785-4497-b434-4e2c154875c8",
+      "occurred_at": "2026-05-21T06:01:38.680Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "65453dc0-9e2b-406f-bdeb-a488708aaaf9",
+      "occurred_at": "2026-05-21T06:01:38.976Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "10d81c5a-764f-4688-b6a0-8eff30bbd3dd",
+      "occurred_at": "2026-05-21T06:01:39.268Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "cd44fefb-ed91-4431-8632-2b14af97b138",
+      "occurred_at": "2026-05-21T06:01:39.560Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/current.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "53fd0f1a-e483-45c0-9043-3336f863db41",
+      "occurred_at": "2026-05-21T06:01:39.852Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/session.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "de024d6c-2662-441e-bc36-00bacc3459ab",
+      "occurred_at": "2026-05-21T06:02:31.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "1e7b4874-7e4a-4417-bd24-e07085019c5c",
+      "occurred_at": "2026-05-21T06:02:38.440Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "edde0a83-36d8-4a4c-8940-4819fcc576c4",
+      "occurred_at": "2026-05-21T06:41:33.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "ff9f0bdd-ce5c-471d-8e18-6d210e98e000",
+      "occurred_at": "2026-05-21T06:41:38.851Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "3d04e574-8487-4a54-96db-81abd7cb0415",
+      "occurred_at": "2026-05-21T06:42:29.715Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "3188d65d-f5af-4b1a-88c8-d5517163872c",
+      "occurred_at": "2026-05-21T06:42:34.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "f2df7845-c29d-4149-a8a6-5b8a98b7d2d5",
+      "occurred_at": "2026-05-21T06:48:44.305Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "d481631d-c4e1-4a19-90cb-945ba48ef1bf",
+      "occurred_at": "2026-05-21T06:48:50.152Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "3235d0b7-9b53-4cad-9a80-6fe547c2ce64",
+      "occurred_at": "2026-05-21T06:48:50.516Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "f95dcac2-9e02-4a5e-9761-fa3b01998264",
+      "occurred_at": "2026-05-21T06:48:50.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "da0d8ea8-1f2b-42b0-8ee6-8426eca69c67",
+      "occurred_at": "2026-05-21T06:48:51.166Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "bb1c676e-3072-432d-8bc3-8fd19236dc15",
+      "occurred_at": "2026-05-21T06:49:05.534Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "7d066022-0f6a-45fd-8d44-f0391da326ec",
+      "occurred_at": "2026-05-21T06:55:37.923Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "1be3b568-1037-4ed0-a899-518b3980312f",
+      "occurred_at": "2026-05-21T06:55:38.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "40aadf5a-ac82-49b6-a04f-bc4ffbf24015",
+      "occurred_at": "2026-05-21T06:55:38.482Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "098e9111-f9e4-4e57-9134-b1b8f9f5afb7",
+      "occurred_at": "2026-05-21T06:55:38.759Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "46f80194-7c9c-4e9a-94a2-efc8895f5f41",
+      "occurred_at": "2026-05-21T06:57:02.420Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "b856e93b-a106-47ee-8863-1fea2159a5e7",
+      "occurred_at": "2026-05-21T06:57:02.708Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "aeffa8b2-01a0-4e05-9235-ae0f4f476f47",
+      "occurred_at": "2026-05-21T06:57:02.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
+    },
+    {
+      "id": "c8842411-40b1-47b0-a80c-bd6237907879",
+      "occurred_at": "2026-05-21T06:57:03.267Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/TOOLS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T03:34:47.676Z"
+  "updated_at": "2026-05-21T06:57:03.319Z"
 }

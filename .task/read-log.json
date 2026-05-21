@@ -2,6 +2,7 @@
   "files": [
     ".task/current.json",
     ".task/handoff.md",
+    ".task/session.json",
     ".task/twenty-server.log",
     ".task/verify.json",
     ".task/workpad.md",
@@ -122,6 +123,7 @@
     "packages/workspace/scripts/edit-flow.js",
     "packages/workspace/scripts/explore.js",
     "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/generate-docs.ts",
     "packages/workspace/scripts/generate-types.ts",
     "packages/workspace/scripts/lib/facade/batch.ts",
     "packages/workspace/scripts/lib/facade/branch-resolver.ts",
@@ -134,6 +136,7 @@
     "packages/workspace/scripts/lib/paths.js",
     "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/lib/task-session.js",
     "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
@@ -148,11 +151,12 @@
     "packages/workspace/scripts/tool-batch.ts",
     "packages/workspace/scripts/tool-runner.ts",
     "packages/workspace/scripts/workspace.ts",
+    "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-21T03:34:47.574Z"
+  "updatedAt": "2026-05-21T06:57:03.216Z"
 }

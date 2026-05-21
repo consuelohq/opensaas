@@ -22,7 +22,6 @@ export type ResolveTaskBranchOptions = {
   explicitBranch?: string;
   cwd?: string;
   env?: NodeJS.ProcessEnv;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
 };
@@ -40,9 +39,6 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
     return { ok: true, branch: options.explicitBranch, source: 'explicit' };
   }
 
-  if (options.pinnedBranch) {
-    return { ok: true, branch: options.pinnedBranch, source: 'pinned' };
-  }
 
   const envBranch = options.env?.TASK_BRANCH;
   if (envBranch) {
@@ -65,7 +61,7 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
     return {
       ok: false,
       code: 'AMBIGUOUS_TASK_SELECTION',
-      message: 'multiple active task worktrees found; pass branch or set TASK_BRANCH',
+      message: 'multiple active task worktrees found; pass taskSession or explicit branch/taskWorktree',
       candidates,
     };
   }
@@ -73,7 +69,7 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
   return {
     ok: false,
     code: 'WORKTREE_NOT_FOUND',
-    message: 'no active task worktree found; run task:start first or pass branch',
+    message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
     candidates: [],
   };
 }

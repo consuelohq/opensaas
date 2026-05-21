@@ -1,20 +1,31 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
-  "base": "stream/workspace-agents",
-  "headSha": "89b5672198def6beeb3b3559b11bddeb955d1b33",
-  "changeHash": "21f998110337d2d8ec2f28ef30d647f35c3369d231450fdd818b4f219c29eae1",
+  "branch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+  "base": "origin/main",
+  "headSha": "9e78ee255be982938725ba121c4d38625e067985",
+  "changeHash": "268bcb92de260054c65bf71c9aec583f18c778841e89ce9c188daa19a33a57e1",
   "changedFiles": [
-    "packages/workspace/scripts/status.js",
-    "packages/workspace/scripts/task-prs.js"
+    "packages/workspace/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+    "packages/workspace/scripts/lib/facade/client.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-20T14:49:10.818Z",
+  "verifiedAt": "2026-05-21T07:01:42.302Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []
