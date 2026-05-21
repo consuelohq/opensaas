@@ -1,6 +1,6 @@
 import { executeTool, manifestEntries } from '../../facade/executor';
 import type { ToolInput, ToolManifestEntry, ToolResult } from '../../facade/types';
-import type { ToolFunction, ToolRegistry } from '../types';
+import type { ToolFunction, ToolNamespace, ToolRegistry } from '../types';
 
 export type CodeRunMode = 'read' | 'edit' | 'verify';
 export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number };
@@ -134,11 +134,35 @@ function makeGenericWorkspaceCall(entriesByName: Map<string, ToolManifestEntry>,
   };
 }
 
+function setNamespaceFunction(root: ToolNamespace, path: string[], fn: ToolFunction): void {
+  let cursor = root;
+  for (let index = 0; index < path.length; index += 1) {
+    const part = path[index];
+    if (index === path.length - 1) {
+      cursor[part] = fn;
+      return;
+    }
+    const existing = cursor[part];
+    if (!isRecord(existing) || typeof existing === 'function') cursor[part] = {};
+    cursor = cursor[part] as ToolNamespace;
+  }
+}
+
+function buildWorkspaceNamespace(entries: ToolManifestEntry[], options: BuildToolRegistryOptions, state: CodeRunRegistryState): ToolNamespace {
+  const workspace: ToolNamespace = {};
+  for (const entry of entries) {
+    const parts = entry.name.split('.').map(sanitizeToolName);
+    const helper = `workspace.${parts.join('.')}`;
+    setNamespaceFunction(workspace, parts, makeToolFunction(entry, helper, options, state));
+  }
+  return workspace;
+}
+
 function addFriendlyAliases(registry: ToolRegistry, state: CodeRunRegistryState): void {
-  const fsRead = registry.fs_read;
-  const fsSearch = registry.fs_search;
-  const fsList = registry.fs_list;
-  const fsWrite = registry.fs_write;
+  const fsRead = registry.fs_read as ToolFunction | undefined;
+  const fsSearch = registry.fs_search as ToolFunction | undefined;
+  const fsList = registry.fs_list as ToolFunction | undefined;
+  const fsWrite = registry.fs_write as ToolFunction | undefined;
   if (fsRead) registry.readFile = async (path: unknown, from?: unknown, to?: unknown) => fsRead({ path, ...(typeof from === 'number' ? { from } : {}), ...(typeof to === 'number' ? { to } : {}) });
   if (fsSearch) registry.grep = async (pattern: unknown, searchPath?: unknown, options?: unknown) => fsSearch({ pattern, ...(typeof searchPath === 'string' ? { paths: [searchPath] } : {}), ...(isRecord(options) ? options : {}) });
   if (fsList) {
@@ -178,6 +202,7 @@ export function buildToolRegistry(_basePath: string, options: BuildToolRegistryO
   registry.workspace_call = genericCall;
   registry.workspaceCall = genericCall;
   registry.callTool = genericCall;
+  registry.workspace = buildWorkspaceNamespace(manifestEntries, options, state);
   addFriendlyAliases(registry, state);
   return registry;
 }

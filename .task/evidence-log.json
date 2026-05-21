@@ -17367,72 +17367,72 @@
       }
     },
     {
-      "id": "eef08903-0b0b-489e-a9a6-7cbb18e8facf",
-      "occurred_at": "2026-05-21T09:48:17.762Z",
+      "id": "dd007105-aa35-4dd9-bbb1-8a07467ad8d5",
+      "occurred_at": "2026-05-21T17:35:43.081Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/lib/codemode/executor.ts",
+      "file_path": "packages/workspace/scripts/lib/state/explore-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "8ba6f508-269c-4c01-92d7-40314cb9448d",
-      "occurred_at": "2026-05-21T09:48:25.377Z",
+      "id": "25e836aa-16b9-4ffe-a153-cdab74ab04e7",
+      "occurred_at": "2026-05-21T17:36:08.465Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "file_path": "packages/workspace/scripts/lib/state/explore-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "caff0601-e8b3-481e-b35f-5e12be6c5e0a",
-      "occurred_at": "2026-05-21T09:50:09.617Z",
+      "id": "8e89e500-c234-4ac8-b2f2-adcc59cfabfe",
+      "occurred_at": "2026-05-21T17:36:25.352Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "file_path": "packages/workspace/scripts/fs.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "c516acb3-373b-4d92-bb51-a7cfa72c04a9",
-      "occurred_at": "2026-05-21T09:52:27.495Z",
+      "id": "d28dc25f-cab7-420d-ad49-b5ce88f4778b",
+      "occurred_at": "2026-05-21T17:37:30.052Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "file_path": "packages/workspace/scripts/lib/state/evidence-log.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "a0595db4-5010-4cf1-94f9-87ca96b6cf0a",
-      "occurred_at": "2026-05-21T09:53:12.591Z",
+      "id": "29809c35-b541-4bfa-8fac-92f3c02594f5",
+      "occurred_at": "2026-05-21T19:00:56.611Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -17440,15 +17440,15 @@
       "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "304681b2-948f-407f-b77e-0bce8f2708a3",
-      "occurred_at": "2026-05-21T17:37:20.873Z",
+      "id": "c468eb4a-c85b-4fc3-8f9a-a9fb53087b06",
+      "occurred_at": "2026-05-21T19:02:02.644Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -17456,15 +17456,47 @@
       "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "14af7e82-6f97-4f8e-9d85-6b9ace3b564c",
-      "occurred_at": "2026-05-21T17:49:09.744Z",
+      "id": "f7f18641-caab-4704-8c09-0e61eb632257",
+      "occurred_at": "2026-05-21T19:02:25.662Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
+      }
+    },
+    {
+      "id": "e104c229-6f08-4b69-9d6d-fb7ed3a3c31f",
+      "occurred_at": "2026-05-21T19:03:09.631Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
+      }
+    },
+    {
+      "id": "be33a2e7-6928-4f48-96d3-c0ac88581611",
+      "occurred_at": "2026-05-21T19:05:33.673Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -17472,15 +17504,15 @@
       "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "26152904-aff4-4270-89f7-dc1aee243637",
-      "occurred_at": "2026-05-21T17:52:04.573Z",
+      "id": "4ae237ce-fc4a-4c24-bf0c-a84f25723dc3",
+      "occurred_at": "2026-05-21T19:07:51.378Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -17488,93 +17520,45 @@
       "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/harden-code-run-bun-orchestration",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/harden-code-run-bun-orchestration"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "7f0fbedf-857c-4b97-94c1-1531742bb43c",
-      "occurred_at": "2026-05-21T19:04:30.490Z",
+      "id": "aa1f2544-afd9-4290-a1f3-3c20e43277fb",
+      "occurred_at": "2026-05-21T19:09:02.634Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/tests/codemode.test.ts",
+      "file_path": "packages/workspace/STEERING.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     },
     {
-      "id": "4cb0d3ee-a25f-4ca1-93fe-8fac53214dfd",
-      "occurred_at": "2026-05-21T19:05:01.255Z",
+      "id": "c2247d07-57ae-4337-8eab-a77219c7f173",
+      "occurred_at": "2026-05-21T19:13:58.402Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/lib/codemode/types.ts",
+      "file_path": "packages/workspace/STEERING.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+      "worktree_id": "task/workspace-agents/namespace-task-metadata-by-task-path",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers"
-      }
-    },
-    {
-      "id": "073feb5e-19a7-4581-9b7f-0603c4e0d5fc",
-      "occurred_at": "2026-05-21T19:07:29.308Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/package.json",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers"
-      }
-    },
-    {
-      "id": "5204e2de-9455-4cdc-bb76-d0ba456b6357",
-      "occurred_at": "2026-05-21T19:08:04.838Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/SCRIPTS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers"
-      }
-    },
-    {
-      "id": "f3d71d1d-76dd-4023-97ed-280533453bb5",
-      "occurred_at": "2026-05-21T19:09:04.482Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/lib/codemode/executor.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers"
+        "task_branch": "task/workspace-agents/namespace-task-metadata-by-task-path"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T19:09:04.535Z"
+  "updated_at": "2026-05-21T19:13:58.462Z"
 }

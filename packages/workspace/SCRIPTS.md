@@ -35,6 +35,30 @@ when answering questions or reporting results, use this format:
 
 do not answer architecture questions from memory. search memory, read files, then answer with citations and paths.
 
+
+---
+
+## code.run / code mode
+
+`code.run` is the primary orchestration surface for multi-step workspace work. Use it when a workflow needs several related typed workspace tool calls in one pass: read files, search context, inspect status, run task-scoped commands, write targeted files, validate, and return a compact structured summary.
+
+Prefer the nested typed workspace namespace inside code mode:
+
+```js
+const status = await workspace.status({});
+const file = await workspace.fs.read({ path: "AGENTS.md", from: 1, to: 40 });
+const current = await workspace.task.current({});
+const exact = await readFile("packages/workspace/package.json", 1, 5);
+```
+
+Use `workspace_call("tool.name", input)` when constructing tool names dynamically. Sanitized helpers like `fs_read`, `task_current`, and aliases like `readFile` remain available, but the nested `workspace.*` namespace is the preferred default because it mirrors the typed facade.
+
+Always pass `taskSession` when task work is involved. The facade resolves the task branch and worktree; do not reconstruct task paths manually.
+
+Use direct outer tool calls for single-step operations and final durable transitions such as task push, task PR promotion, merges, deploys, and publishing. `code.run` can inspect and prepare for those actions, but explicit outer calls keep the review boundary visible.
+
+`code.run` is Bun-native and trusted-agent orchestration, not an untrusted public sandbox. It relies on the typed workspace tools for guardrails and adds orchestration controls: max operations, output caps, operation logs, changed-file tracking, timeout handling, and recursive `code.run` blocking.
+
 ---
 
 ## the task lifecycle
@@ -927,6 +951,20 @@ await workspace.call({
 
 ---
 
+### code-run — Bun-native code mode orchestration
+
+Runs a short trusted-agent orchestration script over the typed workspace facade tools. Prefer this for multi-step workspace operations where several related reads, searches, task commands, validations, or small edits need to be coordinated in one pass.
+
+```bash
+bun run code-run -- '{"code":"return await workspace_call(\"status\", {})","maxOperations":25,"maxResultChars":20000}'
+bun run code-run -- --input-file /tmp/code-run-input.json
+printf '{"code":"return 1 + 1"}' | bun run code-run -- --stdin
+```
+
+Use `workspace_call("tool.name", input)` for generic facade calls, sanitized helpers like `fs_read` or `task_current`, and friendly aliases like `readFile`, `grep`, and `readDir`. Always pass `taskSession` when task work is involved. Use direct outer tool calls for final durable transitions such as push, PR, merge, deploy, and publish.
+
+---
+
 ### tool-runner — run one typed workspace tool
 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
@@ -1372,3 +1410,5 @@ Template names are `research`, `spec`, and `plan`. The selected template is inje
 Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
 
 The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
+
+

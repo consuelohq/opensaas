@@ -1,10 +1,8 @@
 {
   "files": [
-    ".task/code-run-smoke.txt",
+    "packages/workspace/SCRIPTS.md",
     "packages/workspace/package.json",
-    "packages/workspace/scripts/lib/codemode/executor.ts",
-    "packages/workspace/scripts/lib/facade/executor.ts",
-    "packages/workspace/scripts/lib/facade/types.ts"
+    "packages/workspace/scripts/lib/codemode/executor.ts"
   ],
-  "updatedAt": "2026-05-21T08:24:05.532Z"
+  "updatedAt": "2026-05-21T19:09:04.430Z"
 }

@@ -600,7 +600,7 @@ the manifest JSON tells you:
 tool categories:
 
 - **fs** - file operations: read, search, list, write, patch, http, trash
-- **task** - task lifecycle: start, current, pin, push, pr, prs, merge, finish, cleanup, init, fs, exec
+- **task** - task lifecycle: start, current, push, pr, prs, merge, finish, cleanup, init, fs, exec
 - **system** - workspace management: server, doctor, status, tmp, agent
 - **decision** - explore, decideNext, confidenceScore, exploit, confirm, audit
 

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/namespace-task-metadata-by-task-path",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 440,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/440",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/440",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/440/namespace-task-metadata-by-task-path",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/440",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/440/namespace-task-metadata-by-task-path",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-namespace-task-metadata-by-task-path",
+  "taskSession": "tsk_1d4b4a2e3cca",
+  "tmuxSession": "opensaas-workspace-agents-namespace-task-metadata-by-task-path-1d4b4a2e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-namespace-task-metadata-by-task-path/.task/session.json",
+  "createdAt": "2026-05-21T17:31:25.738Z"
+}
