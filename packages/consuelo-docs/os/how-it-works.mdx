@@ -1,0 +1,34 @@
+---
+title: How Consuelo OS Works
+description: The high-level model behind Consuelo OS.
+---
+
+# How Consuelo OS works
+
+Consuelo OS wraps your agents with a safe portal into the workspace.
+
+```text
+agent
+  -> Consuelo OS portal
+    -> workspace context
+    -> approved skills
+      -> scripts
+      -> structured data
+      -> files and artifacts
+      -> approvals
+      -> execution logs
+```
+
+The agent brings the reasoning. Consuelo OS brings the workspace operating layer.
+
+## Portal
+
+The portal lets agents understand the workspace and run approved skills without exposing raw systems directly.
+
+## Skills and scripts
+
+Skills are the workflows agents can run. Scripts are the executable implementation behind those skills.
+
+## Artifacts and observability
+
+Outputs become tracked artifacts. Every skill execution should have a trace ID, status, and enough metadata to debug what happened.

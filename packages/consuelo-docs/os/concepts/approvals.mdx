@@ -1,0 +1,25 @@
+---
+title: Approvals
+description: Human guardrails for high-impact actions.
+---
+
+# Approvals
+
+Approvals let skills pause before high-impact actions.
+
+A skill prepares the action, shows the human what will happen, and waits for an explicit decision before continuing.
+
+## Approval flow
+
+```text
+skill reaches a high-impact step
+  -> OS creates an approval request
+  -> human approves or rejects
+  -> skill continues or stops
+```
+
+The approval record belongs to the OS. The agent does not need to stay alive while the human decides.
+
+## Start simple
+
+The first approval surface should support approve, reject, and details. Editing can come later once action-specific forms are defined.

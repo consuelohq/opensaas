@@ -1,0 +1,30 @@
+---
+title: Connect Agents
+description: Connect ChatGPT, Claude, Codex, OpenCode, and other agents to Consuelo OS.
+---
+
+# Connect agents
+
+Consuelo OS works with the agents you already use. The agent brings the model. Consuelo OS brings context, skills, scripts, files, artifacts, approvals, and memory.
+
+The onboarding wizard detects supported agent homes and helps connect them to the OS portal.
+
+## Agent detection
+
+The wizard can look for local agent configuration in places such as:
+
+```text
+~/.claude
+~/.codex
+~/.opencode
+~/.factory
+~/.config/opencode
+```
+
+Desktop agent paths can be added as the connector list grows.
+
+## What gets connected
+
+Agents receive access to the Consuelo OS portal. The portal gives them one way to understand the workspace and one way to run approved skills.
+
+Agents do not receive direct access to your database, filesystem, or third-party accounts.
