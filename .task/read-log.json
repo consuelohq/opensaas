@@ -57,17 +57,24 @@
     "packages/consuelo-website/src/utils/postFilter.ts",
     "packages/consuelo-website/tailwind.config.mjs",
     "packages/dialer/src/dialer.ts",
+    "packages/os/Dockerfile",
+    "packages/os/README.md",
     "packages/os/decision.md",
     "packages/os/dev-steering.md",
     "packages/os/docs/consuelo-os-v1.md",
     "packages/os/docs/runtime-surfaces.md",
+    "packages/os/package.json",
     "packages/os/runbooks/daily-revenue-brief.ts",
     "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/graphql-client.ts",
     "packages/os/scripts/lib/manifest.ts",
     "packages/os/scripts/lib/types.ts",
     "packages/os/scripts/os.ts",
     "packages/os/scripts/revenue/daily-revenue-brief.ts",
+    "packages/os/scripts/server.js",
     "packages/os/server.py",
+    "packages/os/setup.sh",
     "packages/os/tooling/dev-tool-manifest.json",
     "packages/os/tooling/runbook-manifest.json",
     "packages/os/tooling/tool-manifest.json",
@@ -145,5 +152,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-21T02:11:05.741Z"
+  "updatedAt": "2026-05-21T03:53:35.122Z"
 }

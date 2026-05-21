@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_0d2cf288c12b",
-  "tmuxSession": "opensaas-os-remove-misplaced-os-v1-package-doc-0d2cf288",
+  "taskSession": "tsk_4bf4a8a6706f",
+  "tmuxSession": "opensaas-os-plan-bun-runtime-switch-for-consuelo-os-4bf4a8a6",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/remove-misplaced-os-v1-package-doc",
-  "branch": "task/os/remove-misplaced-os-v1-package-doc",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc",
-  "prNumber": 415,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/415",
-  "createdAt": "2026-05-21T02:10:47.097Z",
+  "taskBranch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
+  "branch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
+  "prNumber": 419,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/419",
+  "createdAt": "2026-05-21T03:51:45.659Z",
   "tmuxCreated": true
 }
