@@ -1273,3 +1273,30 @@ workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrap
 workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
 workspace linear.projects '{"first":50}'
 ```
+
+---
+
+### install:local - local OS installer
+
+Creates the local Consuelo OS home and runs the onboarding flow.
+
+```bash
+bun run install:local
+bun run install:local -- --yes --home /tmp/consuelo-os
+bun run install:local -- --dry-run --json
+bun run install:local -- --connect-agent codex
+```
+
+The installer creates `~/.consuelo/os` by default, preserves existing files, writes `config.json` only when missing, initializes `consuelo.db`, creates the approved folders, and can record detected agent connections.
+
+---
+
+### doctor - local OS health check
+
+Checks Bun, local home shape, SQLite, portal steering, the daily revenue brief skill, and detected agent state.
+
+```bash
+bun run doctor
+bun run doctor -- --home /tmp/consuelo-os
+bun run doctor -- --json
+```

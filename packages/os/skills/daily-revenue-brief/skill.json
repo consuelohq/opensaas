@@ -1,0 +1,10 @@
+{
+  "name": "daily-revenue-brief",
+  "title": "Daily Revenue Brief",
+  "description": "Builds a daily workspace revenue brief from approved structured context and writes a local artifact.",
+  "script": "scripts/revenue/daily-revenue-brief.ts",
+  "permission": "read",
+  "requiresApproval": false,
+  "artifactTypes": ["brief"],
+  "capabilities": ["consuelo-graphql"]
+}
