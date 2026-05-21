@@ -11432,8 +11432,24 @@
         "source": "task:fs",
         "task_branch": "task/dialer/fix-queue-id"
       }
+    },
+    {
+      "id": "d94683f7-38dd-4826-9945-5c10f1847912",
+      "occurred_at": "2026-05-21T03:34:47.625Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-explicit-runtime-queue-id",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-explicit-runtime-queue-id"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T01:39:38.387Z"
+  "updated_at": "2026-05-21T03:34:47.676Z"
 }

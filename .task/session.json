@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_349368e04d7d",
-  "tmuxSession": "opensaas-dialer-fix-queue-id-349368e0",
+  "taskSession": "tsk_bedb65015c75",
+  "tmuxSession": "opensaas-dialer-ship-explicit-runtime-queue-id-bedb6501",
   "area": "dialer",
   "stream": "stream/dialer",
-  "taskBranch": "task/dialer/fix-queue-id",
-  "branch": "task/dialer/fix-queue-id",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-id",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-id",
-  "prNumber": 413,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/413",
-  "createdAt": "2026-05-21T01:36:19.244Z",
+  "taskBranch": "task/dialer/ship-explicit-runtime-queue-id",
+  "branch": "task/dialer/ship-explicit-runtime-queue-id",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-explicit-runtime-queue-id",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-explicit-runtime-queue-id",
+  "prNumber": 417,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/417",
+  "createdAt": "2026-05-21T03:33:59.767Z",
   "tmuxCreated": true
 }
