@@ -66,7 +66,7 @@ const createQueueItem = (
 });
 
 const activeParallelQueue: CallQueue = {
-  id: 'queue-1',
+  id: 'list-1',
   name: 'test queue',
   description: null,
   sourceType: 'list',
@@ -133,7 +133,7 @@ describe('useParallelDialer', () => {
     expect(mockStartDialerCall).not.toHaveBeenCalled();
   });
 
-  it('starts a predictive GraphQL call without sending a frontend-sliced batch', async () => {
+  it('starts a predictive GraphQL call with the runtime queue item queue ID', async () => {
     mockStartDialerCall.mockResolvedValue({
       sessionId: 'session_test',
       twilioGroupId: 'pg_test',
