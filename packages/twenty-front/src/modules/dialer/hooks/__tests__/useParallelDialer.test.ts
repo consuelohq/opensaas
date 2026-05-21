@@ -101,6 +101,11 @@ const queueItems = [
   createQueueItem('item-2', '+18054259549', 'pending'),
 ];
 
+const queueItemsWithStaleListQueueId = queueItems.map((item) => ({
+  ...item,
+  queueId: 'list-1',
+}));
+
 const renderUseParallelDialer = (
   initializeState: (snap: MutableSnapshot) => void,
 ) => renderHookWithRecoil(() => useParallelDialer(), { initializeState });
@@ -133,7 +138,7 @@ describe('useParallelDialer', () => {
     expect(mockStartDialerCall).not.toHaveBeenCalled();
   });
 
-  it('starts a predictive GraphQL call with the runtime queue item queue ID', async () => {
+  it('starts a predictive GraphQL call with the explicit runtime queue ID', async () => {
     mockStartDialerCall.mockResolvedValue({
       sessionId: 'session_test',
       twilioGroupId: 'pg_test',
@@ -164,7 +169,7 @@ describe('useParallelDialer', () => {
 
     const { result } = renderUseParallelDialer((snap) => {
       snap.set(activeQueueState, activeParallelQueue);
-      snap.set(queueItemsState, queueItems);
+      snap.set(queueItemsState, queueItemsWithStaleListQueueId);
       snap.set(currentQueueIndexState, 0);
     });
 
@@ -173,7 +178,9 @@ describe('useParallelDialer', () => {
     > | null = null;
 
     await act(async () => {
-      startResult = await result.current.startParallelBatch();
+      startResult = await result.current.startParallelBatch({
+        queueId: 'queue-1',
+      });
     });
 
     expect(startResult).toEqual({ status: 'started', groupId: 'pg_test' });
@@ -216,7 +223,7 @@ describe('useParallelDialer', () => {
           },
         ],
       });
-      snap.set(queueItemsState, queueItems);
+      snap.set(queueItemsState, queueItemsWithStaleListQueueId);
       snap.set(currentQueueIndexState, 0);
     });
 
@@ -247,7 +254,7 @@ describe('useParallelDialer', () => {
           },
         ],
       });
-      snap.set(queueItemsState, queueItems);
+      snap.set(queueItemsState, queueItemsWithStaleListQueueId);
       snap.set(currentQueueIndexState, 0);
     });
 

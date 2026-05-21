@@ -1,9 +1,9 @@
-# fix queue id
+# fix queue runtime id hydration
 
-branch: `task/dialer/fix-queue-id`
+branch: `task/dialer/fix-queue-runtime-id-hydration`
 stream: `stream/dialer`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/413/fix-queue-id
-github pr: https://github.com/consuelohq/opensaas/pull/413
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/416/fix-queue-runtime-id-hydration
+github pr: https://github.com/consuelohq/opensaas/pull/416
 started: 2026-05-21
 
 ## acceptance criteria
@@ -44,11 +44,12 @@ bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-21 01:37:25 patch lines 82-88: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:37:30 patch lines 103-103: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:37:46 patch lines 100-105: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:37:50 patch lines 157-157: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:38:15 patch lines 157-157: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:38:48 patch lines 160-160: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- 2026-05-21 01:38:55 patch lines 69-69: `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
-- 2026-05-21 01:39:00 patch lines 136-136: `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
+- 2026-05-21 03:28:26 patch lines 31-31: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 03:28:51 patch lines 19-34: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 03:29:01 patch lines 75-75: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 03:29:27 patch lines 75-77: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 03:29:40 patch lines 90-90: `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- 2026-05-21 03:29:44 patch lines 1258-1258: `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
+- 2026-05-21 03:29:57 patch lines 1258-1258: `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
+- 2026-05-21 03:30:04 patch lines 1279-1279: `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
+- 2026-05-21 03:30:38 patch lines 1273-1297: `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
