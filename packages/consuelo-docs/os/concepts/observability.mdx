@@ -1,0 +1,22 @@
+---
+title: Observability
+description: How Consuelo OS records what happened.
+---
+
+# Observability
+
+Every OS call should be traceable.
+
+A trace ID lets a user or operator connect a request, skill execution, logs, artifacts, approvals, and errors.
+
+## Local observability
+
+Local OS stores execution metadata in SQLite and writes logs under the local OS home.
+
+## Cloud observability
+
+Cloud OS records execution metadata in the app and can connect to hosted observability tools for team support.
+
+## Minimum execution record
+
+A skill execution should record the workspace, user, skill, status, trace ID, start time, finish time, artifacts, approvals, and safe error message when something fails.

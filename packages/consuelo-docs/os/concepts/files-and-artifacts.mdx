@@ -1,0 +1,20 @@
+---
+title: Files and Artifacts
+description: How Consuelo OS tracks generated files and outputs.
+---
+
+# Files and artifacts
+
+Consuelo OS treats generated files as artifacts.
+
+An artifact is an app-native record with storage behind it. The record tracks who created it, which skill created it, what source records were used, where the file is stored, and what version it belongs to.
+
+## Local and cloud storage
+
+Local OS stores files under the local OS home and records metadata in SQLite.
+
+Cloud OS stores files in cloud storage and records metadata in the app.
+
+## Artifact formats
+
+Reports and outputs can be Markdown, PDF, DOCX, HTML, JSON, CSV, images, or app-native records. The format can vary. The artifact record is the durable product layer.

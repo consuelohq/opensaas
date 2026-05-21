@@ -1,0 +1,20 @@
+---
+title: Data Model and GraphQL
+description: How Consuelo OS reads structured workspace data.
+---
+
+# Data model and GraphQL
+
+Consuelo OS has an ontology and a schema.
+
+The ontology is how agents understand the workspace: people, companies, calls, tasks, notes, files, skills, reports, approvals, and artifacts.
+
+The schema is how Consuelo stores records today. Some ontology objects already exist as standard workspace objects. Others begin as artifacts or integration-backed records before becoming first-class objects.
+
+## Structured data path
+
+Skills should use structured GraphQL/API facades for workspace records. Direct database access is reserved for internal operator scripts, migrations, diagnostics, and emergency repair.
+
+## Structured first, vector second
+
+Structured records are the source of truth. Vector context is supporting memory, not authority.
