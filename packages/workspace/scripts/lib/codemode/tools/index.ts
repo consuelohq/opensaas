@@ -9,11 +9,12 @@ export type CodeRunRegistryState = { operations: CodeRunOperation[]; blockedTool
 
 type BuildToolRegistryOptions = { taskSession?: string; mode?: CodeRunMode; state?: CodeRunRegistryState };
 
-const JS_RESERVED = new Set(['await', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield']);
-const READ_MUTATING_CATEGORIES = new Set(['http', 'utilities']);
-const EDIT_MUTATING_CATEGORIES = new Set(['filesystem', 'composed', 'utilities', 'http']);
-const VERIFY_MUTATING_CATEGORIES = new Set(['filesystem', 'composed', 'utilities', 'http', 'review', 'decision engine']);
-const EXPLICITLY_BLOCKED_CATEGORIES = new Set(['task lifecycle', 'linear', 'github', 'consuelo design', 'generation']);
+const JS_RESERVED = new Set([
+  'await', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'delete',
+  'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in',
+  'instanceof', 'let', 'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
+  'void', 'while', 'with', 'yield',
+]);
 
 function sanitizeToolName(name: string): string {
   let sanitized = name.replace(/[-.\s]/g, '_').replace(/[^a-zA-Z0-9_$]/g, '');
@@ -31,34 +32,105 @@ function asToolInput(value: unknown): ToolInput {
   return isRecord(value) ? value : {};
 }
 
-function isAllowed(entry: ToolManifestEntry, mode: CodeRunMode, hasTaskSession: boolean): { ok: true } | { ok: false; reason: string; nextStep: string } {
-  if (!entry.capabilities.mutating) return { ok: true };
-  if (EXPLICITLY_BLOCKED_CATEGORIES.has(entry.category)) return { ok: false, reason: `${entry.name} belongs to ${entry.category} and is blocked inside code.run.`, nextStep: `Run ${entry.name} as an explicit workspace.call after reviewing code.run output.` };
-  if (entry.sessionRequired && !hasTaskSession) return { ok: false, reason: `${entry.name} requires taskSession inside code.run.`, nextStep: 'Pass taskSession to code.run.' };
-  if (mode === 'read' && READ_MUTATING_CATEGORIES.has(entry.category)) return { ok: true };
-  if (mode === 'edit' && EDIT_MUTATING_CATEGORIES.has(entry.category)) return { ok: true };
-  if (mode === 'verify' && VERIFY_MUTATING_CATEGORIES.has(entry.category)) return { ok: true };
-  return { ok: false, reason: `${entry.name} is not allowed in code.run ${mode} mode.`, nextStep: mode === 'read' ? 'Use mode="edit" or mode="verify" for task-scoped mutation or validation.' : `Run ${entry.name} explicitly through workspace.call.` };
+function withTaskSession(input: ToolInput, taskSession?: string): ToolInput {
+  return { ...input, ...(taskSession ? { taskSession } : {}) };
+}
+
+function trackChangedFile(entry: ToolManifestEntry, input: ToolInput, state: CodeRunRegistryState): void {
+  if (!entry.capabilities.mutating) return;
+  if (entry.category !== 'filesystem') return;
+  if (typeof input.path === 'string') state.changedFiles.add(input.path);
+}
+
+function blockedResult(tool: string, helper: string, state: CodeRunRegistryState): ToolResult<unknown> {
+  const blocked = {
+    tool,
+    helper,
+    reason: `${tool} cannot be called from inside code.run because recursive code.run calls are blocked.`,
+    nextStep: `Run ${tool} as a separate outer workspace.call if nesting is required.`,
+  };
+  state.blockedTools.push(blocked);
+  return {
+    now: new Date().toISOString(),
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: blocked.reason,
+    data: blocked,
+    stderr: '',
+    exitCode: 1,
+    durationMs: 0,
+    traceId: 'code-run-blocked-recursive',
+    apiVersion: '1.0.0',
+  };
+}
+
+function missingToolResult(tool: string, helper: string): ToolResult<unknown> {
+  return {
+    now: new Date().toISOString(),
+    ok: false,
+    code: 'NOT_FOUND',
+    message: `unknown workspace tool: ${tool}`,
+    data: { tool, helper },
+    stderr: '',
+    exitCode: 1,
+    durationMs: 0,
+    traceId: 'code-run-tool-not-found',
+    apiVersion: '1.0.0',
+  };
+}
+
+async function runWorkspaceTool(
+  entry: ToolManifestEntry,
+  helper: string,
+  rawInput: unknown,
+  options: BuildToolRegistryOptions,
+  state: CodeRunRegistryState,
+): Promise<unknown> {
+  try {
+    if (entry.name === 'code.run') return blockedResult(entry.name, helper, state);
+    const toolInput = withTaskSession(asToolInput(rawInput), options.taskSession);
+    const result = await executeTool(entry.name, toolInput, { logMode: 'errors' });
+    state.operations.push({
+      tool: entry.name,
+      helper,
+      ok: result.ok,
+      code: result.code,
+      message: result.message,
+      traceId: result.traceId,
+      durationMs: result.durationMs,
+    });
+    if (result.ok) trackChangedFile(entry, toolInput, state);
+    return result;
+  } catch (error: unknown) {
+    return {
+      ok: false,
+      code: 'COMMAND_FAILED',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function makeToolFunction(entry: ToolManifestEntry, helper: string, options: BuildToolRegistryOptions, state: CodeRunRegistryState): ToolFunction {
-  return async (input: unknown = {}) => {
-    try {
-      const mode = options.mode || 'read';
-    const policy = isAllowed(entry, mode, Boolean(options.taskSession));
-    if (!policy.ok) {
-      const blocked = { tool: entry.name, helper, reason: policy.reason, nextStep: policy.nextStep };
-      state.blockedTools.push(blocked);
-      return { error: 'CODE_RUN_TOOL_BLOCKED', ...blocked };
-    }
-    const toolInput = { ...asToolInput(input), ...(options.taskSession ? { taskSession: options.taskSession } : {}) };
-    const result = await executeTool(entry.name, toolInput, { logMode: 'errors' });
-    state.operations.push({ tool: entry.name, helper, ok: result.ok, code: result.code, message: result.message, traceId: result.traceId, durationMs: result.durationMs });
-      if (result.ok && entry.category === 'filesystem' && typeof toolInput.path === 'string' && entry.capabilities.mutating) state.changedFiles.add(toolInput.path);
-      return result;
-    } catch (error: unknown) {
-      return { ok: false, code: 'COMMAND_FAILED', message: error instanceof Error ? error.message : String(error) };
-    }
+  return async (input: unknown = {}) => runWorkspaceTool(entry, helper, input, options, state);
+}
+
+function makeGenericWorkspaceCall(entriesByName: Map<string, ToolManifestEntry>, options: BuildToolRegistryOptions, state: CodeRunRegistryState): ToolFunction {
+  return async (toolOrRequest: unknown, maybeInput?: unknown) => {
+    const request = isRecord(toolOrRequest) ? toolOrRequest : null;
+    const tool = typeof toolOrRequest === 'string'
+      ? toolOrRequest
+      : typeof request?.tool === 'string'
+        ? request.tool
+        : '';
+    const input = typeof toolOrRequest === 'string'
+      ? maybeInput
+      : isRecord(request) && 'input' in request
+        ? request.input
+        : {};
+    const helper = 'workspace_call';
+    const entry = entriesByName.get(tool);
+    if (!entry) return missingToolResult(tool || '<missing>', helper);
+    return runWorkspaceTool(entry, helper, input, options, state);
   };
 }
 
@@ -96,11 +168,16 @@ function addFriendlyAliases(registry: ToolRegistry, state: CodeRunRegistryState)
 export function buildToolRegistry(_basePath: string, options: BuildToolRegistryOptions = {}): ToolRegistry {
   const state = options.state || { operations: [], blockedTools: [], changedFiles: new Set<string>() };
   const registry: ToolRegistry = {};
+  const entriesByName = new Map<string, ToolManifestEntry>();
   for (const entry of manifestEntries) {
-    if (entry.name === 'code.run') continue;
+    entriesByName.set(entry.name, entry);
     const helper = sanitizeToolName(entry.name);
     registry[helper] = makeToolFunction(entry, helper, options, state);
   }
+  const genericCall = makeGenericWorkspaceCall(entriesByName, options, state);
+  registry.workspace_call = genericCall;
+  registry.workspaceCall = genericCall;
+  registry.callTool = genericCall;
   addFriendlyAliases(registry, state);
   return registry;
 }

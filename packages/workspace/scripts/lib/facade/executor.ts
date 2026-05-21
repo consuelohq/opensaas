@@ -595,7 +595,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script),
+    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),
@@ -734,7 +734,8 @@ function resolveGitRoot(cwd: string): string {
   }
 }
 
-function resolveWorkspaceCommandCwd(cwd: string, script: string): string {
+function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
+  if (script === 'code-run' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   return resolveControllerRoot(cwd) || cwd;
 }
