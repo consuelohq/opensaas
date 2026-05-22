@@ -273,7 +273,8 @@
     "generate-types": "bun packages/workspace/scripts/generate-types.ts",
     "server": "bun packages/workspace/scripts/server.js",
     "consuelo-design": "bun packages/workspace/scripts/consuelo-design.ts",
-    "code-run": "bun packages/workspace/scripts/code-run.ts"
+    "code-run": "bun packages/workspace/scripts/code-run.ts",
+    "github": "bun packages/workspace/scripts/github.js"
   },
   "workspaces": {
     "packages": [

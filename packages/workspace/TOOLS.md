@@ -46,6 +46,66 @@ if (!result.ok) throw new Error(result.message);
 
 ## commands by category
 
+## codemode
+
+### code.run
+
+run workspace-native codemode JavaScript against allowed workspace tools
+
+- signature: `workspace.code.run({ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace code.run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "code.run",
+  "input": {
+    "code": "return await workspace_call(\"status\", {})",
+    "maxOperations": 25,
+    "maxResultChars": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## composed
 
 ### checkFiles
@@ -2502,6 +2562,64 @@ await workspace.call({
     "args": [
       "225"
     ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### github
+
+typed GitHub facade with semantic operations and presets; prefer over raw gh
+
+- signature: `workspace.github({ operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace github`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "github",
+  "input": {
+    "operation": "pr.view",
+    "pr": 436,
+    "preset": "review"
   }
 });
 ```

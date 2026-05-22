@@ -387,6 +387,41 @@ export const GhInput = z.object({
   args: stringArray,
 });
 
+
+export const GithubInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum([
+    'pr.view',
+    'pr.checks',
+    'pr.reviews',
+    'pr.files',
+    'pr.diff',
+    'pr.list',
+    'pr.merge',
+    'branch.compare',
+    'repo.view',
+    'raw',
+  ]),
+  repo: z.string().optional(),
+  pr: z.number().int().positive().optional(),
+  branch: z.string().optional(),
+  base: z.string().optional(),
+  head: z.string().optional(),
+  preset: z.enum(['summary', 'review', 'merge', 'checks', 'files', 'full']).optional(),
+  fields: stringArray,
+  limit: z.number().int().positive().optional(),
+  state: z.enum(['open', 'closed', 'merged', 'all']).optional(),
+  body: z.string().optional(),
+  bodyFile: z.string().optional(),
+  wait: z.boolean().optional(),
+  squash: z.boolean().optional(),
+  full: z.boolean().optional(),
+  mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
+  rawArgs: stringArray,
+  reason: z.string().optional(),
+});
+
 export const BrowserInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -836,6 +871,7 @@ export const schemaRegistry = {
   PrReviewInput,
   AiReviewInput,
   GhInput,
+  GithubInput,
   BrowserInput,
   BrowserOpenInput,
   BrowserPageInput,
@@ -934,6 +970,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',

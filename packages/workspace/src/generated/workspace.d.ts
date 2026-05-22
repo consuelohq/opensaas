@@ -57,7 +57,7 @@ declare const workspace: {
     wait: (input: { target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   code: {
-    run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   consueloDesign: {
     check: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -178,6 +178,7 @@ declare const workspace: {
   exploit: (input: { query?: string; target?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   explore: (input: { query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   gh: (input: { action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  github: (input: { operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   prReview: (input: { pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   server: (input: { action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
