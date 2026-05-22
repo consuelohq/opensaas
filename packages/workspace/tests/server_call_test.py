@@ -70,12 +70,34 @@ class WorkspaceCallServerTest(unittest.TestCase):
         (self.worktree / '.task').mkdir(parents=True)
         self.session = 'tsk_test'
         os.environ['WORKSPACE_WORKTREE_ROOT'] = str(self.worktree_root)
-        (self.worktree / '.task' / 'session.json').write_text(json.dumps({
-            'taskSession': self.session,
+        self._write_legacy_session()
+
+    def _session_payload(self, session=None, branch='task/workspace-agents/test', worktree=None):
+        return {
+            'taskSession': session or self.session,
             'tmuxSession': 'opensaas-test',
-            'branch': 'task/workspace-agents/test',
-            'worktree': str(self.worktree),
-        }), encoding='utf-8')
+            'branch': branch,
+            'taskBranch': branch,
+            'worktree': str(worktree or self.worktree),
+            'worktreePath': str(worktree or self.worktree),
+        }
+
+    def _write_legacy_session(self, session=None):
+        (self.worktree / '.task' / 'session.json').write_text(json.dumps(
+            self._session_payload(session=session),
+        ), encoding='utf-8')
+
+    def _write_scoped_session(self, session=None, branch='task/workspace-agents/test'):
+        scoped = self.worktree / '.task' / 'workspace-agents' / 'test'
+        scoped.mkdir(parents=True, exist_ok=True)
+        (scoped / 'session.json').write_text(json.dumps(
+            self._session_payload(session=session, branch=branch),
+        ), encoding='utf-8')
+
+    def _remove_legacy_session(self):
+        legacy = self.worktree / '.task' / 'session.json'
+        if legacy.exists():
+            legacy.unlink()
 
     def tearDown(self):
         self.tempdir.cleanup()
@@ -351,6 +373,75 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
+
+    def test_top_level_task_session_resolves_from_scoped_metadata_without_root_session(self):
+        self._remove_legacy_session()
+        self._write_scoped_session()
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('fs.read', taskSession=self.session, tool_input={'path': 'AGENTS.md'})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['branch'], 'task/workspace-agents/test')
+
+    def test_input_level_task_session_is_promoted_for_session_required_tools(self):
+        self._remove_legacy_session()
+        self._write_scoped_session()
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('fs.read', tool_input={'path': 'AGENTS.md', 'taskSession': self.session})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+
+    def test_conflicting_top_level_and_input_task_session_is_standard_error(self):
+        result = self.module._run_workspace_call(
+            'fs.read',
+            taskSession='tsk_outer',
+            tool_input={'path': 'AGENTS.md', 'taskSession': 'tsk_inner'},
+        )
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'VALIDATION_ERROR')
 
     def test_bun_file_not_found_is_standard_error(self):
         def fake_run(args, **kwargs):

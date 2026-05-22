@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2fa716880674",
+  "tmuxSession": "opensaas-workspace-agents-fix-top-level-task-session-propagation-2fa71688",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-top-level-task-session-propagation",
+  "branch": "task/workspace-agents/fix-top-level-task-session-propagation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-top-level-task-session-propagation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-top-level-task-session-propagation",
+  "prNumber": 462,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/462",
+  "createdAt": "2026-05-22T07:46:11.267Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-top-level-task-session-propagation/.task/workspace-agents/fix-top-level-task-session-propagation/session.json"
+}
