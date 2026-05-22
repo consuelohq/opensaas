@@ -664,26 +664,57 @@ verify with the most relevant signal:
 
 ## Timeout budgets are part of correctness
 
-Use timeout budgets that match the operation. Do not run long workflow operations with short default timeouts.
+Use timeout budgets that match the operation. A timeout is not proof that the operation failed; it only means the caller stopped waiting.
 
-Recommended minimums:
+Choose timeouts from observed latency, expected workload, and risk:
 
-- `fs.read`, `fs.search`, `fs.patch`: 120 seconds
-- `task.exec` for simple commands: 300 seconds
-- docs/type generation: 300 seconds
-- focused tests: 600 seconds
-- `review.run`: 900 seconds
-- `verify`: 1200 seconds
-- `task.push`: 900 seconds
-- `task.pr`: 1200 seconds
-- `task.merge`: 1200 seconds
-- deployment checks: 900 seconds or longer when waiting for Railway
-- manually update this list when you find new timeouts to help other agents
+- routine read/status/context calls: short timeout
+- orchestration and semantic exploration: medium timeout
+- tests, review, verify, publish, and external services: long timeout
+- deploy/Railway/browser/E2E checks: extra-long timeout
 
-If a long operation times out, do not assume the operation failed. Check task state, logs, PR state, branch state, or generated output through a follow-up workspace call. A timeout means the caller stopped waiting; it is not proof that the underlying operation stopped.
+Recommended defaults:
 
-For final validation and shipping, prefer single-purpose calls over large batches. Batches are useful for read-only inspection. Final workflow steps should run separately so the exact timeout source is visible.
+| Operation | Recommended timeout | Why |
+|---|---:|---|
+| `fs.read`, `fs.search`, `fs.list` | 120s | Usually fast; enough room for large files/searches. |
+| `status`, `stream.context`, `context.search`, `doctor` | 120s | p99 is under 10s, but keep room for server hiccups. |
+| `explore` | 180s | p95 is about 51s; semantic discovery can spike. |
+| `code.run` read/verify orchestration | 180s | p99 is about 20s; allow room for composed child calls. |
+| `code.run` edit orchestration | 300s | Edits may call multiple tools and validation smokes. |
+| `batch` read-only inspection | 300s | Usually fast, but p99 can spike when child calls are slow. |
+| `task.start` | 180s | p99 is about 34s; worktree/PR setup can vary. |
+| `stream.sync` | 300s | Usually fast; conflicts or fetch state can add time. |
+| `task.push` | 300s | p99 is about 22s; large changed sets or GitHub delay need room. |
+| `task.pr` | 300s | p99 is under 10s; stream promotion can still hit GitHub delay. |
+| `task.merge` | 300s | Usually fast; wait/merge state may need follow-up verification. |
+| `task.finish` | 180s | Usually fast; cleanup should still get enough room. |
+| `task.exec` simple command | 300s | p99 can spike; package scripts vary. |
+| docs/type generation | 300s | Generation is bounded but can hit repo/tool startup latency. |
+| focused tests | 600s | Test startup and package-level tests can vary. |
+| full package tests | 900s | Use for broad package test runs. |
+| `review.run` | 900s | p99 is about 2m; lint/typecheck can grow with changes. |
+| `verify` | 1200s | p99 is about 3m; keep large safety margin for full gates. |
+| deployment/Railway/browser/E2E checks | 900s+ | External systems and deploy propagation are slower and less deterministic. |
 
+Use shorter timeouts only when the operation is intentionally tiny and safe to retry.
+
+Use longer timeouts when:
+- the command runs tests, review, verify, build, deploy, browser, or E2E validation
+- the operation calls external services such as GitHub, Railway, Twilio, Stripe, Sentry, or Linear
+- the task has a large changed set
+- the workspace server was recently restarted
+- previous traces show this specific command often runs long
+
+If a long operation times out:
+1. Do not assume failure.
+2. Check task state, trace logs, PR state, branch state, generated files, or tool output.
+3. Retry once with a corrected timeout only after checking whether the original operation completed.
+4. If the timeout came from a batch, rerun the slow child step separately.
+
+For final validation and shipping, prefer single-purpose calls over large batches. Batches are useful for read-only inspection and fixed checklists. Final workflow steps should run separately so the exact timeout source is visible.
+
+When a timeout surprises you, record the operation, timeout used, observed duration if known, and recommended future timeout in the workpad. Update this timeout table when repeated evidence shows a better budget.
 ## Finish the task or name the real blocker
 
 Do not stop at the first tool failure when the user asked for a shippable change. Tool failures are work to diagnose, not completion states.
