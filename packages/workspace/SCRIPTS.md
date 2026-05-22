@@ -965,6 +965,20 @@ Use `workspace_call("tool.name", input)` for generic facade calls, sanitized hel
 
 ---
 
+### github — typed GitHub facade
+
+Preferred GitHub tool for agents. Use semantic operations and presets instead of constructing raw `gh` CLI arguments.
+
+```bash
+bun run github -- pr.view --pr 436 --preset review
+bun run github -- pr.checks --pr 436
+bun run github -- branch.compare --base main --head stream/workspace-agents
+```
+
+Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
+
+---
+
 ### tool-runner — run one typed workspace tool
 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
@@ -1410,5 +1424,6 @@ Template names are `research`, `spec`, and `plan`. The selected template is inje
 Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
 
 The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
+
 
 
