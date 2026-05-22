@@ -191,6 +191,14 @@ function printResult(result, useJson) {
   writeStdout(`github: ${result.githubPrUrl}`);
 }
 
+
+function removeStaleRootTaskState(worktreePath) {
+  for (const fileName of ['current.json', 'session.json', 'workpad.md', 'verify.json']) {
+    const filePath = path.join(worktreePath, '.task', fileName);
+    if (fs.existsSync(filePath)) fs.rmSync(filePath, { force: true });
+  }
+}
+
 function resolveSourceBranch(startFrom, stream) {
   if (startFrom === 'stream') {
     return stream;
@@ -266,7 +274,8 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  try {
+    const args = parseArgs(process.argv.slice(2));
 
     if (args.help) {
       printHelp();
@@ -358,6 +367,7 @@ async function main() {
     }
 
     const worktreePath = worktree.path;
+    removeStaleRootTaskState(worktreePath);
 
     // symlink node_modules from main worktree so tests/lint/typecheck work
     const worktreeNodeModules = path.join(worktreePath, 'node_modules');
@@ -566,9 +576,13 @@ async function main() {
       writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
       writeStderr('  bun run task:pr');
     }
+  } catch (error) {
+    throw error;
+  }
 }
 
 main().catch((error) => {
   writeStderr(error instanceof Error ? error.message : 'unknown error');
   process.exit(1);
 });
+
