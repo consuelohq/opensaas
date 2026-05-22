@@ -2547,7 +2547,7 @@ example error envelope:
 
 inspect task or working-tree diffs as bounded structured JSON for agents
 
-- signature: `workspace.git.diff(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace git:diff`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms

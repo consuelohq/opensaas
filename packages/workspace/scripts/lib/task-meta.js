@@ -163,9 +163,15 @@ function readTaskMetaRecordFromPath(filePath, directory, expectedBranch, include
 function findTaskMetaInDirectory(directory, options = {}) {
   const expectedBranch = options.taskBranch || options.branch || options.currentBranch || getCurrentBranchSafe(directory);
   const candidatePaths = [];
+  const scopedLookupBranch = options.taskBranch || options.branch || expectedBranch;
+  const shouldSearchScopedMetadata = Boolean(
+    options.taskBranch ||
+    options.branch ||
+    (typeof scopedLookupBranch === 'string' && scopedLookupBranch.startsWith('task/'))
+  );
   if (options.taskBranch || options.branch) candidatePaths.push(getTaskCurrentMetaPath(directory, options.taskBranch || options.branch));
   if (expectedBranch) candidatePaths.push(getTaskCurrentMetaPath(directory, expectedBranch));
-  candidatePaths.push(...listScopedCurrentMetaPaths(directory));
+  if (shouldSearchScopedMetadata) candidatePaths.push(...listScopedCurrentMetaPaths(directory));
   candidatePaths.push(path.join(directory, TASK_DIR, CURRENT_FILENAME));
   candidatePaths.push(path.join(directory, '.task-meta.json'));
   const staleRecords = [];
