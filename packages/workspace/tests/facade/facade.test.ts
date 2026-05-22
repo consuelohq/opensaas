@@ -320,7 +320,7 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('resolves namespaced taskSession metadata and ignores malformed unrelated worktrees', async () => {
+  it('should resolve namespaced taskSession metadata when unrelated worktrees are malformed', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-namespaced-'));
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
     const worktreeRoot = join(tempRoot, 'worktrees');
