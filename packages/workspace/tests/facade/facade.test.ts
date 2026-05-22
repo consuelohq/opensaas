@@ -121,6 +121,14 @@ function executableEntries() {
 }
 
 describe('typed facade executor', () => {
+  it('registers every manifest input schema', () => {
+    const missing = manifestEntries
+      .map((entry) => entry.inputSchema)
+      .filter((name, index, names) => names.indexOf(name) === index)
+      .filter((name) => !getInputSchema(name));
+    expect(missing).toEqual([]);
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
@@ -613,6 +621,32 @@ describe('batch executor', () => {
 });
 
 describe('composed and mac wrappers', () => {
+  it('builds git.diff command arguments', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-git-diff-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_git_diff');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('git.diff', {
+        taskSession: 'tsk_git_diff',
+        base: 'origin/main',
+        stat: true,
+        files: true,
+        hunks: true,
+        maxBytes: 20000,
+      }, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('git:diff');
+      expect(plans[0].args).toContain('--base');
+      expect(plans[0].args).toContain('origin/main');
+      expect(plans[0].args).toContain('--stat');
+      expect(plans[0].args).toContain('--files');
+      expect(plans[0].args).toContain('--hunks');
+      expect(plans[0].args).toContain('--max-bytes');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('builds checkFiles command arguments', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-check-files-'));
     try {
