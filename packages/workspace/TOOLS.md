@@ -2541,6 +2541,69 @@ example error envelope:
 }
 ```
 
+## git
+
+### git.diff
+
+inspect task or working-tree diffs as bounded structured JSON for agents
+
+- signature: `workspace.git.diff(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace git:diff`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "git.diff",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "base": "origin/main",
+    "stat": true,
+    "files": true,
+    "hunks": true,
+    "maxBytes": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## github
 
 ### gh

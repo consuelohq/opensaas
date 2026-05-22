@@ -1427,3 +1427,21 @@ The publish path is durable. `design.publish` materializes local file or directo
 
 
 
+
+
+### git:diff — structured git diff for agents
+
+Structured, bounded diff inspection for agents. Prefer this over raw `git diff` through `task.exec`.
+
+```bash
+bun run git:diff -- --branch task/workspace-agents/example --base origin/main --stat --files --hunks --json
+bun run git:diff -- --patch --max-bytes 20000 --json
+```
+
+Default behavior:
+
+- no `base`/`head`: reads the current working-tree diff
+- `base` without `head`: compares `base...HEAD`
+- no output flags: returns `stat`, `files`, and `hunks`
+- `patch` must be requested explicitly and is bounded by `maxBytes`
+

@@ -41,7 +41,8 @@
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
     "code-run": "bun ./scripts/code-run.ts",
-    "github": "bun ./scripts/github.js"
+    "github": "bun ./scripts/github.js",
+    "git:diff": "bun ./scripts/git-diff.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
