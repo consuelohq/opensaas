@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-top-level-task-session-propagation",
+  "base": "origin/main",
+  "headSha": "b6cd42af11bc8adb6ed057a871ec671a146f16fd",
+  "changeHash": "137589d1570dcd0b70e9e4779ad6344c85c486a831d9c0021cb8080140dc2222",
+  "changedFiles": [
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-05-22T07:54:16.357Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

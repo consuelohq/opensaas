@@ -681,14 +681,38 @@ def _manifest_tool_requires_task_session(tool: str) -> bool:
     return command.get('branchMode') in {'optional', 'required'}
 
 
+def _task_session_candidate_paths(worktree_path: Path) -> list[Path]:
+    task_root = worktree_path / '.task'
+    candidates: list[Path] = []
+    if task_root.exists():
+        for area_path in task_root.iterdir():
+            if not area_path.is_dir() or area_path.name in {'tasks', 'reviews'}:
+                continue
+            for task_path in area_path.iterdir():
+                if not task_path.is_dir():
+                    continue
+                candidates.append(task_path / 'session.json')
+    candidates.append(task_root / 'session.json')
+    return candidates
+
+
 def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
     if not task_session:
         return None
-    root = _workspace_root()
-    candidates = [root / '.task' / 'session.json']
+    roots = [_workspace_root()]
     worktree_base = _worktree_root()
     if worktree_base.exists():
-        candidates.extend(worktree_base.glob('*/.task/session.json'))
+        roots.extend(path for path in worktree_base.iterdir() if path.is_dir() and path.name.startswith('task-'))
+
+    seen: set[Path] = set()
+    candidates: list[Path] = []
+    for root in roots:
+        for candidate in _task_session_candidate_paths(root):
+            resolved = candidate.resolve(strict=False)
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            candidates.append(candidate)
 
     for candidate in candidates:
         try:
@@ -703,9 +727,25 @@ def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
         metadata = raw
         branch = metadata.get('branch') or metadata.get('taskBranch')
         if metadata.get('taskSession') == task_session and isinstance(branch, str):
-            metadata.setdefault('worktree', str(candidate.parents[1]))
+            if not metadata.get('worktree') and not metadata.get('worktreePath'):
+                parts = candidate.parts
+                if '.task' in parts:
+                    metadata.setdefault('worktree', str(Path(*parts[:parts.index('.task')])))
             return metadata
     return None
+
+
+def _input_task_session(value: Any) -> str | None:
+    if isinstance(value, dict) and isinstance(value.get('taskSession'), str) and value.get('taskSession'):
+        return value.get('taskSession')
+    return None
+
+
+def _effective_task_session(task_session: str | None, tool_input: Any) -> tuple[str | None, str | None]:
+    input_task_session = _input_task_session(tool_input)
+    if task_session and input_task_session and task_session != input_task_session:
+        return None, 'Pass either top-level taskSession or matching input.taskSession, not conflicting values.'
+    return task_session or input_task_session, None
 
 
 def _input_has_branch(value: Any) -> bool:
@@ -798,6 +838,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     started = time.time()
     trace_id = _trace_id()
     normalized_input: Any = {} if tool_input is None else tool_input
+    effective_task_session, task_session_error = _effective_task_session(taskSession, normalized_input)
     trace_tool = tool if isinstance(tool, str) and tool else 'workspace.call'
 
     def finish(result: dict[str, Any], resolved_input: Any | None = None, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -806,7 +847,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             tool_input=normalized_input,
             resolved_input=resolved_input,
             result=result,
-            task_session=taskSession,
+            task_session=effective_task_session,
             mcp_trace_id=trace_id,
             metadata=metadata,
         )
@@ -815,7 +856,16 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     if not tool or not isinstance(tool, str):
         return finish(_envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id))
 
-    safety_reason = _safety_check(tool, normalized_input, taskSession)
+    if task_session_error:
+        return finish(_envelope(
+            ok=False,
+            code='VALIDATION_ERROR',
+            message=task_session_error,
+            data={'tool': tool},
+            traceId=trace_id,
+        ))
+
+    safety_reason = _safety_check(tool, normalized_input, effective_task_session)
     if safety_reason:
         result = _envelope(
             ok=False,
@@ -825,20 +875,20 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             exitCode=-1,
             traceId=trace_id,
         )
-        _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=True, reason=safety_reason)
+        _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=True, reason=safety_reason)
         return finish(result)
-    _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=False)
+    _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=False)
 
-    if taskSession and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+    if effective_task_session and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
         return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
             message='Pass either taskSession or input.branch, not both. taskSession is required for agent task-scoped calls.',
-            data={'tool': tool, 'taskSession': taskSession},
+            data={'tool': tool, 'taskSession': effective_task_session},
             traceId=trace_id,
         ))
 
-    if not taskSession and _tool_requires_task_session(tool, normalized_input):
+    if not effective_task_session and _tool_requires_task_session(tool, normalized_input):
         return finish(_envelope(
             ok=False,
             code='TASK_SESSION_REQUIRED',
@@ -847,13 +897,13 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             traceId=trace_id,
         ))
 
-    resolved_input, metadata = _apply_task_session(tool, taskSession, normalized_input)
-    if taskSession and metadata is None:
+    resolved_input, metadata = _apply_task_session(tool, effective_task_session, normalized_input)
+    if effective_task_session and metadata is None:
         return finish(_envelope(
             ok=False,
             code='TASK_SESSION_NOT_FOUND',
             message='taskSession was not found. Use the taskSession returned by task.start.',
-            data={'taskSession': taskSession},
+            data={'taskSession': effective_task_session},
             traceId=trace_id,
         ))
 
@@ -924,7 +974,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         envelope.setdefault('apiVersion', '1.0.0')
         if metadata:
             envelope['taskContext'] = {
-                'taskSession': taskSession,
+                'taskSession': effective_task_session,
                 'tmuxSession': metadata.get('tmuxSession'),
                 'branch': metadata.get('branch') or metadata.get('taskBranch'),
                 'worktree': metadata.get('worktree') or metadata.get('worktreePath'),
