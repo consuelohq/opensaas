@@ -1,17 +1,16 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+  "branch": "task/workspace-agents/address-pr-436-review-comments",
   "base": "origin/stream/workspace-agents",
-  "headSha": "27565e7650c28a48ebba4cc77ea302bdff245001",
-  "changeHash": "695dda86cf6d3fc93edb0de347bf37295c6f9452a00f957ec14d84f5e3801ac1",
+  "headSha": "9f8b4e5e52e2a94855f10f5edc0153c024bb9c11",
+  "changeHash": "2330b1dc737be058cf6aa48d9040a749dacd6b255be40b7994b8179527cef1d9",
   "changedFiles": [
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/lib/codemode/executor.ts",
-    "packages/workspace/scripts/lib/codemode/tools/index.ts",
-    "packages/workspace/scripts/lib/codemode/types.ts",
-    "packages/workspace/tests/codemode.test.ts"
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/task-meta-smoke.js",
+    "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "verifiedAt": "2026-05-21T19:09:26.028Z",
+  "verifiedAt": "2026-05-22T03:46:04.994Z",
   "review": {
     "skipped": false,
     "passed": true

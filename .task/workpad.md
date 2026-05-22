@@ -1,10 +1,10 @@
-# add code run workspace namespace helpers
+# address pr 436 review comments
 
-branch: `task/workspace-agents/add-code-run-workspace-namespace-helpers`
+branch: `task/workspace-agents/address-pr-436-review-comments`
 stream: `stream/workspace-agents`
-pr: https://app.graphite.com/github/pr/consuelohq/opensaas/441/add-code-run-workspace-namespace-helpers
-github pr: https://github.com/consuelohq/opensaas/pull/441
-started: 2026-05-21
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/445/address-pr-436-review-comments
+github pr: https://github.com/consuelohq/opensaas/pull/445
+started: 2026-05-22
 
 ## acceptance criteria
 
@@ -44,9 +44,9 @@ bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-21 19:05:44 write: `packages/workspace/scripts/lib/codemode/types.ts`
-- 2026-05-21 19:06:17 write: `packages/workspace/scripts/lib/codemode/executor.ts`
-- 2026-05-21 19:06:46 write: `packages/workspace/scripts/lib/codemode/tools/index.ts`
-- 2026-05-21 19:07:10 write: `packages/workspace/tests/codemode.test.ts`
-- 2026-05-21 19:08:05 write: `packages/workspace/SCRIPTS.md`
-- 2026-05-21 19:09:04 write: `packages/workspace/scripts/lib/codemode/executor.ts`
+- 2026-05-22 03:44:42 patch lines 323-323: `packages/workspace/tests/facade/facade.test.ts`
+- 2026-05-22 03:44:58 patch lines 343-345: `packages/workspace/scripts/lib/task-meta.js`
+- 2026-05-22 03:45:06 patch lines 171-171: `packages/workspace/scripts/lib/task-session.js`
+- 2026-05-22 03:45:07 patch lines 186-186: `packages/workspace/scripts/task-meta-smoke.js`
+- 2026-05-22 03:45:08 patch lines 187-187: `packages/workspace/scripts/task-meta-smoke.js`
+- 2026-05-22 03:45:17 patch lines 171-171: `packages/workspace/scripts/lib/task-session.js`

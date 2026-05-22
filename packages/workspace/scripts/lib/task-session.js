@@ -168,7 +168,7 @@ function readTaskSessionMetadata(worktreePath) {
       return JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
     } catch (error) {
       writeStderr(`warning: failed to parse task session metadata ${sessionPath}: ${error instanceof Error ? error.message : String(error)}`);
-      return null;
+      continue;
     }
   }
 

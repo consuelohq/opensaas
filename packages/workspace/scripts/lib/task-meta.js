@@ -340,9 +340,7 @@ function selectWorkpadCandidate(candidates, selectedTaskBranch) {
 
 function isAutoResolvableTaskMetadataPath(filePath) {
   const repoPath = normalizeRepoPath(filePath);
-  if (repoPath === CURRENT_META_PATH || repoPath === WORKPAD_PATH) return true;
-  const parts = repoPath.split('/');
-  return parts.length === 4 && parts[0] === TASK_DIR && (parts[3] === CURRENT_FILENAME || parts[3] === WORKPAD_FILENAME);
+  return repoPath === CURRENT_META_PATH || repoPath === WORKPAD_PATH;
 }
 
 function isOnlyTaskMetadataConflict(conflictFiles) {

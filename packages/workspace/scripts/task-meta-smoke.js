@@ -183,8 +183,8 @@ function runMetadataConflictSmoke() {
 
 function runMixedConflictSmoke() {
   assert.equal(isOnlyTaskMetadataConflict(['.task/current.json', 'packages/workspace/SCRIPTS.md']), false);
-  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/current.json']), true);
-  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/workpad.md']), true);
+  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/current.json']), false);
+  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/workpad.md']), false);
 }
 
 function runTaskSelectionSmoke() {
