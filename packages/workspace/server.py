@@ -182,9 +182,12 @@ def _get_langsmith_trace() -> Any | None:
         return None
 
 
-def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any]) -> None:
+def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any], usage_details: dict[str, int] | None = None) -> None:
+    update_payload: dict[str, Any] = {'input': inputs, 'output': output}
+    if usage_details:
+        update_payload['usage_details'] = usage_details
     try:
-        observation.update(input=inputs, output=output)
+        observation.update(**update_payload)
     except Exception:
         pass
 
@@ -201,7 +204,7 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
         if langfuse is None or propagate_attributes is None:
             return fn(*args, **kwargs)
         try:
-            observation_cm = langfuse.start_as_current_observation(as_type='span', name=trace_name)
+            observation_cm = langfuse.start_as_current_observation(as_type='generation', name=trace_name)
             propagation_cm = propagate_attributes(
                 session_id=_session_id,
                 metadata={'workspaceTrace': name, 'provider': 'langfuse'},
@@ -221,7 +224,12 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
                 'completion_tokens': completion_tokens,
                 'total_tokens': prompt_tokens + completion_tokens,
             }
-            _finish_langfuse_observation(span, inputs, _trace_outputs(name, inputs, result, usage))
+            usage_details = {
+                'input': prompt_tokens,
+                'output': completion_tokens,
+                'total': prompt_tokens + completion_tokens,
+            }
+            _finish_langfuse_observation(span, inputs, _trace_outputs(name, inputs, result, usage), usage_details)
             return result
 
     if provider == 'langsmith':
@@ -386,7 +394,10 @@ def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
             input_json TEXT,
             resolved_input_json TEXT,
             result_json TEXT,
-            stderr TEXT
+            stderr TEXT,
+            input_tokens INTEGER,
+            output_tokens INTEGER,
+            total_tokens INTEGER
         )
     ''')
     indexes = [
@@ -400,6 +411,10 @@ def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
     ]
     for statement in indexes:
         conn.execute(statement)
+    existing_columns = {row[1] for row in conn.execute('PRAGMA table_info(tool_traces)').fetchall()}
+    for column_name in ('input_tokens', 'output_tokens', 'total_tokens'):
+        if column_name not in existing_columns:
+            conn.execute(f'ALTER TABLE tool_traces ADD COLUMN {column_name} INTEGER')
     return conn, db_path
 
 
@@ -449,13 +464,17 @@ def _write_tool_trace(
         worktree = task_context.get('worktree') or (metadata or {}).get('worktree') or (metadata or {}).get('worktreePath')
         session = task_context.get('taskSession') or task_session
         conn, db_path = _open_trace_db()
+        input_tokens = _estimate_tokens(tool_input)
+        output_tokens = _estimate_tokens(result)
+        total_tokens = input_tokens + output_tokens
         try:
             conn.execute('''
                 INSERT OR REPLACE INTO tool_traces(
                     id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,
                     status, ok, code, exit_code, duration_ms,
-                    input_json, resolved_input_json, result_json, stderr
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    input_json, resolved_input_json, result_json, stderr,
+                    input_tokens, output_tokens, total_tokens
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 f'{mcp_trace_id}:{trace_id}',
                 datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -475,6 +494,9 @@ def _write_tool_trace(
                 _json_text(resolved_input) if resolved_input is not None else None,
                 _json_text(result),
                 result.get('stderr') if isinstance(result.get('stderr'), str) else None,
+                input_tokens,
+                output_tokens,
+                total_tokens,
             ))
             conn.commit()
             _enforce_trace_db_cap(conn, db_path)
