@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { getCurrentBranch, getRefSha, getTrackedChanges } = require('./git');
+const { findTaskMeta, getTaskVerifyPath } = require('./task-meta');
 
 const VERIFY_STAMP_PATH = path.join('.task', 'verify.json');
 
@@ -54,12 +55,14 @@ function computeVerificationState(repoRoot, branchOverride) {
   };
 }
 
-function getVerifyStampPath(repoRoot) {
+function getVerifyStampPath(repoRoot, branchOverride) {
+  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branchOverride, taskBranch: branchOverride });
+  if (taskMeta?.data) return getTaskVerifyPath(repoRoot, taskMeta.data);
   return path.join(repoRoot, VERIFY_STAMP_PATH);
 }
 
-function readVerifyStamp(repoRoot) {
-  const stampPath = getVerifyStampPath(repoRoot);
+function readVerifyStamp(repoRoot, branchOverride) {
+  const stampPath = getVerifyStampPath(repoRoot, branchOverride);
 
   if (!fs.existsSync(stampPath)) {
     return null;
@@ -73,16 +76,17 @@ function readVerifyStamp(repoRoot) {
 }
 
 function writeVerifyStamp(repoRoot, stamp) {
-  const stampPath = getVerifyStampPath(repoRoot);
+  const stampPath = getVerifyStampPath(repoRoot, stamp.branch);
   fs.mkdirSync(path.dirname(stampPath), { recursive: true });
   fs.writeFileSync(stampPath, `${JSON.stringify(stamp, null, 2)}\n`, 'utf8');
+  return stampPath;
 }
 
 function getVerifyStampMismatch(repoRoot, branchOverride) {
-  const stamp = readVerifyStamp(repoRoot);
+  const stamp = readVerifyStamp(repoRoot, branchOverride);
 
   if (!stamp) {
-    return 'missing .task/verify.json stamp';
+    return `missing ${path.relative(repoRoot, getVerifyStampPath(repoRoot, branchOverride)).split(path.sep).join('/')} stamp`;
   }
 
   if (stamp.result !== 'pass') {

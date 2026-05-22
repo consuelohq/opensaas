@@ -377,7 +377,7 @@ async function executeInternalTool<TData>(
         durationMs: elapsedMs(context.startedAt, context.options.now),
         traceId: context.traceId,
         requestId: context.requestId,
-        now: options.now,
+        now: context.options.now,
       });
       logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
       return result as ToolResult<TData>;
@@ -460,26 +460,48 @@ function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): val
   return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
 }
 
+function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>, worktreePath: string, warn: boolean): void {
+  candidates.push({ path: path.join(worktreePath, '.task', 'session.json'), warn });
+  const taskRoot = path.join(worktreePath, '.task');
+  if (!fs.existsSync(taskRoot)) return;
+
+  for (const areaEntry of fs.readdirSync(taskRoot, { withFileTypes: true })) {
+    if (!areaEntry.isDirectory()) continue;
+    if (areaEntry.name === 'tasks' || areaEntry.name === 'reviews') continue;
+    const areaPath = path.join(taskRoot, areaEntry.name);
+    for (const taskEntry of fs.readdirSync(areaPath, { withFileTypes: true })) {
+      if (!taskEntry.isDirectory()) continue;
+      candidates.push({ path: path.join(areaPath, taskEntry.name, 'session.json'), warn });
+    }
+  }
+}
+
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
-  const candidates = new Set<string>();
-  candidates.add(path.join(cwd, '.task', 'session.json'));
+  const candidates: Array<{ path: string; warn: boolean }> = [];
+  addSessionCandidates(candidates, cwd, true);
+
+  if (typeof env.TASK_WORKTREE === 'string' && env.TASK_WORKTREE.length > 0) {
+    addSessionCandidates(candidates, env.TASK_WORKTREE, true);
+  }
 
   const absoluteWorktreeRoot = getWorktreeRoot(env);
   if (fs.existsSync(absoluteWorktreeRoot)) {
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
-      candidates.add(path.join(absoluteWorktreeRoot, name, '.task', 'session.json'));
+      if (!name.startsWith('task-')) continue;
+      addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);
     }
   }
 
+  const seen = new Set<string>();
   for (const candidate of candidates) {
+    if (seen.has(candidate.path)) continue;
+    seen.add(candidate.path);
     try {
-      const parsed = JSON.parse(fs.readFileSync(candidate, 'utf8')) as unknown;
-      if (isTaskSessionMetadata(parsed, taskSession)) {
-        return parsed;
-      }
+      const parsed = JSON.parse(fs.readFileSync(candidate.path, 'utf8')) as unknown;
+      if (isTaskSessionMetadata(parsed, taskSession)) return parsed;
     } catch (error: unknown) {
-      if (fs.existsSync(candidate)) {
-        process.stderr.write(`warning: failed to parse task session metadata ${candidate}: ${getErrorMessage(error)}\n`);
+      if (candidate.warn && fs.existsSync(candidate.path)) {
+        process.stderr.write(`warning: failed to parse task session metadata ${candidate.path}: ${getErrorMessage(error)}\n`);
       }
     }
   }

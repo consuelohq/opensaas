@@ -103,6 +103,19 @@ function writeTaskSession(tempRoot: string, taskSession: string, branch: string 
   }, null, 2));
 }
 
+function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branch: string): void {
+  const [, area, ...slugParts] = branch.split('/');
+  const slug = slugParts.join('-');
+  const taskDir = join(tempRoot, '.task', area, slug);
+  mkdirSync(taskDir, { recursive: true });
+  writeFileSync(join(taskDir, 'session.json'), JSON.stringify({
+    taskSession,
+    tmuxSession: 'opensaas-test',
+    branch,
+    worktree: tempRoot,
+  }, null, 2));
+}
+
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
@@ -303,6 +316,38 @@ describe('typed facade executor', () => {
       expect(result.ok).toBe(true);
       expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/env-root');
     } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should resolve namespaced taskSession metadata when unrelated worktrees are malformed', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-namespaced-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    process.env.WORKSPACE_WORKTREE_ROOT = worktreeRoot;
+    try {
+      writeNamespacedTaskSession(tempRoot, 'tsk_namespaced', 'task/workspace-agents/namespaced-session');
+      mkdirSync(join(worktreeRoot, 'stream-os-sync-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'stream-os-sync-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+      mkdirSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_namespaced',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/namespaced-session');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });

@@ -95,3 +95,15 @@ xfs-*/
 
 # Legacy task metadata (replaced by .task/)
 .task-meta.json
+
+# Root task singleton files are legacy/local compatibility only.
+# Reviewable task metadata is tracked under .task/<area>/<task-slug>/.
+/.task/current.json
+/.task/session.json
+/.task/verify.json
+/.task/workpad.md
+/.task/evidence-log.json
+/.task/read-log.json
+/.task/explore-state.json
+/.task/handoff.md
+/.task/twenty-server.log
