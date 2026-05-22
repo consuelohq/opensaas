@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import { findManifestEntry, getPackageRoot, readManifest } from './lib/manifest';
+import {
+  findManifestEntry,
+  getPackageRoot,
+  readManifest,
+} from './lib/manifest';
+import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
   ensureRuntimePaths,
   getRuntimePaths,
@@ -73,7 +78,14 @@ export function getSteering(): string {
     if (content) sections.push('', `# ${file}`, '', content);
   }
 
-  sections.push('', '# raw default tool manifest', '', '```json', safeJson(readManifest()), '```');
+  sections.push(
+    '',
+    '# raw default tool manifest',
+    '',
+    '```json',
+    safeJson(readManifest()),
+    '```',
+  );
   return sections.join('\n');
 }
 
@@ -89,11 +101,23 @@ export function getDevSteering(): string {
     '',
   ];
   const devSteering = readIfExists(path.join(packageRoot, 'dev-steering.md'));
-  if (devSteering) sections.push('# original workspace STEERING.md', '', devSteering);
+  if (devSteering)
+    sections.push('# original workspace STEERING.md', '', devSteering);
   const decision = readIfExists(path.join(packageRoot, 'decision.md'));
-  if (decision) sections.push('', '# original workspace decision.md', '', decision);
-  const manifest = readIfExists(path.join(packageRoot, 'tooling', 'dev-tool-manifest.json'));
-  if (manifest) sections.push('', '# original workspace tool manifest', '', '```json', manifest, '```');
+  if (decision)
+    sections.push('', '# original workspace decision.md', '', decision);
+  const manifest = readIfExists(
+    path.join(packageRoot, 'tooling', 'dev-tool-manifest.json'),
+  );
+  if (manifest)
+    sections.push(
+      '',
+      '# original workspace tool manifest',
+      '',
+      '```json',
+      manifest,
+      '```',
+    );
   return sections.join('\n');
 }
 
@@ -113,6 +137,36 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
   const entry = findManifestEntry(callInput.name);
   if (!entry) return notFound(callInput.name);
 
+  const guardrailIssues = validateManifestGuardrails([entry]);
+  if (guardrailIssues.length > 0) {
+    return {
+      ok: false,
+      name: entry.name,
+      permission: entry.permission,
+      requiresApproval: entry.requiresApproval,
+      error: {
+        code: 'SKILL_GUARDRAIL_BLOCKED',
+        message:
+          guardrailIssues[0]?.message ??
+          'Skill failed OS guardrail validation.',
+        details: guardrailIssues,
+      },
+    };
+  }
+
+  if (entry.requiresApproval) {
+    return {
+      ok: false,
+      name: entry.name,
+      permission: entry.permission,
+      requiresApproval: true,
+      error: {
+        code: 'APPROVAL_REQUIRED',
+        message: `Skill "${entry.name}" requires explicit approval before execution.`,
+      },
+    };
+  }
+
   const context: SkillContext = {
     traceId: callInput.traceId ?? createTraceId(),
     workspaceId: callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID,
@@ -121,7 +175,8 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
   };
   if (entry.name === 'daily-revenue-brief') {
     try {
-      const { runDailyRevenueBrief } = await import('./revenue/daily-revenue-brief');
+      const { runDailyRevenueBrief } =
+        await import('./revenue/daily-revenue-brief');
       return await runDailyRevenueBrief(callInput.input ?? {}, context);
     } catch (error: unknown) {
       return {
@@ -131,7 +186,10 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
         requiresApproval: entry.requiresApproval,
         error: {
           code: 'SKILL_EXECUTION_FAILED',
-          message: error instanceof Error ? error.message.slice(0, 240) : 'Skill execution failed.',
+          message:
+            error instanceof Error
+              ? error.message.slice(0, 240)
+              : 'Skill execution failed.',
         },
       };
     }
@@ -153,7 +211,8 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
   ensureRuntimePaths();
   const started = Date.now();
   const traceId = callInput.traceId ?? createTraceId();
-  const workspaceId = callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
+  const workspaceId =
+    callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
   const userId = callInput.userId ?? process.env.CONSUELO_USER_ID;
 
   recordExecutionStarted({
@@ -165,7 +224,12 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
   });
 
   try {
-    const output = await runSkill({ ...callInput, traceId, workspaceId, userId });
+    const output = await runSkill({
+      ...callInput,
+      traceId,
+      workspaceId,
+      userId,
+    });
     output.traceId = traceId;
     output.durationMs = Date.now() - started;
     recordExecutionFinished({
@@ -184,7 +248,10 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
       durationMs: Date.now() - started,
       error: {
         code: 'CALL_FAILED',
-        message: error instanceof Error ? error.message.slice(0, 240) : 'OS call failed.',
+        message:
+          error instanceof Error
+            ? error.message.slice(0, 240)
+            : 'OS call failed.',
       },
     };
     recordExecutionFinished({
@@ -237,13 +304,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  writeStdout([
-    'usage:',
-    '  bun ./scripts/os.ts get-steering',
-    '  bun ./scripts/os.ts get-dev-steering',
-    '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
-    '',
-  ].join('\n'));
+  writeStdout(
+    [
+      'usage:',
+      '  bun ./scripts/os.ts get-steering',
+      '  bun ./scripts/os.ts get-dev-steering',
+      '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
+      '',
+    ].join('\n'),
+  );
 }
 
 if (import.meta.main) {
