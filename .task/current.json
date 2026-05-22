@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-typed-git-diff-tool",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 449,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/449",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-git-diff-tool",
+  "createdAt": "2026-05-22T05:52:27.970Z",
+  "taskSession": "tsk_fd340fd90ac6",
+  "tmuxSession": "opensaas-workspace-agents-add-typed-git-diff-tool-fd340fd9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-git-diff-tool/.task/workspace-agents/add-typed-git-diff-tool/session.json",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/449",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/449/add-typed-git-diff-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/449",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/449/add-typed-git-diff-tool"
+}
