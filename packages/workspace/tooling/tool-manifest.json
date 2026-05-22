@@ -1976,6 +1976,97 @@
     "sessionRequired": false
   },
   {
+    "name": "git.diff",
+    "methodPath": [
+      "git",
+      "diff"
+    ],
+    "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
+    "category": "git",
+    "underlying": "workspace git:diff",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "GitDiffInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "git:diff",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "branch",
+          "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "base",
+          "flag": "--base",
+          "kind": "value"
+        },
+        {
+          "source": "head",
+          "flag": "--head",
+          "kind": "value"
+        },
+        {
+          "source": "paths",
+          "flag": "--paths",
+          "kind": "array"
+        },
+        {
+          "source": "stat",
+          "flag": "--stat",
+          "kind": "boolean"
+        },
+        {
+          "source": "files",
+          "flag": "--files",
+          "kind": "boolean"
+        },
+        {
+          "source": "hunks",
+          "flag": "--hunks",
+          "kind": "boolean"
+        },
+        {
+          "source": "patch",
+          "flag": "--patch",
+          "kind": "boolean"
+        },
+        {
+          "source": "nameOnly",
+          "flag": "--name-only",
+          "kind": "boolean"
+        },
+        {
+          "source": "context",
+          "flag": "--context",
+          "kind": "value"
+        },
+        {
+          "source": "maxBytes",
+          "flag": "--max-bytes",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "branch": "task/workspace-agents/example",
+      "base": "origin/main",
+      "stat": true,
+      "files": true,
+      "hunks": true,
+      "maxBytes": 20000
+    },
+    "sessionRequired": true
+  },
+  {
     "name": "browser",
     "methodPath": [
       "browser",
