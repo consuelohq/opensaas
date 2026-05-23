@@ -14,9 +14,7 @@ const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./l
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
-const FINDING_PRINT_LIMIT = 10;
 const FINDING_JSON_SAMPLE_LIMIT = 20;
-
 
 function printHelp() {
   const lines = [
@@ -28,8 +26,8 @@ function printHelp() {
     '  --fix                auto-fix eslint issues',
     '  --all                check all files, not just changed',
     '  --base <ref>         compare against ref (default: auto-detect stream or origin/main)',
-    '  --json               compact json output for agents and automation',
-    '  --full-json          include full finding arrays with --json',
+    '  --json               json output',
+    '  --summary-json       compact semantic json output for agents',
     '  --quiet              only show failures',
     '  --no-tests           skip test suite',
     '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
@@ -47,7 +45,7 @@ function parseArgs(argv) {
       case '--all': args.all = true; break;
       case '--base': args.base = argv[++i]; break;
       case '--json': args.json = true; break;
-      case '--full-json': args.fullJson = true; break;
+      case '--summary-json': args.summaryJson = true; break;
       case '--quiet': args.quiet = true; break;
       case '--no-tests': args.noTests = true; break;
       case '--strict': args.strict = true; break;
@@ -607,12 +605,9 @@ function printFindings(label, findings, quiet) {
 
   for (const [rule, items] of Object.entries(byRule)) {
     writeStdout(`  ${rule} (${items.length}):`);
-    for (const item of items.slice(0, FINDING_PRINT_LIMIT)) {
+    for (const item of items) {
       const loc = item.file ? `${item.file}:${item.line}` : "(project)";
       writeStdout(`    ${loc} — ${item.msg}`);
-    }
-    if (items.length > FINDING_PRINT_LIMIT) {
-      writeStdout(`    ... and ${items.length - FINDING_PRINT_LIMIT} more`);
     }
   }
 }
@@ -627,42 +622,99 @@ function groupFindingsByRule(findings) {
   return byRule;
 }
 
-function summarizeFindings(findings) {
-  const byRule = Object.entries(groupFindingsByRule(findings)).map(([rule, items]) => ({
-    rule,
-    count: items.length,
-  }));
+function findingId(owner, index) {
+  const prefix = owner === 'your_change' ? 'your' : 'pre';
+  return `${prefix}_finding_${String(index + 1).padStart(4, '0')}`;
+}
+
+function compactFinding(finding, index, owner) {
+  return {
+    id: findingId(owner, index),
+    owner,
+    rule: finding.rule || 'UNKNOWN',
+    file: finding.file || '',
+    line: finding.line || 0,
+    message: finding.msg || '',
+  };
+}
+
+function summarizeCompactFindings(findings) {
+  const byRule = {};
+  const byFile = {};
+  for (const finding of findings) {
+    byRule[finding.rule] = (byRule[finding.rule] || 0) + 1;
+    const file = finding.file || '(project)';
+    if (!byFile[file]) byFile[file] = { file, count: 0, rules: new Set() };
+    byFile[file].count += 1;
+    byFile[file].rules.add(finding.rule);
+  }
+
   return {
     total: findings.length,
-    byRule,
+    byRule: Object.entries(byRule).map(([rule, count]) => ({ rule, count })),
+    byFile: Object.values(byFile)
+      .map((entry) => ({ file: entry.file, count: entry.count, rules: [...entry.rules].sort() }))
+      .sort((a, b) => b.count - a.count || a.file.localeCompare(b.file)),
     sample: findings.slice(0, FINDING_JSON_SAMPLE_LIMIT),
     truncated: findings.length > FINDING_JSON_SAMPLE_LIMIT,
     omitted: Math.max(0, findings.length - FINDING_JSON_SAMPLE_LIMIT),
   };
 }
 
-function summarizeTestResults(testResults) {
-  return testResults.map((result) => ({
-    ...result,
-    failuresTotal: Array.isArray(result.failures) ? result.failures.length : 0,
-    failures: Array.isArray(result.failures) ? result.failures.slice(0, FINDING_JSON_SAMPLE_LIMIT) : [],
-    failuresTruncated: Array.isArray(result.failures) && result.failures.length > FINDING_JSON_SAMPLE_LIMIT,
-  }));
+function summarizeReviewTests(testResults) {
+  const failed = testResults.filter((result) => !result.passed);
+  return {
+    totalSuites: testResults.length,
+    passedSuites: testResults.length - failed.length,
+    failedSuites: failed.length,
+    failures: failed.map((result, index) => ({
+      id: `suite_${String(index + 1).padStart(4, '0')}`,
+      package: result.pkg,
+      elapsed: result.elapsed,
+      suites: result.suites,
+      tests: result.tests,
+      failureCount: Array.isArray(result.failures) ? result.failures.length : 0,
+      failures: Array.isArray(result.failures) ? result.failures.slice(0, FINDING_JSON_SAMPLE_LIMIT) : [],
+      truncated: Array.isArray(result.failures) && result.failures.length > FINDING_JSON_SAMPLE_LIMIT,
+    })),
+  };
 }
 
-function createJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult, fullJson }) {
-  if (fullJson) {
-    return { base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult };
-  }
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult }) {
+  const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
+  const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
+  const testSummary = summarizeReviewTests(testResults);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (testResults.length > 0) checksRun.push('tests');
+
   return {
-    schema: 'review.v2.compact',
+    schema: 'review.summary.v1',
     base,
     branch,
     files: files.length,
     affectedProjects,
-    yours: summarizeFindings(yours),
-    preExisting: summarizeFindings(preExisting),
-    testResults: summarizeTestResults(testResults),
+    checksRun,
+    summary: {
+      yourIssues: yourFindings.length,
+      preExistingIssues: preExistingFindings.length,
+      failedTestSuites: testSummary.failedSuites,
+      blockingIssues: yourFindings.length + testSummary.failedSuites,
+    },
+    mustFix: yourFindings,
+    byRule: {
+      yourChanges: summarizeCompactFindings(yourFindings).byRule,
+      preExisting: summarizeCompactFindings(preExistingFindings).byRule,
+    },
+    byFile: {
+      yourChanges: summarizeCompactFindings(yourFindings).byFile,
+      preExisting: summarizeCompactFindings(preExistingFindings).byFile,
+    },
+    preExistingDigest: summarizeCompactFindings(preExistingFindings),
+    testSummary,
+    fullEvidence: {
+      command: `bun run review -- --base ${base} --json`,
+      note: 'Full raw findings remain available from review --json. Summary finding IDs are stable within this summary output and map by owner/rule/file/line/message.',
+    },
     confidence: confidenceResult,
   };
 }
@@ -670,6 +722,7 @@ function createJsonPayload({ base, branch, files, affectedProjects, yours, preEx
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return; }
+  const structuredOutput = args.json || args.summaryJson;
 
   // --mine: re-run review from the active task worktree
   if (args.mine) {
@@ -749,7 +802,7 @@ async function main() {
       const mainNodeModules = path.join(mainRoot, 'node_modules');
       if (fs.existsSync(mainNodeModules)) {
         fs.symlinkSync(mainNodeModules, nodeModulesPath);
-        if (!args.quiet) writeStdout('symlinked node_modules from main worktree');
+        if (!args.quiet && !structuredOutput) writeStdout('symlinked node_modules from main worktree');
       }
     }
     if (!fs.existsSync(nodeModulesPath)) {
@@ -760,7 +813,7 @@ async function main() {
   const base = args.base || detectBase();
   const branch = currentBranch();
 
-  if (!args.quiet) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`review: ${branch} vs ${base}`);
     writeStdout('');
   }
@@ -774,8 +827,8 @@ async function main() {
     files: project.files,
   }));
 
-  if (!args.quiet) writeStdout(`checking ${files.length} changed file(s)...`);
-  if (!args.quiet && affectedProjects.length > 0) {
+  if (!args.quiet && !structuredOutput) writeStdout(`checking ${files.length} changed file(s)...`);
+  if (!args.quiet && !structuredOutput && affectedProjects.length > 0) {
     writeStdout(`affected projects: ${affectedProjects.map((project) => project.name).join(', ')}`);
   }
 
@@ -810,7 +863,7 @@ async function main() {
   }
 
   // print static check results
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout('');
     for (const name of checkNames) {
       const pad = name + ' '.repeat(Math.max(0, 18 - name.length));
@@ -820,28 +873,28 @@ async function main() {
   }
 
   // run eslint — always, on changed files or all
-  if (!args.quiet) writeStdout('');
-  if (!args.quiet) writeStdout('running eslint...');
+  if (!args.quiet && !structuredOutput) writeStdout('');
+  if (!args.quiet && !structuredOutput) writeStdout('running eslint...');
   const eslintFiles = files.length > 0 ? files : getAllTsFiles(root);
   const eslintFindings = runEslint(eslintFiles, args.fix);
   allFindings.push(...eslintFindings);
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'ESLINT' + ' '.repeat(13)} ${eslintFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${eslintFindings.length})`}`);
   }
 
   // run typecheck — always, on affected packages
-  if (!args.quiet) writeStdout('running typecheck...');
+  if (!args.quiet && !structuredOutput) writeStdout('running typecheck...');
   const typecheckFiles = files.length > 0 ? files : getAllTsFiles(root);
   const typecheckFindings = runTypecheck(typecheckFiles);
   allFindings.push(...typecheckFindings);
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
   }
 
   // spec compliance (not per-file)
   const specFindings = checkSpecCompliance();
   allFindings.push(...specFindings.map((f) => ({ ...f, file: '' })));
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
   }
 
@@ -856,7 +909,7 @@ async function main() {
       const events = getEvidenceEvents(root);
       const updated = updateBeliefsWithEvents(state, events);
       confidenceResult = computeConfidence(root, updated, events);
-      if (!args.quiet && !args.json) {
+      if (!args.quiet && !structuredOutput) {
         const s = confidenceResult;
         const status = s.score >= 0.75 ? 'exploit' : s.score >= 0.55 ? 'gather more' : 'low';
         writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ${s.score.toFixed(2)} (${status})`);
@@ -867,11 +920,11 @@ async function main() {
           writeStdout(`    uncertainty: ${s.uncertainties[0]}`);
         }
       }
-    } else if (!args.quiet && !args.json) {
+    } else if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ no evidence (decision system not used)`);
     }
   } catch {
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ skipped (modules not available)`);
     }
   }
@@ -879,9 +932,9 @@ async function main() {
   // run tests — default on, skip with --no-tests
   let testResults = [];
   if (!args.noTests) {
-    if (!args.quiet) writeStdout('running tests...');
+    if (!args.quiet && !structuredOutput) writeStdout('running tests...');
     testResults = runTests(files);
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       let totalPassed = 0;
       let totalFailed = 0;
       for (const r of testResults) {
@@ -901,7 +954,7 @@ async function main() {
       }
     }
   } else {
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'TESTS' + ' '.repeat(13)} ⊘ SKIPPED (--no-tests)`);
     }
   }
@@ -912,8 +965,12 @@ async function main() {
   // include test failures in exit code
   const testsFailed = testResults.some((r) => !r.passed);
 
-  if (args.json) {
-    writeStdout(JSON.stringify(createJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult, fullJson: args.fullJson }), null, 2));
+  if (args.json || args.summaryJson) {
+    const fullPayload = { base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult };
+    const payload = args.summaryJson
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult })
+      : fullPayload;
+    writeStdout(JSON.stringify(payload, null, 2));
     return;
   }
 

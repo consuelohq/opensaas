@@ -92,7 +92,7 @@ function getConfidence(root) {
 
 function getStaticReview(root) {
   try {
-    const output = execFileSync('node', [path.join(root, 'packages/workspace/scripts/review.js'), '--json', '--no-tests'], {
+    const output = execFileSync('node', [path.join(root, 'packages/workspace/scripts/review.js'), '--summary-json', '--no-tests'], {
       encoding: 'utf8',
       cwd: root,
       maxBuffer: 10 * 1024 * 1024,
@@ -109,10 +109,20 @@ function findingCount(value) {
   return 0;
 }
 
+function reviewIssueCount(review, key, fallback) {
+  if (review?.summary && typeof review.summary[key] === 'number') return review.summary[key];
+  return findingCount(fallback);
+}
+
 function findingSample(value, limit = 5) {
   if (Array.isArray(value)) return value.slice(0, limit);
   if (value && Array.isArray(value.sample)) return value.sample.slice(0, limit);
   return [];
+}
+
+function reviewMustFixSample(review, limit = 5) {
+  if (Array.isArray(review?.mustFix)) return review.mustFix.slice(0, limit);
+  return findingSample(review?.yours, limit);
 }
 
 function buildSystemPrompt(confidence, staticReview) {
@@ -160,12 +170,12 @@ use this to calibrate your review — low confidence means look harder for misse
   }
 
   if (staticReview) {
-    const yourCount = findingCount(staticReview.yours);
-    const preCount = findingCount(staticReview.preExisting);
+    const yourCount = reviewIssueCount(staticReview, 'yourIssues', staticReview.yours);
+    const preCount = reviewIssueCount(staticReview, 'preExistingIssues', staticReview.preExisting);
     if (yourCount > 0 || preCount > 0) {
       prompt += `\n## static analysis already found
 ${yourCount} issue(s) in changed code, ${preCount} pre-existing.
-${findingSample(staticReview.yours, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.msg}`).join('\n')}
+${reviewMustFixSample(staticReview, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.message || f.msg}`).join('\n')}
 don't repeat these — focus on semantic issues the static checks can't catch.
 `;
     }
