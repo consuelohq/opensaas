@@ -775,7 +775,7 @@ export const WebsiteDeployInput = z.object({
 export const ServerInput = z.object({
   ...requestFields,
   ...dryRunField,
-  action: z.enum(['status', 'restart', 'stop', 'start', 'logs']),
+  action: z.enum(['status', 'consuelo-reload', 'reload', 'restart', 'stop', 'start', 'logs']),
 });
 
 export const CheckFilesInput = z.object({
@@ -1026,7 +1026,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ServerInput: '{ action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacExecInput: '{ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
