@@ -939,6 +939,73 @@ function materializeArchiveTarget(target: string, servePath: string): { target: 
   cpSync(sourcePath, indexPath);
   return { target: indexPath, artifactPath: archiveRelativeArtifactPath(servePath), sourceTarget: target };
 }
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const root = JSON.stringify(DESIGN_ARCHIVE_ROOT);
+  const indexPath = JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH);
+  const artifactsRoot = JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT);
+  const port = JSON.stringify(DESIGN_ARCHIVE_PORT);
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, `const root = ${root};\nconst indexPath = ${indexPath};\nconst artifactsRoot = ${artifactsRoot};\nconst port = ${port};\n\nfunction safeJoin(base: string, requestPath: string): string | null {\n  const decoded = decodeURIComponent(requestPath);\n  const relative = decoded.split('/').filter(Boolean).join('/');\n  const target = Bun.pathToFileURL(base + '/' + relative);\n  return target.pathname.startsWith(Bun.pathToFileURL(base + '/').pathname) ? target.pathname : null;\n}\n\nBun.serve({\n  hostname: '${ip}',\n  port,\n  async fetch(request) {\n    const url = new URL(request.url);\n    if (url.pathname === '${DESIGN_ARCHIVE_PATH}' || url.pathname === '${DESIGN_ARCHIVE_PATH}/') {\n      return new Response(Bun.file(indexPath), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });\n    }\n    const artifactPath = safeJoin(artifactsRoot, url.pathname);\n    if (artifactPath) {\n      const file = Bun.file(artifactPath);\n      if (await file.exists()) return new Response(file, { headers: { 'Cache-Control': 'no-store' } });\n      const index = Bun.file(artifactPath + '/index.html');\n      if (await index.exists()) return new Response(index, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });\n    }\n    return new Response('not found', { status: 404 });\n  },\n});\n`);
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { method: 'HEAD' });
+    if (response.ok) return target;
+  } catch {
+    // Start below when the archive server is not already reachable.
+  }
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { method: 'HEAD' });
+      if (response.ok) return target;
+    } catch {
+      // Keep polling until startup deadline.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
+async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
+  try {
+    const tailscaleBin = args.tailscaleBin ?? 'tailscale';
+    const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
+    const payload = readArchivePayload();
+    payload.updatedAt = new Date().toISOString();
+    if (!args.dryRun) {
+      writeArchivePayload(payload);
+      writeArchiveIndex(payload);
+    }
+    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
+    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    if (args.dryRun) {
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, command });
+      else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
+      return;
+    }
+    const result = await runCommand(command, REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale serve failed for Consuelo Wiki: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
+    else if (!args.quiet) writeStdout(`design archive refreshed\nwiki: ${url}\nwikiDirect: ${directUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to refresh Consuelo Wiki archive: ${message}`);
+  }
+}
 
 function readArchivePayload(): DesignArchivePayload {
   try {
@@ -1332,6 +1399,7 @@ Commands:
   generate motion-frame       Create a headless motion-frame work order (use --live for UI)
   render hyperframes          Create a headless HyperFrames work order (use --live for UI)
   publish                     Publish a design artifact through private Tailscale Serve
+  refresh                     Regenerate the existing design wiki archive
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
   get-design-system           Print base Consuelo DESIGN.md and consuelo-design AGENTS.md only
@@ -1418,6 +1486,9 @@ async function main(): Promise<void> {
         break;
       case 'publish':
         await publishDesign(args);
+        break;
+      case 'refresh':
+        await refreshDesignArchive(args);
         break;
       case 'run':
       case 'ui':
