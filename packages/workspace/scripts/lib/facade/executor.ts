@@ -36,6 +36,8 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const MAX_LOG_COMMAND_CHARS = 4000;
+
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
@@ -43,6 +45,7 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
+
 
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
@@ -671,8 +674,9 @@ function elapsedMs(startedAt: number, now?: () => number): number {
   return Math.max(0, (now || Date.now)() - startedAt);
 }
 
+
 function formatCommand(plan: CommandPlan): string {
-  return [plan.command, ...plan.args].join(' ');
+  return truncateCommandForLog([plan.command, ...plan.args].join(' '));
 }
 
 function formatFacadeCommand(toolName: string, input: ToolInput): string {
@@ -680,7 +684,13 @@ function formatFacadeCommand(toolName: string, input: ToolInput): string {
     Object.entries(input).filter(([k]) => k !== 'requestId' && k !== 'timeout'),
   );
   const hasArgs = Object.keys(filtered).length > 0;
-  return hasArgs ? `workspace ${toolName} '${JSON.stringify(filtered)}'` : `workspace ${toolName}`;
+  if (!hasArgs) return `workspace ${toolName}`;
+  return truncateCommandForLog(`workspace ${toolName} '${JSON.stringify(filtered)}'`);
+}
+
+function truncateCommandForLog(command: string): string {
+  if (command.length <= MAX_LOG_COMMAND_CHARS) return command;
+  return `${command.slice(0, MAX_LOG_COMMAND_CHARS)}... [truncated ${command.length - MAX_LOG_COMMAND_CHARS} chars]`;
 }
 
 function stripCommandEcho(stderr: string): string {
