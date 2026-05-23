@@ -137,6 +137,70 @@ function diffArgs(args, extra = []) {
   return gitArgs;
 }
 
+function isWorkingTreeMode(args) {
+  return !args.base && !args.head;
+}
+
+function pathMatchesFilters(filePath, paths) {
+  if (!paths.length) return true;
+  return paths.some((filterPath) => {
+    const normalized = filterPath.replace(/\/$/, '');
+    return filePath === normalized || filePath.startsWith(`${normalized}/`);
+  });
+}
+
+function listUntrackedFiles(cwd, args) {
+  if (!isWorkingTreeMode(args)) return [];
+  return runGit(cwd, ['ls-files', '--others', '--exclude-standard'])
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter((filePath) => pathMatchesFilters(filePath, args.paths));
+}
+
+function readFileFromWorktree(cwd, filePath) {
+  return require('fs').readFileSync(path.join(cwd, filePath), 'utf8');
+}
+
+function countContentLines(content) {
+  if (!content) return 0;
+  const lines = content.split(/\r?\n/);
+  return lines.at(-1) === '' ? lines.length - 1 : lines.length;
+}
+
+function untrackedFilePatch(cwd, filePath) {
+  const content = readFileFromWorktree(cwd, filePath);
+  const lines = content.split(/\r?\n/);
+  const comparableLines = lines.at(-1) === '' ? lines.slice(0, -1) : lines;
+  const lineCount = Math.max(comparableLines.length, 1);
+  const body = comparableLines.map((line) => `+${line}`).join('\n');
+  return [
+    `diff --git a/${filePath} b/${filePath}`,
+    'new file mode 100644',
+    'index 0000000..0000000',
+    '--- /dev/null',
+    `+++ b/${filePath}`,
+    `@@ -0,0 +1,${lineCount} @@`,
+    body,
+  ].filter(Boolean).join('\n');
+}
+
+function untrackedFilesPatch(cwd, files) {
+  return files.map((filePath) => untrackedFilePatch(cwd, filePath)).join('\n');
+}
+
+function untrackedNumstat(cwd, files) {
+  return files.map((filePath) => {
+    const content = readFileFromWorktree(cwd, filePath);
+    return { path: filePath, additions: countContentLines(content), deletions: 0, status: 'A' };
+  });
+}
+
+function combinePatch(trackedPatch, untrackedPatch) {
+  if (!trackedPatch) return untrackedPatch;
+  if (!untrackedPatch) return trackedPatch;
+  return `${trackedPatch.replace(/\s+$/, '')}\n${untrackedPatch}`;
+}
+
 function capText(text, maxBytes) {
   const buffer = Buffer.from(text, 'utf8');
   if (buffer.length <= maxBytes) return { text, truncated: false, bytes: buffer.length };
@@ -252,10 +316,19 @@ function main() {
   }
 
   const worktree = resolveWorktree(process.cwd(), args.branch);
-  const patchRaw = args.hunks || args.patch
+  const untrackedFiles = listUntrackedFiles(worktree, args);
+  const trackedPatchRaw = args.hunks || args.patch
     ? runGit(worktree, diffArgs(args, [`--unified=${args.context}`]))
     : '';
+  const untrackedPatchRaw = args.hunks || args.patch ? untrackedFilesPatch(worktree, untrackedFiles) : '';
+  const patchRaw = combinePatch(trackedPatchRaw, untrackedPatchRaw);
   const cappedPatch = capText(patchRaw, args.maxBytes);
+  const trackedFiles = args.files ? mergeFiles(
+    parseNumstat(runGit(worktree, diffArgs(args, ['--numstat']))),
+    parseNameStatus(runGit(worktree, diffArgs(args, ['--name-status']))),
+  ) : undefined;
+  const untrackedFileStats = args.files ? untrackedNumstat(worktree, untrackedFiles) : undefined;
+  const trackedNameOnly = args.nameOnly ? runGit(worktree, diffArgs(args, ['--name-only'])).split(/\r?\n/).filter(Boolean) : undefined;
 
   const output = {
     branch: args.branch || runGit(worktree, ['rev-parse', '--abbrev-ref', 'HEAD']).trim(),
@@ -263,12 +336,17 @@ function main() {
     base: args.base || null,
     head: args.head || (args.base ? 'HEAD' : null),
     mode: args.base || args.head ? 'revision' : 'working-tree',
-    summary: args.stat ? parseShortStat(runGit(worktree, diffArgs(args, ['--shortstat'])).trim()) : undefined,
-    files: args.files ? mergeFiles(
-      parseNumstat(runGit(worktree, diffArgs(args, ['--numstat']))),
-      parseNameStatus(runGit(worktree, diffArgs(args, ['--name-status']))),
-    ) : undefined,
-    nameOnly: args.nameOnly ? runGit(worktree, diffArgs(args, ['--name-only'])).split(/\r?\n/).filter(Boolean) : undefined,
+    summary: args.stat ? (() => {
+      const tracked = parseShortStat(runGit(worktree, diffArgs(args, ['--shortstat'])).trim());
+      const untracked = untrackedNumstat(worktree, untrackedFiles);
+      return {
+        filesChanged: tracked.filesChanged + untracked.length,
+        insertions: tracked.insertions + untracked.reduce((sum, file) => sum + (file.additions || 0), 0),
+        deletions: tracked.deletions,
+      };
+    })() : undefined,
+    files: args.files ? [...(trackedFiles || []), ...(untrackedFileStats || [])] : undefined,
+    nameOnly: args.nameOnly ? [...(trackedNameOnly || []), ...untrackedFiles] : undefined,
     hunks: args.hunks ? parseHunks(cappedPatch.text) : undefined,
     patch: args.patch ? cappedPatch.text : undefined,
     truncated: cappedPatch.truncated,
