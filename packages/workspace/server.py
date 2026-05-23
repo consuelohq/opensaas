@@ -183,7 +183,10 @@ def _get_langsmith_trace() -> Any | None:
 
 
 def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any], usage_details: dict[str, int] | None = None) -> None:
-    update_payload: dict[str, Any] = {'input': inputs, 'output': output}
+    metadata = {'workspaceUsageEstimate': usage_details} if usage_details else None
+    update_payload: dict[str, Any] = {'input': inputs, 'output': output, 'model': 'workspace-tool-estimate'}
+    if metadata:
+        update_payload['metadata'] = metadata
     if usage_details:
         update_payload['usage_details'] = usage_details
     try:
@@ -204,7 +207,11 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
         if langfuse is None or propagate_attributes is None:
             return fn(*args, **kwargs)
         try:
-            observation_cm = langfuse.start_as_current_observation(as_type='generation', name=trace_name)
+            observation_cm = langfuse.start_as_current_observation(
+                as_type='generation',
+                name=trace_name,
+                model='workspace-tool-estimate',
+            )
             propagation_cm = propagate_attributes(
                 session_id=_session_id,
                 metadata={'workspaceTrace': name, 'provider': 'langfuse'},
