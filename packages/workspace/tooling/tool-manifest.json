@@ -1639,7 +1639,7 @@
     "command": {
       "script": "review",
       "branchMode": "required",
-      "jsonFlag": "--summary-json",
+      "jsonFlag": "--json",
       "arguments": [
         {
           "source": "fix",
@@ -4372,6 +4372,33 @@
       "status"
     ],
     "description": "show compact workspace status",
+    "category": "utilities",
+    "underlying": "workspace status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": []
+    },
+    "exampleInput": {},
+    "sessionRequired": false
+  },
+  {
+    "name": "git.status",
+    "methodPath": [
+      "git",
+      "status"
+    ],
+    "description": "alias for status; use status directly in new code",
     "category": "utilities",
     "underlying": "workspace status",
     "capabilities": {
