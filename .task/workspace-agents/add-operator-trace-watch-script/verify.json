@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-operator-trace-watch-script",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "eca59e45a501f3e8b1c69cef93bc14ee647f35a1",
+  "changeHash": "0f97003430ad09e0b84b1c65694e0db3ee7205f3b15f7a58fab6edb55dff6599",
+  "changedFiles": [
+    "package.json",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T09:42:42.265Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
