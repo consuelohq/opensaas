@@ -256,6 +256,53 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 self.assertFalse(result['ok'])
                 self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
 
+    def test_session_optional_tools_with_optional_branch_mode_do_not_require_task_session(self):
+        captured = {}
+        manifest_entry = {
+            'name': 'code.run',
+            'sessionRequired': False,
+            'command': {'branchMode': 'optional'},
+        }
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module, '_load_manifest_entries', return_value=[manifest_entry]), \
+                patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('code.run', tool_input={'code': 'return 1'})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['code'], 'return 1')
+        self.assertNotIn('taskSession', resolved_input)
+
+    def test_branch_required_tools_still_require_task_session(self):
+        manifest_entry = {
+            'name': 'example.required',
+            'sessionRequired': False,
+            'command': {'branchMode': 'required'},
+        }
+
+        with patch.object(self.module, '_load_manifest_entries', return_value=[manifest_entry]):
+            result = self.module._run_workspace_call('example.required', tool_input={})
+
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
+
     def test_object_wrapped_batch_task_session_propagates_to_children(self):
         captured = {}
 
