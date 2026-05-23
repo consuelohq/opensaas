@@ -30,5 +30,59 @@
         "nextSteps"
       ]
     }
+  },
+  {
+    "name": "consuelo-design-landing-page",
+    "title": "Consuelo Design Landing Page",
+    "description": "Creates a Consuelo Design website workflow draft through the existing design facade, persists a local draft artifact, and approval-gates publishing or customer-facing replacement.",
+    "permission": "draft",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredIntegrations": [
+      "consuelo-design"
+    ],
+    "implementation": {
+      "script": "scripts/design/consuelo-design-landing-page.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifactTitle": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "campaign": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sourceContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publish": {
+          "type": "boolean"
+        },
+        "replaceCustomerFacingPage": {
+          "type": "boolean"
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "workflow",
+        "designSystem",
+        "primaryDesignSkill",
+        "nextActions"
+      ]
+    }
   }
 ]

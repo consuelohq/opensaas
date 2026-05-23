@@ -1,0 +1,15 @@
+{
+  "name": "consuelo-design-landing-page",
+  "title": "Consuelo Design Landing Page",
+  "description": "Creates Consuelo Design landing page or campaign brief draft work orders and writes local draft artifacts. Publishing or replacing customer-facing pages is approval-gated.",
+  "script": "scripts/design/consuelo-design-landing-page.ts",
+  "permission": "draft",
+  "requiresApproval": false,
+  "artifactTypes": [
+    "draft"
+  ],
+  "capabilities": [
+    "consuelo-design",
+    "local-artifacts"
+  ]
+}
