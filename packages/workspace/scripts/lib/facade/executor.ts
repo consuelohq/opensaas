@@ -616,8 +616,11 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   if (kind === 'array' || kind === 'commandArray') {
     if (!Array.isArray(value)) return;
     if (value.length === 0) return;
-    if (argument.flag) args.push(argument.flag);
-    args.push(...value.map(String));
+    if (argument.flag) {
+      for (const item of value) args.push(argument.flag, String(item));
+    } else {
+      args.push(...value.map(String));
+    }
     return;
   }
 

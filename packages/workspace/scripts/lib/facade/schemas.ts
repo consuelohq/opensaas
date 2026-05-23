@@ -423,6 +423,7 @@ export const GithubInput = z.object({
   full: z.boolean().optional(),
   mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
   rawArgs: stringArray,
+  args: stringArray,
   reason: z.string().optional(),
 });
 
@@ -992,7 +993,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
