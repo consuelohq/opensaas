@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_60300cec5aed",
+  "tmuxSession": "opensaas-workspace-agents-workpad-automated-sections-60300cec",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/workpad-automated-sections",
+  "branch": "task/workspace-agents/workpad-automated-sections",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-automated-sections",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-automated-sections",
+  "prNumber": 484,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/484",
+  "createdAt": "2026-05-23T05:04:35.860Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-automated-sections/.task/workspace-agents/workpad-automated-sections/session.json"
+}
