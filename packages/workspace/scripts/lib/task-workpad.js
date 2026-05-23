@@ -49,15 +49,39 @@ function normalizeRepoPath(filePath) {
   return String(filePath || '').split(path.sep).join('/');
 }
 
-function syncFilesChanged(worktreePath, taskMeta, files) {
-  const entries = Array.from(new Map((files || [])
+function parseFileSection(section) {
+  const entries = [];
+  for (const line of String(section || '').split('\n')) {
+    const match = line.match(/^-\s+`([^`]+)`(\s+\(deleted\))?/);
+    if (!match) continue;
+    entries.push({ path: match[1], deleted: Boolean(match[2]) });
+  }
+  return entries;
+}
+
+function normalizeFileEvents(files) {
+  return (files || [])
     .filter((file) => file && file.path && !String(file.path).startsWith('.task/'))
-    .map((file) => [normalizeRepoPath(file.path), file])).values())
-    .sort((a, b) => normalizeRepoPath(a.path).localeCompare(normalizeRepoPath(b.path)));
-  const body = entries.length
+    .map((file) => ({ ...file, path: normalizeRepoPath(file.path) }));
+}
+
+function formatFileEntries(entries) {
+  return entries.length
     ? entries.map((file) => `- \`${normalizeRepoPath(file.path)}\`${file.deleted ? ' (deleted)' : ''}`).join('\n')
     : NONE_YET;
+}
+
+function syncFilesChanged(worktreePath, taskMeta, files, options = {}) {
   const current = readWorkpad(worktreePath, taskMeta);
+  const incoming = normalizeFileEvents(files);
+  const existing = options.replace ? [] : [
+    ...parseFileSection(extractSection(current.content || '', 'files changed')),
+    ...parseFileSection(extractSection(current.content || '', 'workspace-owned: files changed')),
+  ];
+  const entries = Array.from(new Map([...existing, ...incoming]
+    .map((file) => [normalizeRepoPath(file.path), file])).values())
+    .sort((a, b) => normalizeRepoPath(a.path).localeCompare(normalizeRepoPath(b.path)));
+  const body = formatFileEntries(entries);
   let content = current.content || '';
   content = replaceSection(content, 'files changed', body);
   content = replaceSection(content, 'workspace-owned: files changed', body);
@@ -79,6 +103,23 @@ function appendActivity(worktreePath, taskMeta, event) {
   const lines = existing.split('\n').filter((item) => item.trim() && item.trim() !== NONE_YET);
   lines.push(line);
   const next = replaceSection(current.content || '', 'workspace-owned: activity log', lines.slice(-50).join('\n') || NONE_YET);
+  writeWorkpad(current.path, next);
+  return { path: current.path, line };
+}
+
+
+function syncValidationEvidence(worktreePath, taskMeta, event) {
+  const current = readWorkpad(worktreePath, taskMeta);
+  const command = event?.command ? `\`${event.command}\`` : '`validation`';
+  const status = event?.ok === false ? 'failed' : 'passed';
+  const detail = event?.detail ? ` — ${event.detail}` : '';
+  const line = `- ${formatTime()} ${command}: ${status}${detail}`;
+  const existing = extractSection(current.content || '', 'workspace-owned: validation evidence')
+    || extractSection(current.content || '', 'validation evidence')
+    || NONE_YET;
+  const lines = existing.split('\n').filter((item) => item.trim() && item.trim() !== NONE_YET);
+  lines.push(line);
+  const next = replaceSection(current.content || '', 'workspace-owned: validation evidence', lines.slice(-30).join('\n') || NONE_YET);
   writeWorkpad(current.path, next);
   return { path: current.path, line };
 }
@@ -150,4 +191,4 @@ function assertWorkpadReady(worktreePath, taskMeta, options = {}) {
   return readiness;
 }
 
-module.exports = { appendActivity, assertWorkpadReady, checkWorkpadReady, extractSection, getTaskWorkpadPathFromMeta, replaceSection, syncFilesChanged };
+module.exports = { appendActivity, assertWorkpadReady, checkWorkpadReady, extractSection, getTaskWorkpadPathFromMeta, replaceSection, syncFilesChanged, syncValidationEvidence };
