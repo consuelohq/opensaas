@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Email de teste"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Espaço de Trabalho Suspenso"
@@ -63,24 +58,9 @@ msgid "Update your subscription"
 msgstr "Atualize sua assinatura"
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
-msgstr "Confirme seu novo endereço de e-mail"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
-msgstr "Confirme seu endereço de e-mail"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
-msgstr "Confirme o novo email"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
-msgstr "Verificar e-mail"
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Email de teste"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -109,6 +89,26 @@ msgid "Accept invite"
 msgstr "Aceitar convite"
 
 #. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
+msgstr "Confirme seu novo endereço de e-mail"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "Confirme seu endereço de e-mail"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
+msgstr "Confirme o novo email"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "Verificar e-mail"
+
+#. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
 msgid "Password updated"
 msgstr "Senha atualizada"
@@ -127,31 +127,6 @@ msgstr "Se você não iniciou essa alteração, entre em contato com o propriet�
 #: src/emails/password-update-notify.email.tsx
 msgid "Connect to Consuelo"
 msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Deleted Workspace"
-msgstr "Espaço de Trabalho Excluído"
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
-msgstr "Seu workspace <0>{workspaceDisplayName}</0> foi excluído porque sua assinatura expirou há {daysSinceInactive} dias."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "All data in this workspace has been permanently deleted."
-msgstr "Todos os dados deste workspace foram excluídos permanentemente."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "If you wish to use Consuelo again, you can create a new workspace."
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Create a new workspace"
-msgstr "Criar um novo espaço de trabalho"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
@@ -177,6 +152,31 @@ msgstr "Definir"
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
 msgstr "Este link é válido apenas para os próximos {duration}. Se o link não funcionar, você pode usar o link de verificação de login diretamente:"
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Deleted Workspace"
+msgstr "Espaço de Trabalho Excluído"
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
+msgstr "Seu workspace <0>{workspaceDisplayName}</0> foi excluído porque sua assinatura expirou há {daysSinceInactive} dias."
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "All data in this workspace has been permanently deleted."
+msgstr "Todos os dados deste workspace foram excluídos permanentemente."
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Create a new workspace"
+msgstr "Criar um novo espaço de trabalho"
 
 #. js-lingui-explicit-id
 #: src/components/WhatIsTwenty.tsx
