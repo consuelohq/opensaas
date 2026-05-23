@@ -102,6 +102,19 @@ function getStaticReview(root) {
   } catch { return null; }
 }
 
+
+function findingCount(value) {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value.total === 'number') return value.total;
+  return 0;
+}
+
+function findingSample(value, limit = 5) {
+  if (Array.isArray(value)) return value.slice(0, limit);
+  if (value && Array.isArray(value.sample)) return value.sample.slice(0, limit);
+  return [];
+}
+
 function buildSystemPrompt(confidence, staticReview) {
   let prompt = `you are a senior code reviewer for consuelo, an open-source sales infrastructure platform (typescript monorepo, nestjs + react + typeorm + postgres).
 
@@ -147,12 +160,12 @@ use this to calibrate your review — low confidence means look harder for misse
   }
 
   if (staticReview) {
-    const yourCount = (staticReview.yours || []).length;
-    const preCount = (staticReview.preExisting || []).length;
+    const yourCount = findingCount(staticReview.yours);
+    const preCount = findingCount(staticReview.preExisting);
     if (yourCount > 0 || preCount > 0) {
       prompt += `\n## static analysis already found
 ${yourCount} issue(s) in changed code, ${preCount} pre-existing.
-${(staticReview.yours || []).slice(0, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.msg}`).join('\n')}
+${findingSample(staticReview.yours, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.msg}`).join('\n')}
 don't repeat these — focus on semantic issues the static checks can't catch.
 `;
     }

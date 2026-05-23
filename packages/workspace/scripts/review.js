@@ -14,6 +14,10 @@ const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./l
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
+const FINDING_PRINT_LIMIT = 10;
+const FINDING_JSON_SAMPLE_LIMIT = 20;
+
+
 function printHelp() {
   const lines = [
     'usage: bun run review [options]',
@@ -24,7 +28,8 @@ function printHelp() {
     '  --fix                auto-fix eslint issues',
     '  --all                check all files, not just changed',
     '  --base <ref>         compare against ref (default: auto-detect stream or origin/main)',
-    '  --json               json output',
+    '  --json               compact json output for agents and automation',
+    '  --full-json          include full finding arrays with --json',
     '  --quiet              only show failures',
     '  --no-tests           skip test suite',
     '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
@@ -42,6 +47,7 @@ function parseArgs(argv) {
       case '--all': args.all = true; break;
       case '--base': args.base = argv[++i]; break;
       case '--json': args.json = true; break;
+      case '--full-json': args.fullJson = true; break;
       case '--quiet': args.quiet = true; break;
       case '--no-tests': args.noTests = true; break;
       case '--strict': args.strict = true; break;
@@ -597,23 +603,68 @@ function printFindings(label, findings, quiet) {
   }
 
   writeStdout(`${label}: ${findings.length} issue(s)`);
-  // group by rule
-  const byRule = {};
-  for (const f of findings) {
-    if (!byRule[f.rule]) byRule[f.rule] = [];
-    byRule[f.rule].push(f);
-  }
+  const byRule = groupFindingsByRule(findings);
 
   for (const [rule, items] of Object.entries(byRule)) {
     writeStdout(`  ${rule} (${items.length}):`);
-    for (const item of items) {
+    for (const item of items.slice(0, FINDING_PRINT_LIMIT)) {
       const loc = item.file ? `${item.file}:${item.line}` : "(project)";
       writeStdout(`    ${loc} — ${item.msg}`);
     }
-    if (items.length > 10) {
-      writeStdout(`    ... and ${items.length - 10} more`);
+    if (items.length > FINDING_PRINT_LIMIT) {
+      writeStdout(`    ... and ${items.length - FINDING_PRINT_LIMIT} more`);
     }
   }
+}
+
+function groupFindingsByRule(findings) {
+  const byRule = {};
+  for (const finding of findings) {
+    const rule = finding.rule || 'UNKNOWN';
+    if (!byRule[rule]) byRule[rule] = [];
+    byRule[rule].push(finding);
+  }
+  return byRule;
+}
+
+function summarizeFindings(findings) {
+  const byRule = Object.entries(groupFindingsByRule(findings)).map(([rule, items]) => ({
+    rule,
+    count: items.length,
+  }));
+  return {
+    total: findings.length,
+    byRule,
+    sample: findings.slice(0, FINDING_JSON_SAMPLE_LIMIT),
+    truncated: findings.length > FINDING_JSON_SAMPLE_LIMIT,
+    omitted: Math.max(0, findings.length - FINDING_JSON_SAMPLE_LIMIT),
+  };
+}
+
+function summarizeTestResults(testResults) {
+  return testResults.map((result) => ({
+    ...result,
+    failuresTotal: Array.isArray(result.failures) ? result.failures.length : 0,
+    failures: Array.isArray(result.failures) ? result.failures.slice(0, FINDING_JSON_SAMPLE_LIMIT) : [],
+    failuresTruncated: Array.isArray(result.failures) && result.failures.length > FINDING_JSON_SAMPLE_LIMIT,
+  }));
+}
+
+function createJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult, fullJson }) {
+  if (fullJson) {
+    return { base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult };
+  }
+  return {
+    schema: 'review.v2.compact',
+    base,
+    branch,
+    files: files.length,
+    affectedProjects,
+    yours: summarizeFindings(yours),
+    preExisting: summarizeFindings(preExisting),
+    testResults: summarizeTestResults(testResults),
+    confidence: confidenceResult,
+  };
 }
 
 async function main() {
@@ -862,7 +913,7 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult }, null, 2));
+    writeStdout(JSON.stringify(createJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult, fullJson: args.fullJson }), null, 2));
     return;
   }
 

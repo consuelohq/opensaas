@@ -364,11 +364,14 @@ bun run review -- --mine              # scope to active task worktree only
 bun run review -- --fix               # auto-fix eslint issues
 bun run review -- --all               # check all files, not just changed
 bun run review -- --base stream/dialer  # compare against specific ref
-bun run review -- --json              # json output
+bun run review -- --json              # compact json output for agents
+bun run review -- --json --full-json  # full finding arrays for manual deep inspection
 bun run review -- --quiet             # only show failures
 bun run review -- --no-tests          # skip test suite
 bun run review -- --strict            # enable strictPropertyInitialization
 ```
+
+`--json` is compact by default so successful agent review calls return counts and samples instead of every passing/failing detail. Use `--full-json` only for manual deep inspection.
 
 typed facade form — `branch` is required:
 
@@ -391,7 +394,7 @@ bad: review fails on a file you didn't touch
 
 ### verify — full task safety gate
 
-runs `bun run review` + db/migration/graphql guardrails. writes `.task/<area>/<slug>/verify.json` stamp on success. `task:push` requires this stamp by default.
+runs `bun run review` + db/migration/graphql guardrails. writes `.task/<area>/<slug>/verify.json` stamp on success. `task:push` requires this stamp by default. `--json` embeds the compact review payload so verify remains useful as an agent gate without duplicating full review output.
 
 When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
@@ -401,7 +404,8 @@ bun run verify -- --no-review         # skip review, only run db guardrails
 bun run verify -- --no-db             # skip db guardrails
 bun run verify -- --db-warn-only      # report db issues as warnings
 bun run verify -- --no-stamp          # don't write verify.json
-bun run verify -- --json              # structured json output
+bun run verify -- --json              # structured json output with compact review payload
+bun run verify -- --review-arg=--no-tests  # pass flag-like args through to review
 bun run verify -- --base stream/dialer  # compare against specific ref
 ```
 
