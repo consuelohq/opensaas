@@ -1423,7 +1423,7 @@ Template names are `research`, `spec`, and `plan`. The selected template is inje
 
 ## Design wiki archive
 
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/design-wiki`, sorted by `updatedAt` so republished artifacts return to the top.
 
 The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
 
@@ -1447,3 +1447,12 @@ Default behavior:
 - no output flags: returns `stat`, `files`, and `hunks`
 - `patch` must be requested explicitly and is bounded by `maxBytes`
 
+
+
+## Workpad readiness gate
+
+Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed and activity sections from existing task metadata and file operations. Agents still need to write at least one meaningful task note beyond the starter scaffold before publishing.
+
+`task.push` and `task.pr` block scaffold-only workpads with a `Workpad update needed before publishing` message. Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups, then rerun the command.
+
+Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.
