@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_070f335b56f3",
+  "tmuxSession": "opensaas-workspace-agents-trace-errors-report-070f335b",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/trace-errors-report",
+  "branch": "task/workspace-agents/trace-errors-report",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trace-errors-report",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trace-errors-report",
+  "prNumber": 521,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/521",
+  "createdAt": "2026-05-23T09:42:19.610Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trace-errors-report/.task/workspace-agents/trace-errors-report/session.json"
+}

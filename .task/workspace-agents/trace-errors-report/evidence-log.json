@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/trace-errors-report",
+  "events": [
+    {
+      "id": "bb4c07a7-0f74-43b9-a562-d4be770a997b",
+      "occurred_at": "2026-05-23T09:42:44.198Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/trace-errors-report",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/trace-errors-report"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T09:42:44.248Z"
+}
