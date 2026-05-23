@@ -211,7 +211,9 @@ export async function executeTool<TData = unknown>(
     };
     const plan = buildCommandPlan(entry, commandInput, cwd, env);
     const plannedCommand = formatCommand(plan);
+    const plannedCommandForLog = formatCommandForLog(plan);
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
+    const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
     if (entry.capabilities.mutating && commandInput.dryRun === true && !entry.command.dryRunFlag) {
       const result = createToolResult({
@@ -224,7 +226,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -244,7 +246,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -262,7 +264,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -274,7 +276,7 @@ export async function executeTool<TData = unknown>(
         stderr: stripCommandEcho(String(passthrough.stderr || '')),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result;
     }
 
@@ -291,7 +293,7 @@ export async function executeTool<TData = unknown>(
       requestId,
       now: options.now,
     });
-    logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -414,7 +416,7 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, formatCommand(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
+    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
     return result as ToolResult<TData>;
   }
 
@@ -673,10 +675,12 @@ function findJsonStart(value: string): number {
 function elapsedMs(startedAt: number, now?: () => number): number {
   return Math.max(0, (now || Date.now)() - startedAt);
 }
-
-
 function formatCommand(plan: CommandPlan): string {
-  return truncateCommandForLog([plan.command, ...plan.args].join(' '));
+  return [plan.command, ...plan.args].join(' ');
+}
+
+function formatCommandForLog(plan: CommandPlan): string {
+  return truncateCommandForLog(formatCommand(plan));
 }
 
 function formatFacadeCommand(toolName: string, input: ToolInput): string {
@@ -684,8 +688,11 @@ function formatFacadeCommand(toolName: string, input: ToolInput): string {
     Object.entries(input).filter(([k]) => k !== 'requestId' && k !== 'timeout'),
   );
   const hasArgs = Object.keys(filtered).length > 0;
-  if (!hasArgs) return `workspace ${toolName}`;
-  return truncateCommandForLog(`workspace ${toolName} '${JSON.stringify(filtered)}'`);
+  return hasArgs ? `workspace ${toolName} '${JSON.stringify(filtered)}'` : `workspace ${toolName}`;
+}
+
+function formatFacadeCommandForLog(toolName: string, input: ToolInput): string {
+  return truncateCommandForLog(formatFacadeCommand(toolName, input));
 }
 
 function truncateCommandForLog(command: string): string {
@@ -763,3 +770,4 @@ function logResult(
     },
   });
 }
+
