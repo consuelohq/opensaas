@@ -49,6 +49,7 @@ const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
 const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
 const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
 const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
+const DESIGN_ARCHIVE_PAGEFIND_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'pagefind');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_PATH = '/design-wiki';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
@@ -978,6 +979,12 @@ function archiveEntryFilterType(entry: DesignArchiveEntry): string {
   return entry.template;
 }
 
+function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+  if (!entry.artifactPath) return entry.path;
+  const relativePath = entry.artifactPath.split(path.sep).join('/');
+  return relativePath.endsWith('/index.html') ? `/${relativePath}` : `/${relativePath}/index.html`;
+}
+
 function renderArchiveIndex(payload: DesignArchivePayload): string {
   const visibleEntries = [...payload.entries]
     .filter((entry) => entry.category !== 'research-packet')
@@ -992,6 +999,17 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         </article>`;
   }).join('\n');
   const archiveCards = renderItems(visibleEntries);
+  const searchEntries = visibleEntries.map((entry) => ({
+    id: entry.id,
+    title: displayTitleForArchiveEntry(entry),
+    url: entry.directUrl ?? entry.url,
+    path: entry.path,
+    artifactPath: entry.artifactPath ? entry.artifactPath.split(path.sep).join('/') : null,
+    pagefindUrl: pagefindUrlForArchiveEntry(entry),
+    template: archiveEntryFilterType(entry),
+    category: entry.category,
+    updatedAt: archiveEntryTimestamp(entry),
+  }));
   const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published artifacts yet.</p>' : '';
   return `<!doctype html>
 <html lang="en">
@@ -1009,13 +1027,19 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; text-decoration:none; }
     .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
     .nav a { color:var(--ink); text-decoration:none; }
-    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
     .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+    .search-button { display:inline-flex; align-items:center; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
     h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
     .lead { margin:0 0 20px; color:var(--ink); font-size:14px; line-height:1.7; }
-    .filter-row, .pagination { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
+    .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
+    .search-row { margin-top:18px; }
+    .search-row[hidden] { display:none; }
     .filter-label { color:var(--ink); }
+    .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
+    .search-input:focus { border-bottom-color:var(--ink); }
     button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
     button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
     button.active { font-weight:700; }
@@ -1047,15 +1071,15 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 </head>
 <body>
   <div class="shell">
-    <div class="topbar">
+    <div class="topbar" data-pagefind-ignore>
       <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_PATH)}">Consuelo Wiki</a>
       <nav class="nav" aria-label="Primary">
         <a href="#recently-updated">Recently Updated</a>
         <span aria-hidden="true">▣</span>
-        <span class="search-mark" aria-hidden="true">⌕</span>
+        <button class="search-button" type="button" data-search-toggle aria-controls="wiki-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
-    <header class="hero">
+    <header class="hero" data-pagefind-ignore>
       <h1>Wiki</h1>
       <p class="lead">Private tailnet notes, guides, and published artifacts from Consuelo.</p>
       <div class="filter-row" aria-label="Filters">
@@ -1067,42 +1091,93 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         <button data-filter="plan">Plan</button>
         <button data-filter="uncategorized">Uncategorized</button>
       </div>
+      <label class="search-row" hidden>
+        <span class="filter-label">Search:</span>
+        <input id="wiki-search" class="search-input" type="search" placeholder="type to filter the wiki" autocomplete="off" spellcheck="false" />
+      </label>
     </header>
-    <section class="section" id="recently-updated" data-section="recently-updated" data-empty="${visibleEntries.length === 0}">
-      <h2>Recently Updated</h2>
-      <div class="post-list">${archiveCards}</div>
-      <nav class="pagination" aria-label="Recently updated pagination" hidden>
+    <section class="section" id="recently-updated" data-section="recently-updated" data-empty="${visibleEntries.length === 0}" data-pagefind-ignore>
+      <h2 data-results-title>Recently Updated</h2>
+      <div class="post-list" data-results-list>${archiveCards}</div>
+      <nav class="pagination" aria-label="Recently updated pagination" hidden data-pagefind-ignore>
         <button class="page-button" data-page="prev" type="button">Previous</button>
         <span class="page-status" aria-live="polite"></span>
         <button class="page-button" data-page="next" type="button">Next</button>
       </nav>
     </section>
     ${emptyState}
-    <footer>
+    <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date(payload.updatedAt).getFullYear().toString())} Consuelo. All rights reserved.</span>
       <div class="footer-links" aria-label="Footer links"><a href="#recently-updated">Recently Updated</a></div>
     </footer>
   </div>
+  <script type="application/json" id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>
   <script>
     const pageSize = 10;
+    const archiveEntries = JSON.parse(document.getElementById('archive-search-data').textContent || '[]');
     let activeFilter = 'all';
     let currentPage = 1;
-    const cards = Array.from(document.querySelectorAll('.post-item'));
+    let activeQuery = '';
+    let activeMode = 'archive';
+    let pagefind = null;
+    let pagefindLoadStarted = false;
+    const list = document.querySelector('[data-results-list]');
+    const title = document.querySelector('[data-results-title]');
+    const originalCardsHtml = list.innerHTML;
     const section = document.querySelector('[data-section="recently-updated"]');
     const pagination = document.querySelector('.pagination');
     const pageStatus = document.querySelector('.page-status');
     const prevButton = document.querySelector('[data-page="prev"]');
     const nextButton = document.querySelector('[data-page="next"]');
+    const searchToggle = document.querySelector('[data-search-toggle]');
+    const searchRow = document.querySelector('.search-row');
+    const searchInput = document.querySelector('#wiki-search');
 
-    const filteredCards = () => cards.filter((card) => activeFilter === 'all' || card.dataset.template === activeFilter);
-
+    const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    const normalizeUrl = (value) => String(value || '').replace(/^https?:\/\/[^/]+/u, '').replace(/^\/design-wiki/u, '').replace(/^\//u, '').replace(/\/index\.html$/u, '').replace(/\/$/u, '');
+    const entryMatchesFilter = (entry) => activeFilter === 'all' || entry.template === activeFilter;
+    const localEntryMatchesQuery = (entry) => {
+      const query = activeQuery.trim().toLowerCase();
+      if (!query) return true;
+      return [entry.title, entry.path, entry.template, entry.category].some((value) => String(value || '').toLowerCase().includes(query));
+    };
+    const entryForPagefindData = (data) => {
+      const normalized = normalizeUrl(data && data.url);
+      return archiveEntries.find((entry) => {
+        const artifactPath = normalizeUrl(entry.artifactPath || '');
+        const pagefindUrl = normalizeUrl(entry.pagefindUrl || '');
+        const pathUrl = normalizeUrl(entry.path || '');
+        return normalized === artifactPath || normalized === pagefindUrl || normalized === pathUrl || normalized.startsWith(artifactPath + '/') || normalized.startsWith(pagefindUrl + '/');
+      }) || null;
+    };
+    const renderCard = (entry, fallback) => {
+      const updatedAt = entry && entry.updatedAt ? entry.updatedAt : '';
+      const date = updatedAt ? new Date(updatedAt).toLocaleDateString() : '';
+      const href = entry && entry.url ? entry.url : (fallback && fallback.url ? fallback.url : '#');
+      const cardTitle = entry && entry.title ? entry.title : (fallback && fallback.meta && fallback.meta.title ? fallback.meta.title : (fallback && fallback.title ? fallback.title : 'Untitled'));
+      const cardPath = entry && entry.path ? entry.path : (fallback && fallback.url ? fallback.url : '');
+      const filter = entry && entry.template ? entry.template : 'uncategorized';
+      const category = entry && entry.category ? entry.category : '';
+      return '<article class="post-item" data-template="' + escapeText(filter) + '" data-category="' + escapeText(category) + '">' +
+        '<h3><a href="' + escapeText(href) + '">' + escapeText(cardTitle) + '</a></h3>' +
+        '<div class="post-meta" aria-label="Updated date">▣ ' + (date ? escapeText(date) : 'Search result') + '</div>' +
+        '<p>' + escapeText(cardPath) + '</p>' +
+      '</article>';
+    };
+    const currentCards = () => Array.from(list.querySelectorAll('.post-item'));
+    const filteredCards = () => currentCards().filter((card) => activeFilter === 'all' || card.dataset.template === activeFilter);
+    const setArchiveMode = () => {
+      if (activeMode !== 'archive') list.innerHTML = originalCardsHtml;
+      activeMode = 'archive';
+      title.textContent = 'Recently Updated';
+    };
     const renderPage = () => {
       const visibleCards = filteredCards();
       const totalPages = Math.max(1, Math.ceil(visibleCards.length / pageSize));
       currentPage = Math.min(currentPage, totalPages);
       const start = (currentPage - 1) * pageSize;
       const end = start + pageSize;
-      cards.forEach((card) => { card.hidden = true; });
+      currentCards().forEach((card) => { card.hidden = true; });
       visibleCards.slice(start, end).forEach((card) => { card.hidden = false; });
       section.hidden = visibleCards.length === 0;
       pagination.hidden = visibleCards.length <= pageSize;
@@ -1110,14 +1185,96 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       prevButton.disabled = currentPage === 1;
       nextButton.disabled = currentPage === totalPages;
     };
+    const renderLocalSearch = () => {
+      const entries = archiveEntries.filter((entry) => entryMatchesFilter(entry) && localEntryMatchesQuery(entry));
+      activeMode = 'search';
+      list.innerHTML = entries.map((entry) => renderCard(entry, null)).join('');
+      title.textContent = activeQuery.trim() ? 'Search Results' : 'Recently Updated';
+      currentPage = 1;
+      renderPage();
+    };
+    const ensurePagefind = () => {
+      if (pagefind) return Promise.resolve(pagefind);
+      if (pagefindLoadStarted) return Promise.resolve(null);
+      pagefindLoadStarted = true;
+      return import('${escapeHtml(DESIGN_ARCHIVE_PATH)}/pagefind/pagefind.js').then((module) => {
+        pagefind = module;
+        return pagefind;
+      }, () => null);
+    };
+    const runSearch = () => {
+      const query = activeQuery.trim();
+      if (!query) {
+        setArchiveMode();
+        renderPage();
+        return;
+      }
+      renderLocalSearch();
+      ensurePagefind().then((searcher) => {
+        if (!searcher || !searcher.search) return null;
+        return searcher.search(query).then((response) => Promise.all(response.results.slice(0, 60).map((result) => result.data())));
+      }).then((data) => {
+        if (!data) return;
+        const seen = new Set();
+        const cards = [];
+        for (const item of data) {
+          const entry = entryForPagefindData(item);
+          if (entry && !entryMatchesFilter(entry)) continue;
+          const key = entry ? entry.id : item.url;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          cards.push(renderCard(entry, item));
+        }
+        if (cards.length > 0) {
+          activeMode = 'search';
+          list.innerHTML = cards.join('');
+          title.textContent = 'Search Results';
+          currentPage = 1;
+          renderPage();
+        }
+      }, () => undefined);
+    };
+    let searchTimer = null;
+    const scheduleSearch = () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => { runSearch(); }, 120);
+    };
 
     document.querySelectorAll('[data-filter]').forEach((button) => {
       button.addEventListener('click', () => {
         activeFilter = button.dataset.filter;
         currentPage = 1;
         document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-        renderPage();
+        if (activeQuery.trim()) scheduleSearch();
+        else { setArchiveMode(); renderPage(); }
       });
+    });
+
+    searchToggle.addEventListener('click', () => {
+      const shouldOpen = searchRow.hidden;
+      searchRow.hidden = !shouldOpen;
+      searchToggle.setAttribute('aria-expanded', String(shouldOpen));
+      if (shouldOpen) searchInput.focus();
+      else {
+        searchInput.value = '';
+        activeQuery = '';
+        setArchiveMode();
+        renderPage();
+      }
+    });
+    searchInput.addEventListener('input', () => {
+      activeQuery = searchInput.value;
+      scheduleSearch();
+    });
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        searchInput.value = '';
+        activeQuery = '';
+        searchRow.hidden = true;
+        searchToggle.setAttribute('aria-expanded', 'false');
+        setArchiveMode();
+        renderPage();
+      }
     });
 
     prevButton.addEventListener('click', () => {
@@ -1136,6 +1293,14 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
   </script>
 </body>
 </html>\n`;
+}
+
+async function runPagefindIndex(): Promise<void> {
+  rmSync(DESIGN_ARCHIVE_PAGEFIND_ROOT, { recursive: true, force: true });
+  const result = await runCommand(['bunx', '--bun', 'pagefind', '--site', DESIGN_ARCHIVE_ROOT, '--output-subdir', 'pagefind'], REPO_ROOT);
+  if (result.exitCode !== 0) {
+    throw new Error(`pagefind indexing failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+  }
 }
 
 async function updateDesignArchive(args: ParsedArgs, servePath: string, url: string, archiveTarget: string, sourceTarget: string, artifactPath: string | null, tailscaleSelf: TailscaleSelf, tailscaleBin: string): Promise<{ path: string; url: string; directUrl: string; target: string; entries: number }> {
@@ -1162,6 +1327,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     payload.updatedAt = now;
     writeArchivePayload(payload);
     writeArchiveIndex(payload);
+    await runPagefindIndex();
     const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
     const archiveUrl = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
     const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
