@@ -1,0 +1,17 @@
+{
+  "name": "consuelo-design",
+  "title": "Consuelo Design",
+  "description": "Top-level orchestration skill for Consuelo Design artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+  "script": "scripts/design/consuelo-design.ts",
+  "permission": "draft",
+  "requiresApproval": false,
+  "artifactTypes": [
+    "draft",
+    "design-artifact",
+    "work-order"
+  ],
+  "capabilities": [
+    "consuelo-design",
+    "local-artifacts"
+  ]
+}

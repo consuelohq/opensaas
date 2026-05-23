@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-consuelo-design-orchestration-skill",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 538,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/538",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/538",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/538/restore-consuelo-design-orchestration-skill",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/538",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/538/restore-consuelo-design-orchestration-skill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-consuelo-design-orchestration-skill",
+  "taskSession": "tsk_14431871abe5",
+  "tmuxSession": "opensaas-os-restore-consuelo-design-orchestration-skill-14431871",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-consuelo-design-orchestration-skill/.task/os/restore-consuelo-design-orchestration-skill/session.json",
+  "createdAt": "2026-05-23T19:45:52.563Z"
+}

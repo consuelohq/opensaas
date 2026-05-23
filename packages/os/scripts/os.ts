@@ -194,6 +194,26 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
       };
     }
   }
+  if (entry.name === 'consuelo-design') {
+    try {
+      const { runConsueloDesign } = await import('./design/consuelo-design');
+      return await runConsueloDesign(callInput.input ?? {}, context);
+    } catch (error: unknown) {
+      return {
+        ok: false,
+        name: entry.name,
+        permission: entry.permission,
+        requiresApproval: entry.requiresApproval,
+        error: {
+          code: 'SKILL_EXECUTION_FAILED',
+          message:
+            error instanceof Error
+              ? error.message.slice(0, 240)
+              : 'Skill execution failed.',
+        },
+      };
+    }
+  }
   if (entry.name === 'consuelo-design-landing-page') {
     try {
       const { runConsueloDesignLandingPage } =
