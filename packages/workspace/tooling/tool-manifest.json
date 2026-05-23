@@ -5039,7 +5039,43 @@
     },
     "exampleInput": {
       "portlessName": "design.localhost",
-      "path": "/daily-deep-idea/example",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "design.refresh",
+    "methodPath": [
+      "design",
+      "refresh"
+    ],
+    "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design refresh",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "DesignArchiveRefreshInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "refresh",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "tailscaleBin",
+          "flag": "--tailscale-bin",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
       "dryRun": true
     },
     "sessionRequired": false

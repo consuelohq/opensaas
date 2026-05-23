@@ -61,7 +61,6 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-
 export const ConsueloDesignInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -73,6 +72,12 @@ export const ConsueloDesignUiInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const DesignArchiveRefreshInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  tailscaleBin: optionalString,
+});
+
 export const ConsueloDesignSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -81,7 +86,6 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-
 export const ConsueloDesignDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -843,11 +847,12 @@ export const MacPortInput = z.object({
   action: z.enum(['check', 'find']),
   port: z.number().int().positive().optional(),
 });
-
+ 
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
   DesignPublishInput,
+  DesignArchiveRefreshInput,
   ConsueloDesignInput,
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
@@ -948,6 +953,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
