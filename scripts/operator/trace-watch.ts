@@ -157,9 +157,9 @@ function fmtDuration(ms: unknown): string {
 
 function fmtTokens(row: Row): string {
   const total = Number(row.total_tokens || 0);
-  if (!Number.isFinite(total) || total <= 0) return '0 tok';
-  if (total >= 1000) return `${(total / 1000).toFixed(1)}k tok`;
-  return `${total} tok`;
+  if (!Number.isFinite(total) || total <= 0) return '0 tokens';
+  if (total >= 1000) return `${(total / 1000).toFixed(1)}k tokens`;
+  return `${total} tokens`;
 }
 
 function shortBranch(row: Row): string {
@@ -188,6 +188,30 @@ function compactDetail(row: Row): string {
   return parts.join(' | ').slice(0, 220);
 }
 
+const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
+
+function hashText(value: string): number {
+  let hash = 0;
+  for (const char of value) hash = ((hash << 5) - hash + char.charCodeAt(0)) | 0;
+  return Math.abs(hash);
+}
+
+function branchColor(row: Row): string {
+  const label = shortBranch(row);
+  return branchColors[hashText(label) % branchColors.length] || '35';
+}
+
+function divider(args: Args): string {
+  return c(args, '2', `  ${'·'.repeat(74)}`);
+}
+
+function renderStartup(args: Args, db: string) {
+  if (args.json) return;
+  console.log(c(args, '2', `watching traces • ${db}`));
+  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json'));
+  console.log(divider(args));
+}
+
 function renderRow(args: Args, row: Row) {
   if (args.json) {
     console.log(JSON.stringify(row));
@@ -198,10 +222,15 @@ function renderRow(args: Args, row: Row) {
   const tool = c(args, '36', String(row.tool || 'unknown').padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', String(row.code || 'OK')) : c(args, '33', String(row.code || row.status || 'ERR'));
   const time = String(row.ts || '').replace('T', ' ').replace(/\.\d+Z?$/, '').slice(11, 19);
-  const first = `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${fmtTokens(row).padStart(9)} ${code}`;
-  console.log(`${first}  ${c(args, '35', shortBranch(row))}`);
+  const tokens = fmtTokens(row).padStart(12);
+  const branch = c(args, branchColor(row), shortBranch(row));
+  const first = ok
+    ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
+    : `${c(args, '2', time)}  ${icon} ${tool} ${code} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens}  ${branch}`;
+  console.log(first);
   const detail = compactDetail(row);
-  if (detail) console.log(`          ${c(args, '2', detail)}`);
+  if (detail) console.log(`  ${c(args, '2', detail)}`);
+  console.log(divider(args));
 }
 
 function sleep(ms: number) {
@@ -217,6 +246,7 @@ async function main() {
   if (!existsSync(db)) { console.error(`trace db not found: ${db}`); process.exit(1); }
 
   const filters = sqlFilters(args);
+  if (!args.once) renderStartup(args, db);
   let lastId = 0;
   if (args.limit > 0 || args.once) {
     const rows = runSql(db, baseSelect(filters, 'DESC', args.limit || 50)).reverse();
@@ -230,11 +260,6 @@ async function main() {
   } else {
     const rows = runSql(db, 'SELECT coalesce(max(rowid), 0) AS rownum FROM tool_traces;');
     lastId = Number(rows[0]?.rownum || 0);
-  }
-
-  if (!args.json) {
-    console.error(c(args, '2', `watching ${db}`));
-    console.error(c(args, '2', 'press Ctrl-C to stop'));
   }
 
   while (true) {
