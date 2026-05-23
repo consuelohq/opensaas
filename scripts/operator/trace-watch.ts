@@ -159,6 +159,21 @@ function c(args: Args, code: string, text: string): string {
   return `\u001b[${code}m${text}\u001b[0m`;
 }
 
+
+const traceTimeFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+function fmtTraceTime(value: unknown): string {
+  const date = new Date(String(value || ''));
+  if (Number.isNaN(date.getTime())) return '--:--:--';
+  return traceTimeFormatter.format(date).replace(/^24:/, '00:');
+}
+
 function fmtDuration(ms: unknown): string {
   const n = Number(ms || 0);
   if (!Number.isFinite(n)) return '0.00s';
@@ -246,7 +261,7 @@ function renderRow(args: Args, row: Row) {
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', String(row.tool || 'unknown').padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', String(row.code || 'OK')) : c(args, '33', String(row.code || row.status || 'ERR'));
-  const time = String(row.ts || '').replace('T', ' ').replace(/\.\d+Z?$/, '').slice(11, 19);
+  const time = fmtTraceTime(row.ts);
   const tokens = fmtTokens(row).padStart(12);
   const branch = c(args, branchColor(row), shortBranch(row));
   const first = ok

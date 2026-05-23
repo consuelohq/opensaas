@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/make-code-run-task-session-optional",
+  "base": "origin/main",
+  "headSha": "157ad7f55d6e1fa43545522cf65a003ba7fab131",
+  "changeHash": "d1467ff525198b95de2e9be8d864b9898ff5578a1e3dff8228eae5e612cadb17",
+  "changedFiles": [
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-05-23T11:19:57.921Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

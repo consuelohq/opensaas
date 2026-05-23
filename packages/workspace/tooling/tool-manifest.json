@@ -1639,7 +1639,7 @@
     "command": {
       "script": "review",
       "branchMode": "required",
-      "jsonFlag": "--json",
+      "jsonFlag": "--summary-json",
       "arguments": [
         {
           "source": "fix",
