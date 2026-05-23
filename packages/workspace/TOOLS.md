@@ -6738,9 +6738,9 @@ example error envelope:
 
 ### server
 
-manage the workspace MCP server
+manage the workspace MCP server reload/status lifecycle
 
-- signature: `workspace.server({ action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.server({ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace server`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
