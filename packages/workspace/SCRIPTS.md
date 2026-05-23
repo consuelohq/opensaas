@@ -8,7 +8,7 @@ all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do n
 
 every script supports `--help` and `--json`.
 
-`bun run server -- restart` schedules a detached restart and returns before the MCP server stops. This keeps agent-initiated restarts from dropping the active workspace call. `bun run server -- restart-now` performs the immediate stop/start path and is reserved for detached child execution or manual terminal use where a dropped caller response is acceptable.
+`bun run consuelo-reload` schedules a detached reload and returns before the MCP server stops. This keeps agent-initiated reloads from dropping the active workspace call. `bun run consuelo-reload -- reload-now` performs the immediate stop/start path and is reserved for detached child execution or manual terminal use where a dropped caller response is acceptable. Legacy `bun run server -- restart` still works as an alias while agents and humans move to the clearer command name.
 
 ---
 
@@ -1106,15 +1106,27 @@ bun run mac -- port find --json
 
 ---
 
-### server — manage the workspace MCP server
+### consuelo-reload — manage the workspace MCP server reload path
 
 ```bash
-bun run server -- status              # check if running, show tools + pid
-bun run server -- restart             # stop + start
-bun run server -- stop
-bun run server -- start
-bun run server -- logs                # tail /tmp/workspace.log
+bun run consuelo-reload -- status      # check if running, show tools + pid
+bun run consuelo-reload                # schedule safe async reload
+bun run consuelo-reload -- reload      # explicit alias for the default reload
+bun run consuelo-reload -- stop
+bun run consuelo-reload -- start
+bun run consuelo-reload -- logs        # tail /tmp/workspace.log
 ```
+
+Legacy `bun run server -- restart` still works as an alias, but new docs and tooling should use `consuelo-reload`.
+
+### server — legacy alias for consuelo-reload
+
+```bash
+bun run server -- status               # legacy alias for consuelo-reload status
+bun run server -- restart              # legacy alias for safe async reload
+```
+
+Prefer `bun run consuelo-reload` for new usage.
 
 ---
 
