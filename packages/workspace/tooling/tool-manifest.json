@@ -4873,7 +4873,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "code-run",
-      "branchMode": "optional",
+      "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {

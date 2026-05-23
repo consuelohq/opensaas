@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/avoid-ambient-task-selection-in-code-run",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 543,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/543",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/543",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/543/avoid-ambient-task-selection-in-code-run",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/543",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/543/avoid-ambient-task-selection-in-code-run",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-avoid-ambient-task-selection-in-code-run",
+  "taskSession": "tsk_4f3647cf9053",
+  "tmuxSession": "opensaas-workspace-agents-avoid-ambient-task-selection-in-code-run-4f3647cf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-avoid-ambient-task-selection-in-code-run/.task/workspace-agents/avoid-ambient-task-selection-in-code-run/session.json",
+  "createdAt": "2026-05-23T21:49:44.459Z"
+}
