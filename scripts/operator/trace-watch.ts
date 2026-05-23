@@ -182,20 +182,35 @@ function parseJson(value: unknown): any {
   try { return JSON.parse(value); } catch { return null; }
 }
 
-function compactDetail(row: Row): string {
+function cleanText(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function isJsonEnvelope(value: string): boolean {
+  const text = value.trim();
+  return text.startsWith('{\"level\":') || text.startsWith('{"level":') || text.includes('\"event\":\"tool.executed\"') || text.includes('"event":"tool.executed"');
+}
+
+function compactSuccessDetail(row: Row): string {
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
   const result = parseJson(row.result_json) || {};
-  const stderr = String(row.stderr || '').trim().replace(/\s+/g, ' ');
-  const parts: string[] = [];
-  if (input.path) parts.push(String(input.path));
-  if (input.pattern) parts.push(`pattern=${input.pattern}`);
-  if (Array.isArray(input.paths)) parts.push(input.paths.slice(0, 3).join(', '));
-  if (input.query) parts.push(`query=${input.query}`);
-  if (input.keyword) parts.push(`keyword=${input.keyword}`);
-  if (Array.isArray(input.command)) parts.push(input.command.slice(0, 5).join(' '));
-  if (result.message) parts.push(String(result.message));
-  if (stderr) parts.push(stderr.slice(0, 180));
-  return parts.join(' | ').slice(0, 220);
+  const candidates: string[] = [];
+  if (result.message) candidates.push(cleanText(result.message));
+  if (input.path) candidates.push(cleanText(input.path));
+  if (input.pattern) candidates.push(`pattern=${cleanText(input.pattern)}`);
+  if (input.query) candidates.push(`query=${cleanText(input.query)}`);
+  if (input.keyword) candidates.push(`keyword=${cleanText(input.keyword)}`);
+  const detail = candidates.find((candidate) => candidate && !isJsonEnvelope(candidate));
+  return (detail || '').slice(0, 120);
+}
+
+function compactErrorDetail(row: Row): string {
+  const result = parseJson(row.result_json) || {};
+  const stderr = cleanText(row.stderr);
+  const message = cleanText(result.message);
+  const candidates = [stderr, message, cleanText(row.code), cleanText(row.status)].filter(Boolean);
+  const detail = candidates.find((candidate) => !isJsonEnvelope(candidate)) || '';
+  return detail.slice(0, 240);
 }
 
 const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
@@ -237,9 +252,10 @@ function renderRow(args: Args, row: Row) {
   const first = ok
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
     : `${c(args, '2', time)}  ${icon} ${tool} ${code} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens}  ${branch}`;
-  console.log(first);
-  const detail = compactDetail(row);
-  if (detail) console.log(`  ${c(args, '2', detail)}`);
+  const detail = ok ? compactSuccessDetail(row) : compactErrorDetail(row);
+  if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
+  else console.log(first);
+  if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
   console.log(divider(args));
 }
 
