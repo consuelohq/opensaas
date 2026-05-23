@@ -1715,6 +1715,11 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 </html>\n`;
 }
 
+function writeArchiveIndex(payload: DesignArchivePayload): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
+}
+
 async function runPagefindIndex(): Promise<void> {
   rmSync(DESIGN_ARCHIVE_PAGEFIND_ROOT, { recursive: true, force: true });
   const result = await runCommand(['bunx', '--bun', 'pagefind', '--site', DESIGN_ARCHIVE_ROOT, '--output-subdir', 'pagefind'], REPO_ROOT);
