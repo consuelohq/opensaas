@@ -98,11 +98,21 @@ function durationToSql(value: string): string {
   return `datetime('now', '-${amount} ${name}')`;
 }
 
-function runSql(db: string, sql: string): Row[] {
-  const result = spawnSync('sqlite3', ['-json', db, sql], { encoding: 'utf8' });
-  if (result.status !== 0) throw new Error(result.stderr || result.stdout || `sqlite3 exited ${result.status}`);
+type SqlResult = { rows: Row[]; locked: boolean };
+
+function isLockedError(text: string): boolean {
+  return /database is locked|database table is locked|SQLITE_BUSY/i.test(text);
+}
+
+function runSql(db: string, sql: string): SqlResult {
+  const result = spawnSync('sqlite3', ['-cmd', '.timeout 1000', '-json', db, sql], { encoding: 'utf8' });
+  if (result.status !== 0) {
+    const message = result.stderr || result.stdout || `sqlite3 exited ${result.status}`;
+    if (isLockedError(message)) return { rows: [], locked: true };
+    throw new Error(message);
+  }
   const text = result.stdout.trim();
-  return text ? JSON.parse(text) as Row[] : [];
+  return { rows: text ? JSON.parse(text) as Row[] : [], locked: false };
 }
 
 function sqlFilters(args: Args): string {
@@ -249,7 +259,8 @@ async function main() {
   if (!args.once) renderStartup(args, db);
   let lastId = 0;
   if (args.limit > 0 || args.once) {
-    const rows = runSql(db, baseSelect(filters, 'DESC', args.limit || 50)).reverse();
+    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50));
+    const rows = initial.rows.reverse();
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
       renderRow(args, row);
@@ -258,12 +269,21 @@ async function main() {
   } else if (args.since) {
     lastId = 0;
   } else {
-    const rows = runSql(db, 'SELECT coalesce(max(rowid), 0) AS rownum FROM tool_traces;');
-    lastId = Number(rows[0]?.rownum || 0);
+    const latest = runSql(db, 'SELECT coalesce(max(rowid), 0) AS rownum FROM tool_traces;');
+    lastId = Number(latest.rows[0]?.rownum || 0);
   }
 
+  let lockedPolls = 0;
   while (true) {
-    const rows = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    if (result.locked) {
+      lockedPolls += 1;
+      if (!args.json && lockedPolls === 3) console.error(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
+      await sleep(args.interval);
+      continue;
+    }
+    lockedPolls = 0;
+    const rows = result.rows;
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
       renderRow(args, row);
