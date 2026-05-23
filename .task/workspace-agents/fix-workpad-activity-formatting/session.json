@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f46e56da5e90",
+  "tmuxSession": "opensaas-workspace-agents-fix-workpad-activity-formatting-f46e56da",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-workpad-activity-formatting",
+  "branch": "task/workspace-agents/fix-workpad-activity-formatting",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workpad-activity-formatting",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workpad-activity-formatting",
+  "prNumber": 488,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/488",
+  "createdAt": "2026-05-23T05:26:22.066Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workpad-activity-formatting/.task/workspace-agents/fix-workpad-activity-formatting/session.json"
+}

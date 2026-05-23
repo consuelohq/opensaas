@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-workpad-activity-formatting",
+  "base": "origin/main",
+  "headSha": "0a7c4974e43344b48809a3c53fdc55096fde6a5a",
+  "changeHash": "5d8904fb9c7977a81cf185af91867e52e1b1251535d4cd59992798e2c7288e63",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T05:35:44.777Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

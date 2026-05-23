@@ -31,18 +31,32 @@ function escapeHeading(heading) {
   return heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function findSectionRange(content, heading) {
+  const header = `## ${heading}\n\n`;
+  const start = content.indexOf(header);
+  if (start === -1) return null;
+  const bodyStart = start + header.length;
+  const nextHeading = content.indexOf('\n## ', bodyStart);
+  const divider = content.indexOf('\n---\n', bodyStart);
+  const candidates = [nextHeading, divider].filter((value) => value !== -1);
+  const end = candidates.length ? Math.min(...candidates) : content.length;
+  return { bodyStart, end };
+}
+
 function replaceSection(content, heading, nextContent) {
   const normalized = nextContent.endsWith('\n') ? nextContent : `${nextContent}\n`;
-  const pattern = new RegExp(`(^## ${escapeHeading(heading)}\\n\\n)[\\s\\S]*?(?=\\n## |\\n---\\n|$)`, 'm');
-  if (pattern.test(content)) return content.replace(pattern, `$1${normalized}`);
-  const separator = content.endsWith('\n') ? '' : '\n';
-  return `${content}${separator}\n## ${heading}\n\n${normalized}`;
+  const range = findSectionRange(content, heading);
+  if (!range) {
+    const separator = content.endsWith('\n') ? '' : '\n';
+    return `${content}${separator}\n## ${heading}\n\n${normalized}`;
+  }
+  return `${content.slice(0, range.bodyStart)}${normalized}${content.slice(range.end)}`;
 }
 
 function extractSection(content, heading) {
-  const pattern = new RegExp(`^## ${escapeHeading(heading)}\\n\\n([\\s\\S]*?)(?=\\n## |\\n---\\n|$)`, 'm');
-  const match = content.match(pattern);
-  return match ? match[1].trim() : '';
+  const range = findSectionRange(content, heading);
+  if (!range) return '';
+  return content.slice(range.bodyStart, range.end).trim();
 }
 
 function normalizeRepoPath(filePath) {
@@ -52,9 +66,9 @@ function normalizeRepoPath(filePath) {
 function parseFileSection(section) {
   const entries = [];
   for (const line of String(section || '').split('\n')) {
-    const match = line.match(/^-\s+`([^`]+)`(\s+\(deleted\))?/);
-    if (!match) continue;
-    entries.push({ path: match[1], deleted: Boolean(match[2]) });
+    const parts = line.split('`');
+    if (!line.trim().startsWith('- ') || parts.length < 3) continue;
+    entries.push({ path: parts[1], deleted: line.includes('(deleted)') });
   }
   return entries;
 }
@@ -93,6 +107,25 @@ function formatTime(date = new Date()) {
   return date.toISOString().replace('T', ' ').slice(0, 19);
 }
 
+function activitySortKey(line) {
+  const marker = String(line).slice(2, 21);
+  return marker.length === 19 ? marker : '';
+}
+
+function normalizeActivityLines(section) {
+  const seen = new Set();
+  return String(section || '')
+    .split('\n')
+    .map((item) => item.trim())
+    .filter((item) => item && item !== NONE_YET && item.startsWith('- '))
+    .filter((item) => {
+      if (seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    })
+    .sort((a, b) => activitySortKey(a).localeCompare(activitySortKey(b)));
+}
+
 function appendActivity(worktreePath, taskMeta, event) {
   const current = readWorkpad(worktreePath, taskMeta);
   const action = event?.action || 'update';
@@ -100,13 +133,13 @@ function appendActivity(worktreePath, taskMeta, event) {
   const detail = event?.detail ? ` ${event.detail}` : '';
   const line = `- ${formatTime()} ${action}:${filePath}${detail}`;
   const existing = extractSection(current.content || '', 'workspace-owned: activity log') || extractSection(current.content || '', 'activity log') || NONE_YET;
-  const lines = existing.split('\n').filter((item) => item.trim() && item.trim() !== NONE_YET);
+  const lines = normalizeActivityLines(existing);
   lines.push(line);
-  const next = replaceSection(current.content || '', 'workspace-owned: activity log', lines.slice(-50).join('\n') || NONE_YET);
+  const body = normalizeActivityLines(lines.join('\n')).slice(-50).join('\n') || NONE_YET;
+  const next = replaceSection(current.content || '', 'workspace-owned: activity log', body);
   writeWorkpad(current.path, next);
   return { path: current.path, line };
 }
-
 
 function syncValidationEvidence(worktreePath, taskMeta, event) {
   const current = readWorkpad(worktreePath, taskMeta);
