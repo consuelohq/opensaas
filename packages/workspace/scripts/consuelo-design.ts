@@ -1224,6 +1224,143 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   return target;
 }
 
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const serverSource = `const dataPath = ${JSON.stringify(DESIGN_ARCHIVE_DATA_PATH)};
+const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
+
+type ArchiveEntry = { path: string; target: string; artifactPath: string | null };
+type ArchivePayload = { entries?: ArchiveEntry[] };
+
+function noStore(headers: Record<string, string> = {}): Headers {
+  return new Headers({ 'Cache-Control': 'no-store', ...headers });
+}
+
+async function readPayload(): Promise<ArchivePayload> {
+  try {
+    return JSON.parse(await Bun.file(dataPath).text()) as ArchivePayload;
+  } catch {
+    return { entries: [] };
+  }
+}
+
+function safeArtifactPath(relativePath: string): string | null {
+  const candidate = Bun.pathToFileURL(artifactsRoot + '/' + relativePath.split('/').filter(Boolean).join('/')).pathname;
+  const allowed = Bun.pathToFileURL(artifactsRoot + '/').pathname;
+  return candidate.startsWith(allowed) ? candidate : null;
+}
+
+async function serveFile(filePath: string): Promise<Response | null> {
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) return new Response(file, { headers: noStore() });
+    const index = Bun.file(filePath + '/index.html');
+    if (await index.exists()) return new Response(index, { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function proxyTarget(entry: ArchiveEntry, request: Request, suffix: string): Promise<Response | null> {
+  try {
+    if (!/^https?:\/\//.test(entry.target)) return null;
+    const target = new URL(entry.target);
+    const requested = new URL(request.url);
+    const basePath = target.pathname.replace(/\/$/, '');
+    const suffixPath = suffix ? '/' + suffix.split('/').filter(Boolean).map(encodeURIComponent).join('/') : '';
+    target.pathname = basePath + suffixPath;
+    target.search = requested.search;
+    return fetch(target, { method: request.method, headers: request.headers });
+  } catch {
+    return null;
+  }
+}
+
+Bun.serve({
+  hostname: ${JSON.stringify(ip)},
+  port,
+  async fetch(request) {
+    try {
+      const url = new URL(request.url);
+    if (url.pathname === archivePath || url.pathname === archivePath + '/') {
+      return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    }
+
+    const payload = await readPayload();
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + '/'));
+    if (entry) {
+      const suffix = url.pathname.slice(entry.path.length).replace(/^\//, '');
+      if (entry.artifactPath) {
+        const artifactPath = safeArtifactPath(entry.artifactPath + (suffix ? '/' + suffix : ''));
+        if (artifactPath) {
+          const response = await serveFile(artifactPath);
+          if (response) return response;
+        }
+      }
+      const proxied = await proxyTarget(entry, request, suffix);
+      if (proxied) return proxied;
+    }
+
+      return new Response('not found', { status: 404, headers: noStore() });
+    } catch {
+      return new Response('archive server error', { status: 500, headers: noStore() });
+    }
+  },
+});
+`;
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort only. If the process is already gone, publish can continue.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
 function readArchivePayload(): DesignArchivePayload {
   try {
     const parsed = JSON.parse(readFileSync(DESIGN_ARCHIVE_DATA_PATH, 'utf8')) as Partial<DesignArchivePayload>;
@@ -1636,7 +1773,7 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
     const normalizedTarget = normalizeTarget(resolvedTarget);
     const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
-    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
     const url = `https://${hostname}${servePath}`;
@@ -1671,8 +1808,9 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
 
     const materialized = materializeArchiveTarget(normalizedTarget, servePath);
     const archive = await updateDesignArchive(args, servePath, url, materialized.target, materialized.sourceTarget, materialized.artifactPath, tailscaleSelf, tailscaleBin);
+    const publishTarget = archive.target;
 
-    const result = await runCommand(command, REPO_ROOT);
+    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, publishTarget], REPO_ROOT);
     if (result.exitCode !== 0) {
       throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
     }
