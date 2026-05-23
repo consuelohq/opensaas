@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_108f9121bb7c",
+  "tmuxSession": "opensaas-workspace-agents-compact-trace-watch-success-rows-108f9121",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-trace-watch-success-rows",
+  "branch": "task/workspace-agents/compact-trace-watch-success-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-trace-watch-success-rows",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-trace-watch-success-rows",
+  "prNumber": 529,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/529",
+  "createdAt": "2026-05-23T10:24:21.925Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-trace-watch-success-rows/.task/workspace-agents/compact-trace-watch-success-rows/session.json"
+}
