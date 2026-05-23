@@ -278,6 +278,7 @@
     "github": "bun packages/workspace/scripts/github.js",
     "git:diff": "bun packages/workspace/scripts/git-diff.js",
     "trace:analytics": "bun scripts/operator/trace-analytics.ts",
+    "trace:errors": "bun scripts/operator/trace-errors.ts",
     "trace:watch": "bun scripts/operator/trace-watch.ts"
   },
   "workspaces": {
