@@ -13,7 +13,7 @@ const PRESET_FIELDS = {
   full: ['number', 'title', 'url', 'headRefName', 'baseRefName', 'state', 'mergeStateStatus', 'reviewDecision', 'latestReviews', 'statusCheckRollup', 'headRefOid', 'isDraft', 'author', 'files'],
 };
 
-const CHECK_FIELDS = ['bucket', 'completedAt', 'conclusion', 'detailsUrl', 'event', 'link', 'name', 'startedAt', 'state', 'workflow'];
+const CHECK_FIELDS = ['bucket', 'completedAt', 'description', 'event', 'link', 'name', 'startedAt', 'state', 'workflow'];
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
