@@ -622,7 +622,9 @@ export const useOpportunityQueueWorkspace = ({
                 parallelDialingEnabled: requestedParallelDialingEnabled,
                 parallelDialingMaxLines: requestedParallelDialingMaxLines,
               },
-              contactIds: totalCallableRecords.map((record) => record.id),
+              contactIds: totalCallableRecords.map(
+                (record) => record.personId ?? record.id,
+              ),
             }),
           },
         );
@@ -659,7 +661,9 @@ export const useOpportunityQueueWorkspace = ({
               parallelDialingEnabled: requestedParallelDialingEnabled,
               parallelDialingMaxLines: requestedParallelDialingMaxLines,
             },
-            contactIds: callableRecords.map((record) => record.id),
+            contactIds: callableRecords.map(
+              (record) => record.personId ?? record.id,
+            ),
           }),
         },
       );
