@@ -430,6 +430,116 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('compacts review.run full-json output into summary data', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-review-compact-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_review_compact',
+        tmuxSession: 'opensaas-review-compact',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const longMessage = 'x'.repeat(2000);
+      const runner: ToolRunner = async () => ({
+        stdout: JSON.stringify({
+          base: 'origin/main',
+          branch: TEST_BRANCH,
+          files: 1,
+          affectedProjects: [],
+          yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
+          preExisting: [{ rule: 'ESLINT', file: 'src/b.ts', line: 3, msg: longMessage }],
+          testResults: [],
+          confidence: null,
+        }),
+        stderr: '',
+        exitCode: 0,
+      });
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('review.run', { taskSession: 'tsk_review_compact', noTests: true }, {
+        ...stableOptions(runner, plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--json');
+      expect(plans[0].args).not.toContain('--summary-json');
+      expect((result.data as { schema?: string }).schema).toBe('review.summary.v1');
+      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number }; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
+      expect(data.summary.yourIssues).toBe(1);
+      expect(data.summary.preExistingIssues).toBe(1);
+      expect(data.mustFix[0].message.length).toBeLessThan(600);
+      expect(data.mustFix[0].messageTruncated).toBe(true);
+      expect(data.preExistingDigest.sample[0].message.length).toBeLessThan(600);
+      expect(data.preExistingDigest.sample[0].messageTruncated).toBe(true);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('compacts nested verify review data from legacy full-json output', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_verify_compact',
+        tmuxSession: 'opensaas-verify-compact',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const longMessage = 'y'.repeat(1800);
+      const runner: ToolRunner = async () => ({
+        stdout: JSON.stringify({
+          branch: TEST_BRANCH,
+          base: 'origin/main',
+          review: {
+            passed: true,
+            data: {
+              base: 'origin/main',
+              branch: TEST_BRANCH,
+              files: 1,
+              affectedProjects: [],
+              yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
+              preExisting: [],
+              testResults: [],
+              confidence: null,
+            },
+          },
+          db: { skipped: true, passed: true },
+          passed: true,
+        }),
+        stderr: '',
+        exitCode: 0,
+      });
+
+      const result = await executeTool('verify', { taskSession: 'tsk_verify_compact', noDb: true, noStamp: true }, {
+        ...stableOptions(runner),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { review: { data: { schema?: string; mustFix: Array<{ message: string; messageTruncated: boolean }> } } };
+      expect(data.review.data.schema).toBe('review.summary.v1');
+      expect(data.review.data.mustFix[0].message.length).toBeLessThan(600);
+      expect(data.review.data.mustFix[0].messageTruncated).toBe(true);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('passes the taskSession worktree to audit', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-audit-session-'));
     try {
