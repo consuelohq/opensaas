@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/debug-git-diff-working-tree-output",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "db21c254656e743f44801585bf22e319a2bc30da",
+  "changeHash": "f42b7ed71d1541190a5e3e516166df31b68af3514ed5269b276a29150642cbd3",
+  "changedFiles": [
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/tests/git-diff.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T03:12:56.635Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
