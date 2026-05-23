@@ -13,6 +13,9 @@ const START_SCRIPT = path.join(WORKSPACE_DIR, 'scripts', 'start-brain.sh');
 const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
 
+function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
+function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
+
 function run(cmd) {
   try { return execSync(cmd, { encoding: 'utf8', timeout: 10000 }).trim(); }
   catch (e) { return e.stdout?.trim() || e.message; }
@@ -87,48 +90,77 @@ function waitForHealth(label) {
   for (let i = 0; i < 15; i++) {
     const h = health();
     if (h) {
-      console.log(`✓ ${label} — ${h.tools} tools, name: ${h.name}`);
+      writeStdout(`✓ ${label} — ${h.tools} tools, name: ${h.name}`);
       const pid = findServerPid();
-      if (pid) console.log(`  pid: ${pid}`);
+      if (pid) writeStdout(`  pid: ${pid}`);
       return true;
     }
     run('sleep 0.5');
   }
-  console.log(`${label} (health check pending — server may still be starting)`);
+  writeStdout(`${label} (health check pending — server may still be starting)`);
   return false;
+}
+
+function runRestart({ useLaunchd }) {
+  if (useLaunchd) {
+    run(`launchctl unload ${PLIST} 2>/dev/null`);
+    run('sleep 1');
+    run(`launchctl load ${PLIST} 2>/dev/null`);
+  } else {
+    killServer();
+    run('sleep 1');
+    startDirect();
+  }
+}
+
+function scheduleRestart({ useLaunchd }) {
+  const child = spawn(process.execPath, [__filename, 'restart-now'], {
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+    cwd: WORKSPACE_DIR,
+    env: {
+      ...process.env,
+      WORKSPACE_SERVER_RESTART_CHILD: '1',
+      WORKSPACE_SERVER_RESTART_LAUNCHD: useLaunchd ? '1' : '0',
+    },
+  });
+  child.unref();
+  writeStdout('restart scheduled');
+  writeStdout('  server will briefly disconnect while launchd restarts it');
 }
 
 // --- main ---
 
 const args = process.argv.slice(2);
 if (args.includes('--help')) {
-  console.log('usage: bun run server -- [restart|status|stop|start|logs]');
-  console.log('');
-  console.log('  restart   stop + start the workspace MCP server (default)');
-  console.log('  status    show server health and process info');
-  console.log('  stop      stop the server');
-  console.log('  start     start the server');
-  console.log('  logs      tail server logs');
-  console.log('');
-  console.log('uses launchd if the agent is loaded, otherwise manages the process directly.');
+  writeStdout('usage: bun run server -- [restart|restart-now|status|stop|start|logs]');
+  writeStdout('');
+  writeStdout('  restart      schedule a safe async restart of the workspace MCP server (default)');
+  writeStdout('  restart-now  stop + start immediately; intended for detached restart children');
+  writeStdout('  status       show server health and process info');
+  writeStdout('  stop         stop the server');
+  writeStdout('  start        start the server');
+  writeStdout('  logs         tail server logs');
+  writeStdout('');
+  writeStdout('uses launchd if the agent is loaded, otherwise manages the process directly.');
+  writeStdout('restart returns before the server stops so MCP callers do not drop their response.');
   process.exit(0);
 }
 
 const cmd = args[0] || 'restart';
 const useLaunchd = isLaunchdLoaded();
-
 switch (cmd) {
   case 'status': {
     const h = health();
     if (h) {
-      console.log(`✓ server running — ${h.tools} tools, name: ${h.name}`);
+      writeStdout(`✓ server running — ${h.tools} tools, name: ${h.name}`);
       const pid = findServerPid();
-      if (pid) console.log(`  pid: ${pid}`);
-      console.log(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
+      if (pid) writeStdout(`  pid: ${pid}`);
+      writeStdout(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
     } else {
-      console.log('✗ server not responding');
+      writeStdout('✗ server not responding');
       const pid = findServerPid();
-      if (pid) console.log(`  process exists (pid ${pid}) but not healthy`);
+      if (pid) writeStdout(`  process exists (pid ${pid}) but not healthy`);
     }
     break;
   }
@@ -138,15 +170,15 @@ switch (cmd) {
       run(`launchctl unload ${PLIST} 2>/dev/null`);
     }
     killServer();
-    console.log('stopped');
+    writeStdout('stopped');
     break;
 
   case 'start':
     if (findServerPid()) {
-      console.log('server already running');
+      writeStdout('server already running');
       const h = health();
-      if (h) console.log(`  ✓ healthy — ${h.tools} tools`);
-      else console.log('  ✗ process exists but not healthy');
+      if (h) writeStdout(`  ✓ healthy — ${h.tools} tools`);
+      else writeStdout('  ✗ process exists but not healthy');
       break;
     }
     if (useLaunchd) {
@@ -158,25 +190,23 @@ switch (cmd) {
     break;
 
   case 'restart':
-    if (useLaunchd) {
-      run(`launchctl unload ${PLIST} 2>/dev/null`);
-      run('sleep 1');
-      run(`launchctl load ${PLIST} 2>/dev/null`);
-    } else {
-      killServer();
-      run('sleep 1');
-      startDirect();
-    }
-    waitForHealth('restarted');
+    scheduleRestart({ useLaunchd });
+    break;
+
+  case 'restart-now':
+    run('sleep 0.5');
+    runRestart({ useLaunchd: process.env.WORKSPACE_SERVER_RESTART_LAUNCHD === '1' || useLaunchd });
+    if (!process.env.WORKSPACE_SERVER_RESTART_CHILD) waitForHealth('restarted');
     break;
 
   case 'logs':
     try {
       execSync(`tail -50 ${LOG_FILE}`, { stdio: 'inherit' });
-    } catch { console.log(`no logs at ${LOG_FILE}`); }
+    } catch { writeStdout(`no logs at ${LOG_FILE}`); }
     break;
 
   default:
-    console.error(`unknown command: ${cmd}`);
+    writeStderr(`unknown command: ${cmd}`);
     process.exit(1);
 }
+

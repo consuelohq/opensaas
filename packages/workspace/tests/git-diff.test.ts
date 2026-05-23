@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -71,4 +71,33 @@ describe('git-diff script', () => {
       expect.objectContaining({ path: 'src/app.ts' }),
     ]);
   });
+
+  it('includes untracked files in working-tree output', () => {
+    const repo = makeRepo();
+    writeFileSync(join(repo, 'new-file.txt'), 'alpha\nbeta\n');
+
+    const output = runDiff(repo, ['--stat', '--files', '--hunks', '--patch']);
+
+    expect(output.summary).toMatchObject({ filesChanged: 1, insertions: 2, deletions: 0 });
+    expect(output.files).toEqual([
+      expect.objectContaining({ path: 'new-file.txt', status: 'A', additions: 2, deletions: 0 }),
+    ]);
+    expect(output.hunks[0]).toEqual(expect.objectContaining({ path: 'new-file.txt' }));
+    expect(output.patch).toContain('new file mode 100644');
+    expect(output.patch).toContain('+alpha');
+  });
+
+  it('keeps untracked files out of revision comparisons', () => {
+    const repo = makeRepo();
+    writeFileSync(join(repo, 'new-file.txt'), 'alpha\n');
+
+    const output = runDiff(repo, ['--base', 'HEAD', '--stat', '--files', '--hunks', '--patch']);
+
+    expect(output.mode).toBe('revision');
+    expect(output.summary).toMatchObject({ filesChanged: 0, insertions: 0, deletions: 0 });
+    expect(output.files).toEqual([]);
+    expect(output.hunks).toEqual([]);
+    expect(output.patch).toBe('');
+  });
+
 });

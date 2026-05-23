@@ -8,6 +8,8 @@ all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do n
 
 every script supports `--help` and `--json`.
 
+`bun run server -- restart` schedules a detached restart and returns before the MCP server stops. This keeps agent-initiated restarts from dropping the active workspace call. `bun run server -- restart-now` performs the immediate stop/start path and is reserved for detached child execution or manual terminal use where a dropped caller response is acceptable.
+
 ---
 
 ## foundation
