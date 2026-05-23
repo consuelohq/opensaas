@@ -71,7 +71,8 @@ function parseArgs(argv) {
     ].includes(flag);
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
-    if (!isBooleanFlag && (!value || value.startsWith('--'))) {
+    const allowsFlagLikeValue = flag === '--review-arg';
+    if (!isBooleanFlag && (!value || (!allowsFlagLikeValue && value.startsWith('--')))) {
       throw new Error(`missing value for ${flag}`);
     }
 
@@ -218,6 +219,28 @@ function readChangedFiles(repoRoot, base) {
   return [...files].filter((file) => !file.startsWith('.task/')).sort();
 }
 
+const REVIEW_STDERR_LIMIT = 4000;
+
+function compactText(text, limit = REVIEW_STDERR_LIMIT) {
+  const value = String(text || '');
+  return {
+    text: value.length > limit ? `${value.slice(0, limit)}\n... truncated ${value.length - limit} chars` : value,
+    chars: value.length,
+    truncated: value.length > limit,
+  };
+}
+
+function countFindings(value) {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value.total === 'number') return value.total;
+  return 0;
+}
+
+function countFailedTests(value) {
+  if (!Array.isArray(value)) return 0;
+  return value.filter((testResult) => !testResult.passed).length;
+}
+
 function parseReviewJson(stdout) {
   const start = stdout.indexOf('{');
   const end = stdout.lastIndexOf('}');
@@ -254,9 +277,9 @@ function runReview(repoRoot, base, args) {
   });
   const data = parseReviewJson(result.stdout || '');
   const reviewIssueCount = data
-    ? (data.yours || []).length
-      + (data.preExisting || []).length
-      + (data.testResults || []).filter((testResult) => !testResult.passed).length
+    ? countFindings(data.yours)
+      + countFindings(data.preExisting)
+      + countFailedTests(data.testResults)
     : 1;
 
   return {
@@ -404,7 +427,9 @@ async function main() {
         passed: result.review.passed,
         status: result.review.status,
         data: result.review.data,
-        stderr: result.review.stderr,
+        stderr: compactText(result.review.stderr).text,
+        stderrChars: compactText(result.review.stderr).chars,
+        stderrTruncated: compactText(result.review.stderr).truncated,
       },
       db: result.db,
       passed: result.passed,
