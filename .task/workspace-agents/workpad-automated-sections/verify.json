@@ -1,0 +1,24 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/workpad-automated-sections",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "81170a3c8e45225a148c94abdedd69da1673f6e4",
+  "changeHash": "c05ec2313570be4bca1bb347d72d4babb02814085e728484821e99cc9735b554",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T05:11:26.241Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

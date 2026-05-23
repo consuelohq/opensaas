@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,6 +21,9 @@ import type {
   ToolResult,
   ToolRunner,
 } from './types';
+
+const require = createRequire(import.meta.url);
+const { syncValidationEvidence } = require('../task-workpad');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -276,6 +280,7 @@ export async function executeTool<TData = unknown>(
         stderr: stripCommandEcho(String(passthrough.stderr || '')),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
+      maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result;
     }
@@ -293,6 +298,7 @@ export async function executeTool<TData = unknown>(
       requestId,
       now: options.now,
     });
+    maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
     logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
     return result;
   } catch (error: unknown) {
@@ -310,6 +316,23 @@ export async function executeTool<TData = unknown>(
     });
     logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
     return result as ToolResult<TData>;
+  }
+}
+
+
+function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
+  if (!['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'].includes(toolName)) return;
+  const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
+  const taskBranch = typeof input.branch === 'string' ? input.branch : '';
+  if (!taskWorktree || !taskBranch.startsWith('task/')) return;
+  try {
+    syncValidationEvidence(taskWorktree, { taskBranch }, {
+      command: toolName,
+      ok: result.ok,
+      detail: typeof result.code === 'string' ? result.code : undefined,
+    });
+  } catch {
+    // Workpad sync is best-effort evidence; tool execution result remains authoritative.
   }
 }
 
