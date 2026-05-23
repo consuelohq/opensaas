@@ -154,6 +154,23 @@ function syncValidationEvidence(worktreePath, taskMeta, event) {
   return { path: current.path, line };
 }
 
+
+function syncValidationEvidence(worktreePath, taskMeta, event) {
+  const current = readWorkpad(worktreePath, taskMeta);
+  const command = event?.command ? `\`${event.command}\`` : '`validation`';
+  const status = event?.ok === false ? 'failed' : 'passed';
+  const detail = event?.detail ? ` — ${event.detail}` : '';
+  const line = `- ${formatTime()} ${command}: ${status}${detail}`;
+  const existing = extractSection(current.content || '', 'workspace-owned: validation evidence')
+    || extractSection(current.content || '', 'validation evidence')
+    || NONE_YET;
+  const lines = existing.split('\n').filter((item) => item.trim() && item.trim() !== NONE_YET);
+  lines.push(line);
+  const next = replaceSection(current.content || '', 'workspace-owned: validation evidence', lines.slice(-30).join('\n') || NONE_YET);
+  writeWorkpad(current.path, next);
+  return { path: current.path, line };
+}
+
 function stripMarkdownNoise(value) {
   return String(value || '').replace(/```[\s\S]*?```/g, '').replace(/`[^`]*`/g, '').replace(/[-*[\]#\s]/g, '').trim().toLowerCase();
 }

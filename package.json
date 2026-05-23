@@ -276,7 +276,8 @@
     "consuelo-design": "bun packages/workspace/scripts/consuelo-design.ts",
     "code-run": "bun packages/workspace/scripts/code-run.ts",
     "github": "bun packages/workspace/scripts/github.js",
-    "git:diff": "bun packages/workspace/scripts/git-diff.js"
+    "git:diff": "bun packages/workspace/scripts/git-diff.js",
+    "trace:analytics": "bun scripts/operator/trace-analytics.ts"
   },
   "workspaces": {
     "packages": [

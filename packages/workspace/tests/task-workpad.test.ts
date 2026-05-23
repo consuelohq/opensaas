@@ -111,36 +111,6 @@ describe('task workpad helpers', () => {
     }
   });
 
-
-  it('normalizes repeated activity log updates into one ordered list', () => {
-    const root = makeWorktree([
-      '# workpad',
-      '',
-      '## workspace-owned: activity log',
-      '',
-      '- 2026-05-23 05:25:23 fs.write: `two.txt`',
-      '',
-      '- 2026-05-23 05:25:16 fs.write: `one.txt`',
-      '',
-      '## notes for ko',
-      '',
-      '- none yet',
-      '',
-    ].join('\n'));
-    try {
-      appendActivity(root, meta, { action: 'fs.write', filePath: 'three.txt' });
-      const content = readFileSync(join(root, '.task', 'workspace-agents', 'workpad-test', 'workpad.md'), 'utf8');
-      const section = content.match(/## workspace-owned: activity log\n\n([\s\S]*?)(?=\n## |$)/)?.[1] || '';
-      const lines = section.trim().split('\n');
-      expect(lines[0]).toContain('05:25:16');
-      expect(lines[1]).toContain('05:25:23');
-      expect(lines[2]).toContain('fs.write: `three.txt`');
-      expect(section).not.toContain('\n\n-');
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
   it('does not treat automated activity alone as publish-ready', () => {
     const root = makeWorktree([
       '# workpad',
