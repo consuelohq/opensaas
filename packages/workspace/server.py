@@ -707,7 +707,7 @@ def _manifest_tool_requires_task_session(tool: str) -> bool:
     if entry.get('sessionRequired') is True:
         return True
     command = entry.get('command') if isinstance(entry.get('command'), dict) else {}
-    return command.get('branchMode') in {'optional', 'required'}
+    return command.get('branchMode') == 'required'
 
 
 def _task_session_candidate_paths(worktree_path: Path) -> list[Path]:
