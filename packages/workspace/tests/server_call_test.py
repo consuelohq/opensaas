@@ -158,12 +158,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._traced_call('workspace.call', 'tool', lambda **kwargs: {'ok': True, 'code': 'OK'}, tool='status', tool_input={}, taskSession=None, timeout=7)
 
         self.assertEqual(result, {'ok': True, 'code': 'OK'})
-        self.assertEqual(observations[0].kwargs['as_type'], 'span')
+        self.assertEqual(observations[0].kwargs['as_type'], 'generation')
+        self.assertEqual(observations[0].kwargs['model'], 'workspace-tool-estimate')
         self.assertEqual(observations[0].kwargs['name'], 'status')
         self.assertEqual(observations[0].updates[0]['input']['tool'], 'status')
         self.assertEqual(propagated[0]['session_id'], self.module._session_id)
         self.assertEqual(propagated[0]['trace_name'], 'status')
         self.assertEqual(observations[0].updates[0]['output']['code'], 'OK')
+        self.assertEqual(observations[0].updates[0]['model'], 'workspace-tool-estimate')
+        self.assertIn('usage_details', observations[0].updates[0])
+        self.assertIn('workspaceUsageEstimate', observations[0].updates[0]['metadata'])
 
     def test_langfuse_tracing_does_not_retry_failing_call(self):
         calls = []

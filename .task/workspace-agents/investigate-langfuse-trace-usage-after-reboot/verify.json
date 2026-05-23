@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/investigate-langfuse-trace-usage-after-reboot",
+  "base": "origin/main",
+  "headSha": "a331efa1d692cc52c428dfb8dab1b3b4d2ea69a4",
+  "changeHash": "38e9da8f725d0c3bb265662bdabd55bbeb93a9ff8543494aade0a9707be8a958",
+  "changedFiles": [
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-05-23T06:56:25.653Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
