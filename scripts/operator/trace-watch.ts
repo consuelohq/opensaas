@@ -98,11 +98,21 @@ function durationToSql(value: string): string {
   return `datetime('now', '-${amount} ${name}')`;
 }
 
-function runSql(db: string, sql: string): Row[] {
-  const result = spawnSync('sqlite3', ['-json', db, sql], { encoding: 'utf8' });
-  if (result.status !== 0) throw new Error(result.stderr || result.stdout || `sqlite3 exited ${result.status}`);
+type SqlResult = { rows: Row[]; locked: boolean };
+
+function isLockedError(text: string): boolean {
+  return /database is locked|database table is locked|SQLITE_BUSY/i.test(text);
+}
+
+function runSql(db: string, sql: string): SqlResult {
+  const result = spawnSync('sqlite3', ['-cmd', '.timeout 1000', '-json', db, sql], { encoding: 'utf8' });
+  if (result.status !== 0) {
+    const message = result.stderr || result.stdout || `sqlite3 exited ${result.status}`;
+    if (isLockedError(message)) return { rows: [], locked: true };
+    throw new Error(message);
+  }
   const text = result.stdout.trim();
-  return text ? JSON.parse(text) as Row[] : [];
+  return { rows: text ? JSON.parse(text) as Row[] : [], locked: false };
 }
 
 function sqlFilters(args: Args): string {
@@ -172,20 +182,35 @@ function parseJson(value: unknown): any {
   try { return JSON.parse(value); } catch { return null; }
 }
 
-function compactDetail(row: Row): string {
+function cleanText(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function isJsonEnvelope(value: string): boolean {
+  const text = value.trim();
+  return text.startsWith('{\"level\":') || text.startsWith('{"level":') || text.includes('\"event\":\"tool.executed\"') || text.includes('"event":"tool.executed"');
+}
+
+function compactSuccessDetail(row: Row): string {
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
   const result = parseJson(row.result_json) || {};
-  const stderr = String(row.stderr || '').trim().replace(/\s+/g, ' ');
-  const parts: string[] = [];
-  if (input.path) parts.push(String(input.path));
-  if (input.pattern) parts.push(`pattern=${input.pattern}`);
-  if (Array.isArray(input.paths)) parts.push(input.paths.slice(0, 3).join(', '));
-  if (input.query) parts.push(`query=${input.query}`);
-  if (input.keyword) parts.push(`keyword=${input.keyword}`);
-  if (Array.isArray(input.command)) parts.push(input.command.slice(0, 5).join(' '));
-  if (result.message) parts.push(String(result.message));
-  if (stderr) parts.push(stderr.slice(0, 180));
-  return parts.join(' | ').slice(0, 220);
+  const candidates: string[] = [];
+  if (result.message) candidates.push(cleanText(result.message));
+  if (input.path) candidates.push(cleanText(input.path));
+  if (input.pattern) candidates.push(`pattern=${cleanText(input.pattern)}`);
+  if (input.query) candidates.push(`query=${cleanText(input.query)}`);
+  if (input.keyword) candidates.push(`keyword=${cleanText(input.keyword)}`);
+  const detail = candidates.find((candidate) => candidate && !isJsonEnvelope(candidate));
+  return (detail || '').slice(0, 120);
+}
+
+function compactErrorDetail(row: Row): string {
+  const result = parseJson(row.result_json) || {};
+  const stderr = cleanText(row.stderr);
+  const message = cleanText(result.message);
+  const candidates = [stderr, message, cleanText(row.code), cleanText(row.status)].filter(Boolean);
+  const detail = candidates.find((candidate) => !isJsonEnvelope(candidate)) || '';
+  return detail.slice(0, 240);
 }
 
 const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
@@ -227,9 +252,10 @@ function renderRow(args: Args, row: Row) {
   const first = ok
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
     : `${c(args, '2', time)}  ${icon} ${tool} ${code} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens}  ${branch}`;
-  console.log(first);
-  const detail = compactDetail(row);
-  if (detail) console.log(`  ${c(args, '2', detail)}`);
+  const detail = ok ? compactSuccessDetail(row) : compactErrorDetail(row);
+  if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
+  else console.log(first);
+  if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
   console.log(divider(args));
 }
 
@@ -249,7 +275,8 @@ async function main() {
   if (!args.once) renderStartup(args, db);
   let lastId = 0;
   if (args.limit > 0 || args.once) {
-    const rows = runSql(db, baseSelect(filters, 'DESC', args.limit || 50)).reverse();
+    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50));
+    const rows = initial.rows.reverse();
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
       renderRow(args, row);
@@ -258,12 +285,21 @@ async function main() {
   } else if (args.since) {
     lastId = 0;
   } else {
-    const rows = runSql(db, 'SELECT coalesce(max(rowid), 0) AS rownum FROM tool_traces;');
-    lastId = Number(rows[0]?.rownum || 0);
+    const latest = runSql(db, 'SELECT coalesce(max(rowid), 0) AS rownum FROM tool_traces;');
+    lastId = Number(latest.rows[0]?.rownum || 0);
   }
 
+  let lockedPolls = 0;
   while (true) {
-    const rows = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    if (result.locked) {
+      lockedPolls += 1;
+      if (!args.json && lockedPolls === 3) console.error(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
+      await sleep(args.interval);
+      continue;
+    }
+    lockedPolls = 0;
+    const rows = result.rows;
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
       renderRow(args, row);
