@@ -32,9 +32,92 @@ function sqlJson(sql: string): Row[] {
   return text ? (JSON.parse(text) as Row[]) : [];
 }
 
+const integerFormatter = new Intl.NumberFormat('en-US');
+const estFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+const integerColumns = new Set([
+  'calls',
+  'tracked_rows',
+  'estimated_rows',
+  'token_rows',
+  'rows_without_tokens',
+  'input_tokens',
+  'output_tokens',
+  'total_tokens',
+  'tracked_input',
+  'tracked_output',
+  'tracked_total',
+  'mixed_input',
+  'mixed_output',
+  'mixed_total',
+  'tracked_total_tokens',
+  'input_tokens',
+  'output_tokens',
+  'errors',
+]);
+
+function parseTraceDate(raw: unknown): Date | null {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw);
+  if (!text) return null;
+  const normalized = text.includes('T') ? text : text.replace(' ', 'T');
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatEst(raw: unknown): string {
+  const date = parseTraceDate(raw);
+  if (!date) return String(raw ?? '');
+  return `${estFormatter.format(date)} ET`;
+}
+
+function formatRelative(raw: unknown): string {
+  const date = parseTraceDate(raw);
+  if (!date) return String(raw ?? '');
+  const diffSeconds = Math.max(0, Math.round((Date.now() - date.getTime()) / 1000));
+  if (diffSeconds < 60) return `${diffSeconds}s ago`;
+  const diffMinutes = Math.round(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 48) return `${diffHours}h ago`;
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
+function formatDuration(raw: unknown): string {
+  if (raw === null || raw === undefined) return '0s';
+  const text = String(raw);
+  const seconds = Number(text.endsWith('s') ? text.slice(0, -1) : text);
+  if (!Number.isFinite(seconds)) return text;
+  if (seconds < 60) return `${seconds.toFixed(2)}s`;
+  const minutes = seconds / 60;
+  if (minutes < 60) return `${minutes.toFixed(1)}m`;
+  const hours = minutes / 60;
+  return `${hours.toFixed(1)}h`;
+}
+
+function formatInteger(raw: unknown): string {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return String(raw ?? '0');
+  return integerFormatter.format(Math.round(value));
+}
+
 function value(row: Row, key: string): string {
   const raw = row[key];
   if (raw === null || raw === undefined) return '0';
+  if (key === 'ts') return formatEst(raw);
+  if (key === 'last_seen') return formatRelative(raw);
+  if (key === 'first_tracked_token_row' || key === 'latest_tracked_token_row') return formatEst(raw);
+  if (key === 'duration' || key === 'avg_duration' || key === 'total_duration') return formatDuration(raw);
+  if (integerColumns.has(key)) return formatInteger(raw);
   return String(raw);
 }
 
