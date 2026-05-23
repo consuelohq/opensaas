@@ -1447,3 +1447,12 @@ Default behavior:
 - no output flags: returns `stat`, `files`, and `hunks`
 - `patch` must be requested explicitly and is bounded by `maxBytes`
 
+
+
+## Workpad readiness gate
+
+Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed and activity sections from existing task metadata and file operations. Agents still need to write at least one meaningful task note beyond the starter scaffold before publishing.
+
+`task.push` and `task.pr` block scaffold-only workpads with a `Workpad update needed before publishing` message. Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups, then rerun the command.
+
+Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.

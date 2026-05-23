@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8c2cc30d7c99",
+  "tmuxSession": "opensaas-workspace-agents-add-workpad-sync-and-readiness-gate-8c2cc30d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-workpad-sync-and-readiness-gate",
+  "branch": "task/workspace-agents/add-workpad-sync-and-readiness-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workpad-sync-and-readiness-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workpad-sync-and-readiness-gate",
+  "prNumber": 480,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/480",
+  "createdAt": "2026-05-23T04:17:26.493Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workpad-sync-and-readiness-gate/.task/workspace-agents/add-workpad-sync-and-readiness-gate/session.json"
+}

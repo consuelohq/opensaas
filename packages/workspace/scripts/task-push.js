@@ -35,8 +35,9 @@ const {
 const { collectTaskMetaFiles, findTaskMeta, getTaskCurrentMetaPath, getTaskWorkpadPath, validateBranchMatch } = require('./lib/task-meta');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
+const { assertWorkpadReady, syncFilesChanged } = require('./lib/task-workpad');
 
-const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify', '--ack-workpad-incomplete']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -61,6 +62,7 @@ function printHelp() {
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
   writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
   writeStdout('  --no-verify            visibly bypass the verify stamp check');
+  writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -134,6 +136,9 @@ function parseArgs(argv) {
         break;
       case '--no-verify':
         args.verify = false;
+        break;
+      case '--ack-workpad-incomplete':
+        args.ackWorkpadIncomplete = true;
         break;
       case '--json':
         args.json = true;

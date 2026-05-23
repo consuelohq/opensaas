@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
 const { markFileRead } = require('./lib/state/evidence-log');
+const { appendActivity, syncFilesChanged } = require('./lib/task-workpad');
 const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
@@ -21,6 +22,15 @@ function getReadTargets(fsArgs) {
   }
 
   return targets;
+}
+
+function getMutationTarget(fsArgs) {
+  const action = fsArgs[0];
+  if (!['write', 'patch', 'trash'].includes(action)) return null;
+  for (const argument of fsArgs.slice(1)) {
+    if (!argument.startsWith('--')) return { action, filePath: argument };
+  }
+  return { action, filePath: null };
 }
 
 function showHelp() {
@@ -105,6 +115,17 @@ function main() {
         });
       } catch {
         writeStderr(`warning: read evidence not recorded for ${filePath}`);
+      }
+    }
+
+    const mutation = getMutationTarget(fsArgs);
+    if (mutation && mutation.filePath) {
+      try {
+        const deleted = mutation.action === 'trash';
+        syncFilesChanged(task.worktreePath, task.meta, [{ path: mutation.filePath, deleted }]);
+        appendActivity(task.worktreePath, task.meta, { action: `fs.${mutation.action}`, filePath: mutation.filePath });
+      } catch {
+        writeStderr(`warning: workpad activity not recorded for ${mutation.filePath}`);
       }
     }
   }
