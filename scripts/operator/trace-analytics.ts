@@ -11,7 +11,10 @@ const defaultTraceDb = join(
   'Library/Application Support/OpenWorkspace/traces/e8425497c3ee20bf0a28e9da/traces.db',
 );
 
-const traceDb = process.env.TRACE_DB || Bun.argv.find((arg) => arg.startsWith('--db='))?.slice(5) || defaultTraceDb;
+const traceDb =
+  process.env.TRACE_DB ||
+  Bun.argv.find((arg) => arg.startsWith('--db='))?.slice(5) ||
+  defaultTraceDb;
 
 if (!existsSync(traceDb)) {
   console.error(`trace db not found: ${traceDb}`);
@@ -24,13 +27,14 @@ function sqlJson(sql: string): Row[] {
     console.error(result.stderr || result.stdout);
     process.exit(result.status || 1);
   }
+
   const text = result.stdout.trim();
-  return text ? JSON.parse(text) as Row[] : [];
+  return text ? (JSON.parse(text) as Row[]) : [];
 }
 
 function value(row: Row, key: string): string {
   const raw = row[key];
-  if (raw === null || raw === undefined) return '';
+  if (raw === null || raw === undefined) return '0';
   return String(raw);
 }
 
@@ -41,18 +45,26 @@ function printTable(title: string, rows: Row[], columns: string[]) {
     console.log('(none)');
     return;
   }
-  const widths = columns.map((column) => Math.min(
-    Math.max(column.length, ...rows.map((row) => value(row, column).length)),
-    column === 'branch' || column === 'reason_preview' ? 72 : 24,
-  ));
+
+  const widths = columns.map((column) => {
+    const max = Math.max(column.length, ...rows.map((row) => value(row, column).length));
+    if (column === 'branch' || column === 'reason_preview') return Math.min(max, 72);
+    if (column === 'ts' || column === 'last_seen' || column.includes('row')) return Math.min(max, 26);
+    return Math.min(max, 18);
+  });
+
   console.log(columns.map((column, index) => column.padEnd(widths[index])).join('  '));
   console.log(columns.map((_, index) => '-'.repeat(widths[index])).join('  '));
   for (const row of rows) {
-    console.log(columns.map((column, index) => {
-      const cell = value(row, column).replace(/\s+/g, ' ');
-      const width = widths[index];
-      return (cell.length > width ? `${cell.slice(0, Math.max(0, width - 1))}…` : cell).padEnd(width);
-    }).join('  '));
+    console.log(
+      columns
+        .map((column, index) => {
+          const cell = value(row, column).replace(/\s+/g, ' ');
+          const width = widths[index];
+          return (cell.length > width ? `${cell.slice(0, Math.max(0, width - 1))}…` : cell).padEnd(width);
+        })
+        .join('  '),
+    );
   }
 }
 
@@ -80,7 +92,7 @@ SELECT
   coalesce(sum(${inputMixed}), 0) AS mixed_input,
   coalesce(sum(${outputMixed}), 0) AS mixed_output,
   coalesce(sum(${totalMixed}), 0) AS mixed_total,
-  printf('%.2fs', coalesce(sum(t.duration_ms), 0) / 1000.0) AS duration
+  printf('%.2fs', coalesce(sum(t.duration_ms), 0) / 1000.0) AS total_duration
 FROM windows w
 LEFT JOIN tool_traces t ON t.ts >= w.since
 GROUP BY label, sort
@@ -97,7 +109,24 @@ FROM tool_traces
 WHERE total_tokens IS NOT NULL;
 `;
 
-const topToolsSql = `
+const topToolsTrackedSql = `
+SELECT
+  tool,
+  count(*) AS calls,
+  count(total_tokens) AS token_rows,
+  coalesce(sum(total_tokens), 0) AS total_tokens,
+  coalesce(sum(input_tokens), 0) AS input_tokens,
+  coalesce(sum(output_tokens), 0) AS output_tokens,
+  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
+  sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
+FROM tool_traces
+WHERE ts >= datetime('now', '-1 day')
+GROUP BY tool
+ORDER BY total_tokens DESC, calls DESC
+LIMIT 20;
+`;
+
+const topToolsMixedSql = `
 SELECT
   tool,
   count(*) AS calls,
@@ -105,7 +134,7 @@ SELECT
   count(*) - count(total_tokens) AS estimated_rows,
   coalesce(sum(${totalMixed}), 0) AS mixed_total,
   coalesce(sum(total_tokens), 0) AS tracked_total,
-  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS duration,
+  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
 WHERE ts >= datetime('now', '-1 day')
@@ -114,7 +143,24 @@ ORDER BY mixed_total DESC, calls DESC
 LIMIT 20;
 `;
 
-const topBranchesSql = `
+const topBranchesTrackedSql = `
+SELECT
+  coalesce(branch, '(no branch)') AS branch,
+  count(*) AS calls,
+  count(total_tokens) AS token_rows,
+  coalesce(sum(total_tokens), 0) AS total_tokens,
+  coalesce(sum(input_tokens), 0) AS input_tokens,
+  coalesce(sum(output_tokens), 0) AS output_tokens,
+  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
+  sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
+FROM tool_traces
+WHERE ts >= datetime('now', '-1 day')
+GROUP BY branch
+ORDER BY total_tokens DESC, calls DESC
+LIMIT 20;
+`;
+
+const topBranchesMixedSql = `
 SELECT
   coalesce(branch, '(no branch)') AS branch,
   count(*) AS calls,
@@ -122,7 +168,7 @@ SELECT
   count(*) - count(total_tokens) AS estimated_rows,
   coalesce(sum(${totalMixed}), 0) AS mixed_total,
   coalesce(sum(total_tokens), 0) AS tracked_total,
-  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS duration,
+  printf('%.2fs', coalesce(sum(duration_ms), 0) / 1000.0) AS total_duration,
   sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
 FROM tool_traces
 WHERE ts >= datetime('now', '-1 day')
@@ -190,32 +236,123 @@ ORDER BY mixed_output DESC
 LIMIT 20;
 `;
 
+const activeBranchesSql = `
+SELECT
+  branch,
+  count(*) AS calls,
+  max(ts) AS last_seen,
+  coalesce(sum(total_tokens), 0) AS tracked_total,
+  coalesce(sum(${totalMixed}), 0) AS mixed_total,
+  sum(CASE WHEN status != 'ok' OR code != 'OK' THEN 1 ELSE 0 END) AS errors
+FROM tool_traces
+WHERE ts >= datetime('now', '-1 day')
+  AND branch LIKE 'task/%'
+GROUP BY branch
+ORDER BY last_seen DESC
+LIMIT 30;
+`;
+
 console.log('Workspace trace analytics');
 console.log('=========================');
 console.log(`trace_db: ${traceDb}`);
 console.log('token note: tracked_* uses recorded token columns. mixed_* uses recorded tokens when present and character-count estimates for older rows.');
 
 printTable('Token coverage by window', sqlJson(windowsSql), [
-  'window', 'calls', 'tracked_rows', 'estimated_rows', 'tracked_total', 'mixed_total', 'duration',
+  'window',
+  'calls',
+  'tracked_rows',
+  'estimated_rows',
+  'tracked_input',
+  'tracked_output',
+  'tracked_total',
+  'mixed_input',
+  'mixed_output',
+  'mixed_total',
+  'total_duration',
 ]);
 printTable('Tracked token coverage', sqlJson(coverageSql), [
-  'first_tracked_token_row', 'latest_tracked_token_row', 'tracked_rows', 'tracked_total_tokens',
+  'first_tracked_token_row',
+  'latest_tracked_token_row',
+  'tracked_rows',
+  'tracked_total_tokens',
 ]);
-printTable('Top tools by mixed tokens — past day', sqlJson(topToolsSql), [
-  'tool', 'calls', 'tracked_rows', 'estimated_rows', 'mixed_total', 'tracked_total', 'duration', 'errors',
+printTable('Top tools by tracked tokens — past day', sqlJson(topToolsTrackedSql), [
+  'tool',
+  'calls',
+  'token_rows',
+  'total_tokens',
+  'input_tokens',
+  'output_tokens',
+  'total_duration',
+  'errors',
 ]);
-printTable('Top task branches by mixed tokens — past day', sqlJson(topBranchesSql), [
-  'branch', 'calls', 'tracked_rows', 'estimated_rows', 'mixed_total', 'tracked_total', 'duration', 'errors',
+printTable('Top tools by mixed tokens — past day', sqlJson(topToolsMixedSql), [
+  'tool',
+  'calls',
+  'tracked_rows',
+  'estimated_rows',
+  'mixed_total',
+  'tracked_total',
+  'total_duration',
+  'errors',
+]);
+printTable('Top task branches by tracked tokens — past day', sqlJson(topBranchesTrackedSql), [
+  'branch',
+  'calls',
+  'token_rows',
+  'total_tokens',
+  'input_tokens',
+  'output_tokens',
+  'total_duration',
+  'errors',
+]);
+printTable('Top task branches by mixed tokens — past day', sqlJson(topBranchesMixedSql), [
+  'branch',
+  'calls',
+  'tracked_rows',
+  'estimated_rows',
+  'mixed_total',
+  'tracked_total',
+  'total_duration',
+  'errors',
 ]);
 printTable('Top errors by code/tool — past day', sqlJson(errorSummarySql), [
-  'tool', 'code', 'errors', 'avg_duration', 'last_seen',
+  'tool',
+  'code',
+  'errors',
+  'avg_duration',
+  'last_seen',
 ]);
 printTable('Recent errors with reason preview', sqlJson(recentErrorsSql), [
-  'ts', 'tool', 'branch', 'code', 'duration', 'reason_preview',
+  'ts',
+  'tool',
+  'branch',
+  'code',
+  'duration',
+  'reason_preview',
 ]);
 printTable('Slowest calls — past day', sqlJson(slowestSql), [
-  'ts', 'tool', 'branch', 'code', 'duration', 'mixed_total',
+  'ts',
+  'tool',
+  'branch',
+  'code',
+  'duration',
+  'mixed_total',
 ]);
 printTable('High-output calls — past day', sqlJson(highOutputSql), [
-  'ts', 'tool', 'branch', 'code', 'mixed_output', 'mixed_total', 'duration',
+  'ts',
+  'tool',
+  'branch',
+  'code',
+  'mixed_output',
+  'mixed_total',
+  'duration',
+]);
+printTable('Active traced task branches — past day', sqlJson(activeBranchesSql), [
+  'branch',
+  'calls',
+  'last_seen',
+  'tracked_total',
+  'mixed_total',
+  'errors',
 ]);
