@@ -244,6 +244,63 @@ describe('DialerCallStartService', () => {
     );
   });
 
+  it('should resolve queue targets keyed by workspace person id phone fields', async () => {
+    const { service, mockQuery } = createService();
+
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.includes('FROM queue_items qi')) {
+        expect(sql).toContain('LEFT JOIN contacts');
+        expect(sql).toContain('LEFT JOIN "workspace_');
+        expect(sql).toContain('"."person" person');
+        expect(sql).toContain('person."phonesPrimaryPhoneCallingCode"');
+        expect(sql).toContain('person."phonesPrimaryPhoneNumber"');
+
+        return [
+          {
+            queue_item_id: 'queue-item-person',
+            contact_id: 'person-contact-id',
+            attempts: 1,
+            phone: '+14155552671',
+            dnc_status: null,
+          },
+        ];
+      }
+
+      return [];
+    });
+
+    const result = await service.startDialerCall({
+      workspaceId: WORKSPACE_ID,
+      userId: USER_ID,
+      input: {
+        source: 'queue',
+        selectionStrategy: 'predictive',
+        requestedFanout: 1,
+        queueId: 'queue-person',
+        callerIdNumber: '+12025550123',
+        callMode: 'mock',
+      },
+    });
+
+    expect(result.actualFanout).toBe(1);
+    expect(result.capacity).toEqual({
+      requestedFanout: 1,
+      callableTargetCount: 1,
+      availableCallerIdCount: 1,
+      reducedCapacityReasons: [],
+      blockedReasons: [],
+      actualFanout: 1,
+    });
+    expect(result.calls[0]).toEqual(
+      expect.objectContaining({
+        contactId: 'person-contact-id',
+        customerNumber: '+14155552671',
+        callerId: '+12025550123',
+        status: 'mocked',
+      }),
+    );
+  });
+
   it('should fail closed for live starts when the target is not allowlisted', async () => {
     const { service, mockQuery } = createService();
 
