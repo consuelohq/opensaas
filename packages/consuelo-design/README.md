@@ -113,7 +113,7 @@ Generated runtime state belongs in `.od/`, `out/`, or `artifacts/`; those are ig
 
 ## Consuelo Wiki archive
 
-Every `design.publish` call records the published artifact in the private Consuelo Wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Wiki can filter it correctly. The Consuelo Wiki is automatically regenerated and published at `/design-wiki`.
+Every `design.publish` call records the published artifact in the private Consuelo Wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The Consuelo Wiki is automatically regenerated and published at `/design-wiki`, sorted by `updatedAt` so republished artifacts return to the top.
 
 `design.publish` returns and records both HTTPS Serve URLs and direct tailnet HTTP URLs. The Consuelo Wiki links prefer the direct tailnet HTTP URL so mobile reading does not depend on iOS accepting the HTTPS Serve path.
 
