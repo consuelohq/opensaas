@@ -940,6 +940,426 @@ function materializeArchiveTarget(target: string, servePath: string): { target: 
   cpSync(sourcePath, indexPath);
   return { target: indexPath, artifactPath: archiveRelativeArtifactPath(servePath), sourceTarget: target };
 }
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const root = JSON.stringify(DESIGN_ARCHIVE_ROOT);
+  const indexPath = JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH);
+  const artifactsRoot = JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT);
+  const port = JSON.stringify(DESIGN_ARCHIVE_PORT);
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, `const root = ${root};\nconst indexPath = ${indexPath};\nconst artifactsRoot = ${artifactsRoot};\nconst port = ${port};\n\nfunction safeJoin(base: string, requestPath: string): string | null {\n  const decoded = decodeURIComponent(requestPath);\n  const relative = decoded.split('/').filter(Boolean).join('/');\n  const target = Bun.pathToFileURL(base + '/' + relative);\n  return target.pathname.startsWith(Bun.pathToFileURL(base + '/').pathname) ? target.pathname : null;\n}\n\nBun.serve({\n  hostname: '${ip}',\n  port,\n  async fetch(request) {\n    const url = new URL(request.url);\n    if (url.pathname === '${DESIGN_ARCHIVE_PATH}' || url.pathname === '${DESIGN_ARCHIVE_PATH}/') {\n      return new Response(Bun.file(indexPath), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });\n    }\n    const artifactPath = safeJoin(artifactsRoot, url.pathname);\n    if (artifactPath) {\n      const file = Bun.file(artifactPath);\n      if (await file.exists()) return new Response(file, { headers: { 'Cache-Control': 'no-store' } });\n      const index = Bun.file(artifactPath + '/index.html');\n      if (await index.exists()) return new Response(index, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });\n    }\n    return new Response('not found', { status: 404 });\n  },\n});\n`);
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { method: 'HEAD' });
+    if (response.ok) return target;
+  } catch {
+    // Start below when the archive server is not already reachable.
+  }
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { method: 'HEAD' });
+      if (response.ok) return target;
+    } catch {
+      // Keep polling until startup deadline.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
+async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
+  try {
+    const tailscaleBin = args.tailscaleBin ?? 'tailscale';
+    const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
+    const payload = readArchivePayload();
+    payload.updatedAt = new Date().toISOString();
+    if (!args.dryRun) {
+      writeArchivePayload(payload);
+      writeArchiveIndex(payload);
+    }
+    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
+    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    if (args.dryRun) {
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, command });
+      else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
+      return;
+    }
+    const result = await runCommand(command, REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale serve failed for Consuelo Wiki: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
+    else if (!args.quiet) writeStdout(`design archive refreshed\nwiki: ${url}\nwikiDirect: ${directUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to refresh Consuelo Wiki archive: ${message}`);
+  }
+}
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const serverSource = `const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
+const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
+
+function noStore(headers = {}) {
+  return new Headers({ 'Cache-Control': 'no-store', ...headers });
+}
+
+function safePath(base, requestPath) {
+  const clean = decodeURIComponent(requestPath).split('/').filter(Boolean).join('/');
+  const target = Bun.pathToFileURL(base + '/' + clean).pathname;
+  const allowed = Bun.pathToFileURL(base + '/').pathname;
+  return target.startsWith(allowed) ? target : null;
+}
+
+async function serveFile(filePath) {
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) return new Response(file, { headers: noStore() });
+    const index = Bun.file(filePath + '/index.html');
+    if (await index.exists()) return new Response(index, { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+Bun.serve({
+  hostname: ${JSON.stringify(ip)},
+  port,
+  async fetch(request) {
+    try {
+      const url = new URL(request.url);
+      if (url.pathname === archivePath || url.pathname === archivePath + '/') {
+        return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+      }
+
+      const artifactPath = safePath(artifactsRoot, url.pathname);
+      if (artifactPath) {
+        const artifactResponse = await serveFile(artifactPath);
+        if (artifactResponse) return artifactResponse;
+      }
+
+      const rootPath = safePath(root, url.pathname);
+      if (rootPath) {
+        const rootResponse = await serveFile(rootPath);
+        if (rootResponse) return rootResponse;
+      }
+
+      return new Response('not found', { status: 404, headers: noStore() });
+    } catch {
+      return new Response('archive server error', { status: 500, headers: noStore() });
+    }
+  },
+});
+`;
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort: publish can continue and startup polling will report availability.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const serverSource = `const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
+const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
+
+function noStore(headers = {}) {
+  return new Headers({ 'Cache-Control': 'no-store', ...headers });
+}
+
+function safePath(base, requestPath) {
+  const clean = decodeURIComponent(requestPath).split('/').filter(Boolean).join('/');
+  const target = Bun.pathToFileURL(base + '/' + clean).pathname;
+  const allowed = Bun.pathToFileURL(base + '/').pathname;
+  return target.startsWith(allowed) ? target : null;
+}
+
+async function serveFile(filePath) {
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) return new Response(file, { headers: noStore() });
+    const index = Bun.file(filePath + '/index.html');
+    if (await index.exists()) return new Response(index, { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+Bun.serve({
+  hostname: ${JSON.stringify(ip)},
+  port,
+  async fetch(request) {
+    try {
+      const url = new URL(request.url);
+      if (url.pathname === archivePath || url.pathname === archivePath + '/') {
+        return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+      }
+
+      const artifactPath = safePath(artifactsRoot, url.pathname);
+      if (artifactPath) {
+        const artifactResponse = await serveFile(artifactPath);
+        if (artifactResponse) return artifactResponse;
+      }
+
+      const rootPath = safePath(root, url.pathname);
+      if (rootPath) {
+        const rootResponse = await serveFile(rootPath);
+        if (rootResponse) return rootResponse;
+      }
+
+      return new Response('not found', { status: 404, headers: noStore() });
+    } catch {
+      return new Response('archive server error', { status: 500, headers: noStore() });
+    }
+  },
+});
+`;
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort: publish can continue and startup polling will report availability.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const serverSource = `const dataPath = ${JSON.stringify(DESIGN_ARCHIVE_DATA_PATH)};
+const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
+
+type ArchiveEntry = { path: string; target: string; artifactPath: string | null };
+type ArchivePayload = { entries?: ArchiveEntry[] };
+
+function noStore(headers: Record<string, string> = {}): Headers {
+  return new Headers({ 'Cache-Control': 'no-store', ...headers });
+}
+
+async function readPayload(): Promise<ArchivePayload> {
+  try {
+    return JSON.parse(await Bun.file(dataPath).text()) as ArchivePayload;
+  } catch {
+    return { entries: [] };
+  }
+}
+
+function safeArtifactPath(relativePath: string): string | null {
+  const candidate = Bun.pathToFileURL(artifactsRoot + '/' + relativePath.split('/').filter(Boolean).join('/')).pathname;
+  const allowed = Bun.pathToFileURL(artifactsRoot + '/').pathname;
+  return candidate.startsWith(allowed) ? candidate : null;
+}
+
+async function serveFile(filePath: string): Promise<Response | null> {
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) return new Response(file, { headers: noStore() });
+    const index = Bun.file(filePath + '/index.html');
+    if (await index.exists()) return new Response(index, { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function proxyTarget(entry: ArchiveEntry, request: Request, suffix: string): Promise<Response | null> {
+  try {
+    if (!/^https?:\/\//.test(entry.target)) return null;
+    const target = new URL(entry.target);
+    const requested = new URL(request.url);
+    const basePath = target.pathname.replace(/\/$/, '');
+    const suffixPath = suffix ? '/' + suffix.split('/').filter(Boolean).map(encodeURIComponent).join('/') : '';
+    target.pathname = basePath + suffixPath;
+    target.search = requested.search;
+    return fetch(target, { method: request.method, headers: request.headers });
+  } catch {
+    return null;
+  }
+}
+
+Bun.serve({
+  hostname: ${JSON.stringify(ip)},
+  port,
+  async fetch(request) {
+    try {
+      const url = new URL(request.url);
+    if (url.pathname === archivePath || url.pathname === archivePath + '/') {
+      return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    }
+
+    const payload = await readPayload();
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + '/'));
+    if (entry) {
+      const suffix = url.pathname.slice(entry.path.length).replace(/^\//, '');
+      if (entry.artifactPath) {
+        const artifactPath = safeArtifactPath(entry.artifactPath + (suffix ? '/' + suffix : ''));
+        if (artifactPath) {
+          const response = await serveFile(artifactPath);
+          if (response) return response;
+        }
+      }
+      const proxied = await proxyTarget(entry, request, suffix);
+      if (proxied) return proxied;
+    }
+
+      return new Response('not found', { status: 404, headers: noStore() });
+    } catch {
+      return new Response('archive server error', { status: 500, headers: noStore() });
+    }
+  },
+});
+`;
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort only. If the process is already gone, publish can continue.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
 
 function readArchivePayload(): DesignArchivePayload {
   try {
@@ -1353,7 +1773,7 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
     const normalizedTarget = normalizeTarget(resolvedTarget);
     const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
-    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
     const url = `https://${hostname}${servePath}`;
@@ -1388,8 +1808,9 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
 
     const materialized = materializeArchiveTarget(normalizedTarget, servePath);
     const archive = await updateDesignArchive(args, servePath, url, materialized.target, materialized.sourceTarget, materialized.artifactPath, tailscaleSelf, tailscaleBin);
+    const publishTarget = archive.target;
 
-    const result = await runCommand(command, REPO_ROOT);
+    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, publishTarget], REPO_ROOT);
     if (result.exitCode !== 0) {
       throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
     }
@@ -1498,6 +1919,7 @@ Commands:
   generate motion-frame       Create a headless motion-frame work order (use --live for UI)
   render hyperframes          Create a headless HyperFrames work order (use --live for UI)
   publish                     Publish a design artifact through private Tailscale Serve
+  refresh                     Regenerate the existing design wiki archive
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
   get-design-system           Print base Consuelo DESIGN.md and consuelo-design AGENTS.md only
@@ -1584,6 +2006,9 @@ async function main(): Promise<void> {
         break;
       case 'publish':
         await publishDesign(args);
+        break;
+      case 'refresh':
+        await refreshDesignArchive(args);
         break;
       case 'run':
       case 'ui':

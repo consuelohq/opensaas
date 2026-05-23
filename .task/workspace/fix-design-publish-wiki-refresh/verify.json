@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/fix-design-publish-wiki-refresh",
+  "base": "origin/stream/workspace",
+  "headSha": "97117ef4ccfbd2675f75e7d26fd7293f233bca3a",
+  "changeHash": "cd5fad2fd1c1582fb169e55b76cc258e8c1e294751ca024994e1864f8744614e",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "verifiedAt": "2026-05-23T05:16:22.348Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

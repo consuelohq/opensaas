@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/republish-design-wiki-archive",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 490,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/490",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/490",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/490/republish-design-wiki-archive",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/490",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/490/republish-design-wiki-archive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-republish-design-wiki-archive",
+  "taskSession": "tsk_b46e13e476dc",
+  "tmuxSession": "opensaas-workspace-republish-design-wiki-archive-b46e13e4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-republish-design-wiki-archive/.task/workspace/republish-design-wiki-archive/session.json",
+  "createdAt": "2026-05-23T05:59:29.227Z"
+}
