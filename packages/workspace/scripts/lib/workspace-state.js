@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { spawnSync } = require('child_process');
-const { getTaskMetaBranchMismatch } = require('./task-meta');
+const { findTaskMeta, getTaskMetaBranchMismatch } = require('./task-meta');
 
 const DEFAULT_SERVICE = 'opensaas';
 const WORKSPACE_SCRIPTS_DIR = path.join('packages', 'workspace', 'scripts');
@@ -170,33 +170,7 @@ function listWorkspaceScriptFiles(repoRoot) {
 }
 
 function findTaskMetaRecord(startDirectory = process.cwd(), options = {}) {
-  let directory = path.resolve(startDirectory);
-
-  while (true) {
-    const currentPath = path.join(directory, '.task', 'current.json');
-    if (fs.existsSync(currentPath)) {
-      const data = readJsonFile(currentPath);
-      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-      const record = { path: currentPath, dir: directory, data, stale: Boolean(mismatch), mismatch };
-      if (mismatch && !options.includeStale) return null;
-      return record;
-    }
-
-    const legacyPath = path.join(directory, '.task-meta.json');
-    if (fs.existsSync(legacyPath)) {
-      const data = readJsonFile(legacyPath);
-      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-      const record = { path: legacyPath, dir: directory, data, stale: Boolean(mismatch), mismatch };
-      if (mismatch && !options.includeStale) return null;
-      return record;
-    }
-
-    const parent = path.dirname(directory);
-    if (parent === directory) break;
-    directory = parent;
-  }
-
-  return null;
+  return findTaskMeta(startDirectory, options);
 }
 
 function parseTaskBranch(branch) {

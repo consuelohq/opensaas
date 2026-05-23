@@ -417,7 +417,10 @@ function ensureTraceSchema(db) {
       input_json TEXT,
       resolved_input_json TEXT,
       result_json TEXT,
-      stderr TEXT
+      stderr TEXT,
+      input_tokens INTEGER,
+      output_tokens INTEGER,
+      total_tokens INTEGER
     );
     CREATE INDEX IF NOT EXISTS tool_traces_ts_idx ON tool_traces(ts);
     CREATE INDEX IF NOT EXISTS tool_traces_trace_id_idx ON tool_traces(trace_id);
@@ -427,6 +430,12 @@ function ensureTraceSchema(db) {
     CREATE INDEX IF NOT EXISTS tool_traces_task_session_idx ON tool_traces(task_session);
     CREATE INDEX IF NOT EXISTS tool_traces_branch_idx ON tool_traces(branch);
   `);
+  const columns = db.query('PRAGMA table_info(tool_traces)').all().map((row) => row.name);
+  for (const column of ['input_tokens', 'output_tokens', 'total_tokens']) {
+    if (!columns.includes(column)) {
+      db.exec(`ALTER TABLE tool_traces ADD COLUMN ${column} INTEGER`);
+    }
+  }
 }
 
 function parseJsonField(value) {
@@ -450,6 +459,9 @@ function normalizeTraceRow(row, raw) {
     code: row.code,
     exitCode: row.exit_code,
     durationMs: row.duration_ms,
+    inputTokens: row.input_tokens,
+    outputTokens: row.output_tokens,
+    totalTokens: row.total_tokens,
   };
   if (raw) {
     result.input = parseJsonField(row.input_json);
@@ -509,7 +521,8 @@ async function cmdTrace(args) {
     rows.forEach((row, index) => {
       const ok = row.ok ? 'ok' : row.status;
       const branch = row.branch ? ` branch=${row.branch}` : '';
-      writeStdout(`${index + 1}. ${row.ts} ${row.traceId} ${row.tool} ${ok} code=${row.code || ''} duration=${row.durationMs || 0}ms${branch}`);
+      const tokens = Number.isFinite(row.totalTokens) ? ` tokens=${row.totalTokens}` : '';
+      writeStdout(`${index + 1}. ${row.ts} ${row.traceId} ${row.tool} ${ok} code=${row.code || ''} duration=${row.durationMs || 0}ms${branch}${tokens}`);
     });
   } finally {
     db.close();

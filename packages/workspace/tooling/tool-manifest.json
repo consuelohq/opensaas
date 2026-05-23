@@ -858,34 +858,6 @@
     "sessionRequired": false
   },
   {
-    "name": "task.pin",
-    "methodPath": [
-      "task",
-      "pin"
-    ],
-    "description": "pin a task branch for a programmatic workspace client",
-    "category": "task lifecycle",
-    "underlying": "client session state",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": false,
-      "deterministic": true,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 30000,
-    "inputSchema": "BranchInput",
-    "outputSchema": "TaskPinOutput",
-    "command": {
-      "script": "internal",
-      "internal": "task.pin",
-      "arguments": []
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example"
-    },
-    "sessionRequired": false
-  },
-  {
     "name": "task.ensureSynced",
     "methodPath": [
       "task",
@@ -1880,6 +1852,219 @@
       ]
     },
     "sessionRequired": false
+  },
+  {
+    "name": "github",
+    "methodPath": [
+      "github"
+    ],
+    "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+    "category": "github",
+    "underlying": "workspace github",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "GithubInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "github",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "operation",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "branch",
+          "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "base",
+          "flag": "--base",
+          "kind": "value"
+        },
+        {
+          "source": "head",
+          "flag": "--head",
+          "kind": "value"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "fields",
+          "flag": "--field",
+          "kind": "array"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "state",
+          "flag": "--state",
+          "kind": "value"
+        },
+        {
+          "source": "body",
+          "flag": "--body",
+          "kind": "value"
+        },
+        {
+          "source": "bodyFile",
+          "flag": "--body-file",
+          "kind": "value"
+        },
+        {
+          "source": "wait",
+          "flag": "--wait",
+          "kind": "boolean"
+        },
+        {
+          "source": "squash",
+          "flag": "--squash",
+          "kind": "boolean"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        },
+        {
+          "source": "mergeMethod",
+          "flag": "--merge-method",
+          "kind": "value"
+        },
+        {
+          "source": "rawArgs",
+          "flag": "--raw-arg",
+          "kind": "array"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "operation": "pr.view",
+      "pr": 436,
+      "preset": "review"
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "git.diff",
+    "methodPath": [
+      "git",
+      "diff"
+    ],
+    "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
+    "category": "git",
+    "underlying": "workspace git:diff",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "GitDiffInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "git:diff",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "branch",
+          "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "base",
+          "flag": "--base",
+          "kind": "value"
+        },
+        {
+          "source": "head",
+          "flag": "--head",
+          "kind": "value"
+        },
+        {
+          "source": "paths",
+          "flag": "--paths",
+          "kind": "array"
+        },
+        {
+          "source": "stat",
+          "flag": "--stat",
+          "kind": "boolean"
+        },
+        {
+          "source": "files",
+          "flag": "--files",
+          "kind": "boolean"
+        },
+        {
+          "source": "hunks",
+          "flag": "--hunks",
+          "kind": "boolean"
+        },
+        {
+          "source": "patch",
+          "flag": "--patch",
+          "kind": "boolean"
+        },
+        {
+          "source": "nameOnly",
+          "flag": "--name-only",
+          "kind": "boolean"
+        },
+        {
+          "source": "context",
+          "flag": "--context",
+          "kind": "value"
+        },
+        {
+          "source": "maxBytes",
+          "flag": "--max-bytes",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "branch": "task/workspace-agents/example",
+      "base": "origin/main",
+      "stat": true,
+      "files": true,
+      "hunks": true,
+      "maxBytes": 20000
+    },
+    "sessionRequired": true
   },
   {
     "name": "browser",
@@ -4212,7 +4397,7 @@
     "methodPath": [
       "server"
     ],
-    "description": "manage the workspace MCP server",
+    "description": "manage the workspace MCP server reload/status lifecycle",
     "category": "utilities",
     "underlying": "workspace server",
     "capabilities": {
@@ -4225,7 +4410,7 @@
     "inputSchema": "ServerInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "server",
+      "script": "consuelo-reload",
       "branchMode": "none",
       "arguments": [
         {
@@ -4669,6 +4854,72 @@
     "sessionRequired": false
   },
   {
+    "name": "code.run",
+    "methodPath": [
+      "code",
+      "run"
+    ],
+    "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+    "category": "codemode",
+    "underlying": "workspace code.run",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "CodeRunInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "code-run",
+      "branchMode": "optional",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "taskSession",
+          "kind": "value"
+        },
+        {
+          "source": "code",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "mode",
+          "flag": "--mode",
+          "kind": "value"
+        },
+        {
+          "source": "timeout",
+          "flag": "--timeout",
+          "kind": "value"
+        },
+        {
+          "source": "memoryLimit",
+          "flag": "--memory-limit",
+          "kind": "value"
+        },
+        {
+          "source": "maxOperations",
+          "flag": "--max-operations",
+          "kind": "value"
+        },
+        {
+          "source": "maxResultChars",
+          "flag": "--max-result-chars",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "code": "return await workspace_call(\"status\", {})",
+      "maxOperations": 25,
+      "maxResultChars": 20000
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "generate.docs",
     "methodPath": [
       "generate",
@@ -4788,7 +5039,43 @@
     },
     "exampleInput": {
       "portlessName": "design.localhost",
-      "path": "/daily-deep-idea/example",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "design.refresh",
+    "methodPath": [
+      "design",
+      "refresh"
+    ],
+    "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design refresh",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "DesignArchiveRefreshInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "refresh",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "tailscaleBin",
+          "flag": "--tailscale-bin",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
       "dryRun": true
     },
     "sessionRequired": false

@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/workspace-agents/workpad-automated-sections/workpad.md",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "updatedAt": "2026-05-23T05:11:34.172Z"
+}

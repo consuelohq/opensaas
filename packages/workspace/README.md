@@ -93,9 +93,11 @@ every command is logged to `/tmp/sandbox-audit.jsonl` with timestamp, command pr
 
 ### Langfuse observability
 
-Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL` to send remote tool-call spans to Langfuse. `WORKSPACE_OBSERVABILITY_PROVIDER` defaults to `langfuse`; set it to `none` to disable remote observability or `langsmith` to use the legacy LangSmith path explicitly.
+Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL` to send remote tool-call generation observations to Langfuse. `WORKSPACE_OBSERVABILITY_PROVIDER` defaults to `langfuse`; set it to `none` to disable remote observability or `langsmith` to use the legacy LangSmith path explicitly.
 
-Local `context.trace` SQLite logging still runs independently, so workspace tool history remains queryable even when the remote provider is unavailable.
+Workspace observations attach estimated token usage through Langfuse `usage_details` so Langfuse consumption dashboards can show token usage. Cost details are not emitted.
+
+Local `context.trace` SQLite logging still runs independently, so workspace tool history and estimated input/output/total token counts remain queryable even when the remote provider is unavailable.
 
 ### memory + progressive loading
 
@@ -120,7 +122,7 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 |------|---------|
 | `get_steering` | bootstrap steering once per server process |
 | `call` | run a manifest-backed typed workspace tool with `{ tool, input, taskSession, timeout }` |
-| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to `workspace.call` for task-scoped work |
+| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to every task-scoped `workspace.call` instead of relying on shared root task metadata |
 
 ## contributed files in this package
 

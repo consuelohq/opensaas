@@ -46,6 +46,66 @@ if (!result.ok) throw new Error(result.message);
 
 ## commands by category
 
+## codemode
+
+### code.run
+
+run workspace-native codemode JavaScript against allowed workspace tools
+
+- signature: `workspace.code.run({ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace code.run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "code.run",
+  "input": {
+    "code": "return await workspace_call(\"status\", {})",
+    "maxOperations": 25,
+    "maxResultChars": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## composed
 
 ### checkFiles
@@ -2481,6 +2541,69 @@ example error envelope:
 }
 ```
 
+## git
+
+### git.diff
+
+inspect task or working-tree diffs as bounded structured JSON for agents
+
+- signature: `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace git:diff`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "git.diff",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "base": "origin/main",
+    "stat": true,
+    "files": true,
+    "hunks": true,
+    "maxBytes": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## github
 
 ### gh
@@ -2502,6 +2625,64 @@ await workspace.call({
     "args": [
       "225"
     ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### github
+
+typed GitHub facade with semantic operations and presets; prefer over raw gh
+
+- signature: `workspace.github({ operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace github`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "github",
+  "input": {
+    "operation": "pr.view",
+    "pr": 436,
+    "preset": "review"
   }
 });
 ```
@@ -4658,62 +4839,6 @@ example error envelope:
 }
 ```
 
-### task.pin
-
-pin a task branch for a programmatic workspace client
-
-- signature: `workspace.task.pin({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string }>>`
-- wraps: `client session state`
-- capabilities: readOnly=false, mutating=false, safeToRetry=true
-- default timeout: 30000ms
-
-example call:
-
-```ts
-await workspace.call({
-  "tool": "task.pin",
-  "input": {
-    "branch": "task/workspace-agents/example"
-  }
-});
-```
-
-example success envelope:
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-example error envelope:
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### task.pr
 
 merge task to stream and create or refresh the stream review PR
@@ -6613,9 +6738,9 @@ example error envelope:
 
 ### server
 
-manage the workspace MCP server
+manage the workspace MCP server reload/status lifecycle
 
-- signature: `workspace.server({ action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.server({ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace server`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -6903,7 +7028,7 @@ Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `ar
 
 ## branch resolution
 
-Branch resolution order is: explicit `branch`, pinned branch from `workspace.task.pin`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
+Task-scoped work should pass `taskSession`. Branch fallback resolution is for diagnostics/manual commands only: explicit `branch`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
 
 ## dry-run
 

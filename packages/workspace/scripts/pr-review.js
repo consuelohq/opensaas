@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { findTaskMeta: findTaskMetaRecord, getTaskReviewsDir } = require('./lib/task-meta');
 
 const REPO = 'consuelohq/opensaas';
 const BOTS = ['qodo-code-review[bot]', 'coderabbitai[bot]', 'codex'];
@@ -20,17 +21,8 @@ function gh(args) {
 
 function findTaskMeta() {
   const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-  let dir = process.cwd();
-  while (dir !== '/') {
-    const p = path.join(dir, '.task', 'current.json');
-    if (fs.existsSync(p)) {
-      const data = JSON.parse(fs.readFileSync(p, 'utf8'));
-      if (data.taskBranch && currentBranch && data.taskBranch !== currentBranch) return null;
-      return { data, root: dir };
-    }
-    dir = path.dirname(dir);
-  }
-  return null;
+  const record = findTaskMetaRecord(process.cwd(), { currentBranch });
+  return record ? { data: record.data, root: record.dir } : null;
 }
 
 function printHelp() {
@@ -311,7 +303,7 @@ function main() {
 
   // write to .task/reviews/<pr-number>.md
   const task = findTaskMeta();
-  const outDir = task ? path.join(task.root, '.task', 'reviews') : path.join(process.cwd(), '.task', 'reviews');
+  const outDir = task ? getTaskReviewsDir(task.root, task.data) : path.join(process.cwd(), '.task', 'reviews');
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `${prNumber}.md`);
   fs.writeFileSync(outPath, content + '\n', 'utf8');

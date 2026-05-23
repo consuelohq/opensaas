@@ -104,6 +104,9 @@ test('context trace filters local sqlite rows without supabase env', () => {
     code: 'COMMAND_FAILED',
   });
   expect(payload.rows[0]).not.toHaveProperty('input');
+  expect(payload.rows[0]).toHaveProperty('inputTokens');
+  expect(payload.rows[0]).toHaveProperty('outputTokens');
+  expect(payload.rows[0]).toHaveProperty('totalTokens');
 });
 
 test('context trace returns raw structured payloads when requested', () => {
@@ -115,4 +118,29 @@ test('context trace returns raw structured payloads when requested', () => {
   expect(payload.rows[0].input).toEqual({ path: 'src/a.ts' });
   expect(payload.rows[0].result).toEqual({ ok: false, message: 'multiline patch failed' });
   expect(payload.rows[0].stderr).toBe('multiline --content is unsafe');
+});
+
+
+test('context trace returns token usage columns after schema migration', () => {
+  const dbPath = makeTraceDb();
+  const migrate = runTrace(dbPath, ['--limit', '1']);
+  expect(migrate.status).toBe(0);
+  const update = spawnSync('python3', ['-c', `
+import sqlite3
+import sys
+conn = sqlite3.connect(sys.argv[1])
+conn.execute('UPDATE tool_traces SET input_tokens = 10, output_tokens = 7, total_tokens = 17 WHERE trace_id = ?', ('trc_visible_1',))
+conn.commit()
+conn.close()
+`, dbPath], { encoding: 'utf8' });
+  expect(update.status).toBe(0);
+
+  const result = runTrace(dbPath, ['--trace-id', 'trc_visible_1']);
+  expect(result.status).toBe(0);
+  const payload = JSON.parse(result.stdout);
+  expect(payload.rows[0]).toMatchObject({
+    inputTokens: 10,
+    outputTokens: 7,
+    totalTokens: 17,
+  });
 });

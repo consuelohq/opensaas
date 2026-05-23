@@ -1,8 +1,10 @@
+import asyncio
 import importlib.util
 import json
 import os
 import sys
 import tempfile
+import time
 import types
 import unittest
 from unittest.mock import patch
@@ -68,12 +70,34 @@ class WorkspaceCallServerTest(unittest.TestCase):
         (self.worktree / '.task').mkdir(parents=True)
         self.session = 'tsk_test'
         os.environ['WORKSPACE_WORKTREE_ROOT'] = str(self.worktree_root)
-        (self.worktree / '.task' / 'session.json').write_text(json.dumps({
-            'taskSession': self.session,
+        self._write_legacy_session()
+
+    def _session_payload(self, session=None, branch='task/workspace-agents/test', worktree=None):
+        return {
+            'taskSession': session or self.session,
             'tmuxSession': 'opensaas-test',
-            'branch': 'task/workspace-agents/test',
-            'worktree': str(self.worktree),
-        }), encoding='utf-8')
+            'branch': branch,
+            'taskBranch': branch,
+            'worktree': str(worktree or self.worktree),
+            'worktreePath': str(worktree or self.worktree),
+        }
+
+    def _write_legacy_session(self, session=None):
+        (self.worktree / '.task' / 'session.json').write_text(json.dumps(
+            self._session_payload(session=session),
+        ), encoding='utf-8')
+
+    def _write_scoped_session(self, session=None, branch='task/workspace-agents/test'):
+        scoped = self.worktree / '.task' / 'workspace-agents' / 'test'
+        scoped.mkdir(parents=True, exist_ok=True)
+        (scoped / 'session.json').write_text(json.dumps(
+            self._session_payload(session=session, branch=branch),
+        ), encoding='utf-8')
+
+    def _remove_legacy_session(self):
+        legacy = self.worktree / '.task' / 'session.json'
+        if legacy.exists():
+            legacy.unlink()
 
     def tearDown(self):
         self.tempdir.cleanup()
@@ -134,12 +158,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._traced_call('workspace.call', 'tool', lambda **kwargs: {'ok': True, 'code': 'OK'}, tool='status', tool_input={}, taskSession=None, timeout=7)
 
         self.assertEqual(result, {'ok': True, 'code': 'OK'})
-        self.assertEqual(observations[0].kwargs['as_type'], 'span')
+        self.assertEqual(observations[0].kwargs['as_type'], 'generation')
+        self.assertEqual(observations[0].kwargs['model'], 'workspace-tool-estimate')
         self.assertEqual(observations[0].kwargs['name'], 'status')
         self.assertEqual(observations[0].updates[0]['input']['tool'], 'status')
         self.assertEqual(propagated[0]['session_id'], self.module._session_id)
         self.assertEqual(propagated[0]['trace_name'], 'status')
         self.assertEqual(observations[0].updates[0]['output']['code'], 'OK')
+        self.assertEqual(observations[0].updates[0]['model'], 'workspace-tool-estimate')
+        self.assertIn('usage_details', observations[0].updates[0])
+        self.assertIn('workspaceUsageEstimate', observations[0].updates[0]['metadata'])
 
     def test_langfuse_tracing_does_not_retry_failing_call(self):
         calls = []
@@ -191,11 +219,31 @@ class WorkspaceCallServerTest(unittest.TestCase):
             return f'full steering {len(calls)}'
 
         self.module._read_steering = fake_read_steering
-        first = self.module.get_steering()
-        second = self.module.get_steering()
+        first = asyncio.run(self.module.get_steering())
+        second = asyncio.run(self.module.get_steering())
         self.assertEqual(first, 'full steering 1')
         self.assertEqual(second, 'full steering 2')
         self.assertEqual(calls, [1, 2])
+
+    def test_call_runs_workspace_execution_off_event_loop(self):
+        events = []
+
+        def fake_traced_call(*args, **kwargs):
+            time.sleep(0.05)
+            events.append('call-done')
+            return {'ok': True, 'code': 'OK'}
+
+        self.module._traced_call = fake_traced_call
+
+        async def run_call_with_timer():
+            task = asyncio.create_task(self.module.call(tool='status', input={}, timeout=7))
+            await asyncio.sleep(0.005)
+            events.append('event-loop-free')
+            return await task
+
+        result = asyncio.run(run_call_with_timer())
+        self.assertEqual(result, {'ok': True, 'code': 'OK'})
+        self.assertEqual(events, ['event-loop-free', 'call-done'])
 
     def test_task_scoped_tools_require_task_session(self):
         manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
@@ -329,6 +377,75 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
+
+    def test_top_level_task_session_resolves_from_scoped_metadata_without_root_session(self):
+        self._remove_legacy_session()
+        self._write_scoped_session()
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('fs.read', taskSession=self.session, tool_input={'path': 'AGENTS.md'})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['branch'], 'task/workspace-agents/test')
+
+    def test_input_level_task_session_is_promoted_for_session_required_tools(self):
+        self._remove_legacy_session()
+        self._write_scoped_session()
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('fs.read', tool_input={'path': 'AGENTS.md', 'taskSession': self.session})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+
+    def test_conflicting_top_level_and_input_task_session_is_standard_error(self):
+        result = self.module._run_workspace_call(
+            'fs.read',
+            taskSession='tsk_outer',
+            tool_input={'path': 'AGENTS.md', 'taskSession': 'tsk_inner'},
+        )
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'VALIDATION_ERROR')
 
     def test_bun_file_not_found_is_standard_error(self):
         def fake_run(args, **kwargs):

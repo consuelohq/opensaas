@@ -103,11 +103,32 @@ function writeTaskSession(tempRoot: string, taskSession: string, branch: string 
   }, null, 2));
 }
 
+function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branch: string): void {
+  const [, area, ...slugParts] = branch.split('/');
+  const slug = slugParts.join('-');
+  const taskDir = join(tempRoot, '.task', area, slug);
+  mkdirSync(taskDir, { recursive: true });
+  writeFileSync(join(taskDir, 'session.json'), JSON.stringify({
+    taskSession,
+    tmuxSession: 'opensaas-test',
+    branch,
+    worktree: tempRoot,
+  }, null, 2));
+}
+
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
 
 describe('typed facade executor', () => {
+  it('registers every manifest input schema', () => {
+    const missing = manifestEntries
+      .map((entry) => entry.inputSchema)
+      .filter((name, index, names) => names.indexOf(name) === index)
+      .filter((name) => !getInputSchema(name));
+    expect(missing).toEqual([]);
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
@@ -307,6 +328,38 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('should resolve namespaced taskSession metadata when unrelated worktrees are malformed', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-namespaced-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    process.env.WORKSPACE_WORKTREE_ROOT = worktreeRoot;
+    try {
+      writeNamespacedTaskSession(tempRoot, 'tsk_namespaced', 'task/workspace-agents/namespaced-session');
+      mkdirSync(join(worktreeRoot, 'stream-os-sync-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'stream-os-sync-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+      mkdirSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_namespaced',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/namespaced-session');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('resolves taskSession metadata before branch planning', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-'));
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
@@ -468,22 +521,6 @@ describe('typed facade executor', () => {
 });
 
 describe('branch resolver', () => {
-  it('resolves pinned branch before current metadata', () => {
-    const result = resolveTaskBranch({
-      pinnedBranch: 'task/workspace-agents/pinned',
-      currentTask: {
-        branch: TEST_BRANCH,
-        area: 'workspace-agents',
-        worktree: '/tmp/worktree',
-      },
-    });
-    expect(result).toEqual({
-      ok: true,
-      branch: 'task/workspace-agents/pinned',
-      source: 'pinned',
-    });
-  });
-
   it('resolves current metadata when present', () => {
     const result = resolveTaskBranch({
       currentTask: {
@@ -526,7 +563,7 @@ describe('branch resolver', () => {
     expect(result).toEqual({
       ok: false,
       code: 'WORKTREE_NOT_FOUND',
-      message: 'no active task worktree found; run task:start first or pass branch',
+      message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
       candidates: [],
     });
   });
@@ -584,6 +621,32 @@ describe('batch executor', () => {
 });
 
 describe('composed and mac wrappers', () => {
+  it('builds git.diff command arguments', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-git-diff-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_git_diff');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('git.diff', {
+        taskSession: 'tsk_git_diff',
+        base: 'origin/main',
+        stat: true,
+        files: true,
+        hunks: true,
+        maxBytes: 20000,
+      }, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('git:diff');
+      expect(plans[0].args).toContain('--base');
+      expect(plans[0].args).toContain('origin/main');
+      expect(plans[0].args).toContain('--stat');
+      expect(plans[0].args).toContain('--files');
+      expect(plans[0].args).toContain('--hunks');
+      expect(plans[0].args).toContain('--max-bytes');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('builds checkFiles command arguments', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-check-files-'));
     try {

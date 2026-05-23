@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-typed-git-diff-tool",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "4bfa52653587e60869329fa9aed0db5ea058c4ed",
+  "changeHash": "bebd0b8c9a01ae4013f17fa7b5da592c2afaf0b0ef757d4160c0073aefa87f46",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/git-diff.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-22T06:04:40.558Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

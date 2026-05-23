@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7f7c5d2b8c96",
+  "tmuxSession": "opensaas-workspace-agents-update-design-wiki-to-recently-updated-paginatio-7f7c5d2b",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/update-design-wiki-to-recently-updated-pagination",
+  "branch": "task/workspace-agents/update-design-wiki-to-recently-updated-pagination",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-update-design-wiki-to-recently-updated-pagination",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-update-design-wiki-to-recently-updated-pagination",
+  "prNumber": 479,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/479",
+  "createdAt": "2026-05-23T04:14:14.262Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-update-design-wiki-to-recently-updated-pagination/.task/workspace-agents/update-design-wiki-to-recently-updated-pagination/session.json"
+}

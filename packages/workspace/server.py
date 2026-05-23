@@ -1,5 +1,6 @@
 """openworkspace MCP server — local workspace tools with optional memory and observability."""
 
+import asyncio
 import contextlib
 import datetime
 import hashlib
@@ -181,9 +182,15 @@ def _get_langsmith_trace() -> Any | None:
         return None
 
 
-def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any]) -> None:
+def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any], usage_details: dict[str, int] | None = None) -> None:
+    metadata = {'workspaceUsageEstimate': usage_details} if usage_details else None
+    update_payload: dict[str, Any] = {'input': inputs, 'output': output, 'model': 'workspace-tool-estimate'}
+    if metadata:
+        update_payload['metadata'] = metadata
+    if usage_details:
+        update_payload['usage_details'] = usage_details
     try:
-        observation.update(input=inputs, output=output)
+        observation.update(**update_payload)
     except Exception:
         pass
 
@@ -200,7 +207,11 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
         if langfuse is None or propagate_attributes is None:
             return fn(*args, **kwargs)
         try:
-            observation_cm = langfuse.start_as_current_observation(as_type='span', name=trace_name)
+            observation_cm = langfuse.start_as_current_observation(
+                as_type='generation',
+                name=trace_name,
+                model='workspace-tool-estimate',
+            )
             propagation_cm = propagate_attributes(
                 session_id=_session_id,
                 metadata={'workspaceTrace': name, 'provider': 'langfuse'},
@@ -220,7 +231,12 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
                 'completion_tokens': completion_tokens,
                 'total_tokens': prompt_tokens + completion_tokens,
             }
-            _finish_langfuse_observation(span, inputs, _trace_outputs(name, inputs, result, usage))
+            usage_details = {
+                'input': prompt_tokens,
+                'output': completion_tokens,
+                'total': prompt_tokens + completion_tokens,
+            }
+            _finish_langfuse_observation(span, inputs, _trace_outputs(name, inputs, result, usage), usage_details)
             return result
 
     if provider == 'langsmith':
@@ -287,18 +303,15 @@ def _read_steering() -> str:
     if manifest:
         content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
 
-    decision = _read_optional_file(DECISION_PROCESS_FILE)
-    if decision:
-        content += '\n\n' + decision
+    # Keep decision-engine doctrine in decision.md without injecting it into bootstrap steering.
 
     return content
 
 
-
 @mcp.tool(annotations=RO)
-def get_steering() -> str:
-    """mandatory bootstrap call. always returns full current steering."""
-    return _traced_call('get_steering', 'tool', _read_steering)
+async def get_steering() -> str:
+    """return current workspace steering and tool manifest."""
+    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _read_steering)
 
 
 def _workspace_root() -> Path:
@@ -388,7 +401,10 @@ def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
             input_json TEXT,
             resolved_input_json TEXT,
             result_json TEXT,
-            stderr TEXT
+            stderr TEXT,
+            input_tokens INTEGER,
+            output_tokens INTEGER,
+            total_tokens INTEGER
         )
     ''')
     indexes = [
@@ -402,6 +418,10 @@ def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
     ]
     for statement in indexes:
         conn.execute(statement)
+    existing_columns = {row[1] for row in conn.execute('PRAGMA table_info(tool_traces)').fetchall()}
+    for column_name in ('input_tokens', 'output_tokens', 'total_tokens'):
+        if column_name not in existing_columns:
+            conn.execute(f'ALTER TABLE tool_traces ADD COLUMN {column_name} INTEGER')
     return conn, db_path
 
 
@@ -451,13 +471,17 @@ def _write_tool_trace(
         worktree = task_context.get('worktree') or (metadata or {}).get('worktree') or (metadata or {}).get('worktreePath')
         session = task_context.get('taskSession') or task_session
         conn, db_path = _open_trace_db()
+        input_tokens = _estimate_tokens(tool_input)
+        output_tokens = _estimate_tokens(result)
+        total_tokens = input_tokens + output_tokens
         try:
             conn.execute('''
                 INSERT OR REPLACE INTO tool_traces(
                     id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,
                     status, ok, code, exit_code, duration_ms,
-                    input_json, resolved_input_json, result_json, stderr
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    input_json, resolved_input_json, result_json, stderr,
+                    input_tokens, output_tokens, total_tokens
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 f'{mcp_trace_id}:{trace_id}',
                 datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -477,6 +501,9 @@ def _write_tool_trace(
                 _json_text(resolved_input) if resolved_input is not None else None,
                 _json_text(result),
                 result.get('stderr') if isinstance(result.get('stderr'), str) else None,
+                input_tokens,
+                output_tokens,
+                total_tokens,
             ))
             conn.commit()
             _enforce_trace_db_cap(conn, db_path)
@@ -683,14 +710,38 @@ def _manifest_tool_requires_task_session(tool: str) -> bool:
     return command.get('branchMode') in {'optional', 'required'}
 
 
+def _task_session_candidate_paths(worktree_path: Path) -> list[Path]:
+    task_root = worktree_path / '.task'
+    candidates: list[Path] = []
+    if task_root.exists():
+        for area_path in task_root.iterdir():
+            if not area_path.is_dir() or area_path.name in {'tasks', 'reviews'}:
+                continue
+            for task_path in area_path.iterdir():
+                if not task_path.is_dir():
+                    continue
+                candidates.append(task_path / 'session.json')
+    candidates.append(task_root / 'session.json')
+    return candidates
+
+
 def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
     if not task_session:
         return None
-    root = _workspace_root()
-    candidates = [root / '.task' / 'session.json']
+    roots = [_workspace_root()]
     worktree_base = _worktree_root()
     if worktree_base.exists():
-        candidates.extend(worktree_base.glob('*/.task/session.json'))
+        roots.extend(path for path in worktree_base.iterdir() if path.is_dir() and path.name.startswith('task-'))
+
+    seen: set[Path] = set()
+    candidates: list[Path] = []
+    for root in roots:
+        for candidate in _task_session_candidate_paths(root):
+            resolved = candidate.resolve(strict=False)
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            candidates.append(candidate)
 
     for candidate in candidates:
         try:
@@ -705,9 +756,25 @@ def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
         metadata = raw
         branch = metadata.get('branch') or metadata.get('taskBranch')
         if metadata.get('taskSession') == task_session and isinstance(branch, str):
-            metadata.setdefault('worktree', str(candidate.parents[1]))
+            if not metadata.get('worktree') and not metadata.get('worktreePath'):
+                parts = candidate.parts
+                if '.task' in parts:
+                    metadata.setdefault('worktree', str(Path(*parts[:parts.index('.task')])))
             return metadata
     return None
+
+
+def _input_task_session(value: Any) -> str | None:
+    if isinstance(value, dict) and isinstance(value.get('taskSession'), str) and value.get('taskSession'):
+        return value.get('taskSession')
+    return None
+
+
+def _effective_task_session(task_session: str | None, tool_input: Any) -> tuple[str | None, str | None]:
+    input_task_session = _input_task_session(tool_input)
+    if task_session and input_task_session and task_session != input_task_session:
+        return None, 'Pass either top-level taskSession or matching input.taskSession, not conflicting values.'
+    return task_session or input_task_session, None
 
 
 def _input_has_branch(value: Any) -> bool:
@@ -800,6 +867,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     started = time.time()
     trace_id = _trace_id()
     normalized_input: Any = {} if tool_input is None else tool_input
+    effective_task_session, task_session_error = _effective_task_session(taskSession, normalized_input)
     trace_tool = tool if isinstance(tool, str) and tool else 'workspace.call'
 
     def finish(result: dict[str, Any], resolved_input: Any | None = None, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -808,7 +876,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             tool_input=normalized_input,
             resolved_input=resolved_input,
             result=result,
-            task_session=taskSession,
+            task_session=effective_task_session,
             mcp_trace_id=trace_id,
             metadata=metadata,
         )
@@ -817,7 +885,16 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     if not tool or not isinstance(tool, str):
         return finish(_envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id))
 
-    safety_reason = _safety_check(tool, normalized_input, taskSession)
+    if task_session_error:
+        return finish(_envelope(
+            ok=False,
+            code='VALIDATION_ERROR',
+            message=task_session_error,
+            data={'tool': tool},
+            traceId=trace_id,
+        ))
+
+    safety_reason = _safety_check(tool, normalized_input, effective_task_session)
     if safety_reason:
         result = _envelope(
             ok=False,
@@ -827,20 +904,20 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             exitCode=-1,
             traceId=trace_id,
         )
-        _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=True, reason=safety_reason)
+        _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=True, reason=safety_reason)
         return finish(result)
-    _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=False)
+    _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=False)
 
-    if taskSession and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+    if effective_task_session and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
         return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
             message='Pass either taskSession or input.branch, not both. taskSession is required for agent task-scoped calls.',
-            data={'tool': tool, 'taskSession': taskSession},
+            data={'tool': tool, 'taskSession': effective_task_session},
             traceId=trace_id,
         ))
 
-    if not taskSession and _tool_requires_task_session(tool, normalized_input):
+    if not effective_task_session and _tool_requires_task_session(tool, normalized_input):
         return finish(_envelope(
             ok=False,
             code='TASK_SESSION_REQUIRED',
@@ -849,13 +926,13 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             traceId=trace_id,
         ))
 
-    resolved_input, metadata = _apply_task_session(tool, taskSession, normalized_input)
-    if taskSession and metadata is None:
+    resolved_input, metadata = _apply_task_session(tool, effective_task_session, normalized_input)
+    if effective_task_session and metadata is None:
         return finish(_envelope(
             ok=False,
             code='TASK_SESSION_NOT_FOUND',
             message='taskSession was not found. Use the taskSession returned by task.start.',
-            data={'taskSession': taskSession},
+            data={'taskSession': effective_task_session},
             traceId=trace_id,
         ))
 
@@ -926,7 +1003,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         envelope.setdefault('apiVersion', '1.0.0')
         if metadata:
             envelope['taskContext'] = {
-                'taskSession': taskSession,
+                'taskSession': effective_task_session,
                 'tmuxSession': metadata.get('tmuxSession'),
                 'branch': metadata.get('branch') or metadata.get('taskBranch'),
                 'worktree': metadata.get('worktree') or metadata.get('worktreePath'),
@@ -946,9 +1023,8 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         traceId=trace_id,
     ), resolved_input, metadata)
 
-
 @mcp.tool(annotations=CALL_TOOL)
-def call(
+async def call(
     tool: str,
     input: Any | None = None,
     taskSession: str | None = None,
@@ -956,7 +1032,8 @@ def call(
 ) -> dict[str, Any]:
     """run a typed workspace tool through the facade. taskSession scopes task work."""
     tool_input = input
-    return _traced_call(
+    return await asyncio.to_thread(
+        _traced_call,
         'workspace.call',
         'tool',
         _run_workspace_call,

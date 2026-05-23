@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ba13926cfa55",
+  "tmuxSession": "opensaas-workspace-agents-make-trace-watch-tolerate-sqlite-locks-ba13926c",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-trace-watch-tolerate-sqlite-locks",
+  "branch": "task/workspace-agents/make-trace-watch-tolerate-sqlite-locks",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-trace-watch-tolerate-sqlite-locks",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-trace-watch-tolerate-sqlite-locks",
+  "prNumber": 527,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/527",
+  "createdAt": "2026-05-23T10:11:33.158Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-trace-watch-tolerate-sqlite-locks/.task/workspace-agents/make-trace-watch-tolerate-sqlite-locks/session.json"
+}

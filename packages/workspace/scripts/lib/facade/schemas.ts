@@ -61,7 +61,6 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-
 export const ConsueloDesignInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -73,6 +72,12 @@ export const ConsueloDesignUiInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const DesignArchiveRefreshInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  tailscaleBin: optionalString,
+});
+
 export const ConsueloDesignSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -81,7 +86,6 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-
 export const ConsueloDesignDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -90,6 +94,17 @@ export const ConsueloDesignDigitalEguideInput = z.object({
   prompt: optionalString,
   template: digitalEguideTemplate,
   timeout: z.number().int().positive().optional(),
+});
+
+export const CodeRunInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  code: z.string().min(1),
+  mode: z.enum(['read', 'edit', 'verify']).optional(),
+  timeout: z.number().int().positive().optional(),
+  memoryLimit: z.number().int().positive().optional(),
+  maxOperations: z.number().int().positive().optional(),
+  maxResultChars: z.number().int().positive().optional(),
 });
 
 export const FsReadInput = z.object({
@@ -374,6 +389,56 @@ export const GhInput = z.object({
   ...dryRunField,
   action: z.string().min(1),
   args: stringArray,
+});
+
+
+export const GithubInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum([
+    'pr.view',
+    'pr.checks',
+    'pr.reviews',
+    'pr.files',
+    'pr.diff',
+    'pr.list',
+    'pr.merge',
+    'branch.compare',
+    'repo.view',
+    'raw',
+  ]),
+  repo: z.string().optional(),
+  pr: z.number().int().positive().optional(),
+  branch: z.string().optional(),
+  base: z.string().optional(),
+  head: z.string().optional(),
+  preset: z.enum(['summary', 'review', 'merge', 'checks', 'files', 'full']).optional(),
+  fields: stringArray,
+  limit: z.number().int().positive().optional(),
+  state: z.enum(['open', 'closed', 'merged', 'all']).optional(),
+  body: z.string().optional(),
+  bodyFile: z.string().optional(),
+  wait: z.boolean().optional(),
+  squash: z.boolean().optional(),
+  full: z.boolean().optional(),
+  mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
+  rawArgs: stringArray,
+  reason: z.string().optional(),
+});
+
+export const GitDiffInput = z.object({
+  ...requestFields,
+  ...branchField,
+  base: optionalString,
+  head: optionalString,
+  paths: stringArray,
+  stat: z.boolean().optional(),
+  files: z.boolean().optional(),
+  hunks: z.boolean().optional(),
+  patch: z.boolean().optional(),
+  nameOnly: z.boolean().optional(),
+  context: z.number().int().nonnegative().optional(),
+  maxBytes: z.number().int().positive().optional(),
 });
 
 export const BrowserInput = z.object({
@@ -714,7 +779,7 @@ export const WebsiteDeployInput = z.object({
 export const ServerInput = z.object({
   ...requestFields,
   ...dryRunField,
-  action: z.enum(['status', 'restart', 'stop', 'start', 'logs']),
+  action: z.enum(['status', 'consuelo-reload', 'reload', 'restart', 'stop', 'start', 'logs']),
 });
 
 export const CheckFilesInput = z.object({
@@ -782,15 +847,17 @@ export const MacPortInput = z.object({
   action: z.enum(['check', 'find']),
   port: z.number().int().positive().optional(),
 });
-
+ 
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
   DesignPublishInput,
+  DesignArchiveRefreshInput,
   ConsueloDesignInput,
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
+  CodeRunInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -824,6 +891,8 @@ export const schemaRegistry = {
   PrReviewInput,
   AiReviewInput,
   GhInput,
+  GithubInput,
+  GitDiffInput,
   BrowserInput,
   BrowserOpenInput,
   BrowserPageInput,
@@ -884,10 +953,12 @@ export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
@@ -921,6 +992,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -959,7 +1032,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ServerInput: '{ action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacExecInput: '{ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',

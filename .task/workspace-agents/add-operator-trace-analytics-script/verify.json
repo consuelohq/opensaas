@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-operator-trace-analytics-script",
+  "base": "origin/main",
+  "headSha": "c1c8a36b8ce712f55306ba0aa05be1e3d4e60840",
+  "changeHash": "1efc5f6f7aed06b2e6e83a8bceb901b24cf9a612c3e95091ff8ca89336006976",
+  "changedFiles": [
+    "package.json",
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "verifiedAt": "2026-05-23T08:56:09.967Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
