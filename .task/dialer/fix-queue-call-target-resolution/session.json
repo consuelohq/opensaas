@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2ab54719341d",
+  "tmuxSession": "opensaas-dialer-fix-queue-call-target-resolution-2ab54719",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-queue-call-target-resolution",
+  "branch": "task/dialer/fix-queue-call-target-resolution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-call-target-resolution",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-call-target-resolution",
+  "prNumber": 542,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/542",
+  "createdAt": "2026-05-23T21:12:23.646Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-call-target-resolution/.task/dialer/fix-queue-call-target-resolution/session.json"
+}
