@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-lossless-facade-command-formatting",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "206f45d340a50378c99fc49601ad02640561677c",
+  "changeHash": "49086a67706c598efce449909dc2f36aef3dc5914c1127c799cd8020b5a86ab7",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/facade/executor.ts"
+  ],
+  "verifiedAt": "2026-05-23T02:51:25.085Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
