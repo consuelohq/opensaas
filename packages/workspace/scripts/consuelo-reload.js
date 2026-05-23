@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// server.js — manage the workspace MCP server
+// consuelo-reload.js — manage the workspace MCP server reload path
 // supports both launchd and direct process modes
 const { execSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
@@ -101,7 +101,7 @@ function waitForHealth(label) {
   return false;
 }
 
-function runRestart({ useLaunchd }) {
+function runReload({ useLaunchd }) {
   if (useLaunchd) {
     run(`launchctl unload ${PLIST} 2>/dev/null`);
     run('sleep 1');
@@ -113,41 +113,44 @@ function runRestart({ useLaunchd }) {
   }
 }
 
-function scheduleRestart({ useLaunchd }) {
-  const child = spawn(process.execPath, [__filename, 'restart-now'], {
+function scheduleReload({ useLaunchd }) {
+  const child = spawn(process.execPath, [__filename, 'reload-now'], {
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
     cwd: WORKSPACE_DIR,
     env: {
       ...process.env,
-      WORKSPACE_SERVER_RESTART_CHILD: '1',
-      WORKSPACE_SERVER_RESTART_LAUNCHD: useLaunchd ? '1' : '0',
+      WORKSPACE_SERVER_RELOAD_CHILD: '1',
+      WORKSPACE_SERVER_RELOAD_LAUNCHD: useLaunchd ? '1' : '0',
     },
   });
   child.unref();
-  writeStdout('restart scheduled');
-  writeStdout('  server will briefly disconnect while launchd restarts it');
+  writeStdout('consuelo reload scheduled');
+  writeStdout('  workspace will briefly disconnect while launchd reloads it');
+  writeStdout('  check with: bun run consuelo-reload -- status');
 }
 
 // --- main ---
 
 const args = process.argv.slice(2);
 if (args.includes('--help')) {
-  writeStdout('usage: bun run server -- [restart|restart-now|status|stop|start|logs]');
+  writeStdout('usage: bun run consuelo-reload -- [consuelo-reload|reload|reload-now|status|stop|start|logs]');
   writeStdout('');
-  writeStdout('  restart      schedule a safe async restart of the workspace MCP server (default)');
-  writeStdout('  restart-now  stop + start immediately; intended for detached restart children');
+  writeStdout('  consuelo-reload  schedule a safe async reload of the workspace MCP server (default)');
+  writeStdout('  reload           alias for consuelo-reload');
+  writeStdout('  restart          legacy alias for consuelo-reload');
+  writeStdout('  reload-now       stop + start immediately; intended for detached reload children');
   writeStdout('  status       show server health and process info');
   writeStdout('  stop         stop the server');
   writeStdout('  start        start the server');
   writeStdout('  logs         tail server logs');
   writeStdout('');
   writeStdout('uses launchd if the agent is loaded, otherwise manages the process directly.');
-  writeStdout('restart returns before the server stops so MCP callers do not drop their response.');
+  writeStdout('consuelo-reload returns before the server stops so MCP callers do not drop their response.');
   process.exit(0);
 }
 
-const cmd = args[0] || 'restart';
+const cmd = args[0] || 'consuelo-reload';
 const useLaunchd = isLaunchdLoaded();
 switch (cmd) {
   case 'status': {
@@ -189,14 +192,17 @@ switch (cmd) {
     waitForHealth('started');
     break;
 
+  case 'consuelo-reload':
+  case 'reload':
   case 'restart':
-    scheduleRestart({ useLaunchd });
+    scheduleReload({ useLaunchd });
     break;
 
+  case 'reload-now':
   case 'restart-now':
     run('sleep 0.5');
-    runRestart({ useLaunchd: process.env.WORKSPACE_SERVER_RESTART_LAUNCHD === '1' || useLaunchd });
-    if (!process.env.WORKSPACE_SERVER_RESTART_CHILD) waitForHealth('restarted');
+    runReload({ useLaunchd: process.env.WORKSPACE_SERVER_RELOAD_LAUNCHD === '1' || useLaunchd });
+    if (!process.env.WORKSPACE_SERVER_RELOAD_CHILD) waitForHealth('reloaded');
     break;
 
   case 'logs':

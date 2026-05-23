@@ -42,6 +42,7 @@
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
     "code-run": "bun ./scripts/code-run.ts",
     "github": "bun ./scripts/github.js",
+    "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js"
   },
   "dependencies": {

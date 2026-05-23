@@ -4397,7 +4397,7 @@
     "methodPath": [
       "server"
     ],
-    "description": "manage the workspace MCP server",
+    "description": "manage the workspace MCP server reload/status lifecycle",
     "category": "utilities",
     "underlying": "workspace server",
     "capabilities": {
@@ -4410,7 +4410,7 @@
     "inputSchema": "ServerInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "server",
+      "script": "consuelo-reload",
       "branchMode": "none",
       "arguments": [
         {
