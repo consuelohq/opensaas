@@ -958,7 +958,7 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   } catch {
     // Start below when the archive server is not already reachable.
   }
-  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
     cwd: REPO_ROOT,
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
@@ -1012,7 +1012,9 @@ function writeArchiveServer(ip: string): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   const serverSource = `const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
 const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const archiveRoot = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
 const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const pagefindRoot = ${JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT)};
 const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
 const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
 
@@ -1071,6 +1073,27 @@ Bun.serve({
   writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
 }
 
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const lines = [
+    'const archiveRoot = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT) + ';',
+    'const indexPath = ' + JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH) + ';',
+    'const dataPath = ' + JSON.stringify(DESIGN_ARCHIVE_DATA_PATH) + ';',
+    'const pagefindRoot = ' + JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT) + ';',
+    'const archivePath = ' + JSON.stringify(DESIGN_ARCHIVE_PATH) + ';',
+    'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
+    'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
+    'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
+    'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
+    'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
+    'async function readEntries(){ try { const data = JSON.parse(await Bun.file(dataPath).text()); return Array.isArray(data.entries) ? data.entries : []; } catch { return []; } }',
+    'async function proxyEntry(entry, request, suffix){ if (!entry || !entry.target) return null; if (!entry.target.startsWith("http://") && !entry.target.startsWith("https://")) return null; const target = new URL(entry.target); const requested = new URL(request.url); const base = target.pathname.endsWith("/") ? target.pathname.slice(0, -1) : target.pathname; const extra = suffix ? "/" + suffix.split("/").filter(Boolean).map(encodeURIComponent).join("/") : ""; target.pathname = base + extra; target.search = requested.search; return fetch(target, { method: request.method, headers: request.headers }); }',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); if (url.pathname === archivePath || url.pathname === archivePath + "/") return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); if (url.pathname.startsWith(archivePath + "/pagefind/")){ const suffix = url.pathname.slice((archivePath + "/pagefind/").length); const p = safeJoin(pagefindRoot, suffix); if (p){ const response = await servePath(p); if (response) return response; } } const entries = await readEntries(); const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + "/")); if (entry){ const raw = url.pathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + url.pathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch (error) { return new Response("archive server error", { status: 500, headers: h() }); } } });'
+  ];
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
+}
+
 async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
   try {
     const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
@@ -1101,7 +1124,7 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   if (await archiveServerShowsCurrentWiki(target)) return target;
 
   await stopArchiveServer();
-  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
     cwd: REPO_ROOT,
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
@@ -1120,7 +1143,9 @@ function writeArchiveServer(ip: string): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   const serverSource = `const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
 const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const archiveRoot = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
 const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const pagefindRoot = ${JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT)};
 const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
 const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
 
@@ -1209,7 +1234,7 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   if (await archiveServerShowsCurrentWiki(target)) return target;
 
   await stopArchiveServer();
-  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
     cwd: REPO_ROOT,
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
@@ -1228,7 +1253,9 @@ function writeArchiveServer(ip: string): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   const serverSource = `const dataPath = ${JSON.stringify(DESIGN_ARCHIVE_DATA_PATH)};
 const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const archiveRoot = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
 const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const pagefindRoot = ${JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT)};
 const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
 const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
 
@@ -1248,8 +1275,9 @@ async function readPayload(): Promise<ArchivePayload> {
 }
 
 function safeArtifactPath(relativePath: string): string | null {
-  const candidate = Bun.pathToFileURL(artifactsRoot + '/' + relativePath.split('/').filter(Boolean).join('/')).pathname;
-  const allowed = Bun.pathToFileURL(artifactsRoot + '/').pathname;
+  const archiveRoot = artifactsRoot.endsWith('/artifacts') ? artifactsRoot.slice(0, -10) : artifactsRoot;
+  const candidate = Bun.pathToFileURL(archiveRoot + '/' + relativePath.split('/').filter(Boolean).join('/')).pathname;
+  const allowed = Bun.pathToFileURL(archiveRoot + '/').pathname;
   return candidate.startsWith(allowed) ? candidate : null;
 }
 
@@ -1267,10 +1295,10 @@ async function serveFile(filePath: string): Promise<Response | null> {
 
 async function proxyTarget(entry: ArchiveEntry, request: Request, suffix: string): Promise<Response | null> {
   try {
-    if (!/^https?:\/\//.test(entry.target)) return null;
+    if (!entry.target.startsWith('http://') && !entry.target.startsWith('https://')) return null;
     const target = new URL(entry.target);
     const requested = new URL(request.url);
-    const basePath = target.pathname.replace(/\/$/, '');
+    const basePath = target.pathname.endsWith('/') ? target.pathname.slice(0, -1) : target.pathname;
     const suffixPath = suffix ? '/' + suffix.split('/').filter(Boolean).map(encodeURIComponent).join('/') : '';
     target.pathname = basePath + suffixPath;
     target.search = requested.search;
@@ -1290,11 +1318,22 @@ Bun.serve({
       return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
     }
 
+    if (url.pathname.startsWith(archivePath + '/pagefind/')) {
+      const pagefindSuffix = url.pathname.slice((archivePath + '/pagefind/').length);
+      const pagefindPath = Bun.pathToFileURL(pagefindRoot + '/' + pagefindSuffix.split('/').filter(Boolean).join('/')).pathname;
+      const allowedPagefind = Bun.pathToFileURL(pagefindRoot + '/').pathname;
+      if (pagefindPath.startsWith(allowedPagefind)) {
+        const response = await serveFile(pagefindPath);
+        if (response) return response;
+      }
+    }
+
     const payload = await readPayload();
     const entries = Array.isArray(payload.entries) ? payload.entries : [];
     const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + '/'));
     if (entry) {
-      const suffix = url.pathname.slice(entry.path.length).replace(/^\//, '');
+      const rawSuffix = url.pathname.slice(entry.path.length);
+      const suffix = rawSuffix.startsWith('/') ? rawSuffix.slice(1) : rawSuffix;
       if (entry.artifactPath) {
         const artifactPath = safeArtifactPath(entry.artifactPath + (suffix ? '/' + suffix : ''));
         if (artifactPath) {
@@ -1304,6 +1343,12 @@ Bun.serve({
       }
       const proxied = await proxyTarget(entry, request, suffix);
       if (proxied) return proxied;
+    }
+
+    const directArtifactPath = safeArtifactPath('artifacts' + url.pathname);
+    if (directArtifactPath) {
+      const response = await serveFile(directArtifactPath);
+      if (response) return response;
     }
 
       return new Response('not found', { status: 404, headers: noStore() });
@@ -1346,7 +1391,7 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   if (await archiveServerShowsCurrentWiki(target)) return target;
 
   await stopArchiveServer();
-  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
     cwd: REPO_ROOT,
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
@@ -1359,6 +1404,27 @@ async function ensureArchiveServer(ip: string): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   return target;
+}
+
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const lines = [
+    'const archiveRoot = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT) + ';',
+    'const indexPath = ' + JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH) + ';',
+    'const dataPath = ' + JSON.stringify(DESIGN_ARCHIVE_DATA_PATH) + ';',
+    'const pagefindRoot = ' + JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT) + ';',
+    'const archivePath = ' + JSON.stringify(DESIGN_ARCHIVE_PATH) + ';',
+    'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
+    'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
+    'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
+    'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
+    'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
+    'async function readEntries(){ try { const data = JSON.parse(await Bun.file(dataPath).text()); return Array.isArray(data.entries) ? data.entries : []; } catch { return []; } }',
+    'async function proxyEntry(entry, request, suffix){ if (!entry || !entry.target) return null; if (!entry.target.startsWith("http://") && !entry.target.startsWith("https://")) return null; const target = new URL(entry.target); const requested = new URL(request.url); const base = target.pathname.endsWith("/") ? target.pathname.slice(0, -1) : target.pathname; const extra = suffix ? "/" + suffix.split("/").filter(Boolean).map(encodeURIComponent).join("/") : ""; target.pathname = base + extra; target.search = requested.search; return fetch(target, { method: request.method, headers: request.headers }); }',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); if (url.pathname === archivePath || url.pathname === archivePath + "/") return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); if (url.pathname.startsWith(archivePath + "/pagefind/")){ const suffix = url.pathname.slice((archivePath + "/pagefind/").length); const p = safeJoin(pagefindRoot, suffix); if (p){ const response = await servePath(p); if (response) return response; } } const entries = await readEntries(); const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + "/")); if (entry){ const raw = url.pathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + url.pathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch (error) { return new Response("archive server error", { status: 500, headers: h() }); } } });'
+  ];
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
 }
 
 function readArchivePayload(): DesignArchivePayload {
