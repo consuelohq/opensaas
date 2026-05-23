@@ -32,9 +32,46 @@
     }
   },
   {
+    "name": "consuelo-design",
+    "title": "Consuelo Design",
+    "description": "Top-level orchestration skill for Consuelo Design artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+    "permission": "draft",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredIntegrations": [
+      "consuelo-design"
+    ],
+    "implementation": {
+      "script": "scripts/design/consuelo-design.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subskill": {
+          "type": "string"
+        },
+        "includeReferences": {
+          "type": "boolean"
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "skill",
+        "subskills",
+        "references",
+        "nextActions"
+      ]
+    }
+  },
+  {
     "name": "consuelo-design-landing-page",
-    "title": "Consuelo Design Landing Page",
-    "description": "Creates a Consuelo Design website workflow draft through the existing design facade, persists a local draft artifact, and approval-gates publishing or customer-facing replacement.",
+    "title": "Consuelo Design Landing Page (compatibility alias)",
+    "description": "Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.",
     "permission": "draft",
     "requiresApproval": false,
     "writesRecords": false,
@@ -83,6 +120,8 @@
         "primaryDesignSkill",
         "nextActions"
       ]
-    }
+    },
+    "deprecated": true,
+    "supersededBy": "consuelo-design#landing-page"
   }
 ]

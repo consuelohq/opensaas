@@ -1,7 +1,7 @@
 {
   "name": "consuelo-design-landing-page",
-  "title": "Consuelo Design Landing Page",
-  "description": "Creates Consuelo Design landing page or campaign brief draft work orders and writes local draft artifacts. Publishing or replacing customer-facing pages is approval-gated.",
+  "title": "Consuelo Design Landing Page (compatibility alias)",
+  "description": "Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.",
   "script": "scripts/design/consuelo-design-landing-page.ts",
   "permission": "draft",
   "requiresApproval": false,
@@ -11,5 +11,7 @@
   "capabilities": [
     "consuelo-design",
     "local-artifacts"
-  ]
+  ],
+  "deprecated": true,
+  "supersededBy": "consuelo-design#landing-page"
 }

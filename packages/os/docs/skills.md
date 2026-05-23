@@ -59,3 +59,8 @@ Failure modes:
 | `query_failed` | The proof query failed for another safe reason. |
 
 The skill should keep returning structured output even when the current data model is incomplete.
+
+
+## Consuelo Design
+
+`consuelo-design` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `consueloDesign.*` tools, template rules, browser validation, `design.publish`, and `/design-wiki` verification.
