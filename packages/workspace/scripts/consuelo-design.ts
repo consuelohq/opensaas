@@ -1116,6 +1116,114 @@ async function ensureArchiveServer(ip: string): Promise<string> {
   return target;
 }
 
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const serverSource = `const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
+const indexPath = ${JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH)};
+const artifactsRoot = ${JSON.stringify(DESIGN_ARCHIVE_ARTIFACTS_ROOT)};
+const archivePath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = ${JSON.stringify(DESIGN_ARCHIVE_PORT)};
+
+function noStore(headers = {}) {
+  return new Headers({ 'Cache-Control': 'no-store', ...headers });
+}
+
+function safePath(base, requestPath) {
+  const clean = decodeURIComponent(requestPath).split('/').filter(Boolean).join('/');
+  const target = Bun.pathToFileURL(base + '/' + clean).pathname;
+  const allowed = Bun.pathToFileURL(base + '/').pathname;
+  return target.startsWith(allowed) ? target : null;
+}
+
+async function serveFile(filePath) {
+  try {
+    const file = Bun.file(filePath);
+    if (await file.exists()) return new Response(file, { headers: noStore() });
+    const index = Bun.file(filePath + '/index.html');
+    if (await index.exists()) return new Response(index, { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+Bun.serve({
+  hostname: ${JSON.stringify(ip)},
+  port,
+  async fetch(request) {
+    try {
+      const url = new URL(request.url);
+      if (url.pathname === archivePath || url.pathname === archivePath + '/') {
+        return new Response(Bun.file(indexPath), { headers: noStore({ 'Content-Type': 'text/html; charset=utf-8' }) });
+      }
+
+      const artifactPath = safePath(artifactsRoot, url.pathname);
+      if (artifactPath) {
+        const artifactResponse = await serveFile(artifactPath);
+        if (artifactResponse) return artifactResponse;
+      }
+
+      const rootPath = safePath(root, url.pathname);
+      if (rootPath) {
+        const rootResponse = await serveFile(rootPath);
+        if (rootResponse) return rootResponse;
+      }
+
+      return new Response('not found', { status: 404, headers: noStore() });
+    } catch {
+      return new Response('archive server error', { status: 500, headers: noStore() });
+    }
+  },
+});
+`;
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, serverSource);
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort: publish can continue and startup polling will report availability.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn(['bun', DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
 function readArchivePayload(): DesignArchivePayload {
   try {
     const parsed = JSON.parse(readFileSync(DESIGN_ARCHIVE_DATA_PATH, 'utf8')) as Partial<DesignArchivePayload>;
