@@ -4957,7 +4957,7 @@ example error envelope:
 
 push changed task files to the task branch through GitHub API
 
-- signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; dangerous?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.push`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
