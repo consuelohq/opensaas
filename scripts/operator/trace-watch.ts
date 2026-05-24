@@ -285,7 +285,7 @@ function compactTraceRow(row: Row): Row {
     total_tokens: row.total_tokens,
     input_json: compactJsonValue(row.input_json, 800),
     resolved_input_json: compactJsonValue(row.resolved_input_json, 800),
-    result: summarizeResultForTrace(result),
+    result: summarizeResultForTrace(result, String(row.tool || '')),
     nested_operations: nestedOperationsForRow(row),
     result_json_chars: numericValue(row.result_json_chars, textSize(row.result_json)),
     stderr: compactJsonValue(stderr, 1200),
@@ -293,10 +293,24 @@ function compactTraceRow(row: Row): Row {
   };
 }
 
-function summarizeResultForTrace(result: unknown): unknown {
+function summarizeResultForTrace(result: unknown, tool?: string): unknown {
   if (!isRecord(result)) return result;
   const data = isRecord(result.data) ? result.data : result;
   const schema = data.schema || result.schema;
+  if (tool === 'verify' && isRecord(data)) {
+    return {
+      ok: result.ok,
+      code: result.code,
+      message: result.message,
+      mode: data.mode,
+      publishValid: data.publishValid,
+      passed: data.passed,
+      because: data.because,
+      review: isRecord(data.review) ? { skipped: data.review.skipped, passed: data.review.passed } : undefined,
+      db: isRecord(data.db) ? { skipped: data.db.skipped, passed: data.db.passed, warnOnly: data.db.warnOnly } : undefined,
+      stamp: data.stamp,
+    };
+  }
   if (schema === 'review.summary.v1') {
     return {
       schema,
@@ -337,6 +351,26 @@ function compactSuccessDetail(row: Row): string {
   if (input.keyword) candidates.push(`keyword=${cleanText(input.keyword)}`);
   const detail = candidates.find((candidate) => candidate && !isJsonEnvelope(candidate));
   return (detail || '').slice(0, 120);
+}
+
+
+function verifyBecauseLines(row: Row): string[] {
+  const result = parseJson(row.result_json);
+  if (!isRecord(result)) return [];
+  const data = isRecord(result.data) ? result.data : result;
+  const because = isRecord(data.because) ? data.because : undefined;
+  const lines = Array.isArray(because?.lines) ? because.lines : [];
+  return lines.map((line) => cleanText(line)).filter(Boolean);
+}
+
+function renderVerifyBecause(args: Args, row: Row): void {
+  if (String(row.tool || '') !== 'verify') return;
+  const lines = verifyBecauseLines(row);
+  if (lines.length === 0) return;
+  console.log(`  ${c(args, '2', 'because:')}`);
+  for (const line of lines) {
+    console.log(`    ${c(args, '2', '-')} ${line}`);
+  }
 }
 
 function compactErrorDetail(row: Row): string {
@@ -485,6 +519,7 @@ function renderRow(args: Args, row: Row) {
   if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
   else console.log(first);
   if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
+  renderVerifyBecause(args, row);
   if (args.nested) {
     const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
     for (const operation of visibleNested) console.log(renderNestedOperation(args, operation));

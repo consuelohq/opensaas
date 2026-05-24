@@ -336,6 +336,82 @@ function createDbResult(files, args) {
   };
 }
 
+
+function reviewChecks(review) {
+  const data = review && review.data;
+  return Array.isArray(data && data.checksRun) ? data.checksRun : [];
+}
+
+function reviewTestSummary(review) {
+  const data = review && review.data;
+  return data && data.testSummary ? data.testSummary : null;
+}
+
+function createBecause(result) {
+  const checks = reviewChecks(result.review);
+  const testSummary = reviewTestSummary(result.review);
+  const totalSuites = Number((testSummary && testSummary.totalSuites) || 0);
+  const passedSuites = Number((testSummary && testSummary.passedSuites) || 0);
+  const failedSuites = Number((testSummary && testSummary.failedSuites) || 0);
+  const lines = [];
+
+  if (result.review.skipped) {
+    lines.push('review was skipped; this is partial and not publish-valid');
+  } else {
+    lines.push(`review ran${checks.length ? ` ${checks.join(', ')}` : ''} and ${result.review.passed ? 'passed' : 'failed'}`);
+  }
+
+  if (testSummary) {
+    if (totalSuites === 0) {
+      lines.push('tests selected 0 suites because no affected test suite was reported by review for these changed files');
+    } else {
+      lines.push(`tests selected ${totalSuites} suite${totalSuites === 1 ? '' : 's'}; ${passedSuites} passed and ${failedSuites} failed`);
+    }
+  } else {
+    lines.push('tests had no summary because review did not return test selection data');
+  }
+
+  if (result.db.skipped) {
+    lines.push('db guard was skipped; this is partial and not publish-valid');
+  } else {
+    lines.push(`db guard ran and ${result.db.passed ? 'passed' : 'failed'} with ${result.db.risks.length} risk${result.db.risks.length === 1 ? '' : 's'} and ${result.db.findings.length} finding${result.db.findings.length === 1 ? '' : 's'}`);
+  }
+
+  lines.push(result.publishValid
+    ? `stamp is publish-valid${result.stampPath ? ` and written to ${path.relative(result.repoRoot, result.stampPath)}` : ''}`
+    : 'stamp is not publish-valid because the full gate did not pass');
+
+  return {
+    lines,
+    review: {
+      ran: !result.review.skipped,
+      passed: result.review.passed,
+      checksRun: checks,
+    },
+    tests: {
+      summaryAvailable: Boolean(testSummary),
+      totalSuites,
+      passedSuites,
+      failedSuites,
+      zeroSuiteReason: testSummary && totalSuites === 0
+        ? 'no affected test suite was reported by review for these changed files'
+        : null,
+    },
+    db: {
+      ran: !result.db.skipped,
+      passed: result.db.passed,
+      risks: result.db.risks.length,
+      findings: result.db.findings.length,
+      warnOnly: result.db.warnOnly,
+    },
+    stamp: {
+      publishValid: result.publishValid,
+      written: Boolean(result.stampPath),
+      path: result.stampPath ? path.relative(result.repoRoot, result.stampPath) : null,
+    },
+  };
+}
+
 function printHumanResult(result) {
   if (result.args.quiet) {
     return;
@@ -346,6 +422,11 @@ function printHumanResult(result) {
   writeStdout(`changed files: ${result.files.length}`);
   writeStdout(`review: ${result.review.skipped ? 'skipped' : result.review.passed ? 'pass' : 'fail'}`);
   writeStdout(`db guard: ${result.db.skipped ? 'skipped' : result.db.passed ? 'pass' : 'fail'}`);
+
+  writeStdout('because:');
+  for (const line of result.because.lines) {
+    writeStdout(`  - ${line}`);
+  }
 
   for (const risk of result.db.risks) {
     writeStdout(`  ${risk.category}: ${risk.file}`);
@@ -445,6 +526,7 @@ async function main() {
     stamp,
     stampPath,
   };
+  result.because = createBecause(result);
 
   if (args.json) {
     writeStdout(JSON.stringify({
@@ -454,6 +536,7 @@ async function main() {
       files: result.files,
       mode: result.mode,
       publishValid: result.publishValid,
+      because: result.because,
       review: {
         skipped: result.review.skipped,
         passed: result.review.passed,
