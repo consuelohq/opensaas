@@ -15,6 +15,7 @@ import { Dialer, type ParallelDialProfile } from '@consuelo/dialer';
 import { type DataSource } from 'typeorm';
 
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
+import { getWorkspaceSchemaName } from 'src/engine/workspace-datasource/utils/get-workspace-schema-name.util';
 
 type DialerCallSource = 'direct' | 'queue';
 type DialerCallSelectionStrategy = 'single' | 'predictive';
@@ -417,17 +418,31 @@ export class DialerCallStartService {
     queueId: string;
     requestedFanout: number;
   }): Promise<CallableTarget[]> {
+    const workspaceSchemaName = getWorkspaceSchemaName(params.workspaceId);
+
     const rows = (await this.dataSource.query(
       `SELECT qi.id AS queue_item_id,
               qi.contact_id,
               qi.attempts,
-              contacts.phone,
+              COALESCE(
+                contacts.phone,
+                NULLIF(
+                  CONCAT(
+                    person."phonesPrimaryPhoneCallingCode",
+                    person."phonesPrimaryPhoneNumber"
+                  ),
+                  ''
+                )
+              ) AS phone,
               contacts.dnc_status
          FROM queue_items qi
          JOIN call_queues cq ON cq.id = qi.queue_id
-         JOIN contacts
+         LEFT JOIN contacts
            ON contacts.id::text = qi.contact_id
           AND contacts.workspace_id::text = cq.workspace_id
+         LEFT JOIN "${workspaceSchemaName}"."person" person
+           ON person.id::text = qi.contact_id
+          AND person."deletedAt" IS NULL
         WHERE qi.queue_id = $1
           AND cq.workspace_id = $2
           AND qi.status IN ('calling', 'pending')
