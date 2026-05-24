@@ -136,6 +136,10 @@ export class DialerCallStartService {
               workspaceId: params.workspaceId,
               queueId: this.requireString(inputQueueId, 'queueId'),
               requestedFanout,
+              fallbackPhonesByContactId: this.buildTargetPhoneFallbacks(
+                params.input.contactIds,
+                params.input.targetPhones,
+              ),
             });
 
       const uniqueTargets = this.dedupeTargetsByPhone(targets);
@@ -417,6 +421,7 @@ export class DialerCallStartService {
     workspaceId: string;
     queueId: string;
     requestedFanout: number;
+    fallbackPhonesByContactId?: Map<string, string>;
   }): Promise<CallableTarget[]> {
     const workspaceSchemaName = getWorkspaceSchemaName(params.workspaceId);
 
@@ -465,7 +470,11 @@ export class DialerCallStartService {
         continue;
       }
 
-      const phone = this.tryReadValidPhoneNumber(row.phone);
+      const phone =
+        this.tryReadValidPhoneNumber(row.phone) ??
+        this.tryReadValidPhoneNumber(
+          params.fallbackPhonesByContactId?.get(row.contact_id),
+        );
 
       if (!phone) {
         continue;
@@ -479,6 +488,27 @@ export class DialerCallStartService {
     }
 
     return targets;
+  }
+
+  private buildTargetPhoneFallbacks(
+    contactIds: string[] | null | undefined,
+    targetPhones: string[] | null | undefined,
+  ): Map<string, string> {
+    const fallbackPhonesByContactId = new Map<string, string>();
+
+    if (!contactIds || !targetPhones) {
+      return fallbackPhonesByContactId;
+    }
+
+    for (const [index, contactId] of contactIds.entries()) {
+      const targetPhone = targetPhones[index];
+
+      if (contactId && targetPhone) {
+        fallbackPhonesByContactId.set(contactId, targetPhone);
+      }
+    }
+
+    return fallbackPhonesByContactId;
   }
 
   private dedupeTargetsByPhone(targets: CallableTarget[]): CallableTarget[] {
