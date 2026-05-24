@@ -88,6 +88,30 @@ function estimateTokens(value: unknown): number {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
   return Math.max(1, Math.ceil(text.length / 4));
 }
+
+function cleanText(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function commandDetail(command: unknown): string {
+  if (!Array.isArray(command)) return '';
+  return command.map((part) => String(part)).join(' ').slice(0, 120);
+}
+
+function stepDetail(args: unknown): string {
+  const input = typeof args === 'object' && args !== null && !Array.isArray(args) ? args as Record<string, unknown> : {};
+  const candidates = [
+    input.path,
+    input.pattern ? 'pattern=' + input.pattern : '',
+    input.query ? 'query=' + input.query : '',
+    input.keyword ? 'keyword=' + input.keyword : '',
+    input.operation,
+    input.pr ? 'pr #' + input.pr : '',
+    input.repo,
+    commandDetail(input.command),
+  ];
+  return cleanText(candidates.find((value) => cleanText(value)) || '').slice(0, 120);
+}
 async function runStep(
   step: BatchStep,
   previous: ToolResult<unknown> | null,
@@ -110,5 +134,7 @@ async function runStep(
     inputTokens,
     outputTokens,
     totalTokens: inputTokens + outputTokens,
+    detail: stepDetail(args),
+    changed: getToolManifestEntry(step.tool)?.capabilities.mutating === true,
   };
 }
