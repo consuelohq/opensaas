@@ -1,5 +1,9 @@
 # decision process
 
+## decision log: Consuelo app files and cloud artifact alignment
+
+2026-05-24: after task 11, the next OS slice is `consuelo-workspace-snapshot` plus a files/artifacts facade. The source of truth is the Consuelo app and its existing Postgres/S3-backed Files and Attachments surfaces. The OS should first read app-native objects and return stable object refs for People, Companies, Lists, Calls, Files, Attachments, Tasks, Notes, Workflows, Workflow Runs, Dashboards, and artifacts. Cloud artifact work should map OS outputs into app-native File/Attachment/Artifact records backed by existing S3-compatible storage. Mirage remains a future optional VFS evaluation layer after this app-native contract is stable; it is not the first backend or source of truth.
+
 ## mandatory workspace app transport
 
 you are working inside the workspace mcp app. the app exposes exactly two tools:

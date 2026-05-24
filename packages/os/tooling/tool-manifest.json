@@ -32,6 +32,47 @@
     }
   },
   {
+    "name": "consuelo-workspace-snapshot",
+    "title": "Consuelo Workspace Snapshot",
+    "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
+    "permission": "read",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredEnv": [
+      "CONSUELO_GRAPHQL_URL",
+      "CONSUELO_INTERNAL_GRAPHQL_API_KEY"
+    ],
+    "requiredIntegrations": [
+      "workspace-graphql",
+      "consuelo-app"
+    ],
+    "implementation": {
+      "script": "scripts/workspace/consuelo-workspace-snapshot.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "status",
+        "snapshot",
+        "objectRefs",
+        "nextActions"
+      ]
+    }
+  },
+  {
     "name": "consuelo-design",
     "title": "Consuelo Design",
     "description": "Top-level orchestration skill for Consuelo Design artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",

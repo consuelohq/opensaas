@@ -17,5 +17,5 @@ The key must be provided through local/server environment only.
 
 The OS should model files as workspace files, reports, outputs, and artifacts.
 
-Local filesystem is the first backend. S3 storage is a future backend. Skills should return artifact descriptors so the storage backend can change without changing the agent contract.
+Local filesystem is the first OS artifact backend. Consuelo app Files and Attachments are the cloud/app source of truth, backed by the existing S3-compatible storage paths. The first workspace snapshot skill is read-only and returns file/attachment refs; a later cloud artifact adapter should create app-native file/artifact records with approval where needed. Mirage is future optional VFS evaluation over this app-native contract, not the first backend.
 
