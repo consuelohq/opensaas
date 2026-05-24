@@ -748,8 +748,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "task:cleanup",
-      "branchMode": "optional",
-      "branchArgumentStyle": "flag",
+      "branchMode": "none",
       "arguments": [
         {
           "source": "branch",
@@ -781,14 +780,15 @@
           "flag": "--keep",
           "kind": "value"
         }
-      ]
+      ],
+      "jsonFlag": "--json"
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "preview": true,
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": false
   },
   {
     "name": "task.exec",
@@ -1639,7 +1639,7 @@
     "command": {
       "script": "review",
       "branchMode": "required",
-      "jsonFlag": "--json",
+      "jsonFlag": "--summary-json",
       "arguments": [
         {
           "source": "fix",
@@ -1958,6 +1958,11 @@
         },
         {
           "source": "rawArgs",
+          "flag": "--raw-arg",
+          "kind": "array"
+        },
+        {
+          "source": "args",
           "flag": "--raw-arg",
           "kind": "array"
         },
@@ -4873,7 +4878,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "code-run",
-      "branchMode": "optional",
+      "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {

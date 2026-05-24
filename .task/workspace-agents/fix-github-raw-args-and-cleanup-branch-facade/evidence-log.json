@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+  "events": [
+    {
+      "id": "5ae9c296-a9bb-4b88-8cae-44a13af16225",
+      "occurred_at": "2026-05-23T22:34:59.215Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "577c2364-3989-43a4-996f-1bb720686616",
+      "occurred_at": "2026-05-23T22:35:15.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "567913f9-4335-476a-9ba4-02556cbd0ec6",
+      "occurred_at": "2026-05-23T22:35:24.436Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "b8c9a9d4-c31f-45b4-8a51-c1f1679c83ed",
+      "occurred_at": "2026-05-23T22:35:46.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "9b198fac-6976-498d-bbae-50e75d084230",
+      "occurred_at": "2026-05-23T22:35:59.239Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "b4053f7d-5709-4b99-8471-de73c02029da",
+      "occurred_at": "2026-05-23T22:36:05.816Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    },
+    {
+      "id": "62c8e2e7-cd40-4cf5-a90d-00c7ae051172",
+      "occurred_at": "2026-05-23T22:38:20.120Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T22:38:20.170Z"
+}

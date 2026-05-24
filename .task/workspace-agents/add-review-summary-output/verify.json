@@ -1,0 +1,26 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-review-summary-output",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "19eaf8135641e01c9005adcd1d48b02a88d5a37d",
+  "changeHash": "c9f1377cdf48e76bdd5f09776935a1d832c4e8b7e584850d1f1e999dc280622b",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/ai-review.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T21:13:22.819Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
