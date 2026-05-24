@@ -35,6 +35,8 @@ type NestedOperation = {
   inputTokens?: number;
   outputTokens?: number;
   totalTokens?: number;
+  detail?: string;
+  changed?: boolean;
 };
 
 const defaultTraceDb = join(
@@ -363,6 +365,8 @@ function nestedOperationFromResult(result: unknown, toolFallback: string): Neste
     inputTokens: numericValue(result.inputTokens ?? result.input_tokens, 0),
     outputTokens: numericValue(result.outputTokens ?? result.output_tokens, 0),
     totalTokens: numericValue(result.totalTokens ?? result.total_tokens, 0),
+    detail: cleanText(result.detail),
+    changed: result.changed === true,
   };
 }
 
@@ -403,8 +407,10 @@ function renderNestedOperation(args: Args, operation: NestedOperation): string {
   const tool = c(args, '36', operation.tool.padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', operation.code || 'OK') : c(args, '33', operation.code || 'ERR');
   const tokens = fmtTokenCount(operation.totalTokens).padStart(10);
-  const detail = cleanText(operation.helper || operation.message || '').slice(0, 100);
-  const suffix = detail ? ` ${c(args, '2', '|')} ${c(args, '2', detail)}` : '';
+  const marker = operation.changed ? c(args, '33', 'changed') : '';
+  const detail = cleanText(operation.detail || operation.helper || operation.message || '').slice(0, 120);
+  const suffixParts = [marker, detail ? c(args, '2', detail) : ''].filter(Boolean);
+  const suffix = suffixParts.length ? ` ${c(args, '2', '|')} ${suffixParts.join(c(args, '2', ' | '))}` : '';
   return `${c(args, '2', '          ↳')} ${icon} ${tool} ${fmtDuration(operation.durationMs).padStart(7)} ${tokens} ${code}${suffix}`;
 }
 
@@ -540,3 +546,4 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
+
