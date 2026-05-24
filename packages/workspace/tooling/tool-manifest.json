@@ -536,9 +536,14 @@
           "kind": "array"
         },
         {
-          "source": "noVerify",
-          "flag": "--no-verify",
+          "source": "dangerous",
+          "flag": "--dangerous",
           "kind": "boolean"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -1639,7 +1644,7 @@
     "command": {
       "script": "review",
       "branchMode": "required",
-      "jsonFlag": "--summary-json",
+      "jsonFlag": "--json",
       "arguments": [
         {
           "source": "fix",
@@ -1705,21 +1710,6 @@
           "source": "base",
           "flag": "--base",
           "kind": "value"
-        },
-        {
-          "source": "noReview",
-          "flag": "--no-review",
-          "kind": "boolean"
-        },
-        {
-          "source": "noDb",
-          "flag": "--no-db",
-          "kind": "boolean"
-        },
-        {
-          "source": "dbWarnOnly",
-          "flag": "--db-warn-only",
-          "kind": "boolean"
         },
         {
           "source": "noStamp",
@@ -4377,6 +4367,33 @@
       "status"
     ],
     "description": "show compact workspace status",
+    "category": "utilities",
+    "underlying": "workspace status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": []
+    },
+    "exampleInput": {},
+    "sessionRequired": false
+  },
+  {
+    "name": "git.status",
+    "methodPath": [
+      "git",
+      "status"
+    ],
+    "description": "alias for status; use status directly in new code",
     "category": "utilities",
     "underlying": "workspace status",
     "capabilities": {

@@ -37,7 +37,7 @@ const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
 const { assertWorkpadReady, syncFilesChanged } = require('./lib/task-workpad');
 
-const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify', '--ack-workpad-incomplete']);
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--dangerous', '--ack-workpad-incomplete']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -60,8 +60,9 @@ function printHelp() {
   writeStdout('  --pr <number>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
-  writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
-  writeStdout('  --no-verify            visibly bypass the verify stamp check');
+  writeStdout('  --verify               require a matching publish-valid verify stamp (default)');
+  writeStdout('  --dangerous            Ko-approved bypass for invalid/missing verify stamp; requires --reason');
+  writeStdout('  --reason <text>        required explanation when using --dangerous');
   writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
@@ -74,6 +75,7 @@ function parseArgs(argv) {
     json: false,
     changed: false,
     verify: true,
+    dangerous: false,
   };
 
   let index = 0;
@@ -134,8 +136,11 @@ function parseArgs(argv) {
       case '--verify':
         args.verify = true;
         break;
-      case '--no-verify':
-        args.verify = false;
+      case '--dangerous':
+        args.dangerous = true;
+        break;
+      case '--reason':
+        args.reason = value;
         break;
       case '--ack-workpad-incomplete':
         args.ackWorkpadIncomplete = true;
@@ -387,17 +392,21 @@ async function main() {
 
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
 
-  if (args.verify) {
-    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
-    if (verifyMismatch) {
+  const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
+  if (verifyMismatch) {
+    if (!args.dangerous) {
       throw new Error(
-        `verify required before task:push: ${verifyMismatch}.\n` +
+        `publish-valid verify required before task:push: ${verifyMismatch}.\n` +
         'run: bun run verify\n' +
-        'or explicitly bypass with: bun run task:push -- --no-verify --message "fix(area): summary" --changed',
+        'dangerous bypass requires explicit Ko approval: bun run task:push -- --dangerous --reason "Ko approved: ..." --message "fix(area): summary" --changed',
       );
     }
-  } else {
-    writeStderr('warning: task:push bypassing verify because --no-verify was provided');
+    if (!args.reason || args.reason.trim().length < 12) {
+      throw new Error('dangerous task:push requires --reason with explicit Ko approval context');
+    }
+    writeStderr(`DANGEROUS PUSH BYPASS USED: ${args.reason}`);
+  } else if (args.dangerous) {
+    writeStderr('warning: --dangerous provided but verify stamp is publish-valid; bypass not needed');
   }
 
   if (args.changed) {
@@ -548,6 +557,8 @@ async function main() {
     branch,
     sha: commit.sha,
     message: args.message,
+    dangerous: Boolean(args.dangerous && verifyMismatch),
+    dangerousReason: args.dangerous && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
   };
 

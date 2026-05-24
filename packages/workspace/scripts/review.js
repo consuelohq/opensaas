@@ -15,6 +15,7 @@ function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
 const FINDING_JSON_SAMPLE_LIMIT = 20;
+const FINDING_MESSAGE_PREVIEW_LIMIT = 500;
 
 function printHelp() {
   const lines = [
@@ -627,14 +628,23 @@ function findingId(owner, index) {
   return `${prefix}_finding_${String(index + 1).padStart(4, '0')}`;
 }
 
+function previewText(value, limit = FINDING_MESSAGE_PREVIEW_LIMIT) {
+  const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
+  return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
 function compactFinding(finding, index, owner) {
+  const fullMessage = finding.msg || '';
+  const message = previewText(fullMessage);
   return {
     id: findingId(owner, index),
     owner,
     rule: finding.rule || 'UNKNOWN',
     file: finding.file || '',
     line: finding.line || 0,
-    message: finding.msg || '',
+    message,
+    messageChars: String(fullMessage).length,
+    messageTruncated: message !== String(fullMessage || ''),
   };
 }
 

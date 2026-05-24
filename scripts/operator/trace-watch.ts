@@ -13,6 +13,7 @@ type Args = {
   tool?: string;
   errors: boolean;
   json: boolean;
+  rawJson: boolean;
   color: boolean;
   once: boolean;
   help: boolean;
@@ -41,7 +42,8 @@ Options:
   --since <duration>     Start from recent history: 5m, 1h, 24h.
   --limit <n>            Print recent rows before watching. Default: 0.
   --interval <ms>        Poll interval. Default: 1000.
-  --json                 Output JSON lines.
+  --json                 Output compact JSON lines.
+  --raw-json             Output raw database rows including full result_json/stderr.
   --once                 Print matching rows once and exit.
   --no-color             Disable colors.
   --help                 Show help.
@@ -54,13 +56,14 @@ Examples:
 `;
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { errors: false, json: false, color: process.stdout.isTTY, once: false, help: false, limit: 0, interval: 1000 };
+  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, limit: 0, interval: 1000 };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => argv[++i] || '';
     if (arg === '--help' || arg === '-h') args.help = true;
     else if (arg === '--errors') args.errors = true;
     else if (arg === '--json') args.json = true;
+    else if (arg === '--raw-json') { args.json = true; args.rawJson = true; }
     else if (arg === '--once') args.once = true;
     else if (arg === '--no-color') args.color = false;
     else if (arg === '--db') args.db = next();
@@ -126,7 +129,9 @@ function sqlFilters(args: Args): string {
   return filters.length ? ` AND ${filters.join(' AND ')}` : '';
 }
 
-function baseSelect(where: string, order: 'ASC' | 'DESC', limit?: number): string {
+function baseSelect(where: string, order: 'ASC' | 'DESC', limit?: number, raw = false): string {
+  const resultJson = raw ? 'result_json' : "substr(coalesce(result_json, ''), 1, 4000) AS result_json";
+  const stderr = raw ? 'stderr' : "substr(coalesce(stderr, ''), 1, 4000) AS stderr";
   return `
 SELECT
   rowid AS rownum,
@@ -146,8 +151,10 @@ SELECT
   total_tokens,
   input_json,
   resolved_input_json,
-  result_json,
-  stderr
+  ${resultJson},
+  length(coalesce(result_json, '')) AS result_json_chars,
+  ${stderr},
+  length(coalesce(stderr, '')) AS stderr_chars
 FROM tool_traces
 WHERE 1=1 ${where}
 ORDER BY rowid ${order}
@@ -206,6 +213,88 @@ function isJsonEnvelope(value: string): boolean {
   return text.startsWith('{\"level\":') || text.startsWith('{"level":') || text.includes('\"event\":\"tool.executed\"') || text.includes('"event":"tool.executed"');
 }
 
+function textSize(value: unknown): number {
+  return typeof value === 'string' ? value.length : 0;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function numericValue(value: unknown, fallback = 0): number {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function compactJsonValue(value: unknown, limit = 1200): unknown {
+  if (typeof value !== 'string') return value;
+  const cleaned = cleanText(value);
+  return cleaned.length > limit
+    ? { preview: cleaned.slice(0, limit), chars: value.length, truncated: true, omitted: cleaned.length - limit }
+    : cleaned;
+}
+
+function compactTraceRow(row: Row): Row {
+  const result = parseJson(row.result_json);
+  const stderr = cleanText(row.stderr);
+  return {
+    rownum: row.rownum,
+    record_id: row.record_id,
+    ts: row.ts,
+    trace_id: row.trace_id,
+    tool: row.tool,
+    task_session: row.task_session,
+    branch: row.branch,
+    worktree: row.worktree,
+    status: row.status,
+    code: row.code,
+    exit_code: row.exit_code,
+    duration_ms: row.duration_ms,
+    input_tokens: row.input_tokens,
+    output_tokens: row.output_tokens,
+    total_tokens: row.total_tokens,
+    input_json: compactJsonValue(row.input_json, 800),
+    resolved_input_json: compactJsonValue(row.resolved_input_json, 800),
+    result: summarizeResultForTrace(result),
+    result_json_chars: numericValue(row.result_json_chars, textSize(row.result_json)),
+    stderr: compactJsonValue(stderr, 1200),
+    stderr_chars: numericValue(row.stderr_chars, textSize(row.stderr)),
+  };
+}
+
+function summarizeResultForTrace(result: unknown): unknown {
+  if (!isRecord(result)) return result;
+  const data = isRecord(result.data) ? result.data : result;
+  const schema = data.schema || result.schema;
+  if (schema === 'review.summary.v1') {
+    return {
+      schema,
+      base: data.base,
+      branch: data.branch,
+      files: data.files,
+      affectedProjects: data.affectedProjects,
+      checksRun: data.checksRun,
+      summary: data.summary,
+      mustFixCount: Array.isArray(data.mustFix) ? data.mustFix.length : 0,
+      mustFix: Array.isArray(data.mustFix) ? data.mustFix.slice(0, 5) : [],
+      preExistingDigest: data.preExistingDigest ? {
+        total: data.preExistingDigest.total,
+        byRule: data.preExistingDigest.byRule,
+        byFile: data.preExistingDigest.byFile,
+        truncated: data.preExistingDigest.truncated,
+        omitted: data.preExistingDigest.omitted,
+        sampleCount: Array.isArray(data.preExistingDigest.sample) ? data.preExistingDigest.sample.length : 0,
+      } : undefined,
+      testSummary: data.testSummary,
+      fullEvidence: data.fullEvidence,
+    };
+  }
+  if ('ok' in result || 'code' in result || 'message' in result) {
+    return { ok: result.ok, code: result.code, message: result.message, exitCode: result.exitCode };
+  }
+  return compactJsonValue(JSON.stringify(result), 1200);
+}
+
 function compactSuccessDetail(row: Row): string {
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
   const result = parseJson(row.result_json) || {};
@@ -248,13 +337,13 @@ function divider(args: Args): string {
 function renderStartup(args: Args, db: string) {
   if (args.json) return;
   console.log(c(args, '2', `watching traces • ${db}`));
-  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json'));
+  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json, --raw-json'));
   console.log(divider(args));
 }
 
 function renderRow(args: Args, row: Row) {
   if (args.json) {
-    console.log(JSON.stringify(row));
+    console.log(JSON.stringify(args.rawJson ? row : compactTraceRow(row)));
     return;
   }
   const ok = String(row.status || '') === 'ok' && String(row.code || '') === 'OK' && Number(row.exit_code || 0) === 0;
@@ -290,7 +379,7 @@ async function main() {
   if (!args.once) renderStartup(args, db);
   let lastId = 0;
   if (args.limit > 0 || args.once) {
-    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50));
+    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50, args.rawJson));
     const rows = initial.rows.reverse();
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
@@ -306,7 +395,7 @@ async function main() {
 
   let lockedPolls = 0;
   while (true) {
-    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC', undefined, args.rawJson));
     if (result.locked) {
       lockedPolls += 1;
       if (!args.json && lockedPolls === 3) console.error(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
