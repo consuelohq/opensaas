@@ -219,8 +219,9 @@ function fmtTokenCount(value: unknown): string {
   return `${total} tokens`;
 }
 
-function fmtTokens(row: Row): string {
-  return fmtTokenCount(row.total_tokens);
+function fmtTokens(row: Row, nested?: NestedOperation[]): string {
+  const nestedTotal = nested?.reduce((sum, operation) => sum + Number(operation.totalTokens || 0), 0) || 0;
+  return fmtTokenCount(nestedTotal > 0 ? nestedTotal : row.total_tokens);
 }
 
 function shortBranch(row: Row): string {
@@ -473,8 +474,9 @@ function renderRow(args: Args, row: Row) {
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', String(row.tool || 'unknown').padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', String(row.code || 'OK')) : c(args, '33', String(row.code || row.status || 'ERR'));
+  const nested = args.nested ? enrichNestedOperationsWithTraceTokens(args, nestedOperationsForRow(row)) : [];
   const time = fmtTraceTime(row.ts);
-  const tokens = fmtTokens(row).padStart(12);
+  const tokens = fmtTokens(row, nested).padStart(12);
   const branch = c(args, branchColor(row), shortBranch(row));
   const first = ok
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
@@ -484,7 +486,6 @@ function renderRow(args: Args, row: Row) {
   else console.log(first);
   if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
   if (args.nested) {
-    const nested = enrichNestedOperationsWithTraceTokens(args, nestedOperationsForRow(row));
     const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
     for (const operation of visibleNested) console.log(renderNestedOperation(args, operation));
     if (args.nestedLimit !== undefined && nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
