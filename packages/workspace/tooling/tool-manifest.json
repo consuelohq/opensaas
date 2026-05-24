@@ -536,9 +536,14 @@
           "kind": "array"
         },
         {
-          "source": "noVerify",
-          "flag": "--no-verify",
+          "source": "dangerous",
+          "flag": "--dangerous",
           "kind": "boolean"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -1705,21 +1710,6 @@
           "source": "base",
           "flag": "--base",
           "kind": "value"
-        },
-        {
-          "source": "noReview",
-          "flag": "--no-review",
-          "kind": "boolean"
-        },
-        {
-          "source": "noDb",
-          "flag": "--no-db",
-          "kind": "boolean"
-        },
-        {
-          "source": "dbWarnOnly",
-          "flag": "--db-warn-only",
-          "kind": "boolean"
         },
         {
           "source": "noStamp",

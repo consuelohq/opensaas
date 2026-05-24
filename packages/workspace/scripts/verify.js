@@ -31,9 +31,9 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
-  writeStdout('  --no-review           skip bun run review and only run verify guardrails');
-  writeStdout('  --no-db               skip db/migration/graphql guardrails');
-  writeStdout('  --db-warn-only        report db guard errors as warnings');
+  writeStdout('  --debug-skip-review   debug only: skip review; never writes publish-valid stamp');
+  writeStdout('  --debug-skip-db       debug only: skip db guardrails; never writes publish-valid stamp');
+  writeStdout('  --db-warn-only        debug only: report db guard errors as warnings; never publish-valid');
   writeStdout('  --no-stamp            do not write .task/verify.json');
   writeStdout('  --review-arg <value>  pass one extra argument to bun run review; repeatable');
   writeStdout('  --json                output structured json');
@@ -60,12 +60,26 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
+    const knownFlags = [
+      '--base',
+      '--db-warn-only',
+      '--debug-skip-db',
+      '--debug-skip-review',
+      '--help',
+      '--json',
+      '--no-stamp',
+      '--quiet',
+      '--review-arg',
+    ];
+    if (!knownFlags.includes(flag)) {
+      throw new Error(`unknown flag: ${flag}`);
+    }
     const isBooleanFlag = [
       '--db-warn-only',
       '--help',
       '--json',
-      '--no-db',
-      '--no-review',
+      '--debug-skip-db',
+      '--debug-skip-review',
       '--no-stamp',
       '--quiet',
     ].includes(flag);
@@ -87,10 +101,10 @@ function parseArgs(argv) {
       case '--review-arg':
         args.reviewArgs.push(value);
         break;
-      case '--no-review':
+      case '--debug-skip-review':
         args.review = false;
         break;
-      case '--no-db':
+      case '--debug-skip-db':
         args.db = false;
         break;
       case '--db-warn-only':
@@ -241,6 +255,16 @@ function countFailedTests(value) {
   return value.filter((testResult) => !testResult.passed).length;
 }
 
+function countReviewIssues(data) {
+  if (!data) return 1;
+  if (data.summary && typeof data.summary.blockingIssues === 'number') {
+    return data.summary.blockingIssues;
+  }
+  return countFindings(data.yours)
+    + countFindings(data.preExisting)
+    + countFailedTests(data.testResults);
+}
+
 function parseReviewJson(stdout) {
   const start = stdout.indexOf('{');
   const end = stdout.lastIndexOf('}');
@@ -276,11 +300,7 @@ function runReview(repoRoot, base, args) {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const data = parseReviewJson(result.stdout || '');
-  const reviewIssueCount = data
-    ? countFindings(data.yours)
-      + countFindings(data.preExisting)
-      + countFailedTests(data.testResults)
-    : 1;
+  const reviewIssueCount = countReviewIssues(data);
 
   return {
     skipped: false,
@@ -300,6 +320,7 @@ function createDbResult(files, args) {
       risks: [],
       groupedRisks: {},
       findings: [],
+      warnOnly: false,
     };
   }
 
@@ -311,6 +332,7 @@ function createDbResult(files, args) {
     risks: analysis.risks,
     groupedRisks: analysis.groupedRisks,
     findings: analysis.findings,
+    warnOnly: args.dbWarnOnly,
   };
 }
 
@@ -375,31 +397,36 @@ async function main() {
   const review = runReview(repoRoot, base, args);
   const db = createDbResult(files, args);
   const passed = review.passed && db.passed;
+  const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';
+  const publishValid = passed && mode === 'full';
   const verificationState = computeVerificationState(repoRoot, branch);
   let stampPath = null;
+  const stamp = {
+    result: passed ? 'pass' : 'fail',
+    publishValid,
+    mode,
+    branch,
+    base,
+    headSha,
+    changeHash: verificationState.changeHash,
+    changedFiles: files,
+    verifiedAt: new Date().toISOString(),
+    review: {
+      skipped: review.skipped,
+      passed: review.passed,
+      status: review.status,
+    },
+    db: {
+      skipped: db.skipped,
+      passed: db.passed,
+      warnOnly: db.warnOnly,
+      risks: db.risks,
+      findings: db.findings,
+    },
+    commandVersion: 2,
+  };
 
-  if (passed && args.stamp && taskMeta) {
-    const stamp = {
-      result: 'pass',
-      branch,
-      base,
-      headSha,
-      changeHash: verificationState.changeHash,
-      changedFiles: files,
-      verifiedAt: new Date().toISOString(),
-      review: {
-        skipped: review.skipped,
-        passed: review.passed,
-      },
-      db: {
-        skipped: db.skipped,
-        passed: db.passed,
-        risks: db.risks,
-        findings: db.findings,
-      },
-      commandVersion: 1,
-    };
-
+  if (publishValid && args.stamp && taskMeta) {
     stampPath = writeVerifyStamp(repoRoot, stamp);
   }
 
@@ -413,6 +440,9 @@ async function main() {
     review,
     db,
     passed,
+    publishValid,
+    mode,
+    stamp,
     stampPath,
   };
 
@@ -422,6 +452,8 @@ async function main() {
       base: result.base,
       headSha: result.headSha,
       files: result.files,
+      mode: result.mode,
+      publishValid: result.publishValid,
       review: {
         skipped: result.review.skipped,
         passed: result.review.passed,
@@ -433,6 +465,11 @@ async function main() {
       },
       db: result.db,
       passed: result.passed,
+      stamp: {
+        written: Boolean(result.stampPath),
+        path: result.stampPath,
+        publishValid: result.publishValid,
+      },
       stampPath: result.stampPath,
     }, null, 2));
   } else {
