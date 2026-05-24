@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/ship-queue-person-phone-fallback",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 554,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/554",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/554",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/554/ship-queue-person-phone-fallback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/554",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/554/ship-queue-person-phone-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-person-phone-fallback",
+  "taskSession": "tsk_4530797e9792",
+  "tmuxSession": "opensaas-dialer-ship-queue-person-phone-fallback-4530797e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-person-phone-fallback/.task/dialer/ship-queue-person-phone-fallback/session.json",
+  "createdAt": "2026-05-24T01:41:46.888Z"
+}

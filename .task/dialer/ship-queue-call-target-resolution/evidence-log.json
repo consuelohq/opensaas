@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/ship-queue-call-target-resolution",
+  "events": [
+    {
+      "id": "c4249f74-7d18-4f76-9607-6eeb89272eb7",
+      "occurred_at": "2026-05-24T00:43:43.960Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-queue-call-target-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-queue-call-target-resolution"
+      }
+    },
+    {
+      "id": "34e1ce06-4714-4d86-8763-d70693ee3cf3",
+      "occurred_at": "2026-05-24T00:44:08.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-queue-call-target-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-queue-call-target-resolution"
+      }
+    },
+    {
+      "id": "538ff13b-b92b-4822-9444-6b8d7384e9e6",
+      "occurred_at": "2026-05-24T00:44:16.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/graphql/mutations/startDialerCall.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-queue-call-target-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-queue-call-target-resolution"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T00:44:16.092Z"
+}
