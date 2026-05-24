@@ -320,8 +320,8 @@ function buildSnapshot(data: Record<string, unknown>, input: { workspaceId?: str
 }
 
 export async function fetchConsueloWorkspaceSnapshot(options: GraphQLRequestOptions = {}): Promise<WorkspaceSnapshot> {
-  const url = process.env.CONSUELO_GRAPHQL_URL;
-  const apiKey = process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY;
+  const url = (process.env.CONSUELO_APP_GRAPHQL_URL ?? process.env.CONSUELO_GRAPHQL_URL);
+  const apiKey = (process.env.CONSUELO_APP_GRAPHQL_API_KEY ?? process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY);
   const workspaceId = options.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
   const userId = options.userId ?? process.env.CONSUELO_USER_ID;
   const urlHost = url ? getUrlHost(url) : undefined;

@@ -5,8 +5,15 @@ Do not include real secret values in this file.
 | Variable / Capability | Required now? | Used by | Secret? |
 | --- | --- | --- | --- |
 | Server/App runtime | Yes | OS portal, Bun skills | No |
-| `CONSUELO_GRAPHQL_URL` | Yes | GraphQL proof, workspace data skills | No |
-| `CONSUELO_INTERNAL_GRAPHQL_API_KEY` | Yes | GraphQL proof, workspace data skills | Yes |
+| `CONSUELO_APP_GRAPHQL_URL` | Yes | App object reads: snapshot, reporting source data | No |
+| `CONSUELO_APP_GRAPHQL_API_KEY` | Yes | App object reads: snapshot, reporting source data | Yes |
+| `CONSUELO_GRAPHQL_URL` | Backcompat | Legacy alias for app GraphQL URL | No |
+| `CONSUELO_INTERNAL_GRAPHQL_API_KEY` | Backcompat | Legacy alias for app GraphQL key | Yes |
+| `CONSUELO_APP_API_URL` | No | App Files API cloud artifact publishing | No |
+| `CONSUELO_APP_API_KEY` | No | App Files API cloud artifact publishing | Yes |
+| `CONSUELO_APP_URL` | No | App-visible file URL construction | No |
+| `CONSUELO_OS_API_URL` | Future | Hosted OS control plane | No |
+| `CONSUELO_OS_API_KEY` | Future | Hosted OS control plane | Yes |
 | `CONSUELO_WORKSPACE_SNAPSHOT_QUERY` | No | Schema-specific workspace snapshot override | No |
 | Postgres | No | Direct admin/data workflows | Yes |
 | Redis | No | Cache, queue, feature flag workflows | Yes |
@@ -24,4 +31,4 @@ Do not include real secret values in this file.
 | Meta Ads | No | Ads review skills | Yes |
 | Google Ads | No | Ads review skills | Yes |
 
-The first scaffold uses only GraphQL proof env. Other capabilities are documented so future scripts can declare runtime requirements and expose safe agent-facing metadata in the manifest.
+GraphQL and app Files API are separate capabilities: GraphQL reads structured app objects, while the app Files API publishes app-visible artifacts through upload URLs and file records. The future Consuelo OS API is a separate control-plane capability.

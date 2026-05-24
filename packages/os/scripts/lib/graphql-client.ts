@@ -39,8 +39,8 @@ function classifyGraphQLErrors(response: GraphQLResponse): GraphQLProofResult['s
 }
 
 export async function proveGraphQLConnectivity(): Promise<GraphQLProofResult> {
-  const url = process.env.CONSUELO_GRAPHQL_URL;
-  const apiKey = process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY;
+  const url = (process.env.CONSUELO_APP_GRAPHQL_URL ?? process.env.CONSUELO_GRAPHQL_URL);
+  const apiKey = (process.env.CONSUELO_APP_GRAPHQL_API_KEY ?? process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY);
   const hasApiKey = Boolean(apiKey);
 
   if (!url || !apiKey) {

@@ -79,3 +79,8 @@ Capabilities: `CONSUELO_GRAPHQL_URL`, `CONSUELO_INTERNAL_GRAPHQL_API_KEY`, optio
 Failure modes: `MISSING_CAPABILITY`, `AUTH_FAILED`, `SCHEMA_GAP`, and `QUERY_FAILED`.
 
 Guardrail: read-only. No uploads, app writes, S3 writes, file attach/detach, or Mirage dependency in this first slice.
+
+
+### app-visible cloud artifacts
+
+Skills that produce artifacts should continue creating local artifacts first. When app-visible publishing is requested and `consuelo-app-files-api` is configured, skills can call the cloud artifact adapter to publish the artifact through the Consuelo app Files API. This is separate from GraphQL snapshot reads and should be approval-gated by the calling skill when the output will be customer-facing or attached to business records.

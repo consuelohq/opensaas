@@ -127,3 +127,8 @@ bun run server -- stop
 ## Current boundary
 
 This is runtime foundation work. The scaffold intentionally includes one skill and docs for the shape future skills should follow. Docker, S3 storage, approval delivery, and hosted deployment hardening are separate tasks.
+
+
+### App files cloud artifact capability
+
+Set `CONSUELO_APP_API_URL` and `CONSUELO_APP_API_KEY` to enable app-visible artifact publishing through Consuelo Files/S3. This capability is separate from app GraphQL reads. Existing `CONSUELO_GRAPHQL_URL` env remains a compatibility fallback for object reads; prefer `CONSUELO_APP_GRAPHQL_URL` for new setups.

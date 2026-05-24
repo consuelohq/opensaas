@@ -1,5 +1,9 @@
 # decision process
 
+## decision log: Consuelo app GraphQL, Files API, and future OS API boundary
+
+2026-05-24: cloud artifacts should use the Consuelo app Files REST API, not the workspace GraphQL capability. Consuelo app GraphQL reads structured app objects for skills such as `consuelo-workspace-snapshot`; Consuelo app Files API publishes app-visible artifacts through upload URL, S3 PUT, file record creation, optional supported attachment, and file lookup/download URL. `CONSUELO_APP_GRAPHQL_URL` / `CONSUELO_APP_GRAPHQL_API_KEY` are the preferred names for app object reads, with fallback to the older `CONSUELO_GRAPHQL_URL` / `CONSUELO_INTERNAL_GRAPHQL_API_KEY` while the stream settles. `CONSUELO_APP_API_URL` / `CONSUELO_APP_API_KEY` are required for file publishing. A future `CONSUELO_OS_API_URL` / `CONSUELO_OS_API_KEY` may represent the hosted OS control plane, but it is separate from both app GraphQL and app Files API.
+
 ## decision log: Consuelo app files and cloud artifact alignment
 
 2026-05-24: after task 11, the next OS slice is `consuelo-workspace-snapshot` plus a files/artifacts facade. The source of truth is the Consuelo app and its existing Postgres/S3-backed Files and Attachments surfaces. The OS should first read app-native objects and return stable object refs for People, Companies, Lists, Calls, Files, Attachments, Tasks, Notes, Workflows, Workflow Runs, Dashboards, and artifacts. Cloud artifact work should map OS outputs into app-native File/Attachment/Artifact records backed by existing S3-compatible storage. Mirage remains a future optional VFS evaluation layer after this app-native contract is stable; it is not the first backend or source of truth.

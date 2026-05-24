@@ -27,6 +27,9 @@ export type CapabilityId =
   | 'artifact-storage'
   | 'skills'
   | 'workspace-graphql'
+  | 'consuelo-app-graphql'
+  | 'consuelo-app-files-api'
+  | 'consuelo-os-api'
   | 'agent-connections'
   | 'local-guardrails';
 
@@ -170,8 +173,12 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
         ),
   );
 
-  const graphqlUrl = process.env.CONSUELO_GRAPHQL_URL;
-  const graphqlKey = process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY;
+  const graphqlUrl = process.env.CONSUELO_APP_GRAPHQL_URL ?? process.env.CONSUELO_GRAPHQL_URL;
+  const graphqlKey = process.env.CONSUELO_APP_GRAPHQL_API_KEY ?? process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY;
+  const appFilesUrl = process.env.CONSUELO_APP_API_URL;
+  const appFilesKey = process.env.CONSUELO_APP_API_KEY;
+  const osApiUrl = process.env.CONSUELO_OS_API_URL;
+  const osApiKey = process.env.CONSUELO_OS_API_KEY;
   checks.push(
     graphqlUrl && graphqlKey
       ? connected(
@@ -183,6 +190,45 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
           'workspace-graphql',
           'Workspace GraphQL',
           'Workspace GraphQL capability is not configured',
+        ),
+  );
+  checks.push(
+    graphqlUrl && graphqlKey
+      ? connected(
+          'consuelo-app-graphql',
+          'Consuelo app GraphQL',
+          new URL(graphqlUrl).host,
+        )
+      : notConfigured(
+          'consuelo-app-graphql',
+          'Consuelo app GraphQL',
+          'Consuelo app GraphQL capability is not configured',
+        ),
+  );
+  checks.push(
+    appFilesUrl && appFilesKey
+      ? connected(
+          'consuelo-app-files-api',
+          'Consuelo app Files API',
+          new URL(appFilesUrl).host,
+        )
+      : notConfigured(
+          'consuelo-app-files-api',
+          'Consuelo app Files API',
+          'Consuelo app Files API capability is not configured',
+        ),
+  );
+  checks.push(
+    osApiUrl && osApiKey
+      ? connected(
+          'consuelo-os-api',
+          'Consuelo OS API',
+          new URL(osApiUrl).host,
+        )
+      : notConfigured(
+          'consuelo-os-api',
+          'Consuelo OS API',
+          'Future hosted OS control plane is not configured',
         ),
   );
 
