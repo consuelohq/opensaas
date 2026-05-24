@@ -32,6 +32,20 @@ export type ArtifactDescriptor = {
   path?: string;
   localPath?: string;
   url?: string;
+  appUrl?: string;
+  downloadUrl?: string;
+  appFileId?: string;
+  appAttachmentId?: string;
+  storageKey?: string;
+  cloud?: {
+    provider: 'consuelo-app-files';
+    fileId?: string;
+    attachmentId?: string;
+    storageKey?: string;
+    appUrl?: string;
+    downloadUrl?: string;
+    workspaceId?: string;
+  };
   type?: string;
   format?: string;
   status?: string;
