@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+  "events": [
+    {
+      "id": "3d1b2c09-5650-44bc-8d67-6fbc2d8429cc",
+      "occurred_at": "2026-05-24T07:04:54.352Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    },
+    {
+      "id": "cd7c0e06-2bec-4174-aadd-783f89569b23",
+      "occurred_at": "2026-05-24T07:04:54.654Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    },
+    {
+      "id": "6baa4949-906b-4366-8e98-69421e0f5d20",
+      "occurred_at": "2026-05-24T07:04:54.952Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    },
+    {
+      "id": "a1f4800d-70ea-4201-9ebf-919a363685d7",
+      "occurred_at": "2026-05-24T07:05:21.158Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    },
+    {
+      "id": "8dba5452-739e-4f49-bba9-bb4a05fc94f1",
+      "occurred_at": "2026-05-24T07:05:44.204Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    },
+    {
+      "id": "e9a3c068-53f5-4baa-baf8-f86f15c93490",
+      "occurred_at": "2026-05-24T07:05:55.999Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/label-task-pr-output-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/label-task-pr-output-links"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T07:05:56.049Z"
+}
