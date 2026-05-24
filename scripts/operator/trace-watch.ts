@@ -367,7 +367,7 @@ function codeRunOperations(row: Row): NestedOperation[] {
 
 function batchOperations(row: Row): NestedOperation[] {
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
-  const steps = isRecord(input) ? asArray(input.steps) : [];
+  const steps = Array.isArray(input) ? input : isRecord(input) ? asArray(input.steps) : [];
   const extracted = parseJson(row.batch_results_json);
   const result = parseJson(row.result_json);
   const results = asArray(extracted ?? (isRecord(result) && isRecord(result.data) ? result.data.results : undefined) ?? (isRecord(result) && isRecord(result.data) && isRecord(result.data.data) ? result.data.data.results : undefined));
