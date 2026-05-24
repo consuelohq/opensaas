@@ -82,6 +82,12 @@ function hasFunctionArgs(step: BatchStep): boolean {
 function isReadOnly(toolName: string): boolean {
   return getToolManifestEntry(toolName)?.capabilities.readOnly === true;
 }
+
+function estimateTokens(value: unknown): number {
+  if (value === undefined || value === null) return 0;
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return Math.max(1, Math.ceil(text.length / 4));
+}
 async function runStep(
   step: BatchStep,
   previous: ToolResult<unknown> | null,
@@ -96,5 +102,13 @@ async function runStep(
     ...options,
     logMode: options.logMode ?? "errors",
   };
-  return executeTool(step.tool, args as ToolInput, batchOptions);
+  const result = await executeTool(step.tool, args as ToolInput, batchOptions);
+  const inputTokens = estimateTokens(args);
+  const outputTokens = estimateTokens(result);
+  return {
+    ...result,
+    inputTokens,
+    outputTokens,
+    totalTokens: inputTokens + outputTokens,
+  };
 }

@@ -29,6 +29,9 @@ export type ToolResult<TData = unknown> = {
   durationMs: number;
   traceId: string;
   requestId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
   apiVersion: '1.0.0';
 };
 

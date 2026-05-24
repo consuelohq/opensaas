@@ -18,7 +18,7 @@ type Args = {
   once: boolean;
   help: boolean;
   nested: boolean;
-  nestedLimit: number;
+  nestedLimit?: number;
   limit: number;
   interval: number;
   since?: string;
@@ -32,6 +32,9 @@ type NestedOperation = {
   message?: string;
   traceId?: string;
   durationMs?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
 };
 
 const defaultTraceDb = join(
@@ -58,7 +61,7 @@ Options:
   --raw-json             Output raw database rows including full result_json/stderr.
   --once                 Print matching rows once and exit.
   --no-nested            Hide nested code.run/batch child operations.
-  --nested-limit <n>     Max nested child operations to show. Default: 6.
+  --nested-limit <n>     Max nested child operations to show. Default: all.
   --no-color             Disable colors.
   --help                 Show help.
 
@@ -70,7 +73,7 @@ Examples:
 `;
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, nested: true, nestedLimit: 6, limit: 0, interval: 1000 };
+  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, nested: true, limit: 0, interval: 1000 };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => argv[++i] || '';
@@ -102,7 +105,7 @@ function parseArgs(argv: string[]): Args {
     else throw new Error(`unknown option: ${arg}`);
   }
   if (!Number.isFinite(args.limit) || args.limit < 0) args.limit = 0;
-  if (!Number.isFinite(args.nestedLimit) || args.nestedLimit < 0) args.nestedLimit = 6;
+  if (args.nestedLimit !== undefined && (!Number.isFinite(args.nestedLimit) || args.nestedLimit < 0)) args.nestedLimit = undefined;
   if (!Number.isFinite(args.interval) || args.interval < 250) args.interval = 1000;
   return args;
 }
@@ -207,11 +210,15 @@ function fmtDuration(ms: unknown): string {
   return `${(n / 1000).toFixed(2)}s`;
 }
 
-function fmtTokens(row: Row): string {
-  const total = Number(row.total_tokens || 0);
+function fmtTokenCount(value: unknown): string {
+  const total = Number(value || 0);
   if (!Number.isFinite(total) || total <= 0) return '0 tokens';
   if (total >= 1000) return `${(total / 1000).toFixed(1)}k tokens`;
   return `${total} tokens`;
+}
+
+function fmtTokens(row: Row): string {
+  return fmtTokenCount(row.total_tokens);
 }
 
 function shortBranch(row: Row): string {
@@ -353,6 +360,9 @@ function nestedOperationFromResult(result: unknown, toolFallback: string): Neste
     message: cleanText(result.message),
     traceId: cleanText(result.traceId),
     durationMs: numericValue(result.durationMs, 0),
+    inputTokens: numericValue(result.inputTokens ?? result.input_tokens, 0),
+    outputTokens: numericValue(result.outputTokens ?? result.output_tokens, 0),
+    totalTokens: numericValue(result.totalTokens ?? result.total_tokens, 0),
   };
 }
 
@@ -392,13 +402,36 @@ function renderNestedOperation(args: Args, operation: NestedOperation): string {
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', operation.tool.padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', operation.code || 'OK') : c(args, '33', operation.code || 'ERR');
+  const tokens = fmtTokenCount(operation.totalTokens).padStart(10);
   const detail = cleanText(operation.helper || operation.message || '').slice(0, 100);
   const suffix = detail ? ` ${c(args, '2', '|')} ${c(args, '2', detail)}` : '';
-  return `${c(args, '2', '          ↳')} ${icon} ${tool} ${fmtDuration(operation.durationMs).padStart(7)} ${code}${suffix}`;
+  return `${c(args, '2', '          ↳')} ${icon} ${tool} ${fmtDuration(operation.durationMs).padStart(7)} ${tokens} ${code}${suffix}`;
 }
 
 function renderNestedOverflow(args: Args, omitted: number): string {
   return `${c(args, '2', '          ↳')} ${c(args, '2', `… ${omitted} more nested operation${omitted === 1 ? '' : 's'}`)}`;
+}
+
+function enrichNestedOperationsWithTraceTokens(args: Args, operations: NestedOperation[]): NestedOperation[] {
+  const traceIds = [...new Set(operations.map((operation) => operation.traceId).filter(Boolean))];
+  if (!args.db || traceIds.length === 0) return operations;
+  const quotedTraceIds = traceIds.map((traceId) => shellQuote(String(traceId))).join(', ');
+  const result = runSql(
+    args.db,
+    `SELECT trace_id, input_tokens, output_tokens, total_tokens FROM tool_traces WHERE trace_id IN (${quotedTraceIds});`,
+  );
+  if (result.locked || result.rows.length === 0) return operations;
+  const tokenStats = new Map(result.rows.map((row) => [String(row.trace_id), row]));
+  return operations.map((operation) => {
+    const row = operation.traceId ? tokenStats.get(operation.traceId) : undefined;
+    if (!row) return operation;
+    return {
+      ...operation,
+      inputTokens: numericValue(row.input_tokens, operation.inputTokens || 0),
+      outputTokens: numericValue(row.output_tokens, operation.outputTokens || 0),
+      totalTokens: numericValue(row.total_tokens, operation.totalTokens || 0),
+    };
+  });
 }
 
 const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
@@ -445,9 +478,10 @@ function renderRow(args: Args, row: Row) {
   else console.log(first);
   if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
   if (args.nested) {
-    const nested = nestedOperationsForRow(row);
-    for (const operation of nested.slice(0, args.nestedLimit)) console.log(renderNestedOperation(args, operation));
-    if (nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
+    const nested = enrichNestedOperationsWithTraceTokens(args, nestedOperationsForRow(row));
+    const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
+    for (const operation of visibleNested) console.log(renderNestedOperation(args, operation));
+    if (args.nestedLimit !== undefined && nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
   }
   console.log(divider(args));
 }
@@ -462,6 +496,7 @@ async function main() {
   catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exit(2); }
   if (args.help) { console.log(usage); return; }
   const db = args.db || process.env.TRACE_DB || defaultTraceDb;
+  args.db = db;
   if (!existsSync(db)) { console.error(`trace db not found: ${db}`); process.exit(1); }
 
   const filters = sqlFilters(args);
