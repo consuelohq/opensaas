@@ -17,9 +17,21 @@ type Args = {
   color: boolean;
   once: boolean;
   help: boolean;
+  nested: boolean;
+  nestedLimit: number;
   limit: number;
   interval: number;
   since?: string;
+};
+
+type NestedOperation = {
+  tool: string;
+  helper?: string;
+  ok: boolean;
+  code?: string;
+  message?: string;
+  traceId?: string;
+  durationMs?: number;
 };
 
 const defaultTraceDb = join(
@@ -45,6 +57,8 @@ Options:
   --json                 Output compact JSON lines.
   --raw-json             Output raw database rows including full result_json/stderr.
   --once                 Print matching rows once and exit.
+  --no-nested            Hide nested code.run/batch child operations.
+  --nested-limit <n>     Max nested child operations to show. Default: 6.
   --no-color             Disable colors.
   --help                 Show help.
 
@@ -56,7 +70,7 @@ Examples:
 `;
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, limit: 0, interval: 1000 };
+  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, nested: true, nestedLimit: 6, limit: 0, interval: 1000 };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => argv[++i] || '';
@@ -66,6 +80,9 @@ function parseArgs(argv: string[]): Args {
     else if (arg === '--raw-json') { args.json = true; args.rawJson = true; }
     else if (arg === '--once') args.once = true;
     else if (arg === '--no-color') args.color = false;
+    else if (arg === '--no-nested') args.nested = false;
+    else if (arg === '--nested-limit') args.nestedLimit = Number(next());
+    else if (arg.startsWith('--nested-limit=')) args.nestedLimit = Number(arg.slice(15));
     else if (arg === '--db') args.db = next();
     else if (arg.startsWith('--db=')) args.db = arg.slice(5);
     else if (arg === '--task') args.task = next();
@@ -85,6 +102,7 @@ function parseArgs(argv: string[]): Args {
     else throw new Error(`unknown option: ${arg}`);
   }
   if (!Number.isFinite(args.limit) || args.limit < 0) args.limit = 0;
+  if (!Number.isFinite(args.nestedLimit) || args.nestedLimit < 0) args.nestedLimit = 6;
   if (!Number.isFinite(args.interval) || args.interval < 250) args.interval = 1000;
   return args;
 }
@@ -152,6 +170,8 @@ SELECT
   input_json,
   resolved_input_json,
   ${resultJson},
+  CASE WHEN tool = 'code.run' THEN coalesce(json_extract(result_json, '$.data.operations'), json_extract(result_json, '$.data.data.operations')) ELSE NULL END AS nested_operations_json,
+  CASE WHEN tool = 'batch' THEN coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) ELSE NULL END AS batch_results_json,
   length(coalesce(result_json, '')) AS result_json_chars,
   ${stderr},
   length(coalesce(stderr, '')) AS stderr_chars
@@ -256,6 +276,7 @@ function compactTraceRow(row: Row): Row {
     input_json: compactJsonValue(row.input_json, 800),
     resolved_input_json: compactJsonValue(row.resolved_input_json, 800),
     result: summarizeResultForTrace(result),
+    nested_operations: nestedOperationsForRow(row),
     result_json_chars: numericValue(row.result_json_chars, textSize(row.result_json)),
     stderr: compactJsonValue(stderr, 1200),
     stderr_chars: numericValue(row.stderr_chars, textSize(row.stderr)),
@@ -317,6 +338,69 @@ function compactErrorDetail(row: Row): string {
   return detail.slice(0, 240);
 }
 
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function nestedOperationFromResult(result: unknown, toolFallback: string): NestedOperation | null {
+  if (!isRecord(result)) return null;
+  const ok = result.ok === true || (result.code === 'OK' && result.ok !== false);
+  return {
+    tool: cleanText(result.tool || toolFallback || 'unknown') || 'unknown',
+    helper: cleanText(result.helper),
+    ok,
+    code: cleanText(result.code || (ok ? 'OK' : 'ERR')),
+    message: cleanText(result.message),
+    traceId: cleanText(result.traceId),
+    durationMs: numericValue(result.durationMs, 0),
+  };
+}
+
+function codeRunOperations(row: Row): NestedOperation[] {
+  const extracted = parseJson(row.nested_operations_json);
+  const result = parseJson(row.result_json);
+  const operations = asArray(extracted ?? (isRecord(result) && isRecord(result.data) ? result.data.operations : undefined) ?? (isRecord(result) && isRecord(result.data) && isRecord(result.data.data) ? result.data.data.operations : undefined));
+  return operations
+    .map((operation) => nestedOperationFromResult(operation, 'unknown'))
+    .filter((operation): operation is NestedOperation => operation !== null);
+}
+
+function batchOperations(row: Row): NestedOperation[] {
+  const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
+  const steps = isRecord(input) ? asArray(input.steps) : [];
+  const extracted = parseJson(row.batch_results_json);
+  const result = parseJson(row.result_json);
+  const results = asArray(extracted ?? (isRecord(result) && isRecord(result.data) ? result.data.results : undefined) ?? (isRecord(result) && isRecord(result.data) && isRecord(result.data.data) ? result.data.data.results : undefined));
+  return results
+    .map((batchResult, index) => {
+      const step = steps[index];
+      const tool = isRecord(step) ? cleanText(step.tool) : 'unknown';
+      return nestedOperationFromResult(batchResult, tool || 'unknown');
+    })
+    .filter((operation): operation is NestedOperation => operation !== null);
+}
+
+function nestedOperationsForRow(row: Row): NestedOperation[] {
+  const tool = String(row.tool || '');
+  if (tool === 'code.run') return codeRunOperations(row);
+  if (tool === 'batch') return batchOperations(row);
+  return [];
+}
+
+function renderNestedOperation(args: Args, operation: NestedOperation): string {
+  const ok = operation.ok && (operation.code === 'OK' || !operation.code);
+  const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
+  const tool = c(args, '36', operation.tool.padEnd(16).slice(0, 16));
+  const code = ok ? c(args, '2', operation.code || 'OK') : c(args, '33', operation.code || 'ERR');
+  const detail = cleanText(operation.helper || operation.message || '').slice(0, 100);
+  const suffix = detail ? ` ${c(args, '2', '|')} ${c(args, '2', detail)}` : '';
+  return `${c(args, '2', '          ↳')} ${icon} ${tool} ${fmtDuration(operation.durationMs).padStart(7)} ${code}${suffix}`;
+}
+
+function renderNestedOverflow(args: Args, omitted: number): string {
+  return `${c(args, '2', '          ↳')} ${c(args, '2', `… ${omitted} more nested operation${omitted === 1 ? '' : 's'}`)}`;
+}
+
 const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
 
 function hashText(value: string): number {
@@ -360,6 +444,11 @@ function renderRow(args: Args, row: Row) {
   if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
   else console.log(first);
   if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
+  if (args.nested) {
+    const nested = nestedOperationsForRow(row);
+    for (const operation of nested.slice(0, args.nestedLimit)) console.log(renderNestedOperation(args, operation));
+    if (nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
+  }
   console.log(divider(args));
 }
 
