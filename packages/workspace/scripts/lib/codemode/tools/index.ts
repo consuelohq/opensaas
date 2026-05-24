@@ -3,7 +3,7 @@ import type { ToolInput, ToolManifestEntry, ToolResult } from '../../facade/type
 import type { ToolFunction, ToolNamespace, ToolRegistry } from '../types';
 
 export type CodeRunMode = 'read' | 'edit' | 'verify';
-export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number };
+export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number; inputTokens: number; outputTokens: number; totalTokens: number };
 export type BlockedCodeRunTool = { tool: string; helper: string; reason: string; nextStep: string };
 export type CodeRunRegistryState = { operations: CodeRunOperation[]; blockedTools: BlockedCodeRunTool[]; changedFiles: Set<string> };
 
@@ -34,6 +34,12 @@ function asToolInput(value: unknown): ToolInput {
 
 function withTaskSession(input: ToolInput, taskSession?: string): ToolInput {
   return { ...input, ...(taskSession ? { taskSession } : {}) };
+}
+
+function estimateTokens(value: unknown): number {
+  if (value === undefined || value === null) return 0;
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return Math.max(1, Math.ceil(text.length / 4));
 }
 
 function trackChangedFile(entry: ToolManifestEntry, input: ToolInput, state: CodeRunRegistryState): void {
@@ -98,6 +104,9 @@ async function runWorkspaceTool(
       message: result.message,
       traceId: result.traceId,
       durationMs: result.durationMs,
+      inputTokens: estimateTokens(toolInput),
+      outputTokens: estimateTokens(result),
+      totalTokens: estimateTokens(toolInput) + estimateTokens(result),
     });
     if (result.ok) trackChangedFile(entry, toolInput, state);
     return result;
