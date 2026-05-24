@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "workspace-facade",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/lib/facade/**",
+        "packages/workspace/tooling/tool-manifest.json",
+        "packages/workspace/src/generated/workspace.d.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace facade input contracts",
+          "command": ["bun", "test", "packages/workspace/tests/facade/facade.test.ts", "--test-name-pattern", "validates input"]
+        }
+      ],
+      "reason": "Workspace facade and manifest changes must prove typed tool input contracts."
+    },
+    {
+      "id": "workspace-publish-gate",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/verify.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/task-push.js",
+        "packages/workspace/scripts/lib/verification.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": ["bun", "test", "packages/workspace/tests/verification.test.js"]
+        }
+      ],
+      "reason": "Review, verify, and task push changes must prove publish-gate behavior."
+    },
+    {
+      "id": "workspace-task-session",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/scripts/task-pr.js",
+        "packages/workspace/scripts/task-finish.js",
+        "packages/workspace/scripts/task-init.js",
+        "packages/workspace/scripts/lib/task-selection*.js",
+        "packages/workspace/scripts/lib/task-metadata*.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace task session tests",
+          "command": ["bun", "test", "packages/workspace/tests/task-session.test.js", "packages/workspace/tests/task-meta.test.ts"]
+        }
+      ],
+      "reason": "Task routing and metadata changes must prove task-session behavior."
+    },
+    {
+      "id": "workspace-test-selection",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace test selection tests",
+          "command": ["bun", "test", "packages/workspace/tests/test-selection.test.js"]
+        }
+      ],
+      "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
+    },
+    {
+      "id": "trace-watch",
+      "critical": true,
+      "source": ["scripts/operator/trace-watch.ts"],
+      "tests": [
+        {
+          "name": "trace watch build",
+          "command": ["bun", "build", "scripts/operator/trace-watch.ts", "--target=bun", "--outfile=/tmp/trace-watch-test-selection.js"]
+        }
+      ],
+      "reason": "Trace renderer changes must compile."
+    },
+    {
+      "id": "workspace-audit-docs",
+      "critical": false,
+      "source": [
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/scripts/audit.js",
+        "packages/workspace/tests/audit/**"
+      ],
+      "tests": [
+        {
+          "name": "workspace audit tests",
+          "command": ["bun", "test", "packages/workspace/tests/audit/audit.test.ts"]
+        }
+      ],
+      "reason": "Workspace script/docs changes should keep audit behavior covered."
+    },
+    {
+      "id": "dialer-package",
+      "critical": true,
+      "source": ["packages/dialer/**"],
+      "tests": [
+        {
+          "name": "dialer specs",
+          "command": ["bun", "test", "packages/dialer/src"]
+        }
+      ],
+      "reason": "Dialer changes are call-path critical and must run package specs."
+    },
+    {
+      "id": "api-package",
+      "critical": true,
+      "source": ["packages/api/**"],
+      "tests": [
+        {
+          "name": "api specs",
+          "command": ["bun", "test", "packages/api/src"]
+        }
+      ],
+      "reason": "API changes must run API route and service specs."
+    },
+    {
+      "id": "twenty-server-project",
+      "critical": true,
+      "source": [
+        "packages/twenty-server/**",
+        "packages/twenty-server/src/engine/**/*.resolver.ts",
+        "packages/twenty-server/src/**/migrations/**"
+      ],
+      "tests": [
+        {
+          "name": "twenty-server affected test target",
+          "command": ["npx", "nx", "test", "twenty-server"]
+        }
+      ],
+      "reason": "Server changes have the broadest backend impact and should run the project test target."
+    },
+    {
+      "id": "twenty-front-project",
+      "critical": false,
+      "source": ["packages/twenty-front/**"],
+      "tests": [
+        {
+          "name": "twenty-front test target",
+          "command": ["npx", "nx", "test", "twenty-front"]
+        }
+      ],
+      "reason": "Frontend package changes should run the project test target."
+    }
+  ]
+}

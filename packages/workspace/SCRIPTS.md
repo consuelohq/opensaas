@@ -392,6 +392,41 @@ bad: review fails on a file you didn't touch
 
 ---
 
+
+
+### test-selection:generate — generate test registry
+
+writes `packages/workspace/test-selection.registry.json` from repo test discovery plus explicit rules.
+
+---
+
+### test-selection:check — check affected test selection
+
+selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally.
+
+---
+
+### test-selection:nightly — write test registry report
+
+writes `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
+### test-selection — affected test registry
+
+`test-selection:generate` scans repo-relative test files, project targets, package test scripts, and `packages/workspace/test-selection.rules.json`, then writes `packages/workspace/test-selection.registry.json`. The registry is generated and should not be hand-edited. Add explicit rules when a source area has non-obvious test ownership.
+
+```bash
+bun run test-selection:generate -- --json
+bun run test-selection:check -- --base origin/main --json
+bun run test-selection:check -- --base origin/main --run --json
+bun run test-selection:nightly -- --json
+```
+
+`verify` runs the registry check with `--run`. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
 ### verify — full task safety gate
 
 runs `bun run review` + db/migration/graphql guardrails. writes a publish-valid `.task/<area>/<slug>/verify.json` stamp only when the full gate passes. `task:push` requires this publish-valid stamp by default. `review.run` is optional preflight; `verify` is the formal publish gate.
