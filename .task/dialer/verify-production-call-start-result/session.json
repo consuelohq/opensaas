@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8da03e2920d5",
+  "tmuxSession": "opensaas-dialer-verify-production-call-start-result-8da03e29",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/verify-production-call-start-result",
+  "branch": "task/dialer/verify-production-call-start-result",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-production-call-start-result",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-production-call-start-result",
+  "prNumber": 553,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/553",
+  "createdAt": "2026-05-24T01:00:16.298Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-production-call-start-result/.task/dialer/verify-production-call-start-result/session.json"
+}

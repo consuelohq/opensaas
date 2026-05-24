@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/apollo/utils/getTokenPair.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useDialerContact.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useQueueControls.ts",
+    "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts",
+    "packages/twenty-front/src/modules/dialer/utils/contactAdapter.ts",
+    "packages/twenty-front/src/modules/people/types/Person.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts"
+  ],
+  "updatedAt": "2026-05-24T01:07:51.798Z"
+}

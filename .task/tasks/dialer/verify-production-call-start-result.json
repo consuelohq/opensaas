@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/verify-production-call-start-result",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 553,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/553",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/553",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/553/verify-production-call-start-result",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/553",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/553/verify-production-call-start-result",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-production-call-start-result",
+  "taskSession": "tsk_8da03e2920d5",
+  "tmuxSession": "opensaas-dialer-verify-production-call-start-result-8da03e29",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-production-call-start-result/.task/dialer/verify-production-call-start-result/session.json",
+  "createdAt": "2026-05-24T01:00:16.299Z"
+}
