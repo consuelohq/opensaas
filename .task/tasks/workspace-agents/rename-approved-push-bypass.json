@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-approved-push-bypass",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 571,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/571",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/571",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/571/rename-approved-push-bypass",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/571",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/571/rename-approved-push-bypass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-push-bypass",
+  "taskSession": "tsk_f01552569306",
+  "tmuxSession": "opensaas-workspace-agents-rename-approved-push-bypass-f0155256",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-push-bypass/.task/workspace-agents/rename-approved-push-bypass/session.json",
+  "createdAt": "2026-05-24T06:41:01.687Z"
+}
