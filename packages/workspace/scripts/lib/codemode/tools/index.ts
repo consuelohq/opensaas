@@ -3,7 +3,7 @@ import type { ToolInput, ToolManifestEntry, ToolResult } from '../../facade/type
 import type { ToolFunction, ToolNamespace, ToolRegistry } from '../types';
 
 export type CodeRunMode = 'read' | 'edit' | 'verify';
-export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number; inputTokens: number; outputTokens: number; totalTokens: number };
+export type CodeRunOperation = { tool: string; helper: string; ok: boolean; code: string; message: string; traceId: string; durationMs: number; inputTokens: number; outputTokens: number; totalTokens: number; detail?: string; changed?: boolean };
 export type BlockedCodeRunTool = { tool: string; helper: string; reason: string; nextStep: string };
 export type CodeRunRegistryState = { operations: CodeRunOperation[]; blockedTools: BlockedCodeRunTool[]; changedFiles: Set<string> };
 
@@ -40,6 +40,29 @@ function estimateTokens(value: unknown): number {
   if (value === undefined || value === null) return 0;
   const text = typeof value === 'string' ? value : JSON.stringify(value);
   return Math.max(1, Math.ceil(text.length / 4));
+}
+
+function cleanText(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function commandDetail(command: unknown): string {
+  if (!Array.isArray(command)) return '';
+  return command.map((part) => String(part)).join(' ').slice(0, 120);
+}
+
+function operationDetail(input: ToolInput): string {
+  const candidates = [
+    input.path,
+    input.pattern ? `pattern=${input.pattern}` : '',
+    input.query ? `query=${input.query}` : '',
+    input.keyword ? `keyword=${input.keyword}` : '',
+    input.operation,
+    input.pr ? `pr #${input.pr}` : '',
+    input.repo,
+    commandDetail(input.command),
+  ];
+  return cleanText(candidates.find((value) => cleanText(value)) || '').slice(0, 120);
 }
 
 function trackChangedFile(entry: ToolManifestEntry, input: ToolInput, state: CodeRunRegistryState): void {
@@ -107,6 +130,8 @@ async function runWorkspaceTool(
       inputTokens: estimateTokens(toolInput),
       outputTokens: estimateTokens(result),
       totalTokens: estimateTokens(toolInput) + estimateTokens(result),
+      detail: operationDetail(toolInput),
+      changed: entry.capabilities.mutating === true,
     });
     if (result.ok) trackChangedFile(entry, toolInput, state);
     return result;
