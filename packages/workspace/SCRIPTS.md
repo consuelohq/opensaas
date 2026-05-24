@@ -1273,3 +1273,15 @@ workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrap
 workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
 workspace linear.projects '{"first":50}'
 ```
+
+### OS Doctor execution logs
+
+The OS package ships Doctor observability scripts for future OS users. They are cloned from the workspace operator trace workflow but read the packaged OS database at `<CONSUELO_HOME>/consuelo.db` instead of Ko's local OpenWorkspace trace store.
+
+```bash
+bun --cwd packages/os run doctor:watch -- --limit 20
+bun --cwd packages/os run doctor:errors -- --limit 20
+bun --cwd packages/os run doctor:analytics -- --json
+```
+
+Use `--home <path>` or `--db <path>` to inspect another OS home. Keep these scripts packaged under `packages/os/scripts/` so downloaded OS installs include the debugging surface.
