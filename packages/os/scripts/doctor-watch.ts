@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ensureRuntimePaths, getRuntimePaths } from './lib/runtime-state';
+import { redactJson, redactText } from './lib/redaction';
 
 type Row = {
   rowid: number;
@@ -114,12 +115,12 @@ function artifactCount(row: Row): number {
 
 function printRow(args: Args, row: Row): void {
   if (args.json) {
-    write(`${JSON.stringify(row)}\n`);
+    write(`${JSON.stringify(redactJson(row))}\n`);
     return;
   }
   const artifacts = artifactCount(row);
   const artifactText = artifacts ? ` | ${artifacts} artifact${artifacts === 1 ? '' : 's'}` : '';
-  const errorText = row.error_message ? ` | ${row.error_code ?? 'UNKNOWN'}: ${row.error_message.slice(0, 220)}` : '';
+  const errorText = row.error_message ? ` | ${row.error_code ?? 'UNKNOWN'}: ${redactText(row.error_message).slice(0, 220)}` : '';
   write(`${row.started_at.slice(11, 19)}  ${row.status.padEnd(9)} ${duration(row.duration_ms).padStart(7)}  ${row.name}  ${row.trace_id}${artifactText}${errorText}\n`);
 }
 

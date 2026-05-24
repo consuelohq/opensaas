@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { redactJson, redactText } from './redaction';
 import type { CallOutput } from './types';
 
 export type ExecutionStatus = 'started' | 'succeeded' | 'failed';
@@ -95,10 +96,7 @@ function openDatabase(): Database {
 
 function safeJson(value: unknown): string | null {
   if (value === undefined) return null;
-  return JSON.stringify(value, (_key, item) => {
-    if (typeof item === 'bigint') return item.toString();
-    return item;
-  });
+  return JSON.stringify(redactJson(value));
 }
 
 function nowIso(): string {
@@ -131,7 +129,7 @@ export function recordExecutionFinished(input: ExecutionFinishInput): void {
       input.status,
       safeJson(input.output),
       input.errorCode ?? input.output?.error?.code ?? null,
-      input.errorMessage ?? input.output?.error?.message ?? null,
+      input.errorMessage ? redactText(input.errorMessage) : input.output?.error?.message ? redactText(input.output.error.message) : null,
       nowIso(),
       input.durationMs,
       input.traceId,

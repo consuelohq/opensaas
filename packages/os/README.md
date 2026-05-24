@@ -143,5 +143,7 @@ bun run doctor:errors -- --limit 20
 bun run doctor:analytics -- --json
 ```
 
+Doctor redacts known secret keys, bearer/API tokens, credential-like values, full phone numbers, sensitive URL query values, and raw payload bodies before writing execution logs or printing Doctor output.
+
 Use `--home <path>` or `--db <path>` when inspecting another OS home. The scripts read the packaged OS execution tables and do not depend on Ko's local workspace trace database.
 

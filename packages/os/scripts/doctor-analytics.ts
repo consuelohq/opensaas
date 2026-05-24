@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ensureRuntimePaths, getRuntimePaths } from './lib/runtime-state';
+import { redactJson } from './lib/redaction';
 
 type Args = { home?: string; db?: string; skill?: string; json: boolean };
 type AnalyticsRow = { name: string; status: string; count: number; avg_duration_ms: number | null; max_duration_ms: number | null };
@@ -55,7 +56,7 @@ async function main(): Promise<void> {
       ? db.query("SELECT coalesce(error_code, 'UNKNOWN') AS error_code, count(*) AS count FROM skill_executions WHERE name = ? AND status = 'failed' GROUP BY coalesce(error_code, 'UNKNOWN') ORDER BY count DESC, error_code ASC").all(args.skill) as ErrorRow[]
       : db.query("SELECT coalesce(error_code, 'UNKNOWN') AS error_code, count(*) AS count FROM skill_executions WHERE status = 'failed' GROUP BY coalesce(error_code, 'UNKNOWN') ORDER BY count DESC, error_code ASC").all() as ErrorRow[];
     if (args.json) {
-      write(`${JSON.stringify({ dbPath, executions, errors }, null, 2)}\n`);
+      write(`${JSON.stringify(redactJson({ dbPath, executions, errors }), null, 2)}\n`);
       return;
     }
     write(`Doctor analytics: ${dbPath}\nexecutions by skill/status\n`);
