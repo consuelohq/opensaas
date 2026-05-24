@@ -132,3 +132,16 @@ This is runtime foundation work. The scaffold intentionally includes one skill a
 ### App files cloud artifact capability
 
 Set `CONSUELO_APP_API_URL` and `CONSUELO_APP_API_KEY` to enable app-visible artifact publishing through Consuelo Files/S3. This capability is separate from app GraphQL reads. Existing `CONSUELO_GRAPHQL_URL` env remains a compatibility fallback for object reads; prefer `CONSUELO_APP_GRAPHQL_URL` for new setups.
+
+## Doctor execution logs
+
+Doctor is the local observability surface for Consuelo OS. Every OS skill execution records a trace id in the local SQLite database at `<CONSUELO_HOME>/consuelo.db`. Future users get the same operator workflow that proved useful in workspace development:
+
+```bash
+bun run doctor:watch -- --limit 20
+bun run doctor:errors -- --limit 20
+bun run doctor:analytics -- --json
+```
+
+Use `--home <path>` or `--db <path>` when inspecting another OS home. The scripts read the packaged OS execution tables and do not depend on Ko's local workspace trace database.
+
