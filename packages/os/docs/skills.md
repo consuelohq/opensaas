@@ -64,3 +64,18 @@ The skill should keep returning structured output even when the current data mod
 ## Consuelo Design
 
 `consuelo-design` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `consueloDesign.*` tools, template rules, browser validation, `design.publish`, and `/design-wiki` verification.
+
+
+### consuelo-workspace-snapshot
+
+Purpose: read Consuelo workspace context for downstream agents.
+
+Inputs: optional `limit` from 1 to 100.
+
+Outputs: structured workspace snapshot with app-native object refs for workspace, people, companies, lists, calls, files, attachments, tasks, notes, workflows, workflow runs, dashboards, artifacts, and recent activity.
+
+Capabilities: `CONSUELO_GRAPHQL_URL`, `CONSUELO_INTERNAL_GRAPHQL_API_KEY`, optional `CONSUELO_WORKSPACE_ID`, optional `CONSUELO_USER_ID`.
+
+Failure modes: `MISSING_CAPABILITY`, `AUTH_FAILED`, `SCHEMA_GAP`, and `QUERY_FAILED`.
+
+Guardrail: read-only. No uploads, app writes, S3 writes, file attach/detach, or Mirage dependency in this first slice.

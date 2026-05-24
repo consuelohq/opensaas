@@ -7,6 +7,7 @@ Do not include real secret values in this file.
 | Server/App runtime | Yes | OS portal, Bun skills | No |
 | `CONSUELO_GRAPHQL_URL` | Yes | GraphQL proof, workspace data skills | No |
 | `CONSUELO_INTERNAL_GRAPHQL_API_KEY` | Yes | GraphQL proof, workspace data skills | Yes |
+| `CONSUELO_WORKSPACE_SNAPSHOT_QUERY` | No | Schema-specific workspace snapshot override | No |
 | Postgres | No | Direct admin/data workflows | Yes |
 | Redis | No | Cache, queue, feature flag workflows | Yes |
 | S3 Storage | No | Workspace files, artifacts, reports | Yes |

@@ -83,6 +83,12 @@ Run the smoke skill:
 bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
 ```
 
+Run the workspace snapshot skill:
+
+```bash
+bun --cwd packages/os ./scripts/os.ts call '{"name":"consuelo-workspace-snapshot","input":{"limit":25}}'
+```
+
 With GraphQL env configured, the same command attempts a harmless connectivity proof.
 
 ## Bun server

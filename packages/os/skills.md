@@ -24,3 +24,8 @@ This skill does not implement the full revenue brief. It reports scaffold status
 ## Consuelo Design
 
 `consuelo-design` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `consueloDesign.*` tools, template rules, browser validation, `design.publish`, and `/design-wiki` verification.
+
+
+## Consuelo Workspace Snapshot
+
+`consuelo-workspace-snapshot` is the first read-only Consuelo app connection skill. It reads workspace object refs through the configured GraphQL/API facade and includes Files and Attachments as first-class refs for downstream reports, briefs, design work, and future cloud artifacts. It does not upload files, write app records, mutate S3, or depend on Mirage.
