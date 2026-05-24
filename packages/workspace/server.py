@@ -261,6 +261,11 @@ APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
 SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
 BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
+WORKSPACE_CALL_DEFAULT_TIMEOUT_SECONDS = 120
+LONG_RUNNING_TOOL_TIMEOUT_SECONDS = {
+    'review.run': 1200,
+    'verify': 1200,
+}
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
@@ -937,7 +942,8 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         ))
 
     args = [BUN_BIN, str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
-    run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
+    default_timeout = LONG_RUNNING_TOOL_TIMEOUT_SECONDS.get(tool, WORKSPACE_CALL_DEFAULT_TIMEOUT_SECONDS)
+    run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else default_timeout
     try:
         run_env = {
             **os.environ,

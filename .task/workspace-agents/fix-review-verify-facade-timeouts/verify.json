@@ -1,0 +1,28 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-review-verify-facade-timeouts",
+  "base": "origin/main",
+  "headSha": "d5887ca90b9101c60d40943f330766aba0029f73",
+  "changeHash": "35229d6a4eea69f8311d2cca0a59eb619264d23a8c24e2b60cd7c6294064fca0",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-05-24T06:20:20.456Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

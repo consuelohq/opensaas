@@ -323,8 +323,8 @@ export async function executeTool<TData = unknown>(
 
 type JsonRecord = Record<string, unknown>;
 
-const FACADE_FINDING_SAMPLE_LIMIT = 20;
-const FACADE_MESSAGE_PREVIEW_LIMIT = 500;
+const FACADE_FINDING_SAMPLE_LIMIT = 8;
+const FACADE_MESSAGE_PREVIEW_LIMIT = 240;
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -385,6 +385,7 @@ function compactReviewData(data: unknown): unknown {
   if (data.schema === 'review.summary.v1') {
     return {
       ...data,
+      mustFixTotal: asArray(data.mustFix).length,
       mustFix: asArray(data.mustFix).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'your_change')),
       preExistingDigest: isRecord(data.preExistingDigest)
         ? { ...data.preExistingDigest, sample: asArray(data.preExistingDigest.sample).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing')) }
@@ -411,7 +412,8 @@ function compactReviewData(data: unknown): unknown {
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
     },
-    mustFix: yours,
+    mustFixTotal: yours.length,
+    mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     byRule: {
       yourChanges: summarizeFacadeFindings(yours).byRule,
       preExisting: summarizeFacadeFindings(preExisting).byRule,
