@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_df6ff428231f",
+  "tmuxSession": "opensaas-workspace-agents-rename-approved-push-override-df6ff428",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-approved-push-override",
+  "branch": "task/workspace-agents/rename-approved-push-override",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-push-override",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-push-override",
+  "prNumber": 572,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/572",
+  "createdAt": "2026-05-24T06:49:49.858Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-push-override/.task/workspace-agents/rename-approved-push-override/session.json"
+}

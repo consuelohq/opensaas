@@ -1,0 +1,31 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/rename-approved-push-override",
+  "base": "origin/main",
+  "headSha": "5efeda6342f4802593edae1064db6ab3d9b16f5e",
+  "changeHash": "e039efef1065802c929dbf1062f7463c87a6c9d1848cea5c44c71ae7f337ebfb",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-24T06:51:06.269Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

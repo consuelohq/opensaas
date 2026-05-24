@@ -536,8 +536,8 @@
           "kind": "array"
         },
         {
-          "source": "dangerous",
-          "flag": "--dangerous",
+          "source": "approved",
+          "flag": "--approved",
           "kind": "boolean"
         },
         {
