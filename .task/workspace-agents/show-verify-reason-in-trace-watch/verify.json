@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/show-verify-reason-in-trace-watch",
+  "base": "origin/main",
+  "headSha": "bec589010b051b44e86620fdf0e639f6a0f213b8",
+  "changeHash": "9872d9416ca045471f46ec381dfcd7d9fc4957921497edf13f4f6fe5b1a624cc",
+  "changedFiles": [
+    "packages/workspace/scripts/verify.js",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-24T08:39:42.346Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
