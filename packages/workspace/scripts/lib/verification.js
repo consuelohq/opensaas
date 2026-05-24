@@ -93,6 +93,22 @@ function getVerifyStampMismatch(repoRoot, branchOverride) {
     return `last verify result was ${stamp.result || 'unknown'}`;
   }
 
+  if (stamp.publishValid !== true) {
+    return 'last verify stamp is not publish-valid';
+  }
+
+  if (stamp.mode !== 'full') {
+    return `last verify mode was ${stamp.mode || 'unknown'}, not full`;
+  }
+
+  if (!stamp.review || stamp.review.skipped || stamp.review.passed !== true) {
+    return 'last verify did not complete review successfully';
+  }
+
+  if (!stamp.db || stamp.db.skipped || stamp.db.passed !== true || stamp.db.warnOnly) {
+    return 'last verify did not complete db guardrails successfully';
+  }
+
   const state = computeVerificationState(repoRoot, branchOverride);
 
   if (stamp.branch !== state.branch) {

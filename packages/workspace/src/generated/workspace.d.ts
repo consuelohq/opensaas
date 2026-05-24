@@ -162,7 +162,7 @@ declare const workspace: {
     merge: (input: { pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     pr: (input: { branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     prs: (input: { branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    push: (input: { branch?: string; message: string; changed?: boolean; files?: string[]; noVerify?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    push: (input: { branch?: string; message: string; changed?: boolean; files?: string[]; dangerous?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     start: (input: { stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   taskMeta: {
@@ -187,7 +187,7 @@ declare const workspace: {
   server: (input: { action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   tmp: (input: { action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  verify: (input: { branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  verify: (input: { branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   wait: (input: { seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   batch: (steps: BatchStep[]) => Promise<ToolResult<{ results: ToolResult[]; completed: number }>>;
 };
