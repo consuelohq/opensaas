@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+  "events": [
+    {
+      "id": "fd9cffd9-b415-46fb-baa6-e40def4b97a4",
+      "occurred_at": "2026-05-24T07:32:33.378Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "bdced549-c31a-41ad-bd65-2c1d1d9f9d74",
+      "occurred_at": "2026-05-24T07:32:33.670Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "c9add654-1001-42d8-9542-580769709f1c",
+      "occurred_at": "2026-05-24T07:32:33.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "c19d7dac-bb99-4ec1-b3db-84d6b2c677f4",
+      "occurred_at": "2026-05-24T07:32:34.244Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "492610d3-acef-4555-9615-f2b1c880aee6",
+      "occurred_at": "2026-05-24T07:33:24.708Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "2c1f0c69-43df-4553-9303-af9d425f2745",
+      "occurred_at": "2026-05-24T07:33:24.994Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "8db707e3-8cd2-41f3-92e1-de411ccd432d",
+      "occurred_at": "2026-05-24T07:33:25.278Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "49d6f1ab-b2f1-4f53-85a9-abbf25b65ee0",
+      "occurred_at": "2026-05-24T07:33:26.150Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "e2d21987-7d51-4d42-a72a-2fa7657f139f",
+      "occurred_at": "2026-05-24T07:33:32.667Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "15c61317-97da-4b7e-9a62-b805ac5596e2",
+      "occurred_at": "2026-05-24T07:33:51.916Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "0d7ff4b0-e2b0-4996-853d-a4716f4ddba7",
+      "occurred_at": "2026-05-24T07:33:52.210Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "8228c9a8-56ae-4835-829f-5d310905d71b",
+      "occurred_at": "2026-05-24T07:33:52.496Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "fa35bdec-8006-4115-ba99-42e785ecaac3",
+      "occurred_at": "2026-05-24T07:34:10.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    },
+    {
+      "id": "3c26a0b4-7f4a-4fc4-b940-053e3b2a305a",
+      "occurred_at": "2026-05-24T07:34:28.304Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/show-nested-trace-operation-details/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-trace-operation-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-trace-operation-details"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T07:34:28.372Z"
+}

@@ -13,12 +13,30 @@ type Args = {
   tool?: string;
   errors: boolean;
   json: boolean;
+  rawJson: boolean;
   color: boolean;
   once: boolean;
   help: boolean;
+  nested: boolean;
+  nestedLimit?: number;
   limit: number;
   interval: number;
   since?: string;
+};
+
+type NestedOperation = {
+  tool: string;
+  helper?: string;
+  ok: boolean;
+  code?: string;
+  message?: string;
+  traceId?: string;
+  durationMs?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  detail?: string;
+  changed?: boolean;
 };
 
 const defaultTraceDb = join(
@@ -41,8 +59,11 @@ Options:
   --since <duration>     Start from recent history: 5m, 1h, 24h.
   --limit <n>            Print recent rows before watching. Default: 0.
   --interval <ms>        Poll interval. Default: 1000.
-  --json                 Output JSON lines.
+  --json                 Output compact JSON lines.
+  --raw-json             Output raw database rows including full result_json/stderr.
   --once                 Print matching rows once and exit.
+  --no-nested            Hide nested code.run/batch child operations.
+  --nested-limit <n>     Max nested child operations to show. Default: all.
   --no-color             Disable colors.
   --help                 Show help.
 
@@ -54,15 +75,19 @@ Examples:
 `;
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { errors: false, json: false, color: process.stdout.isTTY, once: false, help: false, limit: 0, interval: 1000 };
+  const args: Args = { errors: false, json: false, rawJson: false, color: process.stdout.isTTY, once: false, help: false, nested: true, limit: 0, interval: 1000 };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => argv[++i] || '';
     if (arg === '--help' || arg === '-h') args.help = true;
     else if (arg === '--errors') args.errors = true;
     else if (arg === '--json') args.json = true;
+    else if (arg === '--raw-json') { args.json = true; args.rawJson = true; }
     else if (arg === '--once') args.once = true;
     else if (arg === '--no-color') args.color = false;
+    else if (arg === '--no-nested') args.nested = false;
+    else if (arg === '--nested-limit') args.nestedLimit = Number(next());
+    else if (arg.startsWith('--nested-limit=')) args.nestedLimit = Number(arg.slice(15));
     else if (arg === '--db') args.db = next();
     else if (arg.startsWith('--db=')) args.db = arg.slice(5);
     else if (arg === '--task') args.task = next();
@@ -82,6 +107,7 @@ function parseArgs(argv: string[]): Args {
     else throw new Error(`unknown option: ${arg}`);
   }
   if (!Number.isFinite(args.limit) || args.limit < 0) args.limit = 0;
+  if (args.nestedLimit !== undefined && (!Number.isFinite(args.nestedLimit) || args.nestedLimit < 0)) args.nestedLimit = undefined;
   if (!Number.isFinite(args.interval) || args.interval < 250) args.interval = 1000;
   return args;
 }
@@ -126,7 +152,9 @@ function sqlFilters(args: Args): string {
   return filters.length ? ` AND ${filters.join(' AND ')}` : '';
 }
 
-function baseSelect(where: string, order: 'ASC' | 'DESC', limit?: number): string {
+function baseSelect(where: string, order: 'ASC' | 'DESC', limit?: number, raw = false): string {
+  const resultJson = raw ? 'result_json' : "substr(coalesce(result_json, ''), 1, 4000) AS result_json";
+  const stderr = raw ? 'stderr' : "substr(coalesce(stderr, ''), 1, 4000) AS stderr";
   return `
 SELECT
   rowid AS rownum,
@@ -146,8 +174,12 @@ SELECT
   total_tokens,
   input_json,
   resolved_input_json,
-  result_json,
-  stderr
+  ${resultJson},
+  CASE WHEN tool = 'code.run' THEN coalesce(json_extract(result_json, '$.data.operations'), json_extract(result_json, '$.data.data.operations')) ELSE NULL END AS nested_operations_json,
+  CASE WHEN tool = 'batch' THEN coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) ELSE NULL END AS batch_results_json,
+  length(coalesce(result_json, '')) AS result_json_chars,
+  ${stderr},
+  length(coalesce(stderr, '')) AS stderr_chars
 FROM tool_traces
 WHERE 1=1 ${where}
 ORDER BY rowid ${order}
@@ -180,11 +212,16 @@ function fmtDuration(ms: unknown): string {
   return `${(n / 1000).toFixed(2)}s`;
 }
 
-function fmtTokens(row: Row): string {
-  const total = Number(row.total_tokens || 0);
+function fmtTokenCount(value: unknown): string {
+  const total = Number(value || 0);
   if (!Number.isFinite(total) || total <= 0) return '0 tokens';
   if (total >= 1000) return `${(total / 1000).toFixed(1)}k tokens`;
   return `${total} tokens`;
+}
+
+function fmtTokens(row: Row, nested?: NestedOperation[]): string {
+  const nestedTotal = nested?.reduce((sum, operation) => sum + Number(operation.totalTokens || 0), 0) || 0;
+  return fmtTokenCount(nestedTotal > 0 ? nestedTotal : row.total_tokens);
 }
 
 function shortBranch(row: Row): string {
@@ -206,6 +243,103 @@ function isJsonEnvelope(value: string): boolean {
   return text.startsWith('{\"level\":') || text.startsWith('{"level":') || text.includes('\"event\":\"tool.executed\"') || text.includes('"event":"tool.executed"');
 }
 
+function textSize(value: unknown): number {
+  return typeof value === 'string' ? value.length : 0;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function numericValue(value: unknown, fallback = 0): number {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function compactJsonValue(value: unknown, limit = 1200): unknown {
+  if (typeof value !== 'string') return value;
+  const cleaned = cleanText(value);
+  return cleaned.length > limit
+    ? { preview: cleaned.slice(0, limit), chars: value.length, truncated: true, omitted: cleaned.length - limit }
+    : cleaned;
+}
+
+function compactTraceRow(row: Row): Row {
+  const result = parseJson(row.result_json);
+  const stderr = cleanText(row.stderr);
+  return {
+    rownum: row.rownum,
+    record_id: row.record_id,
+    ts: row.ts,
+    trace_id: row.trace_id,
+    tool: row.tool,
+    task_session: row.task_session,
+    branch: row.branch,
+    worktree: row.worktree,
+    status: row.status,
+    code: row.code,
+    exit_code: row.exit_code,
+    duration_ms: row.duration_ms,
+    input_tokens: row.input_tokens,
+    output_tokens: row.output_tokens,
+    total_tokens: row.total_tokens,
+    input_json: compactJsonValue(row.input_json, 800),
+    resolved_input_json: compactJsonValue(row.resolved_input_json, 800),
+    result: summarizeResultForTrace(result, String(row.tool || '')),
+    nested_operations: nestedOperationsForRow(row),
+    result_json_chars: numericValue(row.result_json_chars, textSize(row.result_json)),
+    stderr: compactJsonValue(stderr, 1200),
+    stderr_chars: numericValue(row.stderr_chars, textSize(row.stderr)),
+  };
+}
+
+function summarizeResultForTrace(result: unknown, tool?: string): unknown {
+  if (!isRecord(result)) return result;
+  const data = isRecord(result.data) ? result.data : result;
+  const schema = data.schema || result.schema;
+  if (tool === 'verify' && isRecord(data)) {
+    return {
+      ok: result.ok,
+      code: result.code,
+      message: result.message,
+      mode: data.mode,
+      publishValid: data.publishValid,
+      passed: data.passed,
+      because: data.because,
+      review: isRecord(data.review) ? { skipped: data.review.skipped, passed: data.review.passed } : undefined,
+      db: isRecord(data.db) ? { skipped: data.db.skipped, passed: data.db.passed, warnOnly: data.db.warnOnly } : undefined,
+      stamp: data.stamp,
+    };
+  }
+  if (schema === 'review.summary.v1') {
+    return {
+      schema,
+      base: data.base,
+      branch: data.branch,
+      files: data.files,
+      affectedProjects: data.affectedProjects,
+      checksRun: data.checksRun,
+      summary: data.summary,
+      mustFixCount: Array.isArray(data.mustFix) ? data.mustFix.length : 0,
+      mustFix: Array.isArray(data.mustFix) ? data.mustFix.slice(0, 5) : [],
+      preExistingDigest: data.preExistingDigest ? {
+        total: data.preExistingDigest.total,
+        byRule: data.preExistingDigest.byRule,
+        byFile: data.preExistingDigest.byFile,
+        truncated: data.preExistingDigest.truncated,
+        omitted: data.preExistingDigest.omitted,
+        sampleCount: Array.isArray(data.preExistingDigest.sample) ? data.preExistingDigest.sample.length : 0,
+      } : undefined,
+      testSummary: data.testSummary,
+      fullEvidence: data.fullEvidence,
+    };
+  }
+  if ('ok' in result || 'code' in result || 'message' in result) {
+    return { ok: result.ok, code: result.code, message: result.message, exitCode: result.exitCode };
+  }
+  return compactJsonValue(JSON.stringify(result), 1200);
+}
+
 function compactSuccessDetail(row: Row): string {
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
   const result = parseJson(row.result_json) || {};
@@ -219,6 +353,26 @@ function compactSuccessDetail(row: Row): string {
   return (detail || '').slice(0, 120);
 }
 
+
+function verifyBecauseLines(row: Row): string[] {
+  const result = parseJson(row.result_json);
+  if (!isRecord(result)) return [];
+  const data = isRecord(result.data) ? result.data : result;
+  const because = isRecord(data.because) ? data.because : undefined;
+  const lines = Array.isArray(because?.lines) ? because.lines : [];
+  return lines.map((line) => cleanText(line)).filter(Boolean);
+}
+
+function renderVerifyBecause(args: Args, row: Row): void {
+  if (String(row.tool || '') !== 'verify') return;
+  const lines = verifyBecauseLines(row);
+  if (lines.length === 0) return;
+  console.log(`  ${c(args, '2', 'because:')}`);
+  for (const line of lines) {
+    console.log(`    ${c(args, '2', '-')} ${line}`);
+  }
+}
+
 function compactErrorDetail(row: Row): string {
   const result = parseJson(row.result_json) || {};
   const stderr = cleanText(row.stderr);
@@ -226,6 +380,99 @@ function compactErrorDetail(row: Row): string {
   const candidates = [stderr, message, cleanText(row.code), cleanText(row.status)].filter(Boolean);
   const detail = candidates.find((candidate) => !isJsonEnvelope(candidate)) || '';
   return detail.slice(0, 240);
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function nestedOperationFromResult(result: unknown, toolFallback: string): NestedOperation | null {
+  if (!isRecord(result)) return null;
+  const ok = result.ok === true || (result.code === 'OK' && result.ok !== false);
+  return {
+    tool: cleanText(result.tool || toolFallback || 'unknown') || 'unknown',
+    helper: cleanText(result.helper),
+    ok,
+    code: cleanText(result.code || (ok ? 'OK' : 'ERR')),
+    message: cleanText(result.message),
+    traceId: cleanText(result.traceId),
+    durationMs: numericValue(result.durationMs, 0),
+    inputTokens: numericValue(result.inputTokens ?? result.input_tokens, 0),
+    outputTokens: numericValue(result.outputTokens ?? result.output_tokens, 0),
+    totalTokens: numericValue(result.totalTokens ?? result.total_tokens, 0),
+    detail: cleanText(result.detail),
+    changed: result.changed === true,
+  };
+}
+
+function codeRunOperations(row: Row): NestedOperation[] {
+  const extracted = parseJson(row.nested_operations_json);
+  const result = parseJson(row.result_json);
+  const operations = asArray(extracted ?? (isRecord(result) && isRecord(result.data) ? result.data.operations : undefined) ?? (isRecord(result) && isRecord(result.data) && isRecord(result.data.data) ? result.data.data.operations : undefined));
+  return operations
+    .map((operation) => nestedOperationFromResult(operation, 'unknown'))
+    .filter((operation): operation is NestedOperation => operation !== null);
+}
+
+function batchOperations(row: Row): NestedOperation[] {
+  const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
+  const steps = Array.isArray(input) ? input : isRecord(input) ? asArray(input.steps) : [];
+  const extracted = parseJson(row.batch_results_json);
+  const result = parseJson(row.result_json);
+  const results = asArray(extracted ?? (isRecord(result) && isRecord(result.data) ? result.data.results : undefined) ?? (isRecord(result) && isRecord(result.data) && isRecord(result.data.data) ? result.data.data.results : undefined));
+  return results
+    .map((batchResult, index) => {
+      const step = steps[index];
+      const tool = isRecord(step) ? cleanText(step.tool) : 'unknown';
+      return nestedOperationFromResult(batchResult, tool || 'unknown');
+    })
+    .filter((operation): operation is NestedOperation => operation !== null);
+}
+
+function nestedOperationsForRow(row: Row): NestedOperation[] {
+  const tool = String(row.tool || '');
+  if (tool === 'code.run') return codeRunOperations(row);
+  if (tool === 'batch') return batchOperations(row);
+  return [];
+}
+
+function renderNestedOperation(args: Args, operation: NestedOperation): string {
+  const ok = operation.ok && (operation.code === 'OK' || !operation.code);
+  const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
+  const tool = c(args, '36', operation.tool.padEnd(16).slice(0, 16));
+  const code = ok ? c(args, '2', operation.code || 'OK') : c(args, '33', operation.code || 'ERR');
+  const tokens = fmtTokenCount(operation.totalTokens).padStart(10);
+  const marker = operation.changed ? c(args, '33', 'changed') : '';
+  const detail = cleanText(operation.detail || operation.helper || operation.message || '').slice(0, 120);
+  const suffixParts = [marker, detail ? c(args, '2', detail) : ''].filter(Boolean);
+  const suffix = suffixParts.length ? ` ${c(args, '2', '|')} ${suffixParts.join(c(args, '2', ' | '))}` : '';
+  return `${c(args, '2', '          ↳')} ${icon} ${tool} ${fmtDuration(operation.durationMs).padStart(7)} ${tokens} ${code}${suffix}`;
+}
+
+function renderNestedOverflow(args: Args, omitted: number): string {
+  return `${c(args, '2', '          ↳')} ${c(args, '2', `… ${omitted} more nested operation${omitted === 1 ? '' : 's'}`)}`;
+}
+
+function enrichNestedOperationsWithTraceTokens(args: Args, operations: NestedOperation[]): NestedOperation[] {
+  const traceIds = [...new Set(operations.map((operation) => operation.traceId).filter(Boolean))];
+  if (!args.db || traceIds.length === 0) return operations;
+  const quotedTraceIds = traceIds.map((traceId) => shellQuote(String(traceId))).join(', ');
+  const result = runSql(
+    args.db,
+    `SELECT trace_id, input_tokens, output_tokens, total_tokens FROM tool_traces WHERE trace_id IN (${quotedTraceIds});`,
+  );
+  if (result.locked || result.rows.length === 0) return operations;
+  const tokenStats = new Map(result.rows.map((row) => [String(row.trace_id), row]));
+  return operations.map((operation) => {
+    const row = operation.traceId ? tokenStats.get(operation.traceId) : undefined;
+    if (!row) return operation;
+    return {
+      ...operation,
+      inputTokens: numericValue(row.input_tokens, operation.inputTokens || 0),
+      outputTokens: numericValue(row.output_tokens, operation.outputTokens || 0),
+      totalTokens: numericValue(row.total_tokens, operation.totalTokens || 0),
+    };
+  });
 }
 
 const branchColors = ['35', '36', '33', '34', '32', '95', '96', '93', '94'];
@@ -248,21 +495,22 @@ function divider(args: Args): string {
 function renderStartup(args: Args, db: string) {
   if (args.json) return;
   console.log(c(args, '2', `watching traces • ${db}`));
-  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json'));
+  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json, --raw-json'));
   console.log(divider(args));
 }
 
 function renderRow(args: Args, row: Row) {
   if (args.json) {
-    console.log(JSON.stringify(row));
+    console.log(JSON.stringify(args.rawJson ? row : compactTraceRow(row)));
     return;
   }
   const ok = String(row.status || '') === 'ok' && String(row.code || '') === 'OK' && Number(row.exit_code || 0) === 0;
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', String(row.tool || 'unknown').padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', String(row.code || 'OK')) : c(args, '33', String(row.code || row.status || 'ERR'));
+  const nested = args.nested ? enrichNestedOperationsWithTraceTokens(args, nestedOperationsForRow(row)) : [];
   const time = fmtTraceTime(row.ts);
-  const tokens = fmtTokens(row).padStart(12);
+  const tokens = fmtTokens(row, nested).padStart(12);
   const branch = c(args, branchColor(row), shortBranch(row));
   const first = ok
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
@@ -271,6 +519,12 @@ function renderRow(args: Args, row: Row) {
   if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
   else console.log(first);
   if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
+  renderVerifyBecause(args, row);
+  if (args.nested) {
+    const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
+    for (const operation of visibleNested) console.log(renderNestedOperation(args, operation));
+    if (args.nestedLimit !== undefined && nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
+  }
   console.log(divider(args));
 }
 
@@ -284,13 +538,14 @@ async function main() {
   catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exit(2); }
   if (args.help) { console.log(usage); return; }
   const db = args.db || process.env.TRACE_DB || defaultTraceDb;
+  args.db = db;
   if (!existsSync(db)) { console.error(`trace db not found: ${db}`); process.exit(1); }
 
   const filters = sqlFilters(args);
   if (!args.once) renderStartup(args, db);
   let lastId = 0;
   if (args.limit > 0 || args.once) {
-    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50));
+    const initial = runSql(db, baseSelect(filters, 'DESC', args.limit || 50, args.rawJson));
     const rows = initial.rows.reverse();
     for (const row of rows) {
       lastId = Math.max(lastId, Number(row.rownum || 0));
@@ -306,7 +561,7 @@ async function main() {
 
   let lockedPolls = 0;
   while (true) {
-    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC'));
+    const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC', undefined, args.rawJson));
     if (result.locked) {
       lockedPolls += 1;
       if (!args.json && lockedPolls === 3) console.error(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
@@ -327,3 +582,4 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
+

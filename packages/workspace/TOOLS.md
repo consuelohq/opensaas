@@ -3814,7 +3814,7 @@ example error envelope:
 
 run the full task safety gate
 
-- signature: `workspace.verify({ branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.verify({ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace verify`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -4957,7 +4957,7 @@ example error envelope:
 
 push changed task files to the task branch through GitHub API
 
-- signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; noVerify?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.push`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms

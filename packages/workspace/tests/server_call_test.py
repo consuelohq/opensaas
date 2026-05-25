@@ -527,6 +527,38 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertTrue(result['ok'])
         self.assertEqual(captured['timeout'], 7)
 
+    def test_workspace_call_uses_long_timeout_for_review_and_verify(self):
+        captured = []
+
+        def fake_run(args, **kwargs):
+            captured.append((args[2], kwargs.get('timeout')))
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            review = self.module._run_workspace_call('review.run', taskSession=self.session, tool_input={})
+            verify = self.module._run_workspace_call('verify', taskSession=self.session, tool_input={})
+            status = self.module._run_workspace_call('status', tool_input={})
+
+        self.assertTrue(review['ok'])
+        self.assertTrue(verify['ok'])
+        self.assertTrue(status['ok'])
+        self.assertEqual(captured, [
+            ('review.run', 1200),
+            ('verify', 1200),
+            ('status', 120),
+        ])
+
     def test_workspace_call_writes_raw_sqlite_trace_row(self):
         def fake_run(args, **kwargs):
             return Completed(json.dumps({

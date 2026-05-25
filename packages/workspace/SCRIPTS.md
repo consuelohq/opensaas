@@ -86,7 +86,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 the verify → push dependency:
 ```text
 verify ✓ → writes .task/<area>/<slug>/verify.json stamp → task:push reads stamp → push succeeds
-no verify → no stamp → task:push rejects (unless --no-verify)
+no verify → no publish-valid stamp → task:push rejects unless Ko explicitly approved an approved path
 ```
 
 always use this flow even if the change seems tiny. when in doubt, start from the stream, isolate the task, push early, clean up after merge.
@@ -134,7 +134,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
 | "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --branch <task-branch> read .task/<area>/<slug>/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
-| task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
+| task:push rejects — no publish-valid verify stamp | run `bun run verify` first. only use `--approved --reason "Ko approved: ..."` with explicit Ko approval. |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
 
 ---
@@ -321,7 +321,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run task:fs -- read s
  (run from repo root, not from inside the worktree)
 
 bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.ts
- → works but bypasses the script system. never read raw worktree paths.
+ → works but skips the script system. never read raw worktree paths.
  (use: bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts)
 ```
 
@@ -394,20 +394,18 @@ bad: review fails on a file you didn't touch
 
 ### verify — full task safety gate
 
-runs `bun run review` + db/migration/graphql guardrails. writes `.task/<area>/<slug>/verify.json` stamp on success. `task:push` requires this stamp by default. verify uses the summary review payload internally so agent-facing gate output stays small while full review evidence remains available through `bun run review -- --json`.
+runs `bun run review` + db/migration/graphql guardrails. writes a publish-valid `.task/<area>/<slug>/verify.json` stamp only when the full gate passes. `task:push` requires this publish-valid stamp by default. `review.run` is optional preflight; `verify` is the formal publish gate.
 
 When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
 ```bash
-bun run verify                        # full verify (review + db guards + stamp)
-bun run verify -- --no-review         # skip review, only run db guardrails
-bun run verify -- --no-db             # skip db guardrails
-bun run verify -- --db-warn-only      # report db issues as warnings
-bun run verify -- --no-stamp          # don't write verify.json
-bun run verify -- --json              # structured json output with summary review payload
-bun run verify -- --review-arg=--no-tests  # pass flag-like args through to review
+bun run verify                          # formal publish gate (review + db guards + publish-valid stamp)
+bun run verify -- --json                # structured formal gate output
 bun run verify -- --base stream/dialer  # compare against specific ref
+bun run verify -- --no-stamp            # validation only; does not create a publish-valid stamp
 ```
+
+Debug-only skip flags are intentionally not part of normal task flow. `task:push` requires a publish-valid verify stamp unless Ko explicitly approves an approved push path.
 
 **verify failure modes**
 ```text
@@ -417,7 +415,7 @@ bad: verify fails on a package with no typecheck target
 
 bad: bun run task:push -- --message "fix: thing" --changed
  → error: no matching verify stamp
-(run bun run verify first. or use --no-verify to bypass — but this is visible and logged)
+(run bun run verify first. an approved path requires explicit Ko approval and `--approved --reason "Ko approved: ..."`)
 ```
 
 ---
@@ -521,7 +519,7 @@ reads changed files from the task worktree and pushes them as a commit to the ta
 ```bash
 bun run task:push -- --branch task/dialer/fix-thing --message "fix(dialer): normalize phone numbers" --changed
 bun run task:push -- --pr 213 --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
-bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
+bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --approved --reason "Ko approved: reason"  # Ko-approved verify path
 bun run task:push -- --branch task/dialer/fix-thing --json
 ```
 
@@ -1342,7 +1340,7 @@ Use this after an Open Design workflow creates or opens an artifact. For daily l
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
 
-the scripts wrap these tools with sane defaults, exclusions, and logging. using the raw tools bypasses all of that.
+the scripts wrap these tools with sane defaults, exclusions, and logging. using the raw tools skips all of that.
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/task-push.js",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-05-24T06:56:01.896Z"
+}
