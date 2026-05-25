@@ -207,7 +207,7 @@ const StyledKeyBoardShortcutContainer = styled.span`
   display: flex;
   gap: ${({ theme }) => theme.spacing(1)};
   justify-content: flex-end;
-  min-width: ${({ theme }) => theme.spacing(9)};
+  width: 100%;
 `;
 
 const StyledKeyBoardShortcut = styled.span`
