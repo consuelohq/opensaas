@@ -9,11 +9,30 @@ import { isFieldLinks } from '@/object-record/record-field/ui/types/guards/isFie
 import { isFieldPhones } from '@/object-record/record-field/ui/types/guards/isFieldPhones';
 import { useRecordFieldValue } from '@/object-record/record-store/hooks/useRecordFieldValue';
 import { t } from '@lingui/core/macro';
-import { useContext } from 'react';
+import { createElement, useContext } from 'react';
 import { FieldMetadataSettingsOnClickAction } from 'twenty-shared/types';
 import { getAbsoluteUrl, isDefined } from 'twenty-shared/utils';
 import { IconArrowUpRight, IconCopy } from 'twenty-ui/display';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
+
+const PhoneActionIcon = ({ size = 16 }: { size?: number | string }) =>
+  createElement(
+    'svg',
+    {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: size,
+      height: size,
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: 2,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+    },
+    createElement('path', {
+      d: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
+    }),
+  );
 
 export const useGetSecondaryRecordTableCellButton = () => {
   const { fieldDefinition, recordId } = useContext(FieldContext);
@@ -32,15 +51,6 @@ export const useGetSecondaryRecordTableCellButton = () => {
     return [];
   }
 
-  const mainActionOnClick =
-    fieldDefinition.metadata.settings?.clickAction ??
-    FieldMetadataSettingsOnClickAction.OPEN_LINK;
-
-  const secondaryActionOnClick =
-    mainActionOnClick === FieldMetadataSettingsOnClickAction.OPEN_LINK
-      ? FieldMetadataSettingsOnClickAction.COPY
-      : FieldMetadataSettingsOnClickAction.OPEN_LINK;
-
   let openLinkOnClick: () => void = () => {};
   let copyOnClick: () => void = () => {};
 
@@ -48,12 +58,21 @@ export const useGetSecondaryRecordTableCellButton = () => {
     const { primaryPhoneCallingCode = '', primaryPhoneNumber = '' } =
       fieldValue as FieldPhonesValue;
     const phoneNumber = `${primaryPhoneCallingCode}${primaryPhoneNumber}`;
-    openLinkOnClick = () => {
-      window.open(`tel:${phoneNumber}`, '_blank');
-    };
-    copyOnClick = () => {
-      copyToClipboard(phoneNumber, t`Phone number copied to clipboard`);
-    };
+
+    return [
+      {
+        onClick: () => {
+          window.open(`tel:${phoneNumber}`, '_blank');
+        },
+        Icon: PhoneActionIcon,
+      },
+      {
+        onClick: () => {
+          copyToClipboard(phoneNumber, t`Phone number copied to clipboard`);
+        },
+        Icon: IconCopy,
+      },
+    ];
   }
 
   if (isFieldEmails(fieldDefinition)) {
@@ -75,6 +94,15 @@ export const useGetSecondaryRecordTableCellButton = () => {
       copyToClipboard(url, t`Link copied to clipboard`);
     };
   }
+
+  const mainActionOnClick =
+    fieldDefinition.metadata.settings?.clickAction ??
+    FieldMetadataSettingsOnClickAction.OPEN_LINK;
+
+  const secondaryActionOnClick =
+    mainActionOnClick === FieldMetadataSettingsOnClickAction.OPEN_LINK
+      ? FieldMetadataSettingsOnClickAction.COPY
+      : FieldMetadataSettingsOnClickAction.OPEN_LINK;
 
   return [
     {
