@@ -10,7 +10,7 @@ it is designed for people who want local-machine power without throwing away saf
 - command guardrails with audit logging and `trash` rewrites for deletes
 - supabase-backed memory with semantic search via nvidia embeddings
 - progressive loading for steering + skills so clients do not need the whole world up front
-- optional langsmith tracing on every tool call
+- optional Langfuse tracing on every tool call with local SQLite fallback
 - cloudflare tunnel + WAF workflow for safe exposure to chatgpt connectors
 
 ## quick start
@@ -91,9 +91,13 @@ rewritten examples:
 
 every command is logged to `/tmp/sandbox-audit.jsonl` with timestamp, command prefix, exit code, and any guardrail block reason.
 
-### langsmith observability
+### Langfuse observability
 
-when `LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` are set, every tool call is wrapped with `langsmith.traceable`. that gives you a per-tool execution trail without changing the public MCP surface.
+Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL` to send remote tool-call generation observations to Langfuse. `WORKSPACE_OBSERVABILITY_PROVIDER` defaults to `langfuse`; set it to `none` to disable remote observability or `langsmith` to use the legacy LangSmith path explicitly.
+
+Workspace observations attach estimated token usage through Langfuse `usage_details` so Langfuse consumption dashboards can show token usage. Cost details are not emitted.
+
+Local `context.trace` SQLite logging still runs independently, so workspace tool history and estimated input/output/total token counts remain queryable even when the remote provider is unavailable.
 
 ### memory + progressive loading
 
@@ -118,7 +122,7 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 |------|---------|
 | `get_steering` | bootstrap steering once per server process |
 | `call` | run a manifest-backed typed workspace tool with `{ tool, input, taskSession, timeout }` |
-| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to `workspace.call` for task-scoped work |
+| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to every task-scoped `workspace.call` instead of relying on shared root task metadata |
 
 ## contributed files in this package
 

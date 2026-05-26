@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,6 +22,9 @@ import type {
   ToolRunner,
 } from './types';
 
+const require = createRequire(import.meta.url);
+const { syncValidationEvidence } = require('../task-workpad');
+
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
 type TaskSessionMetadata = {
@@ -36,6 +40,8 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const MAX_LOG_COMMAND_CHARS = 4000;
+
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
@@ -43,6 +49,7 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
+
 
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
@@ -159,7 +166,7 @@ export async function executeTool<TData = unknown>(
       const result = createToolResult({
         ok: false,
         code: 'TASK_SESSION_REQUIRED',
-        message: `${toolName} requires taskSession. Use the taskSession returned by task.start.`,
+        message: `${toolName} requires taskSession. Start a task with task.start and pass data.taskSession; do not rely on task.pin or root .task/current.json.`,
         data: null,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
@@ -208,7 +215,9 @@ export async function executeTool<TData = unknown>(
     };
     const plan = buildCommandPlan(entry, commandInput, cwd, env);
     const plannedCommand = formatCommand(plan);
+    const plannedCommandForLog = formatCommandForLog(plan);
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
+    const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
     if (entry.capabilities.mutating && commandInput.dryRun === true && !entry.command.dryRunFlag) {
       const result = createToolResult({
@@ -221,7 +230,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -241,7 +250,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -259,7 +268,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -267,11 +276,13 @@ export async function executeTool<TData = unknown>(
       const passthrough = parsedStdout.data as ToolResult<TData>;
       const result = {
         ...passthrough,
+        data: compactFacadeData(toolName, passthrough.data),
         now: typeof passthrough.now === 'string' ? passthrough.now : new Date((options.now || Date.now)()).toISOString(),
         stderr: stripCommandEcho(String(passthrough.stderr || '')),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+      maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result;
     }
 
@@ -280,7 +291,7 @@ export async function executeTool<TData = unknown>(
       ok,
       code: ok ? 'OK' : 'COMMAND_FAILED',
       message: ok ? 'command completed' : 'command failed',
-      data: parsedStdout.data as TData,
+      data: compactFacadeData(toolName, parsedStdout.data) as TData,
       stderr: cleanStderr,
       exitCode: runResult.exitCode,
       durationMs: elapsedMs(startedAt, options.now),
@@ -288,7 +299,8 @@ export async function executeTool<TData = unknown>(
       requestId,
       now: options.now,
     });
-    logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
+    maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -305,6 +317,156 @@ export async function executeTool<TData = unknown>(
     });
     logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
     return result as ToolResult<TData>;
+  }
+}
+
+
+type JsonRecord = Record<string, unknown>;
+
+const FACADE_FINDING_SAMPLE_LIMIT = 8;
+const FACADE_MESSAGE_PREVIEW_LIMIT = 240;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function previewText(value: unknown, limit = FACADE_MESSAGE_PREVIEW_LIMIT): string {
+  const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
+  return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
+function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord {
+  const finding = isRecord(value) ? value : {};
+  const fullMessage = finding.message ?? finding.msg ?? '';
+  const message = previewText(fullMessage);
+  const prefix = owner === 'your_change' ? 'your' : 'pre';
+  return {
+    id: typeof finding.id === 'string' ? finding.id : `${prefix}_finding_${String(index + 1).padStart(4, '0')}`,
+    owner,
+    rule: typeof finding.rule === 'string' ? finding.rule : 'UNKNOWN',
+    file: typeof finding.file === 'string' ? finding.file : '',
+    line: typeof finding.line === 'number' ? finding.line : 0,
+    message,
+    messageChars: String(fullMessage || '').length,
+    messageTruncated: message !== String(fullMessage || ''),
+  };
+}
+
+function summarizeFacadeFindings(findings: JsonRecord[]): JsonRecord {
+  const byRule = new Map<string, number>();
+  const byFile = new Map<string, { file: string; count: number; rules: Set<string> }>();
+  for (const finding of findings) {
+    const rule = typeof finding.rule === 'string' ? finding.rule : 'UNKNOWN';
+    const file = typeof finding.file === 'string' && finding.file ? finding.file : '(project)';
+    byRule.set(rule, (byRule.get(rule) || 0) + 1);
+    const fileEntry = byFile.get(file) || { file, count: 0, rules: new Set<string>() };
+    fileEntry.count += 1;
+    fileEntry.rules.add(rule);
+    byFile.set(file, fileEntry);
+  }
+  return {
+    total: findings.length,
+    byRule: [...byRule.entries()].map(([rule, count]) => ({ rule, count })),
+    byFile: [...byFile.values()]
+      .map((entry) => ({ file: entry.file, count: entry.count, rules: [...entry.rules].sort() }))
+      .sort((a, b) => b.count - a.count || a.file.localeCompare(b.file)),
+    sample: findings.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    truncated: findings.length > FACADE_FINDING_SAMPLE_LIMIT,
+    omitted: Math.max(0, findings.length - FACADE_FINDING_SAMPLE_LIMIT),
+  };
+}
+
+function compactReviewData(data: unknown): unknown {
+  if (!isRecord(data)) return data;
+  if (data.schema === 'review.summary.v1') {
+    return {
+      ...data,
+      mustFixTotal: asArray(data.mustFix).length,
+      mustFix: asArray(data.mustFix).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'your_change')),
+      preExistingDigest: isRecord(data.preExistingDigest)
+        ? { ...data.preExistingDigest, sample: asArray(data.preExistingDigest.sample).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing')) }
+        : data.preExistingDigest,
+    };
+  }
+
+  const yours = asArray(data.yours).map((finding, index) => compactFacadeFinding(finding, index, 'your_change'));
+  const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
+  const testResults = asArray(data.testResults);
+  const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  return {
+    schema: 'review.summary.v1',
+    base: data.base,
+    branch: data.branch,
+    files: data.files,
+    affectedProjects: data.affectedProjects,
+    checksRun: testResults.length > 0
+      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
+      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    summary: {
+      yourIssues: yours.length,
+      preExistingIssues: preExisting.length,
+      failedTestSuites: failedSuites.length,
+      blockingIssues: yours.length + failedSuites.length,
+    },
+    mustFixTotal: yours.length,
+    mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    byRule: {
+      yourChanges: summarizeFacadeFindings(yours).byRule,
+      preExisting: summarizeFacadeFindings(preExisting).byRule,
+    },
+    byFile: {
+      yourChanges: summarizeFacadeFindings(yours).byFile,
+      preExisting: summarizeFacadeFindings(preExisting).byFile,
+    },
+    preExistingDigest: summarizeFacadeFindings(preExisting),
+    testSummary: {
+      totalSuites: testResults.length,
+      passedSuites: testResults.length - failedSuites.length,
+      failedSuites: failedSuites.length,
+      failures: failedSuites.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    },
+    fullEvidence: {
+      command: typeof data.base === 'string' ? `bun run review -- --base ${data.base} --json` : 'bun run review -- --json',
+      note: 'Facade compacted full review JSON for agent output. Full raw findings remain available from review --json in the task worktree.',
+    },
+    confidence: data.confidence ?? null,
+  };
+}
+
+function compactVerifyData(data: unknown): unknown {
+  if (!isRecord(data) || !isRecord(data.review)) return data;
+  return {
+    ...data,
+    review: {
+      ...data.review,
+      data: compactReviewData(data.review.data),
+    },
+  };
+}
+
+function compactFacadeData(toolName: string, data: unknown): unknown {
+  if (toolName === 'review.run') return compactReviewData(data);
+  if (toolName === 'verify') return compactVerifyData(data);
+  return data;
+}
+
+function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
+  if (!['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'].includes(toolName)) return;
+  const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
+  const taskBranch = typeof input.branch === 'string' ? input.branch : '';
+  if (!taskWorktree || !taskBranch.startsWith('task/')) return;
+  try {
+    syncValidationEvidence(taskWorktree, { taskBranch }, {
+      command: toolName,
+      ok: result.ok,
+      detail: typeof result.code === 'string' ? result.code : undefined,
+    });
+  } catch {
+    // Workpad sync is best-effort evidence; tool execution result remains authoritative.
   }
 }
 
@@ -343,7 +505,6 @@ async function executeInternalTool<TData>(
     const task = getCurrentTask({
       cwd: context.cwd,
       env: context.env,
-      pinnedBranch: context.options.pinnedBranch,
       currentTask: context.options.currentTask,
       candidates: context.options.candidates,
     });
@@ -360,56 +521,6 @@ async function executeInternalTool<TData>(
     return result as ToolResult<TData>;
   }
 
-  if (internal === 'task.pin') {
-    const resolution = resolveBranchIfNeeded(
-      { ...entry, command: { ...entry.command, branchMode: 'required' } },
-      input,
-      context.cwd,
-      context.env,
-      context.options,
-    );
-    if (!resolution.ok) {
-      const result = createToolResult({
-        ok: false,
-        code: resolution.code,
-        message: resolution.message,
-        data: { candidates: resolution.candidates },
-        durationMs: elapsedMs(context.startedAt, context.options.now),
-        traceId: context.traceId,
-        requestId: context.requestId,
-        now: options.now,
-      });
-      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
-      return result as ToolResult<TData>;
-    }
-
-    context.options.setPinnedBranch?.(resolution.branch);
-
-    // persist pin to repo root .task/current.json so it survives across CLI calls
-    try {
-      const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], {
-        cwd: context.cwd,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      const metaDir = path.join(repoRoot, ".task");
-      fs.mkdirSync(metaDir, { recursive: true });
-      const area = getAreaFromBranch(resolution.branch) || "unknown";
-      const meta = { area, taskBranch: resolution.branch, pinnedAt: new Date().toISOString() };
-      fs.writeFileSync(path.join(metaDir, "current.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
-    } catch { /* non-critical — in-memory pin still works for this session */ }
-    const result = createToolResult({
-      ok: true,
-      code: 'OK',
-      message: 'task branch pinned',
-      data: { branch: resolution.branch },
-      durationMs: elapsedMs(context.startedAt, context.options.now),
-      traceId: context.traceId,
-      requestId: context.requestId,
-    });
-    logResult(entry, entry.name, result, entry.underlying, resolution.branch, undefined, context.options.logMode);
-    return result as ToolResult<TData>;
-  }
 
   if (internal === 'task.ensureSynced') {
     const resolution = resolveBranchIfNeeded(
@@ -428,7 +539,7 @@ async function executeInternalTool<TData>(
         durationMs: elapsedMs(context.startedAt, context.options.now),
         traceId: context.traceId,
         requestId: context.requestId,
-        now: options.now,
+        now: context.options.now,
       });
       logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
       return result as ToolResult<TData>;
@@ -462,7 +573,7 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, formatCommand(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
+    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
     return result as ToolResult<TData>;
   }
 
@@ -485,14 +596,14 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   if (typeof input.branch === 'string') return {
     ok: false,
     code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or branch, not both.',
+    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
   };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
     ok: false,
     code: 'TASK_SESSION_NOT_FOUND',
-    message: 'taskSession was not found. Use the taskSession returned by task.start.',
+    message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
   };
 
   const branch = metadata.branch || metadata.taskBranch;
@@ -511,26 +622,48 @@ function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): val
   return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
 }
 
+function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>, worktreePath: string, warn: boolean): void {
+  candidates.push({ path: path.join(worktreePath, '.task', 'session.json'), warn });
+  const taskRoot = path.join(worktreePath, '.task');
+  if (!fs.existsSync(taskRoot)) return;
+
+  for (const areaEntry of fs.readdirSync(taskRoot, { withFileTypes: true })) {
+    if (!areaEntry.isDirectory()) continue;
+    if (areaEntry.name === 'tasks' || areaEntry.name === 'reviews') continue;
+    const areaPath = path.join(taskRoot, areaEntry.name);
+    for (const taskEntry of fs.readdirSync(areaPath, { withFileTypes: true })) {
+      if (!taskEntry.isDirectory()) continue;
+      candidates.push({ path: path.join(areaPath, taskEntry.name, 'session.json'), warn });
+    }
+  }
+}
+
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
-  const candidates = new Set<string>();
-  candidates.add(path.join(cwd, '.task', 'session.json'));
+  const candidates: Array<{ path: string; warn: boolean }> = [];
+  addSessionCandidates(candidates, cwd, true);
+
+  if (typeof env.TASK_WORKTREE === 'string' && env.TASK_WORKTREE.length > 0) {
+    addSessionCandidates(candidates, env.TASK_WORKTREE, true);
+  }
 
   const absoluteWorktreeRoot = getWorktreeRoot(env);
   if (fs.existsSync(absoluteWorktreeRoot)) {
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
-      candidates.add(path.join(absoluteWorktreeRoot, name, '.task', 'session.json'));
+      if (!name.startsWith('task-')) continue;
+      addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);
     }
   }
 
+  const seen = new Set<string>();
   for (const candidate of candidates) {
+    if (seen.has(candidate.path)) continue;
+    seen.add(candidate.path);
     try {
-      const parsed = JSON.parse(fs.readFileSync(candidate, 'utf8')) as unknown;
-      if (isTaskSessionMetadata(parsed, taskSession)) {
-        return parsed;
-      }
+      const parsed = JSON.parse(fs.readFileSync(candidate.path, 'utf8')) as unknown;
+      if (isTaskSessionMetadata(parsed, taskSession)) return parsed;
     } catch (error: unknown) {
-      if (fs.existsSync(candidate)) {
-        process.stderr.write(`warning: failed to parse task session metadata ${candidate}: ${getErrorMessage(error)}\n`);
+      if (candidate.warn && fs.existsSync(candidate.path)) {
+        process.stderr.write(`warning: failed to parse task session metadata ${candidate.path}: ${getErrorMessage(error)}\n`);
       }
     }
   }
@@ -554,7 +687,6 @@ function resolveBranchIfNeeded(
     explicitBranch,
     cwd,
     env,
-    pinnedBranch: options.pinnedBranch,
     currentTask: options.currentTask,
     candidates: options.candidates,
   });
@@ -595,7 +727,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script),
+    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),
@@ -618,8 +750,11 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   if (kind === 'array' || kind === 'commandArray') {
     if (!Array.isArray(value)) return;
     if (value.length === 0) return;
-    if (argument.flag) args.push(argument.flag);
-    args.push(...value.map(String));
+    if (argument.flag) {
+      for (const item of value) args.push(argument.flag, String(item));
+    } else {
+      args.push(...value.map(String));
+    }
     return;
   }
 
@@ -700,9 +835,12 @@ function findJsonStart(value: string): number {
 function elapsedMs(startedAt: number, now?: () => number): number {
   return Math.max(0, (now || Date.now)() - startedAt);
 }
-
 function formatCommand(plan: CommandPlan): string {
   return [plan.command, ...plan.args].join(' ');
+}
+
+function formatCommandForLog(plan: CommandPlan): string {
+  return truncateCommandForLog(formatCommand(plan));
 }
 
 function formatFacadeCommand(toolName: string, input: ToolInput): string {
@@ -711,6 +849,15 @@ function formatFacadeCommand(toolName: string, input: ToolInput): string {
   );
   const hasArgs = Object.keys(filtered).length > 0;
   return hasArgs ? `workspace ${toolName} '${JSON.stringify(filtered)}'` : `workspace ${toolName}`;
+}
+
+function formatFacadeCommandForLog(toolName: string, input: ToolInput): string {
+  return truncateCommandForLog(formatFacadeCommand(toolName, input));
+}
+
+function truncateCommandForLog(command: string): string {
+  if (command.length <= MAX_LOG_COMMAND_CHARS) return command;
+  return `${command.slice(0, MAX_LOG_COMMAND_CHARS)}... [truncated ${command.length - MAX_LOG_COMMAND_CHARS} chars]`;
 }
 
 function stripCommandEcho(stderr: string): string {
@@ -734,7 +881,8 @@ function resolveGitRoot(cwd: string): string {
   }
 }
 
-function resolveWorkspaceCommandCwd(cwd: string, script: string): string {
+function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
+  if (script === 'code-run' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   return resolveControllerRoot(cwd) || cwd;
 }
@@ -782,3 +930,4 @@ function logResult(
     },
   });
 }
+

@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-05-24T07:05:55.949Z"
+}

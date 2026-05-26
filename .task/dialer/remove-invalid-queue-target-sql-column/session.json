@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4e7aef086298",
+  "tmuxSession": "opensaas-dialer-remove-invalid-queue-target-sql-column-4e7aef08",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/remove-invalid-queue-target-sql-column",
+  "branch": "task/dialer/remove-invalid-queue-target-sql-column",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-remove-invalid-queue-target-sql-column",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-remove-invalid-queue-target-sql-column",
+  "prNumber": 561,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/561",
+  "createdAt": "2026-05-24T03:37:15.632Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-remove-invalid-queue-target-sql-column/.task/dialer/remove-invalid-queue-target-sql-column/session.json"
+}

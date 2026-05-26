@@ -30,7 +30,11 @@ import {
   type QueueOutcome,
 } from '@/dialer/types/queue';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { getBackendQueueSessionEndpoint } from '@/dialer/utils/backend-queue-session';
+import {
+  getBackendQueueContactId,
+  getBackendQueueSessionEndpoint,
+  isBackendQueueContactIdMatch,
+} from '@/dialer/utils/backend-queue-session';
 import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
@@ -280,7 +284,7 @@ const mapRecordToDialerContact = (
     [firstName, lastName].filter(Boolean).join(' ') || fallbackPhoneNumber;
 
   return {
-    id: record.personId ?? record.id,
+    id: getBackendQueueContactId(record),
     name,
     firstName,
     lastName,
@@ -500,8 +504,8 @@ export const useOpportunityQueueWorkspace = ({
         return;
       }
 
-      const nextIndex = callableRecords.findIndex(
-        (record) => record.id === contactId,
+      const nextIndex = callableRecords.findIndex((record) =>
+        isBackendQueueContactIdMatch(record, contactId),
       );
 
       if (nextIndex < 0 || nextIndex === persistedCurrentIndexRef.current) {
@@ -622,7 +626,7 @@ export const useOpportunityQueueWorkspace = ({
                 parallelDialingEnabled: requestedParallelDialingEnabled,
                 parallelDialingMaxLines: requestedParallelDialingMaxLines,
               },
-              contactIds: totalCallableRecords.map((record) => record.id),
+              contactIds: totalCallableRecords.map(getBackendQueueContactId),
             }),
           },
         );
@@ -659,7 +663,7 @@ export const useOpportunityQueueWorkspace = ({
               parallelDialingEnabled: requestedParallelDialingEnabled,
               parallelDialingMaxLines: requestedParallelDialingMaxLines,
             },
-            contactIds: callableRecords.map((record) => record.id),
+            contactIds: callableRecords.map(getBackendQueueContactId),
           }),
         },
       );
@@ -701,12 +705,14 @@ export const useOpportunityQueueWorkspace = ({
         return queueItems;
       }
 
-      const backendQueueItem = backendQueueItemsByContactId.get(record.id);
+      const backendQueueItem = backendQueueItemsByContactId.get(
+        getBackendQueueContactId(record),
+      );
 
       queueItems.push({
         id: record.id,
         queueId: backendQueue?.id ?? listId,
-        contactId: record.personId ?? record.id,
+        contactId: getBackendQueueContactId(record),
         contact: mapRecordToDialerContact(record, phoneNumber),
         position: record.position ?? index,
         status: backendQueueItem
@@ -1198,7 +1204,7 @@ export const useOpportunityQueueWorkspace = ({
           ? {
               ...previousBackendQueue,
               items: previousBackendQueue.items?.map((backendQueueItem) =>
-                backendQueueItem.contact_id === currentQueueItem.id
+                backendQueueItem.contact_id === currentQueueItem.contactId
                   ? {
                       ...backendQueueItem,
                       status: 'failed',
@@ -1275,7 +1281,9 @@ export const useOpportunityQueueWorkspace = ({
       const autoStartedItemId = currentQueueItem.id;
       autoStartedItemIdRef.current = autoStartedItemId;
 
-      void startParallelBatch()
+      void startParallelBatch({
+        queueId: backendQueue?.id ?? currentQueueItem.queueId,
+      })
         .then((result) => {
           if (result.status === 'blocked' || result.status === 'failed') {
             return;
@@ -1303,6 +1311,7 @@ export const useOpportunityQueueWorkspace = ({
     void startCurrentQueueItem();
   }, [
     callState.status,
+    backendQueue?.id,
     currentQueueItem,
     listId,
     listStatus,

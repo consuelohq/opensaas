@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+  "events": [
+    {
+      "id": "fdb57bf4-348c-496b-9a45-824c406b3626",
+      "occurred_at": "2026-05-24T07:18:36.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "366e7caa-0b84-449a-93f4-b90beb9824d3",
+      "occurred_at": "2026-05-24T07:18:36.556Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "a6a56ecc-a958-4abb-bec6-e35f7eb27df6",
+      "occurred_at": "2026-05-24T07:18:36.866Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "c7bebec1-12fb-4f93-a1e6-82ccb090816e",
+      "occurred_at": "2026-05-24T07:18:46.003Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "368e4ed5-2984-4f20-a260-10b18b2f7ea9",
+      "occurred_at": "2026-05-24T07:18:57.488Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "10590374-5a99-4406-b968-c70b9ec85acc",
+      "occurred_at": "2026-05-24T07:19:10.721Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "3f071431-0448-460d-8da2-8215b24b9329",
+      "occurred_at": "2026-05-24T07:19:17.446Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "71bd9d3d-8481-41cd-b652-6f86ea1fc3ff",
+      "occurred_at": "2026-05-24T07:19:40.634Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "112858ea-0c79-4d37-8de6-6cdd399efe06",
+      "occurred_at": "2026-05-24T07:19:45.731Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "7d43f9dd-1b0c-4acf-af3b-2d85a2a47d6e",
+      "occurred_at": "2026-05-24T07:20:51.760Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "d6b6699f-3466-4ea1-ae72-bb6ee1ab8882",
+      "occurred_at": "2026-05-24T07:21:09.800Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    },
+    {
+      "id": "21916966-401e-4c82-ab18-3439bb2d8c17",
+      "occurred_at": "2026-05-24T07:22:54.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T07:22:54.452Z"
+}

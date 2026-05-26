@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 357,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/357",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments",
+  "taskSession": "tsk_c2e47e7381a6",
+  "tmuxSession": "opensaas-workspace-agents-fix-task-cleanup-tmux-review-comments-c2e47e73",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments/.task/session.json",
+  "createdAt": "2026-05-09T16:15:22.936Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-decision-process-from-steering-bootstrap",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 424,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/424",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/424",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/424/remove-decision-process-from-steering-bootstrap",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/424",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/424/remove-decision-process-from-steering-bootstrap",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-decision-process-from-steering-bootstrap",
+  "taskSession": "tsk_ab2d94223cc4",
+  "tmuxSession": "opensaas-workspace-agents-remove-decision-process-from-steering-bootstrap-ab2d9422",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-decision-process-from-steering-bootstrap/.task/session.json",
+  "createdAt": "2026-05-21T06:01:21.721Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_180a3a5f1f1b",
+  "tmuxSession": "opensaas-dialer-ship-queue-call-target-resolution-180a3a5f",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/ship-queue-call-target-resolution",
+  "branch": "task/dialer/ship-queue-call-target-resolution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-call-target-resolution",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-call-target-resolution",
+  "prNumber": 551,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/551",
+  "createdAt": "2026-05-24T00:32:57.895Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-call-target-resolution/.task/dialer/ship-queue-call-target-resolution/session.json"
+}

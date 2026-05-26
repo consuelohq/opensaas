@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/render-trace-watch-time-in-eastern",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 530,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/530",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/530",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/530/render-trace-watch-time-in-eastern",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/530",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/530/render-trace-watch-time-in-eastern",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-render-trace-watch-time-in-eastern",
+  "taskSession": "tsk_8306a13c0b66",
+  "tmuxSession": "opensaas-workspace-agents-render-trace-watch-time-in-eastern-8306a13c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-render-trace-watch-time-in-eastern/.task/workspace-agents/render-trace-watch-time-in-eastern/session.json",
+  "createdAt": "2026-05-23T10:34:22.939Z"
+}

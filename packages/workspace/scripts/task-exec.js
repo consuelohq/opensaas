@@ -32,6 +32,13 @@ function shellQuote(value) {
   return `'${String(value).replace(/'/g, `'"'"'`)}'`;
 }
 
+function formatCommandPreview(commandArgs) {
+  const maxChars = 2000;
+  const command = commandArgs.join(' ');
+  if (command.length <= maxChars) return command;
+  return `${command.slice(0, maxChars)}... [truncated ${command.length - maxChars} chars]`;
+}
+
 function runTmux(args, options = {}) {
   return spawnSync('tmux', args, {
     encoding: 'utf8',
@@ -56,15 +63,19 @@ function executeInTmux({ tmuxSession, worktreePath, taskBranch, commandArgs }) {
     const stdoutPath = path.join(tempDir, 'stdout.log');
     const stderrPath = path.join(tempDir, 'stderr.log');
     const statusPath = path.join(tempDir, 'status');
+    const scriptPath = path.join(tempDir, 'command.sh');
     const command = commandArgs.map(shellQuote).join(' ');
     const script = [
+      '#!/usr/bin/env bash',
       'set +e',
       `${command} > ${shellQuote(stdoutPath)} 2> ${shellQuote(stderrPath)}`,
-      `status=$?`,
+      'status=$?',
       `printf '%s\n' "$status" > ${shellQuote(statusPath)}`,
       `tmux wait-for -S ${shellQuote(token)}`,
       'exit "$status"',
-    ].join('; ');
+      '',
+    ].join('\n');
+    fs.writeFileSync(scriptPath, script, { mode: 0o700 });
 
     const start = runTmux([
       'new-window',
@@ -77,8 +88,7 @@ function executeInTmux({ tmuxSession, worktreePath, taskBranch, commandArgs }) {
       `TASK_BRANCH=${taskBranch}`,
       `TASK_WORKTREE=${worktreePath}`,
       'bash',
-      '-lc',
-      script,
+      scriptPath,
     ]);
     if (start.status !== 0) {
       const detail = start.stderr || start.stdout || `exit ${start.status}`;
@@ -150,7 +160,7 @@ function main() {
   writeStderr(`→ task: ${task.meta.area}/${task.meta.taskBranch.split('/').pop()}`);
   writeStderr(`→ tmux: ${tmuxSession}`);
   writeStderr(`→ cwd: ${task.worktreePath}`);
-  writeStderr(`→ running: ${commandArgs.join(' ')}`);
+  writeStderr(`→ running: ${formatCommandPreview(commandArgs)}`);
 
   try {
     process.exitCode = executeInTmux({

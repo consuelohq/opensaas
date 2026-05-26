@@ -1,4 +1,5 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -102,11 +103,32 @@ function writeTaskSession(tempRoot: string, taskSession: string, branch: string 
   }, null, 2));
 }
 
+function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branch: string): void {
+  const [, area, ...slugParts] = branch.split('/');
+  const slug = slugParts.join('-');
+  const taskDir = join(tempRoot, '.task', area, slug);
+  mkdirSync(taskDir, { recursive: true });
+  writeFileSync(join(taskDir, 'session.json'), JSON.stringify({
+    taskSession,
+    tmuxSession: 'opensaas-test',
+    branch,
+    worktree: tempRoot,
+  }, null, 2));
+}
+
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
 
 describe('typed facade executor', () => {
+  it('registers every manifest input schema', () => {
+    const missing = manifestEntries
+      .map((entry) => entry.inputSchema)
+      .filter((name, index, names) => names.indexOf(name) === index)
+      .filter((name) => !getInputSchema(name));
+    expect(missing).toEqual([]);
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
@@ -146,6 +168,89 @@ describe('typed facade executor', () => {
     const entry = getToolManifestEntry(toolName);
     expect(result.code).toBe('OK');
     expect(plans[0].args).toContain(entry?.command.dryRunFlag);
+  });
+
+  it('maps fs.write contentFile to --content-file', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-content-file-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_fs_write_content_file');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.write', {
+        taskSession: 'tsk_fs_write_content_file',
+        path: 'tmp/example.txt',
+        contentFile: '/tmp/example.txt',
+        force: true,
+      }, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--content-file');
+      expect(plans[0].args).toContain('/tmp/example.txt');
+      expect(plans[0].args).not.toContain('--content');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.write calls with both content and contentFile', async () => {
+    const result = await executeTool('fs.write', {
+      taskSession: 'tsk_conflict',
+      path: 'tmp/example.txt',
+      content: 'hello',
+      contentFile: '/tmp/example.txt',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
+    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const writePayload = join(tempRoot, 'write-payload.txt');
+    const patchPayload = join(tempRoot, 'patch-payload.txt');
+    try {
+      writeFileSync(writePayload, 'line one\nline two\n');
+      writeFileSync(patchPayload, 'patched one\npatched two\n');
+
+      const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(writeResult.status).toBe(0);
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
+
+      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(inlinePatchResult.status).toBe(1);
+      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
+
+      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(patchResult.status).toBe(0);
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs write content-file directories', () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
+    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    try {
+      const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('content file must be a regular file');
+      expect(existsSync(join(tempRoot, 'example.txt'))).toBe(false);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('passes request ids through the envelope', async () => {
@@ -223,6 +328,38 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('should resolve namespaced taskSession metadata when unrelated worktrees are malformed', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-namespaced-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    process.env.WORKSPACE_WORKTREE_ROOT = worktreeRoot;
+    try {
+      writeNamespacedTaskSession(tempRoot, 'tsk_namespaced', 'task/workspace-agents/namespaced-session');
+      mkdirSync(join(worktreeRoot, 'stream-os-sync-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'stream-os-sync-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+      mkdirSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task'), { recursive: true });
+      writeFileSync(join(worktreeRoot, 'task-workspace-agents-bad', '.task', 'session.json'), '<<<<<<< HEAD\n');
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_namespaced',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/namespaced-session');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('resolves taskSession metadata before branch planning', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-'));
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
@@ -286,6 +423,116 @@ describe('typed facade executor', () => {
       expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/review-session');
       expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
       expect(plans[0].args).toContain('--no-tests');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('compacts review.run full-json output into summary data', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-review-compact-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_review_compact',
+        tmuxSession: 'opensaas-review-compact',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const longMessage = 'x'.repeat(2000);
+      const runner: ToolRunner = async () => ({
+        stdout: JSON.stringify({
+          base: 'origin/main',
+          branch: TEST_BRANCH,
+          files: 1,
+          affectedProjects: [],
+          yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
+          preExisting: [{ rule: 'ESLINT', file: 'src/b.ts', line: 3, msg: longMessage }],
+          testResults: [],
+          confidence: null,
+        }),
+        stderr: '',
+        exitCode: 0,
+      });
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('review.run', { taskSession: 'tsk_review_compact', noTests: true }, {
+        ...stableOptions(runner, plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--json');
+      expect(plans[0].args).not.toContain('--summary-json');
+      expect((result.data as { schema?: string }).schema).toBe('review.summary.v1');
+      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number }; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
+      expect(data.summary.yourIssues).toBe(1);
+      expect(data.summary.preExistingIssues).toBe(1);
+      expect(data.mustFix[0].message.length).toBeLessThan(600);
+      expect(data.mustFix[0].messageTruncated).toBe(true);
+      expect(data.preExistingDigest.sample[0].message.length).toBeLessThan(600);
+      expect(data.preExistingDigest.sample[0].messageTruncated).toBe(true);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('compacts nested verify review data from legacy full-json output', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_verify_compact',
+        tmuxSession: 'opensaas-verify-compact',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const longMessage = 'y'.repeat(1800);
+      const runner: ToolRunner = async () => ({
+        stdout: JSON.stringify({
+          branch: TEST_BRANCH,
+          base: 'origin/main',
+          review: {
+            passed: true,
+            data: {
+              base: 'origin/main',
+              branch: TEST_BRANCH,
+              files: 1,
+              affectedProjects: [],
+              yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
+              preExisting: [],
+              testResults: [],
+              confidence: null,
+            },
+          },
+          db: { skipped: true, passed: true },
+          passed: true,
+        }),
+        stderr: '',
+        exitCode: 0,
+      });
+
+      const result = await executeTool('verify', { taskSession: 'tsk_verify_compact', noDb: true, noStamp: true }, {
+        ...stableOptions(runner),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { review: { data: { schema?: string; mustFix: Array<{ message: string; messageTruncated: boolean }> } } };
+      expect(data.review.data.schema).toBe('review.summary.v1');
+      expect(data.review.data.mustFix[0].message.length).toBeLessThan(600);
+      expect(data.review.data.mustFix[0].messageTruncated).toBe(true);
     } finally {
       if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
       else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
@@ -384,22 +631,6 @@ describe('typed facade executor', () => {
 });
 
 describe('branch resolver', () => {
-  it('resolves pinned branch before current metadata', () => {
-    const result = resolveTaskBranch({
-      pinnedBranch: 'task/workspace-agents/pinned',
-      currentTask: {
-        branch: TEST_BRANCH,
-        area: 'workspace-agents',
-        worktree: '/tmp/worktree',
-      },
-    });
-    expect(result).toEqual({
-      ok: true,
-      branch: 'task/workspace-agents/pinned',
-      source: 'pinned',
-    });
-  });
-
   it('resolves current metadata when present', () => {
     const result = resolveTaskBranch({
       currentTask: {
@@ -442,7 +673,7 @@ describe('branch resolver', () => {
     expect(result).toEqual({
       ok: false,
       code: 'WORKTREE_NOT_FOUND',
-      message: 'no active task worktree found; run task:start first or pass branch',
+      message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
       candidates: [],
     });
   });
@@ -500,6 +731,32 @@ describe('batch executor', () => {
 });
 
 describe('composed and mac wrappers', () => {
+  it('builds git.diff command arguments', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-git-diff-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_git_diff');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('git.diff', {
+        taskSession: 'tsk_git_diff',
+        base: 'origin/main',
+        stat: true,
+        files: true,
+        hunks: true,
+        maxBytes: 20000,
+      }, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('git:diff');
+      expect(plans[0].args).toContain('--base');
+      expect(plans[0].args).toContain('origin/main');
+      expect(plans[0].args).toContain('--stat');
+      expect(plans[0].args).toContain('--files');
+      expect(plans[0].args).toContain('--hunks');
+      expect(plans[0].args).toContain('--max-bytes');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('builds checkFiles command arguments', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-check-files-'));
     try {

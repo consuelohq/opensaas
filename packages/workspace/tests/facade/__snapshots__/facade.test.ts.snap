@@ -85,6 +85,23 @@ exports[`typed facade executor > returns a failure envelope for browser.click 1`
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for browser.clipboard 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for browser.close 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -103,6 +120,57 @@ exports[`typed facade executor > returns a failure envelope for browser.close 1`
 `;
 
 exports[`typed facade executor > returns a failure envelope for browser.consuelo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.cookies 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.dialog 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.download 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -153,7 +221,58 @@ exports[`typed facade executor > returns a failure envelope for browser.fill 1`]
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for browser.find 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.get 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for browser.login 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.network 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -255,6 +374,23 @@ exports[`typed facade executor > returns a failure envelope for browser.snap 1`]
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for browser.tabs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for browser.test 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -272,7 +408,41 @@ exports[`typed facade executor > returns a failure envelope for browser.test 1`]
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for checkFiles 1`] = `
+exports[`typed facade executor > returns a failure envelope for browser.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for browser.wait 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for code.run 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -748,6 +918,23 @@ exports[`typed facade executor > returns a failure envelope for context.search 1
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for context.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for decideNext 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -765,7 +952,7 @@ exports[`typed facade executor > returns a failure envelope for decideNext 1`] =
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for doctor 1`] = `
+exports[`typed facade executor > returns a failure envelope for design.publish 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -782,7 +969,7 @@ exports[`typed facade executor > returns a failure envelope for doctor 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for editFlow 1`] = `
+exports[`typed facade executor > returns a failure envelope for doctor 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -817,108 +1004,6 @@ exports[`typed facade executor > returns a failure envelope for exploit 1`] = `
 `;
 
 exports[`typed facade executor > returns a failure envelope for explore 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.patch 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.read 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.trash 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for fs.write 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -986,7 +1071,7 @@ exports[`typed facade executor > returns a failure envelope for gh 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for http 1`] = `
+exports[`typed facade executor > returns a failure envelope for github 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1309,7 +1394,7 @@ exports[`typed facade executor > returns a failure envelope for railway.redeploy
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for review.run 1`] = `
+exports[`typed facade executor > returns a failure envelope for research.ingest 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1530,57 +1615,6 @@ exports[`typed facade executor > returns a failure envelope for stream.sync 1`] 
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for task.cleanup 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for task.exec 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for task.finish 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a failure envelope for task.init 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1599,57 +1633,6 @@ exports[`typed facade executor > returns a failure envelope for task.init 1`] = 
 `;
 
 exports[`typed facade executor > returns a failure envelope for task.merge 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for task.pr 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for task.prs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for task.push 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1701,23 +1684,6 @@ exports[`typed facade executor > returns a failure envelope for taskMeta.smoke 1
 `;
 
 exports[`typed facade executor > returns a failure envelope for tmp 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for verify 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1853,6 +1819,23 @@ exports[`typed facade executor > returns a success envelope for browser.click 1`
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for browser.clipboard 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for browser.close 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1871,6 +1854,57 @@ exports[`typed facade executor > returns a success envelope for browser.close 1`
 `;
 
 exports[`typed facade executor > returns a success envelope for browser.consuelo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.cookies 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.dialog 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.download 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -1921,7 +1955,58 @@ exports[`typed facade executor > returns a success envelope for browser.fill 1`]
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for browser.find 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.get 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for browser.login 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.network 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2023,6 +2108,23 @@ exports[`typed facade executor > returns a success envelope for browser.snap 1`]
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for browser.tabs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for browser.test 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -2040,7 +2142,41 @@ exports[`typed facade executor > returns a success envelope for browser.test 1`]
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for checkFiles 1`] = `
+exports[`typed facade executor > returns a success envelope for browser.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for browser.wait 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for code.run 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2516,6 +2652,23 @@ exports[`typed facade executor > returns a success envelope for context.search 1
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for context.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for decideNext 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -2533,7 +2686,7 @@ exports[`typed facade executor > returns a success envelope for decideNext 1`] =
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for doctor 1`] = `
+exports[`typed facade executor > returns a success envelope for design.publish 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2550,7 +2703,7 @@ exports[`typed facade executor > returns a success envelope for doctor 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for editFlow 1`] = `
+exports[`typed facade executor > returns a success envelope for doctor 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2585,108 +2738,6 @@ exports[`typed facade executor > returns a success envelope for exploit 1`] = `
 `;
 
 exports[`typed facade executor > returns a success envelope for explore 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.patch 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.read 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.trash 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for fs.write 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2754,7 +2805,7 @@ exports[`typed facade executor > returns a success envelope for gh 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for http 1`] = `
+exports[`typed facade executor > returns a success envelope for github 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -3077,7 +3128,7 @@ exports[`typed facade executor > returns a success envelope for railway.redeploy
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for review.run 1`] = `
+exports[`typed facade executor > returns a success envelope for research.ingest 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -3298,57 +3349,6 @@ exports[`typed facade executor > returns a success envelope for stream.sync 1`] 
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for task.cleanup 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for task.exec 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for task.finish 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a success envelope for task.init 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -3367,57 +3367,6 @@ exports[`typed facade executor > returns a success envelope for task.init 1`] = 
 `;
 
 exports[`typed facade executor > returns a success envelope for task.merge 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for task.pr 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for task.prs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for task.push 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -3485,23 +3434,6 @@ exports[`typed facade executor > returns a success envelope for tmp 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for verify 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a success envelope for wait 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -3536,1775 +3468,7 @@ exports[`typed facade executor > returns a success envelope for website.deploy 1
 }
 `;
 
-exports[`typed facade executor returns a success envelope for fs.read 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for fs.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for fs.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for fs.write 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for fs.patch 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for http 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for fs.trash 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.start 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.init 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.push 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.pr 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.prs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.merge 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.finish 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.cleanup 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for task.exec 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for taskMeta.smoke 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.find 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.get 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.save 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for context.categories 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for explore 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for decideNext 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for confidenceScore 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for exploit 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for confirm 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for audit 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for stream.context 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for stream.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for stream.sync 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for review.run 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for verify 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for prReview 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for aiReview 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for gh 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.open 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.test 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.consuelo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.app 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.screenshot 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.snap 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.click 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.fill 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.login 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.reauth 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.eval 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.raw 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for browser.close 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.config 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.projects 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.issues 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.issue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.issueEvent 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.event 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for sentry.trace 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.issue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.createIssue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.updateIssue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.labels 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.teams 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.projects 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for linear.states 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for wait 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for tmp 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for railway.logs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for railway.redeploy 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for website.deploy 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for doctor 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for status 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for server 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for checkFiles 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for editFlow 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.exec 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.read 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.write 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.process 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for mac.port 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for generate.docs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for generate.types 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.run 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.getDesignSystem 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.listSkills 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.listDesignSystems 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.upstreamStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.railwayCheck 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.check 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateWebsite 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateDemo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateImageBrief 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateDigitalEguide 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateEmail 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.generateMotionFrame 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.renderHyperframes 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.uiBg 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.uiStop 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.uiStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.uiLogs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a success envelope for consueloDesign.odBuild 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for fs.read 1`] = `
+exports[`typed facade executor returns a failure envelope for aiReview 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5321,7 +3485,7 @@ exports[`typed facade executor returns a failure envelope for fs.read 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for fs.search 1`] = `
+exports[`typed facade executor returns a failure envelope for audit 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5338,7 +3502,7 @@ exports[`typed facade executor returns a failure envelope for fs.search 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for fs.list 1`] = `
+exports[`typed facade executor returns a failure envelope for browser 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5355,7 +3519,7 @@ exports[`typed facade executor returns a failure envelope for fs.list 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for fs.write 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.app 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5372,7 +3536,7 @@ exports[`typed facade executor returns a failure envelope for fs.write 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for fs.patch 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.click 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5389,7 +3553,7 @@ exports[`typed facade executor returns a failure envelope for fs.patch 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for http 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.clipboard 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5406,7 +3570,7 @@ exports[`typed facade executor returns a failure envelope for http 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for fs.trash 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.close 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5423,7 +3587,7 @@ exports[`typed facade executor returns a failure envelope for fs.trash 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.start 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.consuelo 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5440,7 +3604,7 @@ exports[`typed facade executor returns a failure envelope for task.start 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.init 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.cookies 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5457,7 +3621,7 @@ exports[`typed facade executor returns a failure envelope for task.init 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.push 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.dialog 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5474,7 +3638,7 @@ exports[`typed facade executor returns a failure envelope for task.push 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.pr 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.download 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5491,7 +3655,7 @@ exports[`typed facade executor returns a failure envelope for task.pr 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.prs 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.eval 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5508,7 +3672,7 @@ exports[`typed facade executor returns a failure envelope for task.prs 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.merge 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.fill 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5525,7 +3689,7 @@ exports[`typed facade executor returns a failure envelope for task.merge 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.finish 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.find 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5542,7 +3706,7 @@ exports[`typed facade executor returns a failure envelope for task.finish 1`] = 
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.cleanup 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.get 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5559,7 +3723,7 @@ exports[`typed facade executor returns a failure envelope for task.cleanup 1`] =
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for task.exec 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.login 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5576,7 +3740,7 @@ exports[`typed facade executor returns a failure envelope for task.exec 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for taskMeta.smoke 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.network 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5593,7 +3757,534 @@ exports[`typed facade executor returns a failure envelope for taskMeta.smoke 1`]
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for context.search 1`] = `
+exports[`typed facade executor returns a failure envelope for browser.open 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.raw 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.reauth 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.screenshot 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.snap 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.tabs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.test 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for browser.wait 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for code.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for confidenceScore 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for confirm 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateDemo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateDigitalEguide 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateEmail 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateImageBrief 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateMotionFrame 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.generateWebsite 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.listDesignSystems 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.listSkills 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.renderHyperframes 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for consueloDesign.upstreamStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for context.categories 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5678,7 +4369,7 @@ exports[`typed facade executor returns a failure envelope for context.save 1`] =
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for context.categories 1`] = `
+exports[`typed facade executor returns a failure envelope for context.search 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5695,7 +4386,7 @@ exports[`typed facade executor returns a failure envelope for context.categories
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for explore 1`] = `
+exports[`typed facade executor returns a failure envelope for context.trace 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5729,7 +4420,24 @@ exports[`typed facade executor returns a failure envelope for decideNext 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for confidenceScore 1`] = `
+exports[`typed facade executor returns a failure envelope for design.publish 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for doctor 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5763,7 +4471,7 @@ exports[`typed facade executor returns a failure envelope for exploit 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for confirm 1`] = `
+exports[`typed facade executor returns a failure envelope for explore 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5780,7 +4488,534 @@ exports[`typed facade executor returns a failure envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for audit 1`] = `
+exports[`typed facade executor returns a failure envelope for generate.docs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for generate.types 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for gh 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for github 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.createIssue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.issue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.labels 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.projects 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.search 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.states 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.teams 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for linear.updateIssue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.exec 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.list 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.port 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.process 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.read 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.search 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for mac.write 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for prReview 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for railway.logs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for railway.redeploy 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for research.ingest 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.config 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.event 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.issue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.issueEvent 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.issues 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.projects 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for sentry.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for server 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for status 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5848,7 +5083,7 @@ exports[`typed facade executor returns a failure envelope for stream.sync 1`] = 
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for review.run 1`] = `
+exports[`typed facade executor returns a failure envelope for task.init 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5865,7 +5100,7 @@ exports[`typed facade executor returns a failure envelope for review.run 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for verify 1`] = `
+exports[`typed facade executor returns a failure envelope for task.merge 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5882,7 +5117,7 @@ exports[`typed facade executor returns a failure envelope for verify 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for prReview 1`] = `
+exports[`typed facade executor returns a failure envelope for task.start 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -5899,534 +5134,7 @@ exports[`typed facade executor returns a failure envelope for prReview 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for aiReview 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for gh 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.open 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.test 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.consuelo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.app 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.screenshot 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.snap 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.click 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.fill 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.login 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.reauth 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.eval 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.raw 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for browser.close 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.config 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.projects 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.issues 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.issue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.issueEvent 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.event 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for sentry.trace 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.issue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.createIssue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.updateIssue 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.labels 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.teams 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.projects 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for linear.states 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for wait 1`] = `
+exports[`typed facade executor returns a failure envelope for taskMeta.smoke 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -6460,24 +5168,7 @@ exports[`typed facade executor returns a failure envelope for tmp 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for railway.logs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for railway.redeploy 1`] = `
+exports[`typed facade executor returns a failure envelope for wait 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -6511,7 +5202,1758 @@ exports[`typed facade executor returns a failure envelope for website.deploy 1`]
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for doctor 1`] = `
+exports[`typed facade executor returns a success envelope for aiReview 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for audit 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.app 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.click 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.clipboard 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.close 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.consuelo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.cookies 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.dialog 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.download 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.eval 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.fill 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.find 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.get 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.login 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.network 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.open 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.raw 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.reauth 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.screenshot 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.snap 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.tabs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.test 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for browser.wait 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for code.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for confidenceScore 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for confirm 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateDemo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateDigitalEguide 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateEmail 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateImageBrief 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateMotionFrame 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.generateWebsite 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.listDesignSystems 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.listSkills 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.renderHyperframes 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for consueloDesign.upstreamStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.categories 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.find 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.get 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.list 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.save 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.search 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for context.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for decideNext 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for design.publish 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for doctor 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for exploit 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for explore 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for generate.docs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for generate.types 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for gh 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for github 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.createIssue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.issue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.labels 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.projects 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.search 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.states 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.teams 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for linear.updateIssue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.exec 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.list 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.port 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.process 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.read 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.search 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for mac.write 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for prReview 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for railway.logs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for railway.redeploy 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for research.ingest 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.config 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.event 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.issue 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.issueEvent 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.issues 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.projects 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for sentry.trace 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for server 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for status 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for stream.context 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for stream.list 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for stream.sync 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for task.init 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for task.merge 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for task.start 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for taskMeta.smoke 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for tmp 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for wait 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for website.deploy 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a success envelope for task.cleanup 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor returns a failure envelope for task.cleanup 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -6528,534 +6970,24 @@ exports[`typed facade executor returns a failure envelope for doctor 1`] = `
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for status 1`] = `
+exports[`typed facade executor returns a success envelope for design.refresh 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
+  "code": "OK",
   "data": {
-    "value": "failed",
+    "value": "ok",
   },
   "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
+  "ok": true,
+  "stderr": "",
   "traceId": "trc_abc123def456",
 }
 `;
 
-exports[`typed facade executor returns a failure envelope for server 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for checkFiles 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for editFlow 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.exec 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.read 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.write 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.search 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.list 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.process 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for mac.port 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for generate.docs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for generate.types 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.run 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.getDesignSystem 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.listSkills 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.listDesignSystems 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.upstreamStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.railwayCheck 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.check 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateWebsite 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateDemo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateImageBrief 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateDigitalEguide 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateEmail 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.generateMotionFrame 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.renderHyperframes 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.uiBg 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.uiStop 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.uiStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.uiLogs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor returns a failure envelope for consueloDesign.odBuild 1`] = `
+exports[`typed facade executor returns a failure envelope for design.refresh 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",

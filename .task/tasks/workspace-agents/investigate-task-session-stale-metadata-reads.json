@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-task-session-stale-metadata-reads",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 371,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/371",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-task-session-stale-metadata-reads",
+  "taskSession": "tsk_606193a1aa06",
+  "tmuxSession": "opensaas-workspace-agents-investigate-task-session-stale-metadata-reads-606193a1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-task-session-stale-metadata-reads/.task/session.json",
+  "createdAt": "2026-05-11T23:27:59.357Z"
+}

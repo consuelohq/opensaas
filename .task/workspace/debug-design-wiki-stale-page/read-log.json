@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-23T04:54:41.283Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_13fa54c0eb54",
+  "tmuxSession": "opensaas-workspace-agents-tighten-trace-analytics-output-13fa54c0",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tighten-trace-analytics-output",
+  "branch": "task/workspace-agents/tighten-trace-analytics-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-trace-analytics-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-trace-analytics-output",
+  "prNumber": 537,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/537",
+  "createdAt": "2026-05-23T19:18:37.970Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-trace-analytics-output/.task/workspace-agents/tighten-trace-analytics-output/session.json"
+}

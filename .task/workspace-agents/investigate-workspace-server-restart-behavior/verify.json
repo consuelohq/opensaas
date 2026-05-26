@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/investigate-workspace-server-restart-behavior",
+  "base": "origin/main",
+  "headSha": "4e06097146f137a8c3707ac23d53b966c16a646d",
+  "changeHash": "c7c656871fe009e3c6f46054362df9bb1d6c08c1bc0107d2c54758543d9ae0e8",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/server.js"
+  ],
+  "verifiedAt": "2026-05-23T03:36:12.192Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
