@@ -22,6 +22,8 @@ export default defineConfig(({ command, mode }) => {
 
   const {
     REACT_APP_SERVER_BASE_URL,
+    REACT_APP_POSTHOG_API_KEY,
+    REACT_APP_POSTHOG_HOST,
     VITE_BUILD_SOURCEMAP,
     VITE_DISABLE_TYPESCRIPT_CHECKER,
     VITE_HOST,
@@ -260,9 +262,13 @@ export default defineConfig(({ command, mode }) => {
     define: {
       _env_: {
         REACT_APP_SERVER_BASE_URL,
+        REACT_APP_POSTHOG_API_KEY,
+        REACT_APP_POSTHOG_HOST,
       },
       'process.env': {
         REACT_APP_SERVER_BASE_URL,
+        REACT_APP_POSTHOG_API_KEY,
+        REACT_APP_POSTHOG_HOST,
         IS_DEBUG_MODE,
         IS_DEV_ENV: mode === 'development' ? 'true' : 'false',
       },
