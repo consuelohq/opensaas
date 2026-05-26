@@ -1,0 +1,328 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+  "events": [
+    {
+      "id": "ea390615-6758-4eb5-a4d3-055a1392f333",
+      "occurred_at": "2026-05-26T18:36:38.925Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "8f5f84d0-9221-4175-b30c-e4f761ed80fe",
+      "occurred_at": "2026-05-26T18:36:38.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/agent/src/pi-extensions/__tests__/crm-tools.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "22b6de4d-0ea0-4588-bf4a-e5cc969f57eb",
+      "occurred_at": "2026-05-26T18:36:48.716Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "718f1f3a-f010-4e2e-bcac-3dd1302afe17",
+      "occurred_at": "2026-05-26T18:37:21.580Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "6e361603-dfab-418b-ab44-783285472eef",
+      "occurred_at": "2026-05-26T18:39:33.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "1fd8ed30-408c-4514-a336-b46fbbd067ba",
+      "occurred_at": "2026-05-26T18:40:10.376Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "1e08dfd3-f0ce-47ca-aa25-56cf116b2c7b",
+      "occurred_at": "2026-05-26T18:40:17.371Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "26a75112-2607-4e64-9761-df00fb7d81ff",
+      "occurred_at": "2026-05-26T18:41:07.981Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "dea3b819-af25-4aac-aee0-d58153666898",
+      "occurred_at": "2026-05-26T18:41:30.329Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "8f5cda28-62c7-444b-a923-f163da3518c6",
+      "occurred_at": "2026-05-26T18:41:49.184Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "a19f909b-bf74-4284-bde1-d6f69f8a9c80",
+      "occurred_at": "2026-05-26T18:41:56.135Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "071b17f4-a8a5-4bf3-80f8-4a5f80a7521f",
+      "occurred_at": "2026-05-26T18:42:49.160Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "c3ddb77c-cf79-4f46-869d-4f647a82b81a",
+      "occurred_at": "2026-05-26T18:43:30.728Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "f99bda43-afd6-42ac-bf57-86f3a5b26230",
+      "occurred_at": "2026-05-26T18:43:46.560Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "27bc5225-5785-4e5e-aa80-57933fa510a7",
+      "occurred_at": "2026-05-26T18:44:15.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "c30fc9e0-f2d0-4e61-8b67-2ba6c6883ca7",
+      "occurred_at": "2026-05-26T18:44:43.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "9d9f26e8-8e07-4015-bde6-e642fefd8cb0",
+      "occurred_at": "2026-05-26T18:45:12.124Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/post-call-analysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "361baca5-12d0-4803-ba5d-f0ce140c252a",
+      "occurred_at": "2026-05-26T18:46:07.629Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/calls.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "228b2677-5ed7-4de7-94cb-8b5f78c3c502",
+      "occurred_at": "2026-05-26T18:46:41.911Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/calls.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    },
+    {
+      "id": "c090d231-ab0c-420e-a0f8-b3424acf3599",
+      "occurred_at": "2026-05-26T18:48:53.376Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/__tests__/ghl.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/harden-post-call-disposition-pipeline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/harden-post-call-disposition-pipeline"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-26T18:48:53.426Z"
+}
