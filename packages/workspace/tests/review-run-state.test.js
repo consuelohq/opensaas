@@ -96,3 +96,46 @@ test('review identity changes when output contract changes', () => {
 
   expect(summaryIdentity.key).not.toBe(fullIdentity.key);
 });
+
+
+test('review identity changes when the base ref moves', () => {
+  const repoRoot = createRepo();
+  git(repoRoot, ['branch', 'base']);
+  const before = identity(repoRoot, { base: 'base' });
+
+  fs.writeFileSync(path.join(repoRoot, 'file.txt'), 'changed\n');
+  git(repoRoot, ['add', 'file.txt']);
+  git(repoRoot, ['commit', '-m', 'change']);
+  git(repoRoot, ['update-ref', 'refs/heads/base', 'HEAD']);
+
+  const after = identity(repoRoot, { base: 'base' });
+  expect(before.baseSha).not.toBe(after.baseSha);
+  expect(before.key).not.toBe(after.key);
+});
+
+test('live lock without record is not removed while waiting', () => {
+  const repoRoot = createRepo();
+  const reviewIdentity = identity(repoRoot);
+  const paths = pathsForIdentity(repoRoot, reviewIdentity);
+
+  fs.mkdirSync(paths.dir, { recursive: true });
+  fs.writeFileSync(paths.lockPath, 'creating\n');
+
+  expect(() => beginReviewRun(repoRoot, reviewIdentity, { waitMs: 10 })).toThrow(/still running/);
+  expect(fs.existsSync(paths.lockPath)).toBe(true);
+});
+
+test('stale lock without record is removed before acquiring a new run', () => {
+  const repoRoot = createRepo();
+  const reviewIdentity = identity(repoRoot);
+  const paths = pathsForIdentity(repoRoot, reviewIdentity);
+
+  fs.mkdirSync(paths.dir, { recursive: true });
+  fs.writeFileSync(paths.lockPath, 'stale\n');
+  const old = new Date(Date.now() - 60 * 60 * 1000);
+  fs.utimesSync(paths.lockPath, old, old);
+
+  const run = beginReviewRun(repoRoot, reviewIdentity, { waitMs: 50 });
+  expect(run.mode).toBe('run');
+  finishReviewRun(run, { stdout: '{}\n', stderr: '', exitCode: 0 });
+});

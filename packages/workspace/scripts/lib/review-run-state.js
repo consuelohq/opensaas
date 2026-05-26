@@ -4,10 +4,22 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const DEFAULT_WAIT_MS = 10 * 60 * 1000;
+const DEFAULT_LOCK_STALE_MS = 30 * 60 * 1000;
 const POLL_MS = 1000;
 
 function sha256(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+function getRefSha(repoRoot, ref) {
+  try {
+    return execFileSync('git', ['rev-parse', '--verify', ref + '^' + '{commit}'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
 }
 
 function gitPath(repoRoot, relativePath) {
@@ -78,6 +90,7 @@ function makeReviewRunIdentity({ repoRoot, branch, base, verificationState, args
     repoRoot: path.resolve(repoRoot),
     branch,
     base,
+    baseSha: getRefSha(repoRoot, base),
     headSha: verificationState.headSha,
     changeHash: verificationState.changeHash,
     args: normalizeArgs(args),
@@ -125,6 +138,19 @@ function removeLock(paths) {
   }
 }
 
+function lockExists(paths) {
+  return fs.existsSync(paths.lockPath);
+}
+
+function isLockStale(paths, staleMs = DEFAULT_LOCK_STALE_MS) {
+  try {
+    const stat = fs.statSync(paths.lockPath);
+    return Date.now() - stat.mtimeMs > staleMs;
+  } catch {
+    return true;
+  }
+}
+
 function markOrphaned(paths, record, reason) {
   writeJsonAtomic(paths.recordPath, {
     ...(record || {}),
@@ -143,7 +169,17 @@ function waitForExistingRun(paths, waitMs) {
     if (completed) return completed;
 
     const record = readActiveRecord(paths);
-    if (!record || record.status !== 'running') {
+    if (!record) {
+      if (!lockExists(paths)) return null;
+      if (isLockStale(paths)) {
+        removeLock(paths);
+        return null;
+      }
+      sleep(POLL_MS);
+      continue;
+    }
+
+    if (record.status !== 'running') {
       removeLock(paths);
       return null;
     }

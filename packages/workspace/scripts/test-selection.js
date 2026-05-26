@@ -38,8 +38,28 @@ function walk(root, visitor, current = root) {
 
 function groupFor(file) {
   const parts = file.split('/');
-  if (parts[0] === 'packages' && parts[1]) return `${parts[0]}/${parts[1]}`;
-  return parts[0];
+  if (parts[0] !== 'packages' || !parts[1]) return parts[0];
+
+  const markerIndex = parts.findIndex((part, index) =>
+    index > 1 && ['__tests__', 'tests', 'test', 'spec', 'e2e', 'integration', 'unit'].includes(part)
+  );
+  if (markerIndex > 2) return parts.slice(0, markerIndex).join('/');
+
+  const dirnameParts = parts.slice(0, -1);
+  if (dirnameParts.length > 2) return dirnameParts.join('/');
+  return parts.slice(0, 2).join('/');
+}
+
+function groupCandidatesFor(file) {
+  const dir = path.dirname(file).replace(/\\/g, '/');
+  const parts = dir.split('/');
+  if (parts[0] !== 'packages' || !parts[1]) return [parts[0]];
+
+  const candidates = [];
+  for (let size = 2; size <= parts.length; size += 1) {
+    candidates.push(parts.slice(0, size).join('/'));
+  }
+  return candidates;
 }
 
 function kindFor(file) {
@@ -150,8 +170,11 @@ function normalizeRule(rule, source = 'explicit') {
 function createAutoRules(tests, projects, packageScripts) {
   const testsByGroup = new Map();
   for (const test of tests) {
-    if (!testsByGroup.has(test.group)) testsByGroup.set(test.group, []);
-    testsByGroup.get(test.group).push(test.path);
+    const groups = new Set([test.group, ...groupCandidatesFor(test.path)]);
+    for (const group of groups) {
+      if (!testsByGroup.has(group)) testsByGroup.set(group, []);
+      testsByGroup.get(group).push(test.path);
+    }
   }
   const rules = [];
   for (const project of projects) {
@@ -245,8 +268,17 @@ function changedFiles(root, args) {
   return [...files].sort();
 }
 
+function isDocumentationJson(file) {
+  return /(^|\/)docs\//i.test(file) || /\.schema\.json$/i.test(file);
+}
+
 function docsOnly(files) {
-  return files.length > 0 && files.every((file) => /(^|\/)(README|CHANGELOG)\.md$/i.test(file) || /\.(md|mdx|txt|json)$/i.test(file) || file.startsWith('.task/'));
+  return files.length > 0 && files.every((file) =>
+    /(^|\/)(README|CHANGELOG)\.md$/i.test(file)
+    || /\.(md|mdx|txt)$/i.test(file)
+    || isDocumentationJson(file)
+    || file.startsWith('.task/')
+  );
 }
 
 function sourceCodeFiles(files) {
@@ -287,20 +319,33 @@ function select(registry, files) {
   }
   return { changedFiles: files, matchedRules, selectedSuites: suites, level, zeroSuiteReason };
 }
+function testSuiteTimeoutMs() {
+  const value = Number.parseInt(process.env.TEST_SUITE_TIMEOUT_MS || '', 10);
+  return Number.isFinite(value) && value > 0 ? value : 300000;
+}
 
 function runSuites(root, suites) {
   const results = [];
   for (const suite of suites) {
     const started = Date.now();
-    const result = spawnSync(suite.command[0], suite.command.slice(1), { cwd: root, encoding: 'utf8', maxBuffer: 1024 * 1024 * 8 });
-    const output = `${result.stdout || ''}${result.stderr || ''}`;
+    const result = spawnSync(suite.command[0], suite.command.slice(1), {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 1024 * 1024 * 8,
+      timeout: testSuiteTimeoutMs(),
+    });
+    const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+    const signaled = Boolean(result.signal);
+    const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] suite timed out\n' : ''}${signaled ? `\n[test-selection] suite terminated by signal ${result.signal}\n` : ''}`;
     results.push({
       name: suite.name,
       command: suite.command,
       ruleId: suite.ruleId,
       critical: suite.critical,
-      status: result.status === 0 ? 'passed' : 'failed',
+      status: result.status === 0 && !timedOut && !signaled ? 'passed' : 'failed',
       exitCode: result.status,
+      signal: result.signal || null,
+      error: result.error ? { code: result.error.code, message: result.error.message } : null,
       durationMs: Date.now() - started,
       outputTail: output.slice(-4000),
     });

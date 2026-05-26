@@ -431,10 +431,9 @@ bun run test-selection:nightly -- --json
 runs `bun run review` + db/migration/graphql guardrails. writes a publish-valid `.task/<area>/<slug>/verify.json` stamp only when the full gate passes. `task:push` requires this publish-valid stamp by default. `review.run` is optional preflight; `verify` is the formal publish gate.
 
 Structured review runs are durable and keyed by branch/base/change hash plus review output mode. This makes `workspace review.run` and `verify` share the same underlying review state: an equivalent completed summary can be replayed, an active equivalent run is waited on, and orphaned state is treated conservatively. Review attach/replay notes go to stderr so `verify` can continue parsing stdout summary JSON safely.
-
-```bash
 When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
+```bash
 ```bash
 bun run verify                          # formal publish gate (review + db guards + publish-valid stamp)
 bun run verify -- --json                # structured formal gate output
