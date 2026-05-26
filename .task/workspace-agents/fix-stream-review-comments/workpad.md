@@ -56,3 +56,11 @@ Fixed all 11 Codex/CodeRabbit inline comments on stream PR #589:
 ## workspace-owned: activity log
 
 - 2026-05-26 18:54:08 fs.write: `.task/workspace-agents/fix-stream-review-comments/workpad.md`
+
+## publish note
+
+Committed fixes for all 11 CodeRabbit/Codex comments from stream PR #589. The final validation set passed: syntax checks, focused Vitest coverage, regenerated test-selection registry, scripts audit, review, and full verify. No remaining bot-comment follow-up is known.
+
+## workspace-owned: validation evidence
+
+- 2026-05-26 18:56:48 `verify`: passed — OK
