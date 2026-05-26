@@ -51,3 +51,8 @@ No unresolved bot-comment follow-ups remain.
 ## workspace-owned: validation evidence
 
 - 2026-05-26 18:59:04 `verify`: passed — OK
+- 2026-05-26 19:02:04 `verify`: passed — OK
+
+## current status
+
+All requested review comments are fixed and validated. The final task PR update contains code changes plus regenerated registry output. Remaining action is only publishing/merging this task PR back into `stream/workspace-agents`.
