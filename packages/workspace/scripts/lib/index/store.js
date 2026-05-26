@@ -303,6 +303,55 @@ function createStore(repoRoot, remoteUrl) {
     ].join('\n')).all(vector, limit);
   }
 
+  function searchChunksByText(terms, limit) {
+    const cleanTerms = Array.from(new Set((terms || [])
+      .map((term) => String(term || '').trim().toLowerCase())
+      .filter((term) => term.length >= 3)))
+      .slice(0, 24);
+    if (cleanTerms.length === 0) return [];
+
+    const rowsByChunk = new Map();
+    const perTermLimit = Math.max(8, Math.ceil(limit / Math.max(1, Math.min(cleanTerms.length, 8))));
+    const statement = db.query([
+      'SELECT',
+      '  chunks.id AS chunkId,',
+      '  0.18 AS distance,',
+      '  chunks.file_path AS filePath,',
+      '  chunks.start_line AS startLine,',
+      '  chunks.end_line AS endLine,',
+      '  chunks.chunk_type AS chunkType,',
+      '  chunks.name AS name,',
+      '  chunks.symbol_path AS symbolPath,',
+      '  chunks.node_type AS nodeType,',
+      '  chunks.parent_name AS parentName,',
+      '  chunks.content AS content,',
+      '  chunks.content_hash AS contentHash',
+      'FROM chunks',
+      'WHERE LOWER(chunks.file_path) LIKE ?',
+      '   OR LOWER(COALESCE(chunks.name, "")) LIKE ?',
+      '   OR LOWER(COALESCE(chunks.symbol_path, "")) LIKE ?',
+      '   OR LOWER(chunks.content) LIKE ?',
+      'ORDER BY',
+      '  CASE WHEN LOWER(chunks.file_path) LIKE ? THEN 0 ELSE 1 END,',
+      '  CASE WHEN LOWER(COALESCE(chunks.name, "")) LIKE ? THEN 0 ELSE 1 END,',
+      '  CASE WHEN LOWER(COALESCE(chunks.symbol_path, "")) LIKE ? THEN 0 ELSE 1 END,',
+      '  LENGTH(chunks.file_path),',
+      '  chunks.seq',
+      'LIMIT ?',
+    ].join('\n'));
+
+    for (const term of cleanTerms) {
+      const pattern = `%${term}%`;
+      const rows = statement.all(pattern, pattern, pattern, pattern, pattern, pattern, pattern, perTermLimit);
+      for (const row of rows) {
+        if (!rowsByChunk.has(row.chunkId)) rowsByChunk.set(row.chunkId, row);
+        if (rowsByChunk.size >= limit) return Array.from(rowsByChunk.values());
+      }
+    }
+
+    return Array.from(rowsByChunk.values());
+  }
+
   function getFile(pathName) {
     return db.query('SELECT * FROM files WHERE path = ?').get(pathName);
   }
@@ -552,6 +601,7 @@ function createStore(repoRoot, remoteUrl) {
     replaceChunks,
     replaceGraphEdges,
     searchChunks,
+    searchChunksByText,
     setCachedEmbedding,
     setMeta,
     setOverlay,
