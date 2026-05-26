@@ -3,7 +3,7 @@
 escape_js_string() {
   printf '%s' "$1" \
     | sed \
-      -e 's/\\/\\\\\\\\/g' \
+      -e 's/\\/\\\\/g' \
       -e 's/"/\\"/g' \
       -e 's/</\\u003C/g' \
       -e 's/>/\\u003E/g'
