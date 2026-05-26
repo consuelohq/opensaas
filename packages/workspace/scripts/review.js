@@ -14,6 +14,7 @@ const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 
 let outputCapture = null;
+let activeReviewRun = null;
 
 function writeStdout(s = '') {
   const value = `${s}\n`;
@@ -889,11 +890,12 @@ async function main() {
       replayReviewResult(reviewRun.result);
       return;
     }
+    activeReviewRun = reviewRun;
     startOutputCapture();
   }
 
   if (!args.quiet && !structuredOutput) {
-    writeStdout(`review: ${branch} vs ${base}`);
+    writeStdout('review: ' + branch + ' vs ' + base);
     writeStdout('');
   }
 
@@ -1053,6 +1055,7 @@ async function main() {
     if (reviewRun) {
       const captured = stopOutputCapture();
       finishReviewRun(reviewRun, { ...captured, exitCode: 0 });
+      activeReviewRun = null;
       emitCapturedOutput(captured);
     }
     return;
@@ -1102,9 +1105,21 @@ async function main() {
 }
 
 main().catch((err) => {
-  if (outputCapture) {
+  let reported = false;
+  if (activeReviewRun && outputCapture) {
+    const captured = stopOutputCapture();
+    const stderr = captured.stderr + err.message + '\n';
+    finishReviewRun(activeReviewRun, {
+      stdout: captured.stdout,
+      stderr,
+      exitCode: 1,
+    });
+    activeReviewRun = null;
+    emitCapturedOutput({ stdout: captured.stdout, stderr });
+    reported = true;
+  } else if (outputCapture) {
     emitCapturedOutput(stopOutputCapture());
   }
-  writeStderr(err.message);
+  if (!reported) writeStderr(err.message);
   process.exit(1);
 });

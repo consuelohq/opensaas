@@ -328,7 +328,7 @@ function runTestSelection(repoRoot, base) {
   }
   return {
     skipped: false,
-    passed: result.status === 0 && data.passed !== false,
+    passed: result.status === 0 && data.passed === true,
     status: result.status,
     data,
     stderr: result.stderr || '',
