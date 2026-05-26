@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "base": "origin/task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "headSha": "6737e8a0951b49e7c43d0cde1a49665d3d475626",
+  "changeHash": "af687b3de37d3954e1bea19d815a2cc5c2ef8beb761f1583f966d7a49ab56786",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/workspace-state.js"
+  ],
+  "verifiedAt": "2026-05-08T21:47:55.088Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
