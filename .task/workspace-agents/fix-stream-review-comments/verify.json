@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/workspace-agents/fix-stream-review-comments",
   "base": "origin/stream/workspace-agents",
-  "headSha": "67214f72f6a40955ef6bdff13b568e10bd61fff8",
-  "changeHash": "6785d419f6ce8ce2db77ad0a61610fc7e4295c0d5e254a883b50703804926c1f",
+  "headSha": "33b4f4d9dd7b75d3ee9f805b935201d1c4a24345",
+  "changeHash": "3a3dfed84525f2ebe210af2c04c7a9814e9294e1c522107b25e14d2b93a90e59",
   "changedFiles": [
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/scripts/lib/review-run-state.js",
@@ -16,7 +16,7 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/test-selection.test.js"
   ],
-  "verifiedAt": "2026-05-26T18:56:48.190Z",
+  "verifiedAt": "2026-05-26T18:59:04.065Z",
   "review": {
     "skipped": false,
     "passed": true,

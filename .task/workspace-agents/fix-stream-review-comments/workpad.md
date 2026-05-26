@@ -1,49 +1,40 @@
 # fix stream review comments
 
-## scope
+## outcome
 
-Fixed all 11 Codex/CodeRabbit inline comments on stream PR #589:
+Fixed all 11 CodeRabbit/Codex inline review comments on stream PR #589 and pushed the fixes to task PR #608 for merge back into `stream/workspace-agents`.
 
-1. Preserve nested package/project test groups instead of collapsing everything to `packages/<name>`.
-2. Do not treat all JSON changes as docs-only.
-3. Do not delete a just-created review lock before its record appears.
-4. Include the resolved base commit in review-run identity keys.
-5. Repair malformed verify docs code fence in `SCRIPTS.md`.
-6. Same review-lock race from CodeRabbit.
-7. Persist failed structured review runs before process exit.
-8. Same JSON docs-only issue from CodeRabbit.
-9. Add per-suite timeout/failure details for selected test runs.
-10. Require explicit `data.passed === true` from test-selection in verify.
-11. Replace brittle test-selection inventory count assertions with structural assertions.
+## changes
 
-## implementation
+- `test-selection.js` now preserves nested package/project groups instead of collapsing tests to `packages/<name>`, while still indexing ancestor groups for package-level auto rules.
+- Docs-only detection no longer treats every JSON file as documentation; only docs paths and schema JSON are docs-only.
+- Selected test suite execution now has a bounded timeout via `TEST_SUITE_TIMEOUT_MS`, records timeout/signal/error details, and fails timed-out suites.
+- Review-run identity now includes the resolved base commit SHA so a moved base ref cannot reuse stale review output.
+- Review-run lock handling now waits for a concurrently-created record and only removes missing-record locks after a stale threshold.
+- Structured `review.js` failures are persisted before process exit so reruns see a terminal failed result instead of an eternal running record.
+- `verify.js` now requires `test-selection` to return explicit `passed: true`.
+- `SCRIPTS.md` verify section markdown fence is repaired.
+- `test-selection.registry.json` was regenerated from the updated grouping logic.
 
-- Updated `test-selection.js` grouping to preserve full package/project paths and also index tests by ancestor groups so package-level auto rules still work.
-- Narrowed docs-only JSON handling to docs paths and schema JSON only.
-- Added `TEST_SUITE_TIMEOUT_MS` support and timeout/signal/error fields for selected test command results.
-- Added base commit SHA into durable review identity.
-- Made lock handling wait for in-flight record creation and only remove missing-record locks after the stale threshold.
-- Added failed structured review persistence in `review.js` catch path.
-- Tightened `verify` to accept only explicit `passed: true` from test-selection.
-- Regenerated `packages/workspace/test-selection.registry.json` from the updated grouping logic.
-- Added regression tests for nested mapping behavior via generated registry shape, docs-only JSON narrowing, suite timeout failure, base-ref identity changes, and missing-record lock handling.
+## regression coverage
+
+- Added/updated test-selection tests for structural inventory assertions, JSON docs-only narrowing, and timed-out suite failure.
+- Added review-run-state tests for moved base refs, missing-record live locks, stale missing-record locks, completed replay, stale PID orphaning, and output-contract-specific identities.
 
 ## validation
 
-- `node --check` passed for:
-  - `packages/workspace/scripts/test-selection.js`
-  - `packages/workspace/scripts/lib/review-run-state.js`
-  - `packages/workspace/scripts/review.js`
-  - `packages/workspace/scripts/verify.js`
-  - `packages/workspace/tests/test-selection.test.js`
-  - `packages/workspace/tests/review-run-state.test.js`
+- `node --check` passed for all modified scripts and focused test files.
 - `bun x vitest run packages/workspace/tests/test-selection.test.js packages/workspace/tests/review-run-state.test.js` passed: 12 tests.
 - `node packages/workspace/scripts/test-selection.js generate --out packages/workspace/test-selection.registry.json --json` passed and regenerated the registry.
 - `workspace audit --scripts` passed.
 - `workspace review.run --base origin/stream/workspace-agents --noTests` passed with 0 blocking issues.
 - `workspace verify --base origin/stream/workspace-agents` passed full mode and wrote a publish-valid stamp.
 
-- 2026-05-26 18:54:08 write: `.task/workspace-agents/fix-stream-review-comments/workpad.md`
+## follow-ups
+
+No unresolved bot-comment follow-ups remain.
+
+- 2026-05-26 18:58:03 write: `.task/workspace-agents/fix-stream-review-comments/workpad.md`
 
 ## files changed
 
@@ -55,12 +46,8 @@ Fixed all 11 Codex/CodeRabbit inline comments on stream PR #589:
 
 ## workspace-owned: activity log
 
-- 2026-05-26 18:54:08 fs.write: `.task/workspace-agents/fix-stream-review-comments/workpad.md`
-
-## publish note
-
-Committed fixes for all 11 CodeRabbit/Codex comments from stream PR #589. The final validation set passed: syntax checks, focused Vitest coverage, regenerated test-selection registry, scripts audit, review, and full verify. No remaining bot-comment follow-up is known.
+- 2026-05-26 18:58:03 fs.write: `.task/workspace-agents/fix-stream-review-comments/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-05-26 18:56:48 `verify`: passed — OK
+- 2026-05-26 18:59:04 `verify`: passed — OK
