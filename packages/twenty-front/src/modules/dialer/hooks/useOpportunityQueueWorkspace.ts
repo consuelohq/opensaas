@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { isValidPhone, normalizePhone } from '@consuelo/contacts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -769,10 +770,6 @@ export const useOpportunityQueueWorkspace = ({
     listStatus,
   ]);
 
-  const hasNextQueueItem = useMemo(() => {
-    return hydratedQueueItems[currentQueueIndex + 1] !== undefined;
-  }, [currentQueueIndex, hydratedQueueItems]);
-
   const hasPendingQueueItems = useMemo(() => {
     return hydratedQueueItems.some((item) => item.status === 'pending');
   }, [hydratedQueueItems]);
@@ -962,7 +959,10 @@ export const useOpportunityQueueWorkspace = ({
       settings: {
         ...DEFAULT_QUEUE_SETTINGS,
         ...(backendQueue?.settings ?? {}),
-        autoAdvance: false,
+        autoAdvance: readQueueBooleanSetting(
+          backendQueue?.settings?.autoAdvance,
+          DEFAULT_QUEUE_SETTINGS.autoAdvance,
+        ),
         parallelDialingEnabled: readQueueBooleanSetting(
           backendQueue?.settings?.parallelDialingEnabled,
           requestedParallelDialingEnabled,
@@ -1352,30 +1352,16 @@ export const useOpportunityQueueWorkspace = ({
 
     if (outcome === 'no-answer') {
       setLastCallOutcome('no-answer');
-
-      void recordResult(currentQueueItem.id, {
-        disposition: 'NO_ANSWER',
-        callSid: callState.callSid ?? '',
-        duration: callState.duration,
-      });
-
-      autoAdvanceTimerRef.current = setTimeout(() => {
-        void advanceBackendQueueSession('no-answer');
-        setWrapUpState(null);
-        autoStartedItemIdRef.current = null;
-      }, 1200);
       return;
     }
 
     setLastCallOutcome('connected');
   }, [
-    advanceBackendQueueSession,
     callState.callSid,
     callState.duration,
     callState.status,
     clearAutoAdvanceTimer,
     currentQueueItem,
-    recordResult,
     setLastCallOutcome,
   ]);
 
