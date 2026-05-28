@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/general/fix-runtime-env-backslash-escaping",
+  "events": [
+    {
+      "id": "afc54446-29fa-4279-886d-0c666b595fc7",
+      "occurred_at": "2026-05-26T17:13:23.011Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/scripts/inject-runtime-env.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-runtime-env-backslash-escaping",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-runtime-env-backslash-escaping"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-26T17:13:23.060Z"
+}

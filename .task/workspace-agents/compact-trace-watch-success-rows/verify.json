@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/compact-trace-watch-success-rows",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "2091e986b90462d34bfb2a1491200aef0bb8c58b",
+  "changeHash": "4e37c41e378c744eb443720dc6db773137526331dbb961ec0577d6c0c686179f",
+  "changedFiles": [
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T10:25:30.623Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

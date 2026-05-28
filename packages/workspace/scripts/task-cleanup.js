@@ -34,6 +34,7 @@ function printHelp() {
   writeStdout('usage: bun run task:cleanup -- [options]');
   writeStdout('');
   writeStdout('options:');
+  writeStdout('  --branch <branch>      cleanup one task branch/worktree (repeatable)');
   writeStdout('  --preview              preview removals without deleting anything');
   writeStdout('  --merged               remove local task branches already merged into their stream or main');
   writeStdout('  --stale-days <n>       remove task worktrees older than n days');
@@ -47,6 +48,7 @@ function printHelp() {
 function parseArgs(argv) {
   const args = {
     repo: DEFAULT_REPO,
+    branches: [],
     keep: [],
     json: false,
     preview: false,
@@ -78,6 +80,9 @@ function parseArgs(argv) {
     }
 
     switch (flag) {
+      case '--branch':
+        args.branches.push(value);
+        break;
       case '--preview':
         args.preview = true;
         break;
@@ -229,7 +234,8 @@ async function main() {
     return;
   }
 
-  const preview = args.preview || (!args.merged && args.staleDays === undefined);
+  const explicitBranchCleanup = args.branches.length > 0;
+  const preview = args.preview || (!explicitBranchCleanup && !args.merged && args.staleDays === undefined);
   const repoRoot = resolveGitRoot(process.cwd());
   const currentWorktreePath = repoRoot;
   const currentBranch = getCurrentBranch(process.cwd());
@@ -262,8 +268,16 @@ async function main() {
     skipped: [],
   };
 
-  for (const branch of localBranches) {
+  const candidateBranches = explicitBranchCleanup ? args.branches : localBranches;
+
+  for (const branch of candidateBranches) {
+    if (!localBranches.includes(branch)) {
+      result.skipped.push({ branch, reason: 'local branch not found' });
+      continue;
+    }
+
     if (!isTaskBranchName(branch)) {
+      result.skipped.push({ branch, reason: 'not a task branch' });
       continue;
     }
 
@@ -287,7 +301,7 @@ async function main() {
       getWorktreeAgeDays(worktreePath) >= args.staleDays;
     const merged = args.merged && isBranchMerged(repoRoot, branch);
 
-    if (!orphan && !stale && !merged) {
+    if (!orphan && !stale && !merged && !explicitBranchCleanup) {
       continue;
     }
 

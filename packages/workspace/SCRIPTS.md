@@ -86,7 +86,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 the verify → push dependency:
 ```text
 verify ✓ → writes .task/<area>/<slug>/verify.json stamp → task:push reads stamp → push succeeds
-no verify → no stamp → task:push rejects (unless --no-verify)
+no verify → no publish-valid stamp → task:push rejects unless Ko explicitly approved an approved path
 ```
 
 always use this flow even if the change seems tiny. when in doubt, start from the stream, isolate the task, push early, clean up after merge.
@@ -134,7 +134,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
 | "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --branch <task-branch> read .task/<area>/<slug>/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
-| task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
+| task:push rejects — no publish-valid verify stamp | run `bun run verify` first. only use `--approved --reason "Ko approved: ..."` with explicit Ko approval. |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
 
 ---
@@ -321,7 +321,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run task:fs -- read s
  (run from repo root, not from inside the worktree)
 
 bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.ts
- → works but bypasses the script system. never read raw worktree paths.
+ → works but skips the script system. never read raw worktree paths.
  (use: bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts)
 ```
 
@@ -364,11 +364,14 @@ bun run review -- --mine              # scope to active task worktree only
 bun run review -- --fix               # auto-fix eslint issues
 bun run review -- --all               # check all files, not just changed
 bun run review -- --base stream/dialer  # compare against specific ref
-bun run review -- --json              # json output
+bun run review -- --json              # full raw json output
+bun run review -- --summary-json      # compact semantic json output for agents
 bun run review -- --quiet             # only show failures
 bun run review -- --no-tests          # skip test suite
 bun run review -- --strict            # enable strictPropertyInitialization
 ```
+
+`--json` keeps the full raw finding arrays for compatibility. `--summary-json` returns counts, finding IDs, must-fix current-change findings, pre-existing digests, and a command for full evidence retrieval.
 
 typed facade form — `branch` is required:
 
@@ -389,21 +392,56 @@ bad: review fails on a file you didn't touch
 
 ---
 
+
+
+### test-selection:generate — generate test registry
+
+writes `packages/workspace/test-selection.registry.json` from repo test discovery plus explicit rules.
+
+---
+
+### test-selection:check — check affected test selection
+
+selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally.
+
+---
+
+### test-selection:nightly — write test registry report
+
+writes `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
+### test-selection — affected test registry
+
+`test-selection:generate` scans repo-relative test files, project targets, package test scripts, and `packages/workspace/test-selection.rules.json`, then writes `packages/workspace/test-selection.registry.json`. The registry is generated and should not be hand-edited. Add explicit rules when a source area has non-obvious test ownership.
+
+```bash
+bun run test-selection:generate -- --json
+bun run test-selection:check -- --base origin/main --json
+bun run test-selection:check -- --base origin/main --run --json
+bun run test-selection:nightly -- --json
+```
+
+`verify` runs the registry check with `--run`. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
 ### verify — full task safety gate
+runs `bun run review` + db/migration/graphql guardrails. writes a publish-valid `.task/<area>/<slug>/verify.json` stamp only when the full gate passes. `task:push` requires this publish-valid stamp by default. `review.run` is optional preflight; `verify` is the formal publish gate.
 
-runs `bun run review` + db/migration/graphql guardrails. writes `.task/<area>/<slug>/verify.json` stamp on success. `task:push` requires this stamp by default.
-
+Structured review runs are durable and keyed by branch/base/change hash plus review output mode. This makes `workspace review.run` and `verify` share the same underlying review state: an equivalent completed summary can be replayed, an active equivalent run is waited on, and orphaned state is treated conservatively. Review attach/replay notes go to stderr so `verify` can continue parsing stdout summary JSON safely.
 When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
 ```bash
-bun run verify                        # full verify (review + db guards + stamp)
-bun run verify -- --no-review         # skip review, only run db guardrails
-bun run verify -- --no-db             # skip db guardrails
-bun run verify -- --db-warn-only      # report db issues as warnings
-bun run verify -- --no-stamp          # don't write verify.json
-bun run verify -- --json              # structured json output
+```bash
+bun run verify                          # formal publish gate (review + db guards + publish-valid stamp)
+bun run verify -- --json                # structured formal gate output
 bun run verify -- --base stream/dialer  # compare against specific ref
+bun run verify -- --no-stamp            # validation only; does not create a publish-valid stamp
 ```
+
+Debug-only skip flags are intentionally not part of normal task flow. `task:push` requires a publish-valid verify stamp unless Ko explicitly approves an approved push path.
 
 **verify failure modes**
 ```text
@@ -413,7 +451,7 @@ bad: verify fails on a package with no typecheck target
 
 bad: bun run task:push -- --message "fix: thing" --changed
  → error: no matching verify stamp
-(run bun run verify first. or use --no-verify to bypass — but this is visible and logged)
+(run bun run verify first. an approved path requires explicit Ko approval and `--approved --reason "Ko approved: ..."`)
 ```
 
 ---
@@ -433,6 +471,20 @@ bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
 bun run explore -- "refresh everything" --reindex
+
+#### Embedding dimension benchmark
+
+The default workspace index keeps the existing 1024-dimensional Qwen3-Embedding-4B cache so agents can fall back instantly. To build a separate non-destructive 2560-dimensional benchmark index, run explore with explicit embedding env vars:
+
+```bash
+WORKSPACE_EMBEDDING_API=1 \
+WORKSPACE_EMBEDDING_DIMENSIONS=2560 \
+WORKSPACE_EMBEDDING_BATCH_SIZE=96 \
+bun run explore -- "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design" --budget 8 --json
+```
+
+The 2560 index writes under a config-specific cache directory and does not overwrite the legacy 1024 cache. Re-run the same command to resume a partial build. Do not promote a higher-dimensional index as default until the scenario matrix beats the 1024 baseline.
+
 ```
 
 **explore failure modes**
@@ -517,7 +569,7 @@ reads changed files from the task worktree and pushes them as a commit to the ta
 ```bash
 bun run task:push -- --branch task/dialer/fix-thing --message "fix(dialer): normalize phone numbers" --changed
 bun run task:push -- --pr 213 --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
-bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
+bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --approved --reason "Ko approved: reason"  # Ko-approved verify path
 bun run task:push -- --branch task/dialer/fix-thing --json
 ```
 
@@ -1338,7 +1390,7 @@ Use this after an Open Design workflow creates or opens an artifact. For daily l
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
 
-the scripts wrap these tools with sane defaults, exclusions, and logging. using the raw tools bypasses all of that.
+the scripts wrap these tools with sane defaults, exclusions, and logging. using the raw tools skips all of that.
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|

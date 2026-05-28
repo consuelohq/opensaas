@@ -619,8 +619,8 @@ function buildTaskOnlyResult({ args, context, taskPrDetails }) {
     return;
   }
 
-  writeStdout(`task pr #${result.prNumber}: ${result.prUrl}`);
-  writeStdout(`github: ${result.githubPrUrl}`);
+  writeStdout(`graphite task pr #${result.prNumber}: ${result.graphitePrUrl}`);
+  writeStdout(`github task pr #${result.prNumber}: ${result.githubPrUrl}`);
   writeStdout(`${context.taskBranch} -> ${context.streamBranch}`);
   if (result.alreadyMerged) {
     writeStdout('task pr is already merged');
@@ -673,11 +673,11 @@ function buildFinalResult({ args, context, taskPrDetails, taskMergeDetails, revi
     return;
   }
 
-  writeStdout(`review pr #${result.streamPrNumber}: ${result.streamPrUrl}`);
+  writeStdout(`graphite review pr #${result.streamPrNumber}: ${result.streamGraphitePrUrl}`);
+  writeStdout(`github review pr #${result.streamPrNumber}: ${result.streamGitHubPrUrl}`);
   writeStdout(`${context.streamBranch} -> ${context.reviewBase}`);
-  writeStdout(`task pr #${result.taskPrNumber}: ${result.taskPrUrl}`);
-  writeStdout(`github review pr: ${result.streamGitHubPrUrl}`);
-  writeStdout(`github task pr: ${result.taskGitHubPrUrl}`);
+  writeStdout(`graphite task pr #${result.taskPrNumber}: ${result.taskGraphitePrUrl}`);
+  writeStdout(`github task pr #${result.taskPrNumber}: ${result.taskGitHubPrUrl}`);
 
   if (taskMergeDetails.alreadyMerged) {
     writeStdout('task pr was already merged into the stream branch');

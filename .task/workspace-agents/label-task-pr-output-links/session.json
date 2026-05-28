@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ebd1fdaa7894",
+  "tmuxSession": "opensaas-workspace-agents-label-task-pr-output-links-ebd1fdaa",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/label-task-pr-output-links",
+  "branch": "task/workspace-agents/label-task-pr-output-links",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-label-task-pr-output-links",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-label-task-pr-output-links",
+  "prNumber": 576,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/576",
+  "createdAt": "2026-05-24T07:04:48.854Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-label-task-pr-output-links/.task/workspace-agents/label-task-pr-output-links/session.json"
+}

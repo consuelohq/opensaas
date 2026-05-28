@@ -109,6 +109,8 @@ export const useParallelDialer = () => {
           selectionStrategy: 'predictive',
           requestedFanout,
           queueId: runtimeQueueId,
+          contactIds: pendingItems.map((item) => item.contactId),
+          targetPhones: pendingItems.map((item) => item.contact.phone),
         });
         const calls: ParallelCall[] = result.calls.map((call) => ({
           callSid: call.callSid,

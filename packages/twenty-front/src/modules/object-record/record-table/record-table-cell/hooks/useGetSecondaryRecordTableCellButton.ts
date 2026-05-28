@@ -32,15 +32,6 @@ export const useGetSecondaryRecordTableCellButton = () => {
     return [];
   }
 
-  const mainActionOnClick =
-    fieldDefinition.metadata.settings?.clickAction ??
-    FieldMetadataSettingsOnClickAction.OPEN_LINK;
-
-  const secondaryActionOnClick =
-    mainActionOnClick === FieldMetadataSettingsOnClickAction.OPEN_LINK
-      ? FieldMetadataSettingsOnClickAction.COPY
-      : FieldMetadataSettingsOnClickAction.OPEN_LINK;
-
   let openLinkOnClick: () => void = () => {};
   let copyOnClick: () => void = () => {};
 
@@ -48,12 +39,15 @@ export const useGetSecondaryRecordTableCellButton = () => {
     const { primaryPhoneCallingCode = '', primaryPhoneNumber = '' } =
       fieldValue as FieldPhonesValue;
     const phoneNumber = `${primaryPhoneCallingCode}${primaryPhoneNumber}`;
-    openLinkOnClick = () => {
-      window.open(`tel:${phoneNumber}`, '_blank');
-    };
-    copyOnClick = () => {
-      copyToClipboard(phoneNumber, t`Phone number copied to clipboard`);
-    };
+
+    return [
+      {
+        onClick: () => {
+          copyToClipboard(phoneNumber, t`Phone number copied to clipboard`);
+        },
+        Icon: IconCopy,
+      },
+    ];
   }
 
   if (isFieldEmails(fieldDefinition)) {
@@ -75,6 +69,15 @@ export const useGetSecondaryRecordTableCellButton = () => {
       copyToClipboard(url, t`Link copied to clipboard`);
     };
   }
+
+  const mainActionOnClick =
+    fieldDefinition.metadata.settings?.clickAction ??
+    FieldMetadataSettingsOnClickAction.OPEN_LINK;
+
+  const secondaryActionOnClick =
+    mainActionOnClick === FieldMetadataSettingsOnClickAction.OPEN_LINK
+      ? FieldMetadataSettingsOnClickAction.COPY
+      : FieldMetadataSettingsOnClickAction.OPEN_LINK;
 
   return [
     {

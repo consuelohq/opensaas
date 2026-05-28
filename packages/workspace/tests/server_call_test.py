@@ -158,12 +158,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._traced_call('workspace.call', 'tool', lambda **kwargs: {'ok': True, 'code': 'OK'}, tool='status', tool_input={}, taskSession=None, timeout=7)
 
         self.assertEqual(result, {'ok': True, 'code': 'OK'})
-        self.assertEqual(observations[0].kwargs['as_type'], 'span')
+        self.assertEqual(observations[0].kwargs['as_type'], 'generation')
+        self.assertEqual(observations[0].kwargs['model'], 'workspace-tool-estimate')
         self.assertEqual(observations[0].kwargs['name'], 'status')
         self.assertEqual(observations[0].updates[0]['input']['tool'], 'status')
         self.assertEqual(propagated[0]['session_id'], self.module._session_id)
         self.assertEqual(propagated[0]['trace_name'], 'status')
         self.assertEqual(observations[0].updates[0]['output']['code'], 'OK')
+        self.assertEqual(observations[0].updates[0]['model'], 'workspace-tool-estimate')
+        self.assertIn('usage_details', observations[0].updates[0])
+        self.assertIn('workspaceUsageEstimate', observations[0].updates[0]['metadata'])
 
     def test_langfuse_tracing_does_not_retry_failing_call(self):
         calls = []
@@ -251,6 +255,53 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 self.assert_standard_envelope(result)
                 self.assertFalse(result['ok'])
                 self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
+
+    def test_session_optional_tools_with_optional_branch_mode_do_not_require_task_session(self):
+        captured = {}
+        manifest_entry = {
+            'name': 'code.run',
+            'sessionRequired': False,
+            'command': {'branchMode': 'optional'},
+        }
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module, '_load_manifest_entries', return_value=[manifest_entry]), \
+                patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('code.run', tool_input={'code': 'return 1'})
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['code'], 'return 1')
+        self.assertNotIn('taskSession', resolved_input)
+
+    def test_branch_required_tools_still_require_task_session(self):
+        manifest_entry = {
+            'name': 'example.required',
+            'sessionRequired': False,
+            'command': {'branchMode': 'required'},
+        }
+
+        with patch.object(self.module, '_load_manifest_entries', return_value=[manifest_entry]):
+            result = self.module._run_workspace_call('example.required', tool_input={})
+
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
 
     def test_object_wrapped_batch_task_session_propagates_to_children(self):
         captured = {}
@@ -475,6 +526,38 @@ class WorkspaceCallServerTest(unittest.TestCase):
             result = self.module._run_workspace_call('status', tool_input={}, timeout=7)
         self.assertTrue(result['ok'])
         self.assertEqual(captured['timeout'], 7)
+
+    def test_workspace_call_uses_long_timeout_for_review_and_verify(self):
+        captured = []
+
+        def fake_run(args, **kwargs):
+            captured.append((args[2], kwargs.get('timeout')))
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            review = self.module._run_workspace_call('review.run', taskSession=self.session, tool_input={})
+            verify = self.module._run_workspace_call('verify', taskSession=self.session, tool_input={})
+            status = self.module._run_workspace_call('status', tool_input={})
+
+        self.assertTrue(review['ok'])
+        self.assertTrue(verify['ok'])
+        self.assertTrue(status['ok'])
+        self.assertEqual(captured, [
+            ('review.run', 1200),
+            ('verify', 1200),
+            ('status', 120),
+        ])
 
     def test_workspace_call_writes_raw_sqlite_trace_row(self):
         def fake_run(args, **kwargs):
