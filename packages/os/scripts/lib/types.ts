@@ -1,4 +1,4 @@
-export type PermissionLevel = 'read' | 'draft' | 'write' | 'execute' | 'external' | 'admin';
+export type PermissionLevel = 'guidance' | 'read' | 'draft' | 'write' | 'execute' | 'external' | 'admin';
 
 export type OsManifestEntry = {
   name: string;

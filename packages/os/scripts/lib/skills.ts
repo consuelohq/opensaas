@@ -4,15 +4,23 @@ import path from 'node:path';
 import { getPackageRoot, readManifest } from './manifest';
 import type { PermissionLevel } from './types';
 
+type GuidanceSkillLoad = {
+  type: 'resource';
+  path: string;
+};
+
 export type SkillMetadata = {
   name: string;
   title: string;
   description: string;
-  script: string;
+  script?: string;
+  entrypoint?: string;
+  load?: GuidanceSkillLoad;
   permission: PermissionLevel;
   requiresApproval: boolean;
   artifactTypes?: string[];
   capabilities?: string[];
+  tools?: string[];
 };
 
 export type SkillValidationIssue = {
@@ -39,11 +47,38 @@ export function listBundledSkills(): SkillMetadata[] {
     .map(readSkillMetadata);
 }
 
+function validateGuidanceSkill(skill: SkillMetadata): SkillValidationIssue[] {
+  const issues: SkillValidationIssue[] = [];
+  const entrypoint = skill.entrypoint ?? 'SKILL.md';
+  const loadPath = skill.load?.path ?? path.join('packages/os/skills', skill.name, entrypoint);
+  const markdownPath = path.isAbsolute(loadPath) ? loadPath : path.join(getPackageRoot(), '..', '..', loadPath);
+
+  if (!fs.existsSync(markdownPath)) {
+    issues.push({ skill: skill.name, code: 'GUIDANCE_ENTRYPOINT_MISSING', message: 'guidance skill entrypoint does not exist' });
+    return issues;
+  }
+
+  const markdown = fs.readFileSync(markdownPath, 'utf8');
+  if (!markdown.startsWith('---\n')) {
+    issues.push({ skill: skill.name, code: 'GUIDANCE_FRONTMATTER_MISSING', message: 'guidance skill entrypoint must start with YAML frontmatter' });
+  }
+  if (!skill.tools?.includes('workspace.get_steering') || !skill.tools.includes('workspace.call')) {
+    issues.push({ skill: skill.name, code: 'GUIDANCE_TOOLS_MISSING', message: 'guidance skill must declare canonical workspace tools' });
+  }
+
+  return issues;
+}
+
 export function validateBundledSkills(): SkillValidationIssue[] {
   const manifestByName = new Map(readManifest().map((entry) => [entry.name, entry]));
   const issues: SkillValidationIssue[] = [];
 
   for (const skill of listBundledSkills()) {
+    if (skill.permission === 'guidance') {
+      issues.push(...validateGuidanceSkill(skill));
+      continue;
+    }
+
     const manifestEntry = manifestByName.get(skill.name);
     if (!manifestEntry) {
       issues.push({ skill: skill.name, code: 'SKILL_NOT_IN_MANIFEST', message: 'skill metadata has no manifest entry' });
