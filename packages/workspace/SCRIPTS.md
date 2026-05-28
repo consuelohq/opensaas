@@ -471,6 +471,20 @@ bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
 bun run explore -- "refresh everything" --reindex
+
+#### Embedding dimension benchmark
+
+The default workspace index keeps the existing 1024-dimensional Qwen3-Embedding-4B cache so agents can fall back instantly. To build a separate non-destructive 2560-dimensional benchmark index, run explore with explicit embedding env vars:
+
+```bash
+WORKSPACE_EMBEDDING_API=1 \
+WORKSPACE_EMBEDDING_DIMENSIONS=2560 \
+WORKSPACE_EMBEDDING_BATCH_SIZE=96 \
+bun run explore -- "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design" --budget 8 --json
+```
+
+The 2560 index writes under a config-specific cache directory and does not overwrite the legacy 1024 cache. Re-run the same command to resume a partial build. Do not promote a higher-dimensional index as default until the scenario matrix beats the 1024 baseline.
+
 ```
 
 **explore failure modes**
