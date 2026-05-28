@@ -608,6 +608,49 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('runs neutral command aliases with legacy command semantics', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-alias-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      writeTaskSession(tempRoot, 'tsk_alias', 'task/workspace-agents/alias-session');
+      const taskCallPlans: CommandPlan[] = [];
+      const taskExecPlans: CommandPlan[] = [];
+      const macCallPlans: CommandPlan[] = [];
+      const macExecPlans: CommandPlan[] = [];
+
+      const taskInput = { command: exampleInput('task.call').command, taskSession: 'tsk_alias' };
+      const taskCall = await executeTool('task.call', taskInput, {
+        ...stableOptions(successfulRunner(), taskCallPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const taskExec = await executeTool('task.exec', { command: exampleInput('task.exec').command, taskSession: 'tsk_alias' }, {
+        ...stableOptions(successfulRunner(), taskExecPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
+      const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
+
+      expect(taskCall.ok).toBe(true);
+      expect(taskExec.ok).toBe(true);
+      expect(macCall.ok).toBe(true);
+      expect(macExec.ok).toBe(true);
+      expect(getToolManifestEntry('task.exec')?.description).toContain('legacy alias for task.call');
+      expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
+      expect(taskCallPlans[0].args).toEqual(taskExecPlans[0].args);
+      expect(taskCallPlans[0].env.TASK_BRANCH).toEqual(taskExecPlans[0].env.TASK_BRANCH);
+      expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('passes request ids through nested tool envelopes', async () => {
     const result = await executeTool('mac.exec', {
       ...exampleInput('mac.exec'),
