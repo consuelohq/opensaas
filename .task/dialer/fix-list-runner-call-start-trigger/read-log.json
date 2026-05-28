@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts",
+    "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts"
+  ],
+  "updatedAt": "2026-05-23T19:56:40.981Z"
+}

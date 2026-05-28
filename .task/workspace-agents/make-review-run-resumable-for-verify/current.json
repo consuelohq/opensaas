@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-review-run-resumable-for-verify",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 604,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/604",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/604",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/604/make-review-run-resumable-for-verify",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/604",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/604/make-review-run-resumable-for-verify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-review-run-resumable-for-verify",
+  "taskSession": "tsk_74571cbf3627",
+  "tmuxSession": "opensaas-workspace-agents-make-review-run-resumable-for-verify-74571cbf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-review-run-resumable-for-verify/.task/workspace-agents/make-review-run-resumable-for-verify/session.json",
+  "createdAt": "2026-05-26T17:47:39.985Z"
+}

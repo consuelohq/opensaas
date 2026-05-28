@@ -1,0 +1,612 @@
+{
+  "query": "research ingest youtube article pdf durable context packet extracted manifest",
+  "budget": 5,
+  "results": [
+    {
+      "path": "packages/workspace/scripts/research-ingest.js",
+      "score": 0.7165,
+      "belief_prior": 0.6083,
+      "symbol": "out",
+      "chunk_type": "function",
+      "file_outline": "out err help readValue choice positiveInteger parseArgs sourceKind slug root lengthFor slidesFor contextTitle readTextFile buildContextBundle saveContextBundle summarizeArgs run writeRaw parseJson isNonEmptyString textAtPath preferredText findText extractedText packet main",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 15997,
+      "chunk_count": 30,
+      "last_modified": 1778652502,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0184,
+      "reason": "hybrid match: function out",
+      "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 14,
+        "end": 14
+      },
+      "target": {
+        "key": "packages/workspace/scripts/research-ingest.js:function:out:14-14",
+        "path": "packages/workspace/scripts/research-ingest.js",
+        "kind": "function",
+        "name": "out",
+        "symbol_path": "out",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 14,
+          "end": 14
+        },
+        "content_hash": "8c911521ac32015152a571d6f120639ad13a800183e9236fd010a1721b76f7e7",
+        "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.11499999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.7165000000000001,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/consuelo-design.ts",
+      "score": 0.714,
+      "belief_prior": 0.607,
+      "symbol": "renderArchiveIndex part 1",
+      "chunk_type": "function",
+      "file_outline": "writeStdout writeStderr printJson repoPath readText pathExists parseArgs requireOpenDesign getCoreDesignSystemFiles getWorkflowContextFiles getDesignSystem readDirectoryNames listSkills listDesignSystems upstreamStatus buildRailwayCheckResult railwayCheck buildBoundaryCheckResult check runCommand runCommandInherited parseJsonFromMixedStdout extractRuntimeUrls startOpenDesign runOpenDesignForeground runUpstream projectIdForWorkflow timestampLabel isDigitalEguideTemplateId getDigitalEguideTemplateBlock buildWorkflowPrompt openUrl createWorkflowProject workOrderNameFor workOrderSlugFor writeWorkflowWorkOrder buildWorkflowWorkOrder workflowFromArgs slugify normalizeServePath normalizeTarget trimTrailingDot parseTailscaleSelf parseTailscaleHostname getTailscaleSelf getTailscaleHostname resolvePortlessTarget escapeHtml archiveTitleFromArgs archiveCategoryFromArgs archiveTemplateFromArgs archiveRelativeArtifactPath archiveAbsoluteArtifactDir materializeArchiveTarget writeArchiveServer ensureArchiveServer refreshDesignArchive writeArchiveServer writeArchiveServer archiveServerShowsCurrentWiki stopArchiveServer ensureArchiveServer writeArchiveServer archiveServerShowsCurrentWiki stopArchiveServer ensureArchiveServer writeArchiveServer writeArchiveServer archiveServerShowsCurrentWiki stopArchiveServer ensureArchiveServer writeArchiveServer readArchivePayload writeArchivePayload displayTitleForArchiveEntry archiveEntryTimestamp archiveEntryFilterType pagefindUrlForArchiveEntry renderArchiveIndex part 1 renderArchiveIndex part 1 renderArchiveIndex part 1 renderArchiveIndex part 2 renderArchiveIndex part 2 renderArchiveIndex part 3 writeArchiveIndex runPagefindIndex updateDesignArchive publishDesign startWorkflowSession uiCommand help main",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 93909,
+      "chunk_count": 107,
+      "last_modified": 1779522252,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0218,
+      "reason": "hybrid match: function renderArchiveIndex part 1",
+      "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 1474,
+        "end": 1528
+      },
+      "target": {
+        "key": "packages/workspace/scripts/consuelo-design.ts:function:renderArchiveIndex part 1:1474-1528",
+        "path": "packages/workspace/scripts/consuelo-design.ts",
+        "kind": "function",
+        "name": "renderArchiveIndex part 1",
+        "symbol_path": "renderArchiveIndex part 1",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 1474,
+          "end": 1528
+        },
+        "content_hash": "b5ea82616792cd6b58581625c5d5685ca1446bb7aae114ab27666c522b2a341a",
+        "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.065,
+        "nameMatch": 0,
+        "rawScore": 0.7140000000000002,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/tests/research-ingest.test.js",
+      "score": 0.7053,
+      "belief_prior": 0.6026,
+      "symbol": "test: research ingest prefers extracted content over summarize input config strings",
+      "chunk_type": "test",
+      "file_outline": "makeFakeSummarize",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/context-trace.test.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2860,
+      "chunk_count": 5,
+      "last_modified": 1778652502,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.5499,
+      "reason": "hybrid match: test test: research ingest prefers extracted content over summarize input config strings",
+      "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({",
+      "graph_connections": [
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/codemode.test.ts",
+        "packages/workspace/tests/context-trace.test.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 36,
+        "end": 73
+      },
+      "target": {
+        "key": "packages/workspace/tests/research-ingest.test.js:test:test: research ingest prefers extracted content over summarize input config strings:36-73",
+        "path": "packages/workspace/tests/research-ingest.test.js",
+        "kind": "test",
+        "name": "test: research ingest prefers extracted content over summarize input config strings",
+        "symbol_path": "test: research ingest prefers extracted content over summarize input config strings",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 36,
+          "end": 73
+        },
+        "content_hash": "1ec241f0072d737e42cd43e32ab8fcf4672a203c449ae04ba5f1daa6afe2420a",
+        "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.21999999999999997,
+        "nameMatch": 1,
+        "rawScore": 0.7052500000000002,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/chat-execution.service.ts",
+      "score": 0.6956,
+      "belief_prior": 0.5978,
+      "symbol": "storeExtractedFiles",
+      "chunk_type": "method",
+      "file_outline": "ChatExecutionService ChatExecutionService.logger ChatExecutionService.constructor streamChat part 1 streamChat part 1 streamChat part 2 ChatExecutionService.buildContextFromBrowsingContext ChatExecutionService.buildRecordPageContext ChatExecutionService.buildListViewContext ChatExecutionService.getNativeWebSearchTool ChatExecutionService.storeExtractedFiles",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/ai-chat.module.ts",
+          "type": "imports",
+          "symbol": "./services/chat-execution.service"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat-streaming.service.ts",
+          "type": "imports",
+          "symbol": "./chat-execution.service"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat-streaming.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-title-generation.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/ai-chat.module.ts",
+          "type": "imported_by",
+          "symbol": "./services/chat-execution.service"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat-streaming.service.ts",
+          "type": "imported_by",
+          "symbol": "./chat-execution.service"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat-streaming.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-title-generation.service.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 11577,
+      "chunk_count": 14,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.287,
+      "reason": "hybrid match: method storeExtractedFiles",
+      "preview": "private async storeExtractedFiles( files: ExtractedFile[], _workspaceId: string,",
+      "graph_connections": [
+        "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/ai-chat.module.ts",
+        "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat-streaming.service.ts",
+        "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-chat.service.ts",
+        "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/agent-title-generation.service.ts",
+        "packages/twenty-shared/src/types/AddressFieldsType.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 334,
+        "end": 345
+      },
+      "target": {
+        "key": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/chat-execution.service.ts:method:ChatExecutionService.storeExtractedFiles:334-345",
+        "path": "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/chat-execution.service.ts",
+        "kind": "method",
+        "name": "storeExtractedFiles",
+        "symbol_path": "ChatExecutionService.storeExtractedFiles",
+        "node_type": "method_definition",
+        "parent_name": "ChatExecutionService",
+        "lines": {
+          "start": 334,
+          "end": 345
+        },
+        "content_hash": "42111f515c32aa3f316beab32ab28efb542913898b5f8d1dfc0b0093f4d9a415",
+        "preview": "private async storeExtractedFiles( files: ExtractedFile[], _workspaceId: string,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.3266666666666666,
+        "graphRelevance": 0.3266666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.08,
+        "nameMatch": 0,
+        "rawScore": 0.6955500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2,
+        "weightedEdges": 9.799999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/tests/context-trace.test.js",
+      "score": 0.6881,
+      "belief_prior": 0.594,
+      "symbol": "test: context trace filters local sqlite rows without supabase env",
+      "chunk_type": "test",
+      "file_outline": "makeTraceDb runTrace",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/git-diff.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/git-diff.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/github.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/pr-links.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/research-ingest.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-meta.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-session.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-workpad.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/test-selection.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/verification.test.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4521,
+      "chunk_count": 8,
+      "last_modified": 1779439958,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 2.1924,
+      "reason": "hybrid match: test test: context trace filters local sqlite rows without supabase env",
+      "preview": "test('context trace filters local sqlite rows without supabase env', () => { const dbPath = makeTraceDb(); const result = runTrace(dbPath, ['--status', 'error', '--contains', 'multiline']);",
+      "graph_connections": [
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/codemode.test.ts",
+        "packages/workspace/tests/git-diff.test.ts",
+        "packages/workspace/tests/github.test.ts",
+        "packages/workspace/tests/pr-links.test.js",
+        "packages/workspace/tests/research-ingest.test.js",
+        "packages/workspace/tests/task-meta.test.ts",
+        "packages/workspace/tests/task-session.test.js"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 92,
+        "end": 110
+      },
+      "target": {
+        "key": "packages/workspace/tests/context-trace.test.js:test:test: context trace filters local sqlite rows without supabase env:92-110",
+        "path": "packages/workspace/tests/context-trace.test.js",
+        "kind": "test",
+        "name": "test: context trace filters local sqlite rows without supabase env",
+        "symbol_path": "test: context trace filters local sqlite rows without supabase env",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 92,
+          "end": 110
+        },
+        "content_hash": "df967d74f0477b11a938b4b099c2b24dcd24a915cd5b219d58078d38a4712525",
+        "preview": "test('context trace filters local sqlite rows without supabase env', () => { const dbPath = makeTraceDb(); const result = runTrace(dbPath, ['--status', 'error', '--contains', 'multiline']);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.13999999999999999,
+        "graphRelevance": 0.13999999999999999,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.08499999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.6881,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.1,
+        "weightedEdges": 4.199999999999999
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15390,
+    "total_chunks": 73719,
+    "last_indexed": "2026-05-26T18:21:33.235Z",
+    "last_full_index": "2026-04-29T01:40:26.658Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/research-ingest.js": {
+      "prior": 0.6083,
+      "posterior": 0.6083,
+      "observations": []
+    },
+    "packages/workspace/scripts/consuelo-design.ts": {
+      "prior": 0.607,
+      "posterior": 0.607,
+      "observations": []
+    },
+    "packages/workspace/tests/research-ingest.test.js": {
+      "prior": 0.6026,
+      "posterior": 0.6026,
+      "observations": []
+    },
+    "packages/twenty-server/src/engine/metadata-modules/ai/ai-chat/services/chat-execution.service.ts": {
+      "prior": 0.5978,
+      "posterior": 0.5978,
+      "observations": []
+    },
+    "packages/workspace/tests/context-trace.test.js": {
+      "prior": 0.594,
+      "posterior": 0.594,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries",
+  "mode": "exploring",
+  "worktree_id": "task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries",
+  "updated_at": "2026-05-26T18:23:09.829Z"
+}

@@ -536,9 +536,14 @@
           "kind": "array"
         },
         {
-          "source": "noVerify",
-          "flag": "--no-verify",
+          "source": "approved",
+          "flag": "--approved",
           "kind": "boolean"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -748,8 +753,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "task:cleanup",
-      "branchMode": "optional",
-      "branchArgumentStyle": "flag",
+      "branchMode": "none",
       "arguments": [
         {
           "source": "branch",
@@ -781,14 +785,15 @@
           "flag": "--keep",
           "kind": "value"
         }
-      ]
+      ],
+      "jsonFlag": "--json"
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "preview": true,
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": false
   },
   {
     "name": "task.exec",
@@ -1707,21 +1712,6 @@
           "kind": "value"
         },
         {
-          "source": "noReview",
-          "flag": "--no-review",
-          "kind": "boolean"
-        },
-        {
-          "source": "noDb",
-          "flag": "--no-db",
-          "kind": "boolean"
-        },
-        {
-          "source": "dbWarnOnly",
-          "flag": "--db-warn-only",
-          "kind": "boolean"
-        },
-        {
           "source": "noStamp",
           "flag": "--no-stamp",
           "kind": "boolean"
@@ -1958,6 +1948,11 @@
         },
         {
           "source": "rawArgs",
+          "flag": "--raw-arg",
+          "kind": "array"
+        },
+        {
+          "source": "args",
           "flag": "--raw-arg",
           "kind": "array"
         },
@@ -4393,6 +4388,33 @@
     "sessionRequired": false
   },
   {
+    "name": "git.status",
+    "methodPath": [
+      "git",
+      "status"
+    ],
+    "description": "alias for status; use status directly in new code",
+    "category": "utilities",
+    "underlying": "workspace status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": []
+    },
+    "exampleInput": {},
+    "sessionRequired": false
+  },
+  {
     "name": "server",
     "methodPath": [
       "server"
@@ -4873,7 +4895,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "code-run",
-      "branchMode": "optional",
+      "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {

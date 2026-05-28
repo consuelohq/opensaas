@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/ship-list-person-ids",
+  "events": [
+    {
+      "id": "590a4697-bb0c-48ba-8727-d30e532af52f",
+      "occurred_at": "2026-05-23T19:13:38.087Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-list-person-ids",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-list-person-ids"
+      }
+    },
+    {
+      "id": "409ac53b-d666-46b5-83db-44c7e595fbd1",
+      "occurred_at": "2026-05-23T19:14:55.214Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/ship-list-person-ids",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/ship-list-person-ids"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T19:14:55.259Z"
+}

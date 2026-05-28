@@ -276,6 +276,7 @@ export async function executeTool<TData = unknown>(
       const passthrough = parsedStdout.data as ToolResult<TData>;
       const result = {
         ...passthrough,
+        data: compactFacadeData(toolName, passthrough.data),
         now: typeof passthrough.now === 'string' ? passthrough.now : new Date((options.now || Date.now)()).toISOString(),
         stderr: stripCommandEcho(String(passthrough.stderr || '')),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
@@ -290,7 +291,7 @@ export async function executeTool<TData = unknown>(
       ok,
       code: ok ? 'OK' : 'COMMAND_FAILED',
       message: ok ? 'command completed' : 'command failed',
-      data: parsedStdout.data as TData,
+      data: compactFacadeData(toolName, parsedStdout.data) as TData,
       stderr: cleanStderr,
       exitCode: runResult.exitCode,
       durationMs: elapsedMs(startedAt, options.now),
@@ -319,6 +320,139 @@ export async function executeTool<TData = unknown>(
   }
 }
 
+
+type JsonRecord = Record<string, unknown>;
+
+const FACADE_FINDING_SAMPLE_LIMIT = 8;
+const FACADE_MESSAGE_PREVIEW_LIMIT = 240;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function previewText(value: unknown, limit = FACADE_MESSAGE_PREVIEW_LIMIT): string {
+  const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
+  return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
+function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord {
+  const finding = isRecord(value) ? value : {};
+  const fullMessage = finding.message ?? finding.msg ?? '';
+  const message = previewText(fullMessage);
+  const prefix = owner === 'your_change' ? 'your' : 'pre';
+  return {
+    id: typeof finding.id === 'string' ? finding.id : `${prefix}_finding_${String(index + 1).padStart(4, '0')}`,
+    owner,
+    rule: typeof finding.rule === 'string' ? finding.rule : 'UNKNOWN',
+    file: typeof finding.file === 'string' ? finding.file : '',
+    line: typeof finding.line === 'number' ? finding.line : 0,
+    message,
+    messageChars: String(fullMessage || '').length,
+    messageTruncated: message !== String(fullMessage || ''),
+  };
+}
+
+function summarizeFacadeFindings(findings: JsonRecord[]): JsonRecord {
+  const byRule = new Map<string, number>();
+  const byFile = new Map<string, { file: string; count: number; rules: Set<string> }>();
+  for (const finding of findings) {
+    const rule = typeof finding.rule === 'string' ? finding.rule : 'UNKNOWN';
+    const file = typeof finding.file === 'string' && finding.file ? finding.file : '(project)';
+    byRule.set(rule, (byRule.get(rule) || 0) + 1);
+    const fileEntry = byFile.get(file) || { file, count: 0, rules: new Set<string>() };
+    fileEntry.count += 1;
+    fileEntry.rules.add(rule);
+    byFile.set(file, fileEntry);
+  }
+  return {
+    total: findings.length,
+    byRule: [...byRule.entries()].map(([rule, count]) => ({ rule, count })),
+    byFile: [...byFile.values()]
+      .map((entry) => ({ file: entry.file, count: entry.count, rules: [...entry.rules].sort() }))
+      .sort((a, b) => b.count - a.count || a.file.localeCompare(b.file)),
+    sample: findings.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    truncated: findings.length > FACADE_FINDING_SAMPLE_LIMIT,
+    omitted: Math.max(0, findings.length - FACADE_FINDING_SAMPLE_LIMIT),
+  };
+}
+
+function compactReviewData(data: unknown): unknown {
+  if (!isRecord(data)) return data;
+  if (data.schema === 'review.summary.v1') {
+    return {
+      ...data,
+      mustFixTotal: asArray(data.mustFix).length,
+      mustFix: asArray(data.mustFix).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'your_change')),
+      preExistingDigest: isRecord(data.preExistingDigest)
+        ? { ...data.preExistingDigest, sample: asArray(data.preExistingDigest.sample).slice(0, FACADE_FINDING_SAMPLE_LIMIT).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing')) }
+        : data.preExistingDigest,
+    };
+  }
+
+  const yours = asArray(data.yours).map((finding, index) => compactFacadeFinding(finding, index, 'your_change'));
+  const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
+  const testResults = asArray(data.testResults);
+  const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  return {
+    schema: 'review.summary.v1',
+    base: data.base,
+    branch: data.branch,
+    files: data.files,
+    affectedProjects: data.affectedProjects,
+    checksRun: testResults.length > 0
+      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
+      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    summary: {
+      yourIssues: yours.length,
+      preExistingIssues: preExisting.length,
+      failedTestSuites: failedSuites.length,
+      blockingIssues: yours.length + failedSuites.length,
+    },
+    mustFixTotal: yours.length,
+    mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    byRule: {
+      yourChanges: summarizeFacadeFindings(yours).byRule,
+      preExisting: summarizeFacadeFindings(preExisting).byRule,
+    },
+    byFile: {
+      yourChanges: summarizeFacadeFindings(yours).byFile,
+      preExisting: summarizeFacadeFindings(preExisting).byFile,
+    },
+    preExistingDigest: summarizeFacadeFindings(preExisting),
+    testSummary: {
+      totalSuites: testResults.length,
+      passedSuites: testResults.length - failedSuites.length,
+      failedSuites: failedSuites.length,
+      failures: failedSuites.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
+    },
+    fullEvidence: {
+      command: typeof data.base === 'string' ? `bun run review -- --base ${data.base} --json` : 'bun run review -- --json',
+      note: 'Facade compacted full review JSON for agent output. Full raw findings remain available from review --json in the task worktree.',
+    },
+    confidence: data.confidence ?? null,
+  };
+}
+
+function compactVerifyData(data: unknown): unknown {
+  if (!isRecord(data) || !isRecord(data.review)) return data;
+  return {
+    ...data,
+    review: {
+      ...data.review,
+      data: compactReviewData(data.review.data),
+    },
+  };
+}
+
+function compactFacadeData(toolName: string, data: unknown): unknown {
+  if (toolName === 'review.run') return compactReviewData(data);
+  if (toolName === 'verify') return compactVerifyData(data);
+  return data;
+}
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
   if (!['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'].includes(toolName)) return;
@@ -616,8 +750,11 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   if (kind === 'array' || kind === 'commandArray') {
     if (!Array.isArray(value)) return;
     if (value.length === 0) return;
-    if (argument.flag) args.push(argument.flag);
-    args.push(...value.map(String));
+    if (argument.flag) {
+      for (const item of value) args.push(argument.flag, String(item));
+    } else {
+      args.push(...value.map(String));
+    }
     return;
   }
 

@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-queue-call-target-resolution",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 542,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/542",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/542",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/542/fix-queue-call-target-resolution",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/542",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/542/fix-queue-call-target-resolution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-call-target-resolution",
+  "taskSession": "tsk_2ab54719341d",
+  "tmuxSession": "opensaas-dialer-fix-queue-call-target-resolution-2ab54719",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-call-target-resolution/.task/dialer/fix-queue-call-target-resolution/session.json",
+  "createdAt": "2026-05-23T21:12:23.647Z"
+}

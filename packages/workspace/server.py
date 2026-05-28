@@ -183,7 +183,10 @@ def _get_langsmith_trace() -> Any | None:
 
 
 def _finish_langfuse_observation(observation: Any, inputs: dict[str, Any], output: dict[str, Any], usage_details: dict[str, int] | None = None) -> None:
-    update_payload: dict[str, Any] = {'input': inputs, 'output': output}
+    metadata = {'workspaceUsageEstimate': usage_details} if usage_details else None
+    update_payload: dict[str, Any] = {'input': inputs, 'output': output, 'model': 'workspace-tool-estimate'}
+    if metadata:
+        update_payload['metadata'] = metadata
     if usage_details:
         update_payload['usage_details'] = usage_details
     try:
@@ -204,7 +207,11 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
         if langfuse is None or propagate_attributes is None:
             return fn(*args, **kwargs)
         try:
-            observation_cm = langfuse.start_as_current_observation(as_type='generation', name=trace_name)
+            observation_cm = langfuse.start_as_current_observation(
+                as_type='generation',
+                name=trace_name,
+                model='workspace-tool-estimate',
+            )
             propagation_cm = propagate_attributes(
                 session_id=_session_id,
                 metadata={'workspaceTrace': name, 'provider': 'langfuse'},
@@ -254,6 +261,11 @@ APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
 SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
 BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
+WORKSPACE_CALL_DEFAULT_TIMEOUT_SECONDS = 120
+LONG_RUNNING_TOOL_TIMEOUT_SECONDS = {
+    'review.run': 1200,
+    'verify': 1200,
+}
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
@@ -700,7 +712,7 @@ def _manifest_tool_requires_task_session(tool: str) -> bool:
     if entry.get('sessionRequired') is True:
         return True
     command = entry.get('command') if isinstance(entry.get('command'), dict) else {}
-    return command.get('branchMode') in {'optional', 'required'}
+    return command.get('branchMode') == 'required'
 
 
 def _task_session_candidate_paths(worktree_path: Path) -> list[Path]:
@@ -930,7 +942,8 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         ))
 
     args = [BUN_BIN, str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
-    run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
+    default_timeout = LONG_RUNNING_TOOL_TIMEOUT_SECONDS.get(tool, WORKSPACE_CALL_DEFAULT_TIMEOUT_SECONDS)
+    run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else default_timeout
     try:
         run_env = {
             **os.environ,

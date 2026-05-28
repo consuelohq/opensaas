@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_49b8e4f23c3f",
+  "tmuxSession": "opensaas-workspace-agents-investigate-explore-bad-relevance-for-issue-quer-49b8e4f2",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries",
+  "branch": "task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-explore-bad-relevance-for-issue-queries",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-explore-bad-relevance-for-issue-queries",
+  "prNumber": 602,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/602",
+  "createdAt": "2026-05-26T01:05:35.280Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-explore-bad-relevance-for-issue-queries/.task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries/session.json"
+}
