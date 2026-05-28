@@ -1,0 +1,4117 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "events": [
+    {
+      "id": "af2b3e7c-b868-4b83-8743-66351f098948",
+      "occurred_at": "2026-05-28T23:14:28.497Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/embedding-config.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/promote-qwen3-2560-embeddings-default"
+      }
+    },
+    {
+      "id": "3eb61c2a-d7e0-4dce-be53-c0681f141d51",
+      "occurred_at": "2026-05-28T23:15:20.854Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/embedding-config.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/promote-qwen3-2560-embeddings-default"
+      }
+    },
+    {
+      "id": "84408f71-ce67-41eb-ab42-7cc20e94894d",
+      "occurred_at": "2026-05-28T23:15:28.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/embedding-config.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/promote-qwen3-2560-embeddings-default"
+      }
+    },
+    {
+      "id": "b435a9aa-6fa3-4a0b-b00b-c03b4afa6d27",
+      "occurred_at": "2026-05-28T23:16:04.303Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/embedding-config.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/promote-qwen3-2560-embeddings-default"
+      }
+    },
+    {
+      "id": "724d2f80-a09e-473b-8cab-aed24d9d8125",
+      "occurred_at": "2026-05-28T23:16:25.916Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/embedding-config.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/promote-qwen3-2560-embeddings-default"
+      }
+    },
+    {
+      "id": "8fb2cd16-4329-4281-b1c6-0a0c0050d659",
+      "occurred_at": "2026-05-28T23:18:38.780Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 3,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 3,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "b11f6091-773c-48e9-8d9b-191c608f76d5",
+      "occurred_at": "2026-05-28T23:18:57.608Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "cdf989e5-b31d-4b4d-b1b7-42603a7507d4",
+      "occurred_at": "2026-05-28T23:20:05.495Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "3aab227a-a480-4bc4-8bad-939a6b538fc9",
+      "occurred_at": "2026-05-28T23:20:07.047Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 2,
+          "chunks_embedded": 10
+        }
+      }
+    },
+    {
+      "id": "6dc78cca-84db-497e-be4f-5cd492187e99",
+      "occurred_at": "2026-05-28T23:20:09.680Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "e8445b11-b5a8-4787-bf95-c575864c8357",
+      "occurred_at": "2026-05-28T23:20:13.057Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "tests/postman/README.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Calls+History",
+            "lines": {
+              "start": 125,
+              "end": 133
+            },
+            "target": {
+              "key": "tests/postman/README.md:block:Calls+History:125-133",
+              "path": "tests/postman/README.md",
+              "kind": "block",
+              "name": "Calls+History",
+              "symbol_path": "Calls+History",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 125,
+                "end": 133
+              },
+              "content_hash": "6fe7c822c00ca24bb07c9adcdd847ef4183fd7d498720d7477175ac95413639e",
+              "preview": "### Calls+History - `GET /v1/calls/logs` - Call log - `GET /v1/calls/:callSid` - Call detail"
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block script uploading (consistent messaging)",
+            "lines": {
+              "start": 137,
+              "end": 140
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md:block:script uploading (consistent messaging):137-140",
+              "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+              "kind": "block",
+              "name": "script uploading (consistent messaging)",
+              "symbol_path": "script uploading (consistent messaging)",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 137,
+                "end": 140
+              },
+              "content_hash": "c6a72347975dfb1f11534a202027ead42e3f08c39bff84e8c19d33ec481bfb8e",
+              "preview": "### script uploading (consistent messaging) upload your sales scripts. mercury trains the ai on your talking points, objection handlers, and compliance requirements. every rep says the right thing every time."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "c9de4881-5b6d-4666-9c82-77d83d6a8466",
+      "occurred_at": "2026-05-28T23:20:13.846Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "tests/postman/README.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Calls+History",
+            "lines": {
+              "start": 125,
+              "end": 133
+            },
+            "target": {
+              "key": "tests/postman/README.md:block:Calls+History:125-133",
+              "path": "tests/postman/README.md",
+              "kind": "block",
+              "name": "Calls+History",
+              "symbol_path": "Calls+History",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 125,
+                "end": 133
+              },
+              "content_hash": "6fe7c822c00ca24bb07c9adcdd847ef4183fd7d498720d7477175ac95413639e",
+              "preview": "### Calls+History - `GET /v1/calls/logs` - Call log - `GET /v1/calls/:callSid` - Call detail"
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block script uploading (consistent messaging)",
+            "lines": {
+              "start": 137,
+              "end": 140
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md:block:script uploading (consistent messaging):137-140",
+              "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+              "kind": "block",
+              "name": "script uploading (consistent messaging)",
+              "symbol_path": "script uploading (consistent messaging)",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 137,
+                "end": 140
+              },
+              "content_hash": "c6a72347975dfb1f11534a202027ead42e3f08c39bff84e8c19d33ec481bfb8e",
+              "preview": "### script uploading (consistent messaging) upload your sales scripts. mercury trains the ai on your talking points, objection handlers, and compliance requirements. every rep says the right thing every time."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "606c6ef5-288c-44c7-ac77-f786335b9264",
+      "occurred_at": "2026-05-28T23:20:16.835Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/workspace/STEERING.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block 1. Identity",
+            "lines": {
+              "start": 18,
+              "end": 43
+            },
+            "target": {
+              "key": "packages/workspace/STEERING.md:block:1. Identity:18-43",
+              "path": "packages/workspace/STEERING.md",
+              "kind": "block",
+              "name": "1. Identity",
+              "symbol_path": "1. Identity",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 43
+              },
+              "content_hash": "0405e13eb84f393ade469e34243a02eadce457915579e1b1ea4ad9f14eddb03f",
+              "preview": "## 1. Identity you are suelo. you are not a generic chatbot. You are a founding member of Consuelo, working alongside Ko."
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block switching from wavv",
+            "lines": {
+              "start": 167,
+              "end": 179
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md:block:switching from wavv:167-179",
+              "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+              "kind": "block",
+              "name": "switching from wavv",
+              "symbol_path": "switching from wavv",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 167,
+                "end": 179
+              },
+              "content_hash": "dcfafc7074a52b1656df1f94f4c52f0516f67c23b5f347e04151420ab8f00e90",
+              "preview": "## switching from wavv migrating takes under an hour: 1. export your wavv call history (csv)"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "46262ba5-aa00-4a4b-8c05-8db5007f8190",
+      "occurred_at": "2026-05-28T23:20:17.612Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/workspace/STEERING.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block 1. Identity",
+            "lines": {
+              "start": 18,
+              "end": 43
+            },
+            "target": {
+              "key": "packages/workspace/STEERING.md:block:1. Identity:18-43",
+              "path": "packages/workspace/STEERING.md",
+              "kind": "block",
+              "name": "1. Identity",
+              "symbol_path": "1. Identity",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 43
+              },
+              "content_hash": "0405e13eb84f393ade469e34243a02eadce457915579e1b1ea4ad9f14eddb03f",
+              "preview": "## 1. Identity you are suelo. you are not a generic chatbot. You are a founding member of Consuelo, working alongside Ko."
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block switching from wavv",
+            "lines": {
+              "start": 167,
+              "end": 179
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md:block:switching from wavv:167-179",
+              "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+              "kind": "block",
+              "name": "switching from wavv",
+              "symbol_path": "switching from wavv",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 167,
+                "end": 179
+              },
+              "content_hash": "dcfafc7074a52b1656df1f94f4c52f0516f67c23b5f347e04151420ab8f00e90",
+              "preview": "## switching from wavv migrating takes under an hour: 1. export your wavv call history (csv)"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "ce720c7e-3811-4cfe-af8d-d0355a416b1f",
+      "occurred_at": "2026-05-28T23:20:20.087Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9366,
+            "reason": "hybrid match: type DialerCallSource",
+            "lines": {
+              "start": 20,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:type:DialerCallSource:20-20",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "type",
+              "name": "DialerCallSource",
+              "symbol_path": "DialerCallSource",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 20,
+                "end": 20
+              },
+              "content_hash": "a8d27151a9a4b29c2f4f7b3cbca30df64f62e489a4ca717fe94ab958d7d87ff6",
+              "preview": "type DialerCallSource = 'direct' | 'queue';"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8212,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/facade/executor.ts",
+            "score": 0.7718,
+            "reason": "hybrid match: type TaskSessionResolution",
+            "lines": {
+              "start": 39,
+              "end": 41
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/executor.ts:type:TaskSessionResolution:39-41",
+              "path": "packages/workspace/scripts/lib/facade/executor.ts",
+              "kind": "type",
+              "name": "TaskSessionResolution",
+              "symbol_path": "TaskSessionResolution",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 39,
+                "end": 41
+              },
+              "content_hash": "f7e908d44e5aec6a84943cdc67b04693000a8f0a69c3768febe85c7e7c8158aa",
+              "preview": "type TaskSessionResolution = | { ok: true; branch: string; metadata: TaskSessionMetadata } | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "d2220a2d-04cc-4a0e-a26e-3c6786b2b3b7",
+      "occurred_at": "2026-05-28T23:20:20.888Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9366,
+            "reason": "hybrid match: type DialerCallSource",
+            "lines": {
+              "start": 20,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:type:DialerCallSource:20-20",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "type",
+              "name": "DialerCallSource",
+              "symbol_path": "DialerCallSource",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 20,
+                "end": 20
+              },
+              "content_hash": "a8d27151a9a4b29c2f4f7b3cbca30df64f62e489a4ca717fe94ab958d7d87ff6",
+              "preview": "type DialerCallSource = 'direct' | 'queue';"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8212,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/facade/executor.ts",
+            "score": 0.7718,
+            "reason": "hybrid match: type TaskSessionResolution",
+            "lines": {
+              "start": 39,
+              "end": 41
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/executor.ts:type:TaskSessionResolution:39-41",
+              "path": "packages/workspace/scripts/lib/facade/executor.ts",
+              "kind": "type",
+              "name": "TaskSessionResolution",
+              "symbol_path": "TaskSessionResolution",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 39,
+                "end": 41
+              },
+              "content_hash": "f7e908d44e5aec6a84943cdc67b04693000a8f0a69c3768febe85c7e7c8158aa",
+              "preview": "type TaskSessionResolution = | { ok: true; branch: string; metadata: TaskSessionMetadata } | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "11ec5aef-1398-4c68-8a56-f2f53c3ed3ae",
+      "occurred_at": "2026-05-28T23:20:22.840Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9635,
+            "reason": "hybrid match: method resolveQueueTargets",
+            "lines": {
+              "start": 420,
+              "end": 490
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:method:DialerCallStartService.resolveQueueTargets:420-490",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "method",
+              "name": "resolveQueueTargets",
+              "symbol_path": "DialerCallStartService.resolveQueueTargets",
+              "node_type": "method_definition",
+              "parent_name": "DialerCallStartService",
+              "lines": {
+                "start": 420,
+                "end": 490
+              },
+              "content_hash": "4cabd371e51615013d1b830aa3aa1397b3e85a6f40877987258821fa472f8bce",
+              "preview": "private async resolveQueueTargets(params: { workspaceId: string; queueId: string;"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8253,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+            "score": 0.8121,
+            "reason": "hybrid match: type DialerCallStartResult",
+            "lines": {
+              "start": 29,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts:type:DialerCallStartResult:29-46",
+              "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+              "kind": "type",
+              "name": "DialerCallStartResult",
+              "symbol_path": "DialerCallStartResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 29,
+                "end": 46
+              },
+              "content_hash": "dea0270148e7fc84b1527dc75f0328dc55c5c9fe6151e83eca86d293340aa713",
+              "preview": "export type DialerCallStartResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "bc9103a5-16b5-49ec-95e0-c0ad8221d546",
+      "occurred_at": "2026-05-28T23:20:23.376Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9635,
+            "reason": "hybrid match: method resolveQueueTargets",
+            "lines": {
+              "start": 420,
+              "end": 490
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:method:DialerCallStartService.resolveQueueTargets:420-490",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "method",
+              "name": "resolveQueueTargets",
+              "symbol_path": "DialerCallStartService.resolveQueueTargets",
+              "node_type": "method_definition",
+              "parent_name": "DialerCallStartService",
+              "lines": {
+                "start": 420,
+                "end": 490
+              },
+              "content_hash": "4cabd371e51615013d1b830aa3aa1397b3e85a6f40877987258821fa472f8bce",
+              "preview": "private async resolveQueueTargets(params: { workspaceId: string; queueId: string;"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8253,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+            "score": 0.8121,
+            "reason": "hybrid match: type DialerCallStartResult",
+            "lines": {
+              "start": 29,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts:type:DialerCallStartResult:29-46",
+              "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+              "kind": "type",
+              "name": "DialerCallStartResult",
+              "symbol_path": "DialerCallStartResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 29,
+                "end": 46
+              },
+              "content_hash": "dea0270148e7fc84b1527dc75f0328dc55c5c9fe6151e83eca86d293340aa713",
+              "preview": "export type DialerCallStartResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "a5d5c5cf-1ebf-466a-a7c8-00bab9c075da",
+      "occurred_at": "2026-05-28T23:20:31.946Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "research ingest youtube article pdf durable context packet extracted manifest",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/consuelo-design.ts",
+            "score": 0.794,
+            "reason": "hybrid match: function renderArchiveIndex part 1",
+            "lines": {
+              "start": 1474,
+              "end": 1526
+            },
+            "target": {
+              "key": "packages/workspace/scripts/consuelo-design.ts:function:renderArchiveIndex part 1:1474-1526",
+              "path": "packages/workspace/scripts/consuelo-design.ts",
+              "kind": "function",
+              "name": "renderArchiveIndex part 1",
+              "symbol_path": "renderArchiveIndex part 1",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 1474,
+                "end": 1526
+              },
+              "content_hash": "cd18d16dee165fe681fb185bb71ac98fc53d90ee87a0360139d1763f70444f9f",
+              "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/research-ingest.js",
+            "score": 0.7165,
+            "reason": "hybrid match: function out",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/workspace/scripts/research-ingest.js:function:out:14-14",
+              "path": "packages/workspace/scripts/research-ingest.js",
+              "kind": "function",
+              "name": "out",
+              "symbol_path": "out",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "8c911521ac32015152a571d6f120639ad13a800183e9236fd010a1721b76f7e7",
+              "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);"
+            }
+          },
+          {
+            "path": "scripts/operator/trace-watch.ts",
+            "score": 0.7146,
+            "reason": "hybrid match: function codeRunOperations",
+            "lines": {
+              "start": 408,
+              "end": 415
+            },
+            "target": {
+              "key": "scripts/operator/trace-watch.ts:function:codeRunOperations:408-415",
+              "path": "scripts/operator/trace-watch.ts",
+              "kind": "function",
+              "name": "codeRunOperations",
+              "symbol_path": "codeRunOperations",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 408,
+                "end": 415
+              },
+              "content_hash": "feb400c5d0c82a7b408ad85b1c73240084b34891636f11683829a2de3e75b2d9",
+              "preview": "function codeRunOperations(row: Row): NestedOperation[] { const extracted = parseJson(row.nested_operations_json); const result = parseJson(row.result_json);"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/research-ingest.test.js",
+            "score": 0.7053,
+            "reason": "hybrid match: test test: research ingest prefers extracted content over summarize input config strings",
+            "lines": {
+              "start": 36,
+              "end": 73
+            },
+            "target": {
+              "key": "packages/workspace/tests/research-ingest.test.js:test:test: research ingest prefers extracted content over summarize input config strings:36-73",
+              "path": "packages/workspace/tests/research-ingest.test.js",
+              "kind": "test",
+              "name": "test: research ingest prefers extracted content over summarize input config strings",
+              "symbol_path": "test: research ingest prefers extracted content over summarize input config strings",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 36,
+                "end": 73
+              },
+              "content_hash": "1ec241f0072d737e42cd43e32ab8fcf4672a203c449ae04ba5f1daa6afe2420a",
+              "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.7009,
+            "reason": "hybrid match: block research.ingest",
+            "lines": {
+              "start": 6681,
+              "end": 6738
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:research.ingest:6681-6738",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "research.ingest",
+              "symbol_path": "research.ingest",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6681,
+                "end": 6738
+              },
+              "content_hash": "004523ff2d0a558d288da827b3714660fedd2ef0bb6803859f048e3ba0138b5c",
+              "preview": "### research.ingest generate a local research packet and autosave its text bundle to context - signature: `workspace.research.ingest({ source: string; question?: string; mode?: \"quick\" | \"standard\" | \"deep\"; visual?: boolean; slidesMax?: nu"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "f5b911d1-97cf-4034-ac5b-7de2d99a8c7f",
+      "occurred_at": "2026-05-28T23:20:39.358Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "research ingest youtube article pdf durable context packet extracted manifest",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/consuelo-design.ts",
+            "score": 0.794,
+            "reason": "hybrid match: function renderArchiveIndex part 1",
+            "lines": {
+              "start": 1474,
+              "end": 1526
+            },
+            "target": {
+              "key": "packages/workspace/scripts/consuelo-design.ts:function:renderArchiveIndex part 1:1474-1526",
+              "path": "packages/workspace/scripts/consuelo-design.ts",
+              "kind": "function",
+              "name": "renderArchiveIndex part 1",
+              "symbol_path": "renderArchiveIndex part 1",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 1474,
+                "end": 1526
+              },
+              "content_hash": "cd18d16dee165fe681fb185bb71ac98fc53d90ee87a0360139d1763f70444f9f",
+              "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/research-ingest.js",
+            "score": 0.7165,
+            "reason": "hybrid match: function out",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/workspace/scripts/research-ingest.js:function:out:14-14",
+              "path": "packages/workspace/scripts/research-ingest.js",
+              "kind": "function",
+              "name": "out",
+              "symbol_path": "out",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "8c911521ac32015152a571d6f120639ad13a800183e9236fd010a1721b76f7e7",
+              "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);"
+            }
+          },
+          {
+            "path": "scripts/operator/trace-watch.ts",
+            "score": 0.7146,
+            "reason": "hybrid match: function codeRunOperations",
+            "lines": {
+              "start": 408,
+              "end": 415
+            },
+            "target": {
+              "key": "scripts/operator/trace-watch.ts:function:codeRunOperations:408-415",
+              "path": "scripts/operator/trace-watch.ts",
+              "kind": "function",
+              "name": "codeRunOperations",
+              "symbol_path": "codeRunOperations",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 408,
+                "end": 415
+              },
+              "content_hash": "feb400c5d0c82a7b408ad85b1c73240084b34891636f11683829a2de3e75b2d9",
+              "preview": "function codeRunOperations(row: Row): NestedOperation[] { const extracted = parseJson(row.nested_operations_json); const result = parseJson(row.result_json);"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/research-ingest.test.js",
+            "score": 0.7053,
+            "reason": "hybrid match: test test: research ingest prefers extracted content over summarize input config strings",
+            "lines": {
+              "start": 36,
+              "end": 73
+            },
+            "target": {
+              "key": "packages/workspace/tests/research-ingest.test.js:test:test: research ingest prefers extracted content over summarize input config strings:36-73",
+              "path": "packages/workspace/tests/research-ingest.test.js",
+              "kind": "test",
+              "name": "test: research ingest prefers extracted content over summarize input config strings",
+              "symbol_path": "test: research ingest prefers extracted content over summarize input config strings",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 36,
+                "end": 73
+              },
+              "content_hash": "1ec241f0072d737e42cd43e32ab8fcf4672a203c449ae04ba5f1daa6afe2420a",
+              "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.7009,
+            "reason": "hybrid match: block research.ingest",
+            "lines": {
+              "start": 6681,
+              "end": 6738
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:research.ingest:6681-6738",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "research.ingest",
+              "symbol_path": "research.ingest",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6681,
+                "end": 6738
+              },
+              "content_hash": "004523ff2d0a558d288da827b3714660fedd2ef0bb6803859f048e3ba0138b5c",
+              "preview": "### research.ingest generate a local research packet and autosave its text bundle to context - signature: `workspace.research.ingest({ source: string; question?: string; mode?: \"quick\" | \"standard\" | \"deep\"; visual?: boolean; slidesMax?: nu"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "b9cb1113-56a6-4887-be49-0ce4b051c927",
+      "occurred_at": "2026-05-28T23:20:53.537Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "test selection registry changed file packages/dialer/src/dialer.ts selects dialer specs",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.9221,
+            "reason": "hybrid match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/dialer/src/dialer.ts:class:Dialer:46-46",
+              "path": "packages/dialer/src/dialer.ts",
+              "kind": "class",
+              "name": "Dialer",
+              "symbol_path": "Dialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 46,
+                "end": 46
+              },
+              "content_hash": "106459c6fc7ba4cd8e5a547dc40729438c99b7ff8f413238ce66a304e299ef61",
+              "preview": "export class Dialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/test-selection.js",
+            "score": 0.859,
+            "reason": "hybrid match: function readJson",
+            "lines": {
+              "start": 13,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/test-selection.js:function:readJson:13-16",
+              "path": "packages/workspace/scripts/test-selection.js",
+              "kind": "function",
+              "name": "readJson",
+              "symbol_path": "readJson",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 16
+              },
+              "content_hash": "d2feea5d23401e4faf3ede942a78f8c88feae32ec3e94c71590c1f678acb7767",
+              "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.794,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+            "score": 0.7773,
+            "reason": "hybrid match: function useChangePageLayoutDragSelection",
+            "lines": {
+              "start": 7,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts:function:useChangePageLayoutDragSelection:7-37",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useChangePageLayoutDragSelection",
+              "symbol_path": "useChangePageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 37
+              },
+              "content_hash": "35ed7709bdaf9728fbd1d87104f46e74f24ed219be751843185f905d05a20795",
+              "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+            "score": 0.7603,
+            "reason": "hybrid match: function useEndPageLayoutDragSelection",
+            "lines": {
+              "start": 13,
+              "end": 71
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts:function:useEndPageLayoutDragSelection:13-71",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useEndPageLayoutDragSelection",
+              "symbol_path": "useEndPageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 71
+              },
+              "content_hash": "dd3071231099b204d167aaee161f50c19edc5f652a6e5faf28b3dd7bb94eca52",
+              "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "224af3bb-b793-4c10-968e-dd1094385ab4",
+      "occurred_at": "2026-05-28T23:21:06.276Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "test selection registry changed file packages/dialer/src/dialer.ts selects dialer specs",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.9221,
+            "reason": "hybrid match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/dialer/src/dialer.ts:class:Dialer:46-46",
+              "path": "packages/dialer/src/dialer.ts",
+              "kind": "class",
+              "name": "Dialer",
+              "symbol_path": "Dialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 46,
+                "end": 46
+              },
+              "content_hash": "106459c6fc7ba4cd8e5a547dc40729438c99b7ff8f413238ce66a304e299ef61",
+              "preview": "export class Dialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/test-selection.js",
+            "score": 0.859,
+            "reason": "hybrid match: function readJson",
+            "lines": {
+              "start": 13,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/test-selection.js:function:readJson:13-16",
+              "path": "packages/workspace/scripts/test-selection.js",
+              "kind": "function",
+              "name": "readJson",
+              "symbol_path": "readJson",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 16
+              },
+              "content_hash": "d2feea5d23401e4faf3ede942a78f8c88feae32ec3e94c71590c1f678acb7767",
+              "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.794,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+            "score": 0.7773,
+            "reason": "hybrid match: function useChangePageLayoutDragSelection",
+            "lines": {
+              "start": 7,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts:function:useChangePageLayoutDragSelection:7-37",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useChangePageLayoutDragSelection",
+              "symbol_path": "useChangePageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 37
+              },
+              "content_hash": "35ed7709bdaf9728fbd1d87104f46e74f24ed219be751843185f905d05a20795",
+              "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+            "score": 0.7603,
+            "reason": "hybrid match: function useEndPageLayoutDragSelection",
+            "lines": {
+              "start": 13,
+              "end": 71
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts:function:useEndPageLayoutDragSelection:13-71",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useEndPageLayoutDragSelection",
+              "symbol_path": "useEndPageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 71
+              },
+              "content_hash": "dd3071231099b204d167aaee161f50c19edc5f652a6e5faf28b3dd7bb94eca52",
+              "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "a7545ec2-9079-4c2e-a90f-a6448556b33f",
+      "occurred_at": "2026-05-28T23:21:07.005Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "004c933a-4c45-4a68-bd49-6505f464c5a4",
+      "occurred_at": "2026-05-28T23:21:15.726Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+            "score": 1,
+            "reason": "hybrid match: function resolveElectronBuilderTargets",
+            "lines": {
+              "start": 370,
+              "end": 381
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts:function:resolveElectronBuilderTargets:370-381",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/mac.ts",
+              "kind": "function",
+              "name": "resolveElectronBuilderTargets",
+              "symbol_path": "resolveElectronBuilderTargets",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 370,
+                "end": 381
+              },
+              "content_hash": "7d5fd448d4f92cba6fdb00b23bd8b566e44eae2703abd41808db88683aacbb61",
+              "preview": "function resolveElectronBuilderTargets(to: MacBuildOutput): ElectronBuilderTarget[] { switch (to) { case \"app\":"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+            "score": 0.9989,
+            "reason": "hybrid match: function resolveElectronBinaryPath",
+            "lines": {
+              "start": 77,
+              "end": 83
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts:function:resolveElectronBinaryPath:77-83",
+              "path": "packages/consuelo-design/upstream/open-design/tools/dev/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronBinaryPath",
+              "symbol_path": "resolveElectronBinaryPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 77,
+                "end": 83
+              },
+              "content_hash": "cfcc696d9003f3338eea8004bda1f7f8caac993050cd944ee19becf68d5d54a1",
+              "preview": "function resolveElectronBinaryPath(workspaceRoot: string): string { const packageJsonPath = path.join(workspaceRoot, \"apps/desktop/package.json\"); const require = createRequire(packageJsonPath);"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+            "score": 0.9793,
+            "reason": "hybrid match: function runElectronBuilderLinux",
+            "lines": {
+              "start": 427,
+              "end": 443
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts:function:runElectronBuilderLinux:427-443",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/linux.ts",
+              "kind": "function",
+              "name": "runElectronBuilderLinux",
+              "symbol_path": "runElectronBuilderLinux",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 427,
+                "end": 443
+              },
+              "content_hash": "f55936e5b75ac31264f9a3dca0f1ff65f3b7e95bef59105abd295d081e874ab6",
+              "preview": "async function runElectronBuilderLinux(config: ToolPackConfig, paths: LinuxPaths): Promise<void> { await rm(paths.appBuilderOutputRoot, { force: true, recursive: true }); const args = ["
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+            "score": 0.9776,
+            "reason": "hybrid match: function resolveElectronVersion",
+            "lines": {
+              "start": 78,
+              "end": 88
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts:function:resolveElectronVersion:78-88",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/config.ts",
+              "kind": "function",
+              "name": "resolveElectronVersion",
+              "symbol_path": "resolveElectronVersion",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 78,
+                "end": 88
+              },
+              "content_hash": "0583a763ebf24128d213af0edbcc913911a2fd00324c2521a40d7cffee330d02",
+              "preview": "function resolveElectronVersion(workspaceRoot: string): string { const require = createRequire(join(workspaceRoot, \"apps/desktop/package.json\")); const desktopPackage = require(join(workspaceRoot, \"apps/desktop/package.json\")) as {"
+            }
+          },
+          {
+            "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+            "score": 0.9715,
+            "reason": "hybrid match: function runElectronBuilder",
+            "lines": {
+              "start": 723,
+              "end": 806
+            },
+            "target": {
+              "key": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts:function:runElectronBuilder:723-806",
+              "path": "packages/consuelo-design/upstream/open-design/tools/pack/src/win.ts",
+              "kind": "function",
+              "name": "runElectronBuilder",
+              "symbol_path": "runElectronBuilder",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 723,
+                "end": 806
+              },
+              "content_hash": "780e176af49a49d89b3f49f11c1a8988179db8a2292ab02e014da57e60be7f6d",
+              "preview": "async function runElectronBuilder(config: ToolPackConfig, paths: WinPaths): Promise<void> { const namespaceToken = sanitizeNamespace(config.namespace); const packagedVersion = await readPackagedVersion(config);"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "76459c3c-b43c-4597-b070-7e31b93384e8",
+      "occurred_at": "2026-05-28T23:21:24.206Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "tests/postman/README.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Calls+History",
+            "lines": {
+              "start": 125,
+              "end": 133
+            },
+            "target": {
+              "key": "tests/postman/README.md:block:Calls+History:125-133",
+              "path": "tests/postman/README.md",
+              "kind": "block",
+              "name": "Calls+History",
+              "symbol_path": "Calls+History",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 125,
+                "end": 133
+              },
+              "content_hash": "6fe7c822c00ca24bb07c9adcdd847ef4183fd7d498720d7477175ac95413639e",
+              "preview": "### Calls+History - `GET /v1/calls/logs` - Call log - `GET /v1/calls/:callSid` - Call detail"
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block script uploading (consistent messaging)",
+            "lines": {
+              "start": 137,
+              "end": 140
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md:block:script uploading (consistent messaging):137-140",
+              "path": "packages/consuelo-website/src/content/blog/ghl-embedded-launch.md",
+              "kind": "block",
+              "name": "script uploading (consistent messaging)",
+              "symbol_path": "script uploading (consistent messaging)",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 137,
+                "end": 140
+              },
+              "content_hash": "c6a72347975dfb1f11534a202027ead42e3f08c39bff84e8c19d33ec481bfb8e",
+              "preview": "### script uploading (consistent messaging) upload your sales scripts. mercury trains the ai on your talking points, objection handlers, and compliance requirements. every rep says the right thing every time."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "c3e3d4d7-14a5-40e7-9b09-761454877ef2",
+      "occurred_at": "2026-05-28T23:21:31.895Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/tests/explore-ranker.test.js",
+            "score": 0.9493,
+            "reason": "hybrid match: test describe: explore ranker relevance signals",
+            "lines": {
+              "start": 35,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/workspace/tests/explore-ranker.test.js:test:describe: explore ranker relevance signals:35-90",
+              "path": "packages/workspace/tests/explore-ranker.test.js",
+              "kind": "test",
+              "name": "describe: explore ranker relevance signals",
+              "symbol_path": "describe: explore ranker relevance signals",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 35,
+                "end": 90
+              },
+              "content_hash": "3036484c3fb32e84a9ae80a3be71fc6ed32187ae74a5d960a2d16ca9602f360c",
+              "preview": "describe('explore ranker relevance signals', () => { it('extracts issue IDs and tool names as anchors', () => { const signals = getQuerySignals('DEV-1508 research.ingest Groq transcript');"
+            }
+          },
+          {
+            "path": "packages/workspace/STEERING.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block 1. Identity",
+            "lines": {
+              "start": 18,
+              "end": 43
+            },
+            "target": {
+              "key": "packages/workspace/STEERING.md:block:1. Identity:18-43",
+              "path": "packages/workspace/STEERING.md",
+              "kind": "block",
+              "name": "1. Identity",
+              "symbol_path": "1. Identity",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 43
+              },
+              "content_hash": "0405e13eb84f393ade469e34243a02eadce457915579e1b1ea4ad9f14eddb03f",
+              "preview": "## 1. Identity you are suelo. you are not a generic chatbot. You are a founding member of Consuelo, working alongside Ko."
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block switching from wavv",
+            "lines": {
+              "start": 167,
+              "end": 179
+            },
+            "target": {
+              "key": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md:block:switching from wavv:167-179",
+              "path": "packages/consuelo-website/src/content/blog/wavv-vs-consuelo-comparison.md",
+              "kind": "block",
+              "name": "switching from wavv",
+              "symbol_path": "switching from wavv",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 167,
+                "end": 179
+              },
+              "content_hash": "dcfafc7074a52b1656df1f94f4c52f0516f67c23b5f347e04151420ab8f00e90",
+              "preview": "## switching from wavv migrating takes under an hour: 1. export your wavv call history (csv)"
+            }
+          },
+          {
+            "path": "packages/agent/src/skills/post-call-analysis.md",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): block Post-Call Analysis",
+            "lines": {
+              "start": 6,
+              "end": 9
+            },
+            "target": {
+              "key": "packages/agent/src/skills/post-call-analysis.md:block:Post-Call Analysis:6-9",
+              "path": "packages/agent/src/skills/post-call-analysis.md",
+              "kind": "block",
+              "name": "Post-Call Analysis",
+              "symbol_path": "Post-Call Analysis",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6,
+                "end": 9
+              },
+              "content_hash": "2343a2b8ec0156ee2e1a1aa3907eda1bb2ac715447ea8a2d7c8fd4b16b381992",
+              "preview": "# Post-Call Analysis You just finished a call. Analyze it for the permanent call record."
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/post-call-card.tsx",
+            "score": 0.38,
+            "reason": "semantic match (issue-anchor-missing): function formatCallDuration",
+            "lines": {
+              "start": 47,
+              "end": 51
+            },
+            "target": {
+              "key": "packages/chat-bot/src/post-call-card.tsx:function:formatCallDuration:47-51",
+              "path": "packages/chat-bot/src/post-call-card.tsx",
+              "kind": "function",
+              "name": "formatCallDuration",
+              "symbol_path": "formatCallDuration",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 47,
+                "end": 51
+              },
+              "content_hash": "e3edc629f715e036058f0635258ce413cb2fc833b18c7a06ad2d41aed988e4a2",
+              "preview": "function formatCallDuration(seconds: number): string { const m = Math.floor(seconds / 60); const s = seconds % 60;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "fa575935-a529-4f03-8722-9c72ca56b62e",
+      "occurred_at": "2026-05-28T23:21:38.792Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9366,
+            "reason": "hybrid match: type DialerCallSource",
+            "lines": {
+              "start": 20,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:type:DialerCallSource:20-20",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "type",
+              "name": "DialerCallSource",
+              "symbol_path": "DialerCallSource",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 20,
+                "end": 20
+              },
+              "content_hash": "a8d27151a9a4b29c2f4f7b3cbca30df64f62e489a4ca717fe94ab958d7d87ff6",
+              "preview": "type DialerCallSource = 'direct' | 'queue';"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8212,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/facade/executor.ts",
+            "score": 0.7718,
+            "reason": "hybrid match: type TaskSessionResolution",
+            "lines": {
+              "start": 39,
+              "end": 41
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/executor.ts:type:TaskSessionResolution:39-41",
+              "path": "packages/workspace/scripts/lib/facade/executor.ts",
+              "kind": "type",
+              "name": "TaskSessionResolution",
+              "symbol_path": "TaskSessionResolution",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 39,
+                "end": 41
+              },
+              "content_hash": "f7e908d44e5aec6a84943cdc67b04693000a8f0a69c3768febe85c7e7c8158aa",
+              "preview": "type TaskSessionResolution = | { ok: true; branch: string; metadata: TaskSessionMetadata } | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "2699b237-c17e-4eca-8433-df590b706ad1",
+      "occurred_at": "2026-05-28T23:21:45.865Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9636,
+            "reason": "hybrid match: method resolveQueueTargets",
+            "lines": {
+              "start": 420,
+              "end": 490
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:method:DialerCallStartService.resolveQueueTargets:420-490",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "method",
+              "name": "resolveQueueTargets",
+              "symbol_path": "DialerCallStartService.resolveQueueTargets",
+              "node_type": "method_definition",
+              "parent_name": "DialerCallStartService",
+              "lines": {
+                "start": 420,
+                "end": 490
+              },
+              "content_hash": "4cabd371e51615013d1b830aa3aa1397b3e85a6f40877987258821fa472f8bce",
+              "preview": "private async resolveQueueTargets(params: { workspaceId: string; queueId: string;"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+            "score": 0.8252,
+            "reason": "hybrid match: test describe: DialerCallStartService part 2",
+            "lines": {
+              "start": 191,
+              "end": 333
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts:test:describe: DialerCallStartService part 2:191-333",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+              "kind": "test",
+              "name": "describe: DialerCallStartService part 2",
+              "symbol_path": "describe: DialerCallStartService part 2",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 191,
+                "end": 333
+              },
+              "content_hash": "c95ce41afa3bf17dd33ad44103b32d70db85fab22d64e22e7aca5df8fade19bd",
+              "preview": "if (sql.includes('FROM queue_items qi')) { expect(sql).toContain(\"qi.status IN ('calling', 'pending')\"); expect(sql).toContain("
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+            "score": 0.8123,
+            "reason": "hybrid match: type DialerCallStartResult",
+            "lines": {
+              "start": 29,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts:type:DialerCallStartResult:29-46",
+              "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+              "kind": "type",
+              "name": "DialerCallStartResult",
+              "symbol_path": "DialerCallStartResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 29,
+                "end": 46
+              },
+              "content_hash": "dea0270148e7fc84b1527dc75f0328dc55c5c9fe6151e83eca86d293340aa713",
+              "preview": "export type DialerCallStartResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.8093,
+            "reason": "hybrid match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            },
+            "target": {
+              "key": "packages/chat-bot/src/queue-dialer.ts:class:QueueDialer:70-70",
+              "path": "packages/chat-bot/src/queue-dialer.ts",
+              "kind": "class",
+              "name": "QueueDialer",
+              "symbol_path": "QueueDialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 70,
+                "end": 70
+              },
+              "content_hash": "6b39cf49af68179aa81eef1009d27e1b8fc95503c962d9b8d5e1c435bb2c6c6d",
+              "preview": "export class QueueDialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+            "score": 0.7728,
+            "reason": "hybrid match: type StartDialerCallResult",
+            "lines": {
+              "start": 21,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/run-dialer-scenario.ts:type:StartDialerCallResult:21-45",
+              "path": "packages/workspace/scripts/run-dialer-scenario.ts",
+              "kind": "type",
+              "name": "StartDialerCallResult",
+              "symbol_path": "StartDialerCallResult",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 21,
+                "end": 45
+              },
+              "content_hash": "e32a685f84cdfe53f86fb78c20d99e9a419537cfa8d67f64dc4006f62df95ac7",
+              "preview": "type StartDialerCallResult = { sessionId: string; twilioGroupId: string | null;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "c0212152-d419-4340-b225-7e98bc9f3039",
+      "occurred_at": "2026-05-28T23:21:54.494Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "research ingest youtube article pdf durable context packet extracted manifest",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/consuelo-design.ts",
+            "score": 0.794,
+            "reason": "hybrid match: function renderArchiveIndex part 1",
+            "lines": {
+              "start": 1474,
+              "end": 1526
+            },
+            "target": {
+              "key": "packages/workspace/scripts/consuelo-design.ts:function:renderArchiveIndex part 1:1474-1526",
+              "path": "packages/workspace/scripts/consuelo-design.ts",
+              "kind": "function",
+              "name": "renderArchiveIndex part 1",
+              "symbol_path": "renderArchiveIndex part 1",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 1474,
+                "end": 1526
+              },
+              "content_hash": "cd18d16dee165fe681fb185bb71ac98fc53d90ee87a0360139d1763f70444f9f",
+              "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/research-ingest.js",
+            "score": 0.7165,
+            "reason": "hybrid match: function out",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/workspace/scripts/research-ingest.js:function:out:14-14",
+              "path": "packages/workspace/scripts/research-ingest.js",
+              "kind": "function",
+              "name": "out",
+              "symbol_path": "out",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "8c911521ac32015152a571d6f120639ad13a800183e9236fd010a1721b76f7e7",
+              "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);"
+            }
+          },
+          {
+            "path": "scripts/operator/trace-watch.ts",
+            "score": 0.7146,
+            "reason": "hybrid match: function codeRunOperations",
+            "lines": {
+              "start": 408,
+              "end": 415
+            },
+            "target": {
+              "key": "scripts/operator/trace-watch.ts:function:codeRunOperations:408-415",
+              "path": "scripts/operator/trace-watch.ts",
+              "kind": "function",
+              "name": "codeRunOperations",
+              "symbol_path": "codeRunOperations",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 408,
+                "end": 415
+              },
+              "content_hash": "feb400c5d0c82a7b408ad85b1c73240084b34891636f11683829a2de3e75b2d9",
+              "preview": "function codeRunOperations(row: Row): NestedOperation[] { const extracted = parseJson(row.nested_operations_json); const result = parseJson(row.result_json);"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/research-ingest.test.js",
+            "score": 0.7053,
+            "reason": "hybrid match: test test: research ingest prefers extracted content over summarize input config strings",
+            "lines": {
+              "start": 36,
+              "end": 73
+            },
+            "target": {
+              "key": "packages/workspace/tests/research-ingest.test.js:test:test: research ingest prefers extracted content over summarize input config strings:36-73",
+              "path": "packages/workspace/tests/research-ingest.test.js",
+              "kind": "test",
+              "name": "test: research ingest prefers extracted content over summarize input config strings",
+              "symbol_path": "test: research ingest prefers extracted content over summarize input config strings",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 36,
+                "end": 73
+              },
+              "content_hash": "1ec241f0072d737e42cd43e32ab8fcf4672a203c449ae04ba5f1daa6afe2420a",
+              "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.7009,
+            "reason": "hybrid match: block research.ingest",
+            "lines": {
+              "start": 6681,
+              "end": 6738
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:research.ingest:6681-6738",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "research.ingest",
+              "symbol_path": "research.ingest",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6681,
+                "end": 6738
+              },
+              "content_hash": "004523ff2d0a558d288da827b3714660fedd2ef0bb6803859f048e3ba0138b5c",
+              "preview": "### research.ingest generate a local research packet and autosave its text bundle to context - signature: `workspace.research.ingest({ source: string; question?: string; mode?: \"quick\" | \"standard\" | \"deep\"; visual?: boolean; slidesMax?: nu"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "4c24e5a9-ceee-4323-8f9d-4c3a86dff646",
+      "occurred_at": "2026-05-28T23:22:01.914Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "research ingest youtube article pdf durable context packet extracted manifest",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/consuelo-design.ts",
+            "score": 0.794,
+            "reason": "hybrid match: function renderArchiveIndex part 1",
+            "lines": {
+              "start": 1474,
+              "end": 1526
+            },
+            "target": {
+              "key": "packages/workspace/scripts/consuelo-design.ts:function:renderArchiveIndex part 1:1474-1526",
+              "path": "packages/workspace/scripts/consuelo-design.ts",
+              "kind": "function",
+              "name": "renderArchiveIndex part 1",
+              "symbol_path": "renderArchiveIndex part 1",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 1474,
+                "end": 1526
+              },
+              "content_hash": "cd18d16dee165fe681fb185bb71ac98fc53d90ee87a0360139d1763f70444f9f",
+              "preview": "function renderArchiveIndex(payload: DesignArchivePayload): string { const visibleEntries = [...payload.entries] .filter((entry) => entry.category !== 'research-packet')"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/research-ingest.js",
+            "score": 0.7165,
+            "reason": "hybrid match: function out",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/workspace/scripts/research-ingest.js:function:out:14-14",
+              "path": "packages/workspace/scripts/research-ingest.js",
+              "kind": "function",
+              "name": "out",
+              "symbol_path": "out",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "8c911521ac32015152a571d6f120639ad13a800183e9236fd010a1721b76f7e7",
+              "preview": "const out = (value = '') => process.stdout.write(`${value}\\n`);"
+            }
+          },
+          {
+            "path": "scripts/operator/trace-watch.ts",
+            "score": 0.7146,
+            "reason": "hybrid match: function codeRunOperations",
+            "lines": {
+              "start": 408,
+              "end": 415
+            },
+            "target": {
+              "key": "scripts/operator/trace-watch.ts:function:codeRunOperations:408-415",
+              "path": "scripts/operator/trace-watch.ts",
+              "kind": "function",
+              "name": "codeRunOperations",
+              "symbol_path": "codeRunOperations",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 408,
+                "end": 415
+              },
+              "content_hash": "feb400c5d0c82a7b408ad85b1c73240084b34891636f11683829a2de3e75b2d9",
+              "preview": "function codeRunOperations(row: Row): NestedOperation[] { const extracted = parseJson(row.nested_operations_json); const result = parseJson(row.result_json);"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/research-ingest.test.js",
+            "score": 0.7053,
+            "reason": "hybrid match: test test: research ingest prefers extracted content over summarize input config strings",
+            "lines": {
+              "start": 36,
+              "end": 73
+            },
+            "target": {
+              "key": "packages/workspace/tests/research-ingest.test.js:test:test: research ingest prefers extracted content over summarize input config strings:36-73",
+              "path": "packages/workspace/tests/research-ingest.test.js",
+              "kind": "test",
+              "name": "test: research ingest prefers extracted content over summarize input config strings",
+              "symbol_path": "test: research ingest prefers extracted content over summarize input config strings",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 36,
+                "end": 73
+              },
+              "content_hash": "1ec241f0072d737e42cd43e32ab8fcf4672a203c449ae04ba5f1daa6afe2420a",
+              "preview": "test('research ingest prefers extracted content over summarize input config strings', () => { const expectedText = 'Actual extracted source text from the README should be written to extracted.md.'; const fakeSummarize = makeFakeSummarize({"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.7009,
+            "reason": "hybrid match: block research.ingest",
+            "lines": {
+              "start": 6681,
+              "end": 6738
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:research.ingest:6681-6738",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "research.ingest",
+              "symbol_path": "research.ingest",
+              "node_type": "markdown_heading",
+              "parent_name": null,
+              "lines": {
+                "start": 6681,
+                "end": 6738
+              },
+              "content_hash": "004523ff2d0a558d288da827b3714660fedd2ef0bb6803859f048e3ba0138b5c",
+              "preview": "### research.ingest generate a local research packet and autosave its text bundle to context - signature: `workspace.research.ingest({ source: string; question?: string; mode?: \"quick\" | \"standard\" | \"deep\"; visual?: boolean; slidesMax?: nu"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "1c09a0ff-64ac-48c0-bb37-59205e9ec20f",
+      "occurred_at": "2026-05-28T23:22:09.514Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "test selection registry changed file packages/dialer/src/dialer.ts selects dialer specs",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.9221,
+            "reason": "hybrid match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/dialer/src/dialer.ts:class:Dialer:46-46",
+              "path": "packages/dialer/src/dialer.ts",
+              "kind": "class",
+              "name": "Dialer",
+              "symbol_path": "Dialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 46,
+                "end": 46
+              },
+              "content_hash": "106459c6fc7ba4cd8e5a547dc40729438c99b7ff8f413238ce66a304e299ef61",
+              "preview": "export class Dialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/test-selection.js",
+            "score": 0.859,
+            "reason": "hybrid match: function readJson",
+            "lines": {
+              "start": 13,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/test-selection.js:function:readJson:13-16",
+              "path": "packages/workspace/scripts/test-selection.js",
+              "kind": "function",
+              "name": "readJson",
+              "symbol_path": "readJson",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 16
+              },
+              "content_hash": "d2feea5d23401e4faf3ede942a78f8c88feae32ec3e94c71590c1f678acb7767",
+              "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.794,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+            "score": 0.7773,
+            "reason": "hybrid match: function useChangePageLayoutDragSelection",
+            "lines": {
+              "start": 7,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts:function:useChangePageLayoutDragSelection:7-37",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useChangePageLayoutDragSelection",
+              "symbol_path": "useChangePageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 37
+              },
+              "content_hash": "35ed7709bdaf9728fbd1d87104f46e74f24ed219be751843185f905d05a20795",
+              "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+            "score": 0.7603,
+            "reason": "hybrid match: function useEndPageLayoutDragSelection",
+            "lines": {
+              "start": 13,
+              "end": 71
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts:function:useEndPageLayoutDragSelection:13-71",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useEndPageLayoutDragSelection",
+              "symbol_path": "useEndPageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 71
+              },
+              "content_hash": "dd3071231099b204d167aaee161f50c19edc5f652a6e5faf28b3dd7bb94eca52",
+              "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:17:27.405Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "2c400b09-b362-44e2-8f78-6a712ebe5920",
+      "occurred_at": "2026-05-28T23:22:18.998Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "test selection registry changed file packages/dialer/src/dialer.ts selects dialer specs",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.9221,
+            "reason": "hybrid match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/dialer/src/dialer.ts:class:Dialer:46-46",
+              "path": "packages/dialer/src/dialer.ts",
+              "kind": "class",
+              "name": "Dialer",
+              "symbol_path": "Dialer",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 46,
+                "end": 46
+              },
+              "content_hash": "106459c6fc7ba4cd8e5a547dc40729438c99b7ff8f413238ce66a304e299ef61",
+              "preview": "export class Dialer {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/test-selection.js",
+            "score": 0.859,
+            "reason": "hybrid match: function readJson",
+            "lines": {
+              "start": 13,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/test-selection.js:function:readJson:13-16",
+              "path": "packages/workspace/scripts/test-selection.js",
+              "kind": "function",
+              "name": "readJson",
+              "symbol_path": "readJson",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 16
+              },
+              "content_hash": "d2feea5d23401e4faf3ede942a78f8c88feae32ec3e94c71590c1f678acb7767",
+              "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.794,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+            "score": 0.7773,
+            "reason": "hybrid match: function useChangePageLayoutDragSelection",
+            "lines": {
+              "start": 7,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts:function:useChangePageLayoutDragSelection:7-37",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useChangePageLayoutDragSelection",
+              "symbol_path": "useChangePageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 37
+              },
+              "content_hash": "35ed7709bdaf9728fbd1d87104f46e74f24ed219be751843185f905d05a20795",
+              "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+            "score": 0.7603,
+            "reason": "hybrid match: function useEndPageLayoutDragSelection",
+            "lines": {
+              "start": 13,
+              "end": 71
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts:function:useEndPageLayoutDragSelection:13-71",
+              "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+              "kind": "function",
+              "name": "useEndPageLayoutDragSelection",
+              "symbol_path": "useEndPageLayoutDragSelection",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 13,
+                "end": 71
+              },
+              "content_hash": "dd3071231099b204d167aaee161f50c19edc5f652a6e5faf28b3dd7bb94eca52",
+              "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15399,
+          "total_chunks": 74028,
+          "last_indexed": "2026-05-28T23:18:58.390Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T23:22:19.021Z"
+}
