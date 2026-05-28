@@ -12,7 +12,13 @@
       "tests": [
         {
           "name": "workspace facade input contracts",
-          "command": ["bun", "test", "packages/workspace/tests/facade/facade.test.ts", "--test-name-pattern", "validates input"]
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ]
         }
       ],
       "reason": "Workspace facade and manifest changes must prove typed tool input contracts."
@@ -29,7 +35,13 @@
       "tests": [
         {
           "name": "workspace verification stamp tests",
-          "command": ["bun", "test", "packages/workspace/tests/verification.test.js"]
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ]
         }
       ],
       "reason": "Review, verify, and task push changes must prove publish-gate behavior."
@@ -48,7 +60,12 @@
       "tests": [
         {
           "name": "workspace task session tests",
-          "command": ["bun", "test", "packages/workspace/tests/task-session.test.js", "packages/workspace/tests/task-meta.test.ts"]
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ]
         }
       ],
       "reason": "Task routing and metadata changes must prove task-session behavior."
@@ -65,7 +82,13 @@
       "tests": [
         {
           "name": "workspace test selection tests",
-          "command": ["bun", "test", "packages/workspace/tests/test-selection.test.js"]
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ]
         }
       ],
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
@@ -73,11 +96,19 @@
     {
       "id": "trace-watch",
       "critical": true,
-      "source": ["scripts/operator/trace-watch.ts"],
+      "source": [
+        "scripts/operator/trace-watch.ts"
+      ],
       "tests": [
         {
           "name": "trace watch build",
-          "command": ["bun", "build", "scripts/operator/trace-watch.ts", "--target=bun", "--outfile=/tmp/trace-watch-test-selection.js"]
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ]
         }
       ],
       "reason": "Trace renderer changes must compile."
@@ -94,7 +125,13 @@
       "tests": [
         {
           "name": "workspace audit tests",
-          "command": ["bun", "test", "packages/workspace/tests/audit/audit.test.ts"]
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ]
         }
       ],
       "reason": "Workspace script/docs changes should keep audit behavior covered."
@@ -102,11 +139,17 @@
     {
       "id": "dialer-package",
       "critical": true,
-      "source": ["packages/dialer/**"],
+      "source": [
+        "packages/dialer/**"
+      ],
       "tests": [
         {
           "name": "dialer specs",
-          "command": ["bun", "test", "packages/dialer/src"]
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ]
         }
       ],
       "reason": "Dialer changes are call-path critical and must run package specs."
@@ -114,11 +157,17 @@
     {
       "id": "api-package",
       "critical": true,
-      "source": ["packages/api/**"],
+      "source": [
+        "packages/api/**"
+      ],
       "tests": [
         {
           "name": "api specs",
-          "command": ["bun", "test", "packages/api/src"]
+          "command": [
+            "bun",
+            "test",
+            "packages/api/src"
+          ]
         }
       ],
       "reason": "API changes must run API route and service specs."
@@ -134,7 +183,12 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": ["npx", "nx", "test", "twenty-server"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ]
         }
       ],
       "reason": "Server changes have the broadest backend impact and should run the project test target."
@@ -142,11 +196,18 @@
     {
       "id": "twenty-front-project",
       "critical": false,
-      "source": ["packages/twenty-front/**"],
+      "source": [
+        "packages/twenty-front/**"
+      ],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": ["npx", "nx", "test", "twenty-front"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-front"
+          ]
         }
       ],
       "reason": "Frontend package changes should run the project test target."

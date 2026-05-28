@@ -626,7 +626,9 @@
           "name": "workspace verification stamp tests",
           "command": [
             "bun",
-            "test",
+            "x",
+            "vitest",
+            "run",
             "packages/workspace/tests/verification.test.js"
           ]
         }
@@ -673,7 +675,9 @@
           "name": "workspace test selection tests",
           "command": [
             "bun",
-            "test",
+            "x",
+            "vitest",
+            "run",
             "packages/workspace/tests/test-selection.test.js"
           ]
         }
@@ -716,7 +720,9 @@
           "name": "workspace audit tests",
           "command": [
             "bun",
-            "test",
+            "x",
+            "vitest",
+            "run",
             "packages/workspace/tests/audit/audit.test.ts"
           ]
         }
