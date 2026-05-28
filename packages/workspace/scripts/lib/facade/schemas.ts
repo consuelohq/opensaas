@@ -602,6 +602,18 @@ export const MacPortInput = z.object({
   port: z.number().int().positive().optional(),
 });
 
+export const WorkerCallInput = z.object({
+  ...requestFields,
+  provider: z.enum(['cdx', 'opc', 'mini']),
+  mode: z.enum(['check', 'step', 'work']).optional(),
+  policy: z.enum(['read', 'safe', 'edit', 'ship']).optional(),
+  instructionPath: z.string().min(1),
+  cwd: optionalString,
+  timeoutMs: z.number().int().positive().max(1_800_000).optional(),
+  workspaceOnly: z.union([z.boolean(), z.enum(['preferred', 'strict'])]).optional(),
+  approval: z.record(z.string(), z.unknown()).optional(),
+});
+
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
@@ -677,6 +689,7 @@ export const schemaRegistry = {
   MacListInput,
   MacProcessInput,
   MacPortInput,
+  WorkerCallInput,
 } satisfies Record<string, z.ZodType<unknown>>;
 
 export type SchemaName = keyof typeof schemaRegistry;
@@ -760,6 +773,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MacListInput: '{ path?: string; depth?: number; requestId?: string; taskSession?: string }',
   MacProcessInput: '{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacPortInput: '{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }',
+  WorkerCallInput: '{ provider: "cdx" | "opc" | "mini"; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }',
 };
 
 export const outputTypeSignatures: Record<string, string> = {
@@ -769,4 +783,5 @@ export const outputTypeSignatures: Record<string, string> = {
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
+  WorkerCallOutput: '{ provider: "cdx" | "opc" | "mini"; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
 };

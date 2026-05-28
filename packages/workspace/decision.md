@@ -37,6 +37,12 @@ this file should teach agents how to think with the system, what the signals mea
 
 ---
 
+## worker delegation naming decision
+
+Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `opc`, and `mini` are provider codes. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
+
+---
+
 ## 1. what this system is
 
 the decision process is not "better search."

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-neutral-command-aliases-and-worker-providers",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 621,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/621",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/621",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/621/add-neutral-command-aliases-and-worker-providers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/621",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/621/add-neutral-command-aliases-and-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-neutral-command-aliases-and-worker-providers",
+  "taskSession": "tsk_7d30e94876d4",
+  "tmuxSession": "opensaas-os-add-neutral-command-aliases-and-worker-providers-7d30e948",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-neutral-command-aliases-and-worker-providers/.task/os/add-neutral-command-aliases-and-worker-providers/session.json",
+  "createdAt": "2026-05-28T20:36:47.690Z"
+}
