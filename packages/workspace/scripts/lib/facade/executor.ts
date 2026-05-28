@@ -163,11 +163,12 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
     if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
+      const recovery = buildTaskSessionRequiredRecovery(toolName, entry, normalizedInput);
       const result = createToolResult({
         ok: false,
         code: 'TASK_SESSION_REQUIRED',
-        message: `${toolName} requires taskSession. Start a task with task.start and pass data.taskSession; do not rely on task.pin or root .task/current.json.`,
-        data: null,
+        message: recovery.message,
+        data: recovery.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
@@ -353,6 +354,69 @@ function compactFacadeFinding(value: unknown, index: number, owner: 'your_change
     message,
     messageChars: String(fullMessage || '').length,
     messageTruncated: message !== String(fullMessage || ''),
+  };
+}
+
+function sanitizeRecoveryInput(input: ToolInput): ToolInput {
+  const sensitivePattern = /(authorization|cookie|token|secret|password|passwd|api[_-]?key|credential|session)/i;
+  const sanitize = (value: unknown, key = ''): unknown => {
+    if (sensitivePattern.test(key)) return '[redacted]';
+    if (Array.isArray(value)) return value.map((item) => sanitize(item));
+    if (isRecord(value)) {
+      return Object.fromEntries(Object.entries(value).map(([entryKey, entryValue]) => [
+        entryKey,
+        sanitize(entryValue, entryKey),
+      ]));
+    }
+    return value;
+  };
+  return sanitize(input) as ToolInput;
+}
+
+function isRepoStateBound(entry: ToolManifestEntry): boolean {
+  if (entry.command.script === 'task:fs') return true;
+  if (entry.command.branchMode === 'required') return true;
+  return false;
+}
+
+function taskSessionRequiredReason(toolName: string, entry: ToolManifestEntry, repoStateBound: boolean): string {
+  if (repoStateBound && entry.capabilities.readOnly) {
+    return `${toolName} reads repository state through a task worktree so the result is branch-aware and fresh.`;
+  }
+  if (repoStateBound) {
+    return `${toolName} must run inside an isolated task worktree so durable repo changes do not touch main or another agent's work.`;
+  }
+  return `${toolName} requires taskSession because its manifest marks the tool as task-scoped.`;
+}
+
+function buildTaskSessionRequiredRecovery(toolName: string, entry: ToolManifestEntry, input: ToolInput): {
+  message: string;
+  data: Record<string, unknown>;
+} {
+  const safeInput = sanitizeRecoveryInput(input);
+  const repoStateBound = isRepoStateBound(entry);
+  const reason = taskSessionRequiredReason(toolName, entry, repoStateBound);
+  return {
+    message: `${toolName} requires taskSession. Start a task with task.start, capture data.taskSession, then rerun ${toolName} with the same input plus taskSession.`,
+    data: {
+      tool: toolName,
+      reason,
+      repoStateBound,
+      originalCall: {
+        tool: toolName,
+        input: safeInput,
+      },
+      recovery: {
+        action: 'start_task_session_then_retry',
+        steps: [
+          'Call task.start for the relevant area and capture data.taskSession.',
+          `Rerun ${toolName} with the same input plus that taskSession.`,
+          entry.capabilities.mutating
+            ? 'If files change, continue through review.run, verify, task.push, and task.pr.'
+            : 'For read-only investigation, report the result without creating durable repo changes.',
+        ],
+      },
+    },
   };
 }
 

@@ -67,6 +67,9 @@ Use direct outer tool calls for single-step operations and final durable transit
 
 every change — even tiny ones — follows this flow. no exceptions.
 
+Always pass `taskSession` when task work is involved. The facade resolves the task branch and worktree; do not reconstruct task paths manually.
+
+Task-scoped repo tools fail with `TASK_SESSION_REQUIRED` when called without a session. The error includes the reason, whether the tool is repo-state-bound, a safe echo of the original tool/input, and a recovery action: start a task, capture `data.taskSession`, then rerun the same tool call with that session. Read-only HTTP checks use the `http` tool without a task session because they do not read repo state or need a task worktree.
 ```bash
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main

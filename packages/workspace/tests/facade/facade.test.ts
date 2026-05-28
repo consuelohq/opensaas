@@ -205,7 +205,7 @@ describe('typed facade executor', () => {
 
   it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
     const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
@@ -239,7 +239,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -262,6 +262,22 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
+  it('runs http without taskSession', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('http', {
+      method: 'get',
+      url: 'https://example.com',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toContain('https://example.com');
+  });
+
   it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('fs.read', {
@@ -281,6 +297,15 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
     expect(plans).toHaveLength(0);
+    expect(result.data).toMatchObject({
+      tool: 'fs.read',
+      repoStateBound: true,
+      originalCall: {
+        tool: 'fs.read',
+        input: { path: 'AGENTS.md' },
+      },
+      recovery: { action: 'start_task_session_then_retry' },
+    });
   });
 
   it('requires taskSession for sessionRequired tools', async () => {
@@ -294,6 +319,28 @@ describe('typed facade executor', () => {
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect((result.data as { reason?: string }).reason).toContain('branch-aware and fresh');
+  });
+
+  it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
+    const result = await executeTool('fs.write', {
+      path: 'tmp/example.txt',
+      content: 'hello',
+    }, {
+      ...stableOptions(successfulRunner()),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect(result.data).toMatchObject({
+      tool: 'fs.write',
+      repoStateBound: true,
+      recovery: { action: 'start_task_session_then_retry' },
+    });
+    expect(JSON.stringify(result.data)).toContain('review.run');
+    expect(JSON.stringify(result.data).toLowerCase()).not.toContain('clean');
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {
