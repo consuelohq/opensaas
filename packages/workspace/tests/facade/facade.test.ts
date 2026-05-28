@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -116,6 +116,34 @@ function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branc
   }, null, 2));
 }
 
+function writeInstruction(tempRoot: string, content = 'Do a safe read-only check.'): string {
+  const instructionPath = join(tempRoot, 'worker-instructions.md');
+  writeFileSync(instructionPath, content);
+  return instructionPath;
+}
+
+function writeFakeCodex(tempRoot: string): string {
+  const binDir = join(tempRoot, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const bin = join(binDir, 'codex');
+  writeFileSync(bin, [
+    '#!/usr/bin/env bash',
+    'if [ "$1" = "exec" ] && [[ "$*" == *"--help"* ]]; then',
+    '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
+    '  echo "instructions are read from stdin"',
+    '  echo "--cd <DIR>"',
+    '  echo "--sandbox <SANDBOX_MODE>"',
+    '  echo "--ask-for-approval <APPROVAL_POLICY>"',
+    '  echo "--json"',
+    '  exit 0',
+    'fi',
+    'node -e \'process.stdout.write("x".repeat(9000)); process.stderr.write("e".repeat(9000));\'',
+    '',
+  ].join('\n'));
+  chmodSync(bin, 0o700);
+  return binDir;
+}
+
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
@@ -155,7 +183,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => !entry.command.internal && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
@@ -205,7 +233,7 @@ describe('typed facade executor', () => {
 
   it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
     const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
@@ -239,7 +267,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -262,6 +290,22 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
+  it('runs http without taskSession', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('http', {
+      method: 'get',
+      url: 'https://example.com',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toContain('https://example.com');
+  });
+
   it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('fs.read', {
@@ -281,6 +325,15 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
     expect(plans).toHaveLength(0);
+    expect(result.data).toMatchObject({
+      tool: 'fs.read',
+      repoStateBound: true,
+      originalCall: {
+        tool: 'fs.read',
+        input: { path: 'AGENTS.md' },
+      },
+      recovery: { action: 'start_task_session_then_retry' },
+    });
   });
 
   it('requires taskSession for sessionRequired tools', async () => {
@@ -294,6 +347,28 @@ describe('typed facade executor', () => {
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect((result.data as { reason?: string }).reason).toContain('branch-aware and fresh');
+  });
+
+  it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
+    const result = await executeTool('fs.write', {
+      path: 'tmp/example.txt',
+      content: 'hello',
+    }, {
+      ...stableOptions(successfulRunner()),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect(result.data).toMatchObject({
+      tool: 'fs.write',
+      repoStateBound: true,
+      recovery: { action: 'start_task_session_then_retry' },
+    });
+    expect(JSON.stringify(result.data)).toContain('review.run');
+    expect(JSON.stringify(result.data).toLowerCase()).not.toContain('clean');
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {
@@ -608,6 +683,49 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('runs neutral command aliases with legacy command semantics', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-alias-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      writeTaskSession(tempRoot, 'tsk_alias', 'task/workspace-agents/alias-session');
+      const taskCallPlans: CommandPlan[] = [];
+      const taskExecPlans: CommandPlan[] = [];
+      const macCallPlans: CommandPlan[] = [];
+      const macExecPlans: CommandPlan[] = [];
+
+      const taskInput = { command: exampleInput('task.call').command, taskSession: 'tsk_alias' };
+      const taskCall = await executeTool('task.call', taskInput, {
+        ...stableOptions(successfulRunner(), taskCallPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const taskExec = await executeTool('task.exec', { command: exampleInput('task.exec').command, taskSession: 'tsk_alias' }, {
+        ...stableOptions(successfulRunner(), taskExecPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
+      const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
+
+      expect(taskCall.ok).toBe(true);
+      expect(taskExec.ok).toBe(true);
+      expect(macCall.ok).toBe(true);
+      expect(macExec.ok).toBe(true);
+      expect(getToolManifestEntry('task.exec')?.description).toContain('legacy alias for task.call');
+      expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
+      expect(taskCallPlans[0].args).toEqual(taskExecPlans[0].args);
+      expect(taskCallPlans[0].env.TASK_BRANCH).toEqual(taskExecPlans[0].env.TASK_BRANCH);
+      expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('passes request ids through nested tool envelopes', async () => {
     const result = await executeTool('mac.exec', {
       ...exampleInput('mac.exec'),
@@ -627,6 +745,143 @@ describe('typed facade executor', () => {
     expect(getToolManifestEntry('decide-next')?.name).toBe('decideNext');
     expect(getToolManifestEntry('confidence-score')?.name).toBe('confidenceScore');
     expect(getToolManifestEntry('task:fs')).toBeNull();
+  });
+
+  it('rejects unknown worker.call providers', async () => {
+    const result = await executeTool('worker.call', {
+      provider: 'agent',
+      instructionPath: 'worker-instructions.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('requires worker.call instructionPath', async () => {
+    const result = await executeTool('worker.call', {
+      provider: 'cdx',
+      policy: 'read',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('requires taskSession for worker.call edit policy', async () => {
+    const result = await executeTool('worker.call', {
+      provider: 'cdx',
+      policy: 'edit',
+      instructionPath: 'worker-instructions.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+  });
+
+  it('fails closed for worker.call ship policy without approval', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-ship-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_worker_ship');
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('worker.call', {
+        provider: 'cdx',
+        policy: 'ship',
+        taskSession: 'tsk_worker_ship',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('approval_required');
+      expect(result.data.audit.taskSession).toBe('tsk_worker_ship');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('returns not_configured when cdx is unavailable', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-cdx-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('worker.call', {
+        provider: 'cdx',
+        mode: 'check',
+        policy: 'read',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '' },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('not_configured');
+      expect(result.data.provider).toBe('cdx');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('returns stable unavailable statuses for mini and opc', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-unavailable-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const mini = await executeTool('worker.call', {
+        provider: 'mini',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '', WORKSPACE_MINI_WORKER_BIN: undefined, MINI_WORKER_BIN: undefined },
+      });
+      const opc = await executeTool('worker.call', {
+        provider: 'opc',
+        policy: 'read',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '' },
+      });
+
+      expect(mini.ok).toBe(true);
+      expect(mini.data.status).toBe('not_configured');
+      expect(opc.ok).toBe(true);
+      expect(opc.data.status).toBe('not_configured');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('bounds worker.call output and includes audit metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
+    try {
+      const binDir = writeFakeCodex(tempRoot);
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('worker.call', {
+        provider: 'cdx',
+        mode: 'check',
+        policy: 'read',
+        instructionPath,
+        workspaceOnly: 'preferred',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.stdout.length).toBeLessThan(8200);
+      expect(result.data.stdout).toContain('[truncated');
+      expect(result.data.stderr.length).toBeLessThan(8200);
+      expect(result.data.audit.workspaceOnly).toBe('preferred');
+      expect(result.data.audit.rawShellUsed).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 });
 
