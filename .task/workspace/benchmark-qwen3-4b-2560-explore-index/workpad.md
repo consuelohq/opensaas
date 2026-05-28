@@ -46,17 +46,30 @@ Ko approved this direction because `explore` is an attention/intention graph, no
 
 ## files changed
 
-- none yet
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/scripts/explore.js`
+- `packages/workspace/scripts/lib/index/embedder.js`
+- `packages/workspace/scripts/lib/index/embedding-config.js`
+- `packages/workspace/scripts/lib/index/indexer.js`
+- `packages/workspace/scripts/lib/index/store.js`
+- `packages/workspace/tests/embedding-config.test.js`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/scripts/explore.js`
+- `packages/workspace/scripts/lib/index/embedder.js`
+- `packages/workspace/scripts/lib/index/embedding-config.js`
+- `packages/workspace/scripts/lib/index/indexer.js`
+- `packages/workspace/scripts/lib/index/store.js`
+- `packages/workspace/tests/embedding-config.test.js`
 
 ## workspace-owned: activity log
 
 - 2026-05-28 21:49:02 fs.write: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
 - 2026-05-28 21:59:37 fs.write: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
 - 2026-05-28 22:25:07 fs.write: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
+- 2026-05-28 22:25:41 fs.write: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -69,6 +82,7 @@ Ko approved this direction because `explore` is an attention/intention graph, no
 - 2026-05-28 22:24:25 `review.run`: passed — OK
 - 2026-05-28 22:24:41 `review.run`: passed — OK
 - 2026-05-28 22:24:56 `verify`: passed — OK
+- 2026-05-28 22:26:38 `verify`: passed — OK
 
 ## Implementation notes — 2026-05-28
 
@@ -143,3 +157,40 @@ Remaining benchmark note:
 The 2560 index build is partially complete and resumable. This PR ships the safe/versioned infrastructure and batch API support. Final quality comparison still requires completing the alternate 2560 index and running the scenario matrix.
 
 - 2026-05-28 22:25:07 append: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
+
+## Final handoff summary
+
+This task adds safe, versioned support for benchmarking Qwen3-Embedding-4B at 2560 dimensions without replacing the existing 1024-dimensional workspace explore index.
+
+What changed:
+
+- Added `embedding-config.js` to centralize embedding provider/model/dimension/instruction config.
+- Preserved the legacy 1024 default cache path and model key so existing indexes and cached embeddings continue to work.
+- Added config-specific cache roots for non-default dimensions, including the 2560 benchmark path.
+- Changed embedding preparation so 2560 does not silently truncate vectors; mismatch errors are explicit.
+- Added OpenRouter API batch embedding support via `embedTexts` and `WORKSPACE_EMBEDDING_BATCH_SIZE`.
+- Added embedding config metadata to store stats and `explore --json` output.
+- Added docs for the resumable 2560 benchmark command.
+- Added tests for config defaults, 2560 config IDs, and invalid dimensions.
+
+Why it changed:
+
+Ko approved benchmarking 4B/2560 as the next step because explore is an attention/intention graph. Better embedding geometry should improve the candidate pool while the current 1024 index remains a fallback.
+
+Validation run:
+
+- Syntax checks passed for all changed JS files.
+- `tests/embedding-config.test.js` passed.
+- `audit { scripts: true }` passed.
+- OpenRouter 2560 single embedding smoke returned a 2560-length vector.
+- OpenRouter 2560 batch embedding smoke returned three 2560-length vectors.
+- Default 1024 explore smoke still returned the expected dialer implementation top result.
+- `review.run` against `origin/main` passed with 0 issues / 0 blockers.
+- `verify` against `origin/main` passed and wrote a publish-valid stamp.
+
+Issues/follow-ups:
+
+- `review.run` against `origin/stream/workspace` is polluted by unrelated stream drift and falsely reports old `consuelo-design.ts` findings. The isolated `origin/main` review is clean for this task's actual files.
+- A partial 2560 index was built under the config-specific cache root. It reached about 4,224 embeddings out of ~74k before client timeout. The benchmark is resumable; final 1024-vs-2560 quality comparison still requires completing that alternate index and running the scenario matrix.
+
+- 2026-05-28 22:25:41 append: `.task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md`
