@@ -1449,8 +1449,22 @@ Use context search first, then code/file exploration. Good first-pass commands:
 await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
 await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
 await workspace.call({ tool: "context.search", input: { keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "explore", input: { query: "<feature or behavior> workspace facade script manifest docs tests", limit: 8 }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "<feature or behavior> source owner implementation tests generated surfaces", limit: 8 }, timeout: 120 })
 ```
+
+Explore result interpretation:
+
+Use `explore` as the AI-native repo map when the next source path is uncertain. Treat its output as a prior over where to inspect next, not as proof and not as permission to edit.
+
+Interpret results by score and evidence shape:
+
+- Strong results usually have high score, hybrid or lexical retrieval, useful preview text, and relevant path/symbol/anchor coverage. Read these first.
+- Mid-score results are plausible context. Read them when they are connected to a strong result, a test, or a named subsystem.
+- Low-score or capped results are still useful. They map fallback terrain and help avoid bad paths, but they are not edit targets without later evidence.
+- `capReason` is a warning label, not noise. For example, `issue-anchor-missing` means the query contained an issue key but the result does not contain that anchor.
+- `source_routes` are required context routes. If explore returns a route such as `linear.issue`, inspect that route before treating repo retrieval as complete.
+
+After interpreting explore, continue with task-scoped workspace tools: use `fs.read` to turn a candidate into evidence, use `fs.search` for exact source confirmation once explore surfaces likely terms, symbols, or files, and use `fs.list` to understand nearby structure. Record what was explored, read, confirmed, rejected, and still uncertain in the task workpad.
 
 After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
 
