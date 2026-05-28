@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "base": "origin/main",
+  "headSha": "cb37395f108d54c66567274b8bf2e81e926b928e",
+  "changeHash": "f324b139dcfba82a00ffcbdb3a64d3a1685ee0b83637d85a1b986d32b0c237c6",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/index/embedding-config.js",
+    "packages/workspace/tests/embedding-config.test.js"
+  ],
+  "verifiedAt": "2026-05-28T23:22:46.079Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/promote-qwen3-2560-embeddings-default.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/current.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/evidence-log.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/explore-state.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/read-log.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/session.json",
+        ".task/workspace/promote-qwen3-2560-embeddings-default/workpad.md",
+        "packages/workspace/scripts/lib/index/embedding-config.js",
+        "packages/workspace/tests/embedding-config.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

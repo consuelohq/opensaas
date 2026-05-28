@@ -1,7 +1,8 @@
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_LABEL = 'Qwen3-Embedding-4B';
 const DEFAULT_API_MODEL = 'qwen/qwen3-embedding-4b';
-const DEFAULT_DIMENSIONS = 1024;
+const LEGACY_DIMENSIONS = 1024;
+const DEFAULT_DIMENSIONS = 2560;
 const DEFAULT_INSTRUCTION_VERSION = 'workspace-code-retrieval-v1';
 
 function parseDimensions(value) {
@@ -31,7 +32,7 @@ function getEmbeddingConfig(overrides = {}) {
     || DEFAULT_INSTRUCTION_VERSION;
   const truncate = overrides.truncate ?? process.env.WORKSPACE_EMBEDDING_TRUNCATE;
   const allowTruncate = truncate === undefined
-    ? dimensions === DEFAULT_DIMENSIONS
+    ? dimensions === LEGACY_DIMENSIONS
     : truncate !== '0' && truncate !== 'false';
 
   return {
@@ -57,7 +58,7 @@ function isLegacyDefaultEmbeddingConfig(config = getEmbeddingConfig()) {
   return config.provider === DEFAULT_PROVIDER
     && config.model === DEFAULT_MODEL_LABEL
     && config.apiModel === DEFAULT_API_MODEL
-    && config.dimensions === DEFAULT_DIMENSIONS
+    && config.dimensions === LEGACY_DIMENSIONS
     && config.instructionVersion === DEFAULT_INSTRUCTION_VERSION;
 }
 
@@ -67,6 +68,7 @@ module.exports = {
   DEFAULT_INSTRUCTION_VERSION,
   DEFAULT_MODEL_LABEL,
   DEFAULT_PROVIDER,
+  LEGACY_DIMENSIONS,
   getEmbeddingConfig,
   getEmbeddingConfigId,
   isLegacyDefaultEmbeddingConfig,

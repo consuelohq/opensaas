@@ -9,12 +9,22 @@ const {
 } = require('../scripts/lib/index/embedding-config.js');
 
 describe('embedding config', () => {
-  it('keeps the existing 1024 config as the legacy default', () => {
+  it('uses 2560 dimensional 4B embeddings by default', () => {
     const config = getEmbeddingConfig({});
 
-    expect(config.dimensions).toBe(1024);
+    expect(config.dimensions).toBe(2560);
     expect(config.model).toBe('Qwen3-Embedding-4B');
     expect(config.apiModel).toBe('qwen/qwen3-embedding-4b');
+    expect(config.allowTruncate).toBe(false);
+    expect(isLegacyDefaultEmbeddingConfig(config)).toBe(false);
+    expect(getEmbeddingConfigId(config)).toContain('2560d');
+  });
+
+  it('keeps explicit 1024 config as the legacy fallback', () => {
+    const config = getEmbeddingConfig({ dimensions: 1024 });
+
+    expect(config.dimensions).toBe(1024);
+    expect(config.allowTruncate).toBe(true);
     expect(isLegacyDefaultEmbeddingConfig(config)).toBe(true);
   });
 
