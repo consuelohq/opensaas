@@ -45,6 +45,7 @@
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
+    "generate-skills-registry": "bun ./scripts/generate-skills-registry.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
