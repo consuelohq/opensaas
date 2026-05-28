@@ -52,8 +52,8 @@ const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts'
 const DESIGN_ARCHIVE_PAGEFIND_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'pagefind');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_PATH = '/design-wiki';
+const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
-
 type ParsedArgs = {
   command: string;
   subcommand: string | null;
@@ -1469,7 +1469,7 @@ function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
   if (!entry.artifactPath) return entry.path;
   const relativePath = entry.artifactPath.split(path.sep).join('/');
   return relativePath.endsWith('/index.html') ? `/${relativePath}` : `/${relativePath}/index.html`;
-}
+} function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string { return entry.path.startsWith('/') ? entry.path : `/${entry.path}`; }
 
 function renderArchiveIndex(payload: DesignArchivePayload): string {
   const visibleEntries = [...payload.entries]
@@ -1479,17 +1479,15 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     const timestamp = archiveEntryTimestamp(entry);
     return `
         <article class="post-item" data-template="${escapeHtml(archiveEntryFilterType(entry))}" data-category="${escapeHtml(entry.category)}">
-          <h3><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
-          <div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div>
-          <p>${escapeHtml(entry.path)}</p>
+          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3><div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div><p>${escapeHtml(entry.path)}</p>
         </article>`;
   }).join('\n');
   const archiveCards = renderItems(visibleEntries);
   const searchEntries = visibleEntries.map((entry) => ({
     id: entry.id,
     title: displayTitleForArchiveEntry(entry),
-    url: entry.directUrl ?? entry.url,
     path: entry.path,
+    url: publicUrlForArchiveEntry(entry),
     artifactPath: entry.artifactPath ? entry.artifactPath.split(path.sep).join('/') : null,
     pagefindUrl: pagefindUrlForArchiveEntry(entry),
     template: archiveEntryFilterType(entry),
@@ -1820,7 +1818,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     writeArchiveIndex(payload);
     await runPagefindIndex();
     const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
-    const archiveUrl = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}`;
     const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
     const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, wikiTarget], REPO_ROOT);
     if (archiveResult.exitCode !== 0) {
@@ -1847,11 +1845,11 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
-    const url = `https://${hostname}${servePath}`;
+    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${servePath}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
     const archivePlan = {
       path: DESIGN_ARCHIVE_PATH,
-      url: args.dryRun ? `https://${hostname}${DESIGN_ARCHIVE_PATH}` : null,
+      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}` : null,
       directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}` : null,
       target: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`,
     };
