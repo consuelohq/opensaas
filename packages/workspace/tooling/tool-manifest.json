@@ -344,7 +344,7 @@
       "method": "get",
       "url": "https://example.com"
     },
-    "sessionRequired": true
+    "sessionRequired": false
   },
   {
     "name": "fs.trash",
