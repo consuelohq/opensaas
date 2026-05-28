@@ -10,12 +10,71 @@ const path = require('path');
 
 const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
+const { computeVerificationState } = require('./lib/verification');
+const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 
-function writeStdout(s = '') { process.stdout.write(s + '\n'); }
-function writeStderr(s = '') { process.stderr.write(s + '\n'); }
+let outputCapture = null;
+let activeReviewRun = null;
+
+function writeStdout(s = '') {
+  const value = `${s}\n`;
+  if (outputCapture) {
+    outputCapture.stdout += value;
+    return;
+  }
+  process.stdout.write(value);
+}
+
+function writeStderr(s = '') {
+  const value = `${s}\n`;
+  if (outputCapture) {
+    outputCapture.stderr += value;
+    return;
+  }
+  process.stderr.write(value);
+}
+
+function startOutputCapture() {
+  outputCapture = { stdout: '', stderr: '' };
+}
+
+function stopOutputCapture() {
+  const captured = outputCapture || { stdout: '', stderr: '' };
+  outputCapture = null;
+  return captured;
+}
+
+function emitCapturedOutput(captured) {
+  if (!captured) return;
+  if (captured.stderr) process.stderr.write(captured.stderr);
+  if (captured.stdout) process.stdout.write(captured.stdout);
+}
+
+function replayReviewResult(result) {
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.stdout) process.stdout.write(result.stdout);
+  process.exitCode = Number.isInteger(result.exitCode) ? result.exitCode : 1;
+}
 
 const FINDING_JSON_SAMPLE_LIMIT = 20;
 const FINDING_MESSAGE_PREVIEW_LIMIT = 500;
+
+function shouldUseReviewRunState(args) {
+  return Boolean((args.json || args.summaryJson) && !args.fix);
+}
+
+function beginStructuredReviewRun(root, branch, base, args) {
+  const verificationState = computeVerificationState(root, branch);
+  const identity = makeReviewRunIdentity({
+    repoRoot: root,
+    branch,
+    base,
+    verificationState,
+    args,
+  });
+
+  return beginReviewRun(root, identity);
+}
 
 function printHelp() {
   const lines = [
@@ -823,8 +882,20 @@ async function main() {
   const base = args.base || detectBase();
   const branch = currentBranch();
 
+  let reviewRun = null;
+  if (shouldUseReviewRunState(args)) {
+    reviewRun = beginStructuredReviewRun(root, branch, base, args);
+    if (reviewRun.mode === 'replay') {
+      writeStderr(`→ review result reused for ${branch} (${reviewRun.identity.key.slice(0, 12)})`);
+      replayReviewResult(reviewRun.result);
+      return;
+    }
+    activeReviewRun = reviewRun;
+    startOutputCapture();
+  }
+
   if (!args.quiet && !structuredOutput) {
-    writeStdout(`review: ${branch} vs ${base}`);
+    writeStdout('review: ' + branch + ' vs ' + base);
     writeStdout('');
   }
 
@@ -981,6 +1052,12 @@ async function main() {
       ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult })
       : fullPayload;
     writeStdout(JSON.stringify(payload, null, 2));
+    if (reviewRun) {
+      const captured = stopOutputCapture();
+      finishReviewRun(reviewRun, { ...captured, exitCode: 0 });
+      activeReviewRun = null;
+      emitCapturedOutput(captured);
+    }
     return;
   }
 
@@ -1028,6 +1105,21 @@ async function main() {
 }
 
 main().catch((err) => {
-  writeStderr(err.message);
+  let reported = false;
+  if (activeReviewRun && outputCapture) {
+    const captured = stopOutputCapture();
+    const stderr = captured.stderr + err.message + '\n';
+    finishReviewRun(activeReviewRun, {
+      stdout: captured.stdout,
+      stderr,
+      exitCode: 1,
+    });
+    activeReviewRun = null;
+    emitCapturedOutput({ stdout: captured.stdout, stderr });
+    reported = true;
+  } else if (outputCapture) {
+    emitCapturedOutput(stopOutputCapture());
+  }
+  if (!reported) writeStderr(err.message);
   process.exit(1);
 });

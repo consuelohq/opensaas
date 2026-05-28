@@ -100,6 +100,36 @@ function isTestPath(filePath) {
   return /\.(test|spec)\.[jt]sx?$/.test(filePath) || filePath.includes('__tests__');
 }
 
+function getSourceRoutes(question) {
+  const routes = [];
+  const issueIds = Array.from(new Set((String(question || '').match(/\b[A-Z][A-Z0-9]+-\d+\b/g) || [])));
+  for (const issueId of issueIds) {
+    routes.push({
+      type: 'linear.issue',
+      identifier: issueId,
+      reason: 'query contains an issue identifier; inspect Linear before treating repo retrieval as complete',
+      command: `workspace.call({ tool: "linear.issue", input: { identifier: "${issueId}" } })`,
+    });
+  }
+
+  const toolNames = Array.from(new Set((String(question || '').match(/\b[a-z][a-z0-9-]+\.[a-z][a-z0-9.-]+\b/g) || [])
+    .filter((name) => !/\.(js|jsx|ts|tsx|json|md|mdx|css|scss|yml|yaml)$/i.test(name))));
+  for (const toolName of toolNames) {
+    routes.push({
+      type: 'workspace.tool-docs',
+      identifier: toolName,
+      reason: 'query contains a tool-like dotted name; inspect tool manifest and docs alongside code retrieval',
+      preferred_paths: [
+        'packages/workspace/tooling/tool-manifest.json',
+        'packages/workspace/TOOLS.md',
+        'packages/workspace/SCRIPTS.md',
+      ],
+    });
+  }
+
+  return routes;
+}
+
 function computeInformationValue(result, beliefs) {
   const posterior = Math.max(0, Math.min(1,
     beliefs[result.path]?.posterior ?? result.belief_prior ?? result.score ?? 0.45));
@@ -165,17 +195,12 @@ function buildEvidenceStateMap(repoRoot) {
 }
 
 function toJsonResult(args, results, indexResult) {
-  const maxRawScore = Math.max(
-    ...results.map((result) => result.scoreParts?.rawScore || result.score || 0),
-    0,
-  );
-
+  const sourceRoutes = getSourceRoutes(args.question);
   const evidenceState = buildEvidenceStateMap(indexResult.repoRoot);
 
   const enrichedResults = results.map((result) => {
-    const beliefPrior = maxRawScore > 0
-      ? Number((0.30 + (0.45 * ((result.scoreParts?.rawScore || result.score || 0) / maxRawScore))).toFixed(4))
-      : Number(result.score.toFixed(4));
+    const absoluteScore = result.scoreParts?.rawScore || result.score || 0;
+    const beliefPrior = Number((0.25 + (0.50 * Math.max(0, Math.min(1, absoluteScore)))).toFixed(4));
 
     const typedEdges = (result.edges || []).map((edge) => ({
       path: edge.sourcePath === result.path ? edge.targetPath : edge.sourcePath,
@@ -211,6 +236,7 @@ function toJsonResult(args, results, indexResult) {
         end: result.endLine,
       },
       target,
+      retrieval_types: result.retrievalTypes || [],
       score_parts: result.scoreParts || {},
     };
 
@@ -226,6 +252,7 @@ function toJsonResult(args, results, indexResult) {
     query: args.question,
     budget: args.budget,
     results: enrichedResults,
+    source_routes: sourceRoutes,
     index_stats: {
       total_files: indexResult.stats.totalFiles,
       total_chunks: indexResult.stats.totalChunks,
@@ -241,6 +268,12 @@ function toJsonResult(args, results, indexResult) {
 function printHuman(args, results, indexResult) {
   writeStdout(`explore: "${args.question}"`);
   writeStdout('');
+
+  const sourceRoutes = getSourceRoutes(args.question);
+  for (const route of sourceRoutes) {
+    writeStdout(`source route: ${route.type} ${route.identifier} - ${route.reason}`);
+  }
+  if (sourceRoutes.length > 0) writeStdout('');
 
   if (results.length === 0) {
     writeStdout('  no results');

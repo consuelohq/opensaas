@@ -712,6 +712,8 @@ If a long operation times out:
 3. Retry once with a corrected timeout only after checking whether the original operation completed.
 4. If the timeout came from a batch, rerun the slow child step separately.
 
+`review.run` and `verify` are publish gates, not ordinary retryable reads. A transport-level timeout from either command means the completion state is unknown. Do not proceed to `task.push`, `task.pr`, `task.merge`, or a second review until the existing trace/run state is known. The underlying review command records structured runs by branch/base/change hash and can replay or attach to an equivalent completed run; agents should let that resumable review path resolve the existing run instead of creating duplicate gates. `verify` still owns the publish-valid stamp and must fail closed when review state is running, unknown, orphaned without a result, or non-passing.
+
 For final validation and shipping, prefer single-purpose calls over large batches. Batches are useful for read-only inspection and fixed checklists. Final workflow steps should run separately so the exact timeout source is visible.
 
 When a timeout surprises you, record the operation, timeout used, observed duration if known, and recommended future timeout in the workpad. Update this timeout table when repeated evidence shows a better budget.
