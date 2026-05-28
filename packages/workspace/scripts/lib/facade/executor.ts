@@ -70,6 +70,42 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
+
+type ToolNotFoundRecovery = {
+  attemptedTool: string;
+  hint: string;
+  helpCommands: string[];
+};
+
+function buildToolNotFoundRecovery(toolName: string): ToolNotFoundRecovery {
+  const family = toolName.split('.')[0] || toolName;
+  const exactFamilyEntries = manifestEntries.filter((entry) => entry.name === family || entry.name.startsWith(`${family}.`));
+  const scriptEntries = manifestEntries.filter((entry) => entry.command.script === family || entry.command.script.startsWith(`${family}:`));
+  const categoryEntries = manifestEntries.filter((entry) => entry.category.toLowerCase().includes(family.toLowerCase()));
+  const relatedEntries = [...exactFamilyEntries, ...scriptEntries, ...categoryEntries];
+  const helpCommands = new Set<string>();
+
+  if (relatedEntries.length > 0) {
+    helpCommands.add(`workspace ${family} --help`);
+    const exactTool = relatedEntries.find((entry) => entry.name === toolName);
+    if (exactTool) helpCommands.add(`workspace ${exactTool.name} --help`);
+    const firstNamed = relatedEntries.find((entry) => entry.name.includes('.'));
+    if (firstNamed) helpCommands.add(`workspace ${firstNamed.name} --help`);
+  }
+
+  if (helpCommands.size === 0) {
+    helpCommands.add('workspace --help');
+    helpCommands.add('workspace task --help');
+    helpCommands.add('workspace stream --help');
+  }
+
+  return {
+    attemptedTool: toolName,
+    hint: 'get_steering already includes the canonical workspace tool manifest. Do not guess workspace.call tool names; use the manifest first, then run the relevant workspace --help command for command syntax.',
+    helpCommands: Array.from(helpCommands).slice(0, 3),
+  };
+}
+
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
     cwd: plan.cwd,
@@ -119,11 +155,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const recovery = buildToolNotFoundRecovery(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: `unknown tool: ${toolName}. Use get_steering's tool manifest first; if still unsure, run: ${recovery.helpCommands.join(' | ')}`,
+        data: recovery,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
