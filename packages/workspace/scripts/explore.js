@@ -259,6 +259,8 @@ function toJsonResult(args, results, indexResult) {
       last_indexed: indexResult.stats.lastIndexed,
       last_full_index: indexResult.stats.lastFullIndex,
       cache_root: indexResult.stats.cacheRoot,
+      embedding_config_id: indexResult.stats.embeddingConfigId,
+      embedding_dimensions: indexResult.stats.embeddingDimensions,
       files_indexed: indexResult.filesIndexed,
       chunks_embedded: indexResult.chunksEmbedded,
     },
@@ -294,6 +296,9 @@ function printHuman(args, results, indexResult) {
 
   writeStdout('');
   writeStdout(`index: ${indexResult.stats.totalFiles} files, ${indexResult.stats.totalChunks} chunks, ${indexResult.filesIndexed} files refreshed`);
+  if (indexResult.stats.embeddingConfigId) {
+    writeStdout(`embedding: ${indexResult.stats.embeddingConfigId}`);
+  }
 }
 
 async function main() {
