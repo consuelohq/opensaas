@@ -2,10 +2,10 @@
   "result": "pass",
   "publishValid": true,
   "mode": "full",
-  "branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+  "branch": "task/workspace/recover-qwen3-2560-benchmark-task",
   "base": "origin/main",
-  "headSha": "c63aeb7e2948a5c73e03e23eb843b31208689fee",
-  "changeHash": "627f2b295909babd9f232987c4f327e93749a4793258c19b6fafd98de406f8bb",
+  "headSha": "4e7891f1a7f316e89bdcabfd8b555d6c99af5897",
+  "changeHash": "9ff9def2ece4916ffe03b40650720f60da78fe833b19aaba6af3fbeeedeabc1d",
   "changedFiles": [
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/scripts/explore.js",
@@ -15,7 +15,7 @@
     "packages/workspace/scripts/lib/index/store.js",
     "packages/workspace/tests/embedding-config.test.js"
   ],
-  "verifiedAt": "2026-05-28T22:24:56.204Z",
+  "verifiedAt": "2026-05-28T22:37:24.092Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -30,12 +30,17 @@
       "passed": true,
       "changedFiles": [
         ".task/tasks/workspace/benchmark-qwen3-4b-2560-explore-index.json",
+        ".task/tasks/workspace/recover-qwen3-2560-benchmark-task.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/current.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/evidence-log.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/explore-state.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/read-log.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/session.json",
+        ".task/workspace/benchmark-qwen3-4b-2560-explore-index/verify.json",
         ".task/workspace/benchmark-qwen3-4b-2560-explore-index/workpad.md",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/current.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/session.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/workpad.md",
         "packages/workspace/SCRIPTS.md",
         "packages/workspace/scripts/explore.js",
         "packages/workspace/scripts/lib/index/embedder.js",
@@ -88,8 +93,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 593,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-benchmark-qwen3-4b-2560-explore-index\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 100\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:24:55\n\u001b[2m   Duration \u001b[22m 210ms\u001b[2m (transform 44ms, setup 0ms, import 48ms, tests 100ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 481,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-recover-qwen3-2560-benchmark-task\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 89\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:37:23\n\u001b[2m   Duration \u001b[22m 218ms\u001b[2m (transform 55ms, setup 0ms, import 60ms, tests 89ms, environment 0ms)\u001b[22m\n\n"
         }
       ],
       "failedSuites": []

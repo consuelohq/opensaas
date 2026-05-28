@@ -1,9 +1,0 @@
-{
-  "files": [
-    "packages/workspace/scripts/explore.js",
-    "packages/workspace/scripts/lib/index/embedder.js",
-    "packages/workspace/scripts/lib/index/store.js",
-    "packages/workspace/scripts/lib/search/retriever.js"
-  ],
-  "updatedAt": "2026-05-28T22:01:19.059Z"
-}
