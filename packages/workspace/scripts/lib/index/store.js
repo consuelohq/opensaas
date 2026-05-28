@@ -6,8 +6,11 @@ const path = require('path');
 const { Database } = require('bun:sqlite');
 const sqliteVec = require('sqlite-vec');
 
-const VECTOR_DIMENSIONS = 1024;
-const EMBEDDING_MODEL = 'Qwen3-Embedding-4B';
+const { getEmbeddingConfig, getEmbeddingConfigId, isLegacyDefaultEmbeddingConfig } = require('./embedding-config');
+
+const EMBEDDING_CONFIG = getEmbeddingConfig();
+const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
+const EMBEDDING_MODEL = EMBEDDING_CONFIG.model;
 
 function normalizePath(filePath) {
   return filePath.split(path.sep).join('/');
@@ -25,8 +28,10 @@ function getRepoHash(repoRoot, remoteUrl) {
   return sha256(getRepoIdentifier(repoRoot, remoteUrl)).slice(0, 24);
 }
 
-function getCacheRoot(repoRoot, remoteUrl) {
-  return path.join(os.homedir(), '.cache', 'workspace-index', getRepoHash(repoRoot, remoteUrl));
+function getCacheRoot(repoRoot, remoteUrl, embeddingConfig = EMBEDDING_CONFIG) {
+  const repoCacheRoot = path.join(os.homedir(), '.cache', 'workspace-index', getRepoHash(repoRoot, remoteUrl));
+  if (isLegacyDefaultEmbeddingConfig(embeddingConfig)) return repoCacheRoot;
+  return path.join(repoCacheRoot, getEmbeddingConfigId(embeddingConfig));
 }
 
 function vectorToBuffer(vector) {
@@ -37,8 +42,13 @@ function bufferToVector(buffer) {
   return new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
 }
 
-function createStore(repoRoot, remoteUrl) {
-  const cacheRoot = getCacheRoot(repoRoot, remoteUrl);
+function createStore(repoRoot, remoteUrl, options = {}) {
+  const embeddingConfig = options.embeddingConfig || EMBEDDING_CONFIG;
+  const vectorDimensions = embeddingConfig.dimensions;
+  const embeddingModel = embeddingConfig.model;
+  const embeddingConfigId = getEmbeddingConfigId(embeddingConfig);
+  const embeddingModelKey = isLegacyDefaultEmbeddingConfig(embeddingConfig) ? embeddingModel : embeddingConfigId;
+  const cacheRoot = getCacheRoot(repoRoot, remoteUrl, embeddingConfig);
   fs.mkdirSync(cacheRoot, { recursive: true });
 
   const dbPath = path.join(cacheRoot, 'index.db');
@@ -85,7 +95,7 @@ function createStore(repoRoot, remoteUrl) {
 
     CREATE TABLE IF NOT EXISTS chunk_embeddings (
       chunk_id INTEGER PRIMARY KEY REFERENCES chunks(id) ON DELETE CASCADE,
-      model TEXT NOT NULL DEFAULT '${EMBEDDING_MODEL}',
+      model TEXT NOT NULL DEFAULT '${embeddingModel}',
       embedded_at TEXT NOT NULL
     );
 
@@ -113,7 +123,7 @@ function createStore(repoRoot, remoteUrl) {
 
     CREATE TABLE IF NOT EXISTS embedding_cache (
       content_hash TEXT PRIMARY KEY,
-      model TEXT NOT NULL DEFAULT '${EMBEDDING_MODEL}',
+      model TEXT NOT NULL DEFAULT '${embeddingModel}',
       embedding BLOB NOT NULL,
       embedded_at TEXT NOT NULL
     );
@@ -233,11 +243,11 @@ function createStore(repoRoot, remoteUrl) {
       'INSERT INTO chunk_embeddings(chunk_id, model, embedded_at)',
       'VALUES (?, ?, ?)',
       'ON CONFLICT(chunk_id) DO UPDATE SET model = excluded.model, embedded_at = excluded.embedded_at',
-    ].join('\n')).run(chunkId, EMBEDDING_MODEL, new Date().toISOString());
+    ].join('\n')).run(chunkId, embeddingModelKey, new Date().toISOString());
   }
 
   function getCachedEmbedding(contentHash) {
-    const row = db.query('SELECT embedding FROM embedding_cache WHERE content_hash = ? AND model = ?').get(contentHash, EMBEDDING_MODEL);
+    const row = db.query('SELECT embedding FROM embedding_cache WHERE content_hash = ? AND model = ?').get(contentHash, embeddingModelKey);
     return row ? bufferToVector(row.embedding) : null;
   }
 
@@ -249,7 +259,7 @@ function createStore(repoRoot, remoteUrl) {
       '  model = excluded.model,',
       '  embedding = excluded.embedding,',
       '  embedded_at = excluded.embedded_at',
-    ].join('\n')).run(contentHash, EMBEDDING_MODEL, vectorToBuffer(vector), new Date().toISOString());
+    ].join('\n')).run(contentHash, embeddingModelKey, vectorToBuffer(vector), new Date().toISOString());
   }
 
   function replaceGraphEdges(edges) {
@@ -567,6 +577,10 @@ function createStore(repoRoot, remoteUrl) {
     return {
       cacheRoot,
       databasePath: dbPath,
+      embeddingConfig,
+      embeddingConfigId,
+      embeddingModelKey,
+      embeddingDimensions: vectorDimensions,
       totalFiles: Number(fileRow.count || 0),
       totalChunks: Number(chunkRow.count || 0),
       lastIndexed: indexedRow.lastIndexed || null,
@@ -577,6 +591,9 @@ function createStore(repoRoot, remoteUrl) {
   return {
     cacheRoot,
     db,
+    embeddingConfig,
+    embeddingConfigId,
+    embeddingModelKey,
     dbPath,
     deleteFile,
     getCachedEmbedding,
@@ -610,10 +627,13 @@ function createStore(repoRoot, remoteUrl) {
 }
 
 module.exports = {
+  EMBEDDING_CONFIG,
   EMBEDDING_MODEL,
   VECTOR_DIMENSIONS,
   createStore,
   getCacheRoot,
+  getEmbeddingConfig,
+  getEmbeddingConfigId,
   getRepoHash,
   normalizePath,
   sha256,

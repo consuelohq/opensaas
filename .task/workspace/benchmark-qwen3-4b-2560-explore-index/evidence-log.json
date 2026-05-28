@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+  "events": [
+    {
+      "id": "b32c8882-0239-4d4f-97b5-56b928ab602d",
+      "occurred_at": "2026-05-28T21:49:09.748Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "528952d7-7b5f-4e0b-a4d2-b78830b51ca9",
+      "occurred_at": "2026-05-28T21:49:16.711Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "04e20e72-dc6d-4eaa-be0e-05cf4918eba4",
+      "occurred_at": "2026-05-28T21:49:16.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/search/retriever.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "ec4a92b2-91bc-4977-a3bb-a84a9016ea65",
+      "occurred_at": "2026-05-28T21:49:36.737Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "534039f3-d86a-423c-a85c-ced14d1866c0",
+      "occurred_at": "2026-05-28T21:49:43.836Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "ca0e37b3-c736-4b7c-b3aa-485d73373c4f",
+      "occurred_at": "2026-05-28T21:51:19.831Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    },
+    {
+      "id": "b8dc83cc-1f3c-40f6-8880-6609b696ed85",
+      "occurred_at": "2026-05-28T21:59:25.815Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "budget": 1,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 1,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9361,
+            "reason": "hybrid match: type DialerCallSource",
+            "lines": {
+              "start": 20,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:type:DialerCallSource:20-20",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "type",
+              "name": "DialerCallSource",
+              "symbol_path": "DialerCallSource",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 20,
+                "end": 20
+              },
+              "content_hash": "a8d27151a9a4b29c2f4f7b3cbca30df64f62e489a4ca717fe94ab958d7d87ff6",
+              "preview": "type DialerCallSource = 'direct' | 'queue';"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15397,
+          "total_chunks": 74018,
+          "last_indexed": "2026-05-28T21:58:18.398Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "6ce1d294-dd45-4d4c-aed3-d07a935e6568",
+      "occurred_at": "2026-05-28T21:59:25.841Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does dialer queue call target resolution work",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "budget": 1,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 1,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "score": 0.9361,
+            "reason": "hybrid match: type DialerCallSource",
+            "lines": {
+              "start": 20,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts:type:DialerCallSource:20-20",
+              "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+              "kind": "type",
+              "name": "DialerCallSource",
+              "symbol_path": "DialerCallSource",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 20,
+                "end": 20
+              },
+              "content_hash": "a8d27151a9a4b29c2f4f7b3cbca30df64f62e489a4ca717fe94ab958d7d87ff6",
+              "preview": "type DialerCallSource = 'direct' | 'queue';"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15397,
+          "total_chunks": 74018,
+          "last_indexed": "2026-05-28T21:58:18.398Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 1024,
+          "files_indexed": 16,
+          "chunks_embedded": 501
+        }
+      }
+    },
+    {
+      "id": "9062140a-5464-45af-96dc-d99588492ac8",
+      "occurred_at": "2026-05-28T22:01:19.119Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/embedder.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace/benchmark-qwen3-4b-2560-explore-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace/benchmark-qwen3-4b-2560-explore-index"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T22:01:19.179Z"
+}
