@@ -1298,7 +1298,62 @@ await workspace.call({
   "tool": "design.publish",
   "input": {
     "portlessName": "design.localhost",
-    "path": "/daily-deep-idea/example",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### design.refresh
+
+regenerate and publish the existing Consuelo Wiki archive without adding an artifact
+
+- signature: `workspace.design.refresh({ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design refresh`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "design.refresh",
+  "input": {
     "dryRun": true
   }
 });
@@ -3240,9 +3295,66 @@ example error envelope:
 
 ## mac
 
-### mac.exec
+### mac.call
 
 run a non-repo shell command on the Mac
+
+- signature: `workspace.mac.call({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.call",
+  "input": {
+    "command": "pwd",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.exec
+
+legacy alias for mac.call; run a non-repo shell command on the Mac
 
 - signature: `workspace.mac.exec({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace mac.exec`
@@ -4437,6 +4549,68 @@ example error envelope:
 
 ## task lifecycle
 
+### task.call
+
+run a command inside a task worktree
+
+- signature: `workspace.task.call({ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.call",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### task.cleanup
 
 preview or remove stale task worktrees and branches
@@ -4607,7 +4781,7 @@ example error envelope:
 
 ### task.exec
 
-run a command inside a task worktree
+legacy alias for task.call; run a command inside a task worktree
 
 - signature: `workspace.task.exec({ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.exec`
@@ -6524,6 +6698,60 @@ example call:
 ```ts
 await workspace.call({
   "tool": "doctor",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### git.status
+
+alias for status; use status directly in new code
+
+- signature: `workspace.git.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "git.status",
   "input": {}
 });
 ```

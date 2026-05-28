@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_17454e4d0385",
+  "tmuxSession": "opensaas-workspace-agents-add-neutral-workspace-command-aliases-17454e4d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-neutral-workspace-command-aliases",
+  "branch": "task/workspace-agents/add-neutral-workspace-command-aliases",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-neutral-workspace-command-aliases",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-neutral-workspace-command-aliases",
+  "prNumber": 620,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/620",
+  "createdAt": "2026-05-28T20:24:28.141Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-neutral-workspace-command-aliases/.task/workspace-agents/add-neutral-workspace-command-aliases/session.json"
+}
