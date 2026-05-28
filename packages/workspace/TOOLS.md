@@ -7246,6 +7246,68 @@ example error envelope:
 }
 ```
 
+## worker
+
+### worker.call
+
+delegate a bounded instruction file to a configured local worker provider
+
+- signature: `workspace.worker.call({ provider: "cdx" | "opc" | "mini"; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }) => Promise<ToolResult<{ provider: "cdx" | "opc" | "mini"; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }>>`
+- wraps: `workspace worker.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "worker.call",
+  "input": {
+    "provider": "cdx",
+    "mode": "work",
+    "policy": "edit",
+    "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
+    "workspaceOnly": "preferred"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## composed methods
 
 `workspace.checkFiles` wraps `bun run check-files`. `workspace.editFlow` wraps `bun run edit-flow`. Both are real scripts; the facade does not duplicate their multi-step behavior.

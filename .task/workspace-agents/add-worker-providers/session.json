@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2b33ec77ae2c",
+  "tmuxSession": "opensaas-workspace-agents-add-worker-providers-2b33ec77",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-worker-providers",
+  "branch": "task/workspace-agents/add-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-worker-providers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-worker-providers",
+  "prNumber": 630,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/630",
+  "createdAt": "2026-05-28T23:13:37.415Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-worker-providers/.task/workspace-agents/add-worker-providers/session.json"
+}

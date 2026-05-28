@@ -932,6 +932,38 @@
     "sessionRequired": false
   },
   {
+    "name": "worker.call",
+    "methodPath": [
+      "worker",
+      "call"
+    ],
+    "description": "delegate a bounded instruction file to a configured local worker provider",
+    "category": "worker",
+    "underlying": "workspace worker.call",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "WorkerCallInput",
+    "outputSchema": "WorkerCallOutput",
+    "command": {
+      "script": "internal",
+      "internal": "worker.call",
+      "arguments": []
+    },
+    "exampleInput": {
+      "provider": "cdx",
+      "mode": "work",
+      "policy": "edit",
+      "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
+      "workspaceOnly": "preferred"
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "taskMeta.smoke",
     "methodPath": [
       "taskMeta",
