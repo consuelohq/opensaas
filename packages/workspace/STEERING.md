@@ -493,6 +493,8 @@ await workspace.call({
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
 
+If a workspace.call tool name returns NOT_FOUND, do not guess another tool name. Use the canonical manifest from get_steering first; for command syntax recovery, run the relevant workspace help command such as `workspace browser --help`, `workspace task --help`, or `workspace stream --help`.
+
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
 After one successful workspace.get_steering call in a conversation, treat steering as loaded.
