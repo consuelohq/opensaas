@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7d30e94876d4",
+  "tmuxSession": "opensaas-os-add-neutral-command-aliases-and-worker-providers-7d30e948",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-neutral-command-aliases-and-worker-providers",
+  "branch": "task/os/add-neutral-command-aliases-and-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-neutral-command-aliases-and-worker-providers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-neutral-command-aliases-and-worker-providers",
+  "prNumber": 621,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/621",
+  "createdAt": "2026-05-28T20:36:47.688Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-neutral-command-aliases-and-worker-providers/.task/os/add-neutral-command-aliases-and-worker-providers/session.json"
+}
