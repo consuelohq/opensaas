@@ -350,7 +350,7 @@ async function executeCdxWorker(
   }
 
   const help = readCommandHelp(codex, ['exec', '--help'], context.env);
-  if (!help || !help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help)) {
+  if (help && (!help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help))) {
     return workerToolResult(entry, context, {
       ...input,
       status: 'not_supported',
@@ -768,7 +768,7 @@ function compactWorkerOutput(input: {
   };
 }
 
-function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): {
+export function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): {
   finalMessage?: string;
   summary?: string;
   usage?: WorkerCallData['usage'];
@@ -819,6 +819,7 @@ function parseCodexJsonEvents(stdout: string): {
       // Ignore non-JSON provider chatter.
     }
   }
+  if (!finalMessage) finalMessage = extractFirstJsonText(stdout);
   return {
     ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
     ...(usage ? { usage } : {}),
@@ -856,10 +857,44 @@ function parsePiJsonEvents(stdout: string): {
       // Ignore non-JSON provider chatter.
     }
   }
-  if (!parsedAny) return {};
+  if (!finalMessage) finalMessage = extractFirstJsonText(stdout);
+  if (!usage) usage = extractPiUsageFallback(stdout);
+  if (!parsedAny && !finalMessage && !usage) return {};
   return {
     ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
     ...(usage ? { usage } : {}),
+  };
+}
+
+function extractFirstJsonText(stdout: string): string | undefined {
+  const patterns = [
+    /\"type\"\s*:\s*\"agent_message\"[\s\S]*?\"text\"\s*:\s*\"((?:\\.|[^\"\\])*)\"/,
+    /\\\"type\\\"\s*:\s*\\\"agent_message\\\"[\s\S]*?\\\"text\\\"\s*:\s*\\\"((?:\\\\.|[^\\\"\\\\])*)\\\"/,
+    /\"text\"\s*:\s*\"((?:\\.|[^\"\\])*)\"/,
+    /\\\"text\\\"\s*:\s*\\\"((?:\\\\.|[^\\\"\\\\])*)\\\"/,
+  ];
+  for (const pattern of patterns) {
+    const match = stdout.match(pattern);
+    if (!match) continue;
+    const raw = match[1].replace(/\\\"/g, '\"');
+    try {
+      return JSON.parse(`\"${raw}\"`) as string;
+    } catch {
+      return raw;
+    }
+  }
+  return undefined;
+}
+
+function extractPiUsageFallback(stdout: string): WorkerCallData['usage'] | undefined {
+  const input = stdout.match(/\"input\"\s*:\s*(\d+)/)?.[1];
+  const output = stdout.match(/\"output\"\s*:\s*(\d+)/)?.[1];
+  const cacheRead = stdout.match(/\"cacheRead\"\s*:\s*(\d+)/)?.[1];
+  if (!input && !output && !cacheRead) return undefined;
+  return {
+    ...(input ? { inputTokens: Number(input) } : {}),
+    ...(output ? { outputTokens: Number(output) } : {}),
+    ...(cacheRead ? { cachedInputTokens: Number(cacheRead) } : {}),
   };
 }
 
