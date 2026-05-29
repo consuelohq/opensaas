@@ -87,4 +87,79 @@ describe('explore ranker relevance signals', () => {
     expect(scored.parts.isGeneratedOrNoisy).toBe(false);
     expect(scored.parts.tokenCoverage).toBeGreaterThan(0);
   });
+
+  it('keeps post-call analysis above generic manifests for issue-style soft queries', () => {
+    const query = 'DEV-1508 dialer post-call analysis Pi agent Groq transcript automatic disposition';
+    const postCall = scoreCandidate(candidate({
+      path: 'packages/agent/src/skills/post-call-analysis.md',
+      bestChunkName: 'Post-Call Analysis',
+      bestChunkType: 'block',
+      embeddingSimilarity: 0.82,
+      preview: 'post-call analysis transcript disposition call outcome groq agent',
+    }), baseContext(query));
+    const manifest = scoreCandidate(candidate({
+      path: 'packages/chat-bot/slack-manifest.json',
+      bestChunkName: 'display_information',
+      bestChunkType: 'block',
+      embeddingSimilarity: 0.95,
+      preview: 'display information bot scopes commands shortcuts',
+    }), baseContext(query));
+
+    expect(postCall.score).toBeGreaterThan(manifest.score);
+    expect(postCall.parts.tokenCoverage).toBeGreaterThan(manifest.parts.tokenCoverage);
+  });
+
+  it('keeps domain implementation files above generic facade plumbing for dialer queue queries', () => {
+    const query = 'how does dialer queue call target resolution work';
+    const domainFile = scoreCandidate(candidate({
+      path: 'packages/dialer/src/dialer.ts',
+      bestChunkName: 'Dialer',
+      bestChunkType: 'class',
+      embeddingSimilarity: 0.82,
+      hasClassOrFunction: true,
+      implementationNames: 'Dialer Queue Call Target Resolution',
+      preview: 'dialer queue call target resolution work',
+    }), baseContext(query));
+    const facade = scoreCandidate(candidate({
+      path: 'packages/workspace/scripts/lib/facade/executor.ts',
+      bestChunkName: 'TaskSessionResolution',
+      bestChunkType: 'function',
+      embeddingSimilarity: 0.95,
+      hasClassOrFunction: true,
+      implementationNames: 'TaskSessionResolution',
+      preview: 'resolve workspace task session command execution',
+    }), baseContext(query));
+
+    expect(domainFile.score).toBeGreaterThan(facade.score);
+    expect(domainFile.parts.tokenCoverage).toBeGreaterThan(facade.parts.tokenCoverage);
+  });
+
+  it('does not let graph centrality overpower weak domain fit for product queries', () => {
+    const query = 'how does dialer queue call target resolution work';
+    const context = baseContext(query);
+    context.edgeCounts.set('packages/workspace/scripts/lib/facade/executor.ts', 23);
+    context.edgeCounts.set('packages/api/src/shared/dialer.ts', 8.6);
+
+    const domainFile = scoreCandidate(candidate({
+      path: 'packages/api/src/shared/dialer.ts',
+      bestChunkName: 'buildDialer',
+      bestChunkType: 'function',
+      embeddingSimilarity: 0.9,
+      hasClassOrFunction: true,
+      implementationNames: 'buildDialer',
+      preview: 'shared dialer builder configuration',
+    }), context);
+    const facade = scoreCandidate(candidate({
+      path: 'packages/workspace/scripts/lib/facade/executor.ts',
+      bestChunkName: 'TaskSessionResolution',
+      bestChunkType: 'type',
+      embeddingSimilarity: 0.95,
+      hasClassOrFunction: true,
+      implementationNames: 'TaskSessionResolution',
+      preview: 'resolve workspace task session command execution',
+    }), context);
+
+    expect(domainFile.parts.lexicalScore).toBeGreaterThan(facade.parts.lexicalScore);
+    expect(domainFile.score).toBeGreaterThan(facade.score);
+  });
 });

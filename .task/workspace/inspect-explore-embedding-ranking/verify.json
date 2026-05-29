@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/inspect-explore-embedding-ranking",
+  "base": "origin/main",
+  "headSha": "c00d89f68bb1125441a43b22303ed1691e251306",
+  "changeHash": "f61e6152af42baf4bc23581192ccf1c9294ad3120355b749fd86d2ec9fd63dda",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/search/ranker.js",
+    "packages/workspace/tests/explore-ranker.test.js"
+  ],
+  "verifiedAt": "2026-05-29T02:58:30.334Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/inspect-explore-embedding-ranking.json",
+        ".task/workspace/inspect-explore-embedding-ranking/current.json",
+        ".task/workspace/inspect-explore-embedding-ranking/evidence-log.json",
+        ".task/workspace/inspect-explore-embedding-ranking/explore-state.json",
+        ".task/workspace/inspect-explore-embedding-ranking/read-log.json",
+        ".task/workspace/inspect-explore-embedding-ranking/session.json",
+        ".task/workspace/inspect-explore-embedding-ranking/workpad.md",
+        "packages/workspace/scripts/lib/search/ranker.js",
+        "packages/workspace/tests/explore-ranker.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
