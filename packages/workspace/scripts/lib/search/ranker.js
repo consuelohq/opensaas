@@ -176,7 +176,9 @@ function scoreCandidate(candidate, context) {
   const implementationBonus = getImplementationBonus(querySignals, candidate, graphQuality);
   const lexical = getLexicalScores(querySignals, candidate);
   const anchorCoverage = querySignals.hasHardAnchors ? lexical.hardAnchorCoverage : lexical.softAnchorCoverage;
-  const graphRelevance = lexical.tokenCoverage > 0 || anchorCoverage > 0 ? graphCentrality : graphCentrality * 0.2;
+  let graphRelevance = lexical.tokenCoverage > 0 || anchorCoverage > 0 ? graphCentrality : graphCentrality * 0.2;
+  const weakLexicalGraphOnlyFit = lexical.lexicalScore < 0.2 && nameMatch === 0 && anchorCoverage === 0;
+  if (weakLexicalGraphOnlyFit) graphRelevance = Math.min(graphRelevance, 0.35);
   const structure = structuralScore(candidate, graphQuality);
   const noisy = isGeneratedOrNoisyCandidate(candidate, querySignals);
   let rankingScore = (embeddingSimilarity * 0.50) + (lexical.lexicalScore * 0.25) + (lexical.tokenCoverage * 0.10) + (anchorCoverage * 0.20) + (graphRelevance * 0.06) + (structure * 0.05);
@@ -191,8 +193,11 @@ function scoreCandidate(candidate, context) {
   if (candidate.bestChunkType === 'import' && lexical.lexicalScore < 0.25) rankingScore *= 0.75;
   let capReason = null;
   if (querySignals.issueIds.length > 0 && lexical.hardAnchorCoverage === 0) {
-    rankingScore = Math.min(rankingScore, 0.38);
-    capReason = 'issue-anchor-missing';
+    const hasIssueSoftEvidence = lexical.tokenCoverage >= 0.25
+      || lexical.softAnchorCoverage >= 0.25
+      || lexical.lexicalScore >= 0.25;
+    rankingScore = Math.min(rankingScore, hasIssueSoftEvidence ? 0.52 : 0.38);
+    capReason = hasIssueSoftEvidence ? 'issue-anchor-missing-soft-match' : 'issue-anchor-missing';
   } else if (querySignals.hasHardAnchors && lexical.hardAnchorCoverage === 0 && lexical.lexicalScore < 0.2) {
     rankingScore = Math.min(rankingScore, 0.42);
     capReason = 'hard-anchor-missing';
