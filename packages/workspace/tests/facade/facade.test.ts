@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
+import { parseWorkerOutput } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
@@ -128,7 +129,7 @@ function writeFakeCodex(tempRoot: string): string {
   const bin = join(binDir, 'codex');
   writeFileSync(bin, [
     '#!/usr/bin/env bash',
-    'if [ "$1" = "exec" ] && [[ "$*" == *"--help"* ]]; then',
+    'if [ "$1" = "exec" ] && [ "$2" = "--help" ]; then',
     '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
     '  echo "instructions are read from stdin"',
     '  echo "--cd <DIR>"',
@@ -151,7 +152,9 @@ function writeFakePi(tempRoot: string): string {
   const bin = join(binDir, 'pi');
   writeFileSync(bin, [
     '#!/usr/bin/env bash',
-    'echo "{\"provider\":\"pi\",\"ok\":true}"',
+    'cat <<\'JSON\'',
+    '{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"pong"}],"usage":{"input":1,"output":1,"cacheRead":0}}}',
+    'JSON',
     '',
   ].join('\n'));
   chmodSync(bin, 0o700);
@@ -930,112 +933,41 @@ describe('typed facade executor', () => {
   });
 
 
-  it('extracts compact final messages from cdx json output and stores raw logs', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-compact-'));
-    try {
-      const binDir = join(tempRoot, 'bin');
-      mkdirSync(binDir, { recursive: true });
-      const bin = join(binDir, 'codex');
-      writeFileSync(bin, [
-        '#!/usr/bin/env bash',
-        'if [ "$1" = "exec" ] && [[ "$*" == *"--help"* ]]; then',
-        '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
-        '  echo "instructions are read from stdin"',
-        '  echo "--cd <DIR>"',
-        '  echo "--sandbox <SANDBOX_MODE>"',
-        '  echo "--ask-for-approval <APPROVAL_POLICY>"',
-        '  echo "--json"',
-        '  exit 0',
-        'fi',
-        'node - <<\'NODE\'',
-        'const huge = "s".repeat(9000);',
-        'process.stdout.write(`${JSON.stringify({ type: "thread.started", thread_id: "test" })}\n`);',
-        'process.stdout.write(`${JSON.stringify({ type: "item.completed", item: { type: "mcp_tool_call", result: { content: [{ type: "text", text: huge }] } } })}\n`);',
-        'process.stdout.write(`${JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "pong" } })}\n`);',
-        'process.stdout.write(`${JSON.stringify({ type: "turn.completed", usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } })}\n`);',
-        'process.stderr.write("diagnostic stderr");',
-        'NODE',
-        '',
-      ].join('\n'));
-      chmodSync(bin, 0o700);
-      const instructionPath = writeInstruction(tempRoot, 'ping');
-      const result = await executeTool('worker.call', {
-        provider: 'cdx',
-        mode: 'check',
-        policy: 'read',
-        instructionPath,
-        workspaceOnly: 'preferred',
-      }, {
-        ...stableOptions(successfulRunner()),
-        cwd: tempRoot,
-        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
-      });
+  it('extracts compact final messages from cdx json output', () => {
+    const huge = 's'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'thread.started', thread_id: 'test' }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: { content: [{ type: 'text', text: huge }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'pong' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } }),
+    ].join('\n');
 
-      expect(result.ok).toBe(true);
-      expect(result.data.status).toBe('completed');
-      expect(result.data.finalMessage).toBe('pong');
-      expect(result.data.stdout).toBe('pong');
-      expect(result.data.stdout.length).toBeLessThan(100);
-      expect(result.data.stdoutChars).toBeGreaterThan(9000);
-      expect(result.data.stdoutLogPath).toContain('.task/worker-runs/');
-      expect(result.data.stderrLogPath).toContain('.task/worker-runs/');
-      expect(readFileSync(result.data.stdoutLogPath, 'utf8')).toContain('agent_message');
-      expect(readFileSync(result.data.stderrLogPath, 'utf8')).toBe('diagnostic stderr');
-      expect(result.data.usage?.inputTokens).toBe(10);
-      expect(result.data.usage?.cachedInputTokens).toBe(2);
-      expect(result.data.usage?.outputTokens).toBe(1);
-    } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
-    }
+    const parsed = parseWorkerOutput('cdx', stdout);
+
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summary).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(10);
+    expect(parsed.usage?.cachedInputTokens).toBe(2);
+    expect(parsed.usage?.outputTokens).toBe(1);
   });
 
+  it('extracts compact final messages from pi jsonl output', () => {
+    const huge = 't'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'session', id: 'test' }),
+      JSON.stringify({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: huge } }),
+      JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'pong' }], api: 'openai-codex-responses', provider: 'openai-codex', model: 'gpt-5.4', usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } }),
+    ].join('\n');
 
-  it('extracts compact final messages from pi jsonl output and stores raw logs', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-compact-'));
-    try {
-      const binDir = join(tempRoot, 'bin');
-      mkdirSync(binDir, { recursive: true });
-      const bin = join(binDir, 'pi');
-      writeFileSync(bin, [
-        '#!/usr/bin/env bash',
-        'node - <<\'NODE\'',
-        'const huge = "t".repeat(9000);',
-        'process.stdout.write(`${JSON.stringify({ type: "session", id: "test" })}\n`);',
-        'process.stdout.write(`${JSON.stringify({ type: "message_update", assistantMessageEvent: { type: "thinking_delta", delta: huge } })}\n`);',
-        'process.stdout.write(`${JSON.stringify({ type: "message_end", message: { role: "assistant", content: [{ type: "text", text: "pong" }], api: "openai-codex-responses", provider: "openai-codex", model: "gpt-5.4", usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } })}\n`);',
-        'process.stderr.write("pi diagnostic stderr");',
-        'NODE',
-        '',
-      ].join('\n'));
-      chmodSync(bin, 0o700);
-      const instructionPath = writeInstruction(tempRoot, 'ping');
-      const result = await executeTool('worker.call', {
-        provider: 'pi',
-        profile: 'mini',
-        policy: 'safe',
-        instructionPath,
-      }, {
-        ...stableOptions(successfulRunner()),
-        cwd: tempRoot,
-        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
-      });
+    const parsed = parseWorkerOutput('pi', stdout);
 
-      expect(result.ok).toBe(true);
-      expect(result.data.status).toBe('completed');
-      expect(result.data.finalMessage).toBe('pong');
-      expect(result.data.stdout).toBe('pong');
-      expect(result.data.stdout.length).toBeLessThan(100);
-      expect(result.data.stdoutChars).toBeGreaterThan(9000);
-      expect(result.data.stdoutLogPath).toContain('.task/worker-runs/');
-      expect(readFileSync(result.data.stdoutLogPath, 'utf8')).toContain('thinking_delta');
-      expect(readFileSync(result.data.stderrLogPath, 'utf8')).toBe('pi diagnostic stderr');
-      expect(result.data.usage?.inputTokens).toBe(11);
-      expect(result.data.usage?.outputTokens).toBe(2);
-      expect(result.data.usage?.cachedInputTokens).toBe(3);
-    } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
-    }
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summary).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(11);
+    expect(parsed.usage?.outputTokens).toBe(2);
+    expect(parsed.usage?.cachedInputTokens).toBe(3);
   });
+
   it('bounds worker.call output and includes audit metadata', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
     try {
