@@ -1,3 +1,4 @@
+import { redactJson } from '../redaction';
 import type { ToolCapabilities } from './types';
 
 export type LogEntry = {
@@ -19,7 +20,7 @@ export type LogEntry = {
 };
 
 export function log(entry: Omit<LogEntry, 'ts'>): void {
-  const line = JSON.stringify({ ...entry, ts: new Date().toISOString() });
+  const line = JSON.stringify(redactJson({ ...entry, ts: new Date().toISOString() }));
   process.stderr.write(`${line}\n`);
 }
 

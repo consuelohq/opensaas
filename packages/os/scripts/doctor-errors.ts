@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ensureRuntimePaths, getRuntimePaths } from './lib/runtime-state';
+import { redactJson, redactText } from './lib/redaction';
 
 type Row = {
   trace_id: string;
@@ -76,12 +77,12 @@ async function main(): Promise<void> {
   try {
     const rows = queryRows(db, args);
     if (args.json) {
-      for (const row of rows) write(`${JSON.stringify({ traceId: row.trace_id, skill: row.name, status: row.status, errorCode: row.error_code, errorMessage: row.error_message, durationMs: row.duration_ms })}\n`);
+      for (const row of rows) write(`${JSON.stringify(redactJson({ traceId: row.trace_id, skill: row.name, status: row.status, errorCode: row.error_code, errorMessage: row.error_message, durationMs: row.duration_ms }))}\n`);
       return;
     }
     write(`Doctor errors: ${dbPath}\n`);
     if (rows.length === 0) { write('no failed executions matched\n'); return; }
-    for (const row of rows) write(`${row.started_at.slice(11, 19)}  ${duration(row.duration_ms).padStart(7)}  ${row.name}  ${row.trace_id}\n  ${row.error_code ?? 'UNKNOWN'}: ${String(row.error_message ?? '').slice(0, 500)}\n`);
+    for (const row of rows) write(`${row.started_at.slice(11, 19)}  ${duration(row.duration_ms).padStart(7)}  ${row.name}  ${row.trace_id}\n  ${row.error_code ?? 'UNKNOWN'}: ${redactText(String(row.error_message ?? '')).slice(0, 500)}\n`);
   } finally {
     db.close();
   }
