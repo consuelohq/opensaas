@@ -929,6 +929,66 @@ describe('typed facade executor', () => {
     }
   });
 
+
+  it('extracts compact final messages from cdx json output and stores raw logs', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-compact-'));
+    try {
+      const binDir = join(tempRoot, 'bin');
+      mkdirSync(binDir, { recursive: true });
+      const bin = join(binDir, 'codex');
+      writeFileSync(bin, [
+        '#!/usr/bin/env bash',
+        'if [ "$1" = "exec" ] && [[ "$*" == *"--help"* ]]; then',
+        '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
+        '  echo "instructions are read from stdin"',
+        '  echo "--cd <DIR>"',
+        '  echo "--sandbox <SANDBOX_MODE>"',
+        '  echo "--ask-for-approval <APPROVAL_POLICY>"',
+        '  echo "--json"',
+        '  exit 0',
+        'fi',
+        'node - <<\'NODE\'',
+        'const huge = "s".repeat(9000);',
+        'process.stdout.write(`${JSON.stringify({ type: "thread.started", thread_id: "test" })}\n`);',
+        'process.stdout.write(`${JSON.stringify({ type: "item.completed", item: { type: "mcp_tool_call", result: { content: [{ type: "text", text: huge }] } } })}\n`);',
+        'process.stdout.write(`${JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "pong" } })}\n`);',
+        'process.stdout.write(`${JSON.stringify({ type: "turn.completed", usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } })}\n`);',
+        'process.stderr.write("diagnostic stderr");',
+        'NODE',
+        '',
+      ].join('\n'));
+      chmodSync(bin, 0o700);
+      const instructionPath = writeInstruction(tempRoot, 'ping');
+      const result = await executeTool('worker.call', {
+        provider: 'cdx',
+        mode: 'check',
+        policy: 'read',
+        instructionPath,
+        workspaceOnly: 'preferred',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.finalMessage).toBe('pong');
+      expect(result.data.stdout).toBe('pong');
+      expect(result.data.stdout.length).toBeLessThan(100);
+      expect(result.data.stdoutChars).toBeGreaterThan(9000);
+      expect(result.data.stdoutLogPath).toContain('.task/worker-runs/');
+      expect(result.data.stderrLogPath).toContain('.task/worker-runs/');
+      expect(readFileSync(result.data.stdoutLogPath, 'utf8')).toContain('agent_message');
+      expect(readFileSync(result.data.stderrLogPath, 'utf8')).toBe('diagnostic stderr');
+      expect(result.data.usage?.inputTokens).toBe(10);
+      expect(result.data.usage?.cachedInputTokens).toBe(2);
+      expect(result.data.usage?.outputTokens).toBe(1);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('bounds worker.call output and includes audit metadata', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
     try {
