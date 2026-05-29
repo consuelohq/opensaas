@@ -1506,3 +1506,12 @@ Canonical sequence:
 3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
 If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to legacy root `.task/*` state before bypassing verification.
+
+
+## Workspace tool implementation placement
+
+When adding or refactoring workspace tools, keep the facade executor thin. The executor should route, normalize, validate, and compose; domain runtimes and provider logic belong in dedicated modules under `packages/workspace/scripts/lib/*`.
+
+If a tool represents a user-runnable operation, provide a Bun script entrypoint that calls the same runtime as the facade tool. Do not create a separate behavior path for the script. Internal facade tools are acceptable for orchestration, but large internal tools must delegate to a runtime module.
+
+Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
