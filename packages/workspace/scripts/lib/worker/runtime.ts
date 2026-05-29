@@ -26,6 +26,19 @@ export type WorkerCallData = {
   stdout: string;
   stderr: string;
   exitCode: number;
+  finalMessage?: string;
+  summary?: string;
+  rawLogPath?: string;
+  stdoutLogPath?: string;
+  stderrLogPath?: string;
+  stdoutChars?: number;
+  stderrChars?: number;
+  usage?: {
+    inputTokens?: number;
+    cachedInputTokens?: number;
+    outputTokens?: number;
+    reasoningOutputTokens?: number;
+  };
   durationMs: number;
   audit: {
     taskSession?: string;
@@ -57,6 +70,7 @@ type WorkerProviderConfig = {
 };
 
 export const WORKER_OUTPUT_LIMIT = 8000;
+const WORKER_COMPACT_OUTPUT_LIMIT = 1200;
 const WORKER_MAX_TIMEOUT_MS = 1_800_000;
 
 const workerDefaults: Record<NormalizedWorkerProvider, {
@@ -373,8 +387,13 @@ async function executeCdxWorker(
     ...input,
     status,
     command,
-    stdout: boundWorkerOutput(run.stdout),
-    stderr: boundWorkerOutput(run.stderr),
+    ...compactWorkerOutput({
+      provider: 'cdx',
+      cwd: input.cwd,
+      traceId: context.traceId,
+      stdout: run.stdout,
+      stderr: run.stderr,
+    }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
     audit: { ...input.audit, rawShellUsed: true },
@@ -475,8 +494,13 @@ async function executeOpcWorker(
     ...input,
     status,
     command,
-    stdout: boundWorkerOutput(run.stdout),
-    stderr: boundWorkerOutput(run.stderr),
+    ...compactWorkerOutput({
+      provider: 'opc',
+      cwd: input.cwd,
+      traceId: context.traceId,
+      stdout: run.stdout,
+      stderr: run.stderr,
+    }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
     audit: { ...input.audit, rawShellUsed: true },
@@ -549,8 +573,13 @@ async function executePiWorker(
     ...input,
     status,
     command,
-    stdout: boundWorkerOutput(run.stdout),
-    stderr: boundWorkerOutput(run.stderr),
+    ...compactWorkerOutput({
+      provider: 'pi',
+      cwd: input.cwd,
+      traceId: context.traceId,
+      stdout: run.stdout,
+      stderr: run.stderr,
+    }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
     audit: { ...input.audit, rawShellUsed: true },
@@ -588,6 +617,14 @@ function workerToolResult(
     stdout: input.stdout,
     stderr: input.stderr,
     exitCode: input.exitCode,
+    ...(input.finalMessage ? { finalMessage: input.finalMessage } : {}),
+    ...(input.summary ? { summary: input.summary } : {}),
+    ...(input.rawLogPath ? { rawLogPath: input.rawLogPath } : {}),
+    ...(input.stdoutLogPath ? { stdoutLogPath: input.stdoutLogPath } : {}),
+    ...(input.stderrLogPath ? { stderrLogPath: input.stderrLogPath } : {}),
+    ...(typeof input.stdoutChars === 'number' ? { stdoutChars: input.stdoutChars } : {}),
+    ...(typeof input.stderrChars === 'number' ? { stderrChars: input.stderrChars } : {}),
+    ...(input.usage ? { usage: input.usage } : {}),
     durationMs: input.durationMs ?? elapsedMs(context.startedAt, context.options.now),
     audit: input.audit,
   };
@@ -703,6 +740,126 @@ function workerInstruction(instruction: string, workspaceOnly: WorkerWorkspaceOn
       ? 'Use workspace tooling first. Raw shell is allowed only as a fallback and must be reported.'
       : 'Use the provider default execution model.';
   return `${guidance}\n\n${instruction}`;
+}
+
+
+function compactWorkerOutput(input: {
+  provider: NormalizedWorkerProvider;
+  cwd: string;
+  traceId: string;
+  stdout: string;
+  stderr: string;
+}): Pick<WorkerCallData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
+  const parsed = parseWorkerOutput(input.provider, input.stdout);
+  const logs = persistWorkerLogs(input);
+  const finalMessage = parsed.finalMessage?.trim();
+  const stderrSummary = compactText(input.stderr);
+  return {
+    stdout: finalMessage || compactText(input.stdout),
+    stderr: stderrSummary,
+    ...(finalMessage ? { finalMessage } : {}),
+    ...(parsed.summary ? { summary: parsed.summary } : finalMessage ? { summary: finalMessage } : {}),
+    ...(logs.rawLogPath ? { rawLogPath: logs.rawLogPath } : {}),
+    stdoutLogPath: logs.stdoutLogPath,
+    stderrLogPath: logs.stderrLogPath,
+    stdoutChars: input.stdout.length,
+    stderrChars: input.stderr.length,
+    ...(parsed.usage ? { usage: parsed.usage } : {}),
+  };
+}
+
+function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): {
+  finalMessage?: string;
+  summary?: string;
+  usage?: WorkerCallData['usage'];
+} {
+  if (provider === 'cdx') return parseCodexJsonEvents(stdout);
+  const trimmed = stdout.trim();
+  if (!trimmed) return {};
+  try {
+    const value = JSON.parse(trimmed) as Record<string, unknown>;
+    const finalMessage = stringValue(value.finalMessage) || stringValue(value.message) || stringValue(value.text) || stringValue(value.output);
+    return {
+      ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+    };
+  } catch {
+    return { finalMessage: trimmed, summary: compactText(trimmed) };
+  }
+}
+
+function parseCodexJsonEvents(stdout: string): {
+  finalMessage?: string;
+  summary?: string;
+  usage?: WorkerCallData['usage'];
+} {
+  let finalMessage: string | undefined;
+  let usage: WorkerCallData['usage'] | undefined;
+  for (const line of stdout.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    try {
+      const event = JSON.parse(trimmed) as Record<string, unknown>;
+      if (event.type === 'item.completed') {
+        const item = event.item as Record<string, unknown> | undefined;
+        if (item?.type === 'agent_message' && typeof item.text === 'string') finalMessage = item.text;
+      }
+      if (event.type === 'turn.completed') {
+        const rawUsage = event.usage as Record<string, unknown> | undefined;
+        if (rawUsage) usage = {
+          ...(numberValue(rawUsage.input_tokens) !== undefined ? { inputTokens: numberValue(rawUsage.input_tokens) } : {}),
+          ...(numberValue(rawUsage.cached_input_tokens) !== undefined ? { cachedInputTokens: numberValue(rawUsage.cached_input_tokens) } : {}),
+          ...(numberValue(rawUsage.output_tokens) !== undefined ? { outputTokens: numberValue(rawUsage.output_tokens) } : {}),
+          ...(numberValue(rawUsage.reasoning_output_tokens) !== undefined ? { reasoningOutputTokens: numberValue(rawUsage.reasoning_output_tokens) } : {}),
+        };
+      }
+    } catch {
+      // Ignore non-JSON provider chatter.
+    }
+  }
+  return {
+    ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+    ...(usage ? { usage } : {}),
+  };
+}
+
+function persistWorkerLogs(input: {
+  provider: NormalizedWorkerProvider;
+  cwd: string;
+  traceId: string;
+  stdout: string;
+  stderr: string;
+}): { rawLogPath?: string; stdoutLogPath: string; stderrLogPath: string } {
+  const runId = `${input.traceId}-${input.provider}`.replace(/[^a-zA-Z0-9_.-]+/g, '-');
+  const logDir = path.join(input.cwd, '.task', 'worker-runs', runId);
+  fs.mkdirSync(logDir, { recursive: true });
+  const stdoutLogPath = path.join(logDir, 'stdout.log');
+  const stderrLogPath = path.join(logDir, 'stderr.log');
+  const summaryPath = path.join(logDir, 'summary.json');
+  fs.writeFileSync(stdoutLogPath, input.stdout);
+  fs.writeFileSync(stderrLogPath, input.stderr);
+  fs.writeFileSync(summaryPath, JSON.stringify({
+    provider: input.provider,
+    traceId: input.traceId,
+    stdoutChars: input.stdout.length,
+    stderrChars: input.stderr.length,
+    stdoutLogPath,
+    stderrLogPath,
+  }, null, 2));
+  return { rawLogPath: summaryPath, stdoutLogPath, stderrLogPath };
+}
+
+function compactText(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length <= WORKER_COMPACT_OUTPUT_LIMIT) return trimmed;
+  return `${trimmed.slice(0, WORKER_COMPACT_OUTPUT_LIMIT)}\n... [truncated ${trimmed.length - WORKER_COMPACT_OUTPUT_LIMIT} chars; see worker log path]`;
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function numberValue(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function boundWorkerOutput(value: string): string {

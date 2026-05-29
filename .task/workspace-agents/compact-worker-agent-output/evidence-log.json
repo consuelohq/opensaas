@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+  "events": [
+    {
+      "id": "e7aafb43-6505-4c8e-bc60-6ce8b7cce49d",
+      "occurred_at": "2026-05-29T04:14:31.547Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "0e98ee98-cc34-4cfc-b354-a9d40072e9b1",
+      "occurred_at": "2026-05-29T04:14:47.631Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/worker/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "7f16801c-d16f-4c1d-b3f5-650ab8f58b01",
+      "occurred_at": "2026-05-29T04:14:47.662Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "610a3784-eb0b-4713-b6b7-a1784b84e27a",
+      "occurred_at": "2026-05-29T04:14:56.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/worker/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "cf7a6f4d-6a98-4bf2-800d-cda4d1a3165a",
+      "occurred_at": "2026-05-29T04:15:06.817Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/worker/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "a7130016-6c5e-48d2-b103-c347354a8292",
+      "occurred_at": "2026-05-29T04:15:33.518Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    },
+    {
+      "id": "7c7eedea-2014-40f3-9a7c-4b7410e5371e",
+      "occurred_at": "2026-05-29T04:15:38.897Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-worker-agent-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-worker-agent-output"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-29T04:15:38.949Z"
+}
