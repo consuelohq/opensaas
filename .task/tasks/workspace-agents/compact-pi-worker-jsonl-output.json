@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-pi-worker-jsonl-output",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 648,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/648",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/648",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/648/compact-pi-worker-jsonl-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/648",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/648/compact-pi-worker-jsonl-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-pi-worker-jsonl-output",
+  "taskSession": "tsk_9cfc914c929d",
+  "tmuxSession": "opensaas-workspace-agents-compact-pi-worker-jsonl-output-9cfc914c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-pi-worker-jsonl-output/.task/workspace-agents/compact-pi-worker-jsonl-output/session.json",
+  "createdAt": "2026-05-29T04:41:39.500Z"
+}

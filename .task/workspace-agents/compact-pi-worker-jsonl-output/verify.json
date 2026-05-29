@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/compact-pi-worker-jsonl-output",
+  "base": "origin/main",
+  "headSha": "ae2efd55bd28ec316c9452926c0647ca580c5c9f",
+  "changeHash": "9ccad86e2ba64eaa44494c652083b7c17f06e0b73c333aa5d3531a0257abc1e6",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-05-29T04:44:01.462Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/compact-pi-worker-jsonl-output.json",
+        ".task/workspace-agents/compact-pi-worker-jsonl-output/current.json",
+        ".task/workspace-agents/compact-pi-worker-jsonl-output/evidence-log.json",
+        ".task/workspace-agents/compact-pi-worker-jsonl-output/read-log.json",
+        ".task/workspace-agents/compact-pi-worker-jsonl-output/session.json",
+        ".task/workspace-agents/compact-pi-worker-jsonl-output/workpad.md",
+        "packages/workspace/scripts/lib/worker/runtime.ts",
+        "packages/workspace/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
