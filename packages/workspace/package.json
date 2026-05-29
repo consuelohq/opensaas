@@ -43,7 +43,8 @@
     "code-run": "bun ./scripts/code-run.ts",
     "github": "bun ./scripts/github.js",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
-    "git:diff": "bun ./scripts/git-diff.js"
+    "git:diff": "bun ./scripts/git-diff.js",
+    "worker": "bun ./scripts/worker.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
