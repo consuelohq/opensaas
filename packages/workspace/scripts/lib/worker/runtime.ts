@@ -774,7 +774,9 @@ function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): 
   usage?: WorkerCallData['usage'];
 } {
   if (provider === 'cdx') return parseCodexJsonEvents(stdout);
+
   if (provider === 'pi') return parsePiJsonEvents(stdout);
+
   const trimmed = stdout.trim();
   if (!trimmed) return {};
   try {
@@ -822,6 +824,7 @@ function parseCodexJsonEvents(stdout: string): {
     ...(usage ? { usage } : {}),
   };
 }
+
 
 
 function parsePiJsonEvents(stdout: string): {
@@ -874,6 +877,7 @@ function extractMessageText(content: unknown): string | undefined {
     .trim();
   return text || undefined;
 }
+
 
 function persistWorkerLogs(input: {
   provider: NormalizedWorkerProvider;

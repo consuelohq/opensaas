@@ -989,6 +989,7 @@ describe('typed facade executor', () => {
     }
   });
 
+<<<<<<< HEAD
 
   it('extracts compact final messages from pi jsonl output and stores raw logs', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-compact-'));
@@ -1037,6 +1038,8 @@ describe('typed facade executor', () => {
     }
   });
 
+=======
+>>>>>>> origin/stream/workspace-agents
   it('bounds worker.call output and includes audit metadata', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
     try {
