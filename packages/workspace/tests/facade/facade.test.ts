@@ -144,6 +144,20 @@ function writeFakeCodex(tempRoot: string): string {
   return binDir;
 }
 
+
+function writeFakePi(tempRoot: string): string {
+  const binDir = join(tempRoot, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const bin = join(binDir, 'pi');
+  writeFileSync(bin, [
+    '#!/usr/bin/env bash',
+    'echo "{\"provider\":\"pi\",\"ok\":true}"',
+    '',
+  ].join('\n'));
+  chmodSync(bin, 0o700);
+  return binDir;
+}
+
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
@@ -848,8 +862,68 @@ describe('typed facade executor', () => {
 
       expect(mini.ok).toBe(true);
       expect(mini.data.status).toBe('not_configured');
+      expect(mini.data.provider).toBe('pi');
+      expect(mini.data.requestedProvider).toBe('mini');
+      expect(mini.data.profile).toBe('mini');
       expect(opc.ok).toBe(true);
       expect(opc.data.status).toBe('not_configured');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs pi provider through the facade with configurable mini profile', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-'));
+    try {
+      const binDir = writeFakePi(tempRoot);
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('worker.call', {
+        provider: 'pi',
+        profile: 'mini',
+        policy: 'safe',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.provider).toBe('pi');
+      expect(result.data.profile).toBe('mini');
+      expect(result.data.command[0]).toContain('/pi');
+      expect(result.data.command).toContain('--no-session');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('exposes a worker Bun script wrapper over worker.call', () => {
+    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-worker-cli-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const fakePiPath = writeFakePi(tempRoot);
+      const run = spawnSync('bun', [
+        'packages/workspace/scripts/worker.ts',
+        'call',
+        '--provider', 'pi',
+        '--profile', 'mini',
+        '--policy', 'safe',
+        '--instruction-path', instructionPath,
+        '--cwd', tempRoot,
+      ], {
+        cwd: process.cwd(),
+        env: { ...process.env, PATH: `${fakePiPath}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+        encoding: 'utf8',
+      });
+
+      expect(run.status).toBe(0);
+      const result = JSON.parse(run.stdout);
+      expect(result.ok).toBe(true);
+      expect(result.data.provider).toBe('pi');
+      expect(result.data.profile).toBe('mini');
+      expect(result.data.status).toBe('completed');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
