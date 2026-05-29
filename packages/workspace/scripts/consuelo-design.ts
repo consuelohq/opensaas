@@ -1502,31 +1502,37 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo Wiki</title>
   <style>
-    :root { color-scheme: light; --ink:#171717; --muted:#666; --quiet:#a3a3a3; --line:#eaeaea; --soft:#fafafa; }
+    :root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: dark; --paper:#111820; --surface:#18212b; --ink:#e9eef4; --muted:#a9b4bf; --quiet:#7f8b96; --line:#2a3642; --soft:#1d2732; --accent:#c7d0d9; --accent-soft:#263341; }
+    }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:#fff; }
+    html { scroll-behavior: smooth; background:var(--paper); }
+    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
+    ::selection { background:var(--accent-soft); color:var(--ink); }
     .shell { max-width:680px; margin:0 auto; padding:0 18px 32px; }
     .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
     .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; text-decoration:none; }
     .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
     .nav a { color:var(--ink); text-decoration:none; }
-    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
     .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
     .search-button { display:inline-flex; align-items:center; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
     h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
-    .lead { margin:0 0 20px; color:var(--ink); font-size:14px; line-height:1.7; }
+    .lead { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.7; }
     .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
-    .search-row { margin-top:18px; }
+    .search-row { margin-top:18px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
     .search-row[hidden] { display:none; }
-    .filter-label { color:var(--ink); }
+    .filter-label { color:var(--muted); }
     .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
-    .search-input:focus { border-bottom-color:var(--ink); }
+    .search-input::placeholder { color:var(--quiet); }
+    .search-input:focus { border-bottom-color:var(--accent); }
     button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
-    button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
-    button.active { font-weight:700; }
+    button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    button.active { color:var(--accent); font-weight:700; }
     button.active::before { content:"["; color:var(--quiet); }
     button.active::after { content:"]"; color:var(--quiet); }
     .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
@@ -1538,10 +1544,11 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     .post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
     .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
     .empty { color:var(--quiet); font-size:14px; }
+    mark, .pagefind-ui__result-excerpt mark { background:var(--accent-soft); color:var(--ink); }
     .pagination { margin-top:28px; color:var(--quiet); }
     .page-status { color:var(--quiet); }
     .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
-    footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--ink); font-size:13px; }
+    footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
     .footer-links { display:flex; gap:10px; }
     .footer-links a { color:var(--ink); text-decoration:none; }
     @media (max-width: 680px) {
