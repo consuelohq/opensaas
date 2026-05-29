@@ -39,7 +39,7 @@ this file should teach agents how to think with the system, what the signals mea
 
 ## worker delegation naming decision
 
-Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `opc`, and `mini` are provider codes. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
+Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `pi`, and `opc` are provider codes. `mini` is a legacy/profile name normalized to `pi` with `profile: mini`. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
 
 ---
 
@@ -1031,3 +1031,6 @@ the system is working when an agent can say:
 i know what to do next because the current evidence makes that action highest value.
 i know whether it was right because validation and runtime truth updated the belief.
 ```
+
+
+Keep `worker.call` as the neutral facade entrypoint and expose `bun run worker -- call ...` as the human/Codex CLI wrapper. Both paths must call the same worker runtime module; executor-owned provider implementations should be refactored into dedicated runtime modules.

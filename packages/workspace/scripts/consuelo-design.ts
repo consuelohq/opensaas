@@ -1240,7 +1240,15 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     const searchInput = document.querySelector('#wiki-search');
 
     const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-    const normalizeUrl = (value) => String(value || '').replace(/^https?:\/\/[^/]+/u, '').replace(/^\/design-wiki/u, '').replace(/^\//u, '').replace(/\/index\.html$/u, '').replace(/\/$/u, '');
+    const normalizeUrl = (value) => {
+      let normalized = String(value || '');
+      try { normalized = new URL(normalized).pathname; } catch { /* keep relative path */ }
+      if (normalized.startsWith('/design-wiki')) normalized = normalized.slice('/design-wiki'.length);
+      while (normalized.startsWith('/')) normalized = normalized.slice(1);
+      if (normalized.endsWith('/index.html')) normalized = normalized.slice(0, -'/index.html'.length);
+      if (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+      return normalized;
+    };
     const entryMatchesFilter = (entry) => activeFilter === 'all' || entry.template === activeFilter;
     const localEntryMatchesQuery = (entry) => {
       const query = activeQuery.trim().toLowerCase();
