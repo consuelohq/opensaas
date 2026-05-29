@@ -895,6 +895,20 @@ Do not call get_steering again unless:
 - a previous get_steering call failed
 - there is evidence the steering response is stale or incomplete
 
+## Workspace tool-surface recovery
+
+After `workspace.get_steering()` succeeds, use direct `workspace.call` for normal workspace operations.
+
+If the tool surface appears to reload, disappear, or expose only `get_steering`, do not loop on tool discovery. Recover in this order:
+
+1. Check whether direct `workspace.call` is available.
+2. Run `workspace.call({ tool: "status", input: {}, timeout: 120 })`.
+3. Run `workspace.call({ tool: "context.trace", input: { status: "error", since: "2h", limit: 20 }, timeout: 120 })`.
+4. If `workspace.call` is unavailable, state that the ChatGPT tool surface is incomplete and stop with the exact blocker.
+5. If `workspace.call` works, continue the task. Do not treat the temporary tool-surface reload as a task blocker.
+
+Do not repeatedly call `api_tool.list_resources` after steering has loaded unless the user asks to inspect tool schemas or the direct workspace namespace is missing.
+
 quick reference:
 
 ```ts
