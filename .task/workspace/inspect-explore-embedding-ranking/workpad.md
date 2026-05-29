@@ -95,6 +95,7 @@ The larger embedding model may be producing a different candidate distribution, 
 - 2026-05-29 02:43:05 fs.patch: `packages/workspace/scripts/lib/search/ranker.js`
 - 2026-05-29 02:49:28 fs.write: `.task/workspace/inspect-explore-embedding-ranking/workpad.md`
 - 2026-05-29 02:57:27 fs.write: `.task/workspace/inspect-explore-embedding-ranking/workpad.md`
+- 2026-05-29 02:59:52 fs.write: `.task/workspace/inspect-explore-embedding-ranking/workpad.md`
 
 ## TDD implementation checkpoint
 
@@ -172,3 +173,14 @@ Final decision for this task:
 - 2026-05-29 02:57:46 `audit`: passed — OK
 - 2026-05-29 02:58:19 `review.run`: passed — OK
 - 2026-05-29 02:58:30 `verify`: passed — OK
+- 2026-05-29 03:00:09 `verify`: passed — OK
+
+## Summary
+
+Shipped a focused TDD ranker fix for workspace explore soft-query ranking while keeping Qwen3-Embedding-4B/2560 as the default. The 8B/4096 benchmark exposed a real scoring issue: relevant soft-query candidates were flattened into the same cap bucket as noisy candidates, and graph centrality could overpower weak lexical/domain fit.
+
+The ranker now distinguishes issue-anchor misses with meaningful soft evidence via `issue-anchor-missing-soft-match` capped at `0.52`, while preserving the strict `0.38` cap for weak issue-anchor misses. It also caps graph relevance at `0.35` when lexical/name/anchor fit is weak, preventing high-centrality plumbing files from outranking better domain files solely due to graph edges.
+
+Validation passed: focused ranker tests, scripts audit, review, verify. The post-patch 4B/2560 vs 8B/4096 matrix kept five control scenarios stable, fixed DEV-1508 by returning `post-call-analysis.md` to rank 2 under 8B, and improved dialer queue by removing facade executor from the top 5. 8B is still not promoted because 4B/2560 produced the more correct dialer ordering.
+
+- 2026-05-29 02:59:52 append: `.task/workspace/inspect-explore-embedding-ranking/workpad.md`

@@ -1,8 +1,9 @@
 {
   "files": [
+    ".task/workspace/inspect-explore-embedding-ranking/workpad.md",
     "packages/workspace/scripts/lib/search/ranker.js",
     "packages/workspace/scripts/lib/search/retriever.js",
     "packages/workspace/tests/explore-ranker.test.js"
   ],
-  "updatedAt": "2026-05-29T02:42:52.600Z"
+  "updatedAt": "2026-05-29T02:59:44.059Z"
 }
