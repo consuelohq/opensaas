@@ -1197,12 +1197,16 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ### consuelo-design — run local design tooling
 
+Publishes design artifacts into the generated Consuelo Wiki archive and manages the archive server used by the private tailnet and wiki tunnel.
+
+The archive server serves the wiki index, generated search assets, and published artifact pages from the same origin. Keep this route contract aligned with design.publish and design.refresh.
+
 ```bash
 bun run consuelo-design -- --help
+bun run consuelo-design -- refresh --json
 ```
 
 ---
-
 ### doctor — workspace diagnostics
 
 checks local workspace prerequisites, server health, git state, and related command availability.
