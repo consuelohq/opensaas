@@ -989,6 +989,53 @@ describe('typed facade executor', () => {
     }
   });
 
+
+  it('extracts compact final messages from pi jsonl output and stores raw logs', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-compact-'));
+    try {
+      const binDir = join(tempRoot, 'bin');
+      mkdirSync(binDir, { recursive: true });
+      const bin = join(binDir, 'pi');
+      writeFileSync(bin, [
+        '#!/usr/bin/env bash',
+        'node - <<\'NODE\'',
+        'const huge = "t".repeat(9000);',
+        'process.stdout.write(`${JSON.stringify({ type: "session", id: "test" })}\n`);',
+        'process.stdout.write(`${JSON.stringify({ type: "message_update", assistantMessageEvent: { type: "thinking_delta", delta: huge } })}\n`);',
+        'process.stdout.write(`${JSON.stringify({ type: "message_end", message: { role: "assistant", content: [{ type: "text", text: "pong" }], api: "openai-codex-responses", provider: "openai-codex", model: "gpt-5.4", usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } })}\n`);',
+        'process.stderr.write("pi diagnostic stderr");',
+        'NODE',
+        '',
+      ].join('\n'));
+      chmodSync(bin, 0o700);
+      const instructionPath = writeInstruction(tempRoot, 'ping');
+      const result = await executeTool('worker.call', {
+        provider: 'pi',
+        profile: 'mini',
+        policy: 'safe',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.finalMessage).toBe('pong');
+      expect(result.data.stdout).toBe('pong');
+      expect(result.data.stdout.length).toBeLessThan(100);
+      expect(result.data.stdoutChars).toBeGreaterThan(9000);
+      expect(result.data.stdoutLogPath).toContain('.task/worker-runs/');
+      expect(readFileSync(result.data.stdoutLogPath, 'utf8')).toContain('thinking_delta');
+      expect(readFileSync(result.data.stderrLogPath, 'utf8')).toBe('pi diagnostic stderr');
+      expect(result.data.usage?.inputTokens).toBe(11);
+      expect(result.data.usage?.outputTokens).toBe(2);
+      expect(result.data.usage?.cachedInputTokens).toBe(3);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
   it('bounds worker.call output and includes audit metadata', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
     try {

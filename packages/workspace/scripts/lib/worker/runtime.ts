@@ -774,6 +774,9 @@ function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): 
   usage?: WorkerCallData['usage'];
 } {
   if (provider === 'cdx') return parseCodexJsonEvents(stdout);
+
+  if (provider === 'pi') return parsePiJsonEvents(stdout);
+
   const trimmed = stdout.trim();
   if (!trimmed) return {};
   try {
@@ -821,6 +824,60 @@ function parseCodexJsonEvents(stdout: string): {
     ...(usage ? { usage } : {}),
   };
 }
+
+
+
+function parsePiJsonEvents(stdout: string): {
+  finalMessage?: string;
+  summary?: string;
+  usage?: WorkerCallData['usage'];
+} {
+  let finalMessage: string | undefined;
+  let usage: WorkerCallData['usage'] | undefined;
+  let parsedAny = false;
+  for (const line of stdout.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    try {
+      const event = JSON.parse(trimmed) as Record<string, unknown>;
+      parsedAny = true;
+      const message = event.message as Record<string, unknown> | undefined;
+      if (event.type === 'message_end' && message?.role === 'assistant') {
+        const text = extractMessageText(message.content);
+        if (text) finalMessage = text;
+        const rawUsage = message.usage as Record<string, unknown> | undefined;
+        if (rawUsage) usage = {
+          ...(numberValue(rawUsage.input) !== undefined ? { inputTokens: numberValue(rawUsage.input) } : {}),
+          ...(numberValue(rawUsage.cacheRead) !== undefined ? { cachedInputTokens: numberValue(rawUsage.cacheRead) } : {}),
+          ...(numberValue(rawUsage.output) !== undefined ? { outputTokens: numberValue(rawUsage.output) } : {}),
+        };
+      }
+    } catch {
+      // Ignore non-JSON provider chatter.
+    }
+  }
+  if (!parsedAny) return {};
+  return {
+    ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+    ...(usage ? { usage } : {}),
+  };
+}
+
+function extractMessageText(content: unknown): string | undefined {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return undefined;
+  const text = content
+    .map((item) => {
+      if (!item || typeof item !== 'object') return '';
+      const value = item as Record<string, unknown>;
+      return typeof value.text === 'string' ? value.text : '';
+    })
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+  return text || undefined;
+}
+
 
 function persistWorkerLogs(input: {
   provider: NormalizedWorkerProvider;
