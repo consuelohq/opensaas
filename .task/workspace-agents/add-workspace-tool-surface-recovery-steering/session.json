@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fd1b45757013",
+  "tmuxSession": "opensaas-workspace-agents-add-workspace-tool-surface-recovery-steering-fd1b4575",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+  "branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-surface-recovery-steering",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-surface-recovery-steering",
+  "prNumber": 638,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/638",
+  "createdAt": "2026-05-29T00:56:21.872Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-surface-recovery-steering/.task/workspace-agents/add-workspace-tool-surface-recovery-steering/session.json"
+}
