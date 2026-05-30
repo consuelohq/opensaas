@@ -895,6 +895,8 @@ await workspace.call({
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
 
+Use `tools.search` when you are unsure which workspace tool to call. Search by intent keywords such as `linear issue`, `github pr checks`, `file search`, `trace logs`, or `codex worker`; prefer the highest-ranked read-only result for investigation and use mutating results only when the user asked for a state change. Do not read the full manifest just to discover a tool.
+
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
 For task work, `taskSession` is the source of truth. Capture `data.taskSession` from `task.start` and pass it to every task-scoped `workspace.call`. Task-local review and decision metadata belongs under `.task/<area>/<slug>/`; avoid shared root task metadata as task truth because it is unsafe for parallel agents.
@@ -1525,3 +1527,4 @@ When adding or refactoring workspace tools, keep the facade executor thin. The e
 If a tool represents a user-runnable operation, provide a Bun script entrypoint that calls the same runtime as the facade tool. Do not create a separate behavior path for the script. Internal facade tools are acceptable for orchestration, but large internal tools must delegate to a runtime module.
 
 Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
+
