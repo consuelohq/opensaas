@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/dialer/components/ClickToCallButton.tsx",
+    "packages/twenty-front/src/modules/object-record/record-field/ui/utils/getFieldButtonIcon.ts",
+    "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/components/RecordTableCellButtons.tsx",
+    "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/components/RecordTableCellEditButton.tsx",
+    "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/hooks/useGetSecondaryRecordTableCellButton.ts",
+    "packages/twenty-ui/src/input/button/components/LightIconButtonGroup.tsx"
+  ],
+  "updatedAt": "2026-05-25T23:29:53.092Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ec1a043508c3",
+  "tmuxSession": "opensaas-dialer-fix-list-runner-call-start-trigger-ec1a0435",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-list-runner-call-start-trigger",
+  "branch": "task/dialer/fix-list-runner-call-start-trigger",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-list-runner-call-start-trigger",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-list-runner-call-start-trigger",
+  "prNumber": 539,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/539",
+  "createdAt": "2026-05-23T19:48:40.681Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-list-runner-call-start-trigger/.task/dialer/fix-list-runner-call-start-trigger/session.json"
+}

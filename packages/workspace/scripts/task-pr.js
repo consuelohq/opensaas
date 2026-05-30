@@ -26,6 +26,7 @@ const {
   updatePullRequest,
 } = require('./lib/github');
 const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
+const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { resolveGitRoot } = require('./lib/paths');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const {
@@ -36,11 +37,13 @@ const {
 } = require('./lib/validation');
 const {
   findTaskMeta,
+  getTaskCurrentMetaPath,
   isOnlyTaskMetadataConflict,
   resolveTaskMetadataConflicts,
   validateBranchMatch,
   writeTaskMeta,
 } = require('./lib/task-meta');
+const { assertWorkpadReady } = require('./lib/task-workpad');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -68,6 +71,7 @@ function printHelp() {
   writeStdout('  --body-file <path>       final review pr body markdown file');
   writeStdout('  --body-template area     generate an area-context body template for the final review pr');
   writeStdout('  --task-only              stop after creating or refreshing the task/* -> stream/* pr');
+  writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --draft                  create or keep the final review pr as draft');
   writeStdout('  --no-draft               create the final review pr as ready-for-review (default)');
   writeStdout('  --ready                  convert an existing draft final review pr to ready');
@@ -98,7 +102,8 @@ function parseArgs(argv) {
       flag === '--json' ||
       flag === '--help' ||
       flag === '--ready' ||
-      flag === '--task-only';
+      flag === '--task-only' ||
+      flag === '--ack-workpad-incomplete';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -139,6 +144,9 @@ function parseArgs(argv) {
         break;
       case '--task-only':
         args.taskOnly = true;
+        break;
+      case '--ack-workpad-incomplete':
+        args.ackWorkpadIncomplete = true;
         break;
       case '--draft':
         args.draft = true;
@@ -262,7 +270,7 @@ function getSelectedPrContext(args) {
     taskMeta: {
       dir: selected.task.worktreePath,
       data: selected.task.meta,
-      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+      path: getTaskCurrentMetaPath(selected.task.worktreePath, selected.task.meta),
     },
   };
 }
@@ -588,12 +596,16 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
 }
 
 function buildTaskOnlyResult({ args, context, taskPrDetails }) {
+  const githubPrUrl = taskPrDetails.pullRequest.html_url;
+  const graphitePrUrl = buildGraphitePullRequestUrl(args.repo, taskPrDetails.pullRequest.number, context.slug);
   const result = {
     repo: args.repo,
     branch: context.taskBranch,
     base: context.streamBranch,
     prNumber: taskPrDetails.pullRequest.number,
-    prUrl: taskPrDetails.pullRequest.html_url,
+    prUrl: graphitePrUrl,
+    githubPrUrl,
+    graphitePrUrl,
     draft: Boolean(taskPrDetails.pullRequest.draft),
     created: taskPrDetails.created,
     updated: taskPrDetails.updated,
@@ -607,7 +619,8 @@ function buildTaskOnlyResult({ args, context, taskPrDetails }) {
     return;
   }
 
-  writeStdout(`task pr #${result.prNumber}: ${result.prUrl}`);
+  writeStdout(`graphite task pr #${result.prNumber}: ${result.graphitePrUrl}`);
+  writeStdout(`github task pr #${result.prNumber}: ${result.githubPrUrl}`);
   writeStdout(`${context.taskBranch} -> ${context.streamBranch}`);
   if (result.alreadyMerged) {
     writeStdout('task pr is already merged');
@@ -621,19 +634,33 @@ function buildTaskOnlyResult({ args, context, taskPrDetails }) {
 }
 
 function buildFinalResult({ args, context, taskPrDetails, taskMergeDetails, reviewPrDetails }) {
+  const taskGitHubPrUrl = taskPrDetails.pullRequest.html_url;
+  const taskGraphitePrUrl = buildGraphitePullRequestUrl(args.repo, taskPrDetails.pullRequest.number, context.slug);
+  const streamGitHubPrUrl = reviewPrDetails.pullRequest.html_url;
+  const streamGraphitePrUrl = buildGraphitePullRequestUrl(
+    args.repo,
+    reviewPrDetails.pullRequest.number,
+    reviewPrDetails.pullRequest.title || context.streamBranch,
+  );
   const result = {
     repo: args.repo,
     taskBranch: context.taskBranch,
     stream: context.streamBranch,
     base: context.reviewBase,
     taskPrNumber: taskPrDetails.pullRequest.number,
-    taskPrUrl: taskPrDetails.pullRequest.html_url,
+    taskPrUrl: taskGraphitePrUrl,
+    taskGitHubPrUrl,
+    taskGraphitePrUrl,
     taskPrMerged: Boolean(taskMergeDetails.pullRequest.merged_at),
     taskPrMergedNow: taskMergeDetails.merged,
     streamPrNumber: reviewPrDetails.pullRequest.number,
-    streamPrUrl: reviewPrDetails.pullRequest.html_url,
+    streamPrUrl: streamGraphitePrUrl,
+    streamGitHubPrUrl,
+    streamGraphitePrUrl,
     prNumber: reviewPrDetails.pullRequest.number,
-    prUrl: reviewPrDetails.pullRequest.html_url,
+    prUrl: streamGraphitePrUrl,
+    githubPrUrl: streamGitHubPrUrl,
+    graphitePrUrl: streamGraphitePrUrl,
     draft: Boolean(reviewPrDetails.pullRequest.draft),
     created: reviewPrDetails.created,
     updated: reviewPrDetails.updated,
@@ -646,9 +673,11 @@ function buildFinalResult({ args, context, taskPrDetails, taskMergeDetails, revi
     return;
   }
 
-  writeStdout(`review pr #${result.streamPrNumber}: ${result.streamPrUrl}`);
+  writeStdout(`graphite review pr #${result.streamPrNumber}: ${result.streamGraphitePrUrl}`);
+  writeStdout(`github review pr #${result.streamPrNumber}: ${result.streamGitHubPrUrl}`);
   writeStdout(`${context.streamBranch} -> ${context.reviewBase}`);
-  writeStdout(`task pr #${result.taskPrNumber}: ${result.taskPrUrl}`);
+  writeStdout(`graphite task pr #${result.taskPrNumber}: ${result.taskGraphitePrUrl}`);
+  writeStdout(`github task pr #${result.taskPrNumber}: ${result.taskGitHubPrUrl}`);
 
   if (taskMergeDetails.alreadyMerged) {
     writeStdout('task pr was already merged into the stream branch');
@@ -681,6 +710,12 @@ async function main() {
   }
 
   const context = getPrContext(args);
+  const workpadReadiness = context.taskMeta?.data
+    ? assertWorkpadReady(context.repoRoot, context.taskMeta.data, { ackIncomplete: args.ackWorkpadIncomplete })
+    : { ok: true };
+  if (!workpadReadiness.ok && args.ackWorkpadIncomplete) {
+    writeStderr(`warning: publishing with incomplete workpad: ${workpadReadiness.path}`);
+  }
   const token = getToken();
   const reviewBody = readReviewBody(args, context);
 
@@ -724,8 +759,11 @@ async function main() {
     updateTaskMetaIfPresent(context.taskMeta, {
       taskPrNumber: taskPrDetails.pullRequest.number,
       taskPrUrl: taskPrDetails.pullRequest.html_url,
+      taskGraphitePrUrl: buildGraphitePullRequestUrl(args.repo, taskPrDetails.pullRequest.number, context.slug),
       prNumber: taskPrDetails.pullRequest.number,
       prUrl: taskPrDetails.pullRequest.html_url,
+      githubPrUrl: taskPrDetails.pullRequest.html_url,
+      graphitePrUrl: buildGraphitePullRequestUrl(args.repo, taskPrDetails.pullRequest.number, context.slug),
       stream: context.streamBranch,
       baseBranch: context.streamBranch,
     });
@@ -775,11 +813,15 @@ async function main() {
     stream: context.streamBranch,
     taskPrNumber: taskPrDetails.pullRequest.number,
     taskPrUrl: taskPrDetails.pullRequest.html_url,
+    taskGraphitePrUrl: buildGraphitePullRequestUrl(args.repo, taskPrDetails.pullRequest.number, context.slug),
     taskPrMergedAt: taskMergeDetails.pullRequest.merged_at || null,
     streamPrNumber: reviewPullRequest.number,
     streamPrUrl: reviewPullRequest.html_url,
+    streamGraphitePrUrl: buildGraphitePullRequestUrl(args.repo, reviewPullRequest.number, reviewPullRequest.title || context.streamBranch),
     prNumber: reviewPullRequest.number,
     prUrl: reviewPullRequest.html_url,
+    githubPrUrl: reviewPullRequest.html_url,
+    graphitePrUrl: buildGraphitePullRequestUrl(args.repo, reviewPullRequest.number, reviewPullRequest.title || context.streamBranch),
     baseBranch: context.streamBranch,
     reviewBaseBranch: context.reviewBase,
   });

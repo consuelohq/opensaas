@@ -1,0 +1,923 @@
+{
+  "query": "test selection registry verify review tests workspace scripts docs package test commands",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/workspace/tests/facade/facade.test.ts",
+      "score": 1,
+      "belief_prior": 0.75,
+      "symbol": "imports",
+      "chunk_type": "import",
+      "file_outline": "stableOptions successfulRunner failingRunner timeoutRunner passthroughRunner exampleInput executableEntries",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/types"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 11092,
+      "chunk_count": 12,
+      "last_modified": 1779601256,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.125,
+      "reason": "semantic match: import imports",
+      "preview": "import { describe, expect, it } from 'vitest'; import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver'; import { runBatch } from '../../scripts/lib/facade/batch';",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/facade/batch.ts",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/types.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 1,
+        "end": 7
+      },
+      "target": {
+        "key": "packages/workspace/tests/facade/facade.test.ts:import:imports:1-7",
+        "path": "packages/workspace/tests/facade/facade.test.ts",
+        "kind": "import",
+        "name": "imports",
+        "symbol_path": "imports",
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 7
+        },
+        "content_hash": "cb28f6eb1e8a993363ba61c96dca45531bbd0f93a6a22d0007ee9b46aef3555a",
+        "preview": "import { describe, expect, it } from 'vitest'; import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver'; import { runBatch } from '../../scripts/lib/facade/batch';"
+      },
+      "score_parts": {
+        "boost": 1.6071825000000004,
+        "embeddingSimilarity": 0.8433428833915535,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "graphCentrality": 0.3333333333333333,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 1,
+        "rawScore": 1.3554059236864457,
+        "weightedEdges": 10
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "score": 1,
+      "belief_prior": 0.7179,
+      "symbol": "imports",
+      "chunk_type": "import",
+      "file_outline": "getToolManifestEntry executeTool part 1 executeTool part 1 executeTool part 2 normalizeInput executeInternalTool executeInternalTool resolveBranchIfNeeded buildCommandPlan appendArgument getTimeoutMs runWithRetry parseStdout findJsonStart elapsedMs formatCommand resolveGitRoot resolveWorkspaceCommandCwd resolveControllerRoot logResult",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+          "type": "imports",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imported_by",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imports",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imports",
+          "symbol": "./logger"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "./schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imports",
+          "symbol": "../../../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imported_by",
+          "symbol": "./logger"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "./schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imported_by",
+          "symbol": "../../../tooling/tool-manifest.json"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 18876,
+      "chunk_count": 23,
+      "last_modified": 1779603941,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0156,
+      "reason": "semantic match: import imports",
+      "preview": "import { execa } from 'execa'; import { execFileSync } from 'node:child_process'; import manifestJson from '../../../tooling/tool-manifest.json';",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/codemode/tools/index.ts",
+        "packages/workspace/scripts/lib/facade/batch.ts",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/client.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/logger.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/types.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 1,
+        "end": 20
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/facade/executor.ts:import:imports:1-20",
+        "path": "packages/workspace/scripts/lib/facade/executor.ts",
+        "kind": "import",
+        "name": "imports",
+        "symbol_path": "imports",
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 20
+        },
+        "content_hash": "77c54074393ee861add9b1f0d681baaca2a0ccaf3c78c11f9744df87839d44e9",
+        "preview": "import { execa } from 'execa'; import { execFileSync } from 'node:child_process'; import manifestJson from '../../../tooling/tool-manifest.json';"
+      },
+      "score_parts": {
+        "boost": 1.7559094250000002,
+        "embeddingSimilarity": 0.7168414508828205,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "graphCentrality": 0.7633333333333334,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 1,
+        "rawScore": 1.2587086598358193,
+        "weightedEdges": 22.900000000000002
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "score": 1,
+      "belief_prior": 0.6916,
+      "symbol": "imports",
+      "chunk_type": "import",
+      "file_outline": "runBatch collectParallelGroup hasFunctionArgs isReadOnly runStep getStepInput",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imported_by",
+          "symbol": "./batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-batch.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imports",
+          "symbol": "./batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/tool-batch.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/batch"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 3173,
+      "chunk_count": 7,
+      "last_modified": 1779609324,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.1102,
+      "reason": "semantic match: import imports",
+      "preview": "import { createToolResult, createTraceId, getErrorMessage } from './errors'; import { executeTool, getToolManifestEntry } from './executor'; import type { BatchResult, BatchStep, ExecuteToolOptions, ToolInput, ToolResult } from './types';",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/client.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/scripts/tool-batch.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/scripts/lib/facade/logger.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 1,
+        "end": 3
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/facade/batch.ts:import:imports:1-3",
+        "path": "packages/workspace/scripts/lib/facade/batch.ts",
+        "kind": "import",
+        "name": "imports",
+        "symbol_path": "imports",
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 3
+        },
+        "content_hash": "e2754671033b869f947c004af39d5b181b0d81520b9d99bd45ab6536ace43f61",
+        "preview": "import { createToolResult, createTraceId, getErrorMessage } from './errors'; import { executeTool, getToolManifestEntry } from './executor'; import type { BatchResult, BatchStep, ExecuteToolOptions, ToolInput, ToolResult } from './types';"
+      },
+      "score_parts": {
+        "boost": 1.6454487500000003,
+        "embeddingSimilarity": 0.7168414508828205,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "graphCentrality": 0.5000000000000001,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 1,
+        "rawScore": 1.1795258693033237,
+        "weightedEdges": 15.000000000000004
+      }
+    },
+    {
+      "path": "packages/workspace/tooling/tool-manifest.json",
+      "score": 1,
+      "belief_prior": 0.6894,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/generate-docs.ts",
+          "type": "imports",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-types.ts",
+          "type": "imports",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-docs.ts",
+          "type": "imported_by",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-types.ts",
+          "type": "imported_by",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../../tooling/tool-manifest.json"
+        }
+      ],
+      "is_implementation": false,
+      "file_size": 121788,
+      "chunk_count": 35,
+      "last_modified": 1779606005,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.8076,
+      "reason": "semantic match: block chunk",
+      "preview": "} ] },",
+      "graph_connections": [
+        "packages/workspace/scripts/generate-docs.ts",
+        "packages/workspace/scripts/generate-types.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 3901,
+        "end": 4050
+      },
+      "target": {
+        "key": "packages/workspace/tooling/tool-manifest.json:block:anonymous:3901-4050",
+        "path": "packages/workspace/tooling/tool-manifest.json",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 3901,
+          "end": 4050
+        },
+        "content_hash": "bb98e39bfe93b4b1dea7e37e59097d2c31344d046e360dd85ccbb21082973f0d",
+        "preview": "} ] },"
+      },
+      "score_parts": {
+        "boost": 1.4332450000000003,
+        "embeddingSimilarity": 0.8183363847553684,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "graphCentrality": 0.2,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 1,
+        "rawScore": 1.1728765317687082,
+        "weightedEdges": 6
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/generate-docs.ts",
+      "score": 1,
+      "belief_prior": 0.6772,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": "renderSignature exampleEnvelope renderCommand renderDocs renderDocs main",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/types"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imports",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/types"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imported_by",
+          "symbol": "../tooling/tool-manifest.json"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 7534,
+      "chunk_count": 10,
+      "last_modified": 1779352879,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.033,
+      "reason": "semantic match: block chunk",
+      "preview": "#!/usr/bin/env bun",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 1,
+        "end": 2
+      },
+      "target": {
+        "key": "packages/workspace/scripts/generate-docs.ts:block:anonymous:1-2",
+        "path": "packages/workspace/scripts/generate-docs.ts",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 2
+        },
+        "content_hash": "977c0f8898e6cb0618feec400f35160e7d71a7095d7d57d18b189f25560b019a",
+        "preview": "#!/usr/bin/env bun"
+      },
+      "score_parts": {
+        "boost": 1.6334574250000002,
+        "embeddingSimilarity": 0.6955859270420631,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "graphCentrality": 0.23,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.1362099972523665,
+        "weightedEdges": 6.9
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/workspace-state.js",
+      "score": 1,
+      "belief_prior": 0.6677,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": "writeLine writeError runCommand commandExists git gitOutput getRepoRoot getCurrentBranch refExists fetchOrigin getAheadBehind getChangedFiles readJsonFile readPackageJson getPackageScripts getWorkspaceScriptMappings listWorkspaceScriptFiles findTaskMetaRecord parseTaskBranch parseStreamBranch getStreamFromContext getRemoteBranchName getLatestRailwayDeploy getWorkspaceServerHealth findRecentStamp formatAge",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/db-guards.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/git.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/github.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 10691,
+      "chunk_count": 28,
+      "last_modified": 1779393226,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.864,
+      "reason": "semantic match: block chunk",
+      "preview": "module.exports = { DEFAULT_SERVICE, WORKSPACE_SCRIPTS_DIR,",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/db-guards.js",
+        "packages/workspace/scripts/lib/git.js",
+        "packages/workspace/scripts/lib/github.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 339,
+        "end": 369
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/workspace-state.js:block:anonymous:339-369",
+        "path": "packages/workspace/scripts/lib/workspace-state.js",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 339,
+          "end": 369
+        },
+        "content_hash": "17858cdb24cb878911baca1bf4c2de4df98dbde279b78323f2f0bb00976b27e7",
+        "preview": "module.exports = { DEFAULT_SERVICE, WORKSPACE_SCRIPTS_DIR,"
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8020652309605794,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.1076520839565605,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/TOOLS.md",
+      "score": 1,
+      "belief_prior": 0.6367,
+      "symbol": "audit",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 136100,
+      "chunk_count": 150,
+      "last_modified": 1779606005,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7266,
+      "reason": "semantic match: block audit",
+      "preview": "### audit audit workspace scripts, docs, or index freshness - signature: `workspace.audit({ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]:",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 1742,
+        "end": 1797
+      },
+      "target": {
+        "key": "packages/workspace/TOOLS.md:block:audit:1742-1797",
+        "path": "packages/workspace/TOOLS.md",
+        "kind": "block",
+        "name": "audit",
+        "symbol_path": "audit",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 1742,
+          "end": 1797
+        },
+        "content_hash": "1e09719b6eef13cf674ace25a0cb18e99cd257cbeac187fa243c159dc3931c0d",
+        "preview": "### audit audit workspace scripts, docs, or index freshness - signature: `workspace.audit({ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]:"
+      },
+      "score_parts": {
+        "boost": 1.2100000000000002,
+        "embeddingSimilarity": 0.8382026641910301,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 1,
+        "nameMatch": 1,
+        "rawScore": 1.0142252236711466,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/workspace/STEERING.md",
+      "score": 0.9917,
+      "belief_prior": 0.6293,
+      "symbol": "typed facade usage examples",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 28409,
+      "chunk_count": 34,
+      "last_modified": 1779434203,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7414,
+      "reason": "semantic match: block typed facade usage examples",
+      "preview": "## typed facade usage examples branch auto-detection starts with the strongest source and stops at the first valid match. ```ts",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 444,
+        "end": 491
+      },
+      "target": {
+        "key": "packages/workspace/STEERING.md:block:typed facade usage examples:444-491",
+        "path": "packages/workspace/STEERING.md",
+        "kind": "block",
+        "name": "typed facade usage examples",
+        "symbol_path": "typed facade usage examples",
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 444,
+          "end": 491
+        },
+        "content_hash": "4f4e4b938c12d1d4c4b6e999e0df9a97d8d0f0417fa79d108fbe2b33d75dca40",
+        "preview": "## typed facade usage examples branch auto-detection starts with the strongest source and stops at the first valid match. ```ts"
+      },
+      "score_parts": {
+        "boost": 1.2100000000000002,
+        "embeddingSimilarity": 0.8196152090575737,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 0.9917344029596643,
+        "weightedEdges": 0
+      }
+    }
+  ],
+  "index_stats": {
+    "total_files": 14569,
+    "total_chunks": 59936,
+    "last_indexed": "2026-05-24T08:50:47.652Z",
+    "last_full_index": "2026-04-29T01:40:26.658Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+    "files_indexed": 0,
+    "chunks_embedded": 16
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/tests/facade/facade.test.ts": {
+      "prior": 0.75,
+      "posterior": 0.75,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/facade/executor.ts": {
+      "prior": 0.7179,
+      "posterior": 0.7179,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/facade/batch.ts": {
+      "prior": 0.6916,
+      "posterior": 0.6916,
+      "observations": []
+    },
+    "packages/workspace/tooling/tool-manifest.json": {
+      "prior": 0.6894,
+      "posterior": 0.6894,
+      "observations": []
+    },
+    "packages/workspace/scripts/generate-docs.ts": {
+      "prior": 0.6772,
+      "posterior": 0.6772,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/workspace-state.js": {
+      "prior": 0.6677,
+      "posterior": 0.6677,
+      "observations": []
+    },
+    "packages/workspace/TOOLS.md": {
+      "prior": 0.6367,
+      "posterior": 0.6367,
+      "observations": []
+    },
+    "packages/workspace/STEERING.md": {
+      "prior": 0.6293,
+      "posterior": 0.6293,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/workspace-agents/seed-test-selection-registry",
+  "mode": "exploring",
+  "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+  "updated_at": "2026-05-24T08:51:11.180Z"
+}

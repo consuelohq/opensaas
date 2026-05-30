@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/seed-test-selection-registry",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 587,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/587",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/587",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/587/seed-test-selection-registry",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/587",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/587/seed-test-selection-registry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-seed-test-selection-registry",
+  "taskSession": "tsk_872edff37081",
+  "tmuxSession": "opensaas-workspace-agents-seed-test-selection-registry-872edff3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-seed-test-selection-registry/.task/workspace-agents/seed-test-selection-registry/session.json",
+  "createdAt": "2026-05-24T08:50:03.025Z"
+}

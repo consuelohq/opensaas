@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-review-verify-facade-timeouts",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 568,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/568",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/568",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/568/fix-review-verify-facade-timeouts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/568",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/568/fix-review-verify-facade-timeouts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-review-verify-facade-timeouts",
+  "taskSession": "tsk_e9e58ca0e68b",
+  "tmuxSession": "opensaas-workspace-agents-fix-review-verify-facade-timeouts-e9e58ca0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-review-verify-facade-timeouts/.task/workspace-agents/fix-review-verify-facade-timeouts/session.json",
+  "createdAt": "2026-05-24T06:16:01.794Z"
+}

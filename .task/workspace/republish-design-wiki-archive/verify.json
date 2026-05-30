@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/republish-design-wiki-archive",
+  "base": "origin/stream/workspace",
+  "headSha": "891103597deca5930a29602db673b6cdf192e683",
+  "changeHash": "566feb2a4e82be0b0730e3775f3228bec5df2f06f33d8197490854dd04d19d20",
+  "changedFiles": [
+    "packages/consuelo-design/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T06:02:41.244Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

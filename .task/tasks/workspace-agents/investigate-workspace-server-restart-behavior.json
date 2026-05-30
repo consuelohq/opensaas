@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-workspace-server-restart-behavior",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 474,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/474",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/474",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/474/investigate-workspace-server-restart-behavior",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/474",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/474/investigate-workspace-server-restart-behavior",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-workspace-server-restart-behavior",
+  "taskSession": "tsk_a0879e217337",
+  "tmuxSession": "opensaas-workspace-agents-investigate-workspace-server-restart-behavior-a0879e21",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-workspace-server-restart-behavior/.task/workspace-agents/investigate-workspace-server-restart-behavior/session.json",
+  "createdAt": "2026-05-23T02:56:49.392Z"
+}

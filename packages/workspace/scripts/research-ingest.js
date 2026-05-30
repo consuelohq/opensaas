@@ -237,8 +237,52 @@ function parseJson(raw) {
   }
 }
 
+const SKIPPED_TEXT_SEARCH_KEYS = new Set(['input', 'env', 'metrics', 'diagnostics', 'prompt']);
+const TEXT_KEYS = new Set(['content', 'text', 'markdown', 'transcript', 'extracted', 'extractedContent', 'summary', 'output', 'result']);
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function textAtPath(value, segments) {
+  let current = value;
+  for (const segment of segments) {
+    if (!current || typeof current !== 'object') return null;
+    current = current[segment];
+  }
+  return isNonEmptyString(current) ? current.trim() : null;
+}
+
+function preferredText(parsed, kind) {
+  const extractPaths = [
+    ['extracted', 'content'],
+    ['extracted', 'text'],
+    ['extracted', 'markdown'],
+    ['extractedContent'],
+    ['content'],
+    ['text'],
+    ['transcript'],
+  ];
+  const summaryPaths = [
+    ['summary'],
+    ['output'],
+    ['result'],
+    ['content'],
+    ['text'],
+    ['markdown'],
+    ['extracted', 'content'],
+    ['extracted', 'text'],
+    ['transcript'],
+  ];
+
+  for (const pathSegments of kind === 'summary' ? summaryPaths : extractPaths) {
+    const found = textAtPath(parsed, pathSegments);
+    if (found) return found;
+  }
+  return null;
+}
+
 function findText(value) {
-  const keys = new Set(['content', 'text', 'markdown', 'transcript', 'extracted', 'extractedContent', 'summary', 'output', 'result']);
   if (!value || typeof value !== 'object') return null;
 
   if (Array.isArray(value)) {
@@ -250,10 +294,12 @@ function findText(value) {
   }
 
   for (const [key, child] of Object.entries(value)) {
-    if (keys.has(key) && typeof child === 'string' && child.trim()) return child;
+    if (SKIPPED_TEXT_SEARCH_KEYS.has(key)) continue;
+    if (TEXT_KEYS.has(key) && isNonEmptyString(child)) return child.trim();
   }
 
-  for (const child of Object.values(value)) {
+  for (const [key, child] of Object.entries(value)) {
+    if (SKIPPED_TEXT_SEARCH_KEYS.has(key)) continue;
     const found = findText(child);
     if (found) return found;
   }
@@ -263,7 +309,7 @@ function findText(value) {
 
 function extractedText(runResult) {
   const parsed = parseJson(runResult.stdout);
-  return (parsed && findText(parsed)) || runResult.stdout.trim();
+  return (parsed && (preferredText(parsed, runResult.kind) || findText(parsed))) || runResult.stdout.trim();
 }
 
 function packet(manifest, text) {

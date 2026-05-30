@@ -33,7 +33,8 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
-const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { getTaskWorkpadPath, readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 
 const DEFAULT_START_FROM = 'main';
@@ -187,6 +188,15 @@ function printResult(result, useJson) {
   writeStdout(`tmux session: ${result.tmuxSession}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
+  writeStdout(`github: ${result.githubPrUrl}`);
+}
+
+
+function removeStaleRootTaskState(worktreePath) {
+  for (const fileName of ['current.json', 'session.json', 'workpad.md', 'verify.json']) {
+    const filePath = path.join(worktreePath, '.task', fileName);
+    if (fs.existsSync(filePath)) fs.rmSync(filePath, { force: true });
+  }
 }
 
 function resolveSourceBranch(startFrom, stream) {
@@ -264,7 +274,8 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  try {
+    const args = parseArgs(process.argv.slice(2));
 
     if (args.help) {
       printHelp();
@@ -356,6 +367,7 @@ async function main() {
     }
 
     const worktreePath = worktree.path;
+    removeStaleRootTaskState(worktreePath);
 
     // symlink node_modules from main worktree so tests/lint/typecheck work
     const worktreeNodeModules = path.join(worktreePath, 'node_modules');
@@ -445,6 +457,8 @@ async function main() {
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
+    const taskSlug = taskBranch.split('/').pop();
+    const graphitePrUrl = buildGraphitePullRequestUrl(args.repo, pullRequest.number, taskSlug);
 
     const taskMeta = {
       area,
@@ -455,20 +469,24 @@ async function main() {
       startFrom: args.startFrom,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
+      githubPrUrl: pullRequest.html_url,
+      graphitePrUrl,
+      taskPrUrl: pullRequest.html_url,
+      taskGraphitePrUrl: graphitePrUrl,
       worktreePath,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
-      sessionPath: path.join(worktreePath, '.task', 'session.json'),
+      sessionPath: taskSessionMeta.sessionPath,
       createdAt: new Date().toISOString(),
     };
 
     writeTaskMeta(worktreePath, taskMeta);
 
-    // guard 2: verify .task/current.json was written correctly
+    // guard 2: verify task metadata was written correctly
     const verifyMeta = readTaskMeta(worktreePath);
     if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
       throw new Error(
-        `.task/current.json verification failed in ${worktreePath}.\n` +
+        `task metadata verification failed in ${worktreePath}.\n` +
         'the file was not written correctly. check disk permissions.',
       );
     }
@@ -476,14 +494,14 @@ async function main() {
     await saveTaskMetaMemory(taskMeta);
 
     // create fresh workpad — always overwrite, never reuse from previous task
-    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
-    const slug = taskBranch.split('/').pop();
+    const workpadPath = getTaskWorkpadPath(worktreePath, taskMeta);
     const workpad = [
       `# ${args.title}`,
       '',
       `branch: \`${taskBranch}\``,
       `stream: \`${stream}\``,
-      `pr: ${pullRequest.html_url}`,
+      `pr: ${graphitePrUrl}`,
+      `github pr: ${pullRequest.html_url}`,
       `started: ${new Date().toISOString().slice(0, 10)}`,
       '',
       '## acceptance criteria',
@@ -494,7 +512,23 @@ async function main() {
       '',
       '1. Read the relevant code and update this plan before editing.',
       '',
+      '## current status',
+      '',
+      '- Task started. Update this before publish.',
+      '',
       '## files changed',
+      '',
+      '- none yet',
+      '',
+      '## workspace-owned: files changed',
+      '',
+      '- none yet',
+      '',
+      '## workspace-owned: activity log',
+      '',
+      '- none yet',
+      '',
+      '## workspace-owned: validation evidence',
       '',
       '- none yet',
       '',
@@ -510,7 +544,7 @@ async function main() {
       '',
       '- none yet',
       '',
-      '## errors i ran into',
+      '## issues and recovery',
       '',
       '- none yet',
       '',
@@ -536,7 +570,9 @@ async function main() {
         branch: taskBranch,
         worktreePath,
         prNumber: pullRequest.number,
-        prUrl: pullRequest.html_url,
+        prUrl: graphitePrUrl,
+        githubPrUrl: pullRequest.html_url,
+        graphitePrUrl,
         taskSession: taskSessionMeta.taskSession,
         tmuxSession: taskSessionMeta.tmuxSession,
         createdBranch: remoteTaskDetails.created,
@@ -556,9 +592,13 @@ async function main() {
       writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
       writeStderr('  bun run task:pr');
     }
+  } catch (error) {
+    throw error;
+  }
 }
 
 main().catch((error) => {
   writeStderr(error instanceof Error ? error.message : 'unknown error');
   process.exit(1);
 });
+

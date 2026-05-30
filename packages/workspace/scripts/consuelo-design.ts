@@ -49,10 +49,11 @@ const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
 const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
 const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
 const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
+const DESIGN_ARCHIVE_PAGEFIND_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'pagefind');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_PATH = '/design-wiki';
+const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
-
 type ParsedArgs = {
   command: string;
   subcommand: string | null;
@@ -939,6 +940,103 @@ function materializeArchiveTarget(target: string, servePath: string): { target: 
   cpSync(sourcePath, indexPath);
   return { target: indexPath, artifactPath: archiveRelativeArtifactPath(servePath), sourceTarget: target };
 }
+async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
+  try {
+    const tailscaleBin = args.tailscaleBin ?? 'tailscale';
+    const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
+    const payload = readArchivePayload();
+    payload.updatedAt = new Date().toISOString();
+    if (!args.dryRun) {
+      writeArchivePayload(payload);
+      writeArchiveIndex(payload);
+    }
+    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
+    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    if (args.dryRun) {
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, command });
+      else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
+      return;
+    }
+    const result = await runCommand(command, REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale serve failed for Consuelo Wiki: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
+    else if (!args.quiet) writeStdout(`design archive refreshed\nwiki: ${url}\nwikiDirect: ${directUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to refresh Consuelo Wiki archive: ${message}`);
+  }
+}
+
+async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
+  } catch {
+    return false;
+  }
+}
+
+async function stopArchiveServer(): Promise<void> {
+  try {
+    const lookup = await runCommand(['lsof', '-ti', `tcp:${DESIGN_ARCHIVE_PORT}`], REPO_ROOT);
+    if (lookup.exitCode !== 0) return;
+    const pids = lookup.stdout.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      await runCommand(['kill', pid], REPO_ROOT);
+    }
+  } catch {
+    // Best effort only. If the process is already gone, publish can continue.
+  }
+}
+
+async function ensureArchiveServer(ip: string): Promise<string> {
+  writeArchiveServer(ip);
+  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+  if (await archiveServerShowsCurrentWiki(target)) return target;
+
+  await stopArchiveServer();
+  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
+    cwd: REPO_ROOT,
+    detached: true,
+    stdio: ['ignore', 'ignore', 'ignore'],
+  });
+  child.unref();
+
+  const deadline = Date.now() + 4000;
+  while (Date.now() < deadline) {
+    if (await archiveServerShowsCurrentWiki(target)) return target;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return target;
+}
+
+
+function writeArchiveServer(ip: string): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  const lines = [
+    'const archiveRoot = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT) + ';',
+    'const indexPath = ' + JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH) + ';',
+    'const dataPath = ' + JSON.stringify(DESIGN_ARCHIVE_DATA_PATH) + ';',
+    'const pagefindRoot = ' + JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT) + ';',
+    'const archivePath = ' + JSON.stringify(DESIGN_ARCHIVE_PATH) + ';',
+    'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
+    'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
+    'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
+    'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
+    'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
+    'async function readEntries(){ try { const data = JSON.parse(await Bun.file(dataPath).text()); return Array.isArray(data.entries) ? data.entries : []; } catch { return []; } }',
+    'async function proxyEntry(entry, request, suffix){ if (!entry || !entry.target) return null; if (!entry.target.startsWith("http://") && !entry.target.startsWith("https://")) return null; const target = new URL(entry.target); const requested = new URL(request.url); const base = target.pathname.endsWith("/") ? target.pathname.slice(0, -1) : target.pathname; const extra = suffix ? "/" + suffix.split("/").filter(Boolean).map(encodeURIComponent).join("/") : ""; target.pathname = base + extra; target.search = requested.search; return fetch(target, { method: request.method, headers: request.headers }); }',
+    'function pagefindSuffix(pathname){ if (pathname.startsWith(archivePath + "/pagefind/")) return pathname.slice((archivePath + "/pagefind/").length); if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); if (url.pathname === "/" || url.pathname === archivePath || url.pathname === archivePath + "/") return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const pagefind = pagefindSuffix(url.pathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const entries = await readEntries(); const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + "/")); if (entry){ const raw = url.pathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + url.pathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });'
+  ];
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
+}
 
 function readArchivePayload(): DesignArchivePayload {
   try {
@@ -969,25 +1067,48 @@ function displayTitleForArchiveEntry(entry: DesignArchiveEntry): string {
   return withoutPrefix || rawTitle;
 }
 
-function archiveSectionLabel(entry: DesignArchiveEntry): string {
-  if (entry.category === 'daily-deep-idea') return 'Featured';
-  return 'Recent Posts';
+function archiveEntryTimestamp(entry: DesignArchiveEntry): string {
+  return entry.updatedAt || entry.publishedAt;
+}
+
+function archiveEntryFilterType(entry: DesignArchiveEntry): string {
+  if (entry.path.split('/').filter(Boolean)[0] === 'website') return 'website';
+  return entry.template;
+}
+
+function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+  if (!entry.artifactPath) return entry.path;
+  const relativePath = entry.artifactPath.split(path.sep).join('/');
+  return relativePath.endsWith('/index.html') ? `/${relativePath}` : `/${relativePath}/index.html`;
+}
+
+function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+  return entry.path.startsWith('/') ? entry.path : `/${entry.path}`;
 }
 
 function renderArchiveIndex(payload: DesignArchivePayload): string {
   const visibleEntries = [...payload.entries]
     .filter((entry) => entry.category !== 'research-packet')
-    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
-  const featuredEntries = visibleEntries.filter((entry) => archiveSectionLabel(entry) === 'Featured');
-  const recentEntries = visibleEntries.filter((entry) => archiveSectionLabel(entry) !== 'Featured');
-  const renderItems = (entries: DesignArchiveEntry[]) => entries.map((entry) => `
-        <article class="post-item" data-template="${escapeHtml(entry.template)}" data-category="${escapeHtml(entry.category)}">
-          <h3><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
-          <div class="post-meta" aria-label="Published date">▣ <time datetime="${escapeHtml(entry.publishedAt)}">${escapeHtml(new Date(entry.publishedAt).toLocaleDateString())}</time></div>
-          <p>${escapeHtml(entry.path)}</p>
-        </article>`).join('\n');
-  const featuredCards = renderItems(featuredEntries);
-  const recentCards = renderItems(recentEntries);
+    .sort((left, right) => archiveEntryTimestamp(right).localeCompare(archiveEntryTimestamp(left)));
+  const renderItems = (entries: DesignArchiveEntry[]) => entries.map((entry) => {
+    const timestamp = archiveEntryTimestamp(entry);
+    return `
+        <article class="post-item" data-template="${escapeHtml(archiveEntryFilterType(entry))}" data-category="${escapeHtml(entry.category)}">
+          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3><div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div><p>${escapeHtml(entry.path)}</p>
+        </article>`;
+  }).join('\n');
+  const archiveCards = renderItems(visibleEntries);
+  const searchEntries = visibleEntries.map((entry) => ({
+    id: entry.id,
+    title: displayTitleForArchiveEntry(entry),
+    path: entry.path,
+    url: publicUrlForArchiveEntry(entry),
+    artifactPath: entry.artifactPath ? entry.artifactPath.split(path.sep).join('/') : null,
+    pagefindUrl: pagefindUrlForArchiveEntry(entry),
+    template: archiveEntryFilterType(entry),
+    category: entry.category,
+    updatedAt: archiveEntryTimestamp(entry),
+  }));
   const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published artifacts yet.</p>' : '';
   return `<!doctype html>
 <html lang="en">
@@ -996,25 +1117,37 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo Wiki</title>
   <style>
-    :root { color-scheme: light; --ink:#171717; --muted:#666; --quiet:#a3a3a3; --line:#eaeaea; --soft:#fafafa; }
+    :root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; }
+    @media (prefers-color-scheme: dark) {
+      :root { color-scheme: dark; --paper:#111820; --surface:#18212b; --ink:#e9eef4; --muted:#a9b4bf; --quiet:#7f8b96; --line:#2a3642; --soft:#1d2732; --accent:#c7d0d9; --accent-soft:#263341; }
+    }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:#fff; }
+    html { scroll-behavior: smooth; background:var(--paper); }
+    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
+    ::selection { background:var(--accent-soft); color:var(--ink); }
     .shell { max-width:680px; margin:0 auto; padding:0 18px 32px; }
     .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
     .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; text-decoration:none; }
     .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
     .nav a { color:var(--ink); text-decoration:none; }
-    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
     .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+    .search-button { display:inline-flex; align-items:center; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
     h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
-    .lead { margin:0 0 20px; color:var(--ink); font-size:14px; line-height:1.7; }
-    .filter-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
-    .filter-label { color:var(--ink); }
+    .lead { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.7; }
+    .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
+    .search-row { margin-top:18px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+    .search-row[hidden] { display:none; }
+    .filter-label { color:var(--muted); }
+    .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
+    .search-input::placeholder { color:var(--quiet); }
+    .search-input:focus { border-bottom-color:var(--accent); }
     button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
-    button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
-    button.active { font-weight:700; }
+    button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    button.active { color:var(--accent); font-weight:700; }
     button.active::before { content:"["; color:var(--quiet); }
     button.active::after { content:"]"; color:var(--quiet); }
     .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
@@ -1026,7 +1159,11 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     .post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
     .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
     .empty { color:var(--quiet); font-size:14px; }
-    footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--ink); font-size:13px; }
+    mark, .pagefind-ui__result-excerpt mark { background:var(--accent-soft); color:var(--ink); }
+    .pagination { margin-top:28px; color:var(--quiet); }
+    .page-status { color:var(--quiet); }
+    .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
+    footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
     .footer-links { display:flex; gap:10px; }
     .footer-links a { color:var(--ink); text-decoration:none; }
     @media (max-width: 680px) {
@@ -1040,162 +1177,248 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 </head>
 <body>
   <div class="shell">
-    <div class="topbar">
+    <div class="topbar" data-pagefind-ignore>
       <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_PATH)}">Consuelo Wiki</a>
       <nav class="nav" aria-label="Primary">
-        <a href="#featured">Featured</a>
-        <a href="#recent">Recent</a>
+        <a href="#recently-updated">Recently Updated</a>
         <span aria-hidden="true">▣</span>
-        <span class="search-mark" aria-hidden="true">⌕</span>
+        <button class="search-button" type="button" data-search-toggle aria-controls="wiki-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
-    <header class="hero">
+    <header class="hero" data-pagefind-ignore>
       <h1>Wiki</h1>
       <p class="lead">Private tailnet notes, guides, and published artifacts from Consuelo.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
         <button class="active" data-filter="all">All</button>
+        <button data-filter="website">Website</button>
         <button data-filter="research">Research</button>
         <button data-filter="spec">Spec</button>
         <button data-filter="plan">Plan</button>
         <button data-filter="uncategorized">Uncategorized</button>
       </div>
+      <label class="search-row" hidden>
+        <span class="filter-label">Search:</span>
+        <input id="wiki-search" class="search-input" type="search" placeholder="type to filter the wiki" autocomplete="off" spellcheck="false" />
+      </label>
     </header>
-    <section class="section" id="featured" data-section="featured" data-empty="${featuredEntries.length === 0}">
-      <h2>Featured</h2>
-      <div class="post-list">${featuredCards}</div>
-    </section>
-    <section class="section" id="recent" data-section="recent" data-empty="${recentEntries.length === 0}">
-      <h2>Recent Posts</h2>
-      <div class="post-list">${recentCards}</div>
+    <section class="section" id="recently-updated" data-section="recently-updated" data-empty="${visibleEntries.length === 0}" data-pagefind-ignore>
+      <h2 data-results-title>Recently Updated</h2>
+      <div class="post-list" data-results-list>${archiveCards}</div>
+      <nav class="pagination" aria-label="Recently updated pagination" hidden data-pagefind-ignore>
+        <button class="page-button" data-page="prev" type="button">Previous</button>
+        <span class="page-status" aria-live="polite"></span>
+        <button class="page-button" data-page="next" type="button">Next</button>
+      </nav>
     </section>
     ${emptyState}
-    <footer>
+    <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date(payload.updatedAt).getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#featured">Featured</a><a href="#recent">Recent</a></div>
+      <div class="footer-links" aria-label="Footer links"><a href="#recently-updated">Recently Updated</a></div>
     </footer>
   </div>
+  <script type="application/json" id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>
   <script>
-    const sections = Array.from(document.querySelectorAll('[data-section]'));
-    const updateSections = () => {
-      sections.forEach((section) => {
-        const visibleItems = Array.from(section.querySelectorAll('.post-item')).filter((item) => !item.hidden);
-        section.hidden = visibleItems.length === 0;
-      });
+    const pageSize = 10;
+    const archiveEntries = JSON.parse(document.getElementById('archive-search-data').textContent || '[]');
+    let activeFilter = 'all';
+    let currentPage = 1;
+    let activeQuery = '';
+    let activeMode = 'archive';
+    let pagefind = null;
+    let pagefindLoadStarted = false;
+    const list = document.querySelector('[data-results-list]');
+    const title = document.querySelector('[data-results-title]');
+    const originalCardsHtml = list.innerHTML;
+    const section = document.querySelector('[data-section="recently-updated"]');
+    const pagination = document.querySelector('.pagination');
+    const pageStatus = document.querySelector('.page-status');
+    const prevButton = document.querySelector('[data-page="prev"]');
+    const nextButton = document.querySelector('[data-page="next"]');
+    const searchToggle = document.querySelector('[data-search-toggle]');
+    const searchRow = document.querySelector('.search-row');
+    const searchInput = document.querySelector('#wiki-search');
+
+    const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    const normalizeUrl = (value) => {
+      let normalized = String(value || '');
+      try { normalized = new URL(normalized).pathname; } catch { /* keep relative path */ }
+      if (normalized.startsWith('/design-wiki')) normalized = normalized.slice('/design-wiki'.length);
+      while (normalized.startsWith('/')) normalized = normalized.slice(1);
+      if (normalized.endsWith('/index.html')) normalized = normalized.slice(0, -'/index.html'.length);
+      if (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+      return normalized;
     };
+    const entryMatchesFilter = (entry) => activeFilter === 'all' || entry.template === activeFilter;
+    const localEntryMatchesQuery = (entry) => {
+      const query = activeQuery.trim().toLowerCase();
+      if (!query) return true;
+      return [entry.title, entry.path, entry.template, entry.category].some((value) => String(value || '').toLowerCase().includes(query));
+    };
+    const entryForPagefindData = (data) => {
+      const normalized = normalizeUrl(data && data.url);
+      return archiveEntries.find((entry) => {
+        const artifactPath = normalizeUrl(entry.artifactPath || '');
+        const pagefindUrl = normalizeUrl(entry.pagefindUrl || '');
+        const pathUrl = normalizeUrl(entry.path || '');
+        return normalized === artifactPath || normalized === pagefindUrl || normalized === pathUrl || normalized.startsWith(artifactPath + '/') || normalized.startsWith(pagefindUrl + '/');
+      }) || null;
+    };
+    const renderCard = (entry, fallback) => {
+      const updatedAt = entry && entry.updatedAt ? entry.updatedAt : '';
+      const date = updatedAt ? new Date(updatedAt).toLocaleDateString() : '';
+      const href = entry && entry.url ? entry.url : (fallback && fallback.url ? fallback.url : '#');
+      const cardTitle = entry && entry.title ? entry.title : (fallback && fallback.meta && fallback.meta.title ? fallback.meta.title : (fallback && fallback.title ? fallback.title : 'Untitled'));
+      const cardPath = entry && entry.path ? entry.path : (fallback && fallback.url ? fallback.url : '');
+      const filter = entry && entry.template ? entry.template : 'uncategorized';
+      const category = entry && entry.category ? entry.category : '';
+      return '<article class="post-item" data-template="' + escapeText(filter) + '" data-category="' + escapeText(category) + '">' +
+        '<h3><a href="' + escapeText(href) + '">' + escapeText(cardTitle) + '</a></h3>' +
+        '<div class="post-meta" aria-label="Updated date">▣ ' + (date ? escapeText(date) : 'Search result') + '</div>' +
+        '<p>' + escapeText(cardPath) + '</p>' +
+      '</article>';
+    };
+    const currentCards = () => Array.from(list.querySelectorAll('.post-item'));
+    const filteredCards = () => currentCards().filter((card) => activeFilter === 'all' || card.dataset.template === activeFilter);
+    const setArchiveMode = () => {
+      if (activeMode !== 'archive') list.innerHTML = originalCardsHtml;
+      activeMode = 'archive';
+      title.textContent = 'Recently Updated';
+    };
+    const renderPage = () => {
+      const visibleCards = filteredCards();
+      const totalPages = Math.max(1, Math.ceil(visibleCards.length / pageSize));
+      currentPage = Math.min(currentPage, totalPages);
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      currentCards().forEach((card) => { card.hidden = true; });
+      visibleCards.slice(start, end).forEach((card) => { card.hidden = false; });
+      section.hidden = visibleCards.length === 0;
+      pagination.hidden = visibleCards.length <= pageSize;
+      pageStatus.textContent = visibleCards.length === 0 ? 'No results' : 'Page ' + currentPage + ' of ' + totalPages;
+      prevButton.disabled = currentPage === 1;
+      nextButton.disabled = currentPage === totalPages;
+    };
+    const renderLocalSearch = () => {
+      const entries = archiveEntries.filter((entry) => entryMatchesFilter(entry) && localEntryMatchesQuery(entry));
+      activeMode = 'search';
+      list.innerHTML = entries.map((entry) => renderCard(entry, null)).join('');
+      title.textContent = activeQuery.trim() ? 'Search Results' : 'Recently Updated';
+      currentPage = 1;
+      renderPage();
+    };
+    const ensurePagefind = () => {
+      if (pagefind) return Promise.resolve(pagefind);
+      if (pagefindLoadStarted) return Promise.resolve(null);
+      pagefindLoadStarted = true;
+      return import('${escapeHtml(DESIGN_ARCHIVE_PATH)}/pagefind/pagefind.js').then((module) => {
+        pagefind = module;
+        return pagefind;
+      }, () => null);
+    };
+    const runSearch = () => {
+      const query = activeQuery.trim();
+      if (!query) {
+        setArchiveMode();
+        renderPage();
+        return;
+      }
+      renderLocalSearch();
+      ensurePagefind().then((searcher) => {
+        if (!searcher || !searcher.search) return null;
+        return searcher.search(query).then((response) => Promise.all(response.results.slice(0, 60).map((result) => result.data())));
+      }).then((data) => {
+        if (!data) return;
+        const seen = new Set();
+        const cards = [];
+        for (const item of data) {
+          const entry = entryForPagefindData(item);
+          if (entry && !entryMatchesFilter(entry)) continue;
+          const key = entry ? entry.id : item.url;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          cards.push(renderCard(entry, item));
+        }
+        if (cards.length > 0) {
+          activeMode = 'search';
+          list.innerHTML = cards.join('');
+          title.textContent = 'Search Results';
+          currentPage = 1;
+          renderPage();
+        }
+      }, () => undefined);
+    };
+    let searchTimer = null;
+    const scheduleSearch = () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => { runSearch(); }, 120);
+    };
+
     document.querySelectorAll('[data-filter]').forEach((button) => {
       button.addEventListener('click', () => {
-        const filter = button.dataset.filter;
+        activeFilter = button.dataset.filter;
+        currentPage = 1;
         document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-        document.querySelectorAll('.post-item').forEach((card) => {
-          card.hidden = filter !== 'all' && card.dataset.template !== filter;
-        });
-        updateSections();
+        if (activeQuery.trim()) scheduleSearch();
+        else { setArchiveMode(); renderPage(); }
       });
     });
-    updateSections();
+
+    searchToggle.addEventListener('click', () => {
+      const shouldOpen = searchRow.hidden;
+      searchRow.hidden = !shouldOpen;
+      searchToggle.setAttribute('aria-expanded', String(shouldOpen));
+      if (shouldOpen) searchInput.focus();
+      else {
+        searchInput.value = '';
+        activeQuery = '';
+        setArchiveMode();
+        renderPage();
+      }
+    });
+    searchInput.addEventListener('input', () => {
+      activeQuery = searchInput.value;
+      scheduleSearch();
+    });
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        searchInput.value = '';
+        activeQuery = '';
+        searchRow.hidden = true;
+        searchToggle.setAttribute('aria-expanded', 'false');
+        setArchiveMode();
+        renderPage();
+      }
+    });
+
+    prevButton.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        renderPage();
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      currentPage += 1;
+      renderPage();
+    });
+
+    renderPage();
   </script>
 </body>
 </html>\n`;
 }
+
 function writeArchiveIndex(payload: DesignArchivePayload): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
 }
 
-function writeArchiveServer(): void {
-  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
-  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, `
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import path from 'node:path';
-
-const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
-const wikiPath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
-const port = Number(process.env.CONSUELO_DESIGN_ARCHIVE_PORT ?? ${DESIGN_ARCHIVE_PORT});
-
-const contentType = (filePath: string) => filePath.endsWith('.json') ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8';
-const archiveDataPath = path.join(root, 'archive.json');
-const archiveIndexPath = path.join(root, 'index.html');
-
-function readArchive() {
-  if (!existsSync(archiveDataPath)) return { entries: [] };
-  return JSON.parse(readFileSync(archiveDataPath, 'utf8')) as { entries?: Array<{ path: string; target: string }> };
-}
-
-function readTarget(entry: { path: string; target: string }, request: Request, url: URL) {
-  if (/^https?:\\/\\//.test(entry.target)) {
-    const targetUrl = new URL(entry.target);
-    targetUrl.pathname = url.pathname;
-    targetUrl.search = url.search;
-    return fetch(targetUrl, { headers: request.headers });
-  }
-
-  const targetPath = path.resolve(entry.target);
-  if (!existsSync(targetPath)) return new Response('target not found', { status: 404 });
-  const stat = statSync(targetPath);
-  const filePath = stat.isDirectory() ? path.join(targetPath, 'index.html') : targetPath;
-  if (!existsSync(filePath)) return new Response('target index not found', { status: 404 });
-  return new Response(readFileSync(filePath), { headers: { 'content-type': contentType(filePath), 'cache-control': 'no-store' } });
-}
-
-Bun.serve({
-  hostname: process.env.CONSUELO_DESIGN_ARCHIVE_HOST ?? '127.0.0.1',
-  port,
-  fetch(request) {
-    const url = new URL(request.url);
-    if (url.pathname === '/__health') return new Response('ok', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
-    if (url.pathname === '/' || url.pathname === wikiPath || url.pathname === wikiPath + '/') {
-      if (!existsSync(archiveIndexPath)) return new Response('not found', { status: 404 });
-      return new Response(readFileSync(archiveIndexPath), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
-    }
-    if (url.pathname === wikiPath + '/archive.json' || url.pathname.endsWith('/archive.json')) {
-      if (!existsSync(archiveDataPath)) return new Response('not found', { status: 404 });
-      return new Response(readFileSync(archiveDataPath), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
-    }
-
-    const payload = readArchive();
-    const entry = payload.entries?.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + '/'));
-    if (!entry) return new Response('not found', { status: 404 });
-    return readTarget(entry, request, url);
-  },
-});
-`);
-}
-
-async function isArchiveServerRunning(host: string): Promise<boolean> {
-  for (const probePath of ['/__health', DESIGN_ARCHIVE_PATH]) {
-    try {
-      const response = await fetch(`http://${host}:${DESIGN_ARCHIVE_PORT}${probePath}`, { cache: 'no-store' });
-      if (probePath === '/__health') return response.ok;
-      return true;
-    } catch {
-      continue;
-    }
-  }
-  return false;
-}
-
-async function ensureArchiveServer(host: string): Promise<string> {
-  try {
-    writeArchiveServer();
-    if (!(await isArchiveServerRunning(host))) {
-      const child = spawn(process.execPath, [DESIGN_ARCHIVE_SERVER_PATH], {
-        cwd: REPO_ROOT,
-        detached: true,
-        env: { ...process.env, CONSUELO_DESIGN_ARCHIVE_HOST: host, CONSUELO_DESIGN_ARCHIVE_PORT: String(DESIGN_ARCHIVE_PORT) },
-        stdio: 'ignore',
-      });
-      child.unref();
-      for (let attempt = 0; attempt < 20; attempt += 1) {
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        if (await isArchiveServerRunning(host)) break;
-      }
-      if (!(await isArchiveServerRunning(host))) throw new Error(`Consuelo Wiki server did not start on ${host}:${DESIGN_ARCHIVE_PORT}`);
-    }
-    return `http://${host}:${DESIGN_ARCHIVE_PORT}`;
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`failed to start Consuelo Wiki server: ${message}`);
+async function runPagefindIndex(): Promise<void> {
+  rmSync(DESIGN_ARCHIVE_PAGEFIND_ROOT, { recursive: true, force: true });
+  const result = await runCommand(['bunx', '--bun', 'pagefind', '--site', DESIGN_ARCHIVE_ROOT, '--output-subdir', 'pagefind'], REPO_ROOT);
+  if (result.exitCode !== 0) {
+    throw new Error(`pagefind indexing failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
   }
 }
 
@@ -1223,8 +1446,9 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     payload.updatedAt = now;
     writeArchivePayload(payload);
     writeArchiveIndex(payload);
+    await runPagefindIndex();
     const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
-    const archiveUrl = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}`;
     const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
     const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, wikiTarget], REPO_ROOT);
     if (archiveResult.exitCode !== 0) {
@@ -1248,14 +1472,14 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
     const normalizedTarget = normalizeTarget(resolvedTarget);
     const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
-    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
-    const url = `https://${hostname}${servePath}`;
+    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${servePath}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
     const archivePlan = {
       path: DESIGN_ARCHIVE_PATH,
-      url: args.dryRun ? `https://${hostname}${DESIGN_ARCHIVE_PATH}` : null,
+      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}` : null,
       directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}` : null,
       target: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`,
     };
@@ -1283,8 +1507,9 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
 
     const materialized = materializeArchiveTarget(normalizedTarget, servePath);
     const archive = await updateDesignArchive(args, servePath, url, materialized.target, materialized.sourceTarget, materialized.artifactPath, tailscaleSelf, tailscaleBin);
+    const publishTarget = archive.target;
 
-    const result = await runCommand(command, REPO_ROOT);
+    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, publishTarget], REPO_ROOT);
     if (result.exitCode !== 0) {
       throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
     }
@@ -1393,6 +1618,7 @@ Commands:
   generate motion-frame       Create a headless motion-frame work order (use --live for UI)
   render hyperframes          Create a headless HyperFrames work order (use --live for UI)
   publish                     Publish a design artifact through private Tailscale Serve
+  refresh                     Regenerate the existing design wiki archive
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
   get-design-system           Print base Consuelo DESIGN.md and consuelo-design AGENTS.md only
@@ -1480,6 +1706,9 @@ async function main(): Promise<void> {
       case 'publish':
         await publishDesign(args);
         break;
+      case 'refresh':
+        await refreshDesignArchive(args);
+        break;
       case 'run':
       case 'ui':
       case 'ui:bg':
@@ -1509,3 +1738,4 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
+

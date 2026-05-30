@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+  "events": [
+    {
+      "id": "08609674-88b0-46c0-90b6-2a07cc4f0feb",
+      "occurred_at": "2026-05-24T06:29:28.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch"
+      }
+    },
+    {
+      "id": "a006be4d-1593-4b54-8855-1c788adc6d0c",
+      "occurred_at": "2026-05-24T06:29:33.713Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch"
+      }
+    },
+    {
+      "id": "b8990fc7-abaa-4caa-97db-e7135c204ed6",
+      "occurred_at": "2026-05-24T06:55:55.977Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch"
+      }
+    },
+    {
+      "id": "39a8bfcb-a9f0-4683-babd-798f3f222e8b",
+      "occurred_at": "2026-05-24T06:56:01.948Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T06:56:01.998Z"
+}

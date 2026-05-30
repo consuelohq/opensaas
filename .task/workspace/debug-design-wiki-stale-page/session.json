@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_34de85e78eb1",
+  "tmuxSession": "opensaas-workspace-debug-design-wiki-stale-page-34de85e7",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/debug-design-wiki-stale-page",
+  "branch": "task/workspace/debug-design-wiki-stale-page",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-debug-design-wiki-stale-page",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-debug-design-wiki-stale-page",
+  "prNumber": 481,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/481",
+  "createdAt": "2026-05-23T04:42:57.756Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-debug-design-wiki-stale-page/.task/workspace/debug-design-wiki-stale-page/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/prefer-graphite-pr-links",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 404,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/404",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-prefer-graphite-pr-links",
+  "taskSession": "tsk_697ae81e55cd",
+  "tmuxSession": "opensaas-workspace-agents-prefer-graphite-pr-links-697ae81e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-prefer-graphite-pr-links/.task/session.json",
+  "createdAt": "2026-05-20T14:18:00.632Z"
+}

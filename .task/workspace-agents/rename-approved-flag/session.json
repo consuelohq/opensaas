@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1c11d1616a1e",
+  "tmuxSession": "opensaas-workspace-agents-rename-approved-flag-1c11d161",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-approved-flag",
+  "branch": "task/workspace-agents/rename-approved-flag",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-flag",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-flag",
+  "prNumber": 573,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/573",
+  "createdAt": "2026-05-24T06:52:24.555Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-approved-flag/.task/workspace-agents/rename-approved-flag/session.json"
+}

@@ -17,6 +17,7 @@ const {
   writeError,
   writeLine,
 } = require('./lib/workspace-state');
+const { buildGraphitePullRequestUrl, getBranchSlug } = require('./lib/pr-links');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 
@@ -196,6 +197,17 @@ async function main() {
   const prs = getPullRequests({ repo: args.repo, taskBranch, stream });
   const next = recommendNext({ currentBranch, taskMeta, changedFiles, prs });
 
+  if (prs.taskPr) {
+    prs.taskPr.githubUrl = prs.taskPr.url;
+    prs.taskPr.graphiteUrl = buildGraphitePullRequestUrl(args.repo, prs.taskPr.number, getBranchSlug(taskBranch));
+    prs.taskPr.url = prs.taskPr.graphiteUrl;
+  }
+  if (prs.streamPr) {
+    prs.streamPr.githubUrl = prs.streamPr.url;
+    prs.streamPr.graphiteUrl = buildGraphitePullRequestUrl(args.repo, prs.streamPr.number, prs.streamPr.title || stream);
+    prs.streamPr.url = prs.streamPr.graphiteUrl;
+  }
+
   const result = {
     ok: true,
     cwd,
@@ -230,10 +242,14 @@ async function main() {
   }
   writeLine(`task: ${taskBranch || 'none'}`);
 
-  if (taskMeta?.data?.prNumber && taskMeta?.data?.prUrl) {
-    writeLine(`task pr: #${taskMeta.data.prNumber} ${taskMeta.data.prUrl}`);
+  if ((taskMeta?.data?.taskPrNumber || taskMeta?.data?.prNumber) && (taskMeta?.data?.taskPrUrl || taskMeta?.data?.prUrl)) {
+    const metadataTaskPrNumber = taskMeta.data.taskPrNumber || taskMeta.data.prNumber;
+    const metadataGraphiteUrl = taskMeta.data.taskGraphitePrUrl || taskMeta.data.graphitePrUrl;
+    const metadataGitHubUrl = taskMeta.data.taskPrUrl || taskMeta.data.githubPrUrl || taskMeta.data.prUrl;
+    writeLine(`task pr: #${metadataTaskPrNumber} ${metadataGraphiteUrl || metadataGitHubUrl}`);
+    if (metadataGitHubUrl && metadataGitHubUrl !== metadataGraphiteUrl) writeLine(`task github: ${metadataGitHubUrl}`);
   }
-  if (prs.taskPr) writeLine(`task pr lookup: #${prs.taskPr.number} ${prs.taskPr.state}${prs.taskPr.mergedAt ? ' merged' : ''}`);
+  if (prs.taskPr) writeLine(`task pr lookup: #${prs.taskPr.number} ${prs.taskPr.state}${prs.taskPr.mergedAt ? ' merged' : ''} ${prs.taskPr.url}`);
   if (prs.streamPr) writeLine(`review pr: #${prs.streamPr.number} ${prs.streamPr.url}`);
   if (!prs.streamPr) writeLine('review pr: none');
   if (prs.error) writeLine(`github lookup: ${prs.error}`);

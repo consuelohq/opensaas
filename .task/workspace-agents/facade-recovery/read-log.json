@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-28T21:23:13.435Z"
+}

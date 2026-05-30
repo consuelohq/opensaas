@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6878c0e8720c",
+  "tmuxSession": "opensaas-workspace-agents-show-batch-child-tool-names-in-trace-watch-6878c0e8",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+  "branch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-batch-child-tool-names-in-trace-watch",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-batch-child-tool-names-in-trace-watch",
+  "prNumber": 570,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/570",
+  "createdAt": "2026-05-24T06:28:56.694Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-batch-child-tool-names-in-trace-watch/.task/workspace-agents/show-batch-child-tool-names-in-trace-watch/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7c8795855df9",
+  "tmuxSession": "opensaas-workspace-agents-fix-git-diff-schema-registry-7c879585",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-git-diff-schema-registry",
+  "branch": "task/workspace-agents/fix-git-diff-schema-registry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-git-diff-schema-registry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-git-diff-schema-registry",
+  "prNumber": 467,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/467",
+  "createdAt": "2026-05-22T09:00:07.599Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-git-diff-schema-registry/.task/workspace-agents/fix-git-diff-schema-registry/session.json"
+}
