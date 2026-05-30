@@ -162,7 +162,7 @@ function writeFakePi(tempRoot: string): string {
 }
 
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
 }
 
 describe('typed facade executor', () => {
@@ -172,6 +172,23 @@ describe('typed facade executor', () => {
       .filter((name, index, names) => names.indexOf(name) === index)
       .filter((name) => !getInputSchema(name));
     expect(missing).toEqual([]);
+  });
+
+
+  it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', 'linear issue', '--limit', '5', '--json'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    const names = payload.matches.map((match: { name: string }) => match.name);
+    expect(names.slice(0, 3)).toContain('linear.issue');
+    expect(names).toContain('linear.search');
+    const linearIssue = payload.matches.find((match: { name: string }) => match.name === 'linear.issue');
+    expect(linearIssue.inputSignature).toContain('identifier');
+    expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -1164,3 +1181,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+

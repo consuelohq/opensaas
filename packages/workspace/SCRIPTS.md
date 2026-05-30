@@ -1057,6 +1057,19 @@ bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agen
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
+
+---
+
+### tools:search — search typed workspace tools by intent
+
+searches the workspace tool manifest and generated docs, then returns ranked tool matches with signatures, example input, capability metadata, and usage guidance. use it when an agent knows what it is trying to do but does not know the exact workspace tool name.
+
+```bash
+bun run tools:search -- "linear issue" --limit 5 --json
+bun run tools:search -- "github pr checks" --read-only --json
+bun run tools:search -- "file search" --category filesystem --json
+```
+
 ---
 
 
