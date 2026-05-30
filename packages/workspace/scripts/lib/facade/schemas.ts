@@ -249,6 +249,7 @@ export const TaskExecInput = z.object({
   ...dryRunField,
   ...branchField,
   command: z.array(z.string().min(1)).min(1),
+  tddPhase: z.enum(['red', 'green', 'post']).optional(),
   timeout: z.number().int().positive().optional(),
 });
 
@@ -986,7 +987,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskExecInput: '{ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',

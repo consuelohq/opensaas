@@ -4,6 +4,7 @@ const path = require('path');
 const STARTER_ACCEPTANCE = 'Define explicit task acceptance criteria before coding';
 const STARTER_PLAN = 'Read the relevant code and update this plan before editing';
 const NONE_YET = '- none yet';
+const OUTPUT_TAIL_LIMIT = 600;
 
 function getTaskWorkpadPathFromMeta(worktreePath, taskMeta) {
   const taskBranch = taskMeta?.taskBranch || taskMeta?.branch || '';
@@ -26,19 +27,20 @@ function writeWorkpad(workpadPath, content) {
   fs.mkdirSync(path.dirname(workpadPath), { recursive: true });
   fs.writeFileSync(workpadPath, content.endsWith('\n') ? content : `${content}\n`, 'utf8');
 }
-
 function findSectionRange(content, heading) {
-  const header = `## ${heading}\n\n`;
-  const start = content.indexOf(header);
-  if (start === -1) return null;
-  const bodyStart = start + header.length;
-  const nextHeading = content.indexOf('\n## ', bodyStart);
+  const escapedHeading = String(heading).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const headerPattern = new RegExp(`^##\\s+${escapedHeading}\\s*\\n\\s*\\n`, 'im');
+  const match = headerPattern.exec(content);
+  if (!match) return null;
+  const bodyStart = match.index + match[0].length;
+  const nextHeadingPattern = /\n##\s+/g;
+  nextHeadingPattern.lastIndex = bodyStart;
+  const nextHeading = nextHeadingPattern.exec(content);
   const divider = content.indexOf('\n---\n', bodyStart);
-  const candidates = [nextHeading, divider].filter((value) => value !== -1);
+  const candidates = [nextHeading ? nextHeading.index : -1, divider].filter((value) => value !== -1);
   const end = candidates.length ? Math.min(...candidates) : content.length;
   return { bodyStart, end };
 }
-
 function replaceSection(content, heading, nextContent) {
   const normalized = nextContent.endsWith('\n') ? nextContent : `${nextContent}\n`;
   const range = findSectionRange(content, heading);
@@ -75,6 +77,14 @@ function normalizeFileEvents(files) {
     .map((file) => ({ ...file, path: normalizeRepoPath(file.path) }));
 }
 
+function normalizeReadFiles(files) {
+  return (files || [])
+    .map((file) => (typeof file === 'string' ? file : file?.path))
+    .filter(Boolean)
+    .map(normalizeRepoPath)
+    .filter((file) => !file.startsWith('.task/'));
+}
+
 function formatFileEntries(entries) {
   return entries.length
     ? entries.map((file) => `- \`${normalizeRepoPath(file.path)}\`${file.deleted ? ' (deleted)' : ''}`).join('\n')
@@ -97,6 +107,17 @@ function syncFilesChanged(worktreePath, taskMeta, files, options = {}) {
   content = replaceSection(content, 'workspace-owned: files changed', body);
   writeWorkpad(current.path, content);
   return { path: current.path, files: entries.map((file) => normalizeRepoPath(file.path)) };
+}
+
+function syncFilesRead(worktreePath, taskMeta, files, options = {}) {
+  const current = readWorkpad(worktreePath, taskMeta);
+  const incoming = normalizeReadFiles(files);
+  const existing = options.replace ? [] : parseFileSection(extractSection(current.content || '', 'workspace-owned: files read')).map((file) => file.path);
+  const entries = [...new Set([...existing, ...incoming])].sort();
+  const body = entries.length ? entries.map((file) => `- \`${file}\``).join('\n') : NONE_YET;
+  const next = replaceSection(current.content || '', 'workspace-owned: files read', body);
+  writeWorkpad(current.path, next);
+  return { path: current.path, files: entries };
 }
 
 function formatTime(date = new Date()) {
@@ -137,7 +158,6 @@ function appendActivity(worktreePath, taskMeta, event) {
   return { path: current.path, line };
 }
 
-
 function syncValidationEvidence(worktreePath, taskMeta, event) {
   const current = readWorkpad(worktreePath, taskMeta);
   const command = event?.command ? `\`${event.command}\`` : '`validation`';
@@ -154,21 +174,66 @@ function syncValidationEvidence(worktreePath, taskMeta, event) {
   return { path: current.path, line };
 }
 
+function outputTail(output) {
+  const value = String(output || '').trim();
+  if (!value) return '';
+  return value.length > OUTPUT_TAIL_LIMIT ? value.slice(-OUTPUT_TAIL_LIMIT) : value;
+}
 
-function syncValidationEvidence(worktreePath, taskMeta, event) {
-  const current = readWorkpad(worktreePath, taskMeta);
-  const command = event?.command ? `\`${event.command}\`` : '`validation`';
+function formatTddLine(event) {
+  const command = event?.command ? `\`${event.command}\`` : '`test command`';
   const status = event?.ok === false ? 'failed' : 'passed';
-  const detail = event?.detail ? ` — ${event.detail}` : '';
-  const line = `- ${formatTime()} ${command}: ${status}${detail}`;
-  const existing = extractSection(current.content || '', 'workspace-owned: validation evidence')
-    || extractSection(current.content || '', 'validation evidence')
-    || NONE_YET;
+  const exitCode = Number.isInteger(event?.exitCode) ? ` exit ${event.exitCode}` : '';
+  const trace = event?.traceId ? ` trace: \`${event.traceId}\`` : '';
+  const tail = outputTail(event?.output || event?.outputTail || event?.stderr || event?.stdout);
+  return [
+    `- ${formatTime()} ${command}: ${status}${exitCode}${trace}`,
+    tail ? `  - output: ${tail.replace(/\s+/g, ' ').trim()}` : null,
+  ].filter(Boolean).join('\n');
+}
+
+function syncTddEvidence(worktreePath, taskMeta, event) {
+  const phase = event?.phase === 'green' ? 'green' : event?.phase === 'post' ? 'post' : 'red';
+  const heading = phase === 'green'
+    ? 'workspace-owned: TDD green evidence'
+    : phase === 'post'
+      ? 'workspace-owned: TDD post evidence'
+      : 'workspace-owned: TDD red evidence';
+  const current = readWorkpad(worktreePath, taskMeta);
+  const existing = extractSection(current.content || '', heading) || NONE_YET;
   const lines = existing.split('\n').filter((item) => item.trim() && item.trim() !== NONE_YET);
-  lines.push(line);
-  const next = replaceSection(current.content || '', 'workspace-owned: validation evidence', lines.slice(-30).join('\n') || NONE_YET);
+  lines.push(formatTddLine(event));
+  const next = replaceSection(current.content || '', heading, lines.slice(-10).join('\n') || NONE_YET);
   writeWorkpad(current.path, next);
-  return { path: current.path, line };
+  return { path: current.path, phase, heading };
+}
+
+function listField(items, formatter, empty = 'none') {
+  const values = (items || []).map(formatter).filter(Boolean);
+  return values.length ? values.map((item) => `\`${item}\``).join(', ') : empty;
+}
+
+function syncTestSelectionEvidence(worktreePath, taskMeta, selection) {
+  const current = readWorkpad(worktreePath, taskMeta);
+  const changedFiles = listField(selection?.changedFiles, (file) => file);
+  const matchedRules = listField(selection?.matchedRules, (rule) => rule.id || rule.name || rule);
+  const selectedSuites = listField(selection?.selectedSuites, (suite) => suite.name || suite.command?.join(' ') || suite);
+  const runResults = (selection?.runResults || []).map((result) => {
+    const name = result.name || result.command?.join(' ') || 'suite';
+    return `\`${name}\` ${result.status || (result.passed ? 'passed' : 'failed')}`;
+  });
+  const failedSuites = listField(selection?.failedSuites, (suite) => suite.name || suite.command?.join(' ') || suite);
+  const lines = [
+    `- changed files: ${changedFiles}`,
+    `- matched rules: ${matchedRules}`,
+    `- selected suites: ${selectedSuites}`,
+    runResults.length ? `- run results: ${runResults.join(', ')}` : '- run results: none',
+    `- failed suites: ${failedSuites}`,
+    selection?.zeroSuiteReason ? `- zero-suite reason: ${selection.zeroSuiteReason}` : null,
+  ].filter(Boolean);
+  const next = replaceSection(current.content || '', 'workspace-owned: test selection', lines.join('\n'));
+  writeWorkpad(current.path, next);
+  return { path: current.path };
 }
 
 function stripMarkdownNoise(value) {
@@ -194,19 +259,10 @@ function buildWorkpadMessage(workpadPath, missing) {
   return [
     'Workpad update needed before publishing.',
     '',
-    'The code may be fine, but the scoped task workpad still looks like the starter scaffold.',
-    'Update the workpad so Ko and the next agent can understand what happened.',
-    '',
-    `Open: ${workpadPath}`,
-    '',
-    'Add a short note with:',
-    '- what changed',
-    '- why it changed',
-    '- validation run',
-    '- any issues or follow-ups',
-    '',
+    `Workpad: ${workpadPath}`,
     `Missing: ${missing.join(', ')}`,
     '',
+    'Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups.',
     'Then rerun the publish command.',
     'Use --ack-workpad-incomplete only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.',
   ].join('\n');
@@ -220,7 +276,7 @@ function checkWorkpadReady(worktreePath, taskMeta) {
     return { ok: false, path: current.path, missing, message: buildWorkpadMessage(current.path, missing) };
   }
   const hasMeaningfulAgentSection = [
-    'acceptance criteria', 'plan', 'current status', 'key decisions', 'notes for ko', 'issues and recovery', 'errors i ran into',
+    'acceptance criteria', 'plan', 'current status', 'key decisions', 'notes for ko', 'issues and recovery', 'errors i ran into', 'test-first contract',
   ].some((heading) => sectionHasMeaningfulContent(content, heading));
   const ready = hasMeaningfulAgentSection || hasAgentCheckpoint(content);
   const missing = ready ? [] : ['one meaningful agent-authored workpad update'];
@@ -238,4 +294,16 @@ function assertWorkpadReady(worktreePath, taskMeta, options = {}) {
   return readiness;
 }
 
-module.exports = { appendActivity, assertWorkpadReady, checkWorkpadReady, extractSection, getTaskWorkpadPathFromMeta, replaceSection, syncFilesChanged, syncValidationEvidence };
+module.exports = {
+  appendActivity,
+  assertWorkpadReady,
+  checkWorkpadReady,
+  extractSection,
+  getTaskWorkpadPathFromMeta,
+  replaceSection,
+  syncFilesChanged,
+  syncFilesRead,
+  syncTddEvidence,
+  syncTestSelectionEvidence,
+  syncValidationEvidence,
+};
