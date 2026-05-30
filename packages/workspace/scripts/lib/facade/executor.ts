@@ -24,7 +24,7 @@ import type {
 } from './types';
 
 const require = createRequire(import.meta.url);
-const { syncValidationEvidence } = require('../task-workpad');
+const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -36,7 +36,6 @@ type TaskSessionMetadata = {
   worktree?: string;
   worktreePath?: string;
 };
-
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
@@ -520,16 +519,38 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  if (!['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'].includes(toolName)) return;
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'];
+  const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
+  if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
   const taskBranch = typeof input.branch === 'string' ? input.branch : '';
   if (!taskWorktree || !taskBranch.startsWith('task/')) return;
   try {
-    syncValidationEvidence(taskWorktree, { taskBranch }, {
-      command: toolName,
-      ok: result.ok,
-      detail: typeof result.code === 'string' ? result.code : undefined,
-    });
+    if (tddPhase) {
+      syncTddEvidence(taskWorktree, { taskBranch }, {
+        phase: tddPhase,
+        command: Array.isArray(input.command) ? input.command.join(' ') : toolName,
+        ok: result.ok,
+        exitCode: result.exitCode,
+        traceId: result.traceId,
+        output: typeof result.stderr === 'string' && result.stderr ? result.stderr : JSON.stringify(result.data || {}),
+      });
+    }
+
+    if (validationTools.includes(toolName)) {
+      syncValidationEvidence(taskWorktree, { taskBranch }, {
+        command: toolName,
+        ok: result.ok,
+        detail: typeof result.code === 'string' ? result.code : undefined,
+      });
+    }
+
+    if (toolName === 'verify' && isRecord(result.data) && isRecord(result.data.testSelection)) {
+      const testSelection = result.data.testSelection;
+      if (isRecord(testSelection.data)) {
+        syncTestSelectionEvidence(taskWorktree, { taskBranch }, testSelection.data);
+      }
+    }
   } catch {
     // Workpad sync is best-effort evidence; tool execution result remains authoritative.
   }
@@ -539,7 +560,6 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
   if (toolName === "task.start" && !input.area && typeof input.stream === "string") {
     return { ...input, area: input.stream.replace(/^stream\//, "") };
   }
-
   if (toolName === "fs.http" && !input.method) {
     return { ...input, method: "get" };
   }
