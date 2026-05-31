@@ -31,7 +31,10 @@
     "generate:digital-eguide": "bun ./scripts/consuelo-design.ts generate digital-eguide",
     "generate:email": "bun ./scripts/consuelo-design.ts generate email",
     "generate:motion-frame": "bun ./scripts/consuelo-design.ts generate motion-frame",
-    "render:hyperframes": "bun ./scripts/consuelo-design.ts render hyperframes"
+    "render:hyperframes": "bun ./scripts/consuelo-design.ts render hyperframes",
+    "wiki:render": "bun ./scripts/render-consuelo-reader.ts",
+    "wiki:validate": "bun ./scripts/validate-consuelo-reader.ts",
+    "test:reader": "bun test ./scripts/render-consuelo-reader.test.ts"
   },
   "license": "AGPL-3.0"
 }
