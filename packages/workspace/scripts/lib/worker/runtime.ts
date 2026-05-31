@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,6 +8,8 @@ import path from 'node:path';
 import { createToolResult } from '../facade/errors';
 import { logToolExecution } from '../facade/logger';
 import type { ExecuteToolOptions, RunnerResult, ToolInput, ToolManifestEntry, ToolResult } from '../facade/types';
+
+const requireFromModule = createRequire(import.meta.url);
 
 export type WorkerProvider = 'cdx' | 'pi' | 'opc' | 'mini';
 export type NormalizedWorkerProvider = 'cdx' | 'pi' | 'opc';
@@ -437,7 +440,7 @@ async function executeCdxWorker(
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
-    audit: { ...input.audit, rawShellUsed: true },
+    audit: input.audit,
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
     message: run.timedOut ? 'cdx provider timed out' : run.exitCode === 0 ? 'cdx provider completed' : 'cdx provider failed',
@@ -545,7 +548,7 @@ async function executeOpcWorker(
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
-    audit: { ...input.audit, rawShellUsed: true },
+    audit: input.audit,
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
     message: run.timedOut ? 'opc provider timed out' : run.exitCode === 0 ? 'opc provider completed' : 'opc provider failed',
@@ -625,7 +628,7 @@ async function executePiWorker(
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
-    audit: { ...input.audit, rawShellUsed: true },
+    audit: input.audit,
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
     message: run.timedOut ? 'pi provider timed out' : run.exitCode === 0 ? 'pi provider completed' : 'pi provider failed',
@@ -1011,7 +1014,7 @@ function persistWorkerTraceEvents(input: {
   try {
     const dbPath = traceDbPath(input.cwd);
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-    const { Database } = eval('require')('bun:sqlite') as { Database: new (path: string, options?: { create?: boolean }) => any };
+    const { Database } = requireFromModule('bun:sqlite') as { Database: TraceDatabaseConstructor };
     const db = new Database(dbPath, { create: true });
     try {
       ensureTraceSchema(db);
@@ -1069,9 +1072,9 @@ function persistWorkerTraceEvents(input: {
           null,
           JSON.stringify(resultJson),
           event.ok ? null : stringValue(event.result) || event.code,
-          event.inputTokens || null,
-          event.outputTokens || null,
-          event.totalTokens || null,
+          event.inputTokens ?? null,
+          event.outputTokens ?? null,
+          event.totalTokens ?? null,
         );
       }
     } finally {
@@ -1182,10 +1185,15 @@ function parseCodexTraceEvents(stdout: string): WorkerTraceEvent[] {
   return events;
 }
 
+function isWorkspaceMcpTraceEvent(event: WorkerTraceEvent): boolean {
+  return event.eventType === 'mcp_tool_call'
+    && (Boolean(event.facadeTool) || event.tool === 'cdx.get_steering' || event.tool.startsWith('cdx.workspace.'));
+}
+
 function summarizeWorkerTraceEvents(events: WorkerTraceEvent[]): WorkerTraceSummary {
   return {
     eventCount: events.length,
-    workspaceMcpCallCount: events.filter((event) => event.eventType === 'mcp_tool_call' && event.tool.startsWith('cdx.')).length,
+    workspaceMcpCallCount: events.filter(isWorkspaceMcpTraceEvent).length,
     workspaceCallCount: events.filter((event) => Boolean(event.facadeTool)).length,
     getSteeringCount: events.filter((event) => event.tool === 'cdx.get_steering').length,
     nativeCommandExecutionCount: events.filter((event) => event.eventType === 'command_execution').length,

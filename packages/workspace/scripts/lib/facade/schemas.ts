@@ -115,6 +115,9 @@ export const ToolsSearchInput = z.object({
   readOnly: z.boolean().optional(),
   mutating: z.boolean().optional(),
   noDocs: z.boolean().optional(),
+}).refine((input) => !(input.readOnly && input.mutating), {
+  message: 'readOnly and mutating cannot both be true',
+  path: ['mutating'],
 });
 
 export const FsReadInput = z.object({

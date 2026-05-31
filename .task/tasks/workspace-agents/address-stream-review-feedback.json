@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/address-stream-review-feedback",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 670,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/670",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/670",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/670/address-stream-review-feedback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/670",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/670/address-stream-review-feedback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback",
+  "taskSession": "tsk_70933dcfc7ac",
+  "tmuxSession": "opensaas-workspace-agents-address-stream-review-feedback-70933dcf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback/.task/workspace-agents/address-stream-review-feedback/session.json",
+  "createdAt": "2026-05-31T18:01:20.257Z"
+}
