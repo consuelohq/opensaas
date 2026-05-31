@@ -1057,6 +1057,19 @@ bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agen
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
+
+---
+
+### tools:search — search typed workspace tools by intent
+
+searches the workspace tool manifest and generated docs, then returns ranked tool matches with signatures, example input, capability metadata, and usage guidance. use it when an agent knows what it is trying to do but does not know the exact workspace tool name.
+
+```bash
+bun run tools:search -- "linear issue" --limit 5 --json
+bun run tools:search -- "github pr checks" --read-only --json
+bun run tools:search -- "file search" --category filesystem --json
+```
+
 ---
 
 
@@ -1524,8 +1537,10 @@ Default behavior:
 
 ## Workpad readiness gate
 
-Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed and activity sections from existing task metadata and file operations. Agents still need to write at least one meaningful task note beyond the starter scaffold before publishing.
+Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed, files read, activity, validation, TDD evidence, and test-selection sections from existing task metadata, file operations, and validation tool output. Agents still need to write the agent-owned task intent and `Test-first contract` sections before publishing.
 
 `task.push` and `task.pr` block scaffold-only workpads with a `Workpad update needed before publishing` message. Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups, then rerun the command.
+
+Use `tddPhase: "red" | "green" | "post"` on task-scoped command validation when a focused test run should be copied into the corresponding workspace-owned TDD evidence section.
 
 Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.

@@ -162,7 +162,7 @@ function writeFakePi(tempRoot: string): string {
 }
 
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
 }
 
 describe('typed facade executor', () => {
@@ -172,6 +172,36 @@ describe('typed facade executor', () => {
       .filter((name, index, names) => names.indexOf(name) === index)
       .filter((name) => !getInputSchema(name));
     expect(missing).toEqual([]);
+  });
+
+
+  it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const runSearch = (query: string, limit = 5) => {
+      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(0);
+      return JSON.parse(result.stdout);
+    };
+
+    const linearPayload = runSearch('linear issue');
+    const linearNames = linearPayload.matches.map((match: { name: string }) => match.name);
+    expect(linearNames.slice(0, 3)).toContain('linear.issue');
+    expect(linearNames).toContain('linear.search');
+    const linearIssue = linearPayload.matches.find((match: { name: string }) => match.name === 'linear.issue');
+    expect(linearIssue.inputSignature).toContain('identifier');
+    expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
+
+    expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
+    expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
+    expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
+    expect(runSearch('codex worker', 4).matches[0].name).toBe('worker.call');
+
+    const missingPayload = runSearch('no-such-made-up-tool', 4);
+    expect(missingPayload.totalMatches).toBe(0);
+    expect(missingPayload.matches).toEqual([]);
+    expect(missingPayload.guidance).toContain('No matching tools found');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -1164,3 +1194,6 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+
+

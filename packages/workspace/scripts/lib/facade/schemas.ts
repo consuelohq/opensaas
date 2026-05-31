@@ -107,6 +107,16 @@ export const CodeRunInput = z.object({
   maxResultChars: z.number().int().positive().optional(),
 });
 
+export const ToolsSearchInput = z.object({
+  ...requestFields,
+  query: z.string().min(1),
+  limit: z.number().int().positive().max(30).optional(),
+  category: optionalString,
+  readOnly: z.boolean().optional(),
+  mutating: z.boolean().optional(),
+  noDocs: z.boolean().optional(),
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -249,6 +259,7 @@ export const TaskExecInput = z.object({
   ...dryRunField,
   ...branchField,
   command: z.array(z.string().min(1)).min(1),
+  tddPhase: z.enum(['red', 'green', 'post']).optional(),
   timeout: z.number().int().positive().optional(),
 });
 
@@ -870,6 +881,7 @@ export const schemaRegistry = {
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
   CodeRunInput,
+  ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -972,6 +984,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
@@ -986,7 +999,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskExecInput: '{ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
@@ -1066,4 +1079,6 @@ export const outputTypeSignatures: Record<string, string> = {
   TaskPinOutput: '{ branch: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
   WorkerCallOutput: '{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
+  ToolsSearchOutput: '{ query: string; limit: number; filters: Record<string, unknown>; totalMatches: number; matches: Array<{ name: string; score: number; description?: string; inputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; why: string[] }>; guidance: string }',
 };
+

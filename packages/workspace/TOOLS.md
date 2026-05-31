@@ -4553,7 +4553,7 @@ example error envelope:
 
 run a command inside a task worktree
 
-- signature: `workspace.task.call({ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.call({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.call`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -4783,7 +4783,7 @@ example error envelope:
 
 legacy alias for task.call; run a command inside a task worktree
 
-- signature: `workspace.task.exec({ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.exec({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.exec`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5259,6 +5259,65 @@ example call:
 await workspace.call({
   "tool": "taskMeta.smoke",
   "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## tooling
+
+### tools.search
+
+search workspace tools by intent and return ranked usage guidance
+
+- signature: `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; filters: Record<string, unknown>; totalMatches: number; matches: Array<{ name: string; score: number; description?: string; inputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; why: string[] }>; guidance: string }>>`
+- wraps: `workspace tools.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "tools.search",
+  "input": {
+    "query": "linear issue",
+    "limit": 5
+  }
 });
 ```
 
