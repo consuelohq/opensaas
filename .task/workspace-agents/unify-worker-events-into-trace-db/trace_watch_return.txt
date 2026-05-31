@@ -1,3 +1,0 @@
-  const detail = candidates.find((candidate) => candidate && !isJsonEnvelope(candidate));
-  return (detail || '').slice(0, 120);
-}
