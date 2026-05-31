@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9da4290aabb4",
+  "tmuxSession": "opensaas-design-fix-wiki-render-protocol-root-command-9da4290a",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/fix-wiki-render-protocol-root-command",
+  "branch": "task/design/fix-wiki-render-protocol-root-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-fix-wiki-render-protocol-root-command",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-fix-wiki-render-protocol-root-command",
+  "prNumber": 664,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/664",
+  "createdAt": "2026-05-31T11:35:20.964Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-fix-wiki-render-protocol-root-command/.task/design/fix-wiki-render-protocol-root-command/session.json"
+}
