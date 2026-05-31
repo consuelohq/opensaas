@@ -111,4 +111,11 @@ describe('tools.search v2 intent resolution', () => {
     expect(payload.matches).toEqual([]);
     expect(payload.recommended).toBeUndefined();
   });
+
+  it('omits TOOLS.md from catalog sources when docs are skipped', () => {
+    const payload = runSearch('linear issue', ['--limit', '3', '--no-docs']);
+    expect(payload.catalog?.source).toEqual(['tool-manifest.json']);
+    expect(payload.recommended).toBe('linear.issue');
+    expect(payload.detectedIntent).toBe('read or search Linear issues');
+  });
 });

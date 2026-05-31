@@ -525,7 +525,8 @@ function readEmbeddingCache(configId: string): EmbeddingCache {
       return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
     }
     return parsed;
-  } catch {
+  } catch (error: unknown) {
+    void error;
     return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
   }
 }
@@ -800,12 +801,17 @@ async function run(options: SearchOptions): Promise<Record<string, unknown>> {
   if (scored.length > 0 && scored[0].score < 35) scored = [];
 
   const recommended = scored[0]?.card.entry.name;
+  const winningIntentId = scored[0]?.matchedIntentIds[0];
+  const detectedIntent = winningIntentId
+    ? INTENT_PACKS.find((intent) => intent.id === winningIntentId)?.label
+    : intents[0]?.label;
   const alternatives = buildAlternatives(intents, scored, recommended);
   const ambiguous = alternatives.length > 0 || (scored.length > 1 && scored[0].score - scored[1].score < 18);
   const confidence = chooseConfidence(scored, ambiguous);
   const displayLimit = Math.max(1, Math.min(options.limit, 30));
   const matches = scored.slice(0, displayLimit).map((item) => toMatch(item, options.includeDocs));
   const catalogHash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, cards: allCards.map((card) => ({ name: card.entry.name, hash: card.hash })) }));
+  const catalogSource = ['tool-manifest.json', ...(options.includeDocs ? ['TOOLS.md'] : [])];
 
   return {
     query: options.query,
@@ -820,13 +826,13 @@ async function run(options: SearchOptions): Promise<Record<string, unknown>> {
     totalMatches: scored.length,
     confidence,
     ambiguous,
-    ...(intents[0] ? { detectedIntent: intents[0].label } : {}),
+    ...(detectedIntent ? { detectedIntent } : {}),
     ...(recommended ? { recommended } : {}),
     matches,
     ...(alternatives.length > 0 ? { alternatives } : {}),
     guidance: buildGuidance(scored, intents, ambiguous),
     catalog: {
-      source: ['tool-manifest.json', 'TOOLS.md'],
+      source: catalogSource,
       catalogHash,
       toolCount: allCards.length,
       searchedCount: cards.length,
