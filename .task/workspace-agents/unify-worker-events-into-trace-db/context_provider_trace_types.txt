@@ -1,0 +1,33 @@
+type WorkerContext = {
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+  startedAt: number;
+  traceId: string;
+  requestId?: string;
+  options: ExecuteToolOptions;
+};
+
+type WorkerProviderConfig = {
+  bin: string;
+  defaultMode: WorkerMode;
+  defaultPolicy: WorkerPolicy;
+  workspaceOnly: WorkerWorkspaceOnly;
+  model?: string;
+  provider?: string;
+  extensionPaths?: string[];
+  mcpConfig?: string;
+  tools?: string[];
+};
+
+type TraceStatement = {
+  run(...args: unknown[]): unknown;
+};
+
+type TraceDatabase = {
+  exec(sql: string): void;
+  query(sql: string): { all(...args: unknown[]): Array<{ name: string }> };
+  prepare(sql: string): TraceStatement;
+  close(): void;
+};
+
+type TraceDatabaseConstructor = new (path: string, options?: { create?: boolean }) => TraceDatabase;
