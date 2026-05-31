@@ -1,7 +1,12 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
+
+const require = createRequire(import.meta.url);
 
 type ToolCapability = {
   readOnly?: boolean;
@@ -56,11 +61,39 @@ type ToolDoc = {
   source: string;
 };
 
+type ToolCard = {
+  entry: ToolManifestEntry;
+  doc?: ToolDoc;
+  text: string;
+  hash: string;
+  tokens: string[];
+};
+
+type ScoreParts = {
+  exact: number;
+  name: number;
+  lexical: number;
+  bm25: number;
+  intent: number;
+  capability: number;
+  embedding: number;
+};
+
+type ScoredTool = {
+  card: ToolCard;
+  score: number;
+  why: string[];
+  meaningfulMatches: number;
+  matchedIntentIds: string[];
+  scoreParts: ScoreParts;
+};
+
 type ToolSearchMatch = {
   name: string;
   methodPath?: string[];
   category?: string;
   score: number;
+  scoreParts: ScoreParts;
   description?: string;
   capabilities: ToolCapability;
   sessionRequired: boolean;
@@ -79,17 +112,44 @@ type ToolSearchMatch = {
   why: string[];
 };
 
+type IntentPack = {
+  id: string;
+  label: string;
+  terms: string[];
+  requireAny?: string[];
+  boost: Record<string, number>;
+  alternatives?: Array<{ intent: string; tools: string[] }>;
+  safeDefault?: string;
+  mutatingGuidance?: string;
+};
+
+type EmbeddingCache = {
+  version: number;
+  embeddingConfigId: string;
+  cardVersion: string;
+  entries: Record<string, number[]>;
+};
+
 const workspaceRoot = path.resolve(import.meta.dir, '..');
 const manifestPath = path.join(workspaceRoot, 'tooling', 'tool-manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
+const TOOL_CARD_VERSION = 'tools-search-card-v2';
 
-const STOP_WORDS = new Set(['a', 'an', 'the', 'for', 'to', 'of', 'and', 'or', 'no', 'such', 'made', 'up']);
+const STOP_WORDS = new Set(['a', 'an', 'the', 'for', 'to', 'of', 'and', 'or', 'no', 'such', 'made', 'up', 'with', 'by', 'in', 'on']);
 const GENERIC_ONLY_TOKENS = new Set(['tool', 'tools', 'search', 'find', 'query', 'lookup', 'file', 'files', 'fs', 'read', 'get', 'view']);
-const READ_INTENT_TOKENS = new Set(['search', 'find', 'lookup', 'read', 'get', 'view', 'check', 'checks', 'status', 'list', 'logs', 'log', 'trace', 'inspect', 'screenshot']);
+const READ_INTENT_TOKENS = new Set(['search', 'find', 'lookup', 'read', 'get', 'view', 'check', 'checks', 'status', 'list', 'links', 'logs', 'log', 'trace', 'inspect', 'screenshot', 'show']);
 
 const QUERY_ALIASES: Record<string, string[]> = {
+  abandon: ['cleanup', 'clean', 'remove', 'delete', 'stale', 'worktree', 'branch'],
+  close: ['cleanup', 'finish', 'pr'],
+  cleanup: ['clean', 'remove', 'delete', 'stale', 'worktree', 'branch'],
+  clean: ['cleanup', 'remove', 'delete'],
+  delete: ['cleanup', 'remove', 'trash'],
+  remove: ['cleanup', 'delete', 'trash'],
+  stale: ['cleanup', 'worktree', 'branch'],
+  worktree: ['task', 'branch', 'cleanup'],
   pr: ['pull', 'request', 'github'],
-  prs: ['pull', 'request', 'github'],
+  prs: ['pull', 'request', 'github', 'links'],
   pull: ['pr', 'github'],
   github: ['gh', 'pr', 'branch', 'repo'],
   gh: ['github', 'pr'],
@@ -97,7 +157,11 @@ const QUERY_ALIASES: Record<string, string[]> = {
   jira: ['linear', 'issue'],
   file: ['fs', 'filesystem'],
   files: ['fs', 'filesystem'],
-  grep: ['fs', 'search', 'ripgrep'],
+  grep: ['fs', 'search', 'ripgrep', 'pattern'],
+  ripgrep: ['grep', 'fs', 'search'],
+  patch: ['fs', 'write', 'edit'],
+  write: ['fs', 'file', 'mutating'],
+  trash: ['fs', 'delete', 'remove'],
   search: ['find', 'query', 'lookup'],
   read: ['get', 'fetch', 'view'],
   trace: ['context', 'logs', 'sentry'],
@@ -111,6 +175,116 @@ const QUERY_ALIASES: Record<string, string[]> = {
   tool: ['manifest', 'schema', 'capability'],
   tools: ['manifest', 'schema', 'capability'],
 };
+
+const INTENT_PACKS: IntentPack[] = [
+  {
+    id: 'task-cleanup',
+    label: 'clean up or abandon a task branch/worktree',
+    terms: ['cleanup', 'clean', 'abandon', 'delete', 'remove', 'stale', 'worktree', 'branch'],
+    requireAny: ['task', 'branch', 'worktree', 'cleanup', 'abandon', 'stale'],
+    boost: { 'task.cleanup': 105, 'fs.trash': -35, 'task.pr': 12, 'task.prs': 20, 'task.finish': -60 },
+    alternatives: [
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
+      { intent: 'merge a pull request', tools: ['task.merge'] },
+      { intent: 'finish a merged task branch', tools: ['task.finish'] },
+    ],
+    safeDefault: 'Use task.prs when only inspecting PR state; use task.cleanup only when the user intends branch/worktree cleanup.',
+    mutatingGuidance: 'task.cleanup mutates branches/worktrees unless preview/dry-run flags are used.',
+  },
+  {
+    id: 'task-pr-links',
+    label: 'inspect task and review PR links',
+    terms: ['show', 'list', 'links', 'prs', 'pr'],
+    requireAny: ['show', 'list', 'links', 'prs'],
+    boost: { 'task.prs': 95, 'task.pr': 8, 'task.merge': -14, 'task.cleanup': -24 },
+    alternatives: [
+      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
+      { intent: 'merge a pull request', tools: ['task.merge'] },
+    ],
+    safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
+  },
+  {
+    id: 'task-pr-create',
+    label: 'create or refresh a stream review PR',
+    terms: ['create', 'refresh', 'review', 'stream', 'pr', 'pull', 'request'],
+    requireAny: ['create', 'refresh', 'review', 'stream'],
+    boost: { 'task.pr': 90, 'task.prs': 12, 'task.merge': -8, 'task.cleanup': -24 },
+    alternatives: [
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+      { intent: 'merge a pull request', tools: ['task.merge'] },
+    ],
+  },
+  {
+    id: 'task-merge',
+    label: 'merge a pull request',
+    terms: ['merge', 'pull', 'request', 'pr', 'squash', 'wait'],
+    requireAny: ['merge', 'squash'],
+    boost: { 'task.merge': 95, 'task.pr': 22, 'task.prs': 8, 'task.cleanup': -20 },
+    alternatives: [
+      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+    ],
+  },
+  {
+    id: 'task-finish',
+    label: 'finish a completed task branch',
+    terms: ['finish', 'done', 'complete', 'close', 'task'],
+    requireAny: ['finish', 'done', 'complete'],
+    boost: { 'task.finish': 95, 'task.cleanup': 22, 'task.prs': 8 },
+  },
+  {
+    id: 'fs-search',
+    label: 'search repo files',
+    terms: ['grep', 'ripgrep', 'search', 'find', 'pattern', 'contents', 'files'],
+    requireAny: ['grep', 'ripgrep', 'pattern', 'contents'],
+    boost: { 'fs.search': 95, 'mac.search': 12, 'context.search': -18, 'task.cleanup': -45 },
+    safeDefault: 'fs.search is the read-only default for searching repository files.',
+  },
+  {
+    id: 'fs-read',
+    label: 'read file contents',
+    terms: ['read', 'open', 'show', 'lines', 'contents', 'file'],
+    requireAny: ['read', 'open', 'lines'],
+    boost: { 'fs.read': 95, 'mac.read': 12, 'fs.search': 10 },
+  },
+  {
+    id: 'fs-list',
+    label: 'list files or directories',
+    terms: ['list', 'tree', 'folder', 'directory', 'dirs', 'files'],
+    requireAny: ['list', 'tree', 'folder', 'directory'],
+    boost: { 'fs.list': 95, 'mac.list': 10, 'fs.search': 8 },
+  },
+  {
+    id: 'fs-write-patch',
+    label: 'write or patch task worktree files',
+    terms: ['write', 'patch', 'edit', 'replace', 'file', 'contents'],
+    requireAny: ['write', 'patch', 'edit', 'replace'],
+    boost: { 'fs.patch': 82, 'fs.write': 78, 'fs.trash': 18, 'fs.read': 8 },
+    mutatingGuidance: 'fs.write, fs.patch, and fs.trash mutate task worktree files; prefer fs.read/fs.search for investigation.',
+  },
+  {
+    id: 'browser-screenshot',
+    label: 'capture or inspect rendered browser state',
+    terms: ['browser', 'screenshot', 'page', 'rendered', 'snapshot', 'accessibility'],
+    requireAny: ['browser', 'screenshot', 'rendered', 'snapshot'],
+    boost: { 'browser.screenshot': 86, 'browser.test': 72, 'browser.snap': 60, 'browser.open': 32 },
+  },
+  {
+    id: 'linear-issue',
+    label: 'read or search Linear issues',
+    terms: ['linear', 'issue', 'ticket', 'jira', 'dev'],
+    requireAny: ['linear', 'issue', 'ticket', 'jira'],
+    boost: { 'linear.issue': 86, 'linear.search': 72, 'linear.createIssue': -16 },
+  },
+  {
+    id: 'railway-logs',
+    label: 'inspect Railway logs or deploy status',
+    terms: ['railway', 'logs', 'deploy', 'errors', 'runtime'],
+    requireAny: ['railway', 'logs', 'deploy'],
+    boost: { 'railway.logs': 86, 'railway.redeploy': -20 },
+  },
+];
 
 function parseArgs(argv: string[]): SearchOptions {
   let query = '';
@@ -189,16 +363,7 @@ function hasReadIntent(query: string): boolean {
 }
 
 function allowsGenericOnlySearch(query: string): boolean {
-  return new Set([
-    'file search',
-    'files search',
-    'fs search',
-    'tool search',
-    'tools search',
-    'search tools',
-    'tool',
-    'tools',
-  ]).has(normalize(query));
+  return new Set(['file search', 'files search', 'fs search', 'tool search', 'tools search', 'search tools', 'tool', 'tools']).has(normalize(query));
 }
 
 function expandTokens(query: string): string[] {
@@ -216,6 +381,10 @@ function meaningfulExpandedTokens(query: string): Set<string> {
     for (const alias of QUERY_ALIASES[token] || []) meaningful.add(alias);
   }
   return meaningful;
+}
+
+function hashText(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 function fuzzyTokenMatch(needle: string, haystack: string): boolean {
@@ -256,10 +425,167 @@ function readToolDocs(): Map<string, ToolDoc> {
   return docs;
 }
 
-function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<string, ToolDoc>): { score: number; why: string[]; meaningfulMatches: number } {
+function toolCardText(entry: ToolManifestEntry, doc?: ToolDoc): string {
+  const args = entry.command?.arguments?.map((arg) => `${arg.source} ${arg.flag || ''} ${arg.kind || ''}`).join(' ') || '';
+  return [
+    `name: ${entry.name}`,
+    `category: ${entry.category || ''}`,
+    `description: ${entry.description || ''}`,
+    `capabilities: readOnly=${entry.capabilities?.readOnly === true} mutating=${entry.capabilities?.mutating === true} deterministic=${entry.capabilities?.deterministic === true} safeToRetry=${entry.capabilities?.safeToRetry === true}`,
+    `input schema: ${entry.inputSchema || ''}`,
+    `output schema: ${entry.outputSchema || ''}`,
+    `method path: ${(entry.methodPath || []).join('.')}`,
+    `script: ${entry.command?.script || ''} ${entry.command?.subcommand || ''}`,
+    `arguments: ${args}`,
+    `example: ${JSON.stringify(entry.exampleInput || {})}`,
+    `docs: ${doc?.snippet || ''}`,
+  ].join('\n');
+}
+
+function buildCards(manifest: ToolManifestEntry[], docs: Map<string, ToolDoc>): ToolCard[] {
+  return manifest.map((entry) => {
+    const doc = docs.get(entry.name);
+    const text = toolCardText(entry, doc);
+    const hash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, entry, doc, text }));
+    return { entry, doc, text, hash, tokens: tokensFor(text) };
+  });
+}
+
+function termSet(query: string): Set<string> {
+  return new Set(baseSearchTokens(query));
+}
+function intentMatches(pack: IntentPack, queryTerms: Set<string>): boolean {
+  const hasTerm = pack.terms.some((term) => queryTerms.has(term));
+  if (!hasTerm) return false;
+  if (!pack.requireAny?.length) return true;
+  return pack.requireAny.some((term) => queryTerms.has(term));
+}
+
+function matchedIntentPacks(query: string): IntentPack[] {
+  const terms = termSet(query);
+  return INTENT_PACKS.filter((pack) => intentMatches(pack, terms));
+}
+
+function computeIdf(cards: ToolCard[]): Map<string, number> {
+  const df = new Map<string, number>();
+  for (const card of cards) {
+    for (const token of new Set(card.tokens)) df.set(token, (df.get(token) || 0) + 1);
+  }
+  const idf = new Map<string, number>();
+  for (const [token, count] of df) {
+    idf.set(token, Math.log(1 + (cards.length - count + 0.5) / (count + 0.5)));
+  }
+  return idf;
+}
+
+function bm25Score(card: ToolCard, queryTokens: string[], idf: Map<string, number>, averageLength: number): number {
+  const k1 = 1.2;
+  const b = 0.75;
+  const counts = new Map<string, number>();
+  for (const token of card.tokens) counts.set(token, (counts.get(token) || 0) + 1);
+  let score = 0;
+  for (const token of new Set(queryTokens)) {
+    const freq = counts.get(token) || 0;
+    if (freq === 0) continue;
+    const numerator = freq * (k1 + 1);
+    const denominator = freq + k1 * (1 - b + b * (card.tokens.length / Math.max(1, averageLength)));
+    score += (idf.get(token) || 0) * (numerator / denominator);
+  }
+  return score;
+}
+
+function cosineSimilarity(a: number[] | Float32Array, b: number[] | Float32Array): number {
+  const length = Math.min(a.length, b.length);
+  let dot = 0;
+  for (let index = 0; index < length; index += 1) dot += a[index] * b[index];
+  return Math.max(0, dot);
+}
+
+function getEmbeddingRuntime(): { embedText: (text: string, options?: Record<string, unknown>) => Promise<Float32Array>; embedTexts: (texts: string[], options?: Record<string, unknown>) => Promise<Float32Array[]>; configId: string } {
+  const { embedText, embedTexts } = require('./lib/index/embedder');
+  const { getEmbeddingConfig, getEmbeddingConfigId } = require('./lib/index/embedding-config');
+  const config = getEmbeddingConfig();
+  return { embedText, embedTexts, configId: getEmbeddingConfigId(config) };
+}
+
+function embeddingsEnabled(): boolean {
+  return process.env.WORKSPACE_TOOL_SEARCH_EMBEDDINGS !== '0' && process.env.WORKSPACE_TOOL_SEARCH_EMBEDDINGS !== 'false';
+}
+
+function cacheFileFor(configId: string): string {
+  return path.join(os.homedir(), '.cache', 'workspace-tool-search', configId, `${TOOL_CARD_VERSION}.json`);
+}
+
+function readEmbeddingCache(configId: string): EmbeddingCache {
+  const file = cacheFileFor(configId);
+  if (!fs.existsSync(file)) return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as EmbeddingCache;
+    if (parsed.embeddingConfigId !== configId || parsed.cardVersion !== TOOL_CARD_VERSION || parsed.version !== 1) {
+      return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
+    }
+    return parsed;
+  } catch {
+    return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
+  }
+}
+function writeEmbeddingCache(configId: string, cache: EmbeddingCache): void {
+  const file = cacheFileFor(configId);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(cache)}\n`);
+}
+
+async function embeddingScores(query: string, cards: ToolCard[]): Promise<{ scores: Map<string, number>; diagnostics: { embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; error?: string } }> {
+  if (!embeddingsEnabled()) {
+    return { scores: new Map(), diagnostics: { embeddingConfigId: 'disabled', cardsEmbedded: 0, cardsReused: 0 } };
+  }
+
+  try {
+    const runtime = getEmbeddingRuntime();
+    const cache = readEmbeddingCache(runtime.configId);
+    const missing = cards.filter((card) => !cache.entries[card.hash]);
+    let cardsEmbedded = 0;
+
+    if (missing.length > 0) {
+      const batchSize = Math.max(1, Math.min(Number.parseInt(process.env.WORKSPACE_TOOL_SEARCH_BATCH_SIZE || '32', 10) || 32, 64));
+      for (let index = 0; index < missing.length; index += batchSize) {
+        const batch = missing.slice(index, index + batchSize);
+        const vectors = await runtime.embedTexts(batch.map((card) => card.text), { kind: 'document' });
+        vectors.forEach((vector, vectorIndex) => {
+          cache.entries[batch[vectorIndex].hash] = Array.from(vector);
+          cardsEmbedded += 1;
+        });
+      }
+      writeEmbeddingCache(runtime.configId, cache);
+    }
+
+    const queryVector = await runtime.embedText(query, { kind: 'query' });
+    const scores = new Map<string, number>();
+    for (const card of cards) {
+      const vector = cache.entries[card.hash];
+      if (!vector) continue;
+      scores.set(card.hash, cosineSimilarity(queryVector, vector));
+    }
+
+    return {
+      scores,
+      diagnostics: {
+        embeddingConfigId: runtime.configId,
+        cardsEmbedded,
+        cardsReused: cards.length - cardsEmbedded,
+      },
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { scores: new Map(), diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message } };
+  }
+}
+
+function scoreCard(card: ToolCard, options: SearchOptions, docs: Map<string, ToolDoc>, intents: IntentPack[], bm25: number, embeddingScore: number): ScoredTool {
   const rawQuery = options.query.trim().toLowerCase();
   const queryTokens = expandTokens(options.query);
   const meaningfulTokens = meaningfulExpandedTokens(options.query);
+  const entry = card.entry;
   const name = entry.name || '';
   const nameLower = name.toLowerCase();
   const nameTokens = tokensFor(name);
@@ -268,28 +594,25 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
   const schema = normalize(`${entry.inputSchema || ''} ${entry.outputSchema || ''}`);
   const commandText = normalize(JSON.stringify(entry.command || {}));
   const exampleText = normalize(JSON.stringify(entry.exampleInput || {}));
-  const doc = docs.get(entry.name);
-  const docsText = normalize(doc?.snippet || '');
-  const haystack = [nameTokens.join(' '), category, description, schema, commandText, exampleText, docsText].join(' ');
+  const docsText = normalize(docs.get(entry.name)?.snippet || '');
   const why: string[] = [];
-  let score = 0;
   let meaningfulMatches = 0;
+  const scoreParts: ScoreParts = { exact: 0, name: 0, lexical: 0, bm25: 0, intent: 0, capability: 0, embedding: 0 };
 
   if (nameLower === rawQuery) {
-    score += 120;
+    scoreParts.exact += 300;
     why.push('exact tool name match');
   }
   if (rawQuery.length >= 3 && nameLower.includes(rawQuery)) {
-    score += 55;
+    scoreParts.name += 100;
     why.push('tool name contains query');
   }
   if (category && rawQuery === category) {
-    score += 24;
+    scoreParts.lexical += 24;
     why.push('category match');
   }
-
   if (nameTokens.join(' ') === normalize(options.query)) {
-    score += 45;
+    scoreParts.name += 70;
     why.push('tool name matches query phrase');
   }
 
@@ -298,61 +621,81 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
     const isMeaningfulToken = meaningfulTokens.has(token);
     let tokenMatched = false;
     if (nameTokens.includes(token)) {
-      score += 18;
+      scoreParts.name += 22;
       why.push(`name token: ${token}`);
       tokenMatched = true;
     } else if (nameTokens.some((nameToken) => nameToken.startsWith(token))) {
-      score += 14;
+      scoreParts.name += 16;
       why.push(`name prefix: ${token}`);
       tokenMatched = true;
     } else if (nameTokens.some((nameToken) => fuzzyTokenMatch(token, nameToken))) {
-      score += 6;
+      scoreParts.name += 6;
       why.push(`fuzzy name token: ${token}`);
       tokenMatched = true;
     }
 
-    if (category.includes(token)) {
-      score += 8;
-      why.push(`category token: ${token}`);
-      tokenMatched = true;
-    }
-    if (description.includes(token)) { score += 4; tokenMatched = true; }
-    if (schema.includes(token)) { score += 3; tokenMatched = true; }
-    if (commandText.includes(token)) { score += 2; tokenMatched = true; }
-    if (exampleText.includes(token)) { score += 2; tokenMatched = true; }
-    if (docsText.includes(token)) { score += 1; tokenMatched = true; }
+    if (category.includes(token)) { scoreParts.lexical += 8; why.push(`category token: ${token}`); tokenMatched = true; }
+    if (description.includes(token)) { scoreParts.lexical += 5; tokenMatched = true; }
+    if (schema.includes(token)) { scoreParts.lexical += 4; tokenMatched = true; }
+    if (commandText.includes(token)) { scoreParts.lexical += 3; tokenMatched = true; }
+    if (exampleText.includes(token)) { scoreParts.lexical += 2; tokenMatched = true; }
+    if (docsText.includes(token)) { scoreParts.lexical += 2; tokenMatched = true; }
     if (isMeaningfulToken && tokenMatched) meaningfulMatches += 1;
   }
 
-  const capabilities = entry.capabilities || {};
-  if (options.readOnly === true && capabilities.readOnly === true) score += 8;
-  if (options.mutating === true && capabilities.mutating === true) score += 8;
-  if (hasReadIntent(options.query)) {
-    if (capabilities.readOnly === true) score += 10;
-    if (capabilities.mutating === true) score -= 8;
+  scoreParts.bm25 = Math.min(60, bm25 * 18);
+  if (scoreParts.bm25 > 0) why.push('bm25 tool-card match');
+
+  const matchedIntentIds: string[] = [];
+  for (const intent of intents) {
+    const boost = intent.boost[entry.name] || 0;
+    if (boost !== 0) {
+      scoreParts.intent += boost;
+      matchedIntentIds.push(intent.id);
+      why.push(`intent: ${intent.label}`);
+    }
   }
 
-  return { score, why: [...new Set(why)].slice(0, 8), meaningfulMatches }; 
+  const capabilities = entry.capabilities || {};
+  if (options.readOnly === true && capabilities.readOnly === true) scoreParts.capability += 12;
+  if (options.mutating === true && capabilities.mutating === true) scoreParts.capability += 12;
+  if (hasReadIntent(options.query)) {
+    if (capabilities.readOnly === true) scoreParts.capability += 14;
+    if (capabilities.mutating === true) scoreParts.capability -= 10;
+  }
+
+  scoreParts.embedding = embeddingScore > 0 ? Math.min(45, embeddingScore * 45) : 0;
+  if (scoreParts.embedding > 0) why.push('embedding tool-card match');
+
+  const score = Object.values(scoreParts).reduce((sum, value) => sum + Number(value), 0);
+  return { card, score, why: [...new Set(why)].slice(0, 10), meaningfulMatches, matchedIntentIds, scoreParts };
 }
 
 function workspaceCallSnippet(entry: ToolManifestEntry): string {
   const example = entry.exampleInput || {};
-  const fields = [
-    `tool: ${JSON.stringify(entry.name)}`,
-    `input: ${JSON.stringify(example)}`,
-  ];
+  const fields = [`tool: ${JSON.stringify(entry.name)}`, `input: ${JSON.stringify(example)}`];
   if (entry.sessionRequired === true) fields.push('taskSession: "<taskSession>"');
   return `await workspace.call({ ${fields.join(', ')} })`;
 }
 
-function toMatch(entry: ToolManifestEntry, score: number, why: string[], docs: Map<string, ToolDoc>, includeDocs: boolean): ToolSearchMatch {
+function toMatch(item: ScoredTool, includeDocs: boolean): ToolSearchMatch {
+  const entry = item.card.entry;
   const inputSchema = entry.inputSchema;
   const outputSchema = entry.outputSchema;
   return {
     name: entry.name,
     ...(entry.methodPath ? { methodPath: entry.methodPath } : {}),
     ...(entry.category ? { category: entry.category } : {}),
-    score,
+    score: Math.round(item.score),
+    scoreParts: {
+      exact: Math.round(item.scoreParts.exact),
+      name: Math.round(item.scoreParts.name),
+      lexical: Math.round(item.scoreParts.lexical),
+      bm25: Math.round(item.scoreParts.bm25),
+      intent: Math.round(item.scoreParts.intent),
+      capability: Math.round(item.scoreParts.capability),
+      embedding: Math.round(item.scoreParts.embedding),
+    },
     ...(entry.description ? { description: entry.description } : {}),
     capabilities: entry.capabilities || {},
     sessionRequired: entry.sessionRequired === true,
@@ -367,53 +710,140 @@ function toMatch(entry: ToolManifestEntry, score: number, why: string[], docs: M
       ...(entry.command?.subcommand ? { subcommand: entry.command.subcommand } : {}),
       arguments: entry.command?.arguments || [],
     },
-    ...(includeDocs && docs.get(entry.name) ? { docs: docs.get(entry.name) } : {}),
-    why,
+    ...(includeDocs && item.card.doc ? { docs: item.card.doc } : {}),
+    why: item.why,
   };
 }
 
-function run(options: SearchOptions): Record<string, unknown> {
+function filterByOptions(cards: ToolCard[], options: SearchOptions): ToolCard[] {
+  return cards
+    .filter((card) => !options.category || card.entry.category === options.category)
+    .filter((card) => options.readOnly !== true || card.entry.capabilities?.readOnly === true)
+    .filter((card) => options.mutating !== true || card.entry.capabilities?.mutating === true);
+}
+
+function chooseConfidence(matches: ScoredTool[], ambiguous: boolean): 'high' | 'medium' | 'low' {
+  if (matches.length === 0) return 'low';
+  const top = matches[0].score;
+  const gap = top - (matches[1]?.score || 0);
+  if (!ambiguous && top >= 130 && gap >= 35) return 'high';
+  if (top >= 55) return 'medium';
+  return 'low';
+}
+
+function buildAlternatives(intents: IntentPack[], scored: ScoredTool[], recommended?: string): Array<{ intent: string; tools: string[] }> {
+  const available = new Set(scored.map((item) => item.card.entry.name));
+  const groups: Array<{ intent: string; tools: string[] }> = [];
+  const seen = new Set<string>();
+  for (const intent of intents) {
+    for (const group of intent.alternatives || []) {
+      const tools = group.tools.filter((tool) => tool !== recommended && available.has(tool));
+      if (tools.length === 0) continue;
+      const key = `${group.intent}:${tools.join(',')}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      groups.push({ intent: group.intent, tools });
+    }
+  }
+  return groups.slice(0, 8);
+}
+
+function buildGuidance(matches: ScoredTool[], intents: IntentPack[], ambiguous: boolean): Record<string, unknown> | string {
+  if (matches.length === 0) {
+    return 'No matching tools found. Try broader intent keywords like "github pr", "linear issue", "file search", or "trace logs".';
+  }
+  const top = matches[0];
+  const mutating = top.card.entry.capabilities?.mutating === true;
+  const safeDefaults = intents.map((intent) => intent.safeDefault).filter(Boolean);
+  const mutatingGuidance = intents.map((intent) => intent.mutatingGuidance).filter(Boolean);
+  return {
+    summary: 'Use the recommended tool when its intent matches the user request. Inspect alternatives when ambiguous.',
+    recommendedUse: mutating ? 'Mutating recommendation; use dry-run/preview or get explicit user intent when state change is unclear.' : 'Read-only recommendation is safe for investigation.',
+    ambiguous,
+    safeDefaults,
+    mutatingGuidance,
+  };
+}
+
+async function run(options: SearchOptions): Promise<Record<string, unknown>> {
   const manifest = readManifest();
   const docs = options.includeDocs ? readToolDocs() : new Map<string, ToolDoc>();
-  const matches = manifest
-    .filter((entry) => !options.category || entry.category === options.category)
-    .filter((entry) => options.readOnly !== true || entry.capabilities?.readOnly === true)
-    .filter((entry) => options.mutating !== true || entry.capabilities?.mutating === true)
-    .map((entry) => ({ entry, ...scoreTool(entry, options, docs) }))
+  const allCards = buildCards(manifest, docs);
+  const cards = filterByOptions(allCards, options);
+  const intents = matchedIntentPacks(options.query);
+  const queryTokens = expandTokens(options.query);
+  const meaningfulTokens = meaningfulExpandedTokens(options.query);
+  const idf = computeIdf(cards);
+  const averageLength = cards.reduce((sum, card) => sum + card.tokens.length, 0) / Math.max(1, cards.length);
+  let embeddings: Awaited<ReturnType<typeof embeddingScores>>;
+  try {
+    embeddings = await embeddingScores(options.query, cards);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    embeddings = {
+      scores: new Map(),
+      diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message },
+    };
+  }
+
+  let scored = cards
+    .map((card) => scoreCard(card, options, docs, intents, bm25Score(card, queryTokens, idf, averageLength), embeddings.scores.get(card.hash) || 0))
     .filter((item) => item.score >= 20)
     .filter((item) => {
-      const meaningfulTokens = meaningfulExpandedTokens(options.query);
-      if (meaningfulTokens.size > 0) return item.meaningfulMatches > 0;
+      if (meaningfulTokens.size > 0) {
+        return item.meaningfulMatches > 0 || item.matchedIntentIds.length > 0 || item.scoreParts.embedding >= 12 || item.scoreParts.exact > 0;
+      }
       return allowsGenericOnlySearch(options.query);
     })
-    .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))
-    .slice(0, options.limit)
-    .map((item) => toMatch(item.entry, item.score, item.why, docs, options.includeDocs));
+    .sort((a, b) => b.score - a.score || a.card.entry.name.localeCompare(b.card.entry.name));
+
+  if (scored.length > 0 && scored[0].score < 35) scored = [];
+
+  const recommended = scored[0]?.card.entry.name;
+  const alternatives = buildAlternatives(intents, scored, recommended);
+  const ambiguous = alternatives.length > 0 || (scored.length > 1 && scored[0].score - scored[1].score < 18);
+  const confidence = chooseConfidence(scored, ambiguous);
+  const displayLimit = Math.max(1, Math.min(options.limit, 30));
+  const matches = scored.slice(0, displayLimit).map((item) => toMatch(item, options.includeDocs));
+  const catalogHash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, cards: allCards.map((card) => ({ name: card.entry.name, hash: card.hash })) }));
 
   return {
     query: options.query,
     limit: options.limit,
+    searchedCount: cards.length,
+    returnedCount: matches.length,
     filters: {
       ...(options.category ? { category: options.category } : {}),
       ...(options.readOnly ? { readOnly: true } : {}),
       ...(options.mutating ? { mutating: true } : {}),
     },
-    totalMatches: matches.length,
+    totalMatches: scored.length,
+    confidence,
+    ambiguous,
+    ...(intents[0] ? { detectedIntent: intents[0].label } : {}),
+    ...(recommended ? { recommended } : {}),
     matches,
-    guidance: matches.length > 0
-      ? 'Use the highest-ranked read-only match for investigation. Use mutating tools only when the user asked for a state change.'
-      : 'No matching tools found. Try broader intent keywords like "github pr", "linear issue", "file search", or "trace logs".',
+    ...(alternatives.length > 0 ? { alternatives } : {}),
+    guidance: buildGuidance(scored, intents, ambiguous),
+    catalog: {
+      source: ['tool-manifest.json', 'TOOLS.md'],
+      catalogHash,
+      toolCount: allCards.length,
+      searchedCount: cards.length,
+      cardVersion: TOOL_CARD_VERSION,
+      embeddingConfigId: embeddings.diagnostics.embeddingConfigId,
+      cardsEmbedded: embeddings.diagnostics.cardsEmbedded,
+      cardsReused: embeddings.diagnostics.cardsReused,
+      ...(embeddings.diagnostics.error ? { embeddingError: embeddings.diagnostics.error } : {}),
+    },
   };
 }
 
 try {
-  const result = run(parseArgs(Bun.argv.slice(2)));
+  const result = await run(parseArgs(Bun.argv.slice(2)));
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 } catch (error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   process.stderr.write(`${message}\n`);
   process.exit(1);
 }
-
-
-
