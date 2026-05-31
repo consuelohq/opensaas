@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tighten-tools-search-ranking",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 656,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/656",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/656",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/656/tighten-tools-search-ranking",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/656",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/656/tighten-tools-search-ranking",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-tools-search-ranking",
+  "taskSession": "tsk_70a486d55807",
+  "tmuxSession": "opensaas-workspace-agents-tighten-tools-search-ranking-70a486d5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-tools-search-ranking/.task/workspace-agents/tighten-tools-search-ranking/session.json",
+  "createdAt": "2026-05-31T03:38:21.137Z"
+}

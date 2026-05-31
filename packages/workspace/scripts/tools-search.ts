@@ -83,6 +83,10 @@ const workspaceRoot = path.resolve(import.meta.dir, '..');
 const manifestPath = path.join(workspaceRoot, 'tooling', 'tool-manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
 
+const STOP_WORDS = new Set(['a', 'an', 'the', 'for', 'to', 'of', 'and', 'or', 'no', 'such', 'made', 'up']);
+const GENERIC_ONLY_TOKENS = new Set(['tool', 'tools', 'search', 'find', 'query', 'lookup', 'file', 'files', 'fs', 'read', 'get', 'view']);
+const READ_INTENT_TOKENS = new Set(['search', 'find', 'lookup', 'read', 'get', 'view', 'check', 'checks', 'status', 'list', 'logs', 'log', 'trace', 'inspect', 'screenshot']);
+
 const QUERY_ALIASES: Record<string, string[]> = {
   pr: ['pull', 'request', 'github'],
   prs: ['pull', 'request', 'github'],
@@ -91,8 +95,8 @@ const QUERY_ALIASES: Record<string, string[]> = {
   gh: ['github', 'pr'],
   ticket: ['linear', 'issue'],
   jira: ['linear', 'issue'],
-  file: ['fs', 'filesystem', 'read', 'search', 'write'],
-  files: ['fs', 'filesystem', 'read', 'search', 'write'],
+  file: ['fs', 'filesystem'],
+  files: ['fs', 'filesystem'],
   grep: ['fs', 'search', 'ripgrep'],
   search: ['find', 'query', 'lookup'],
   read: ['get', 'fetch', 'view'],
@@ -172,8 +176,33 @@ function tokensFor(value: string): string[] {
   return normalize(value).split(' ').filter((token) => token.length > 0);
 }
 
+function baseSearchTokens(query: string): string[] {
+  return tokensFor(query).filter((token) => !STOP_WORDS.has(token));
+}
+
+function meaningfulSearchTokens(query: string): string[] {
+  return baseSearchTokens(query).filter((token) => !GENERIC_ONLY_TOKENS.has(token));
+}
+
+function hasReadIntent(query: string): boolean {
+  return baseSearchTokens(query).some((token) => READ_INTENT_TOKENS.has(token));
+}
+
+function allowsGenericOnlySearch(query: string): boolean {
+  return new Set([
+    'file search',
+    'files search',
+    'fs search',
+    'tool search',
+    'tools search',
+    'search tools',
+    'tool',
+    'tools',
+  ]).has(normalize(query));
+}
+
 function expandTokens(query: string): string[] {
-  const base = tokensFor(query);
+  const base = baseSearchTokens(query);
   const expanded = new Set(base);
   for (const token of base) {
     for (const alias of QUERY_ALIASES[token] || []) expanded.add(alias);
@@ -219,9 +248,10 @@ function readToolDocs(): Map<string, ToolDoc> {
   return docs;
 }
 
-function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<string, ToolDoc>): { score: number; why: string[] } {
+function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<string, ToolDoc>): { score: number; why: string[]; meaningfulMatches: number } {
   const rawQuery = options.query.trim().toLowerCase();
   const queryTokens = expandTokens(options.query);
+  const meaningfulTokens = meaningfulSearchTokens(options.query);
   const name = entry.name || '';
   const nameLower = name.toLowerCase();
   const nameTokens = tokensFor(name);
@@ -235,6 +265,7 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
   const haystack = [nameTokens.join(' '), category, description, schema, commandText, exampleText, docsText].join(' ');
   const why: string[] = [];
   let score = 0;
+  let meaningfulMatches = 0;
 
   if (nameLower === rawQuery) {
     score += 120;
@@ -256,33 +287,44 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
 
   for (const token of queryTokens) {
     if (!token) continue;
+    const isMeaningfulToken = meaningfulTokens.includes(token);
+    let tokenMatched = false;
     if (nameTokens.includes(token)) {
       score += 18;
       why.push(`name token: ${token}`);
+      tokenMatched = true;
     } else if (nameTokens.some((nameToken) => nameToken.startsWith(token))) {
       score += 14;
       why.push(`name prefix: ${token}`);
+      tokenMatched = true;
     } else if (nameTokens.some((nameToken) => fuzzyTokenMatch(token, nameToken))) {
       score += 6;
       why.push(`fuzzy name token: ${token}`);
+      tokenMatched = true;
     }
 
     if (category.includes(token)) {
       score += 8;
       why.push(`category token: ${token}`);
+      tokenMatched = true;
     }
-    if (description.includes(token)) score += 4;
-    if (schema.includes(token)) score += 3;
-    if (commandText.includes(token)) score += 2;
-    if (exampleText.includes(token)) score += 2;
-    if (docsText.includes(token)) score += 1;
+    if (description.includes(token)) { score += 4; tokenMatched = true; }
+    if (schema.includes(token)) { score += 3; tokenMatched = true; }
+    if (commandText.includes(token)) { score += 2; tokenMatched = true; }
+    if (exampleText.includes(token)) { score += 2; tokenMatched = true; }
+    if (docsText.includes(token)) { score += 1; tokenMatched = true; }
+    if (isMeaningfulToken && tokenMatched) meaningfulMatches += 1;
   }
 
   const capabilities = entry.capabilities || {};
   if (options.readOnly === true && capabilities.readOnly === true) score += 8;
   if (options.mutating === true && capabilities.mutating === true) score += 8;
+  if (hasReadIntent(options.query)) {
+    if (capabilities.readOnly === true) score += 10;
+    if (capabilities.mutating === true) score -= 8;
+  }
 
-  return { score, why: [...new Set(why)].slice(0, 8) };
+  return { score, why: [...new Set(why)].slice(0, 8), meaningfulMatches }; 
 }
 
 function workspaceCallSnippet(entry: ToolManifestEntry): string {
@@ -325,7 +367,12 @@ function run(options: SearchOptions): Record<string, unknown> {
     .filter((entry) => options.readOnly !== true || entry.capabilities?.readOnly === true)
     .filter((entry) => options.mutating !== true || entry.capabilities?.mutating === true)
     .map((entry) => ({ entry, ...scoreTool(entry, options, docs) }))
-    .filter((item) => item.score > 0)
+    .filter((item) => item.score >= 20)
+    .filter((item) => {
+      const meaningfulTokens = meaningfulSearchTokens(options.query);
+      if (meaningfulTokens.length > 0) return item.meaningfulMatches > 0;
+      return allowsGenericOnlySearch(options.query);
+    })
     .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))
     .slice(0, options.limit)
     .map((item) => toMatch(item.entry, item.score, item.why, docs, options.includeDocs));
@@ -354,4 +401,6 @@ try {
   process.stderr.write(`${message}\n`);
   process.exit(1);
 }
+
+
 
