@@ -8,6 +8,8 @@ Use for research lessons, research reports, source-grounded explainers, paper wa
 
 Do not hand-author a new page shell for wiki artifacts.
 
+Run the commands from the repository root. The root package forwards to `packages/consuelo-design`, so agents should not `cd` or infer a package-local invocation.
+
 1. Read this template as the content/thinking contract.
 2. Produce structured content for this template.
 3. Render through the canonical Consuelo reader shell with one shared command:

@@ -284,7 +284,10 @@
     "test-selection:generate": "node packages/workspace/scripts/test-selection.js generate",
     "test-selection:check": "node packages/workspace/scripts/test-selection.js check",
     "test-selection:nightly": "node packages/workspace/scripts/test-selection.js nightly",
-    "test-selection": "node packages/workspace/scripts/test-selection.js"
+    "test-selection": "node packages/workspace/scripts/test-selection.js",
+    "wiki:render": "bun run --cwd packages/consuelo-design wiki:render --",
+    "wiki:validate": "bun run --cwd packages/consuelo-design wiki:validate --",
+    "test:reader": "bun run --cwd packages/consuelo-design test:reader"
   },
   "workspaces": {
     "packages": [
