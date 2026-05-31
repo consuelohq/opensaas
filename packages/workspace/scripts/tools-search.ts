@@ -210,6 +210,14 @@ function expandTokens(query: string): string[] {
   return [...expanded];
 }
 
+function meaningfulExpandedTokens(query: string): Set<string> {
+  const meaningful = new Set(meaningfulSearchTokens(query));
+  for (const token of meaningfulSearchTokens(query)) {
+    for (const alias of QUERY_ALIASES[token] || []) meaningful.add(alias);
+  }
+  return meaningful;
+}
+
 function fuzzyTokenMatch(needle: string, haystack: string): boolean {
   if (haystack.includes(needle)) return true;
   if (needle.length < 4) return false;
@@ -251,7 +259,7 @@ function readToolDocs(): Map<string, ToolDoc> {
 function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<string, ToolDoc>): { score: number; why: string[]; meaningfulMatches: number } {
   const rawQuery = options.query.trim().toLowerCase();
   const queryTokens = expandTokens(options.query);
-  const meaningfulTokens = meaningfulSearchTokens(options.query);
+  const meaningfulTokens = meaningfulExpandedTokens(options.query);
   const name = entry.name || '';
   const nameLower = name.toLowerCase();
   const nameTokens = tokensFor(name);
@@ -287,7 +295,7 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
 
   for (const token of queryTokens) {
     if (!token) continue;
-    const isMeaningfulToken = meaningfulTokens.includes(token);
+    const isMeaningfulToken = meaningfulTokens.has(token);
     let tokenMatched = false;
     if (nameTokens.includes(token)) {
       score += 18;
@@ -329,7 +337,12 @@ function scoreTool(entry: ToolManifestEntry, options: SearchOptions, docs: Map<s
 
 function workspaceCallSnippet(entry: ToolManifestEntry): string {
   const example = entry.exampleInput || {};
-  return `await workspace.call({ tool: ${JSON.stringify(entry.name)}, input: ${JSON.stringify(example)} })`;
+  const fields = [
+    `tool: ${JSON.stringify(entry.name)}`,
+    `input: ${JSON.stringify(example)}`,
+  ];
+  if (entry.sessionRequired === true) fields.push('taskSession: "<taskSession>"');
+  return `await workspace.call({ ${fields.join(', ')} })`;
 }
 
 function toMatch(entry: ToolManifestEntry, score: number, why: string[], docs: Map<string, ToolDoc>, includeDocs: boolean): ToolSearchMatch {
@@ -369,8 +382,8 @@ function run(options: SearchOptions): Record<string, unknown> {
     .map((entry) => ({ entry, ...scoreTool(entry, options, docs) }))
     .filter((item) => item.score >= 20)
     .filter((item) => {
-      const meaningfulTokens = meaningfulSearchTokens(options.query);
-      if (meaningfulTokens.length > 0) return item.meaningfulMatches > 0;
+      const meaningfulTokens = meaningfulExpandedTokens(options.query);
+      if (meaningfulTokens.size > 0) return item.meaningfulMatches > 0;
       return allowsGenericOnlySearch(options.query);
     })
     .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))

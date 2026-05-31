@@ -193,15 +193,31 @@ describe('typed facade executor', () => {
     expect(linearIssue.inputSignature).toContain('identifier');
     expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
 
+    const ticketPayload = runSearch('ticket', 4);
+    const ticketNames = ticketPayload.matches.map((match: { name: string }) => match.name);
+    expect(ticketNames).toContain('linear.issue');
+
     expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
     expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
     expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
-    expect(runSearch('codex worker', 4).matches[0].name).toBe('worker.call');
+    const codexWorker = runSearch('codex worker', 4).matches[0];
+    expect(codexWorker.name).toBe('worker.call');
+
+    const fileSearch = runSearch('file search', 4).matches[0];
+    expect(fileSearch.name).toBe('fs.search');
+    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
 
     const missingPayload = runSearch('no-such-made-up-tool', 4);
     expect(missingPayload.totalMatches).toBe(0);
     expect(missingPayload.matches).toEqual([]);
     expect(missingPayload.guidance).toContain('No matching tools found');
+  });
+
+  it('rejects contradictory tools.search capability filters', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -1041,7 +1057,7 @@ describe('typed facade executor', () => {
       expect(result.data.stdout).toContain('[truncated');
       expect(result.data.stderr.length).toBeLessThan(8200);
       expect(result.data.audit.workspaceOnly).toBe('preferred');
-      expect(result.data.audit.rawShellUsed).toBe(true);
+      expect(result.data.audit.rawShellUsed).toBe(false);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
