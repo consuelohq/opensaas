@@ -17,12 +17,70 @@ function renderSignature(entry: ToolManifestEntry): string {
   return `workspace.${entry.name}(${input}) => Promise<ToolResult<${output}>>`;
 }
 
+function exampleData(entry: ToolManifestEntry): unknown {
+  if (entry.outputSchema === 'ToolsSearchOutput') {
+    return {
+      query: 'linear issue',
+      limit: 5,
+      searchedCount: 128,
+      returnedCount: 1,
+      filters: {},
+      totalMatches: 1,
+      confidence: 'high',
+      ambiguous: false,
+      detectedIntent: 'read or search Linear issues',
+      recommended: 'linear.issue',
+      matches: [
+        {
+          name: 'linear.issue',
+          methodPath: ['linear', 'issue'],
+          category: 'linear',
+          score: 142,
+          scoreParts: { exact: 0, name: 22, lexical: 31, bm25: 34, intent: 55, capability: 0, embedding: 0 },
+          description: 'Read one Linear issue by identifier.',
+          capabilities: { readOnly: true, mutating: false, safeToRetry: true },
+          sessionRequired: false,
+          inputSchema: 'LinearIssueInput',
+          outputSchema: 'RawOutput',
+          inputSignature: '{ identifier: string; requestId?: string; taskSession?: string }',
+          usage: {
+            workspaceCall: 'await workspace.call({ tool: "linear.issue", input: { "identifier": "DEV-123" } })',
+            script: 'linear',
+            subcommand: 'issue',
+            arguments: [],
+          },
+          why: ['intent: read or search Linear issues'],
+        },
+      ],
+      guidance: {
+        summary: 'Use the recommended tool when its intent matches the user request. Inspect alternatives when ambiguous.',
+        recommendedUse: 'Read-only recommendation is safe for investigation.',
+        ambiguous: false,
+        safeDefaults: [],
+        mutatingGuidance: [],
+      },
+      catalog: {
+        source: ['tool-manifest.json', 'TOOLS.md'],
+        catalogHash: 'abc123',
+        toolCount: 128,
+        searchedCount: 128,
+        cardVersion: 'tools-search-card-v2',
+        embeddingConfigId: 'disabled',
+        cardsEmbedded: 0,
+        cardsReused: 0,
+      },
+    };
+  }
+
+  return { raw: 'example' };
+}
+
 function exampleEnvelope(entry: ToolManifestEntry, ok: boolean): string {
   return JSON.stringify({
     ok,
     code: ok ? 'OK' : 'VALIDATION_ERROR',
     message: ok ? 'command completed' : 'input: Required',
-    data: ok ? { raw: 'example' } : { issues: [] },
+    data: ok ? exampleData(entry) : { issues: [] },
     stderr: '',
     exitCode: ok ? 0 : 1,
     durationMs: 12,
