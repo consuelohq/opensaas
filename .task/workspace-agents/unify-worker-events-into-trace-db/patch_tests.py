@@ -1,0 +1,34 @@
+from pathlib import Path
+p=Path('packages/workspace/tests/facade/facade.test.ts')
+s=p.read_text()
+s=s.replace("import { parseWorkerOutput } from '../../scripts/lib/worker/runtime';", "import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';")
+insert="""
+
+  it('normalizes cdx worker tool calls into trace events', () => {
+    const stdout = [
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_0', type: 'mcp_tool_call', server: 'workspace', tool: 'get_steering', arguments: {}, result: { content: [{ type: 'text', text: 'steering' }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_1', type: 'mcp_tool_call', server: 'workspace', tool: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' } }, result: { ok: true, code: 'OK' } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_2', type: 'command_execution', command: '/bin/zsh -lc rg test', exit_code: 0, aggregated_output: 'match' } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_3', type: 'agent_message', text: 'done' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 2, reasoning_output_tokens: 1 } }),
+    ].join('\\n');
+
+    const events = parseWorkerTraceEvents('cdx', stdout);
+
+    expect(events.map((event) => event.tool)).toEqual([
+      'cdx.get_steering',
+      'cdx.fs.read',
+      'cdx.command_execution',
+      'cdx.agent_message',
+      'cdx.turn.completed',
+    ]);
+    expect(events[1].facadeTool).toBe('fs.read');
+    expect(events[2].eventType).toBe('command_execution');
+    expect(events[4].totalTokens).toBe(13);
+  });
+"""
+marker="""  it('extracts compact final messages from pi jsonl output', () => {"""
+if marker not in s:
+    raise SystemExit('test marker not found')
+s=s.replace(marker, insert+"\n"+marker)
+p.write_text(s)
