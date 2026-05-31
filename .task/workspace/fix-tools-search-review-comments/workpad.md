@@ -61,6 +61,7 @@ Fix the CodeRabbit review comments on the current workspace stream PR, then prom
 - 2026-05-31 20:03:54 fs.patch: `packages/workspace/scripts/tools-search.ts`
 - 2026-05-31 20:04:47 fs.write: `.task/workspace/fix-tools-search-review-comments/workpad.md`
 - 2026-05-31 20:07:31 fs.write: `.task/workspace/fix-tools-search-review-comments/workpad.md`
+- 2026-05-31 20:09:51 fs.write: `.task/workspace/fix-tools-search-review-comments/workpad.md`
 
 ## CodeRabbit findings on stream PR #674
 
@@ -100,6 +101,7 @@ All appear valid against current stream state.
 - 2026-05-31 20:05:11 `review.run`: passed — OK
 - 2026-05-31 20:05:31 `verify`: passed — OK
 - 2026-05-31 20:07:57 `verify`: passed — OK
+- 2026-05-31 20:10:04 `verify`: passed — OK
 
 ## Fixes applied
 
@@ -136,3 +138,9 @@ All appear valid against current stream state.
 - Next action: push this metadata update, promote task into `stream/workspace`, merge the stream PR to `main`, sync/restart/test locally.
 
 - 2026-05-31 20:07:31 append: `.task/workspace/fix-tools-search-review-comments/workpad.md`
+
+## Promotion-ready summary
+
+This task fixes every valid CodeRabbit finding from stream PR #674. The implementation changes are intentionally narrow: the public `ToolsSearchOutput` signature now matches the actual serialized match shape, `catalog.source` reflects whether docs were actually loaded, `detectedIntent` is derived from the winning scored tool instead of raw matched-intent order, cache JSON parsing follows the repo `catch (error: unknown)` convention, and generated docs now show a structured `tools.search` success payload. Validation completed successfully: syntax checks, focused `tools-search-v2` tests, existing facade `tools.search` tests, generated-doc inspection, review, and publish-valid verify. No follow-up issues are known before promoting this task into `stream/workspace`.
+
+- 2026-05-31 20:09:51 append: `.task/workspace/fix-tools-search-review-comments/workpad.md`
