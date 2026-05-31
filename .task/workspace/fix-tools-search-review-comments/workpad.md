@@ -60,6 +60,7 @@ Fix the CodeRabbit review comments on the current workspace stream PR, then prom
 - 2026-05-31 20:03:40 fs.patch: `packages/workspace/scripts/tools-search.ts`
 - 2026-05-31 20:03:54 fs.patch: `packages/workspace/scripts/tools-search.ts`
 - 2026-05-31 20:04:47 fs.write: `.task/workspace/fix-tools-search-review-comments/workpad.md`
+- 2026-05-31 20:07:31 fs.write: `.task/workspace/fix-tools-search-review-comments/workpad.md`
 
 ## CodeRabbit findings on stream PR #674
 
@@ -98,6 +99,7 @@ All appear valid against current stream state.
 - 2026-05-31 20:04:01 `checkFiles`: passed — OK
 - 2026-05-31 20:05:11 `review.run`: passed — OK
 - 2026-05-31 20:05:31 `verify`: passed — OK
+- 2026-05-31 20:07:57 `verify`: passed — OK
 
 ## Fixes applied
 
@@ -120,8 +122,17 @@ All appear valid against current stream state.
 
 ## workspace-owned: test selection
 
-- changed files: `.task/tasks/workspace/fix-tools-search-review-comments.json`, `.task/workspace/fix-tools-search-review-comments/current.json`, `.task/workspace/fix-tools-search-review-comments/evidence-log.json`, `.task/workspace/fix-tools-search-review-comments/read-log.json`, `.task/workspace/fix-tools-search-review-comments/session.json`, `.task/workspace/fix-tools-search-review-comments/workpad.md`, `packages/workspace/TOOLS.md`, `packages/workspace/scripts/generate-docs.ts`, `packages/workspace/scripts/lib/facade/schemas.ts`, `packages/workspace/scripts/tools-search.ts`, `packages/workspace/src/generated/workspace.d.ts`, `packages/workspace/tests/tools-search-v2.test.ts`
+- changed files: `.task/tasks/workspace/fix-tools-search-review-comments.json`, `.task/workspace/fix-tools-search-review-comments/current.json`, `.task/workspace/fix-tools-search-review-comments/evidence-log.json`, `.task/workspace/fix-tools-search-review-comments/read-log.json`, `.task/workspace/fix-tools-search-review-comments/session.json`, `.task/workspace/fix-tools-search-review-comments/verify.json`, `.task/workspace/fix-tools-search-review-comments/workpad.md`, `packages/workspace/TOOLS.md`, `packages/workspace/scripts/generate-docs.ts`, `packages/workspace/scripts/lib/facade/schemas.ts`, `packages/workspace/scripts/tools-search.ts`, `packages/workspace/src/generated/workspace.d.ts`, `packages/workspace/tests/tools-search-v2.test.ts`
 - matched rules: `workspace-facade`, `workspace-audit-docs`
 - selected suites: `workspace facade input contracts`, `workspace audit tests`
 - run results: `workspace facade input contracts` passed, `workspace audit tests` passed
 - failed suites: none
+
+## Final publish checkpoint
+
+- Local task worktree reset to remote commit `4eb5d322115ba0d60e6c1f61c2c52ae9f86e9569` after the initial publish sync warning.
+- CodeRabbit fixes are committed remotely and local task state is synced.
+- Validation remains: focused v2 tests 7/7, existing facade tools.search tests 3/3, review clean, verify publish-valid.
+- Next action: push this metadata update, promote task into `stream/workspace`, merge the stream PR to `main`, sync/restart/test locally.
+
+- 2026-05-31 20:07:31 append: `.task/workspace/fix-tools-search-review-comments/workpad.md`
