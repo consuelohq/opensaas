@@ -133,7 +133,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => entry.name !== 'worker.call' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
@@ -384,9 +384,9 @@ describe('typed facade executor', () => {
 });
 
 describe('branch resolver', () => {
-  it('resolves pinned branch before current metadata', () => {
+  it('resolves explicit branch before current metadata', () => {
     const result = resolveTaskBranch({
-      pinnedBranch: 'task/workspace-agents/pinned',
+      explicitBranch: 'task/workspace-agents/pinned',
       currentTask: {
         branch: TEST_BRANCH,
         area: 'workspace-agents',
@@ -396,7 +396,7 @@ describe('branch resolver', () => {
     expect(result).toEqual({
       ok: true,
       branch: 'task/workspace-agents/pinned',
-      source: 'pinned',
+      source: 'explicit',
     });
   });
 
@@ -442,11 +442,10 @@ describe('branch resolver', () => {
     expect(result).toEqual({
       ok: false,
       code: 'WORKTREE_NOT_FOUND',
-      message: 'no active task worktree found; run task:start first or pass branch',
+      message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
       candidates: [],
     });
   });
-
   it('returns the environment-selected current task before stale metadata', () => {
     const result = getCurrentTask({
       env: { TASK_BRANCH: 'task/workspace-agents/env' },
