@@ -2,6 +2,29 @@ spec
 
 Use for product specs, engineering specs, RFCs, architecture proposals, system designs, launch readiness specs, and high-stakes feature/product definition artifacts.
 
+
+render protocol
+
+Do not hand-author a new page shell for wiki artifacts.
+
+1. Read this template as the content/thinking contract.
+2. Produce structured content for this template.
+3. Render through the canonical Consuelo reader shell with one shared command:
+
+```bash
+bun run wiki:render -- --template spec --input <content.json> --out <index.html>
+```
+
+4. Validate the output before publishing:
+
+```bash
+bun run wiki:validate -- --input <index.html>
+```
+
+The Markdown template owns the section logic. The TypeScript renderer owns the repeatable UI/UX: top pill nav, section rail, resume reading, ScrollSmoother, back-to-top, favicon/theme-color, neutral dark mode, mobile responsiveness, cards, footer, and /design-wiki link.
+
+For roadmap or operating-plan artifacts, use `template: spec`. Do not create a separate roadmap template.
+
 job
 
 Turn ambiguous product or engineering work into a durable specification that helps Ko and the team decide what to build, why it matters, how it should work, how it will be validated, and what must be true before it can ship.
