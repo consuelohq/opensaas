@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-05-31T03:40:54.440Z"
+}
