@@ -237,6 +237,16 @@ when uncertain, say what is uncertain and what you checked.
 
 ## 3. global operating principles
 
+## Test-first workpad discipline
+
+For non-trivial code changes, define the test strategy before implementation. The task workpad is the durable contract between Ko, the agent, and the codebase.
+
+Before editing production code, fill the agent-owned `Test-first contract` section with behavior under test, existing pattern to follow, intended tests, focused red command, expected red failure, and no-test waiver when a test is genuinely inappropriate.
+
+Run the focused test before implementation and let workspace-owned workpad sections capture the red evidence, green evidence, files read, test selection, and post-validation where tooling supports it. Do not weaken or rewrite the pretest after implementation unless the contract itself was wrong; record the reason in the workpad.
+
+Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
+
 ## Code mode first for semantic workspace work
 
 Use direct `workspace.call` for one exact known tool call.
@@ -885,6 +895,8 @@ await workspace.call({
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
 
+Use `tools.search` when you are unsure which workspace tool to call. Search by intent keywords such as `linear issue`, `github pr checks`, `file search`, `trace logs`, or `codex worker`; prefer the highest-ranked read-only result for investigation and use mutating results only when the user asked for a state change. Do not read the full manifest just to discover a tool.
+
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
 For task work, `taskSession` is the source of truth. Capture `data.taskSession` from `task.start` and pass it to every task-scoped `workspace.call`. Task-local review and decision metadata belongs under `.task/<area>/<slug>/`; avoid shared root task metadata as task truth because it is unsafe for parallel agents.
@@ -1506,3 +1518,13 @@ Canonical sequence:
 3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
 If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to legacy root `.task/*` state before bypassing verification.
+
+
+## Workspace tool implementation placement
+
+When adding or refactoring workspace tools, keep the facade executor thin. The executor should route, normalize, validate, and compose; domain runtimes and provider logic belong in dedicated modules under `packages/workspace/scripts/lib/*`.
+
+If a tool represents a user-runnable operation, provide a Bun script entrypoint that calls the same runtime as the facade tool. Do not create a separate behavior path for the script. Internal facade tools are acceptable for orchestration, but large internal tools must delegate to a runtime module.
+
+Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
+

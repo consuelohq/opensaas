@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
+import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
@@ -128,7 +129,7 @@ function writeFakeCodex(tempRoot: string): string {
   const bin = join(binDir, 'codex');
   writeFileSync(bin, [
     '#!/usr/bin/env bash',
-    'if [ "$1" = "exec" ] && [[ "$*" == *"--help"* ]]; then',
+    'if [ "$1" = "exec" ] && [ "$2" = "--help" ]; then',
     '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
     '  echo "instructions are read from stdin"',
     '  echo "--cd <DIR>"',
@@ -144,8 +145,24 @@ function writeFakeCodex(tempRoot: string): string {
   return binDir;
 }
 
+
+function writeFakePi(tempRoot: string): string {
+  const binDir = join(tempRoot, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const bin = join(binDir, 'pi');
+  writeFileSync(bin, [
+    '#!/usr/bin/env bash',
+    'cat <<\'JSON\'',
+    '{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"pong"}],"usage":{"input":1,"output":1,"cacheRead":0}}}',
+    'JSON',
+    '',
+  ].join('\n'));
+  chmodSync(bin, 0o700);
+  return binDir;
+}
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
 }
 
 describe('typed facade executor', () => {
@@ -155,6 +172,52 @@ describe('typed facade executor', () => {
       .filter((name, index, names) => names.indexOf(name) === index)
       .filter((name) => !getInputSchema(name));
     expect(missing).toEqual([]);
+  });
+
+
+  it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const runSearch = (query: string, limit = 5) => {
+      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(0);
+      return JSON.parse(result.stdout);
+    };
+
+    const linearPayload = runSearch('linear issue');
+    const linearNames = linearPayload.matches.map((match: { name: string }) => match.name);
+    expect(linearNames.slice(0, 3)).toContain('linear.issue');
+    expect(linearNames).toContain('linear.search');
+    const linearIssue = linearPayload.matches.find((match: { name: string }) => match.name === 'linear.issue');
+    expect(linearIssue.inputSignature).toContain('identifier');
+    expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
+
+    const ticketPayload = runSearch('ticket', 4);
+    const ticketNames = ticketPayload.matches.map((match: { name: string }) => match.name);
+    expect(ticketNames).toContain('linear.issue');
+
+    expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
+    expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
+    expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
+    const codexWorker = runSearch('codex worker', 4).matches[0];
+    expect(codexWorker.name).toBe('worker.call');
+
+    const fileSearch = runSearch('file search', 4).matches[0];
+    expect(fileSearch.name).toBe('fs.search');
+    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
+
+    const missingPayload = runSearch('no-such-made-up-tool', 4);
+    expect(missingPayload.totalMatches).toBe(0);
+    expect(missingPayload.matches).toEqual([]);
+    expect(missingPayload.guidance).toContain('No matching tools found');
+  });
+
+  it('rejects contradictory tools.search capability filters', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -848,11 +911,127 @@ describe('typed facade executor', () => {
 
       expect(mini.ok).toBe(true);
       expect(mini.data.status).toBe('not_configured');
+      expect(mini.data.provider).toBe('pi');
+      expect(mini.data.requestedProvider).toBe('mini');
+      expect(mini.data.profile).toBe('mini');
       expect(opc.ok).toBe(true);
       expect(opc.data.status).toBe('not_configured');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
+  });
+
+  it('runs pi provider through the facade with configurable mini profile', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-'));
+    try {
+      const binDir = writeFakePi(tempRoot);
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('worker.call', {
+        provider: 'pi',
+        profile: 'mini',
+        policy: 'safe',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.provider).toBe('pi');
+      expect(result.data.profile).toBe('mini');
+      expect(result.data.command[0]).toContain('/pi');
+      expect(result.data.command).toContain('--no-session');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('exposes a worker Bun script wrapper over worker.call', () => {
+    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-worker-cli-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const fakePiPath = writeFakePi(tempRoot);
+      const run = spawnSync('bun', [
+        'packages/workspace/scripts/worker.ts',
+        'call',
+        '--provider', 'pi',
+        '--profile', 'mini',
+        '--policy', 'safe',
+        '--instruction-path', instructionPath,
+        '--cwd', tempRoot,
+      ], {
+        cwd: process.cwd(),
+        env: { ...process.env, PATH: `${fakePiPath}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+        encoding: 'utf8',
+      });
+
+      expect(run.status).toBe(0);
+      const result = JSON.parse(run.stdout);
+      expect(result.ok).toBe(true);
+      expect(result.data.provider).toBe('pi');
+      expect(result.data.profile).toBe('mini');
+      expect(result.data.status).toBe('completed');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('extracts compact final messages from cdx json output', () => {
+    const huge = 's'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'thread.started', thread_id: 'test' }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: { content: [{ type: 'text', text: huge }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'pong' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } }),
+    ].join('\n');
+
+    const parsed = parseWorkerOutput('cdx', stdout);
+
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summary).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(10);
+    expect(parsed.usage?.cachedInputTokens).toBe(2);
+    expect(parsed.usage?.outputTokens).toBe(1);
+  });
+  it('normalizes cdx worker tool calls into trace events', () => {
+    const stdout = [
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_0', type: 'mcp_tool_call', server: 'workspace', tool: 'get_steering', arguments: {}, result: { content: [{ type: 'text', text: 'steering' }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_1', type: 'mcp_tool_call', server: 'workspace', tool: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' } }, result: { ok: true, code: 'OK' } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_2', type: 'command_execution', command: 'native-search README', exit_code: 0, aggregated_output: 'match' } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_3', type: 'agent_message', text: 'done' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 2, reasoning_output_tokens: 1 } }),
+    ].join('\n');
+
+    const events = parseWorkerTraceEvents('cdx', stdout);
+
+    expect(events.map((event) => event.tool)).toEqual([
+      'cdx.get_steering',
+      'cdx.fs.read',
+      'cdx.command_execution',
+      'cdx.agent_message',
+      'cdx.turn.completed',
+    ]);
+    expect(events[1].facadeTool).toBe('fs.read');
+    expect(events[2].eventType).toBe('command_execution');
+    expect(events[4].totalTokens).toBe(13);
+  });
+
+  it('extracts compact final messages from pi jsonl output', () => {
+    const huge = 't'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'session', id: 'test' }),
+      JSON.stringify({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: huge } }),
+      JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'pong' }], api: 'openai-codex-responses', provider: 'openai-codex', model: 'gpt-5.4', usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } }),
+    ].join('\n');
+    const parsed = parseWorkerOutput("pi", stdout);
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summary).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(11);
+    expect(parsed.usage?.outputTokens).toBe(2);
+    expect(parsed.usage?.cachedInputTokens).toBe(3);
   });
 
   it('bounds worker.call output and includes audit metadata', async () => {
@@ -878,7 +1057,7 @@ describe('typed facade executor', () => {
       expect(result.data.stdout).toContain('[truncated');
       expect(result.data.stderr.length).toBeLessThan(8200);
       expect(result.data.audit.workspaceOnly).toBe('preferred');
-      expect(result.data.audit.rawShellUsed).toBe(true);
+      expect(result.data.audit.rawShellUsed).toBe(false);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -1051,3 +1230,6 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+
+

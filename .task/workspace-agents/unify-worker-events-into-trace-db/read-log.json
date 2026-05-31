@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/lib/facade/logger.ts",
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-05-31T10:44:21.326Z"
+}

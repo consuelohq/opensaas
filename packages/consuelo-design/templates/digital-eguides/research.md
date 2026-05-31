@@ -2,6 +2,32 @@
 
 Use for research lessons, research reports, source-grounded explainers, paper walkthroughs, and Daily Deep Idea artifacts.
 
+
+
+## render protocol
+
+Do not hand-author a new page shell for wiki artifacts.
+
+Run the commands from the repository root. The root package forwards to `packages/consuelo-design`, so agents should not `cd` or infer a package-local invocation.
+
+1. Read this template as the content/thinking contract.
+2. Produce structured content for this template.
+3. Render through the canonical Consuelo reader shell with one shared command:
+
+```bash
+bun run wiki:render -- --template <spec|research> --input <content.json> --out <index.html>
+```
+
+4. Validate the output before publishing:
+
+```bash
+bun run wiki:validate -- --input <index.html>
+```
+
+The Markdown template owns the section logic. The TypeScript renderer owns the repeatable UI/UX: top pill nav, section rail, resume reading, ScrollSmoother, back-to-top, favicon/theme-color, neutral dark mode, mobile responsiveness, cards, footer, and /design-wiki link.
+
+For teaching, paper walkthroughs, Daily Deep Ideas, and research explainers, use `template: research` with the lesson-specific sections below. Do not force the spec checklist structure onto lessons.
+
 ## job
 
 Turn source material into a durable teaching/report artifact that preserves evidence, improves understanding, and gives Ko a clear mental model he can reuse.

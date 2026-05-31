@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_70933dcfc7ac",
+  "tmuxSession": "opensaas-workspace-agents-address-stream-review-feedback-70933dcf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/address-stream-review-feedback",
+  "branch": "task/workspace-agents/address-stream-review-feedback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback",
+  "prNumber": 670,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/670",
+  "createdAt": "2026-05-31T18:01:20.256Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback/.task/workspace-agents/address-stream-review-feedback/session.json"
+}

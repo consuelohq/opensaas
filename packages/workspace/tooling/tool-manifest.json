@@ -5062,6 +5062,67 @@
     "sessionRequired": false
   },
   {
+    "name": "tools.search",
+    "methodPath": [
+      "tools",
+      "search"
+    ],
+    "description": "search workspace tools by intent and return ranked usage guidance",
+    "category": "tooling",
+    "underlying": "workspace tools.search",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "sessionRequired": false,
+    "inputSchema": "ToolsSearchInput",
+    "outputSchema": "ToolsSearchOutput",
+    "command": {
+      "script": "tools:search",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "query",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "category",
+          "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "readOnly",
+          "flag": "--read-only",
+          "kind": "boolean"
+        },
+        {
+          "source": "mutating",
+          "flag": "--mutating",
+          "kind": "boolean"
+        },
+        {
+          "source": "noDocs",
+          "flag": "--no-docs",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "query": "linear issue",
+      "limit": 5
+    }
+  },
+  {
     "name": "generate.docs",
     "methodPath": [
       "generate",

@@ -107,6 +107,19 @@ export const CodeRunInput = z.object({
   maxResultChars: z.number().int().positive().optional(),
 });
 
+export const ToolsSearchInput = z.object({
+  ...requestFields,
+  query: z.string().min(1),
+  limit: z.number().int().positive().max(30).optional(),
+  category: optionalString,
+  readOnly: z.boolean().optional(),
+  mutating: z.boolean().optional(),
+  noDocs: z.boolean().optional(),
+}).refine((input) => !(input.readOnly && input.mutating), {
+  message: 'readOnly and mutating cannot both be true',
+  path: ['mutating'],
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -249,6 +262,7 @@ export const TaskExecInput = z.object({
   ...dryRunField,
   ...branchField,
   command: z.array(z.string().min(1)).min(1),
+  tddPhase: z.enum(['red', 'green', 'post']).optional(),
   timeout: z.number().int().positive().optional(),
 });
 
@@ -849,7 +863,8 @@ export const MacPortInput = z.object({
 
 export const WorkerCallInput = z.object({
   ...requestFields,
-  provider: z.enum(['cdx', 'opc', 'mini']),
+  provider: z.enum(['cdx', 'pi', 'opc', 'mini']),
+  profile: optionalString,
   mode: z.enum(['check', 'step', 'work']).optional(),
   policy: z.enum(['read', 'safe', 'edit', 'ship']).optional(),
   instructionPath: z.string().min(1),
@@ -869,6 +884,7 @@ export const schemaRegistry = {
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
   CodeRunInput,
+  ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -971,6 +987,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
@@ -985,7 +1002,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskExecInput: '{ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
@@ -1054,7 +1071,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MacListInput: '{ path?: string; depth?: number; requestId?: string; taskSession?: string }',
   MacProcessInput: '{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacPortInput: '{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }',
-  WorkerCallInput: '{ provider: "cdx" | "opc" | "mini"; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }',
+  WorkerCallInput: '{ provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }',
 };
 
 export const outputTypeSignatures: Record<string, string> = {
@@ -1064,5 +1081,6 @@ export const outputTypeSignatures: Record<string, string> = {
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
-  WorkerCallOutput: '{ provider: "cdx" | "opc" | "mini"; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
+  WorkerCallOutput: '{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
+  ToolsSearchOutput: '{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; score: number; scoreParts?: Record<string, number>; description?: string; inputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }',
 };

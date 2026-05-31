@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_383ddfa66b76",
+  "tmuxSession": "opensaas-workspace-agents-remove-worker-trace-temp-helper-files-383ddfa6",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-worker-trace-temp-helper-files",
+  "branch": "task/workspace-agents/remove-worker-trace-temp-helper-files",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-worker-trace-temp-helper-files",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-worker-trace-temp-helper-files",
+  "prNumber": 662,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/662",
+  "createdAt": "2026-05-31T10:46:52.181Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-worker-trace-temp-helper-files/.task/workspace-agents/remove-worker-trace-temp-helper-files/session.json"
+}

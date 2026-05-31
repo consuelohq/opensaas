@@ -1,0 +1,65 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/compact-worker-agent-output",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "9cdef29f2c9229a1197ee03454e98fb6b57f2659",
+  "changeHash": "a67fa7be91901f1ef5934c37b1b3e96b4761bc5ca9642665cf48a4ca4900433c",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/search/ranker.js",
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/tests/explore-ranker.test.js",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-05-29T04:19:53.430Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/compact-worker-agent-output.json",
+        ".task/tasks/workspace/inspect-explore-embedding-ranking.json",
+        ".task/workspace-agents/compact-worker-agent-output/current.json",
+        ".task/workspace-agents/compact-worker-agent-output/evidence-log.json",
+        ".task/workspace-agents/compact-worker-agent-output/read-log.json",
+        ".task/workspace-agents/compact-worker-agent-output/session.json",
+        ".task/workspace-agents/compact-worker-agent-output/workpad.md",
+        ".task/workspace/inspect-explore-embedding-ranking/current.json",
+        ".task/workspace/inspect-explore-embedding-ranking/evidence-log.json",
+        ".task/workspace/inspect-explore-embedding-ranking/explore-state.json",
+        ".task/workspace/inspect-explore-embedding-ranking/read-log.json",
+        ".task/workspace/inspect-explore-embedding-ranking/session.json",
+        ".task/workspace/inspect-explore-embedding-ranking/verify.json",
+        ".task/workspace/inspect-explore-embedding-ranking/workpad.md",
+        "packages/workspace/scripts/lib/search/ranker.js",
+        "packages/workspace/scripts/lib/worker/runtime.ts",
+        "packages/workspace/tests/explore-ranker.test.js",
+        "packages/workspace/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
