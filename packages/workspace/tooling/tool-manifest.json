@@ -5077,10 +5077,12 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
+    "sessionRequired": false,
     "inputSchema": "ToolsSearchInput",
     "outputSchema": "ToolsSearchOutput",
     "command": {
       "script": "tools:search",
+      "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {

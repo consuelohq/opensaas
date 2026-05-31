@@ -345,6 +345,8 @@ function compactSuccessDetail(row: Row): string {
   const result = parseJson(row.result_json) || {};
   const candidates: string[] = [];
   if (result.message) candidates.push(cleanText(result.message));
+  if (input.facadeTool) candidates.push(`facade=${cleanText(input.facadeTool)}`);
+  if (input.command) candidates.push(cleanText(input.command));
   if (input.path) candidates.push(cleanText(input.path));
   if (input.pattern) candidates.push(`pattern=${cleanText(input.pattern)}`);
   if (input.query) candidates.push(`query=${cleanText(input.query)}`);

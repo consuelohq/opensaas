@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5f1dc66fd398",
+  "tmuxSession": "opensaas-workspace-agents-unify-worker-events-into-trace-db-5f1dc66f",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/unify-worker-events-into-trace-db",
+  "branch": "task/workspace-agents/unify-worker-events-into-trace-db",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-worker-events-into-trace-db",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-worker-events-into-trace-db",
+  "prNumber": 659,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/659",
+  "createdAt": "2026-05-31T10:28:20.796Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-worker-events-into-trace-db/.task/workspace-agents/unify-worker-events-into-trace-db/session.json"
+}
