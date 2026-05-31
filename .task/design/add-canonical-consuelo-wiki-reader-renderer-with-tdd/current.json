@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 660,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/660",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/660",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/660/add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/660",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/660/add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "taskSession": "tsk_c869517936c3",
+  "tmuxSession": "opensaas-design-add-canonical-consuelo-wiki-reader-renderer-with-c8695179",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-canonical-consuelo-wiki-reader-renderer-with-tdd/.task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/session.json",
+  "createdAt": "2026-05-31T10:44:00.667Z"
+}
