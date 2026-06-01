@@ -277,6 +277,32 @@ Default choice:
 | Final push / PR / merge / deploy / publish | direct outer `workspace.call` |
 | No typed tool exists | report a tooling gap and use the smallest safe fallback |
 
+## Workspace tool discovery with tools.search
+
+Use `tools.search` for tool discovery when the needed workspace tool is unknown, absent from the currently loaded context, or ambiguous across tool families. Do not use `tools.search` to rediscover an exact tool that is already visible in steering, the current tool manifest, or the immediate task context. When the exact tool is already known, call it directly through `workspace.call`.
+
+Treat `tools.search` as an orientation tool, not a required preflight for every workspace action. The failure mode to avoid is spending tokens searching for `worker.call`, `fs.read`, `git.diff`, `task.start`, or another tool already present in the active context.
+
+Use `batch` for multiple independent discovery queries. When orienting across several unknown tool areas, group the searches so the agent pays one orchestration cost and receives a compact map of options:
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      { tool: "tools.search", input: { query: "github pull request comments" }, parallel: true },
+      { tool: "tools.search", input: { query: "git diff compare branches" }, parallel: true },
+      { tool: "tools.search", input: { query: "mac local startup service" }, parallel: true },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+Use `tools.search` for intent-level discovery such as `linear issue`, `github pr comments`, `filesystem patch`, `railway logs`, `browser screenshot`, or `codex worker`. After a result identifies the correct tool, use the returned schema and examples to call the tool directly. Do not repeatedly search for the same tool after it has been selected.
+
+Current steering may still include a large tool manifest while `tools.search` burns in. During this transition, prefer direct calls for tools already present in context and use `tools.search` to find tools outside the agent’s immediate memory. Future steering may shrink the injected tool list; this rule protects both modes.
+
 Do not use raw shell because it is familiar. Raw shell means either the facade is missing a tool or the agent failed to use the available tool.
 
 ## Payload transport rule
