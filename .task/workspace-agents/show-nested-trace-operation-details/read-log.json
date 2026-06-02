@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/workspace-agents/show-nested-trace-operation-details/workpad.md",
+    "packages/workspace/scripts/lib/codemode/tools/index.ts",
+    "packages/workspace/scripts/lib/facade/batch.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-05-24T07:34:28.255Z"
+}

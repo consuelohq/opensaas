@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/harden-code-run-bun-orchestration",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 439,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/439",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/439",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/439/harden-code-run-bun-orchestration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/439",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/439/harden-code-run-bun-orchestration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-code-run-bun-orchestration",
+  "taskSession": "tsk_0b77310d9ab5",
+  "tmuxSession": "opensaas-workspace-agents-harden-code-run-bun-orchestration-0b77310d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-code-run-bun-orchestration/.task/session.json",
+  "createdAt": "2026-05-21T09:47:49.675Z"
+}

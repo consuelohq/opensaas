@@ -35,11 +35,17 @@
     "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
+    "tools:search": "bun ./scripts/tools-search.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/consuelo-design.ts"
+    "consuelo-design": "bun ./scripts/consuelo-design.ts",
+    "code-run": "bun ./scripts/code-run.ts",
+    "github": "bun ./scripts/github.js",
+    "consuelo-reload": "bun ./scripts/consuelo-reload.js",
+    "git:diff": "bun ./scripts/git-diff.js",
+    "worker": "bun ./scripts/worker.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

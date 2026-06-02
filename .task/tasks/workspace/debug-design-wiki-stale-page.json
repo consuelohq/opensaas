@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/debug-design-wiki-stale-page",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 481,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/481",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/481",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/481/debug-design-wiki-stale-page",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/481",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/481/debug-design-wiki-stale-page",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-debug-design-wiki-stale-page",
+  "taskSession": "tsk_34de85e78eb1",
+  "tmuxSession": "opensaas-workspace-debug-design-wiki-stale-page-34de85e7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-debug-design-wiki-stale-page/.task/workspace/debug-design-wiki-stale-page/session.json",
+  "createdAt": "2026-05-23T04:42:57.759Z"
+}

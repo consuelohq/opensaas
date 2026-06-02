@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9949bc41d01b",
+  "tmuxSession": "opensaas-dialer-fix-queue-person-phone-physical-column-9949bc41",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-queue-person-phone-physical-column",
+  "branch": "task/dialer/fix-queue-person-phone-physical-column",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-person-phone-physical-column",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-person-phone-physical-column",
+  "prNumber": 555,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/555",
+  "createdAt": "2026-05-24T02:32:49.144Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-queue-person-phone-physical-column/.task/dialer/fix-queue-person-phone-physical-column/session.json"
+}

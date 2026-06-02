@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationItemDropTarget.tsx",
+    "packages/twenty-front/src/modules/object-metadata/components/NavigationDrawerSectionForWorkspaceItems.tsx",
+    "packages/twenty-front/src/modules/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper.tsx",
+    "packages/twenty-front/src/modules/ui/navigation/navigation-drawer/components/NavigationDrawerItem.tsx"
+  ],
+  "updatedAt": "2026-05-25T16:48:24.901Z"
+}

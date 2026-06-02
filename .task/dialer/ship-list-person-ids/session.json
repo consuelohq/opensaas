@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bb24a6c0a336",
+  "tmuxSession": "opensaas-dialer-ship-list-person-ids-bb24a6c0",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/ship-list-person-ids",
+  "branch": "task/dialer/ship-list-person-ids",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-list-person-ids",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-list-person-ids",
+  "prNumber": 535,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/535",
+  "createdAt": "2026-05-23T19:13:30.446Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-list-person-ids/.task/dialer/ship-list-person-ids/session.json"
+}

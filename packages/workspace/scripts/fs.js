@@ -7,6 +7,7 @@
 const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { findTaskMeta, getTaskWorkpadPath } = require('./lib/task-meta');
 
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
@@ -538,14 +539,19 @@ function cmdPatch(argv) {
 // ── workpad logging ──
 
 function logToWorkpad(filePath, action) {
-  // walk up from cwd looking for .task/workpad.md
   let dir = process.cwd();
   while (dir !== '/') {
-    const wp = path.join(dir, '.task', 'workpad.md');
-    if (fs.existsSync(wp)) {
-      const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      fs.appendFileSync(wp, `\n- ${ts} ${action}: \`${filePath}\``);
-      return;
+    const taskMeta = findTaskMeta(dir);
+    const candidates = [];
+    if (taskMeta?.data) candidates.push(getTaskWorkpadPath(taskMeta.dir, taskMeta.data));
+    candidates.push(path.join(dir, '.task', 'workpad.md'));
+
+    for (const wp of Array.from(new Set(candidates))) {
+      if (fs.existsSync(wp)) {
+        const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        fs.appendFileSync(wp, `\n- ${ts} ${action}: \`${filePath}\``);
+        return;
+      }
     }
     dir = path.dirname(dir);
   }

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
+const { getTaskSessionPath: getTaskSessionMetaPath, readTaskMeta } = require('./task-meta');
 
 const SESSION_FILENAME = 'session.json';
 
@@ -43,8 +44,8 @@ function getTmuxSessionName(area, taskBranch) {
   return `opensaas-${safeArea}-${slug}-${digest}`;
 }
 
-function getTaskSessionPath(worktreePath) {
-  return path.join(worktreePath, '.task', SESSION_FILENAME);
+function getTaskSessionPath(worktreePath, taskBranchOrMeta) {
+  return getTaskSessionMetaPath(worktreePath, taskBranchOrMeta);
 }
 
 function runTmux(args, options = {}) {
@@ -143,10 +144,11 @@ function ensureTaskTmuxSession({ area, taskBranch, worktreePath }) {
 
 function writeTaskSessionMetadata(input, tmuxCreated = false) {
   const metadata = buildTaskSessionMetadata(input, tmuxCreated);
-  const sessionPath = getTaskSessionPath(input.worktreePath);
+  const sessionPath = getTaskSessionPath(input.worktreePath, metadata);
+  const nextMetadata = { ...metadata, sessionPath };
   fs.mkdirSync(path.dirname(sessionPath), { recursive: true });
-  fs.writeFileSync(sessionPath, JSON.stringify(metadata, null, 2) + '\n', 'utf8');
-  return metadata;
+  fs.writeFileSync(sessionPath, JSON.stringify(nextMetadata, null, 2) + '\n', 'utf8');
+  return nextMetadata;
 }
 
 function createTaskSessionMetadata(input) {
@@ -155,14 +157,22 @@ function createTaskSessionMetadata(input) {
 }
 
 function readTaskSessionMetadata(worktreePath) {
-  const sessionPath = getTaskSessionPath(worktreePath);
-  if (!fs.existsSync(sessionPath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
-  } catch (error) {
-    writeStderr(`warning: failed to parse task session metadata ${sessionPath}: ${error instanceof Error ? error.message : String(error)}`);
-    return null;
+  const taskMeta = readTaskMeta(worktreePath);
+  const candidates = [];
+  if (taskMeta) candidates.push(getTaskSessionPath(worktreePath, taskMeta));
+  candidates.push(path.join(worktreePath, '.task', SESSION_FILENAME));
+
+  for (const sessionPath of Array.from(new Set(candidates))) {
+    if (!fs.existsSync(sessionPath)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    } catch (error) {
+      writeStderr(`warning: failed to parse task session metadata ${sessionPath}: ${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
   }
+
+  return null;
 }
 
 function asMetadataRecords(metadata) {

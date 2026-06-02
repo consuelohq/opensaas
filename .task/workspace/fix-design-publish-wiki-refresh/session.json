@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a7148104a01c",
+  "tmuxSession": "opensaas-workspace-fix-design-publish-wiki-refresh-a7148104",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-design-publish-wiki-refresh",
+  "branch": "task/workspace/fix-design-publish-wiki-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-design-publish-wiki-refresh",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-design-publish-wiki-refresh",
+  "prNumber": 486,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/486",
+  "createdAt": "2026-05-23T05:12:15.585Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-design-publish-wiki-refresh/.task/workspace/fix-design-publish-wiki-refresh/session.json"
+}

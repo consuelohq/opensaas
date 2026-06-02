@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4a7f9c65894c",
+  "tmuxSession": "opensaas-workspace-agents-compact-worker-agent-output-4a7f9c65",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-worker-agent-output",
+  "branch": "task/workspace-agents/compact-worker-agent-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-worker-agent-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-worker-agent-output",
+  "prNumber": 647,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/647",
+  "createdAt": "2026-05-29T04:14:10.120Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-worker-agent-output/.task/workspace-agents/compact-worker-agent-output/session.json"
+}

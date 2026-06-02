@@ -1,0 +1,15 @@
+{
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/fix-twenty-front-posthog-dependency-and-config",
+  "baseBranch": "stream/general",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 353,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/353",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-twenty-front-posthog-dependency-and-config",
+  "taskSession": "tsk_937a4e6e43fa",
+  "tmuxSession": "opensaas-general-fix-twenty-front-posthog-dependency-and-config-937a4e6e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-twenty-front-posthog-dependency-and-config/.task/session.json",
+  "createdAt": "2026-05-09T15:11:52.623Z"
+}

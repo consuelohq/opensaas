@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/add-worker-providers",
+  "events": [
+    {
+      "id": "804aaac1-45c8-44d0-ab28-2ec72d6e760b",
+      "occurred_at": "2026-05-28T23:13:47.590Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/add-worker-providers/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-worker-providers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-worker-providers"
+      }
+    },
+    {
+      "id": "815cf4f0-7730-4d58-9f31-c90adf270a9b",
+      "occurred_at": "2026-05-28T23:18:06.673Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/add-worker-providers/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-worker-providers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-worker-providers"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T23:18:06.701Z"
+}

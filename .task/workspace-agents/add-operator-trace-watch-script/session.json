@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0483ed7dd1ee",
+  "tmuxSession": "opensaas-workspace-agents-add-operator-trace-watch-script-0483ed7d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-operator-trace-watch-script",
+  "branch": "task/workspace-agents/add-operator-trace-watch-script",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-operator-trace-watch-script",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-operator-trace-watch-script",
+  "prNumber": 519,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/519",
+  "createdAt": "2026-05-23T09:33:19.601Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-operator-trace-watch-script/.task/workspace-agents/add-operator-trace-watch-script/session.json"
+}
