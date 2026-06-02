@@ -1,0 +1,13 @@
+{
+  "files": [
+    "packages/os/data-model.md",
+    "packages/os/docs/env-capability-matrix.md",
+    "packages/os/docs/skills.md",
+    "packages/os/package.json",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/workspace/consuelo-workspace-snapshot.ts",
+    "packages/os/tooling/tool-manifest.json",
+    "packages/twenty-server/src/modules/attachment/standard-objects/attachment.workspace-entity.ts"
+  ],
+  "updatedAt": "2026-05-24T03:36:01.051Z"
+}

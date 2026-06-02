@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b1b19cabc262",
+  "tmuxSession": "opensaas-os-add-consuelo-workspace-snapshot-and-files-facade-b1b19cab",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-consuelo-workspace-snapshot-and-files-facade",
+  "branch": "task/os/add-consuelo-workspace-snapshot-and-files-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-workspace-snapshot-and-files-facade",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-workspace-snapshot-and-files-facade",
+  "prNumber": 560,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/560",
+  "createdAt": "2026-05-24T03:30:22.799Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-workspace-snapshot-and-files-facade/.task/os/add-consuelo-workspace-snapshot-and-files-facade/session.json"
+}

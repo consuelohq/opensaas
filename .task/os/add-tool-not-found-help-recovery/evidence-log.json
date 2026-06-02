@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/add-tool-not-found-help-recovery",
+  "events": [
+    {
+      "id": "4caf0629-0a3f-4f7d-8060-9d68cd6c93bf",
+      "occurred_at": "2026-05-28T23:06:08.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "bd95a52a-28ed-4061-b4ac-04da967d5595",
+      "occurred_at": "2026-05-28T23:06:19.611Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "4ba3c60c-d214-4a5d-931d-cc0421d40679",
+      "occurred_at": "2026-05-28T23:06:37.203Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "1f400ce5-196b-45d9-bcb0-3a011e2b309d",
+      "occurred_at": "2026-05-28T23:06:43.377Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "564c48d1-62ae-465d-8bc9-a5b39656df3c",
+      "occurred_at": "2026-05-28T23:07:06.866Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "db16ab23-ae94-49c1-bbed-5a8d6e46289f",
+      "occurred_at": "2026-05-28T23:07:21.250Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    },
+    {
+      "id": "bfde1c49-e221-4d44-9f5f-98df2cb2f933",
+      "occurred_at": "2026-05-28T23:07:24.976Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-tool-not-found-help-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-tool-not-found-help-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T23:07:25.028Z"
+}

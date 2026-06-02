@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/fix-os-installer-domain/workpad.md",
+    ".task/os/os-bootstrap-installer/publish-update.md",
+    "packages/os/README.md",
+    "packages/os/scripts/bootstrap.sh"
+  ],
+  "updatedAt": "2026-06-02T15:11:15.980Z"
+}
