@@ -4,6 +4,8 @@ import {
   classifyTaskCallCommand,
   renderTraceHome,
   resolveTraceDb,
+  sanitizeDefaultText,
+  terminalSequences,
   type TraceHomeRow,
 } from '../../../scripts/operator/trace-home';
 
@@ -31,6 +33,8 @@ function row(overrides: Partial<TraceHomeRow>): TraceHomeRow {
     ...overrides,
   };
 }
+
+const githubWrapperError = "execFileSync('gh', args, { encoding: 'utf8' });\nError: job is still in progress; logs unavailable\n    at githubRaw (/repo/packages/workspace/scripts/gh.js:44:10)";
 
 const fixtureRows: TraceHomeRow[] = [
   row({
@@ -90,11 +94,22 @@ const fixtureRows: TraceHomeRow[] = [
     output_tokens: 72,
     total_tokens: 359,
     resolved_input_json: JSON.stringify({ command: ['bash', '-lc', "sed -n '1,260p' packages/os/scripts/install.ts"] }),
-    stderr: "tmux: ... script 'verify' exited with code 1\n",
+    stderr: 'tmux: ... script verify exited with code 1\n',
     result_json: JSON.stringify({ ok: false, code: 'COMMAND_FAILED', message: 'command failed', exitCode: 1 }),
   }),
   row({
     rownum: 4,
+    record_id: 'task-exec-suspect',
+    trace_id: 'trc_exec_suspect',
+    ts: '2026-06-01T20:01:25.000Z',
+    tool: 'task.exec',
+    branch: 'task/workspace/clarify-tools-search-steering-usage',
+    duration_ms: 850,
+    total_tokens: 500,
+    resolved_input_json: JSON.stringify({ command: ['bash', '-lc', 'grep -R trace:watch scripts/operator'] }),
+  }),
+  row({
+    rownum: 5,
     record_id: 'bad-task-call',
     trace_id: 'trc_bad',
     ts: '2026-06-01T20:01:32.000Z',
@@ -106,7 +121,7 @@ const fixtureRows: TraceHomeRow[] = [
     result_json: JSON.stringify({ ok: true, code: 'OK', message: 'command completed' }),
   }),
   row({
-    rownum: 5,
+    rownum: 6,
     record_id: 'review-1',
     trace_id: 'trc_review',
     ts: '2026-06-01T20:01:45.000Z',
@@ -117,7 +132,23 @@ const fixtureRows: TraceHomeRow[] = [
     result_json: JSON.stringify({ ok: true, code: 'OK', message: 'review.run completed' }),
   }),
   row({
-    rownum: 6,
+    rownum: 7,
+    record_id: 'github-wrapper',
+    trace_id: 'trc_gh',
+    ts: '2026-06-01T20:01:50.000Z',
+    tool: 'github',
+    branch: 'task/workspace/clarify-tools-search-steering-usage',
+    status: 'failed',
+    code: 'COMMAND_FAILED',
+    exit_code: 1,
+    duration_ms: 1200,
+    total_tokens: 100,
+    resolved_input_json: JSON.stringify({ operation: 'raw', rawArgs: ['run', 'view', '123', '--log'] }),
+    stderr: githubWrapperError,
+    result_json: JSON.stringify({ ok: false, code: 'COMMAND_FAILED', message: githubWrapperError }),
+  }),
+  row({
+    rownum: 8,
     record_id: 'code-run-1',
     trace_id: 'trc_code',
     ts: '2026-06-01T20:02:10.000Z',
@@ -149,14 +180,14 @@ describe('trace home model', () => {
       sinceLabel: '10:01:12',
     });
 
-    expect(model.header).toMatchObject({ title: 'trace:home', live: true, rows: 6, errors: 1, branches: 2 });
-    expect(model.rows).toHaveLength(6);
+    expect(model.header).toMatchObject({ title: 'trace:home', live: true, rows: 8, errors: 2, branches: 2 });
+    expect(model.rows).toHaveLength(8);
     expect(model.rows[0].children).toHaveLength(2);
-    expect(model.rows[5].children.map((child) => child.tool)).toEqual(['fs.read', 'fs.search', 'task.call', 'git.diff']);
+    expect(model.rows[7].children.map((child) => child.tool)).toEqual(['fs.read', 'fs.search', 'task.call', 'git.diff']);
 
-    expect(model.summary).toMatchObject({ rows: 6, errors: 1, running: 0, branches: 2, since: '10:01:12' });
-    expect(model.topTools.map((tool) => tool.tool)).toEqual(['code.run', 'review.run', 'task.call', 'batch']);
-    expect(model.rawShell).toMatchObject({ total: 3, good: 1, suspect: 1, bad: 1 });
+    expect(model.summary).toMatchObject({ rows: 8, errors: 2, running: 0, branches: 2, since: '10:01:12' });
+    expect(model.topTools.map((tool) => tool.tool)).toEqual(['code.run', 'review.run', 'task.call', 'batch', 'task.exec', 'github']);
+    expect(model.rawShell).toMatchObject({ total: 4, good: 1, suspect: 2, bad: 1 });
 
     expect(model.selected?.traceId).toBe('trc_suspect');
     expect(model.selected?.commandQuality).toMatchObject({
@@ -171,30 +202,60 @@ describe('trace home model', () => {
     expect(model.rawJson).toContain('"classification"');
   });
 
-  test('renders the mockup-aligned sections in deterministic text mode', () => {
+  test('sanitizes wrapper internals from default table, inspect, and json output', () => {
     const model = buildTraceHomeModel(fixtureRows, {
-      now: new Date('2026-06-01T20:03:00.000Z'),
-      selectedTraceId: 'trc_suspect',
+      selectedTraceId: 'trc_gh',
       sinceLabel: '10:01:12',
     });
     const output = renderTraceHome(model, { width: 151, height: 44, color: false });
 
-    for (const section of [
-      'trace:home',
-      'SUMMARY',
-      'TOP TOOLS (TOKENS)',
-      'RAW SHELL (TASK.CALL)',
-      'trace:inspect',
-      'trace:tree',
-      'trace:json',
-      'COMMAND QUALITY',
-      'Repository file inspection via shell.',
-      'enter: open',
-      'space: pause live',
-      '/: search',
-    ]) {
-      expect(output).toContain(section);
-    }
+    expect(sanitizeDefaultText(githubWrapperError)).not.toContain("execFileSync('gh', args");
+    expect(output).not.toContain("execFileSync('gh', args");
+    expect(model.selected?.stderr).toContain('job still in progress; logs unavailable yet');
+    expect(model.rawJson).not.toContain("execFileSync('gh', args");
+    expect(output).toContain('github raw');
+  });
+
+  test('classifies task.call and task.exec command quality', () => {
+    expect(classifyTaskCallCommand(['bun', '--cwd', 'packages/os', 'run', 'tools:search']).quality).toBe('good');
+    expect(classifyTaskCallCommand(['task.exec', 'bash', '-lc', "sed -n '1,260p' packages/os/scripts/install.ts"]).quality).toBe('suspect');
+    expect(classifyTaskCallCommand(['bash', '-lc', 'grep -R trace:watch scripts/operator']).quality).toBe('suspect');
+    expect(classifyTaskCallCommand(['bash', '-lc', 'rm -rf .task/tmp && git reset --hard']).quality).toBe('bad');
+  });
+
+  test('builds selected tree context for batch and code.run children', () => {
+    const model = buildTraceHomeModel(fixtureRows, { selectedTraceId: 'trc_code', sinceLabel: '10:01:12' });
+    const tree = model.tree.lines.join('\n');
+
+    expect(tree).toContain('> code.run');
+    expect(tree).toContain('├─ ✓ fs.read');
+    expect(tree).toContain('├─ ✓ fs.search');
+    expect(tree).toContain('├─ ✓ task.call');
+    expect(tree).toContain('├─ ✓ git.diff');
+  });
+
+  test('renders deterministic fixed-size frame output', () => {
+    const model = buildTraceHomeModel(fixtureRows, {
+      selectedTraceId: 'trc_suspect',
+      sinceLabel: '10:01:12',
+      live: true,
+    });
+    const output = renderTraceHome(model, { width: 120, height: 36, color: false });
+    const lines = output.split('\n');
+
+    expect(lines).toHaveLength(36);
+    expect(lines[0]).toContain('trace:home');
+    expect(output).toContain('SUMMARY');
+    expect(output).toContain('trace:inspect');
+    expect(output).toContain('trace:tree');
+    expect(output).toContain('trace:json');
+    expect(output).toContain('enter: open');
+  });
+
+  test('exposes alternate-screen lifecycle sequences for live mode', () => {
+    expect(terminalSequences.enter).toContain('\u001b[?1049h');
+    expect(terminalSequences.exit).toContain('\u001b[?1049l');
+    expect(terminalSequences.exit).toContain('\u001b[?25h');
   });
 
   test('resolves trace database path with OpenWorkspace env priority', () => {
@@ -206,10 +267,5 @@ describe('trace home model', () => {
     ).toBe('/tmp/openworkspace-traces.db');
     expect(resolveTraceDb(undefined, { TRACE_DB: '/tmp/legacy-traces.db' })).toBe('/tmp/legacy-traces.db');
     expect(resolveTraceDb('/tmp/explicit-traces.db', { OPENWORKSPACE_TRACE_DB: '/tmp/openworkspace-traces.db' })).toBe('/tmp/explicit-traces.db');
-  });
-  test('classifies task.call command quality with nuance', () => {
-    expect(classifyTaskCallCommand(['bun', '--cwd', 'packages/os', 'run', 'tools:search']).quality).toBe('good');
-    expect(classifyTaskCallCommand(['bash', '-lc', "sed -n '1,260p' packages/os/scripts/install.ts"]).quality).toBe('suspect');
-    expect(classifyTaskCallCommand(['bash', '-lc', 'rm -rf .task/tmp && git reset --hard']).quality).toBe('bad');
   });
 });

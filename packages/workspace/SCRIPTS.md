@@ -1547,12 +1547,16 @@ Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explic
 
 ## trace:home — interactive trace homebase
 
-`trace:home` renders a terminal dashboard over the local workspace trace SQLite store. Use it when `trace:watch` is too compact and Ko needs a homebase view with live rows, nested `batch` / `code.run` children, summary panels, top tools by tokens, task.call command-quality counts, selected trace inspection, a tree pane, and raw JSON.
+`trace:home` opens a full-screen terminal homebase over the local workspace trace SQLite store. In live TTY mode it uses the alternate screen buffer and redraws in place, so it does not print repeated dashboards into scrollback. Use it when `trace:watch` is too compact and Ko needs a homebase view with live rows, nested `batch` / `code.run` children, summary panels, top tools by tokens, raw-shell quality counts, selected trace inspection, a trace tree, and compact sanitized JSON.
 
 ```bash
 bun run trace:home
 bun run trace:home -- --once --limit 40 --no-color
 bun run trace:home -- --trace-id trc_example --limit 100
+bun run trace:home -- --failed --tool task.call
 ```
 
-Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies `task.call` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+Important keys: `enter` opens/focuses inspect, `space` pauses live updates, `/` searches, `f` toggles failed-only, `b` cycles branch filters, `t` cycles tool filters, `g` cycles grouping, `r` refreshes, `c` copies the selected trace id where clipboard support exists, `?` shows help, `esc` backs out, and `q` quits while restoring the terminal.
+
+Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `task.call` and `task.exec` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `bad` flags destructive or broad shell shapes.
+

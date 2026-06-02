@@ -1,0 +1,97 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/fix-trace-home-opentui-dashboard",
+  "base": "origin/task/workspace/fix-trace-home-opentui-dashboard",
+  "headSha": "596120c65d904fc048b7f383261444703f63bfb7",
+  "changeHash": "41acba8eb799ae9b9599e3449c1967449dc97f77de266b092d51e6dc4620d79c",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/tests/trace-home.test.ts",
+    "scripts/operator/trace-home.ts"
+  ],
+  "verifiedAt": "2026-06-02T02:48:59.376Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/fix-trace-home-opentui-dashboard.json",
+        ".task/workspace/fix-trace-home-opentui-dashboard/current.json",
+        ".task/workspace/fix-trace-home-opentui-dashboard/evidence-log.json",
+        ".task/workspace/fix-trace-home-opentui-dashboard/read-log.json",
+        ".task/workspace/fix-trace-home-opentui-dashboard/session.json",
+        ".task/workspace/fix-trace-home-opentui-dashboard/workpad.md",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/tests/trace-home.test.ts",
+        "scripts/operator/trace-home.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 475,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 91\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:48:58\n\u001b[2m   Duration \u001b[22m 218ms\u001b[2m (transform 55ms, setup 0ms, import 60ms, tests 91ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

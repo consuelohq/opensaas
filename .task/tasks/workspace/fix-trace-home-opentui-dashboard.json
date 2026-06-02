@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-trace-home-opentui-dashboard",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 689,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/689",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/689",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/689/fix-trace-home-opentui-dashboard",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/689",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/689/fix-trace-home-opentui-dashboard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard",
+  "taskSession": "tsk_de0f933baea6",
+  "tmuxSession": "opensaas-workspace-fix-trace-home-opentui-dashboard-de0f933b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard/.task/workspace/fix-trace-home-opentui-dashboard/session.json",
+  "createdAt": "2026-06-02T02:35:54.745Z"
+}

@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/workspace/fix-trace-home-opentui-dashboard/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/tests/trace-home.test.ts",
+    "scripts/operator/trace-home.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-06-02T02:47:44.332Z"
+}

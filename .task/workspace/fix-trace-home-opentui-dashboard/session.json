@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_de0f933baea6",
+  "tmuxSession": "opensaas-workspace-fix-trace-home-opentui-dashboard-de0f933b",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-trace-home-opentui-dashboard",
+  "branch": "task/workspace/fix-trace-home-opentui-dashboard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard",
+  "prNumber": 689,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/689",
+  "createdAt": "2026-06-02T02:35:54.744Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-opentui-dashboard/.task/workspace/fix-trace-home-opentui-dashboard/session.json"
+}
