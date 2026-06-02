@@ -93,8 +93,7 @@ function parseArgs(argv: string[]): InstallOptions {
         [
           'usage: bun ./scripts/install.ts [--yes] [--dry-run] [--home <path>] [--mode local|cloud]',
           '',
-          'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work.',
-          'The background service is installed as a user LaunchAgent and can be stopped or uninstalled later.',
+          'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.',
           '',
           'Options:',
           '  --yes                 run without prompts',
@@ -220,6 +219,9 @@ async function main(): Promise<void> {
       stepComplete('artifacts');
       if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
+      info(
+        'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.',
+      );
       for (const action of result.actions) {
         info(`${action.status}: ${action.path}`);
       }

@@ -136,26 +136,94 @@ bun run install:local -- --yes
 
 The installer prepares `CONSUELO_HOME`, local runtime folders, skill metadata, and optional agent links. Consuelo OS runs a background service on the Mac so agents and apps can reach it while you work, similar to common Mac utilities that keep a helper running in the background.
 
-For foreground server testing:
+## First-time Mac install
+
+Hosted install path:
 
 ```bash
-cd packages/os
-bun run server:run
-curl --fail http://127.0.0.1:8850/health
+curl -fsSL https://install.consuelo.com/os | bash
 ```
 
-For startup and restart readiness, validate the generated macOS background services without installing them:
+The hosted `/os` route is implemented by the production app server and serves the maintained source at `packages/os/scripts/bootstrap.sh` as a shell script. Railway/DNS should map `install.consuelo.com` to the same production service that serves the app API, with the path `/os` left intact. If the deployed working directory differs from the repo root, set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` to the absolute path of `packages/os/scripts/bootstrap.sh` in that container.
+
+Repo-local bootstrap testing:
 
 ```bash
-cd packages/os
-bash scripts/install-system-daemons.sh --dry-run
+bash packages/os/scripts/bootstrap.sh --dry-run
+bash packages/os/scripts/bootstrap.sh --yes --install-daemons
+bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
 ```
 
-The dry run generates and lints user LaunchAgent plists under `scripts/generated/`. The normal install path writes those plists to `~/Library/LaunchAgents` with labels `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`, and logs to `~/Library/Logs/Consuelo`. The plists use `RunAtLoad` and `KeepAlive`; no privileged system install is required for local Mac testing.
+The bootstrap is a pre-Bun shell script. It assumes macOS plus baseline `bash`, `curl`, and `uname`; verifies macOS tools `launchctl`, `plutil`, and `lsof`; installs Bun only after confirmation unless `--yes` is passed; and fails with manual Bun instructions when `--no-install-bun` is used. It does not use `sudo`, install privileged system daemons, source arbitrary `.env` files, or mutate LaunchAgents during dry-run.
 
+When run outside a repo checkout, the hosted bootstrap downloads the Consuelo source into `~/.consuelo/source/opensaas` by default, installs the OS package dependencies with Bun, then hands off to onboarding:
+
+```bash
+bun --cwd packages/os ./scripts/install.ts --yes
+```
+
+Dry-run uses the non-mutating onboarding plan:
+
+```bash
+bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
+```
+
+Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.
+
+After onboarding, the bootstrap offers user LaunchAgent setup unless `--skip-daemons` is passed. `--yes` alone skips LaunchAgents; `--yes --install-daemons` installs them without another prompt. The user LaunchAgents install to:
+
+```text
+~/Library/LaunchAgents/com.consuelo.system.plist
+~/Library/LaunchAgents/com.consuelo.watchdog.plist
+~/Library/LaunchAgents/com.consuelo.portless.system.plist
+```
+
+The labels stay:
+
+```text
+com.consuelo.system
+com.consuelo.watchdog
+com.consuelo.portless.system
+```
+
+Logs go under:
+
+```text
+~/Library/Logs/Consuelo
+```
+
+Validate LaunchAgent setup without installing services:
+
+```bash
+bun --cwd packages/os run install:system-daemons:dry-run
+```
+
+Install LaunchAgents explicitly:
+
+```bash
+bun --cwd packages/os run install:system-daemons
+```
+
+Status and stop paths are available through the local server helper and `launchctl`:
+
+```bash
+bun --cwd packages/os run server -- status
+bun --cwd packages/os run server -- stop
+launchctl bootout "gui/$(id -u)/com.consuelo.watchdog" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.system" || true
+```
+
+To remove the user LaunchAgent plists after stopping them:
+
+```bash
+rm -f ~/Library/LaunchAgents/com.consuelo.system.plist
+rm -f ~/Library/LaunchAgents/com.consuelo.watchdog.plist
+rm -f ~/Library/LaunchAgents/com.consuelo.portless.system.plist
+```
 ## Current Boundary
 
-This is runtime foundation work. The scaffold intentionally includes one skill and docs for the shape future skills should follow. Docker, S3 storage, approval delivery, and hosted deployment hardening are separate tasks.
+This is runtime foundation work. The scaffold intentionally includes one skill and docs for the shape future skills should follow. Docker, S3 storage, approval delivery, and hosted deployment hardening beyond the `/os` bootstrap route are separate tasks.
 
 ### App files cloud artifact capability
 

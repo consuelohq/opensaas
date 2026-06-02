@@ -7,6 +7,7 @@
     "get-dev-steering": "bun ./scripts/os.ts get-dev-steering",
     "call": "bun ./scripts/os.ts call",
     "install:local": "bun ./scripts/install.ts",
+    "bootstrap": "bash ./scripts/bootstrap.sh",
     "doctor": "bun ./scripts/doctor.ts",
     "smoke:steering": "bun ./scripts/os.ts get-steering",
     "smoke:dev-steering": "bun ./scripts/os.ts get-dev-steering",
