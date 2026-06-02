@@ -117,7 +117,7 @@ fi
 
 bash "$script_dir/generate-system-daemons.sh"
 
-bash -n "$script_dir/start-brain-daemon.sh"
+bash -n "$script_dir/start-consuelo-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
 bash -n "$script_dir/workspace-watchdog.sh"
 bash -n "$script_dir/generate-system-daemons.sh"
@@ -130,7 +130,7 @@ if [ "$dry_run" -eq 1 ]; then
 fi
 
 log "running Consuelo OS smoke test on port $stage_port"
-WORKSPACE_DAEMON_PORT="$stage_port" "$script_dir/start-brain-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
+WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
 trap 'kill "$stage_pid" 2>/dev/null || true' EXIT
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then
