@@ -1,0 +1,17 @@
+{
+  "name": "consuelo-os",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/os",
+        "commands": [
+          "node scripts/check-syntax.js"
+        ]
+      }
+    }
+  }
+}

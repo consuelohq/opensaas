@@ -407,6 +407,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "os/overview/what-is-consuelo-os",
+                  "os/overview/core-concepts",
+                  "os/overview/quickstart",
+                  "os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "os/agent-interface/get-steering",
+                  "os/agent-interface/get-dev-steering",
+                  "os/agent-interface/call",
+                  "os/agent-interface/steering-files",
+                  "os/agent-interface/tool-manifest",
+                  "os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "os/runbooks/overview",
+                  "os/runbooks/daily-revenue-brief",
+                  "os/runbooks/lead-prioritizer",
+                  "os/runbooks/post-call-analysis",
+                  "os/runbooks/sales-coaching",
+                  "os/runbooks/follow-up-generator",
+                  "os/runbooks/landing-page-builder",
+                  "os/runbooks/meta-ads-review",
+                  "os/runbooks/google-ads-review",
+                  "os/runbooks/campaign-brief",
+                  "os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "os/workspace-filesystem/overview",
+                  "os/workspace-filesystem/local-development-filesystem",
+                  "os/workspace-filesystem/s3-files-production-target",
+                  "os/workspace-filesystem/artifacts",
+                  "os/workspace-filesystem/reports",
+                  "os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "os/data-layer/data-model-as-os-ontology",
+                  "os/data-layer/graphql-facades",
+                  "os/data-layer/structured-queries",
+                  "os/data-layer/vectorized-context",
+                  "os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "os/runtime/bun-runtime",
+                  "os/runtime/sandbox-executor",
+                  "os/runtime/package-scripts-vs-mcp-tools",
+                  "os/runtime/operator-scripts",
+                  "os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "os/integrations/twilio",
+                  "os/integrations/ghl",
+                  "os/integrations/meta-ads",
+                  "os/integrations/google-ads",
+                  "os/integrations/supabase-auth",
+                  "os/integrations/s3-s3-files",
+                  "os/integrations/stripe",
+                  "os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "os/pilot/insurance-revenue-workspace",
+                  "os/pilot/setup-checklist",
+                  "os/pilot/demo-flow",
+                  "os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Developers",
             "groups": [
               {
@@ -953,6 +1055,108 @@
                       "l/fr/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/fr/os/overview/what-is-consuelo-os",
+                  "l/fr/os/overview/core-concepts",
+                  "l/fr/os/overview/quickstart",
+                  "l/fr/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/fr/os/agent-interface/get-steering",
+                  "l/fr/os/agent-interface/get-dev-steering",
+                  "l/fr/os/agent-interface/call",
+                  "l/fr/os/agent-interface/steering-files",
+                  "l/fr/os/agent-interface/tool-manifest",
+                  "l/fr/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/fr/os/runbooks/overview",
+                  "l/fr/os/runbooks/daily-revenue-brief",
+                  "l/fr/os/runbooks/lead-prioritizer",
+                  "l/fr/os/runbooks/post-call-analysis",
+                  "l/fr/os/runbooks/sales-coaching",
+                  "l/fr/os/runbooks/follow-up-generator",
+                  "l/fr/os/runbooks/landing-page-builder",
+                  "l/fr/os/runbooks/meta-ads-review",
+                  "l/fr/os/runbooks/google-ads-review",
+                  "l/fr/os/runbooks/campaign-brief",
+                  "l/fr/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/fr/os/workspace-filesystem/overview",
+                  "l/fr/os/workspace-filesystem/local-development-filesystem",
+                  "l/fr/os/workspace-filesystem/s3-files-production-target",
+                  "l/fr/os/workspace-filesystem/artifacts",
+                  "l/fr/os/workspace-filesystem/reports",
+                  "l/fr/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/fr/os/data-layer/data-model-as-os-ontology",
+                  "l/fr/os/data-layer/graphql-facades",
+                  "l/fr/os/data-layer/structured-queries",
+                  "l/fr/os/data-layer/vectorized-context",
+                  "l/fr/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/fr/os/runtime/bun-runtime",
+                  "l/fr/os/runtime/sandbox-executor",
+                  "l/fr/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/fr/os/runtime/operator-scripts",
+                  "l/fr/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/fr/os/integrations/twilio",
+                  "l/fr/os/integrations/ghl",
+                  "l/fr/os/integrations/meta-ads",
+                  "l/fr/os/integrations/google-ads",
+                  "l/fr/os/integrations/supabase-auth",
+                  "l/fr/os/integrations/s3-s3-files",
+                  "l/fr/os/integrations/stripe",
+                  "l/fr/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/fr/os/pilot/insurance-revenue-workspace",
+                  "l/fr/os/pilot/setup-checklist",
+                  "l/fr/os/pilot/demo-flow",
+                  "l/fr/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -1509,6 +1713,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/ar/os/overview/what-is-consuelo-os",
+                  "l/ar/os/overview/core-concepts",
+                  "l/ar/os/overview/quickstart",
+                  "l/ar/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/ar/os/agent-interface/get-steering",
+                  "l/ar/os/agent-interface/get-dev-steering",
+                  "l/ar/os/agent-interface/call",
+                  "l/ar/os/agent-interface/steering-files",
+                  "l/ar/os/agent-interface/tool-manifest",
+                  "l/ar/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/ar/os/runbooks/overview",
+                  "l/ar/os/runbooks/daily-revenue-brief",
+                  "l/ar/os/runbooks/lead-prioritizer",
+                  "l/ar/os/runbooks/post-call-analysis",
+                  "l/ar/os/runbooks/sales-coaching",
+                  "l/ar/os/runbooks/follow-up-generator",
+                  "l/ar/os/runbooks/landing-page-builder",
+                  "l/ar/os/runbooks/meta-ads-review",
+                  "l/ar/os/runbooks/google-ads-review",
+                  "l/ar/os/runbooks/campaign-brief",
+                  "l/ar/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/ar/os/workspace-filesystem/overview",
+                  "l/ar/os/workspace-filesystem/local-development-filesystem",
+                  "l/ar/os/workspace-filesystem/s3-files-production-target",
+                  "l/ar/os/workspace-filesystem/artifacts",
+                  "l/ar/os/workspace-filesystem/reports",
+                  "l/ar/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/ar/os/data-layer/data-model-as-os-ontology",
+                  "l/ar/os/data-layer/graphql-facades",
+                  "l/ar/os/data-layer/structured-queries",
+                  "l/ar/os/data-layer/vectorized-context",
+                  "l/ar/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/ar/os/runtime/bun-runtime",
+                  "l/ar/os/runtime/sandbox-executor",
+                  "l/ar/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ar/os/runtime/operator-scripts",
+                  "l/ar/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/ar/os/integrations/twilio",
+                  "l/ar/os/integrations/ghl",
+                  "l/ar/os/integrations/meta-ads",
+                  "l/ar/os/integrations/google-ads",
+                  "l/ar/os/integrations/supabase-auth",
+                  "l/ar/os/integrations/s3-s3-files",
+                  "l/ar/os/integrations/stripe",
+                  "l/ar/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/ar/os/pilot/insurance-revenue-workspace",
+                  "l/ar/os/pilot/setup-checklist",
+                  "l/ar/os/pilot/demo-flow",
+                  "l/ar/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "المطورون",
             "groups": [
               {
@@ -2055,6 +2361,108 @@
                       "l/cs/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/cs/os/overview/what-is-consuelo-os",
+                  "l/cs/os/overview/core-concepts",
+                  "l/cs/os/overview/quickstart",
+                  "l/cs/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/cs/os/agent-interface/get-steering",
+                  "l/cs/os/agent-interface/get-dev-steering",
+                  "l/cs/os/agent-interface/call",
+                  "l/cs/os/agent-interface/steering-files",
+                  "l/cs/os/agent-interface/tool-manifest",
+                  "l/cs/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/cs/os/runbooks/overview",
+                  "l/cs/os/runbooks/daily-revenue-brief",
+                  "l/cs/os/runbooks/lead-prioritizer",
+                  "l/cs/os/runbooks/post-call-analysis",
+                  "l/cs/os/runbooks/sales-coaching",
+                  "l/cs/os/runbooks/follow-up-generator",
+                  "l/cs/os/runbooks/landing-page-builder",
+                  "l/cs/os/runbooks/meta-ads-review",
+                  "l/cs/os/runbooks/google-ads-review",
+                  "l/cs/os/runbooks/campaign-brief",
+                  "l/cs/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/cs/os/workspace-filesystem/overview",
+                  "l/cs/os/workspace-filesystem/local-development-filesystem",
+                  "l/cs/os/workspace-filesystem/s3-files-production-target",
+                  "l/cs/os/workspace-filesystem/artifacts",
+                  "l/cs/os/workspace-filesystem/reports",
+                  "l/cs/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/cs/os/data-layer/data-model-as-os-ontology",
+                  "l/cs/os/data-layer/graphql-facades",
+                  "l/cs/os/data-layer/structured-queries",
+                  "l/cs/os/data-layer/vectorized-context",
+                  "l/cs/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/cs/os/runtime/bun-runtime",
+                  "l/cs/os/runtime/sandbox-executor",
+                  "l/cs/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/cs/os/runtime/operator-scripts",
+                  "l/cs/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/cs/os/integrations/twilio",
+                  "l/cs/os/integrations/ghl",
+                  "l/cs/os/integrations/meta-ads",
+                  "l/cs/os/integrations/google-ads",
+                  "l/cs/os/integrations/supabase-auth",
+                  "l/cs/os/integrations/s3-s3-files",
+                  "l/cs/os/integrations/stripe",
+                  "l/cs/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/cs/os/pilot/insurance-revenue-workspace",
+                  "l/cs/os/pilot/setup-checklist",
+                  "l/cs/os/pilot/demo-flow",
+                  "l/cs/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -2611,6 +3019,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/de/os/overview/what-is-consuelo-os",
+                  "l/de/os/overview/core-concepts",
+                  "l/de/os/overview/quickstart",
+                  "l/de/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/de/os/agent-interface/get-steering",
+                  "l/de/os/agent-interface/get-dev-steering",
+                  "l/de/os/agent-interface/call",
+                  "l/de/os/agent-interface/steering-files",
+                  "l/de/os/agent-interface/tool-manifest",
+                  "l/de/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/de/os/runbooks/overview",
+                  "l/de/os/runbooks/daily-revenue-brief",
+                  "l/de/os/runbooks/lead-prioritizer",
+                  "l/de/os/runbooks/post-call-analysis",
+                  "l/de/os/runbooks/sales-coaching",
+                  "l/de/os/runbooks/follow-up-generator",
+                  "l/de/os/runbooks/landing-page-builder",
+                  "l/de/os/runbooks/meta-ads-review",
+                  "l/de/os/runbooks/google-ads-review",
+                  "l/de/os/runbooks/campaign-brief",
+                  "l/de/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/de/os/workspace-filesystem/overview",
+                  "l/de/os/workspace-filesystem/local-development-filesystem",
+                  "l/de/os/workspace-filesystem/s3-files-production-target",
+                  "l/de/os/workspace-filesystem/artifacts",
+                  "l/de/os/workspace-filesystem/reports",
+                  "l/de/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/de/os/data-layer/data-model-as-os-ontology",
+                  "l/de/os/data-layer/graphql-facades",
+                  "l/de/os/data-layer/structured-queries",
+                  "l/de/os/data-layer/vectorized-context",
+                  "l/de/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/de/os/runtime/bun-runtime",
+                  "l/de/os/runtime/sandbox-executor",
+                  "l/de/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/de/os/runtime/operator-scripts",
+                  "l/de/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/de/os/integrations/twilio",
+                  "l/de/os/integrations/ghl",
+                  "l/de/os/integrations/meta-ads",
+                  "l/de/os/integrations/google-ads",
+                  "l/de/os/integrations/supabase-auth",
+                  "l/de/os/integrations/s3-s3-files",
+                  "l/de/os/integrations/stripe",
+                  "l/de/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/de/os/pilot/insurance-revenue-workspace",
+                  "l/de/os/pilot/setup-checklist",
+                  "l/de/os/pilot/demo-flow",
+                  "l/de/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Entwickler",
             "groups": [
               {
@@ -3157,6 +3667,108 @@
                       "l/es/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/es/os/overview/what-is-consuelo-os",
+                  "l/es/os/overview/core-concepts",
+                  "l/es/os/overview/quickstart",
+                  "l/es/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/es/os/agent-interface/get-steering",
+                  "l/es/os/agent-interface/get-dev-steering",
+                  "l/es/os/agent-interface/call",
+                  "l/es/os/agent-interface/steering-files",
+                  "l/es/os/agent-interface/tool-manifest",
+                  "l/es/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/es/os/runbooks/overview",
+                  "l/es/os/runbooks/daily-revenue-brief",
+                  "l/es/os/runbooks/lead-prioritizer",
+                  "l/es/os/runbooks/post-call-analysis",
+                  "l/es/os/runbooks/sales-coaching",
+                  "l/es/os/runbooks/follow-up-generator",
+                  "l/es/os/runbooks/landing-page-builder",
+                  "l/es/os/runbooks/meta-ads-review",
+                  "l/es/os/runbooks/google-ads-review",
+                  "l/es/os/runbooks/campaign-brief",
+                  "l/es/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/es/os/workspace-filesystem/overview",
+                  "l/es/os/workspace-filesystem/local-development-filesystem",
+                  "l/es/os/workspace-filesystem/s3-files-production-target",
+                  "l/es/os/workspace-filesystem/artifacts",
+                  "l/es/os/workspace-filesystem/reports",
+                  "l/es/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/es/os/data-layer/data-model-as-os-ontology",
+                  "l/es/os/data-layer/graphql-facades",
+                  "l/es/os/data-layer/structured-queries",
+                  "l/es/os/data-layer/vectorized-context",
+                  "l/es/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/es/os/runtime/bun-runtime",
+                  "l/es/os/runtime/sandbox-executor",
+                  "l/es/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/es/os/runtime/operator-scripts",
+                  "l/es/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/es/os/integrations/twilio",
+                  "l/es/os/integrations/ghl",
+                  "l/es/os/integrations/meta-ads",
+                  "l/es/os/integrations/google-ads",
+                  "l/es/os/integrations/supabase-auth",
+                  "l/es/os/integrations/s3-s3-files",
+                  "l/es/os/integrations/stripe",
+                  "l/es/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/es/os/pilot/insurance-revenue-workspace",
+                  "l/es/os/pilot/setup-checklist",
+                  "l/es/os/pilot/demo-flow",
+                  "l/es/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -3713,6 +4325,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/it/os/overview/what-is-consuelo-os",
+                  "l/it/os/overview/core-concepts",
+                  "l/it/os/overview/quickstart",
+                  "l/it/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/it/os/agent-interface/get-steering",
+                  "l/it/os/agent-interface/get-dev-steering",
+                  "l/it/os/agent-interface/call",
+                  "l/it/os/agent-interface/steering-files",
+                  "l/it/os/agent-interface/tool-manifest",
+                  "l/it/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/it/os/runbooks/overview",
+                  "l/it/os/runbooks/daily-revenue-brief",
+                  "l/it/os/runbooks/lead-prioritizer",
+                  "l/it/os/runbooks/post-call-analysis",
+                  "l/it/os/runbooks/sales-coaching",
+                  "l/it/os/runbooks/follow-up-generator",
+                  "l/it/os/runbooks/landing-page-builder",
+                  "l/it/os/runbooks/meta-ads-review",
+                  "l/it/os/runbooks/google-ads-review",
+                  "l/it/os/runbooks/campaign-brief",
+                  "l/it/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/it/os/workspace-filesystem/overview",
+                  "l/it/os/workspace-filesystem/local-development-filesystem",
+                  "l/it/os/workspace-filesystem/s3-files-production-target",
+                  "l/it/os/workspace-filesystem/artifacts",
+                  "l/it/os/workspace-filesystem/reports",
+                  "l/it/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/it/os/data-layer/data-model-as-os-ontology",
+                  "l/it/os/data-layer/graphql-facades",
+                  "l/it/os/data-layer/structured-queries",
+                  "l/it/os/data-layer/vectorized-context",
+                  "l/it/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/it/os/runtime/bun-runtime",
+                  "l/it/os/runtime/sandbox-executor",
+                  "l/it/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/it/os/runtime/operator-scripts",
+                  "l/it/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/it/os/integrations/twilio",
+                  "l/it/os/integrations/ghl",
+                  "l/it/os/integrations/meta-ads",
+                  "l/it/os/integrations/google-ads",
+                  "l/it/os/integrations/supabase-auth",
+                  "l/it/os/integrations/s3-s3-files",
+                  "l/it/os/integrations/stripe",
+                  "l/it/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/it/os/pilot/insurance-revenue-workspace",
+                  "l/it/os/pilot/setup-checklist",
+                  "l/it/os/pilot/demo-flow",
+                  "l/it/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Sviluppatori",
             "groups": [
               {
@@ -4259,6 +4973,108 @@
                       "l/ja/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/ja/os/overview/what-is-consuelo-os",
+                  "l/ja/os/overview/core-concepts",
+                  "l/ja/os/overview/quickstart",
+                  "l/ja/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/ja/os/agent-interface/get-steering",
+                  "l/ja/os/agent-interface/get-dev-steering",
+                  "l/ja/os/agent-interface/call",
+                  "l/ja/os/agent-interface/steering-files",
+                  "l/ja/os/agent-interface/tool-manifest",
+                  "l/ja/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/ja/os/runbooks/overview",
+                  "l/ja/os/runbooks/daily-revenue-brief",
+                  "l/ja/os/runbooks/lead-prioritizer",
+                  "l/ja/os/runbooks/post-call-analysis",
+                  "l/ja/os/runbooks/sales-coaching",
+                  "l/ja/os/runbooks/follow-up-generator",
+                  "l/ja/os/runbooks/landing-page-builder",
+                  "l/ja/os/runbooks/meta-ads-review",
+                  "l/ja/os/runbooks/google-ads-review",
+                  "l/ja/os/runbooks/campaign-brief",
+                  "l/ja/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/ja/os/workspace-filesystem/overview",
+                  "l/ja/os/workspace-filesystem/local-development-filesystem",
+                  "l/ja/os/workspace-filesystem/s3-files-production-target",
+                  "l/ja/os/workspace-filesystem/artifacts",
+                  "l/ja/os/workspace-filesystem/reports",
+                  "l/ja/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/ja/os/data-layer/data-model-as-os-ontology",
+                  "l/ja/os/data-layer/graphql-facades",
+                  "l/ja/os/data-layer/structured-queries",
+                  "l/ja/os/data-layer/vectorized-context",
+                  "l/ja/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/ja/os/runtime/bun-runtime",
+                  "l/ja/os/runtime/sandbox-executor",
+                  "l/ja/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ja/os/runtime/operator-scripts",
+                  "l/ja/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/ja/os/integrations/twilio",
+                  "l/ja/os/integrations/ghl",
+                  "l/ja/os/integrations/meta-ads",
+                  "l/ja/os/integrations/google-ads",
+                  "l/ja/os/integrations/supabase-auth",
+                  "l/ja/os/integrations/s3-s3-files",
+                  "l/ja/os/integrations/stripe",
+                  "l/ja/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/ja/os/pilot/insurance-revenue-workspace",
+                  "l/ja/os/pilot/setup-checklist",
+                  "l/ja/os/pilot/demo-flow",
+                  "l/ja/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -4815,6 +5631,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/ko/os/overview/what-is-consuelo-os",
+                  "l/ko/os/overview/core-concepts",
+                  "l/ko/os/overview/quickstart",
+                  "l/ko/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/ko/os/agent-interface/get-steering",
+                  "l/ko/os/agent-interface/get-dev-steering",
+                  "l/ko/os/agent-interface/call",
+                  "l/ko/os/agent-interface/steering-files",
+                  "l/ko/os/agent-interface/tool-manifest",
+                  "l/ko/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/ko/os/runbooks/overview",
+                  "l/ko/os/runbooks/daily-revenue-brief",
+                  "l/ko/os/runbooks/lead-prioritizer",
+                  "l/ko/os/runbooks/post-call-analysis",
+                  "l/ko/os/runbooks/sales-coaching",
+                  "l/ko/os/runbooks/follow-up-generator",
+                  "l/ko/os/runbooks/landing-page-builder",
+                  "l/ko/os/runbooks/meta-ads-review",
+                  "l/ko/os/runbooks/google-ads-review",
+                  "l/ko/os/runbooks/campaign-brief",
+                  "l/ko/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/ko/os/workspace-filesystem/overview",
+                  "l/ko/os/workspace-filesystem/local-development-filesystem",
+                  "l/ko/os/workspace-filesystem/s3-files-production-target",
+                  "l/ko/os/workspace-filesystem/artifacts",
+                  "l/ko/os/workspace-filesystem/reports",
+                  "l/ko/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/ko/os/data-layer/data-model-as-os-ontology",
+                  "l/ko/os/data-layer/graphql-facades",
+                  "l/ko/os/data-layer/structured-queries",
+                  "l/ko/os/data-layer/vectorized-context",
+                  "l/ko/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/ko/os/runtime/bun-runtime",
+                  "l/ko/os/runtime/sandbox-executor",
+                  "l/ko/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ko/os/runtime/operator-scripts",
+                  "l/ko/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/ko/os/integrations/twilio",
+                  "l/ko/os/integrations/ghl",
+                  "l/ko/os/integrations/meta-ads",
+                  "l/ko/os/integrations/google-ads",
+                  "l/ko/os/integrations/supabase-auth",
+                  "l/ko/os/integrations/s3-s3-files",
+                  "l/ko/os/integrations/stripe",
+                  "l/ko/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/ko/os/pilot/insurance-revenue-workspace",
+                  "l/ko/os/pilot/setup-checklist",
+                  "l/ko/os/pilot/demo-flow",
+                  "l/ko/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "개발자",
             "groups": [
               {
@@ -5361,6 +6279,108 @@
                       "l/pt/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/pt/os/overview/what-is-consuelo-os",
+                  "l/pt/os/overview/core-concepts",
+                  "l/pt/os/overview/quickstart",
+                  "l/pt/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/pt/os/agent-interface/get-steering",
+                  "l/pt/os/agent-interface/get-dev-steering",
+                  "l/pt/os/agent-interface/call",
+                  "l/pt/os/agent-interface/steering-files",
+                  "l/pt/os/agent-interface/tool-manifest",
+                  "l/pt/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/pt/os/runbooks/overview",
+                  "l/pt/os/runbooks/daily-revenue-brief",
+                  "l/pt/os/runbooks/lead-prioritizer",
+                  "l/pt/os/runbooks/post-call-analysis",
+                  "l/pt/os/runbooks/sales-coaching",
+                  "l/pt/os/runbooks/follow-up-generator",
+                  "l/pt/os/runbooks/landing-page-builder",
+                  "l/pt/os/runbooks/meta-ads-review",
+                  "l/pt/os/runbooks/google-ads-review",
+                  "l/pt/os/runbooks/campaign-brief",
+                  "l/pt/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/pt/os/workspace-filesystem/overview",
+                  "l/pt/os/workspace-filesystem/local-development-filesystem",
+                  "l/pt/os/workspace-filesystem/s3-files-production-target",
+                  "l/pt/os/workspace-filesystem/artifacts",
+                  "l/pt/os/workspace-filesystem/reports",
+                  "l/pt/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/pt/os/data-layer/data-model-as-os-ontology",
+                  "l/pt/os/data-layer/graphql-facades",
+                  "l/pt/os/data-layer/structured-queries",
+                  "l/pt/os/data-layer/vectorized-context",
+                  "l/pt/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/pt/os/runtime/bun-runtime",
+                  "l/pt/os/runtime/sandbox-executor",
+                  "l/pt/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/pt/os/runtime/operator-scripts",
+                  "l/pt/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/pt/os/integrations/twilio",
+                  "l/pt/os/integrations/ghl",
+                  "l/pt/os/integrations/meta-ads",
+                  "l/pt/os/integrations/google-ads",
+                  "l/pt/os/integrations/supabase-auth",
+                  "l/pt/os/integrations/s3-s3-files",
+                  "l/pt/os/integrations/stripe",
+                  "l/pt/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/pt/os/pilot/insurance-revenue-workspace",
+                  "l/pt/os/pilot/setup-checklist",
+                  "l/pt/os/pilot/demo-flow",
+                  "l/pt/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -5917,6 +6937,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/ro/os/overview/what-is-consuelo-os",
+                  "l/ro/os/overview/core-concepts",
+                  "l/ro/os/overview/quickstart",
+                  "l/ro/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/ro/os/agent-interface/get-steering",
+                  "l/ro/os/agent-interface/get-dev-steering",
+                  "l/ro/os/agent-interface/call",
+                  "l/ro/os/agent-interface/steering-files",
+                  "l/ro/os/agent-interface/tool-manifest",
+                  "l/ro/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/ro/os/runbooks/overview",
+                  "l/ro/os/runbooks/daily-revenue-brief",
+                  "l/ro/os/runbooks/lead-prioritizer",
+                  "l/ro/os/runbooks/post-call-analysis",
+                  "l/ro/os/runbooks/sales-coaching",
+                  "l/ro/os/runbooks/follow-up-generator",
+                  "l/ro/os/runbooks/landing-page-builder",
+                  "l/ro/os/runbooks/meta-ads-review",
+                  "l/ro/os/runbooks/google-ads-review",
+                  "l/ro/os/runbooks/campaign-brief",
+                  "l/ro/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/ro/os/workspace-filesystem/overview",
+                  "l/ro/os/workspace-filesystem/local-development-filesystem",
+                  "l/ro/os/workspace-filesystem/s3-files-production-target",
+                  "l/ro/os/workspace-filesystem/artifacts",
+                  "l/ro/os/workspace-filesystem/reports",
+                  "l/ro/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/ro/os/data-layer/data-model-as-os-ontology",
+                  "l/ro/os/data-layer/graphql-facades",
+                  "l/ro/os/data-layer/structured-queries",
+                  "l/ro/os/data-layer/vectorized-context",
+                  "l/ro/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/ro/os/runtime/bun-runtime",
+                  "l/ro/os/runtime/sandbox-executor",
+                  "l/ro/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ro/os/runtime/operator-scripts",
+                  "l/ro/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/ro/os/integrations/twilio",
+                  "l/ro/os/integrations/ghl",
+                  "l/ro/os/integrations/meta-ads",
+                  "l/ro/os/integrations/google-ads",
+                  "l/ro/os/integrations/supabase-auth",
+                  "l/ro/os/integrations/s3-s3-files",
+                  "l/ro/os/integrations/stripe",
+                  "l/ro/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/ro/os/pilot/insurance-revenue-workspace",
+                  "l/ro/os/pilot/setup-checklist",
+                  "l/ro/os/pilot/demo-flow",
+                  "l/ro/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Dezvoltatori",
             "groups": [
               {
@@ -6463,6 +7585,108 @@
                       "l/ru/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/ru/os/overview/what-is-consuelo-os",
+                  "l/ru/os/overview/core-concepts",
+                  "l/ru/os/overview/quickstart",
+                  "l/ru/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/ru/os/agent-interface/get-steering",
+                  "l/ru/os/agent-interface/get-dev-steering",
+                  "l/ru/os/agent-interface/call",
+                  "l/ru/os/agent-interface/steering-files",
+                  "l/ru/os/agent-interface/tool-manifest",
+                  "l/ru/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/ru/os/runbooks/overview",
+                  "l/ru/os/runbooks/daily-revenue-brief",
+                  "l/ru/os/runbooks/lead-prioritizer",
+                  "l/ru/os/runbooks/post-call-analysis",
+                  "l/ru/os/runbooks/sales-coaching",
+                  "l/ru/os/runbooks/follow-up-generator",
+                  "l/ru/os/runbooks/landing-page-builder",
+                  "l/ru/os/runbooks/meta-ads-review",
+                  "l/ru/os/runbooks/google-ads-review",
+                  "l/ru/os/runbooks/campaign-brief",
+                  "l/ru/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/ru/os/workspace-filesystem/overview",
+                  "l/ru/os/workspace-filesystem/local-development-filesystem",
+                  "l/ru/os/workspace-filesystem/s3-files-production-target",
+                  "l/ru/os/workspace-filesystem/artifacts",
+                  "l/ru/os/workspace-filesystem/reports",
+                  "l/ru/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/ru/os/data-layer/data-model-as-os-ontology",
+                  "l/ru/os/data-layer/graphql-facades",
+                  "l/ru/os/data-layer/structured-queries",
+                  "l/ru/os/data-layer/vectorized-context",
+                  "l/ru/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/ru/os/runtime/bun-runtime",
+                  "l/ru/os/runtime/sandbox-executor",
+                  "l/ru/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/ru/os/runtime/operator-scripts",
+                  "l/ru/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/ru/os/integrations/twilio",
+                  "l/ru/os/integrations/ghl",
+                  "l/ru/os/integrations/meta-ads",
+                  "l/ru/os/integrations/google-ads",
+                  "l/ru/os/integrations/supabase-auth",
+                  "l/ru/os/integrations/s3-s3-files",
+                  "l/ru/os/integrations/stripe",
+                  "l/ru/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/ru/os/pilot/insurance-revenue-workspace",
+                  "l/ru/os/pilot/setup-checklist",
+                  "l/ru/os/pilot/demo-flow",
+                  "l/ru/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -7019,6 +8243,108 @@
             ]
           },
           {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/tr/os/overview/what-is-consuelo-os",
+                  "l/tr/os/overview/core-concepts",
+                  "l/tr/os/overview/quickstart",
+                  "l/tr/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/tr/os/agent-interface/get-steering",
+                  "l/tr/os/agent-interface/get-dev-steering",
+                  "l/tr/os/agent-interface/call",
+                  "l/tr/os/agent-interface/steering-files",
+                  "l/tr/os/agent-interface/tool-manifest",
+                  "l/tr/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/tr/os/runbooks/overview",
+                  "l/tr/os/runbooks/daily-revenue-brief",
+                  "l/tr/os/runbooks/lead-prioritizer",
+                  "l/tr/os/runbooks/post-call-analysis",
+                  "l/tr/os/runbooks/sales-coaching",
+                  "l/tr/os/runbooks/follow-up-generator",
+                  "l/tr/os/runbooks/landing-page-builder",
+                  "l/tr/os/runbooks/meta-ads-review",
+                  "l/tr/os/runbooks/google-ads-review",
+                  "l/tr/os/runbooks/campaign-brief",
+                  "l/tr/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/tr/os/workspace-filesystem/overview",
+                  "l/tr/os/workspace-filesystem/local-development-filesystem",
+                  "l/tr/os/workspace-filesystem/s3-files-production-target",
+                  "l/tr/os/workspace-filesystem/artifacts",
+                  "l/tr/os/workspace-filesystem/reports",
+                  "l/tr/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/tr/os/data-layer/data-model-as-os-ontology",
+                  "l/tr/os/data-layer/graphql-facades",
+                  "l/tr/os/data-layer/structured-queries",
+                  "l/tr/os/data-layer/vectorized-context",
+                  "l/tr/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/tr/os/runtime/bun-runtime",
+                  "l/tr/os/runtime/sandbox-executor",
+                  "l/tr/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/tr/os/runtime/operator-scripts",
+                  "l/tr/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/tr/os/integrations/twilio",
+                  "l/tr/os/integrations/ghl",
+                  "l/tr/os/integrations/meta-ads",
+                  "l/tr/os/integrations/google-ads",
+                  "l/tr/os/integrations/supabase-auth",
+                  "l/tr/os/integrations/s3-s3-files",
+                  "l/tr/os/integrations/stripe",
+                  "l/tr/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/tr/os/pilot/insurance-revenue-workspace",
+                  "l/tr/os/pilot/setup-checklist",
+                  "l/tr/os/pilot/demo-flow",
+                  "l/tr/os/pilot/success-criteria"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Geliştiriciler",
             "groups": [
               {
@@ -7565,6 +8891,108 @@
                       "l/zh/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "OS",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "sparkles",
+                "pages": [
+                  "l/zh/os/overview/what-is-consuelo-os",
+                  "l/zh/os/overview/core-concepts",
+                  "l/zh/os/overview/quickstart",
+                  "l/zh/os/overview/architecture"
+                ]
+              },
+              {
+                "group": "Agent Interface",
+                "icon": "terminal",
+                "pages": [
+                  "l/zh/os/agent-interface/get-steering",
+                  "l/zh/os/agent-interface/get-dev-steering",
+                  "l/zh/os/agent-interface/call",
+                  "l/zh/os/agent-interface/steering-files",
+                  "l/zh/os/agent-interface/tool-manifest",
+                  "l/zh/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Runbooks",
+                "icon": "bolt",
+                "pages": [
+                  "l/zh/os/runbooks/overview",
+                  "l/zh/os/runbooks/daily-revenue-brief",
+                  "l/zh/os/runbooks/lead-prioritizer",
+                  "l/zh/os/runbooks/post-call-analysis",
+                  "l/zh/os/runbooks/sales-coaching",
+                  "l/zh/os/runbooks/follow-up-generator",
+                  "l/zh/os/runbooks/landing-page-builder",
+                  "l/zh/os/runbooks/meta-ads-review",
+                  "l/zh/os/runbooks/google-ads-review",
+                  "l/zh/os/runbooks/campaign-brief",
+                  "l/zh/os/runbooks/weekly-manager-report"
+                ]
+              },
+              {
+                "group": "Workspace Filesystem",
+                "icon": "folder",
+                "pages": [
+                  "l/zh/os/workspace-filesystem/overview",
+                  "l/zh/os/workspace-filesystem/local-development-filesystem",
+                  "l/zh/os/workspace-filesystem/s3-files-production-target",
+                  "l/zh/os/workspace-filesystem/artifacts",
+                  "l/zh/os/workspace-filesystem/reports",
+                  "l/zh/os/workspace-filesystem/runbook-outputs"
+                ]
+              },
+              {
+                "group": "Data Layer",
+                "icon": "database",
+                "pages": [
+                  "l/zh/os/data-layer/data-model-as-os-ontology",
+                  "l/zh/os/data-layer/graphql-facades",
+                  "l/zh/os/data-layer/structured-queries",
+                  "l/zh/os/data-layer/vectorized-context",
+                  "l/zh/os/data-layer/decision-engine"
+                ]
+              },
+              {
+                "group": "Runtime",
+                "icon": "cpu",
+                "pages": [
+                  "l/zh/os/runtime/bun-runtime",
+                  "l/zh/os/runtime/sandbox-executor",
+                  "l/zh/os/runtime/package-scripts-vs-mcp-tools",
+                  "l/zh/os/runtime/operator-scripts",
+                  "l/zh/os/runtime/scheduled-runbooks"
+                ]
+              },
+              {
+                "group": "Integrations",
+                "icon": "plug",
+                "pages": [
+                  "l/zh/os/integrations/twilio",
+                  "l/zh/os/integrations/ghl",
+                  "l/zh/os/integrations/meta-ads",
+                  "l/zh/os/integrations/google-ads",
+                  "l/zh/os/integrations/supabase-auth",
+                  "l/zh/os/integrations/s3-s3-files",
+                  "l/zh/os/integrations/stripe",
+                  "l/zh/os/integrations/sentry-posthog"
+                ]
+              },
+              {
+                "group": "Pilot",
+                "icon": "flag",
+                "pages": [
+                  "l/zh/os/pilot/insurance-revenue-workspace",
+                  "l/zh/os/pilot/setup-checklist",
+                  "l/zh/os/pilot/demo-flow",
+                  "l/zh/os/pilot/success-criteria"
                 ]
               }
             ]

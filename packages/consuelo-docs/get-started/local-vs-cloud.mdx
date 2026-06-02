@@ -1,0 +1,69 @@
+---
+title: Local OS and Cloud OS
+description: Understand the two runtime modes for Consuelo OS.
+---
+
+# Local OS and Cloud OS
+
+Consuelo OS can run locally or in the cloud.
+
+The distinction is about runtime, storage, sharing, and observability. The product model is the same: agents connect to the OS portal, run approved skills, create tracked artifacts, and leave an observable trail.
+
+## Comparison
+
+Capability | Local OS | Cloud OS
+--- | --- | ---
+Runtime | User machine | Hosted in the regular OpenSaaS deployment path
+Storage | Local filesystem and SQLite | App database and cloud storage
+Best for | Solo users, founders, internal builders, local agent workflows | Teams, shared workspaces, customer deployments
+Agents | Local connected agents | Local or hosted agent connections, depending on setup
+Artifacts | Local bytes plus SQLite metadata | Cloud bytes plus app-native metadata
+Approvals | Local first, team surfaces later | App, chat, or team workflow surfaces
+Observability | Local logs and trace records | Hosted logs, app records, and observability tools
+Setup complexity | Low | Higher, but team-ready
+
+## Local OS
+
+Local OS should not feel like an untracked script runner. It should create the same kinds of records cloud OS creates, just stored locally.
+
+Local OS should include Bun, SQLite, an OS home folder, connected agents, local artifact storage, execution logs, trace IDs, and capability health.
+
+Local is the fastest way to build and use OS before every hosted capability is wired.
+
+## Cloud OS
+
+Cloud OS is the team version.
+
+It should include workspace and user identity through the app, app-native artifact records, cloud artifact storage, shared visibility, hosted observability, managed capabilities, and approval delivery surfaces.
+
+Cloud OS is the version that makes OS sellable for teams.
+
+## Choose local when
+
+- you are the only user
+- you want fast setup
+- your agent runs on your machine
+- you are building or testing a new skill
+- you need local files or local scripts
+
+## Choose cloud when
+
+- multiple people need access
+- artifacts need to be shared
+- workspace data is already in the app
+- capabilities should be managed server-side
+- approvals should go to team surfaces
+- support and observability matter
+
+## Migration path
+
+The same skill should be able to run in both modes when the required capabilities exist.
+
+That means skills should depend on OS services, not hardcoded storage paths. A skill should create an artifact through the artifact layer. The artifact layer decides whether bytes go to local storage or cloud storage.
+
+## Related
+
+- [Install locally](/get-started/install-local)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Integrations and capabilities](/os/concepts/integrations-and-capabilities)
+- [Observability](/os/concepts/observability)

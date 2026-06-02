@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/tasks/os/os-bootstrap-installer.json",
+    "packages/os/README.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/task-workpad.js",
+    "packages/twenty-server/src/engine/core-modules/client-config/client-config.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
+    "packages/twenty-server/src/engine/guards/public-endpoint.guard.ts"
+  ],
+  "updatedAt": "2026-06-02T02:19:08.146Z"
+}

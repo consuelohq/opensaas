@@ -165,6 +165,35 @@
         }
       }
     },
+    "os": {
+      "label": "OS",
+      "groups": {
+        "osOverview": {
+          "label": "Overview"
+        },
+        "osAgentInterface": {
+          "label": "Agent Interface"
+        },
+        "osRunbooks": {
+          "label": "Runbooks"
+        },
+        "osWorkspaceFilesystem": {
+          "label": "Workspace Filesystem"
+        },
+        "osDataLayer": {
+          "label": "Data Layer"
+        },
+        "osRuntime": {
+          "label": "Runtime"
+        },
+        "osIntegrations": {
+          "label": "Integrations"
+        },
+        "osPilot": {
+          "label": "Pilot"
+        }
+      }
+    },
     "developers": {
       "label": "Developers",
       "groups": {

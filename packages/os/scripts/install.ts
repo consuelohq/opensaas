@@ -1,0 +1,247 @@
+#!/usr/bin/env bun
+
+import {
+  cancel,
+  confirm,
+  isCancel,
+  multiselect,
+  select,
+  text,
+} from '@clack/prompts';
+
+import {
+  info,
+  printEnd,
+  printOsBanner,
+  spinner,
+  stepComplete,
+  success,
+} from './lib/cli-ui';
+import {
+  detectAgents,
+  provisionLocalOs,
+  resolveOsHome,
+  type AgentName,
+  type OsMode,
+} from './lib/install-state';
+
+type InstallOptions = {
+  dryRun: boolean;
+  yes: boolean;
+  json: boolean;
+  quiet: boolean;
+  home?: string;
+  mode?: OsMode;
+  connectAgents: AgentName[];
+};
+
+const AGENT_NAMES = new Set<AgentName>([
+  'codex',
+  'claude',
+  'opencode',
+  'factory',
+]);
+
+function writeStdout(value: string): void {
+  process.stdout.write(value);
+}
+
+function parseArgs(argv: string[]): InstallOptions {
+  const options: InstallOptions = {
+    dryRun: false,
+    yes: false,
+    json: false,
+    quiet: false,
+    connectAgents: [],
+  };
+
+  const readValue = (flag: string, index: number): string => {
+    const value = argv[index + 1];
+    if (!value || value.startsWith('-')) {
+      throw new Error(`${flag} requires a value`);
+    }
+    return value;
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--dry-run') options.dryRun = true;
+    else if (arg === '--yes' || arg === '-y') options.yes = true;
+    else if (arg === '--json') options.json = true;
+    else if (arg === '--quiet') options.quiet = true;
+    else if (arg === '--home') {
+      options.home = readValue('--home', index);
+      index += 1;
+    } else if (arg === '--mode') {
+      const mode = readValue('--mode', index);
+      index += 1;
+      if (mode !== 'local' && mode !== 'cloud')
+        throw new Error('--mode must be local or cloud');
+      options.mode = mode;
+    } else if (arg === '--connect-agent') {
+      const agent = readValue('--connect-agent', index) as AgentName;
+      index += 1;
+      if (!AGENT_NAMES.has(agent))
+        throw new Error(
+          '--connect-agent must be codex, claude, opencode, or factory',
+        );
+      options.connectAgents.push(agent);
+    } else if (arg === '--connect-agents') {
+      options.connectAgents = ['codex', 'claude', 'opencode'];
+    } else if (arg === '--help' || arg === '-h') {
+      writeStdout(
+        [
+          'usage: bun ./scripts/install.ts [--yes] [--dry-run] [--home <path>] [--mode local|cloud]',
+          '',
+          'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.',
+          '',
+          'Options:',
+          '  --yes                 run without prompts',
+          '  --dry-run             print planned writes without writing',
+          '  --home <path>         override OS home',
+          '  --mode <mode>         local or cloud',
+          '  --connect-agent <id>  connect codex, claude, opencode, or factory',
+          '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
+          '  --json                machine-readable output',
+          '  --quiet               reduce human output',
+          '',
+        ].join('\n'),
+      );
+      process.exit(0);
+    } else {
+      throw new Error(`unknown option: ${arg}`);
+    }
+  }
+
+  return options;
+}
+
+async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
+  try {
+    if (options.yes || options.json) return options;
+
+    printOsBanner(['home', 'skills', 'agents', 'artifacts', 'health']);
+
+    const mode = await select({
+      message: 'choose an OS mode',
+      initialValue: options.mode ?? 'local',
+      options: [
+        {
+          value: 'local' as const,
+          label: 'local OS',
+          hint: 'runs on this machine',
+        },
+        {
+          value: 'cloud' as const,
+          label: 'connect to cloud OS',
+          hint: 'uses hosted workspace services later',
+        },
+      ],
+    });
+    if (isCancel(mode)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
+
+    const home = await text({
+      message: 'OS home',
+      initialValue: resolveOsHome(options.home),
+      validate: (value) => (value.length > 0 ? undefined : 'home is required'),
+    });
+    if (isCancel(home)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
+
+    const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
+    let connectAgents: AgentName[] = options.connectAgents;
+    if (detectedAgents.length > 0) {
+      const shouldConnect = await confirm({
+        message: 'connect detected agents to the OS portal?',
+        initialValue: true,
+      });
+      if (!isCancel(shouldConnect) && shouldConnect) {
+        const selectedAgents = await multiselect({
+          message: 'select agents to connect',
+          options: detectedAgents.map((agent) => ({
+            value: agent.name,
+            label: agent.label,
+            hint: agent.homePath,
+          })),
+          required: false,
+        });
+        if (!isCancel(selectedAgents))
+          connectAgents = selectedAgents as AgentName[];
+      }
+    }
+
+    return {
+      ...options,
+      mode,
+      home,
+      connectAgents,
+    };
+  } catch (error: unknown) {
+    throw new Error(
+      `install prompt failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+async function main(): Promise<void> {
+  try {
+    const options = await promptOptions(parseArgs(process.argv.slice(2)));
+    const spin =
+      options.quiet || options.json
+        ? null
+        : spinner(
+            options.dryRun
+              ? 'planning local OS install...'
+              : 'installing local OS...',
+          ).start();
+    const result = provisionLocalOs({
+      home: options.home,
+      mode: options.mode ?? 'local',
+      dryRun: options.dryRun,
+      connectAgents: options.connectAgents,
+    });
+
+    spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS installed');
+
+    if (options.json) {
+      writeStdout(`${JSON.stringify(result, null, 2)}\n`);
+      return;
+    }
+
+    if (!options.quiet) {
+      stepComplete('home');
+      stepComplete('skills');
+      stepComplete('artifacts');
+      if (options.connectAgents.length > 0) stepComplete('agents');
+      success(options.dryRun ? 'dry run complete' : 'configuration saved');
+      info(
+        'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.',
+      );
+      for (const action of result.actions) {
+        info(`${action.status}: ${action.path}`);
+      }
+      info(
+        `next: CONSUELO_HOME=${result.home} bun --cwd packages/os run doctor`,
+      );
+      printEnd('OS ready');
+    }
+  } catch (error: unknown) {
+    throw new Error(
+      `install failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exit(1);
+  });
+}

@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "consuelo-design",
+      "title": "Consuelo Design",
+      "description": "Top-level orchestration skill for Consuelo Design artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+      "trigger": "Invoke when the user asks for Consuelo Design artifact work, design wiki publishing, website/spec/demo generation, or design workflow orchestration.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/consuelo-design/SKILL.md"
+      },
+      "permission": "draft",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "consuelo-design",
+        "local-artifacts"
+      ]
+    },
+    {
+      "name": "consuelo-design-landing-page",
+      "title": "Consuelo Design Landing Page (compatibility alias)",
+      "description": "Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.",
+      "trigger": "Invoke only for legacy calls that still reference the old consuelo-design-landing-page skill name.",
+      "entrypoint": "skill.json",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/consuelo-design-landing-page/skill.json"
+      },
+      "permission": "draft",
+      "requiresApproval": false,
+      "status": "deprecated",
+      "capabilities": [
+        "consuelo-design",
+        "local-artifacts"
+      ]
+    },
+    {
+      "name": "consuelo-workspace-snapshot",
+      "title": "Consuelo Workspace Snapshot",
+      "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
+      "trigger": "Invoke when the user asks an agent to inspect Consuelo workspace records, files, attachments, tasks, notes, dashboards, or GraphQL-backed workspace context.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/consuelo-workspace-snapshot/SKILL.md"
+      },
+      "permission": "read",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "workspace-graphql",
+        "consuelo-app",
+        "files"
+      ]
+    },
+    {
+      "name": "daily-revenue-brief",
+      "title": "Daily Revenue Brief",
+      "description": "Builds a daily workspace revenue brief from approved structured context and writes a local artifact.",
+      "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
+      "entrypoint": "skill.json",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/daily-revenue-brief/skill.json"
+      },
+      "permission": "read",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "consuelo-graphql"
+      ]
+    },
+    {
+      "name": "task",
+      "title": "Task Workflow",
+      "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
+      "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/task/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "workspace",
+        "repo",
+        "task-lifecycle"
+      ],
+      "tools": [
+        "workspace.get_steering",
+        "workspace.call"
+      ],
+      "subskills": []
+    }
+  ]
+}

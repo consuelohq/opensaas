@@ -1,0 +1,59 @@
+---
+title: Run Your First Skill
+description: Run a Consuelo OS skill through the OS portal.
+---
+
+# Run your first skill
+
+A skill is an approved workflow an agent can run through Consuelo OS.
+
+Use this page to verify the basic OS loop. The agent can reach OS. OS can describe available skills. A selected skill can run. The result is recorded with a trace ID.
+
+## Before you start
+
+You need local OS installed, at least one connected agent, a passing health check, and one safe skill available.
+
+## Expected flow
+
+```text
+agent asks OS for context
+  -> OS returns skills and capability health
+  -> agent selects a skill
+  -> OS validates input
+  -> OS creates an execution record
+  -> script runs behind the skill
+  -> OS returns a structured result
+```
+
+## Expected result
+
+A useful result includes status, skill name, trace ID, artifacts created, summary, and a safe error message when something fails.
+
+If a capability is missing, OS should explain which capability is missing and how to add it.
+
+## Why this matters
+
+This is the core loop. Every deeper workflow depends on the same path: context, skill, script, result, trace.
+
+## Related
+
+- [Skills](/os/concepts/skills)
+- [Scripts](/os/concepts/scripts)
+- [Approvals](/os/concepts/approvals)
+- [Observability](/os/concepts/observability)
+
+## Troubleshooting
+
+Problem | Check
+--- | ---
+Agent cannot see OS | Reconnect the agent and restart the agent app.
+OS returns no skills | Check skill registration and capability health.
+Skill cannot run | Check the required capability list for that skill.
+Result has no trace ID | Treat the execution as incomplete and inspect local logs.
+Artifact missing | Check the artifact layer instead of looking only for a local file.
+
+## What good looks like
+
+A first skill run should feel boring. The agent asks OS for context, OS shows a small set of approved skills, the selected skill runs, and the result includes enough metadata to debug it later.
+
+The first skill does not need to prove every integration. It needs to prove the OS loop: context, skill, script, result, trace.
