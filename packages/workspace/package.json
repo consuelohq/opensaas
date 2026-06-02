@@ -45,7 +45,8 @@
     "github": "bun ./scripts/github.js",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
-    "worker": "bun ./scripts/worker.ts"
+    "worker": "bun ./scripts/worker.ts",
+    "os:release-install": "bun ./scripts/os-release-install.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
