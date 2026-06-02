@@ -29,6 +29,7 @@ started: 2026-06-02
 ## workspace-owned: activity log
 
 - 2026-06-02 19:02:27 fs.write: `.task/os/prune-non-os-changes-from-stream-os/workpad.md`
+- 2026-06-02 19:05:10 fs.write: `.task/os/prune-non-os-changes-from-stream-os/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -98,3 +99,57 @@ Test-first contract:
 - No new unit test planned unless route/module edits reveal a changed behavior; this is path pruning/revert cleanup with focused smoke validation.
 
 - 2026-06-02 19:02:27 append: `.task/os/prune-non-os-changes-from-stream-os/workpad.md`
+
+
+## pruning result
+
+Created backup branch before pruning:
+
+- `backup/os-stream-pre-prune-20260602`
+
+Pruned paths by resetting them to `origin/main` or removing stream-only files:
+
+- `packages/workspace/**`
+- `packages/consuelo-design/**`
+- `areas/consuelo-design/**`
+- `agent-browser.json`
+- `packages/twenty-front/**`
+- `packages/twenty-shared/**`
+- unrelated `packages/twenty-server/**` GraphQL/session/dialer files
+- broad historical `.task/os/**` and `.task/tasks/os/**` metadata, preserving this cleanup task metadata only
+- unrelated `.task/tasks/dialer/**` and `.task/tasks/workspace-agents/**` by restoring main state so they do not appear in the final stream PR diff
+
+Final PR-equivalent diff after local cleanup commit:
+
+```text
+248 files total
+218 packages/os
+22 packages/consuelo-docs
+3 .task/os
+2 packages/twenty-server
+2 packages/cli
+1 .task/tasks
+```
+
+Disallowed-path guard passed: no `packages/workspace`, `packages/consuelo-design`, `areas/consuelo-design`, `packages/twenty-front`, `packages/twenty-shared`, `agent-browser.json`, unrelated GraphQL/session/dialer server files remain in `origin/main...HEAD`.
+
+Validation:
+
+```bash
+git diff --name-only origin/main...HEAD
+git diff --name-only origin/main...HEAD | category count
+# 248 total, categories listed above
+bad-path grep guard # no disallowed paths
+bash -n packages/os/scripts/bootstrap.sh
+bash packages/os/scripts/bootstrap.sh --help
+bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
+node -e 'JSON.parse(fs.readFileSync("packages/consuelo-docs/docs.json","utf8"))'
+git diff --check
+```
+
+Notes:
+
+- The previous broad stream state is recoverable from `backup/os-stream-pre-prune-20260602`.
+- The cleanup intentionally removes old OS task metadata from the final PR for reviewability. Runtime/source OS work remains in `packages/os`, `packages/consuelo-docs`, the OS CLI files, and the hosted route/module files.
+
+- 2026-06-02 19:05:09 append: `.task/os/prune-non-os-changes-from-stream-os/workpad.md`
