@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9fa0b79b8014",
+  "tmuxSession": "opensaas-workspace-rebuild-trace-home-with-opentui-9fa0b79b",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/rebuild-trace-home-with-opentui",
+  "branch": "task/workspace/rebuild-trace-home-with-opentui",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-rebuild-trace-home-with-opentui",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-rebuild-trace-home-with-opentui",
+  "prNumber": 693,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/693",
+  "createdAt": "2026-06-02T05:37:39.457Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-rebuild-trace-home-with-opentui/.task/workspace/rebuild-trace-home-with-opentui/session.json"
+}

@@ -1545,9 +1545,9 @@ Use `tddPhase: "red" | "green" | "post"` on task-scoped command validation when 
 
 Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.
 
-## trace:home — interactive trace homebase
+## trace:home — OpenTUI trace homebase
 
-`trace:home` renders a terminal dashboard over the local workspace trace SQLite store. Use it when `trace:watch` is too compact and Ko needs a homebase view with live rows, nested `batch` / `code.run` children, summary panels, top tools by tokens, task.call command-quality counts, selected trace inspection, a tree pane, and raw JSON.
+`trace:home` opens a full-screen OpenTUI dashboard over the local workspace trace SQLite store. Use it when `trace:watch` is too compact and Ko needs a homebase view with live rows, nested `batch` / `code.run` children, summary panels, top tools by tokens, raw-shell command-quality counts, selected trace inspection, a tree pane, and compact sanitized JSON.
 
 ```bash
 bun run trace:home
@@ -1555,4 +1555,6 @@ bun run trace:home -- --once --limit 40 --no-color
 bun run trace:home -- --trace-id trc_example --limit 100
 ```
 
-Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies `task.call` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+Live mode uses OpenTUI alternate-screen rendering, so it updates in place rather than printing repeated dashboards into scrollback. `--once` keeps deterministic text output for tests and CI. The default JSON/inspect views sanitize wrapper internals; use `--raw-json` only when raw selected-row payloads are explicitly needed.
+
+Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `task.call` and `task.exec` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
