@@ -187,6 +187,8 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/data-migration/how-tos/prepare-your-csv-files',
   USER_GUIDE_DATA_MIGRATION_HOW_TOS_UPDATE_EXISTING_RECORDS_VIA_IMPORT:
     '/user-guide/data-migration/how-tos/update-existing-records-via-import',
+  USER_GUIDE_DATA_MIGRATION_HOW_TOS_UPLOAD_CSV_PROGRAMMATICALLY:
+    '/user-guide/data-migration/how-tos/upload-csv-programmatically',
   USER_GUIDE_DATA_MIGRATION_OVERVIEW: '/user-guide/data-migration/overview',
   USER_GUIDE_DATA_MODEL_CAPABILITIES_FIELDS:
     '/user-guide/data-model/capabilities/fields',
