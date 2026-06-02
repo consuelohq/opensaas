@@ -38,6 +38,25 @@ when answering questions or reporting results, use this format:
 do not answer architecture questions from memory. search memory, read files, then answer with citations and paths.
 
 
+
+### os:release-install — release the hosted Consuelo OS curl installer
+
+Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
+
+```bash
+bun run os:release-install -- --dry-run
+bun run os:release-install
+bun run os:release-install -- --verify-only
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-install`
+- Custom domain: `install.consuelohq.com`
+- Installer path: `/os`
+- Bootstrap source: `packages/os/scripts/bootstrap.sh`
+
+
 ---
 
 ## code.run / code mode
