@@ -85,7 +85,7 @@ function main() {
   }
 
   const task = selected.task;
-  const fsScript = path.join(repoRoot, 'packages/workspace/scripts/fs.js');
+  const fsScript = path.join(repoRoot, 'packages/os/scripts/fs.js');
 
   writeStderr(`→ task: ${task.meta.area}/${task.meta.taskBranch.split('/').pop()}`);
   writeStderr(`→ cwd: ${task.worktreePath}`);

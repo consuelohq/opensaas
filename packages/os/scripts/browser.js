@@ -1,16 +1,22 @@
 #!/usr/bin/env bun
 
 // browser.js — agent-friendly browser automation wrapper
-// uses agent-browser with ko's persistent profile (already authenticated)
+// uses agent-browser with a persistent local profile when configured
 // usage: bun run browser -- <command> [options]
 
 const { execSync, spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
-const PROFILE = '/Users/kokayi/.agent-browser-ko';
-const SCREENSHOT_DIR = '/tmp/opensaas-screenshots';
-const CONSUELO_URL = 'https://consuelo.consuelohq.com';
-const APP_URL = 'https://app.consuelohq.com';
+const PROFILE = process.env.AGENT_BROWSER_PROFILE
+  || path.join(os.homedir(), '.agent-browser-ko');
+const SCREENSHOT_DIR = process.env.AGENT_SCREENSHOT_DIR
+  || path.join(os.tmpdir(), 'opensaas-screenshots');
+const CONSUELO_URL = process.env.AGENT_CONSUELO_URL
+  || 'https://consuelo.consuelohq.com';
+const APP_URL = process.env.AGENT_APP_URL
+  || 'https://app.consuelohq.com';
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
@@ -19,8 +25,8 @@ function printHelp() {
   const lines = [
     'usage: bun run browser -- <command> [options]',
     '',
-    'agent-friendly browser wrapper with ko\'s auth profile.',
-    'screenshots go to /tmp/opensaas-screenshots/.',
+    'agent-friendly browser wrapper with a persistent auth profile.',
+    `screenshots go to ${SCREENSHOT_DIR}.`,
     '',
     'commands:',
     '  open|url <url>       open url, wait for load, snapshot, screenshot',
@@ -87,7 +93,7 @@ function printHelp() {
     '  raw <...args>        pass args directly to agent-browser',
     '',
     `profile: ${PROFILE}`,
-    'set AGENT_BROWSER_PROFILE to override the persistent profile path.',
+    'set AGENT_BROWSER_PROFILE, AGENT_SCREENSHOT_DIR, AGENT_CONSUELO_URL, or AGENT_APP_URL to override defaults.',
     '',
     'options:',
     '  --headed             show browser window (visible to ko)',
@@ -97,9 +103,8 @@ function printHelp() {
   ];
   lines.forEach((l) => writeStdout(l));
 }
-
 function ensureScreenshotDir() {
-  try { execSync(`mkdir -p ${SCREENSHOT_DIR}`, { encoding: 'utf8' }); } catch {}
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
 function shouldUseProfile(args) {

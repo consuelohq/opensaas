@@ -55,20 +55,32 @@ function parseArgs(argv: string[]): InstallOptions {
     connectAgents: [],
   };
 
+  const readValue = (flag: string, index: number): string => {
+    const value = argv[index + 1];
+    if (!value || value.startsWith('-')) {
+      throw new Error(`${flag} requires a value`);
+    }
+    return value;
+  };
+
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--yes' || arg === '-y') options.yes = true;
     else if (arg === '--json') options.json = true;
     else if (arg === '--quiet') options.quiet = true;
-    else if (arg === '--home') options.home = argv[++index];
-    else if (arg === '--mode') {
-      const mode = argv[++index];
+    else if (arg === '--home') {
+      options.home = readValue('--home', index);
+      index += 1;
+    } else if (arg === '--mode') {
+      const mode = readValue('--mode', index);
+      index += 1;
       if (mode !== 'local' && mode !== 'cloud')
         throw new Error('--mode must be local or cloud');
       options.mode = mode;
     } else if (arg === '--connect-agent') {
-      const agent = argv[++index] as AgentName;
+      const agent = readValue('--connect-agent', index) as AgentName;
+      index += 1;
       if (!AGENT_NAMES.has(agent))
         throw new Error(
           '--connect-agent must be codex, claude, opencode, or factory',
@@ -76,10 +88,13 @@ function parseArgs(argv: string[]): InstallOptions {
       options.connectAgents.push(agent);
     } else if (arg === '--connect-agents') {
       options.connectAgents = ['codex', 'claude', 'opencode'];
-    } else if (arg === '--help') {
+    } else if (arg === '--help' || arg === '-h') {
       writeStdout(
         [
           'usage: bun ./scripts/install.ts [--yes] [--dry-run] [--home <path>] [--mode local|cloud]',
+          '',
+          'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work.',
+          'The background service is installed as a user LaunchAgent and can be stopped or uninstalled later.',
           '',
           'Options:',
           '  --yes                 run without prompts',

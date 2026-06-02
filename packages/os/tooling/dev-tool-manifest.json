@@ -5081,6 +5081,7 @@
     "outputSchema": "ToolsSearchOutput",
     "command": {
       "script": "tools:search",
+      "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {

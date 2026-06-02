@@ -5,17 +5,40 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
 
-if [ -f "$env_file" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$env_file"
-  set +a
-fi
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+load_env_file "$env_file"
 
 PATH="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 export PATH
 
-workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.workspace.system}"
+workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 interval_seconds="${WORKSPACE_WATCHDOG_INTERVAL_SECONDS:-30}"
 min_restart_gap_seconds="${WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS:-60}"
@@ -25,8 +48,9 @@ external_failure_threshold="${WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD:-3}"
 http_timeout_seconds="${WORKSPACE_WATCHDOG_HTTP_TIMEOUT_SECONDS:-15}"
 local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${WORKSPACE_DAEMON_PORT:-${PORT:-8850}}}"
 local_health_url="${WORKSPACE_WATCHDOG_LOCAL_URL:-http://127.0.0.1:${local_port}/health}"
-default_state_dir="${HOME:-/Users/kokayi}/Library/Caches/Consuelo/workspace-watchdog"
+default_state_dir="${HOME:-/Users/$(id -un)}/Library/Caches/Consuelo/watchdog"
 state_dir="${WORKSPACE_WATCHDOG_STATE_DIR:-$default_state_dir}"
+launch_domain="gui/$(id -u)"
 mkdir -p "$state_dir"
 
 local_tcp_failure_file="$state_dir/local-tcp-failure-count"
@@ -34,15 +58,13 @@ local_http_failure_file="$state_dir/local-http-failure-count"
 external_failure_file="$state_dir/external-failure-count"
 
 log() {
-  printf '%s %s
-' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+  printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
 }
 
 read_counter() {
   local counter_file="$1"
   if [ ! -f "$counter_file" ]; then
-    printf '0
-'
+    printf '0\n'
     return 0
   fi
   cat "$counter_file"
@@ -51,8 +73,7 @@ read_counter() {
 write_counter() {
   local counter_file="$1"
   local value="$2"
-  printf '%s
-' "$value" > "$counter_file"
+  printf '%s\n' "$value" > "$counter_file"
 }
 
 increment_counter() {
@@ -61,8 +82,7 @@ increment_counter() {
   current_value="$(read_counter "$counter_file")"
   current_value="$((current_value + 1))"
   write_counter "$counter_file" "$current_value"
-  printf '%s
-' "$current_value"
+  printf '%s\n' "$current_value"
 }
 
 reset_counter() {
@@ -85,8 +105,7 @@ derive_external_health_url() {
   fi
 
   if [ -n "${WORKSPACE_WATCHDOG_EXTERNAL_URL:-}" ]; then
-    printf '%s
-' "$WORKSPACE_WATCHDOG_EXTERNAL_URL"
+    printf '%s\n' "$WORKSPACE_WATCHDOG_EXTERNAL_URL"
     return 0
   fi
 
@@ -96,13 +115,11 @@ derive_external_health_url() {
 
   local base_url="${MCP_SERVER_URL%/}"
   if [[ "$base_url" == */mcp ]]; then
-    printf '%s/health
-' "${base_url%/mcp}"
+    printf '%s/health\n' "${base_url%/mcp}"
     return 0
   fi
 
-  printf '%s/health
-' "$base_url"
+  printf '%s/health\n' "$base_url"
 }
 
 maybe_restart() {
@@ -123,7 +140,7 @@ maybe_restart() {
 
   log "restarting $label because $reason"
   echo "$now" > "$stamp_file"
-  launchctl kickstart -k "system/$label"
+  launchctl kickstart -k "$launch_domain/$label"
 }
 
 external_health_url="$(derive_external_health_url || true)"

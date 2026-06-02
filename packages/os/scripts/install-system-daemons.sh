@@ -1,28 +1,43 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$(id -u)" -ne 0 ]; then
-  echo "run this script with sudo" >&2
-  exit 1
-fi
+dry_run=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) dry_run=1 ;;
+    --help|-h)
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run]"
+      echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $arg" >&2
+      exit 1
+      ;;
+  esac
+done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
-log_prefix="[workspace-system-install]"
+log_prefix="[consuelo-os-launchagent-install]"
 
-daemon_user="${CONSUELO_DAEMON_USER:-kokayi}"
-daemon_home="${CONSUELO_DAEMON_HOME:-/Users/$daemon_user}"
+daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
+if ! id -u "$daemon_user" >/dev/null 2>&1; then
+  echo "daemon user does not exist: $daemon_user" >&2
+  exit 1
+fi
+daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
+launch_agent_dir="$daemon_home/Library/LaunchAgents"
 log_dir="${CONSUELO_DAEMON_LOG_DIR:-$daemon_home/Library/Logs/Consuelo}"
-workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.workspace.system}"
+workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
-watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.workspace.watchdog}"
-workspace_agent_label="com.consuelo.workspace"
-portless_agent_label="com.consuelo.portless"
-workspace_agent_plist="$daemon_home/Library/LaunchAgents/${workspace_agent_label}.plist"
-portless_agent_plist="$daemon_home/Library/LaunchAgents/${portless_agent_label}.plist"
-workspace_daemon_plist="$script_dir/generated/${workspace_label}.plist"
-portless_daemon_plist="$script_dir/generated/${portless_label}.plist"
-watchdog_daemon_plist="$script_dir/generated/${watchdog_label}.plist"
+watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
+workspace_agent_plist="$launch_agent_dir/${workspace_label}.plist"
+portless_agent_plist="$launch_agent_dir/${portless_label}.plist"
+watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
+workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
+portless_generated_plist="$script_dir/generated/${portless_label}.plist"
+watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
   for candidate_port in 8961 8962 8963 9851 10851; do
@@ -38,6 +53,7 @@ if [ -z "$stage_port" ]; then
 fi
 local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8850/health}"
 uid_value="$(id -u "$daemon_user")"
+launch_domain="gui/$uid_value"
 
 log() {
   printf '%s %s\n' "$log_prefix" "$*"
@@ -76,26 +92,28 @@ wait_for_health() {
   return 1
 }
 
-rollback_to_agents() {
-  log "rolling back to user launchagents"
-  launchctl bootout "system/$watchdog_label" 2>/dev/null || true
-  launchctl bootout "system/$portless_label" 2>/dev/null || true
-  launchctl bootout "system/$workspace_label" 2>/dev/null || true
-
-  if [ -f "$workspace_agent_plist" ]; then
-    launchctl bootstrap "gui/$uid_value" "$workspace_agent_plist" 2>/dev/null || true
-    launchctl kickstart -k "gui/$uid_value/$workspace_agent_label" 2>/dev/null || true
-  fi
-
-  if [ -f "$portless_agent_plist" ]; then
-    launchctl bootstrap "gui/$uid_value" "$portless_agent_plist" 2>/dev/null || true
-    launchctl kickstart -k "gui/$uid_value/$portless_agent_label" 2>/dev/null || true
-  fi
+bootout_agent() {
+  local label="$1"
+  launchctl bootout "$launch_domain/$label" 2>/dev/null || true
 }
 
-mkdir -p "$log_dir"
-chown "$daemon_user":staff "$log_dir"
-chmod 755 "$log_dir"
+bootstrap_agent() {
+  local label="$1"
+  local plist="$2"
+  launchctl bootstrap "$launch_domain" "$plist"
+  launchctl kickstart -k "$launch_domain/$label"
+}
+
+rollback_agents() {
+  log "rolling back user LaunchAgents"
+  bootout_agent "$watchdog_label"
+  bootout_agent "$portless_label"
+  bootout_agent "$workspace_label"
+}
+
+if [ "$dry_run" -eq 0 ]; then
+  mkdir -p "$launch_agent_dir" "$log_dir"
+fi
 
 bash "$script_dir/generate-system-daemons.sh"
 
@@ -104,53 +122,51 @@ bash -n "$script_dir/start-portless-daemon.sh"
 bash -n "$script_dir/workspace-watchdog.sh"
 bash -n "$script_dir/generate-system-daemons.sh"
 bash -n "$script_dir/install-system-daemons.sh"
-plutil -lint "$workspace_daemon_plist" "$portless_daemon_plist" "$watchdog_daemon_plist"
+plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist"
 
-log "running workspace smoke test on port $stage_port"
-WORKSPACE_DAEMON_PORT="$stage_port" "$script_dir/start-brain-daemon.sh" > /tmp/workspace-daemon-stage.log 2>&1 &
+if [ "$dry_run" -eq 1 ]; then
+  log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
+  exit 0
+fi
+
+log "running Consuelo OS smoke test on port $stage_port"
+WORKSPACE_DAEMON_PORT="$stage_port" "$script_dir/start-brain-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
 trap 'kill "$stage_pid" 2>/dev/null || true' EXIT
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then
-  log "stage workspace daemon did not become healthy"
+  log "stage Consuelo OS service did not become healthy"
   exit 1
 fi
 kill "$stage_pid" 2>/dev/null || true
 wait "$stage_pid" 2>/dev/null || true
 trap - EXIT
 
-install -o root -g wheel -m 644 "$workspace_daemon_plist" "/Library/LaunchDaemons/${workspace_label}.plist"
-install -o root -g wheel -m 644 "$portless_daemon_plist" "/Library/LaunchDaemons/${portless_label}.plist"
-install -o root -g wheel -m 644 "$watchdog_daemon_plist" "/Library/LaunchDaemons/${watchdog_label}.plist"
+install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
 
-launchctl bootout "system/$watchdog_label" 2>/dev/null || true
-launchctl bootout "system/$portless_label" 2>/dev/null || true
-launchctl bootout "system/$workspace_label" 2>/dev/null || true
+bootout_agent "$watchdog_label"
+bootout_agent "$portless_label"
+bootout_agent "$workspace_label"
 
-launchctl bootout "gui/$uid_value/$workspace_agent_label" 2>/dev/null || true
-launchctl bootout "gui/$uid_value/$portless_agent_label" 2>/dev/null || true
-
-launchctl bootstrap system "/Library/LaunchDaemons/${workspace_label}.plist"
-launchctl bootstrap system "/Library/LaunchDaemons/${portless_label}.plist"
-launchctl bootstrap system "/Library/LaunchDaemons/${watchdog_label}.plist"
-
-launchctl kickstart -k "system/$workspace_label"
-launchctl kickstart -k "system/$portless_label"
-launchctl kickstart -k "system/$watchdog_label"
+bootstrap_agent "$workspace_label" "$workspace_agent_plist"
+bootstrap_agent "$portless_label" "$portless_agent_plist"
+bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
 if ! wait_for_health "$local_health_url" 20 1; then
-  log "local workspace health failed after cutover"
-  rollback_to_agents
+  log "local Consuelo OS health failed after LaunchAgent cutover"
+  rollback_agents
   exit 1
 fi
 
 external_health_url="$(derive_external_health_url || true)"
 if [ -n "$external_health_url" ] && ! wait_for_health "$external_health_url" 20 1; then
-  log "external health failed after cutover"
-  rollback_to_agents
+  log "external health failed after LaunchAgent cutover"
+  rollback_agents
   exit 1
 fi
 
-log "cutover complete"
-launchctl print "system/$workspace_label" | sed -n '1,80p'
-launchctl print "system/$portless_label" | sed -n '1,80p'
-launchctl print "system/$watchdog_label" | sed -n '1,80p'
+log "LaunchAgent cutover complete"
+launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
+launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
+launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
