@@ -124,10 +124,38 @@ bun run server -- restart
 bun run server -- stop
 ```
 
-## Current boundary
+## Local Mac Testing Path
+
+Run a user-style local install without writing files first:
+
+```bash
+cd packages/os
+bun run install:local -- --dry-run --json
+bun run install:local -- --yes
+```
+
+The installer prepares `CONSUELO_HOME`, local runtime folders, skill metadata, and optional agent links. Consuelo OS runs a background service on the Mac so agents and apps can reach it while you work, similar to common Mac utilities that keep a helper running in the background.
+
+For foreground server testing:
+
+```bash
+cd packages/os
+bun run server:run
+curl --fail http://127.0.0.1:8850/health
+```
+
+For startup and restart readiness, validate the generated macOS background services without installing them:
+
+```bash
+cd packages/os
+bash scripts/install-system-daemons.sh --dry-run
+```
+
+The dry run generates and lints user LaunchAgent plists under `scripts/generated/`. The normal install path writes those plists to `~/Library/LaunchAgents` with labels `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`, and logs to `~/Library/Logs/Consuelo`. The plists use `RunAtLoad` and `KeepAlive`; no privileged system install is required for local Mac testing.
+
+## Current Boundary
 
 This is runtime foundation work. The scaffold intentionally includes one skill and docs for the shape future skills should follow. Docker, S3 storage, approval delivery, and hosted deployment hardening are separate tasks.
-
 
 ### App files cloud artifact capability
 
@@ -146,4 +174,3 @@ bun run doctor:analytics -- --json
 Doctor redacts known secret keys, bearer/API tokens, credential-like values, full phone numbers, sensitive URL query values, and raw payload bodies before writing execution logs or printing Doctor output.
 
 Use `--home <path>` or `--db <path>` when inspecting another OS home. The scripts read the packaged OS execution tables and do not depend on Ko's local workspace trace database.
-

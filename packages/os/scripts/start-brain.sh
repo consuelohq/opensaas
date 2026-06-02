@@ -5,27 +5,48 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
 
-if [ -f "$env_file" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$env_file"
-  set +a
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+load_env_file "$env_file"
+
+export PATH="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-8850}}}"
+export PORT="$CONSUELO_OS_PORT"
+export CONSUELO_HOME="${WORKSPACE_DAEMON_CONSUELO_HOME:-${CONSUELO_HOME:-${HOME:-/tmp}/.consuelo/os}}"
+
+bun_bin="${BUN_BIN:-}"
+if [ -z "$bun_bin" ]; then
+  bun_bin="$(command -v bun || true)"
+fi
+if [ -z "$bun_bin" ]; then
+  echo "bun binary not found in PATH=$PATH" >&2
+  exit 1
 fi
 
-export PORT="${PORT:-8850}"
-export STEERING_FILE="${STEERING_FILE:-$root_dir/BRAIN.md}"
-export WORKSPACE_DIR="${WORKSPACE_DIR:-$root_dir}"
-
-# kill any stale process holding the port (prevents address-in-use crash loops after sleep/wake)
-stale_pid=$(lsof -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null || true)
-if [ -n "$stale_pid" ]; then
-  kill "$stale_pid" 2>/dev/null || true
-  sleep 1
-fi
-
-python_bin="${PYTHON_BIN:-$root_dir/.venv/bin/python3}"
-if [ ! -x "$python_bin" ]; then
-  python_bin="$(command -v python3)"
-fi
-
-exec "$python_bin" "$root_dir/server.py"
+exec "$bun_bin" "$root_dir/scripts/server.ts"

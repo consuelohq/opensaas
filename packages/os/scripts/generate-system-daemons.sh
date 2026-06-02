@@ -7,19 +7,62 @@ generated_dir="$script_dir/generated"
 env_file="$root_dir/.env"
 mkdir -p "$generated_dir"
 
-if [ -f "$env_file" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$env_file"
-  set +a
-fi
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
 
-consuelo_user="${CONSUELO_DAEMON_USER:-kokayi}"
-consuelo_home="${CONSUELO_DAEMON_HOME:-/Users/$consuelo_user}"
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+sanitize_label() {
+  local fallback="$1"
+  local raw="$2"
+  local sanitized
+  sanitized="$(printf '%s' "$raw" | tr -c 'A-Za-z0-9._-' '_')"
+  while [[ "$sanitized" == *..* ]]; do
+    sanitized="${sanitized//../_}"
+  done
+  sanitized="${sanitized#.}"
+  sanitized="${sanitized#/}"
+  if [ -z "$sanitized" ]; then
+    sanitized="$fallback"
+  fi
+  printf '%s\n' "$sanitized"
+}
+
+load_env_file "$env_file"
+
+consuelo_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
+if ! id -u "$consuelo_user" >/dev/null 2>&1; then
+  echo "daemon user does not exist: $consuelo_user" >&2
+  exit 1
+fi
+consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
 log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_home/Library/Logs/Consuelo}"
-workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.workspace.system}"
-portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
-watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.workspace.watchdog}"
+workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
+portless_label="$(sanitize_label 'com.consuelo.portless.system' "${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}")"
+watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}")"
 workspace_path="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
@@ -40,14 +83,12 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
   <true/>
   <key>KeepAlive</key>
   <true/>
-  <key>UserName</key>
-  <string>${consuelo_user}</string>
   <key>WorkingDirectory</key>
   <string>${root_dir}</string>
   <key>StandardOutPath</key>
-  <string>${log_dir}/workspace-daemon.log</string>
+  <string>${log_dir}/system.log</string>
   <key>StandardErrorPath</key>
-  <string>${log_dir}/workspace-daemon.log</string>
+  <string>${log_dir}/system.log</string>
   <key>ThrottleInterval</key>
   <integer>5</integer>
   <key>EnvironmentVariables</key>
@@ -83,14 +124,12 @@ cat > "$generated_dir/${portless_label}.plist" <<PLIST
   <true/>
   <key>KeepAlive</key>
   <true/>
-  <key>UserName</key>
-  <string>${consuelo_user}</string>
   <key>WorkingDirectory</key>
   <string>${consuelo_home}</string>
   <key>StandardOutPath</key>
-  <string>${log_dir}/portless-daemon.log</string>
+  <string>${log_dir}/portless.log</string>
   <key>StandardErrorPath</key>
-  <string>${log_dir}/portless-daemon.log</string>
+  <string>${log_dir}/portless.log</string>
   <key>ThrottleInterval</key>
   <integer>5</integer>
   <key>EnvironmentVariables</key>
@@ -129,9 +168,9 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
   <key>WorkingDirectory</key>
   <string>${root_dir}</string>
   <key>StandardOutPath</key>
-  <string>${log_dir}/workspace-watchdog.log</string>
+  <string>${log_dir}/watchdog.log</string>
   <key>StandardErrorPath</key>
-  <string>${log_dir}/workspace-watchdog.log</string>
+  <string>${log_dir}/watchdog.log</string>
   <key>ThrottleInterval</key>
   <integer>5</integer>
   <key>EnvironmentVariables</key>
@@ -143,4 +182,4 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
 </plist>
 PLIST
 
-echo "generated system daemon plists in $generated_dir"
+echo "generated user LaunchAgent plists in $generated_dir"

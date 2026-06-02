@@ -750,7 +750,7 @@ bun run linear -- query "{ viewer { id name } }"
 
 ### browser — test and interact with web pages
 
-opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-browser-ko`. use for production verification after deploys.
+opens agent-browser with a persistent local auth profile. set `AGENT_BROWSER_PROFILE` to override the default `~/.agent-browser-ko` path; screenshots default to the system temp directory unless `AGENT_SCREENSHOT_DIR` is set.
 
 ```bash
 bun run browser -- consuelo                 # open consuelo CRM (internal)
@@ -1300,3 +1300,18 @@ bun run doctor
 bun run doctor -- --home /tmp/consuelo-os
 bun run doctor -- --json
 ```
+
+### install:system-daemons
+
+```bash
+bun run install:system-daemons
+```
+Install the local Mac launchd services for the OS Bun server, portless proxy, and watchdog. The normal path installs user LaunchAgents in `~/Library/LaunchAgents` with labels `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`; it does not require `sudo`. Consuelo OS runs this background service so agents and apps can reach it while the user works.
+
+### install:system-daemons:dry-run
+
+```bash
+bun run install:system-daemons:dry-run
+```
+
+Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.

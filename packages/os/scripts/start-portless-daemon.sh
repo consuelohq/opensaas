@@ -5,15 +5,38 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
 
-if [ -f "$env_file" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$env_file"
-  set +a
-fi
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
 
-export HOME="${PORTLESS_DAEMON_HOME:-${HOME:-/Users/kokayi}}"
-export USER="${PORTLESS_DAEMON_USER:-${USER:-kokayi}}"
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+load_env_file "$env_file"
+
+export HOME="${PORTLESS_DAEMON_HOME:-${HOME:-/Users/$(id -un)}}"
+export USER="${PORTLESS_DAEMON_USER:-${USER:-$(id -un)}}"
 export PATH="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 export PORTLESS_HTTPS="${PORTLESS_HTTPS:-1}"
 
