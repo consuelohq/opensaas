@@ -15,7 +15,7 @@ every script supports `--help` and `--json`.
 `bootstrap` is the pre-Bun Mac installer entrypoint. It is also served by the production app route at `/os` so a first-time user can run:
 
 ```bash
-curl -fsSL https://install.consuelo.com/os | bash
+curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
 Repo-local checks:
@@ -50,7 +50,7 @@ bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 
 Background services stay user-level only. Labels are `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`; plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
 
-The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelo.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
+The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
 
 ---
 
