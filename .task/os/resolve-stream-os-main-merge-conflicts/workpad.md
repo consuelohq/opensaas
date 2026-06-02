@@ -31,6 +31,7 @@ started: 2026-06-02
 - 2026-06-02 18:07:18 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
 - 2026-06-02 18:13:17 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
 - 2026-06-02 18:19:38 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
+- 2026-06-02 18:29:13 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -167,3 +168,18 @@ Current state:
 - Do not run `task.pr` / promotion until Ko confirms the resolution and approves either retrying a heavier verify path or using the approved publish path with the recorded focused validation evidence.
 
 - 2026-06-02 18:19:38 append: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
+
+
+## Ko approval to publish
+
+Ko approved pushing this conflict-resolution task to `stream/os` despite the verify/review timeout, with the intent to manually merge the now-unconflicted stream PR to `main` and then continue with Railway deploy validation.
+
+Approval basis:
+
+- Conflicts are resolved locally.
+- Focused OS/bootstrap/docs validation passed.
+- Verify/review gate timeout was tooling/process related and left stuck validation processes, not a code failure envelope.
+
+Next action: run approved `task.push`, then `task.pr` to promote into `stream/os`. Do not merge stream PR to main from the agent.
+
+- 2026-06-02 18:29:13 append: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
