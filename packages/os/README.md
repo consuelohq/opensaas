@@ -141,10 +141,10 @@ The installer prepares `CONSUELO_HOME`, local runtime folders, skill metadata, a
 Hosted install path:
 
 ```bash
-curl -fsSL https://install.consuelo.com/os | bash
+curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
-The hosted `/os` route is implemented by the production app server and serves the maintained source at `packages/os/scripts/bootstrap.sh` as a shell script. Railway/DNS should map `install.consuelo.com` to the same production service that serves the app API, with the path `/os` left intact. If the deployed working directory differs from the repo root, set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` to the absolute path of `packages/os/scripts/bootstrap.sh` in that container.
+The hosted `/os` route is implemented by the production app server and serves the maintained source at `packages/os/scripts/bootstrap.sh` as a shell script. Railway/DNS should map `install.consuelohq.com` to the same production service that serves the app API, with the path `/os` left intact. If the deployed working directory differs from the repo root, set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` to the absolute path of `packages/os/scripts/bootstrap.sh` in that container.
 
 Repo-local bootstrap testing:
 

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 PROGRAM="Consuelo OS bootstrap"
-HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelo.com/os | bash"
-HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelo.com/os | bash -s --"
+HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
+HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
 DEFAULT_SOURCE_DIR="$HOME/.consuelo/source/opensaas"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
 REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz}"
@@ -28,7 +28,7 @@ usage() {
 Usage: bash packages/os/scripts/bootstrap.sh [options]
 
 Hosted first-time install:
-  curl -fsSL https://install.consuelo.com/os | bash
+  curl -fsSL https://install.consuelohq.com/os | bash
 
 Repo-local testing:
   bash packages/os/scripts/bootstrap.sh --dry-run

@@ -26,10 +26,10 @@ started: 2026-06-02
 
 The endpoint reads from the maintained bootstrap source. `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` can override the script path if the deployed process does not run from the repo root.
 
-Production mapping needed outside the repo: map `install.consuelo.com` to the production app service that serves this Nest route and preserve `/os`. Then the user command is:
+Production mapping needed outside the repo: map `install.consuelohq.com` to the production app service that serves this Nest route and preserve `/os`. Then the user command is:
 
 ```bash
-curl -fsSL https://install.consuelo.com/os | bash
+curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
 ## prerequisite behavior
@@ -154,10 +154,10 @@ Focused guards:
 
 ## exact command Ko should run next
 
-After this lands on `main` and Railway/DNS maps `install.consuelo.com` to the production app route:
+After this lands on `main` and Railway/DNS maps `install.consuelohq.com` to the production app route:
 
 ```bash
-curl -fsSL https://install.consuelo.com/os | bash
+curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
 For repo-local verification now:

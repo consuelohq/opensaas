@@ -15,7 +15,7 @@ Implemented the first-time hosted Consuelo OS bootstrap path:
 The OS task requires a real installer command:
 
 ```bash
-curl -fsSL https://install.consuelo.com/os | bash
+curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
 The hosted endpoint now serves the maintained bootstrap source instead of requiring an out-of-band local script or fake doc route.
@@ -58,7 +58,7 @@ TESTS:twenty-server ✗ FAIL (5.3s) 2 failed, 2 skipped, 2115 passed, 2119 total
 - Real `npx nx run twenty-server:start:ci` could not start from the task worktree because Node cannot resolve `@nestjs/core` from `packages/twenty-server/dist/main.js`.
 - `npx nx run twenty-server:typecheck` fails on missing server dependencies such as `@nestjs/common` across the worktree, including existing files.
 - The exact requested `bun --cwd packages/os run install:system-daemons:dry-run` prints Bun `run` usage in this local Bun version; equivalent `bun run --cwd packages/os install:system-daemons:dry-run` validates the daemon script successfully.
-- Production still needs external Railway/DNS mapping: map `install.consuelo.com` to the app service preserving `/os`; set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed cwd is not the repo root.
+- Production still needs external Railway/DNS mapping: map `install.consuelohq.com` to the app service preserving `/os`; set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed cwd is not the repo root.
 
 ## publish
 
