@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+  "events": [
+    {
+      "id": "4dcc3942-8fc5-4f54-b1cc-833f1c894800",
+      "occurred_at": "2026-06-02T00:21:18.201Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "e93a1ae0-7fea-4bc5-9ff2-04ca7f7bbcf6",
+      "occurred_at": "2026-06-02T00:21:18.508Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "82f1bf81-8235-4687-9f25-dbb6489c2b49",
+      "occurred_at": "2026-06-02T00:21:18.799Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "400d9f04-c85a-458e-ba53-5f884c9e9874",
+      "occurred_at": "2026-06-02T00:21:19.089Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "0ec89133-e193-4fc8-970a-c3f6b565549a",
+      "occurred_at": "2026-06-02T00:21:19.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "efeaa705-e2e3-4279-9d07-fed6a4cb1ec4",
+      "occurred_at": "2026-06-02T00:21:26.725Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "914a022d-2762-4d11-827b-33a6cab722ee",
+      "occurred_at": "2026-06-02T00:22:03.826Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "1184b9be-2a1f-44ce-8578-5c13da779fd1",
+      "occurred_at": "2026-06-02T00:22:42.174Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "c8583755-f0f4-4b2a-91ed-bf2d47de19e9",
+      "occurred_at": "2026-06-02T00:23:32.067Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "66a7dfd9-32b4-4d05-9540-2fc033ec865a",
+      "occurred_at": "2026-06-02T00:24:10.408Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "e319a746-d986-4c14-aceb-b14a010fc249",
+      "occurred_at": "2026-06-02T00:25:02.115Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "9acda204-8403-4a85-af17-e53cefa0e0e8",
+      "occurred_at": "2026-06-02T00:25:13.823Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-analytics.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "d45acf33-5452-4bec-8e02-96117cc2e52a",
+      "occurred_at": "2026-06-02T00:25:56.979Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/context-trace.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "e0161bec-16da-4a0d-bbaf-561ba7092613",
+      "occurred_at": "2026-06-02T00:26:46.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "0ef23963-5a9f-4a68-9a57-33c5ef7a921f",
+      "occurred_at": "2026-06-02T00:27:28.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/build-trace-home-tui-inspector/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "6c9780d0-f682-4f4d-9435-e59efe280aa0",
+      "occurred_at": "2026-06-02T00:33:08.803Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "26ce57c0-54e6-4deb-9a41-d358b72c4662",
+      "occurred_at": "2026-06-02T00:33:36.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "4e8ab901-1bad-4514-b8dc-1bf7eac8ee6e",
+      "occurred_at": "2026-06-02T00:36:07.266Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "8cb9f0ca-7786-43ce-9c7d-4cfea3385989",
+      "occurred_at": "2026-06-02T00:36:23.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "7c33e4fb-749b-4901-bf64-d3e7386c7aa8",
+      "occurred_at": "2026-06-02T00:36:46.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "21b13f2b-3a5e-4734-aadf-f628c12755fc",
+      "occurred_at": "2026-06-02T00:38:10.663Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "edf46082-a894-4159-ae26-4acd600bc7f9",
+      "occurred_at": "2026-06-02T00:39:06.571Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "bf0b2848-5748-4e17-bacf-9f811e9fd4a7",
+      "occurred_at": "2026-06-02T00:40:24.250Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "25d05e60-b7f7-4c03-935a-80b4c5e43937",
+      "occurred_at": "2026-06-02T00:41:53.991Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "f77e98c5-a0b3-479b-9a8a-62ccbef040eb",
+      "occurred_at": "2026-06-02T00:42:00.929Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "ca3d3554-ae4d-43dc-ab32-df0e85a67247",
+      "occurred_at": "2026-06-02T00:44:17.557Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "e1ef5c38-f47d-411d-b94d-d157f75cd310",
+      "occurred_at": "2026-06-02T00:45:11.821Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "5502521f-f520-43f3-bbda-02ef7d09fe5a",
+      "occurred_at": "2026-06-02T00:46:57.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "9270b54c-3e28-4e4e-99a2-b5ede3a56cc3",
+      "occurred_at": "2026-06-02T00:47:45.050Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "bfe71e51-476a-4c78-a910-6f8527609a6b",
+      "occurred_at": "2026-06-02T00:48:57.559Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "bbf3eaa2-384a-4cf0-8b3a-df9f6f585b8f",
+      "occurred_at": "2026-06-02T00:50:29.473Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    },
+    {
+      "id": "2808a883-25e9-4e39-b78b-a13b728ec3ca",
+      "occurred_at": "2026-06-02T00:52:09.569Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/build-trace-home-tui-inspector/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-02T00:52:09.619Z"
+}

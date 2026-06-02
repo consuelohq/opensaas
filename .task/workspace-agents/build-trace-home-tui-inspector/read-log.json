@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/workspace-agents/build-trace-home-tui-inspector/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/tests/context-trace.test.js",
+    "scripts/operator/trace-analytics.ts",
+    "scripts/operator/trace-home.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-06-02T00:52:09.519Z"
+}
