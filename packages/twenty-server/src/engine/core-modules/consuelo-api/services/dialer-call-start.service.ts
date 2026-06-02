@@ -431,6 +431,7 @@ export class DialerCallStartService {
               qi.attempts,
               COALESCE(
                 contacts.phone,
+                NULLIF(person."phone", ''),
                 NULLIF(
                   CONCAT(
                     person."phonesPrimaryPhoneCallingCode",

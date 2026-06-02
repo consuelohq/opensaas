@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/verify-production-call-start-result",
+  "events": [
+    {
+      "id": "c316fa35-70d3-4776-b372-48cc45cdde77",
+      "occurred_at": "2026-05-24T01:00:47.146Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useQueueControls.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "f2a4e635-b7c0-4dfe-86c1-9be8c393a364",
+      "occurred_at": "2026-05-24T01:01:12.819Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useQueueControls.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "4c435d7a-6931-4173-ab51-fcb6c238be8d",
+      "occurred_at": "2026-05-24T01:03:56.038Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "fedfda92-7893-4248-9eb4-fd1a887a5b50",
+      "occurred_at": "2026-05-24T01:04:09.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "0b4cc251-4bd2-4b69-8a71-7003d6aeb950",
+      "occurred_at": "2026-05-24T01:05:42.339Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/apollo/utils/getTokenPair.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "97757927-49e3-4202-8297-20257c8ab6fd",
+      "occurred_at": "2026-05-24T01:06:08.022Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "4ab2cc06-2422-4e3e-8fac-e1dc5fbad668",
+      "occurred_at": "2026-05-24T01:06:12.947Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "f56b4229-9c3b-4a0c-be06-00b4778f44e6",
+      "occurred_at": "2026-05-24T01:06:38.982Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useDialerContact.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "0a2e3163-c686-4e94-a763-149bbc9e60ae",
+      "occurred_at": "2026-05-24T01:07:06.170Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/contactAdapter.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "6f090f84-fdc2-487c-93bf-b7e1a78fafcc",
+      "occurred_at": "2026-05-24T01:07:22.134Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/people/types/Person.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "872cff24-e5f7-45cc-8055-cecdc331d535",
+      "occurred_at": "2026-05-24T01:07:36.540Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    },
+    {
+      "id": "06ae5693-f10c-4c9d-bc7d-46af308661bb",
+      "occurred_at": "2026-05-24T01:07:51.849Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/verify-production-call-start-result",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/verify-production-call-start-result"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T01:07:51.902Z"
+}
