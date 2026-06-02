@@ -289,7 +289,8 @@
     "test-selection": "node packages/workspace/scripts/test-selection.js",
     "wiki:render": "bun run --cwd packages/consuelo-design wiki:render --",
     "wiki:validate": "bun run --cwd packages/consuelo-design wiki:validate --",
-    "test:reader": "bun run --cwd packages/consuelo-design test:reader"
+    "test:reader": "bun run --cwd packages/consuelo-design test:reader",
+    "os:release-install": "bun packages/workspace/scripts/os-release-install.ts"
   },
   "workspaces": {
     "packages": [
