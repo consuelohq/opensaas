@@ -29,6 +29,7 @@ started: 2026-06-02
 ## workspace-owned: activity log
 
 - 2026-06-02 19:13:36 fs.write: `.task/os/restore-os-task-metadata-history/workpad.md`
+- 2026-06-02 19:15:50 fs.write: `.task/os/restore-os-task-metadata-history/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -78,3 +79,53 @@ Acceptance criteria:
 - Validate bootstrap/help/dry-run still passes.
 
 - 2026-06-02 19:13:36 append: `.task/os/restore-os-task-metadata-history/workpad.md`
+
+
+## result
+
+Restored `.task` history metadata from `backup/os-stream-pre-prune-20260602` after Ko clarified that `.task` is intentional historical/task context and should remain even if noisy.
+
+Restored:
+- root `.task/evidence-log.json`, `.task/explore-state.json`, `.task/read-log.json`
+- historical `.task/os/**` workpads/session/current/evidence/read/verify files
+- historical `.task/tasks/os/**` task registry files
+- this task's own metadata: `.task/os/restore-os-task-metadata-history/**` and `.task/tasks/os/restore-os-task-metadata-history.json`
+
+Kept pruned:
+- `packages/workspace/**`
+- `packages/consuelo-design/**`
+- `areas/consuelo-design/**`
+- `packages/twenty-front/**`
+- `packages/twenty-shared/**`
+- `agent-browser.json`
+- unrelated server GraphQL/session/dialer paths
+
+Final PR-equivalent category count before promotion:
+
+```text
+218 packages/os
+84 .task/os
+28 .task/tasks
+22 packages/consuelo-docs
+2 packages/twenty-server
+2 packages/cli
+1 .task/read-log.json
+1 .task/explore-state.json
+1 .task/evidence-log.json
+359 total
+```
+
+Validation:
+
+```bash
+bad-path guard # no disallowed source paths
+bash -n packages/os/scripts/bootstrap.sh
+bash packages/os/scripts/bootstrap.sh --help
+git diff --check
+```
+
+Notes:
+- `.task` history is intentionally retained going forward.
+- Source-code cleanup remains intact.
+
+- 2026-06-02 19:15:50 append: `.task/os/restore-os-task-metadata-history/workpad.md`
