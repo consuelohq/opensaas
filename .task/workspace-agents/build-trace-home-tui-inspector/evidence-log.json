@@ -513,8 +513,24 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
       }
+    },
+    {
+      "id": "a2688286-1fdc-45d6-9414-d386d8ce20da",
+      "occurred_at": "2026-06-02T01:31:40.853Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/build-trace-home-tui-inspector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/build-trace-home-tui-inspector"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-06-02T00:52:09.619Z"
+  "updated_at": "2026-06-02T01:31:40.910Z"
 }

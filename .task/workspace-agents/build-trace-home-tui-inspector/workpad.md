@@ -68,10 +68,9 @@ No-test waiver:
 
 ## files changed
 
-- `package.json`
-- `packages/workspace/SCRIPTS.md`
 - `packages/workspace/tests/trace-home.test.ts`
 - `scripts/operator/trace-home.ts`
+
 
 ## workspace-owned: files changed
 

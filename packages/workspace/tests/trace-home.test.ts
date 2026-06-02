@@ -3,6 +3,7 @@ import {
   buildTraceHomeModel,
   classifyTaskCallCommand,
   renderTraceHome,
+  resolveTraceDb,
   type TraceHomeRow,
 } from '../../../scripts/operator/trace-home';
 
@@ -196,6 +197,16 @@ describe('trace home model', () => {
     }
   });
 
+  test('resolves trace database path with OpenWorkspace env priority', () => {
+    expect(
+      resolveTraceDb(undefined, {
+        OPENWORKSPACE_TRACE_DB: '/tmp/openworkspace-traces.db',
+        TRACE_DB: '/tmp/legacy-traces.db',
+      }),
+    ).toBe('/tmp/openworkspace-traces.db');
+    expect(resolveTraceDb(undefined, { TRACE_DB: '/tmp/legacy-traces.db' })).toBe('/tmp/legacy-traces.db');
+    expect(resolveTraceDb('/tmp/explicit-traces.db', { OPENWORKSPACE_TRACE_DB: '/tmp/openworkspace-traces.db' })).toBe('/tmp/explicit-traces.db');
+  });
   test('classifies task.call command quality with nuance', () => {
     expect(classifyTaskCallCommand(['bun', '--cwd', 'packages/os', 'run', 'tools:search']).quality).toBe('good');
     expect(classifyTaskCallCommand(['bash', '-lc', "sed -n '1,260p' packages/os/scripts/install.ts"]).quality).toBe('suspect');

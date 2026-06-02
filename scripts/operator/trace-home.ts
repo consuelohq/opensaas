@@ -153,6 +153,10 @@ Keys in live TTY mode:
   q quit · r refresh · space pause/resume
 `;
 
+export function resolveTraceDb(argsDb?: string, env: Record<string, string | undefined> = process.env): string {
+  return argsDb || env.OPENWORKSPACE_TRACE_DB || env.TRACE_DB || defaultTraceDb;
+}
+
 function parseArgs(argv: string[]): Args {
   const args: Args = {
     limit: 80,
@@ -613,7 +617,7 @@ async function main(): Promise<void> {
     console.log(usage);
     return;
   }
-  const db = args.db || process.env.TRACE_DB || defaultTraceDb;
+  const db = resolveTraceDb(args.db);
   if (!existsSync(db)) {
     console.error(`trace db not found: ${db}`);
     process.exit(1);
