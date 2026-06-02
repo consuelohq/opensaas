@@ -30,6 +30,7 @@ started: 2026-06-02
 
 - 2026-06-02 18:07:18 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
 - 2026-06-02 18:13:17 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
+- 2026-06-02 18:19:38 fs.write: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -132,3 +133,37 @@ git diff --check
 ```
 
 - 2026-06-02 18:13:17 append: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
+
+
+## publish gate status
+
+After committing the merge resolution:
+
+- `git status --short` in the task worktree was clean except for task metadata before the metadata commit; after metadata commit the task worktree was clean.
+- `git.diff` against `origin/stream/os` shows the expected large main-sync diff. Most of that is `main` metadata/content entering the task branch so `stream/os` can become mergeable; it should collapse out of final `stream/os -> main` diff after promotion.
+
+Attempted publish:
+
+```bash
+task.push changed=true
+```
+
+Result: blocked by missing publish-valid verify stamp.
+
+Then attempted:
+
+```bash
+verify base=origin/stream/os noDb=true
+review.run base=origin/stream/os noTests=true
+```
+
+Both timed out at the workspace-call layer before returning a success/failure envelope or writing `.task/os/resolve-stream-os-main-merge-conflicts/verify.json`.
+
+Current state:
+
+- Local task branch has committed merge resolution: `c395a496a4 chore(os): sync stream with main`.
+- Local task branch has committed task metadata: `6a990ec081 chore(os): record conflict task metadata`.
+- Task branch has not been pushed because the publish gate requires a verify stamp or explicit Ko-approved bypass.
+- Do not run `task.pr` / promotion until Ko confirms the resolution and approves either retrying a heavier verify path or using the approved publish path with the recorded focused validation evidence.
+
+- 2026-06-02 18:19:38 append: `.task/os/resolve-stream-os-main-merge-conflicts/workpad.md`
