@@ -175,10 +175,22 @@ bash packages/os/scripts/bootstrap.sh --dry-run
 
 ## files changed
 
+- `packages/os/package.json`
+- `packages/os/README.md`
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/bootstrap.sh`
+- `packages/os/scripts/install.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
 
 ## workspace-owned: files changed
 
+- `packages/os/package.json`
+- `packages/os/README.md`
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/bootstrap.sh`
+- `packages/os/scripts/install.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
 
 ## workspace-owned: activity log
@@ -188,6 +200,7 @@ bash packages/os/scripts/bootstrap.sh --dry-run
 - 2026-06-02 02:13:21 fs.patch: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
 - 2026-06-02 02:14:27 fs.patch: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
 - 2026-06-02 02:15:31 fs.patch: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
+- 2026-06-02 02:17:29 fs.write: `.task/os/os-bootstrap-installer/publish-update.md`
 
 ## workspace-owned: files read
 
@@ -214,3 +227,5 @@ TESTS:twenty-server ✗ FAIL (5.3s) 2 failed, 2 skipped, 2115 passed, 2119 total
 The remaining typecheck failure is dependency resolution in the task worktree, e.g. `Cannot find module '@nestjs/common' or its corresponding type declarations`, including the new controller and many existing server files. The real `twenty-server:start:ci` curl test also failed for the same worktree dependency resolution class with `Cannot find module '@nestjs/core'` from `packages/twenty-server/dist/main.js`.
 
 This matches the task instruction to record exact wrapper failures and use focused validation evidence when the wrapper is broken. Focused validation evidence includes shell syntax, bootstrap help/dry-run/no-install-bun dry-run, install dry-run JSON, LaunchAgent dry-run, route response smoke, docs/types generation, OS typecheck, ESLint pass, git diff check, no changed `server.py`, and no executable `sudo` use.
+
+- 2026-06-02 02:17:29 write: `.task/os/os-bootstrap-installer/publish-update.md`
