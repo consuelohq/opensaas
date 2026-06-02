@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+  "events": [
+    {
+      "id": "04bbc324-12ad-499f-8008-36eb7892cf7d",
+      "occurred_at": "2026-06-02T06:20:08.378Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-trace-home-trace-loading"
+      }
+    },
+    {
+      "id": "5a34efa5-3278-4364-a876-73277533ec37",
+      "occurred_at": "2026-06-02T06:20:46.929Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-trace-home-trace-loading"
+      }
+    },
+    {
+      "id": "456e88bf-9a5d-4882-a879-f85dc0b4e648",
+      "occurred_at": "2026-06-02T06:20:54.953Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-trace-home-trace-loading"
+      }
+    },
+    {
+      "id": "c0397bb4-27e5-49c3-ba32-42d7bd8f7452",
+      "occurred_at": "2026-06-02T06:21:04.833Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-trace-home-trace-loading"
+      }
+    },
+    {
+      "id": "bacd7574-80c2-41a3-8be5-1883d7ea69e5",
+      "occurred_at": "2026-06-02T06:21:25.117Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/trace-home.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-trace-home-trace-loading",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-trace-home-trace-loading"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-02T06:21:25.173Z"
+}

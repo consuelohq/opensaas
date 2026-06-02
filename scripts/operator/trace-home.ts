@@ -157,6 +157,17 @@ export function resolveTraceDb(argsDb?: string, env: Record<string, string | und
   return argsDb || env.OPENWORKSPACE_TRACE_DB || env.TRACE_DB || defaultTraceDb;
 }
 
+type SqlResult = { rows: TraceHomeRow[]; transientError?: string };
+
+function isTransientSqlError(text: string): boolean {
+  return text.includes('database is locked') || text.includes('database table is locked') || text.includes('SQLITE_BUSY') || text.includes('SQLITE_LOCKED');
+}
+
+function formatSqlError(text: string): string {
+  const compact = cleanText(text);
+  return compact.length > 240 ? `${compact.slice(0, 239)}...` : compact;
+}
+
 function parseArgs(argv: string[]): Args {
   const args: Args = {
     limit: 80,
@@ -556,14 +567,23 @@ export function renderTraceHome(model: TraceHomeModel, options: TraceHomeRenderO
   return output.join('\n');
 }
 
-function runSql(db: string, sql: string): TraceHomeRow[] {
+function runSql(db: string, sql: string): SqlResult {
   const result = spawnSync('sqlite3', ['-cmd', '.timeout 1000', '-json', db, sql], { encoding: 'utf8' });
-  if (result.status !== 0) throw new Error(result.stderr || result.stdout || `sqlite3 exited ${result.status}`);
+  if (result.status !== 0) {
+    const message = result.stderr || result.stdout || `sqlite3 exited ${result.status}`;
+    if (isTransientSqlError(message)) return { rows: [], transientError: formatSqlError(message) };
+    throw new Error(formatSqlError(message));
+  }
   const text = result.stdout.trim();
-  return text ? JSON.parse(text) as TraceHomeRow[] : [];
+  if (!text) return { rows: [] };
+  try {
+    return { rows: JSON.parse(text) as TraceHomeRow[] };
+  } catch (error) {
+    return { rows: [], transientError: `failed to parse sqlite JSON output: ${error instanceof Error ? error.message : String(error)}` };
+  }
 }
 
-function loadRows(db: string, limit: number): TraceHomeRow[] {
+function loadRows(db: string, limit: number): SqlResult {
   const sql = `
 SELECT
   rowid AS rownum,
@@ -583,14 +603,15 @@ SELECT
   total_tokens,
   input_json,
   resolved_input_json,
-  result_json,
-  CASE WHEN tool = 'code.run' THEN coalesce(json_extract(result_json, '$.data.operations'), json_extract(result_json, '$.data.data.operations')) ELSE NULL END AS nested_operations_json,
-  CASE WHEN tool = 'batch' THEN coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) ELSE NULL END AS batch_results_json,
-  stderr
+  substr(coalesce(result_json, ''), 1, 4000) AS result_json,
+  NULL AS nested_operations_json,
+  NULL AS batch_results_json,
+  substr(coalesce(stderr, ''), 1, 4000) AS stderr
 FROM tool_traces
 ORDER BY rowid DESC
 LIMIT ${Math.max(1, Math.min(500, limit))};`;
-  return runSql(db, sql).reverse();
+  const result = runSql(db, sql);
+  return { rows: result.rows.reverse(), transientError: result.transientError };
 }
 
 function clearScreen(): void {
@@ -635,12 +656,21 @@ async function main(): Promise<void> {
     });
   }
 
+  let lastRows: TraceHomeRow[] = [];
+  let lastTransientError: string | undefined;
   try {
     do {
-      const rows = loadRows(db, args.limit);
-      const model = buildTraceHomeModel(rows, {
+      try {
+        const result = loadRows(db, args.limit);
+        if (result.rows.length > 0 || lastRows.length === 0) lastRows = result.rows;
+        lastTransientError = result.transientError;
+      } catch (error) {
+        lastTransientError = error instanceof Error ? formatSqlError(error.message) : formatSqlError(String(error));
+        if (lastRows.length === 0 && args.once) throw error;
+      }
+      const model = buildTraceHomeModel(lastRows, {
         selectedTraceId: args.selectedTraceId,
-        sinceLabel: 'live',
+        sinceLabel: lastTransientError ? `live (trace db retrying: ${lastTransientError})` : 'live',
         live: !paused,
         filterLabel: args.filterLabel,
       });

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c23f7899bb48",
+  "tmuxSession": "opensaas-workspace-agents-stabilize-trace-home-trace-loading-c23f7899",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/stabilize-trace-home-trace-loading",
+  "branch": "task/workspace-agents/stabilize-trace-home-trace-loading",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stabilize-trace-home-trace-loading",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stabilize-trace-home-trace-loading",
+  "prNumber": 694,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/694",
+  "createdAt": "2026-06-02T06:19:50.450Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stabilize-trace-home-trace-loading/.task/workspace-agents/stabilize-trace-home-trace-loading/session.json"
+}
