@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/add-review-summary-output",
+  "events": [
+    {
+      "id": "65c0ec55-bc8b-48b0-bd47-9b0a662ad344",
+      "occurred_at": "2026-05-23T21:12:24.267Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-review-summary-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-review-summary-output"
+      }
+    },
+    {
+      "id": "48cf2ec8-6ea3-4a97-9f7d-a3ba43bbd81e",
+      "occurred_at": "2026-05-23T21:12:24.577Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-review-summary-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-review-summary-output"
+      }
+    },
+    {
+      "id": "1a8c01d9-6d02-4cc8-ab1e-e18f8f08bcd3",
+      "occurred_at": "2026-05-23T21:12:24.870Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/ai-review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-review-summary-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-review-summary-output"
+      }
+    },
+    {
+      "id": "31fd7707-7420-4659-8166-72617c68b6eb",
+      "occurred_at": "2026-05-23T21:12:25.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-review-summary-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-review-summary-output"
+      }
+    },
+    {
+      "id": "50bfc67a-e8d4-4567-b073-5650aafe2e8f",
+      "occurred_at": "2026-05-23T21:12:25.459Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-review-summary-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-review-summary-output"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T21:12:25.511Z"
+}

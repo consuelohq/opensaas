@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+  "events": [
+    {
+      "id": "ee78a059-a631-4a04-80e3-6c86eb7c6208",
+      "occurred_at": "2026-05-24T08:57:59.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/seed-test-selection-registry"
+      }
+    },
+    {
+      "id": "71731a40-7dcc-4086-b29c-a618277c9c3e",
+      "occurred_at": "2026-05-24T09:00:03.819Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/seed-test-selection-registry"
+      }
+    },
+    {
+      "id": "4c5af3d2-98f4-45a8-b9ca-6c66ce80ac8f",
+      "occurred_at": "2026-05-24T09:01:14.480Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/audit.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/seed-test-selection-registry"
+      }
+    },
+    {
+      "id": "e41f427d-8e56-4b6c-af13-dec4cb0355bf",
+      "occurred_at": "2026-05-24T09:02:33.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/seed-test-selection-registry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/seed-test-selection-registry"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T09:02:33.426Z"
+}

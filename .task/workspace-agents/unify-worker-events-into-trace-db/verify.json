@@ -1,0 +1,107 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/unify-worker-events-into-trace-db",
+  "base": "origin/task/workspace-agents/unify-worker-events-into-trace-db",
+  "headSha": "18261ab0398786f20c6406616b55a0f73680c805",
+  "changeHash": "4a566689b59a88171a1a035819d8bee5071f5995366d568ea8e0b316a234c748",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-31T10:45:39.929Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/unify-worker-events-into-trace-db.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/context_provider_trace_types.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/current.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/evidence-log.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/fix_runtime_sqlite_import.py",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/patch_runtime.py",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/patch_tests.py",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/provider_and_trace_types.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/read-log.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/session.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/test_block_fixed.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/test_insert.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/trace_watch_detail.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/trace_watch_return.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/type_safety_runtime.txt",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/workpad.md",
+        "packages/workspace/scripts/lib/worker/runtime.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 6,
+          "outputTail": "Bundled 1 module in 3ms\n\n  trace-watch-test-selection.js  22.93 KB  (entry point)\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

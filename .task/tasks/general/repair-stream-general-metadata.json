@@ -1,0 +1,19 @@
+{
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/repair-stream-general-metadata",
+  "baseBranch": "stream/general",
+  "sourceBranch": "stream/general",
+  "startFrom": "stream",
+  "prNumber": 600,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/600",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/600",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/600/repair-stream-general-metadata",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/600",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/600/repair-stream-general-metadata",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-repair-stream-general-metadata",
+  "taskSession": "tsk_8cf3777fd90d",
+  "tmuxSession": "opensaas-general-repair-stream-general-metadata-8cf3777f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-repair-stream-general-metadata/.task/general/repair-stream-general-metadata/session.json",
+  "createdAt": "2026-05-26T00:28:27.410Z"
+}

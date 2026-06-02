@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 631,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/631",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/631",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/631/promote-qwen3-2560-embeddings-default",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/631",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/631/promote-qwen3-2560-embeddings-default",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-promote-qwen3-2560-embeddings-default",
+  "taskSession": "tsk_a9a361b0bc4a",
+  "tmuxSession": "opensaas-workspace-promote-qwen3-2560-embeddings-default-a9a361b0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-promote-qwen3-2560-embeddings-default/.task/workspace/promote-qwen3-2560-embeddings-default/session.json",
+  "createdAt": "2026-05-28T23:13:59.771Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9cfc914c929d",
+  "tmuxSession": "opensaas-workspace-agents-compact-pi-worker-jsonl-output-9cfc914c",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-pi-worker-jsonl-output",
+  "branch": "task/workspace-agents/compact-pi-worker-jsonl-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-pi-worker-jsonl-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-pi-worker-jsonl-output",
+  "prNumber": 648,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/648",
+  "createdAt": "2026-05-29T04:41:39.498Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-pi-worker-jsonl-output/.task/workspace-agents/compact-pi-worker-jsonl-output/session.json"
+}

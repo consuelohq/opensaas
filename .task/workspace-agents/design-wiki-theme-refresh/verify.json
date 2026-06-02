@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/design-wiki-theme-refresh",
+  "base": "stream/workspace-agents",
+  "headSha": "d2666e59417524fba717c4dc5b2f8ad12742a300",
+  "changeHash": "742cbba454f454dfb95797ff0f52bace71d87ec273d900824244cc534895ea28",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-05-29T00:58:54.872Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/design-wiki-theme-refresh.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/current.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/evidence-log.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/read-log.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/session.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/workpad.md",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -4,7 +4,7 @@ const { execFileSync } = require('child_process');
 
 const { getCacheRoot } = require('../index/store');
 const { getCurrentBranch } = require('../git');
-const { findTaskMeta } = require('../task-meta');
+const { findTaskMeta, getTaskStateDir } = require('../task-meta');
 
 function readJson(filePath, fallback) {
   try {
@@ -25,7 +25,7 @@ function getStateDirectory(repoRoot) {
 
   if (taskMeta?.dir) {
     return {
-      stateDir: path.join(taskMeta.dir, '.task'),
+      stateDir: getTaskStateDir(taskMeta.dir, taskMeta.data),
       taskMeta,
       worktreeId: taskMeta.data?.taskBranch || null,
     };

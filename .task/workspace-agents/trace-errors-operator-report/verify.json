@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/trace-errors-operator-report",
+  "base": "origin/main",
+  "headSha": "bfb378b8b6286d038167b6bb11b3b753eacd56de",
+  "changeHash": "043fdba978de15896f1383e16453c6da05cc11846f5bc55e6d993ecc5d4ca566",
+  "changedFiles": [
+    "package.json",
+    "scripts/operator/trace-errors.ts"
+  ],
+  "verifiedAt": "2026-05-23T09:49:40.305Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

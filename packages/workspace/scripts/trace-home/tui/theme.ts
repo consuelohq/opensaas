@@ -1,0 +1,2 @@
+export const theme = { bg: '#020617', panel: '#111827', border: '#334155', text: '#e5e7eb', muted: '#94a3b8', accent: '#7dd3fc', good: '#86efac', bad: '#fca5a5', warn: '#fde68a' };
+export function branchColor(branch: string): string { const palette = ['#7dd3fc', '#c4b5fd', '#f9a8d4', '#fdba74', '#86efac', '#fef08a', '#93c5fd', '#d8b4fe']; let hash = 0; for (const char of branch) hash = (hash * 31 + char.charCodeAt(0)) >>> 0; return palette[hash % palette.length]; }

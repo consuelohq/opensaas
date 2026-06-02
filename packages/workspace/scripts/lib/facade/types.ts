@@ -29,6 +29,11 @@ export type ToolResult<TData = unknown> = {
   durationMs: number;
   traceId: string;
   requestId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  detail?: string;
+  changed?: boolean;
   apiVersion: '1.0.0';
 };
 
@@ -134,3 +139,4 @@ export type BatchResult = ToolResult<{
   results: ToolResult<unknown>[];
   completed: number;
 }>;
+

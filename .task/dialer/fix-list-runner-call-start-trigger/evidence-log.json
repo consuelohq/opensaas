@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+  "events": [
+    {
+      "id": "2ee3ea0f-0c67-4ba1-8fd1-88c4386af28c",
+      "occurred_at": "2026-05-23T19:50:23.740Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "950cca8d-5adc-4cb0-be2e-6f3f96708394",
+      "occurred_at": "2026-05-23T19:50:23.780Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "620d2b84-ad6c-4b3a-bbf1-9f3d901c275a",
+      "occurred_at": "2026-05-23T19:51:16.914Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "afb5b002-8642-4901-b48e-5bafd949c787",
+      "occurred_at": "2026-05-23T19:51:57.425Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "600edd73-feb4-4b5d-8ae3-52f5979de713",
+      "occurred_at": "2026-05-23T19:53:16.653Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "8445f6f2-82f3-4ab6-8be7-5f65aaaebb09",
+      "occurred_at": "2026-05-23T19:53:38.931Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "879a67c4-eb4a-4edd-987a-a491dd2f341c",
+      "occurred_at": "2026-05-23T19:53:48.041Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "a054a01e-dfe5-40ef-b51b-36514eea7a93",
+      "occurred_at": "2026-05-23T19:53:59.494Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "a687ca3a-ab3c-4e2a-a7cc-88ad1db6831c",
+      "occurred_at": "2026-05-23T19:54:55.429Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "069f42c9-cd89-4bc1-874b-85f12e7e0f70",
+      "occurred_at": "2026-05-23T19:54:55.476Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "08ab7f29-6e73-474c-a2cb-847459fd017e",
+      "occurred_at": "2026-05-23T19:54:55.513Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "535a6ec3-5718-4ada-ae76-47bd3a331726",
+      "occurred_at": "2026-05-23T19:55:26.511Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "8f1c59e7-c9ee-4f75-9166-72a95d323c11",
+      "occurred_at": "2026-05-23T19:56:07.308Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "a57333f9-fcf6-4746-86be-c17de204ab4a",
+      "occurred_at": "2026-05-23T19:56:40.969Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "0753fd88-3100-4d70-982a-2613a33f0eb6",
+      "occurred_at": "2026-05-23T19:56:41.006Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    },
+    {
+      "id": "73a6a779-9861-418c-8c6e-14f6b13f7945",
+      "occurred_at": "2026-05-23T19:56:41.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-list-runner-call-start-trigger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-list-runner-call-start-trigger"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T19:56:41.102Z"
+}

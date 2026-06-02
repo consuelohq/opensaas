@@ -11,7 +11,9 @@ export type StartDialerCallInput = {
   selectionStrategy: 'single' | 'predictive';
   requestedFanout: number;
   targetPhone?: string;
+  targetPhones?: string[];
   contactId?: string;
+  contactIds?: string[];
   queueId?: string;
   callerIdNumber?: string;
 };

@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/twenty-front/package.json",
+    "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx",
+    "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsFolder.tsx",
+    "packages/twenty-front/src/modules/navigation/components/MainNavigationDrawerFixedItems.tsx",
+    "packages/twenty-front/src/modules/object-metadata/components/NavigationDrawerItemForObjectMetadataItem.tsx",
+    "packages/twenty-front/src/modules/ui/navigation/navigation-drawer/components/NavigationDrawerItem.tsx",
+    "packages/twenty-sdk/package.json"
+  ],
+  "updatedAt": "2026-05-25T16:04:56.683Z"
+}
