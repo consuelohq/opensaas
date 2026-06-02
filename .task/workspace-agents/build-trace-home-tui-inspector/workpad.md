@@ -152,6 +152,10 @@ bun run task:finish
 ## workspace-owned: files read
 
 - `package.json`
+- `packages/consuelo-docs/user-guide/dialer/how-tos/use-parallel-dialing.mdx`
+- `packages/consuelo-docs/user-guide/dialer/overview.mdx`
+- `packages/consuelo-docs/user-guide/graphql-api/analytics/scheduled-reports.mdx`
+- `packages/consuelo-docs/user-guide/graphql-api/automation/slack-notifications.mdx`
 - `packages/workspace/SCRIPTS.md`
 - `scripts/operator/trace-home.ts`
 
