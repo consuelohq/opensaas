@@ -14,11 +14,21 @@ import { Response } from 'express';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 const BOOTSTRAP_SCRIPT_PATH = 'packages/os/scripts/bootstrap.sh';
+const PRODUCTION_BOOTSTRAP_SCRIPT_PATH =
+  '/app/packages/os/scripts/bootstrap.sh';
 
-function resolveBootstrapScriptPath(): string {
-  return (
-    process.env.CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH ??
-    resolve(process.cwd(), BOOTSTRAP_SCRIPT_PATH)
+function getBootstrapScriptPathCandidates(): string[] {
+  return [
+    process.env.CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH,
+    resolve(process.cwd(), BOOTSTRAP_SCRIPT_PATH),
+    resolve(process.cwd(), '../os/scripts/bootstrap.sh'),
+    PRODUCTION_BOOTSTRAP_SCRIPT_PATH,
+  ].filter((path): path is string => Boolean(path));
+}
+
+function resolveBootstrapScriptPath(): string | undefined {
+  return getBootstrapScriptPathCandidates().find((scriptPath) =>
+    existsSync(scriptPath),
   );
 }
 
@@ -29,9 +39,9 @@ export class OsInstallController {
   getOsInstaller(@Res() response: Response): void {
     const scriptPath = resolveBootstrapScriptPath();
 
-    if (!existsSync(scriptPath)) {
+    if (!scriptPath) {
       throw new InternalServerErrorException(
-        `Consuelo OS bootstrap script not found at ${scriptPath}`,
+        `Consuelo OS bootstrap script not found. Checked: ${getBootstrapScriptPathCandidates().join(', ')}`,
       );
     }
 
