@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/close-tmux-sessions-during-task-cleanup",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 351,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/351",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-close-tmux-sessions-during-task-cleanup",
+  "taskSession": "tsk_f536cb716cdd",
+  "tmuxSession": "opensaas-workspace-agents-close-tmux-sessions-during-task-cleanup-f536cb71",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-close-tmux-sessions-during-task-cleanup/.task/session.json",
+  "createdAt": "2026-05-09T01:02:46.934Z"
+}

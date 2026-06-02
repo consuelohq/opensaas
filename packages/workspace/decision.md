@@ -5,24 +5,19 @@
 you are working inside the workspace mcp app. the app exposes exactly two tools:
 
 - `workspace.get_steering()`
-- `workspace.sandbox_exec({ command, timeout })`
+- `workspace.call({ tool, input, taskSession, timeout })`
 
-every command in this document runs through `sandbox_exec`. when you see a workspace command such as:
-
-```bash
-workspace explore '{"query":"how does auth work"}'
-```
-
-call it as:
+normal decision-engine workflow uses structured `workspace.call` inputs. do not construct nested shell strings or JSON-in-shell command strings for normal workspace operations.
 
 ```ts
-workspace.sandbox_exec({
-  command: "workspace explore '{\"query\":\"how does auth work\"}'",
-  timeout: 120
+await workspace.call({
+  tool: "explore",
+  input: { query: "how does auth work" },
+  timeout: 120,
 })
 ```
 
-**this wrapper is mandatory.** `workspace explore ...` is the command string passed to `sandbox_exec`; it is not a separate mcp tool. there are no per-operation mcp tools beyond `get_steering` and `sandbox_exec`. if a command does not work through `sandbox_exec`, test it there and fix the invocation or implementation.
+there are no per-operation mcp tools beyond `get_steering` and `call`. if a call fails, inspect the returned envelope and fix the typed input or implementation.
 
 alignment is the number one thing this system protects.
 
@@ -39,6 +34,12 @@ handoffs belong in memory or tmp/context files.
 
 do not turn this file into a script reference.
 this file should teach agents how to think with the system, what the signals mean, when to trust them, and when to stop.
+
+---
+
+## worker delegation naming decision
+
+Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `pi`, and `opc` are provider codes. `mini` is a legacy/profile name normalized to `pi` with `profile: mini`. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
 
 ---
 
@@ -204,8 +205,8 @@ each command should read or write decision state.
 
 use `explore` when the agent needs to know what files or paths are likely relevant.
 
-```bash
-workspace explore '{"query":"how does the dialer queue work?"}'
+```ts
+await workspace.call({ tool: "explore", input: { query: "how does the dialer queue work?" }, timeout: 120 })
 ```
 
 what it does:
@@ -229,8 +230,8 @@ what to remember:
 
 use `decideNext` when the agent has evidence and needs the next best action.
 
-```bash
-workspace decideNext
+```ts
+await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
 what it does:
@@ -251,10 +252,10 @@ examples of correct actions:
 
 manual fallback:
 
-```bash
-workspace decideNext '{"markRead":"packages/dialer/src/dialer.ts"}'
-workspace decideNext '{"markRelevant":"packages/dialer/src/dialer.ts"}'
-workspace decideNext '{"markIrrelevant":"packages/dialer/src/types.ts"}'
+```ts
+await workspace.call({ tool: "decideNext", input: { markRead: "packages/dialer/src/dialer.ts" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markRelevant: "packages/dialer/src/dialer.ts" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markIrrelevant: "packages/dialer/src/types.ts" }, timeout: 120 })
 ```
 
 manual marking exists because not every read happens through the normal workspace scripts.
@@ -264,8 +265,8 @@ automatic read tracking is still preferred.
 
 use `confidenceScore` when the agent needs to know how justified the current path is.
 
-```bash
-workspace confidenceScore
+```ts
+await workspace.call({ tool: "confidenceScore", input: {}, timeout: 120 })
 ```
 
 what it does:
@@ -286,8 +287,8 @@ what to remember:
 
 use `exploit` when the system has enough evidence to stop exploring and commit to a path.
 
-```bash
-workspace exploit
+```ts
+await workspace.call({ tool: "exploit", input: {}, timeout: 120 })
 ```
 
 what it does:
@@ -307,8 +308,8 @@ what to remember:
 
 use `confirm` when the agent needs validation truth.
 
-```bash
-workspace confirm '{"verify":true}'
+```ts
+await workspace.call({ tool: "confirm", input: { verify: true }, timeout: 120 })
 ```
 
 what it does:
@@ -330,8 +331,8 @@ what to remember:
 
 use `audit` when the agent needs to know whether the script and doc surface is truthful.
 
-```bash
-workspace audit '{"scripts":true}'
+```ts
+await workspace.call({ tool: "audit", input: { scripts: true }, timeout: 120 })
 ```
 
 what it does:
@@ -352,29 +353,29 @@ what to remember:
 
 use this flow when starting from a question or bug:
 
-```bash
-workspace explore '{"query":"<question or goal>"}'
-workspace decideNext
+```ts
+await workspace.call({ tool: "explore", input: { query: "<question or goal>" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
 then do the recommended action.
 
 if it says to read a file, read the file through the workspace script so the read can be tracked:
 
-```bash
-workspace fs.read '{"branch":"<task-branch>","path":"<path>"}'
+```ts
+await workspace.call({ tool: "fs.read", taskSession, input: { path: "<path>" }, timeout: 120 })
 ```
 
 if the read happened outside normal tracking, mark it:
 
-```bash
-workspace decideNext '{"markRead":"<path>"}'
+```ts
+await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
 ```
 
 then check confidence:
 
-```bash
-workspace confidenceScore
+```ts
+await workspace.call({ tool: "confidenceScore", input: {}, timeout: 120 })
 ```
 
 repeat:
@@ -385,20 +386,20 @@ decideNext -> action -> evidence -> confidenceScore
 
 when confidence is concentrated enough:
 
-```bash
-workspace exploit
+```ts
+await workspace.call({ tool: "exploit", input: {}, timeout: 120 })
 ```
 
 after editing and validation:
 
-```bash
-workspace confirm '{"verify":true}'
+```ts
+await workspace.call({ tool: "confirm", input: { verify: true }, timeout: 120 })
 ```
 
 before pushing script/workflow changes:
 
-```bash
-workspace audit '{"scripts":true}'
+```ts
+await workspace.call({ tool: "audit", input: { scripts: true }, timeout: 120 })
 ```
 
 ---
@@ -550,7 +551,7 @@ confirm after the system has something real to validate.
 
 confirmation can include:
 
-- `workspace verify`
+- `workspace.call({ tool: "verify", taskSession, input: {} })`
 - targeted tests
 - runtime logs
 - production or browser verification
@@ -612,7 +613,7 @@ good evidence:
 ```text
 file.read packages/dialer/src/dialer.ts
 test.fail packages/dialer/src/dialer.test.ts
-verify.pass workspace verify
+verify.pass workspace.call({ tool: "verify", taskSession, input: {} })
 runtime.clean railway errors query returned no new errors
 ```
 
@@ -627,13 +628,13 @@ it understands more only after reading evidence-producing files.
 
 preferred behavior:
 
-- reads through `workspace fs.read` should create `file.read` evidence automatically
+- reads through `workspace.call({ tool: "fs.read", ... })` should create `file.read` evidence automatically
 - direct reads outside the wrapper should be manually marked
 
 manual fallback:
 
-```bash
-workspace decideNext '{"markRead":"<path>"}'
+```ts
+await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
 ```
 
 if a file was read and the system does not know it, the next decision will be weaker.
@@ -850,26 +851,26 @@ good explore questions name the behavior, not just a keyword.
 
 weak:
 
-```bash
-workspace explore '{"query":"queue"}'
+```ts
+await workspace.call({ tool: "explore", input: { query: "queue" }, timeout: 120 })
 ```
 
 better:
 
-```bash
-workspace explore '{"query":"how does the dialer queue choose the next call?"}'
+```ts
+await workspace.call({ tool: "explore", input: { query: "how does the dialer queue choose the next call?" }, timeout: 120 })
 ```
 
 weak:
 
-```bash
-workspace explore '{"query":"auth"}'
+```ts
+await workspace.call({ tool: "explore", input: { query: "auth" }, timeout: 120 })
 ```
 
 better:
 
-```bash
-workspace explore '{"query":"how does authentication create and refresh workspace tokens?"}'
+```ts
+await workspace.call({ tool: "explore", input: { query: "how does authentication create and refresh workspace tokens?" }, timeout: 120 })
 ```
 
 the query should describe the job the code performs.
@@ -881,28 +882,28 @@ qwen can bridge synonyms, but it still needs a meaningful task.
 
 before reading random files:
 
-```bash
-workspace explore '{"query":"<goal>"}'
-workspace decideNext
+```ts
+await workspace.call({ tool: "explore", input: { query: "<goal>" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
 before editing:
 
-```bash
-workspace confidenceScore
-workspace exploit
+```ts
+await workspace.call({ tool: "confidenceScore", input: {}, timeout: 120 })
+await workspace.call({ tool: "exploit", input: {}, timeout: 120 })
 ```
 
 after editing:
 
-```bash
-workspace confirm '{"verify":true}'
+```ts
+await workspace.call({ tool: "confirm", input: { verify: true }, timeout: 120 })
 ```
 
 before claiming done:
 
-```bash
-workspace audit '{"scripts":true}'
+```ts
+await workspace.call({ tool: "audit", input: { scripts: true }, timeout: 120 })
 ```
 
 if the recommendation feels wrong:
@@ -1030,3 +1031,6 @@ the system is working when an agent can say:
 i know what to do next because the current evidence makes that action highest value.
 i know whether it was right because validation and runtime truth updated the belief.
 ```
+
+
+Keep `worker.call` as the neutral facade entrypoint and expose `bun run worker -- call ...` as the human/Codex CLI wrapper. Both paths must call the same worker runtime module; executor-owned provider implementations should be refactored into dedicated runtime modules.

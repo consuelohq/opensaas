@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 315,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/315",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-codex-review-findings-for-pr-308",
+  "createdAt": "2026-05-04T23:59:51.297Z"
+}

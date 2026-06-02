@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/restore-design-archive-server-publish",
+  "base": "origin/stream/workspace",
+  "headSha": "812bddd05e4991420629e4b7c81ce5b0abf549a2",
+  "changeHash": "8f1e4fbb9ee4cae847fe62914990625d96d142bb25b1e1c695ec092db7686b49",
+  "changedFiles": [
+    "packages/consuelo-design/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T06:06:06.834Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

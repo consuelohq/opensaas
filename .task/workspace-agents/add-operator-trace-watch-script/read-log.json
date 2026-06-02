@@ -1,0 +1,8 @@
+{
+  "files": [
+    "package.json",
+    "scripts/operator/trace-analytics.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-05-23T09:38:22.478Z"
+}

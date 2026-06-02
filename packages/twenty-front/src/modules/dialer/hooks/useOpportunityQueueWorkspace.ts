@@ -19,6 +19,7 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { useParallelDialer } from '@/dialer/hooks/useParallelDialer';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
+import { useStartDialerCall } from '@/dialer/hooks/useStartDialerCall';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -29,7 +30,11 @@ import {
   type QueueOutcome,
 } from '@/dialer/types/queue';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { getBackendQueueSessionEndpoint } from '@/dialer/utils/backend-queue-session';
+import {
+  getBackendQueueContactId,
+  getBackendQueueSessionEndpoint,
+  isBackendQueueContactIdMatch,
+} from '@/dialer/utils/backend-queue-session';
 import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
@@ -279,7 +284,7 @@ const mapRecordToDialerContact = (
     [firstName, lastName].filter(Boolean).join(' ') || fallbackPhoneNumber;
 
   return {
-    id: record.personId ?? record.id,
+    id: getBackendQueueContactId(record),
     name,
     firstName,
     lastName,
@@ -358,7 +363,8 @@ export const useOpportunityQueueWorkspace = ({
   const setCallState = useSetRecoilState(callStateAtom);
 
   const { status: twilioConfigStatus } = useTwilioConfigStatus();
-  const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
+  const { disconnect, deviceReady, deviceError } = useTwilioDevice();
+  const { startDialerCall } = useStartDialerCall();
   const { startParallelBatch, cancelParallelDial } = useParallelDialer();
   const { recordResult } = useQueueOperations();
 
@@ -498,8 +504,8 @@ export const useOpportunityQueueWorkspace = ({
         return;
       }
 
-      const nextIndex = callableRecords.findIndex(
-        (record) => record.id === contactId,
+      const nextIndex = callableRecords.findIndex((record) =>
+        isBackendQueueContactIdMatch(record, contactId),
       );
 
       if (nextIndex < 0 || nextIndex === persistedCurrentIndexRef.current) {
@@ -620,7 +626,7 @@ export const useOpportunityQueueWorkspace = ({
                 parallelDialingEnabled: requestedParallelDialingEnabled,
                 parallelDialingMaxLines: requestedParallelDialingMaxLines,
               },
-              contactIds: totalCallableRecords.map((record) => record.id),
+              contactIds: totalCallableRecords.map(getBackendQueueContactId),
             }),
           },
         );
@@ -657,7 +663,7 @@ export const useOpportunityQueueWorkspace = ({
               parallelDialingEnabled: requestedParallelDialingEnabled,
               parallelDialingMaxLines: requestedParallelDialingMaxLines,
             },
-            contactIds: callableRecords.map((record) => record.id),
+            contactIds: callableRecords.map(getBackendQueueContactId),
           }),
         },
       );
@@ -699,12 +705,14 @@ export const useOpportunityQueueWorkspace = ({
         return queueItems;
       }
 
-      const backendQueueItem = backendQueueItemsByContactId.get(record.id);
+      const backendQueueItem = backendQueueItemsByContactId.get(
+        getBackendQueueContactId(record),
+      );
 
       queueItems.push({
         id: record.id,
         queueId: backendQueue?.id ?? listId,
-        contactId: record.personId ?? record.id,
+        contactId: getBackendQueueContactId(record),
         contact: mapRecordToDialerContact(record, phoneNumber),
         position: record.position ?? index,
         status: backendQueueItem
@@ -778,7 +786,7 @@ export const useOpportunityQueueWorkspace = ({
     activeQueue?.parallelDialingEnabled ?? requestedParallelDialingEnabled;
   const queueSessionReady =
     twilioConfigStatus !== null && twilioConfigStatus.configured;
-  const queueRunnerReady = queueUsesParallelDialing || deviceReady;
+  const queueRunnerReady = queueUsesParallelDialing || queueSessionReady;
 
   const clearAutoAdvanceTimer = useCallback(() => {
     if (autoAdvanceTimerRef.current) {
@@ -1132,11 +1140,7 @@ export const useOpportunityQueueWorkspace = ({
       selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
     const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
 
-    if (
-      !deviceReady ||
-      twilioConfigStatus === null ||
-      !twilioConfigStatus.configured
-    ) {
+    if (twilioConfigStatus === null || !twilioConfigStatus.configured) {
       return;
     }
 
@@ -1165,43 +1169,31 @@ export const useOpportunityQueueWorkspace = ({
     setPhoneNumber(currentQueueItem.contact.phone);
 
     try {
-      const preflightRes = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            callerId: manualCallerId,
-            to: currentQueueItem.contact.phone,
-            localPresence: localPresenceEnabled,
-          }),
-        },
-      );
+      const result = await startDialerCall({
+        source: 'direct',
+        selectionStrategy: 'single',
+        requestedFanout: 1,
+        targetPhone: currentQueueItem.contact.phone,
+        contactId: currentQueueItem.contactId,
+        callerIdNumber: manualCallerId ?? undefined,
+      });
+      const call = result.calls[0];
+      const resolvedCallerId = call?.callerId;
 
-      if (!preflightRes.ok) {
-        throw new Error(`Preflight failed: ${preflightRes.status}`);
-      }
-
-      const preflightBody = (await preflightRes.json()) as {
-        callerId?: string;
-      };
-      const resolvedCallerId = preflightBody.callerId ?? manualCallerId;
-
-      if (!resolvedCallerId) {
+      if (!call || !resolvedCallerId) {
         throw new Error('No caller ID resolved for queue item');
       }
 
       setSelectedCallerId(resolvedCallerId);
       setCallState((previousCallState) => ({
         ...previousCallState,
+        status: 'connecting',
+        callSid: call.callSid,
         contact: currentQueueItem.contact,
         fromNumber: resolvedCallerId,
+        parallelGroupId: result.twilioGroupId ?? result.sessionId,
+        startedAt: new Date(),
       }));
-
-      await connect({
-        To: currentQueueItem.contact.phone,
-        From: resolvedCallerId,
-      });
     } catch (error: unknown) {
       const failedAt = new Date().toISOString();
 
@@ -1212,7 +1204,7 @@ export const useOpportunityQueueWorkspace = ({
           ? {
               ...previousBackendQueue,
               items: previousBackendQueue.items?.map((backendQueueItem) =>
-                backendQueueItem.contact_id === currentQueueItem.id
+                backendQueueItem.contact_id === currentQueueItem.contactId
                   ? {
                       ...backendQueueItem,
                       status: 'failed',
@@ -1259,7 +1251,6 @@ export const useOpportunityQueueWorkspace = ({
     }
   }, [
     availableCallerIds,
-    connect,
     currentQueueItem,
     deviceError,
     deviceReady,
@@ -1270,6 +1261,7 @@ export const useOpportunityQueueWorkspace = ({
     setPhoneNumber,
     setSelectedCallerId,
     setSelectedContact,
+    startDialerCall,
     twilioConfigStatus,
   ]);
 
@@ -1289,7 +1281,9 @@ export const useOpportunityQueueWorkspace = ({
       const autoStartedItemId = currentQueueItem.id;
       autoStartedItemIdRef.current = autoStartedItemId;
 
-      void startParallelBatch()
+      void startParallelBatch({
+        queueId: backendQueue?.id ?? currentQueueItem.queueId,
+      })
         .then((result) => {
           if (result.status === 'blocked' || result.status === 'failed') {
             return;
@@ -1317,6 +1311,7 @@ export const useOpportunityQueueWorkspace = ({
     void startCurrentQueueItem();
   }, [
     callState.status,
+    backendQueue?.id,
     currentQueueItem,
     listId,
     listStatus,

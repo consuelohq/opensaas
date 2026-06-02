@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+  "events": [
+    {
+      "id": "b980cf64-126e-4ead-92f8-0720e6ceda73",
+      "occurred_at": "2026-05-24T02:33:32.189Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/metadata-modules/flat-field-metadata/__mocks__/person-flat-fields.mock.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "300ec4a4-53b2-4d99-a9db-28d2301e419a",
+      "occurred_at": "2026-05-24T02:33:41.621Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "0d33f9e8-7e35-456d-8c04-35953cb61030",
+      "occurred_at": "2026-05-24T02:33:54.226Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "b29a0adc-346f-4b9e-a0b7-4c02e5ac72c3",
+      "occurred_at": "2026-05-24T02:34:00.607Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "44029cfd-3a92-46ca-b8ed-63fd55ef4c9e",
+      "occurred_at": "2026-05-24T02:34:25.215Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "04db79d7-a7de-4e2e-88d0-a75ccf349b6e",
+      "occurred_at": "2026-05-24T02:34:44.454Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    },
+    {
+      "id": "c023b10f-232e-41d3-910f-7ce104ec173a",
+      "occurred_at": "2026-05-24T02:34:50.372Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/types/queue.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-queue-person-phone-physical-column",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-queue-person-phone-physical-column"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T02:34:50.422Z"
+}

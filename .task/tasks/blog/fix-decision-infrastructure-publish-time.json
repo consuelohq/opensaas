@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/fix-decision-infrastructure-publish-time",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 301,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/301",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-fix-decision-infrastructure-publish-time",
+  "createdAt": "2026-05-04T05:27:17.554Z"
+}

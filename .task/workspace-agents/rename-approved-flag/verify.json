@@ -1,0 +1,31 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/rename-approved-flag",
+  "base": "origin/main",
+  "headSha": "44db32c99bdd7ba10323c628efa291162c6b56fb",
+  "changeHash": "0a58bcaeeb1101be335b1fa3f33b86d58bd273f9664a38847fc58a28f32729bc",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-24T06:54:07.298Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

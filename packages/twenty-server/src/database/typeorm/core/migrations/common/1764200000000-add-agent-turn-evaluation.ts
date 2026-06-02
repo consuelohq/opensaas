@@ -5,7 +5,7 @@ export class AddAgentTurnEvaluation1764200000000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "core"."agentTurnEvaluation" (
+      CREATE TABLE IF NOT EXISTS "core"."agentTurnEvaluation" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "turnId" uuid NOT NULL,
         "score" int NOT NULL,
@@ -16,10 +16,14 @@ export class AddAgentTurnEvaluation1764200000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "IDX_c94f072dbd3c11f7df51db5293"
+      CREATE INDEX IF NOT EXISTS "IDX_c94f072dbd3c11f7df51db5293"
       ON "core"."agentTurnEvaluation" ("turnId")
     `);
 
+    await queryRunner.query(`
+      ALTER TABLE "core"."agentTurnEvaluation"
+      DROP CONSTRAINT IF EXISTS "FK_c94f072dbd3c11f7df51db52934"
+    `);
     await queryRunner.query(`
       ALTER TABLE "core"."agentTurnEvaluation"
       ADD CONSTRAINT "FK_c94f072dbd3c11f7df51db52934"
@@ -32,11 +36,13 @@ export class AddAgentTurnEvaluation1764200000000 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE "core"."agentTurnEvaluation"
-      DROP CONSTRAINT "FK_c94f072dbd3c11f7df51db52934"
+      DROP CONSTRAINT IF EXISTS "FK_c94f072dbd3c11f7df51db52934"
     `);
     await queryRunner.query(`
-      DROP INDEX "core"."IDX_c94f072dbd3c11f7df51db5293"
+      DROP INDEX IF EXISTS "core"."IDX_c94f072dbd3c11f7df51db5293"
     `);
-    await queryRunner.query(`DROP TABLE "core"."agentTurnEvaluation"`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "core"."agentTurnEvaluation"`,
+    );
   }
 }

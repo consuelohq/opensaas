@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "bb527767da99bdfd8fad607c23c5e0019a67ab00",
+  "changeHash": "e52c43a1fe540e2213703669f711ff50f0a8c64ecba6c4d3633605e517f7ee8c",
+  "changedFiles": [
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/scripts/lib/search/ranker.js",
+    "packages/workspace/scripts/lib/search/retriever.js",
+    "packages/workspace/tests/explore-ranker.test.js"
+  ],
+  "verifiedAt": "2026-05-26T18:25:22.320Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

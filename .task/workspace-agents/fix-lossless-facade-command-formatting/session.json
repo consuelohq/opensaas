@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_781d6c8f4784",
+  "tmuxSession": "opensaas-workspace-agents-fix-lossless-facade-command-formatting-781d6c8f",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-lossless-facade-command-formatting",
+  "branch": "task/workspace-agents/fix-lossless-facade-command-formatting",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-lossless-facade-command-formatting",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-lossless-facade-command-formatting",
+  "prNumber": 473,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/473",
+  "createdAt": "2026-05-23T02:47:49.111Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-lossless-facade-command-formatting/.task/workspace-agents/fix-lossless-facade-command-formatting/session.json"
+}

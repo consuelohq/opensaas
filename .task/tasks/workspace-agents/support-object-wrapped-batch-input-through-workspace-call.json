@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 345,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/345",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call",
+  "taskSession": "tsk_aa97979cccab",
+  "tmuxSession": "opensaas-workspace-agents-support-object-wrapped-batch-input-through-works-aa97979c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call/.task/session.json",
+  "createdAt": "2026-05-08T21:50:29.566Z"
+}

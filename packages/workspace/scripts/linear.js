@@ -35,18 +35,26 @@ function printHelp() {
     'commands:',
     '  query <graphql>              run raw graphql (query or mutation)',
     '  issue <identifier>           get issue by identifier (DEV-123)',
-    '  issues [--search <text>]     list/search issues',
-    '  create <title>               create issue (dev team, [task]+opensaas labels)',
+    '  issues|search [--search <text>] list/search issues',
+    '  create|createIssue <title>   create issue (DEV/open, opensaas label by default)',
     '  comment <issue-id> <body>    add comment to issue',
-    '  update <issue-id> [options]  update issue fields',
+    '  update|updateIssue <issue-id> update issue fields',
+    '  labels                       list issue labels',
+    '  teams                        list teams and workflow states',
+    '  projects                     list projects',
+    '  states [--team <id|dev>]     list workflow states for a team',
     '',
     'options:',
     '  --team <id>           team id (default: DEV)',
     '  --state <id>          workflow state id',
-    '  --labels <id,id,...>  label ids (comma-separated)',
+    '  --labels <name-or-id>  label names or ids (comma-separated or repeated after flag)',
     '  --priority <0-4>      priority (1=urgent, 4=low)',
     '  --assignee <id>       assignee id',
     '  --description <text>  issue description (markdown)',
+    '  --title <text>        update issue title',
+    '  --project <id|name>   project id or name',
+    '  --cycle <id>          cycle id',
+    '  --parent <issue-id>   parent issue id for sub-issues',
     '  --search <text>       search query for issues command',
     '  --first <n>           pagination limit (default: 20)',
     '  --after <cursor>      pagination cursor',
@@ -58,7 +66,7 @@ function printHelp() {
     '  bun run linear -- issue DEV-123',
     '  bun run linear -- issues --search "dialer queue"',
     '  bun run linear -- issues --filter \'{"priority":{"lte":2,"neq":0}}\'',
-    '  bun run linear -- create "[task] add health check" --description "markdown body"',
+    '  bun run linear -- create "add health check" --description "markdown body"',
     '  bun run linear -- comment ISSUE-UUID "looks good, merging"',
     '  bun run linear -- update ISSUE-UUID --state d8f29981-a8ce-451d-8910-ca8c04af01b2',
     '  bun run linear -- query "{ viewer { id name } }"',
@@ -68,9 +76,9 @@ function printHelp() {
 
 // --- IDs ---
 const DEV_TEAM = '29f5c661-da6c-4bfb-bd48-815a006ccaac';
-const LABEL_TASK = '756f365d-b523-4ebb-9827-fed6e64309ce';
-const LABEL_OPENSAAS = 'aed5a241-2c72-44ca-a56a-9e5eabb0644a';
 const STATE_OPEN = '1160621c-7a00-4945-9093-47ba33862b7e';
+const GROWTH_TEAM = 'd923f357-397d-4416-832f-2ec2e822acdf';
+const TEAM_IDS = { dev: DEV_TEAM, development: DEV_TEAM, DEV: DEV_TEAM, grow: GROWTH_TEAM, growth: GROWTH_TEAM, GROW: GROWTH_TEAM };
 
 function parseArgs(argv) {
   const args = { positional: [], first: 20 };
@@ -78,10 +86,19 @@ function parseArgs(argv) {
     switch (argv[i]) {
       case '--team': args.team = argv[++i]; break;
       case '--state': args.state = argv[++i]; break;
-      case '--labels': args.labels = argv[++i].split(','); break;
+      case '--labels': {
+        const labels = [];
+        while (i + 1 < argv.length && !argv[i + 1].startsWith('--')) labels.push(argv[++i]);
+        args.labels = labels.flatMap((value) => String(value).split(',')).map((value) => value.trim()).filter(Boolean);
+        break;
+      }
       case '--priority': args.priority = parseInt(argv[++i], 10); break;
       case '--assignee': args.assignee = argv[++i]; break;
       case '--description': args.description = argv[++i]; break;
+      case '--title': args.title = argv[++i]; break;
+      case '--project': args.project = argv[++i]; break;
+      case '--cycle': args.cycle = argv[++i]; break;
+      case '--parent': args.parent = argv[++i]; break;
       case '--search': args.search = argv[++i]; break;
       case '--first': args.first = parseInt(argv[++i], 10); break;
       case '--after': args.after = argv[++i]; break;
@@ -135,13 +152,17 @@ async function cmdIssue(token, args) {
   if (!id) throw new Error('usage: linear issue <identifier>');
 
   const data = await gql(token, `
-    query {
-      issue(id: "${id}") {
-        id identifier title description priority
+    query($id: String!) {
+      issue(id: $id) {
+        id identifier url title description priority
         state { id name type }
+        team { id key name }
         assignee { id name }
         labels { nodes { id name } }
-        project { id name }
+        project { id name url state }
+        cycle { id name number }
+        parent { id identifier title }
+        children { nodes { id identifier title } }
         comments(first: 10) {
           nodes { id body user { name } createdAt }
         }
@@ -149,7 +170,7 @@ async function cmdIssue(token, args) {
         createdAt updatedAt
       }
     }
-  `);
+  `, { id });
 
   writeStdout(JSON.stringify(data.issue, null, 2));
 }
@@ -180,7 +201,7 @@ async function cmdIssues(token, args) {
 
   // list with optional filter
   let filter = args.filter ? JSON.parse(args.filter) : {};
-  const teamId = args.team || DEV_TEAM;
+  const teamId = resolveTeamId(args.team);
   filter = { ...filter, team: { id: { eq: teamId } } };
 
   const data = await gql(token, `
@@ -204,25 +225,57 @@ async function cmdIssues(token, args) {
   }, null, 2));
 }
 
+function resolveTeamId(value) { return TEAM_IDS[value] || value || DEV_TEAM; }
+function isUuid(value) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || '')); }
+function defaultLabels() {
+  return ['opensaas'];
+}
+async function resolveLabelIds(token, labels) {
+  try {
+    const requested = labels && labels.length > 0 ? labels : defaultLabels();
+    const data = await gql(token, `
+      query($first: Int) {
+        issueLabels(first: $first) { nodes { id name } }
+      }
+    `, { first: 250 });
+    const byName = new Map(data.issueLabels.nodes.map((label) => [label.name.toLowerCase(), label.id]));
+    const resolved = [];
+    for (const label of requested) {
+      if (isUuid(label)) { resolved.push(label); continue; }
+      const id = byName.get(String(label).toLowerCase());
+      if (!id) throw new Error(`unknown Linear label: ${label}. run: bun run linear -- labels`);
+      resolved.push(id);
+    }
+    return Array.from(new Set(resolved));
+  } catch (error) {
+    throw new Error(`failed to resolve Linear labels: ${error instanceof Error ? error.message : String(error)}`, {
+      cause: error,
+    });
+  }
+}
+
 async function cmdCreate(token, args) {
-  const title = args.positional[1];
+  const title = args.positional[1] || args.title;
   if (!title) throw new Error('usage: linear create "<title>" [--description "..."]');
 
   const input = {
-    teamId: args.team || DEV_TEAM,
+    teamId: resolveTeamId(args.team),
     title,
     stateId: args.state || STATE_OPEN,
-    labelIds: args.labels || [LABEL_TASK, LABEL_OPENSAAS],
+    labelIds: await resolveLabelIds(token, args.labels),
   };
   if (args.description) input.description = args.description;
   if (args.priority !== undefined) input.priority = args.priority;
   if (args.assignee) input.assigneeId = args.assignee;
+  if (args.project) input.projectId = args.project;
+  if (args.cycle) input.cycleId = args.cycle;
+  if (args.parent) input.parentId = args.parent;
 
   const data = await gql(token, `
     mutation($input: IssueCreateInput!) {
       issueCreate(input: $input) {
         success
-        issue { id identifier url title }
+        issue { id identifier url title team { key name } state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
       }
     }
   `, { input });
@@ -253,10 +306,14 @@ async function cmdUpdate(token, args) {
 
   const input = {};
   if (args.state) input.stateId = args.state;
-  if (args.labels) input.labelIds = args.labels;
+  if (args.title) input.title = args.title;
+  if (args.labels) input.labelIds = await resolveLabelIds(token, args.labels);
   if (args.priority !== undefined) input.priority = args.priority;
   if (args.assignee) input.assigneeId = args.assignee;
   if (args.description) input.description = args.description;
+  if (args.project) input.projectId = args.project;
+  if (args.cycle) input.cycleId = args.cycle;
+  if (args.parent) input.parentId = args.parent;
 
   if (Object.keys(input).length === 0) throw new Error('no fields to update — pass --state, --labels, --priority, etc.');
 
@@ -264,12 +321,59 @@ async function cmdUpdate(token, args) {
     mutation($id: String!, $input: IssueUpdateInput!) {
       issueUpdate(id: $id, input: $input) {
         success
-        issue { id identifier title state { name } }
+        issue { id identifier url title state { name type } labels { nodes { id name } } project { id name url state } parent { id identifier title } }
       }
     }
   `, { id: issueId, input });
 
   writeStdout(JSON.stringify(data.issueUpdate, null, 2));
+}
+
+
+async function cmdLabels(token, args) {
+  const data = await gql(token, `
+    query($first: Int, $after: String) {
+      issueLabels(first: $first, after: $after) {
+        nodes { id name description color }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  `, { first: args.first, after: args.after || null });
+  writeStdout(JSON.stringify({ labels: data.issueLabels.nodes, pageInfo: data.issueLabels.pageInfo }, null, 2));
+}
+
+async function cmdTeams(token, args) {
+  const data = await gql(token, `
+    query($first: Int, $after: String) {
+      teams(first: $first, after: $after) {
+        nodes { id key name states { nodes { id name type position } } }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  `, { first: args.first, after: args.after || null });
+  writeStdout(JSON.stringify({ teams: data.teams.nodes, pageInfo: data.teams.pageInfo }, null, 2));
+}
+
+async function cmdProjects(token, args) {
+  const data = await gql(token, `
+    query($first: Int, $after: String) {
+      projects(first: $first, after: $after) {
+        nodes { id name url state teams { nodes { id key name } } }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  `, { first: args.first, after: args.after || null });
+  writeStdout(JSON.stringify({ projects: data.projects.nodes, pageInfo: data.projects.pageInfo }, null, 2));
+}
+
+async function cmdStates(token, args) {
+  const teamId = resolveTeamId(args.team);
+  const data = await gql(token, `
+    query($id: String!) {
+      team(id: $id) { id key name states { nodes { id name type position } } }
+    }
+  `, { id: teamId });
+  writeStdout(JSON.stringify(data.team, null, 2));
 }
 
 // --- main ---
@@ -295,10 +399,17 @@ async function main() {
   switch (command) {
     case 'query': await cmdQuery(token, args); break;
     case 'issue': await cmdIssue(token, args); break;
-    case 'issues': await cmdIssues(token, args); break;
-    case 'create': await cmdCreate(token, args); break;
+    case 'issues':
+    case 'search': await cmdIssues(token, args); break;
+    case 'create':
+    case 'createIssue': await cmdCreate(token, args); break;
     case 'comment': await cmdComment(token, args); break;
-    case 'update': await cmdUpdate(token, args); break;
+    case 'update':
+    case 'updateIssue': await cmdUpdate(token, args); break;
+    case 'labels': await cmdLabels(token, args); break;
+    case 'teams': await cmdTeams(token, args); break;
+    case 'projects': await cmdProjects(token, args); break;
+    case 'states': await cmdStates(token, args); break;
     default: throw new Error(`unknown command: ${command}. run --help for usage.`);
   }
 }

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8bee70592eaf",
+  "tmuxSession": "opensaas-workspace-agents-add-review-summary-output-8bee7059",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-review-summary-output",
+  "branch": "task/workspace-agents/add-review-summary-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-review-summary-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-review-summary-output",
+  "prNumber": 541,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/541",
+  "createdAt": "2026-05-23T21:11:24.899Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-review-summary-output/.task/workspace-agents/add-review-summary-output/session.json"
+}

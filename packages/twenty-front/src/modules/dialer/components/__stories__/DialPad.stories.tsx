@@ -1,6 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { RecoilRoot } from 'recoil';
-import { fn, userEvent, within, expect } from '@storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { DialPad } from '@/dialer/components/DialPad';
 import { callStateAtom } from '@/dialer/states/callStateAtom';

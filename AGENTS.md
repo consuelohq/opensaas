@@ -1,257 +1,228 @@
-# Agents.md — opensaas agent instructions
+## First things first
 
+Read `CODING-STANDARDS.md` before writing code. Those rules are mandatory.
 
-## first things first
+This file contains repo-specific knowledge for the OpenSaaS codebase. It does not replace the task workflow skill or worker-agent engineering standards skill.
 
-read `CODING-STANDARDS.md` before writing any code. every rule in that file is mandatory.
+Use this file for architecture, package conventions, deployment facts, production/internal-instance details, and known repo gotchas.
 
-## project overview
+## Project overview
 
-Company: Consuelo
-Repo:Opensaas
-About:Teleommunication infrastructure.
+Company: Consuelo  
+Repo: OpenSaaS  
+Purpose: telecommunication infrastructure and Consuelo product development.
 
+This repo is built on top of Twenty. Some package names still contain `twenty-*`; those are historical naming artifacts. Treat Consuelo behavior and current repo conventions as the source of truth.
 
-## architecture
+## Architecture
 
-### tech stack
+### Tech stack
 
-- **frontend**: React 18, TypeScript, Recoil (state management), Emotion (styling), Vite, astro
-- **backend**: NestJS, TypeORM, PostgreSQL, Redis, GraphQL (with GraphQL Yoga)
-- **monorepo**: Nx workspace managed with Yarn 4
-- **background jobs**: BullMQ
-- **telephony**: Twilio
-- **billing**: Stripe
-- **AI**: Groq/OpenAI (via openai SDK)
-- **knowledge base**: pgvector (postgres-native embeddings)
-- **deploy**: Docker, Railway, or AWS SAM (`template.yaml`)
+- Frontend: React 18, TypeScript, Recoil, Emotion, Vite, Astro
+- Backend: NestJS, TypeORM, PostgreSQL, Redis, GraphQL with GraphQL Yoga
+- Monorepo: Nx workspace managed with Yarn 4
+- Background jobs: BullMQ
+- Telephony: Twilio
+- Billing: Stripe
+- AI: Groq/OpenAI via OpenAI SDK-compatible clients
+- Knowledge base: pgvector
+- Deploy: Docker, Railway, AWS SAM where applicable
 
-### key development principles
+### Major runtime services
 
-- **functional components only** (no class components)
-- **named exports only** (no default exports)
-- **types over interfaces** (except when extending third-party interfaces)
-- **string literals over enums** (except for GraphQL enums)
-- **no 'any' type allowed** — strict TypeScript enforced
-- **event handlers preferred over useEffect** for state updates
-- **props down, events up** — unidirectional data flow
-- **composition over inheritance**
-- **no abbreviations** in variable names (`user` not `u`, `fieldMetadata` not `fm`)
+| Service | Purpose |
+| --- | --- |
+| `opensaas` | Main Twenty/Consuelo server, NestJS API, frontend |
+| `twenty-worker` | BullMQ background job processor |
+| `postgres` | Railway-managed PostgreSQL |
+| `redis` | Railway-managed Redis for cache, sessions, BullMQ |
 
-### naming conventions
+## Core codebase rules
 
-- **variables/functions**: camelCase
-- **constants**: SCREAMING_SNAKE_CASE
-- **types/classes**: PascalCase (suffix component props with `Props`, e.g. `ButtonProps`)
-- **files/directories**: kebab-case with descriptive suffixes (`.component.tsx`, `.service.ts`, `.entity.ts`, `.dto.ts`, `.module.ts`)
-- **TypeScript generics**: descriptive names (`TData` not `T`)
-- **Proper upper vs lowercase all across work.**
+These are repo-specific reminders. Full style and implementation standards live in `CODING-STANDARDS.md`.
 
-### file structure
+- Functional React components only.
+- Named exports only.
+- Prefer `type` over `interface`, except when extending third-party interfaces.
+- Prefer string literal unions over enums, except GraphQL enums.
+- No `any` or `as any`.
+- Use `catch (err: unknown)` with type guards.
+- Use event handlers and derived state before reaching for `useEffect`.
+- Props down, events up.
+- Composition over inheritance.
+- No unclear abbreviations.
+- Keep proper uppercase/lowercase naming across the codebase.
+- Use short `//` comments that explain why, not what.
+- Do not use `console.log`, `console.warn`, or `console.error` in runtime code. Use structured logging.
+- Never interpolate user input into SQL. Use parameterized queries.
+- Always normalize phone numbers with `normalizePhone()` from `@consuelo/contacts` where phone normalization is needed.
 
-- components under 300 lines, services under 500 lines
-- components in their own directories with tests and stories
-- use `index.ts` barrel exports for clean imports
-- import order: external libraries first, then internal (`@/`), then relative
+## Naming conventions
 
-### comments
+- Variables/functions: `camelCase`
+- Constants: `SCREAMING_SNAKE_CASE`
+- Types/classes: `PascalCase`
+- Component props: suffix with `Props`, for example `ButtonProps`
+- Files/directories: kebab-case with descriptive suffixes:
+  - `.component.tsx`
+  - `.service.ts`
+  - `.entity.ts`
+  - `.dto.ts`
+  - `.module.ts`
+- TypeScript generics: descriptive names like `TData`, not bare `T` unless the meaning is obvious and local.
 
-- use short-form comments (`//`), not JSDoc blocks
-- explain WHY (business logic), not WHAT
-- do not comment obvious code
-- multi-line comments use multiple `//` lines, not `/** */`
+## Structure conventions
 
-### state management (recoil)
+- Components should usually stay under 300 lines.
+- Services should usually stay under 500 lines.
+- Components should live in their own directories with tests and stories when applicable.
+- Use `index.ts` barrel exports for clean imports, but do not re-export values from modules that depend on optional peer dependencies.
+- Import order:
+  1. External libraries
+  2. Internal aliases such as `@/`
+  3. Relative imports
 
-- **atoms** for primitive state
-- **selectors** for derived state
-- **atom families** for dynamic collections
-- component-specific state with React hooks (`useState`, `useReducer` for complex logic)
-- GraphQL cache managed by Apollo Client
-- use functional state updates: `setState(prev => prev + 1)`
+## Frontend conventions
 
-### backend architecture
+- Use Emotion for styling with the project’s styled-components pattern.
+- Use Lingui for internationalization.
+- Query by user-visible elements in tests: text, roles, labels.
+- Prefer `@testing-library/user-event` for realistic interactions.
+- Test behavior, not implementation details.
+- Use descriptive test names: `should [behavior] when [condition]`.
+- Clear mocks between tests with `jest.clearAllMocks()`.
 
-- **NestJS modules** for feature organization
-- **TypeORM** for database ORM with PostgreSQL
-- **GraphQL** API with code-first approach
-- **Redis** for caching and session management
-- **BullMQ** for background job processing
+## State management
 
-### database & migrations
+- Use Recoil atoms for primitive shared state.
+- Use selectors for derived state.
+- Use atom families for dynamic collections.
+- Use component-local React state for local state.
+- Use `useReducer` for complex local transitions.
+- Use functional state updates: `setState((previousValue) => nextValue)`.
+- GraphQL cache is managed by Apollo Client.
 
-- **PostgreSQL** as primary database
-- **Redis** for caching and sessions
-- **ClickHouse** for analytics (when enabled)
-- always generate migrations when changing entity files
-- migration names must be kebab-case (e.g. `add-agent-turn-evaluation`)
-- include both `up` and `down` logic in migrations
-- never delete or rewrite committed migrations
+## Backend conventions
 
-### utility helpers
+- Use NestJS modules for feature organization.
+- Use TypeORM with PostgreSQL.
+- Use GraphQL code-first patterns where the existing package does.
+- Use Redis for caching and sessions.
+- Use BullMQ for background processing.
+- Keep domain logic separated from side effects.
+- Prefer existing module/service patterns over new architecture.
 
-use existing helpers from `twenty-shared` instead of manual type guards:
+## Database and migrations
 
-- `isDefined()`, `isNonEmptyString()`, `isNonEmptyArray()`
+- PostgreSQL is the primary database.
+- Redis is used for caching, sessions, and BullMQ.
+- ClickHouse is used for analytics when enabled.
+- Always generate migrations when changing entity files.
+- Migration names must be kebab-case, for example `add-agent-turn-evaluation`.
+- Include both `up` and `down` logic in migrations.
+- Never delete or rewrite committed migrations.
+- Run a database backup before migration, reset, or schema-changing operations.
 
+## Useful helpers
 
-### code style
+Use existing helpers from `twenty-shared` instead of manual type guards when applicable:
 
-- use **Emotion** for styling with styled-components pattern
-- follow **Nx** workspace conventions for imports
-- use **Lingui** for internationalization
-- apply security first, then formatting (sanitize before format)
+- `isDefined()`
+- `isNonEmptyString()`
+- `isNonEmptyArray()`
 
-### testing strategy
+## API routes — current production reality
 
-- **test behavior, not implementation** — focus on user perspective
-- **test pyramid**: 70% unit, 20% integration, 10% E2E
-- query by user-visible elements (text, roles, labels) over test IDs
-- use `@testing-library/user-event` for realistic interactions
-- descriptive test names: "should [behavior] when [condition]"
-- clear mocks between tests with `jest.clearAllMocks()`
+The Express-style OpenSaaS API routes in:
 
-
-
-
-## deployment — railway
-
-
-
-| service         | what it does                          | Dockerfile                                 |
-| --------------- | ------------------------------------- | ------------------------------------------ |
-| `opensaas`      | twenty-server (NestJS API + frontend) | `packages/twenty-docker/twenty/Dockerfile` |
-| `twenty-worker` | BullMQ background job processor       | same Dockerfile, custom start command      |
-| `postgres`      | PostgreSQL database                   | railway managed                            |
-| `redis`         | Redis cache + sessions + BullMQ       | railway managed                            |
-
-### railway Dockerfile configuration (twenty is just namining old old packages consuelo built on top of)
-
-railway has TWO env vars for Dockerfile path — you need BOTH:
-
-```
-RAILWAY_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
-NIXPACKS_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
-```
-
-**`RAILWAY_DOCKERFILE_PATH` is the one that actually matters.** without it, railway falls back to the root `Dockerfile` (opensaas API, uses `npm ci`) which fails because there's no `package-lock.json` — the monorepo uses yarn.
-
-### twenty-worker service
-
-the worker uses the same Dockerfile as the main server but with a custom start command override in railway dashboard settings:
-
-```
-/bin/sh -c "node dist/queue-worker/queue-worker"
+```text
+packages/api/src/routes/
 ```
 
-the `/bin/sh -c` wrapper is required because the Dockerfile uses an ENTRYPOINT (`/app/entrypoint.sh`), and railway treats the start command as an ENTRYPOINT override — without the shell wrapper, env vars won't expand.
+are `RouteDefinition[]` arrays.
 
+They are not registered in the production Twenty Server NestJS app. Hitting paths such as `/api/v1/queues` may return frontend HTML via the SPA catch-all, not JSON.
 
+The chosen direction is to rewrite these as native NestJS controllers in:
 
-### yoga driver patch (DO NOT MODIFY)
-
-`packages/twenty-server/patches/@graphql-yoga+nestjs+2.1.0.patch` — patches the yoga NestJS driver to support conditional schema merging (workspace + core schemas). this is the code path that calls `mergeSchemas()`. do not touch this file.
-
-## consuelo internal instance — direct API access this is NOT the same as app.consuelohq.com this is our workspace for us to dev and work on and app.consuelohq.com is what we sell.
-
-the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API you can hit directly.
-
-### graphql endpoints
-
-- workspace data: `https://consuelo.consuelohq.com/graphql` — contacts, companies, lists, tasks, notes, etc.
-- metadata: `https://consuelo.consuelohq.com/metadata` — object definitions, field metadata
-- auth: `Authorization: Bearer $INTERNAL_CONSUELO_API_KEY` (workspace-scoped JWT token, in `.env`)
-
-the workspace token can query/mutate workspace-level data (people, companies, etc.) but NOT core-level queries like `currentUser`. core queries require a user JWT from the login flow.
-
-### database access (for admin operations)
-
-when you need to bypass the API (bulk operations, feature flags, cache inspection):
-
-- postgres public URL: `postgresql://postgres:<pw>@maglev.proxy.rlwy.net:21615/railway`
-- redis public URL: `redis://default:<pw>@mainline.proxy.rlwy.net:46909`
-- credentials are in the Railway service env vars (use `railway variables --json --service Postgres` or `--service Redis`)
-
-### feature flags — cache invalidation is REQUIRED
-
-feature flags are stored in `core."featureFlag"` table (per workspace). **but the server caches them in a 3-tier system:**
-
-1. **local in-memory** (server process) — cleared on redeploy
-2. **redis** (`engine:workspace:feature-flag:feature-flags-map:<workspaceId>:data` + `:hash`) — persists across deploys
-3. **postgres** (source of truth)
-
-**if you modify flags directly in postgres, you MUST also flush the redis cache:**
-
-```javascript
-// connect to redis public URL and delete:
-redis.del(
-  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:data`,
-  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:hash`,
-);
+```text
+packages/twenty-server/src/engine/core-modules/consuelo-api/
 ```
 
-without this, the server reads stale data from redis and your DB changes are invisible. a server redeploy alone is NOT enough — it only clears tier 1 (local memory), not tier 2 (redis).
+The controllers should be thin wrappers:
 
-**the proper way** (if you have API access): use the `updateWorkspaceFeatureFlag` admin mutation, which calls `invalidateAndRecompute` internally and handles all cache tiers. but that requires `AdminPanelGuard` auth.
+```text
+auth + request parsing + call into @consuelo/* services
+```
 
-### workspace IDs
+Business logic should stay in the private Consuelo packages.
 
-- consuelo (internal): `7d0894c1-bdb1-4dd6-9a00-78681b52d5f6`
+Do not try to mount the Express routes as middleware. The decision is native NestJS.
 
+Related task: `DEV-1459`.
 
-## critical rules
+### Route ordering
 
+Literal routes must come before parameter routes in the same prefix group. The framework registers routes in array order, and first match wins.
 
-1. **read CODING-STANDARDS.md** — contains all error tracking, logging, SQL, phone normalization, and code review rules
-2. **never use `console.log/error/warn`** — use structured logger
-3. **never interpolate user input into SQL** — parameterized queries only
-4. **always normalize phone numbers** — use `normalizePhone()` from `@consuelo/contacts`
-5. **all CLI commands support `--json` and `--quiet`** — check `isJson()` and the global quiet flag
-6. **config lives at `~/.consuelo/config.json`** — loaded via `loadConfig()` from `packages/cli/src/config.ts`
-7. **error format is consistent** — API: `{ error: { code, message } }`, CLI: `error()` + `process.exit(1)`
+Correct:
 
-
-
-## route ordering
-
-literal routes MUST come before param routes in the same prefix group. the framework registers routes in array order — first match wins.
-
-```typescript
-// ✅ correct — literal before param
+```ts
 { path: '/v1/contacts/search', ... },
 { path: '/v1/contacts/import', ... },
 { path: '/v1/contacts/:id', ... },
+```
 
-// ❌ wrong — /:id catches "search" and "import" as id values
+Wrong:
+
+```ts
 { path: '/v1/contacts/:id', ... },
 { path: '/v1/contacts/search', ... },
+{ path: '/v1/contacts/import', ... },
 ```
 
+`/:id` catches `"search"` and `"import"` if it comes first.
 
+### Shared service instances
 
-## shared instances
+Do not create new service instances per request unless the service is intentionally request-scoped.
 
-don't create new service instances per request. instantiate once at module level or in the route factory function, then share across handlers.
+Correct:
 
-```typescript
-// ✅ correct — shared instance
+```ts
 export function callRoutes(): RouteDefinition[] {
   const dialer = new Dialer();
+
   return [
-    { handler: async (req, res) => { await dialer.call(...); } },
+    {
+      handler: async (request, response) => {
+        await dialer.call(...);
+      },
+    },
   ];
 }
-
-// ❌ wrong — new instance per request
-{ handler: async (req, res) => { const dialer = new Dialer(); ... } }
 ```
 
-## Dockerfile — copy all workspace deps
+Wrong:
 
-when building a package that depends on other workspace packages, the Dockerfile must COPY all of them. check `package.json` dependencies for `@consuelo/*` packages.
+```ts
+{
+  handler: async (request, response) => {
+    const dialer = new Dialer();
+    await dialer.call(...);
+  },
+}
+```
+
+### Dockerfile workspace dependency rule
+
+When building a package that depends on other workspace packages, the Dockerfile must copy all runtime workspace dependencies.
+
+Check `package.json` for `@consuelo/*` dependencies.
+
+Example:
 
 ```dockerfile
-# if api depends on coaching, contacts, dialer, logger:
 COPY packages/api/ packages/api/
 COPY packages/coaching/ packages/coaching/
 COPY packages/contacts/ packages/contacts/
@@ -259,520 +230,428 @@ COPY packages/dialer/ packages/dialer/
 COPY packages/logger/ packages/logger/
 ```
 
-## dependencies vs devDependencies vs peerDependencies
+If a copied package imports another workspace package at runtime, that dependency must also be copied.
 
-- **dependencies** — used at runtime, bundled with the package
-- **devDependencies** — only needed for building/testing (types, test frameworks, build tools)
-- **peerDependencies** — used at runtime but provided by the consuming app (e.g. `groq-sdk` in contacts — the app provides it)
+### dependencies vs devDependencies vs peerDependencies
 
-if a package `import`s something in its source code (not just types), it must be in `dependencies` or `peerDependencies`, never only in `devDependencies`.
+- `dependencies`: used at runtime and bundled with the package.
+- `devDependencies`: only needed for local build/test/type tooling.
+- `peerDependencies`: used at runtime but provided by the consuming app.
 
-## catch typing
+If source code imports a package as a runtime value, it must be in `dependencies` or `peerDependencies`, never only `devDependencies`.
 
-always use `catch (err: unknown)` with type guards, never `catch (err: any)`:
+Type-only imports can be backed by dev dependencies when they are not required at runtime.
 
-```typescript
-// ✅ correct
-catch (err: unknown) {
-  const message = err instanceof Error ? err.message : 'unknown error';
-}
+### Peer dependencies require lazy imports
 
-// ❌ wrong
-catch (err: any) {
-  error(err.message);
-}
-```
+If a package is in `peerDependencies`, import it dynamically inside the function that uses it. Do not import it at the top level.
 
-## peer dependencies — lazy imports only
+Wrong:
 
-if a package is in `peerDependencies` (not `dependencies`), it MUST be imported dynamically inside the function that uses it. never at the top level. top-level imports of optional deps crash the entire package for anyone who doesn't have them installed.
-
-the pre-push `OPTIONAL_IMPORT` check enforces this automatically.
-
-```typescript
-// ❌ wrong — crashes if groq-sdk not installed
+```ts
 import Groq from 'groq-sdk';
 
 export async function parseDocument(file: Buffer) {
   const groq = new Groq();
-  // ...
 }
+```
 
-// ✅ correct — only fails when actually called
+Correct:
+
+```ts
 export async function parseDocument(file: Buffer) {
   const { default: Groq } = await import('groq-sdk');
   const groq = new Groq();
-  // ...
 }
 ```
 
-this also applies to barrel exports (`index.ts`). never re-export values from modules that depend on optional packages — it forces the dep on every consumer. use `export type` for types only.
+This also applies to barrel exports. Do not re-export runtime values from modules that depend on optional packages.
 
-```typescript
-// ❌ wrong — importing this barrel crashes without @sentry/node
+Wrong:
+
+```ts
 export { initSentry, Sentry } from './sentry.js';
+```
 
-// ✅ correct — types are safe, values need direct import
+Correct:
+
+```ts
 export type { SentryConfig } from './sentry.js';
-// consumers: import { initSentry } from '@consuelo/api/sentry'
 ```
 
-## no stub handlers
+Consumers that need runtime values should import from the explicit module path that owns the optional dependency.
 
-route handlers must return real data. if a handler isn't implemented yet, return `501 Not Implemented` — don't return hardcoded fake data that looks real.
+The pre-push `OPTIONAL_IMPORT` check enforces this.
 
-the pre-push `STUB_HANDLER` check flags suspicious hardcoded responses in route files.
+### No stub handlers
 
-```typescript
-// ❌ wrong — looks implemented but returns fake data
-handler: async (req, res) => {
-  res.status(200).json({ status: 'in-progress' });
+Route handlers must return real data.
+
+If a handler is not implemented, return `501 Not Implemented`. Do not return fake hardcoded data that looks real.
+
+Wrong:
+
+```ts
+handler: async (request, response) => {
+  response.status(200).json({ status: 'in-progress' });
 };
+```
 
-// ✅ correct — clearly unfinished
-handler: async (req, res) => {
-  res
-    .status(501)
-    .json({
-      error: {
-        code: 'NOT_IMPLEMENTED',
-        message: 'Call status lookup not yet implemented',
-      },
-    });
+Correct:
+
+```ts
+handler: async (request, response) => {
+  response.status(501).json({
+    error: {
+      code: 'NOT_IMPLEMENTED',
+      message: 'Call status lookup not yet implemented',
+    },
+  });
 };
+```
 
-// ✅ also fine — marked as intentional stub
-handler: async (req, res) => {
+Intentional temporary stubs must be clearly marked with `STUB:` and a ticket.
+
+```ts
+handler: async (request, response) => {
   // STUB: replace with real call status check (DEV-xxx)
-  res.status(200).json({ status: 'in-progress' });
+  response.status(200).json({ status: 'in-progress' });
 };
 ```
 
-## error recovery in cached clients
+The pre-push `STUB_HANDLER` check flags suspicious hardcoded responses in route files.
 
-any pattern that lazily creates and caches a client (e.g. `getClient()`) must null out the cached reference on failure. otherwise a failed init leaves a broken client cached forever and retries are impossible.
+### Error recovery in cached clients
 
-```typescript
-// ❌ wrong — if OpenAI() throws, this.client stays undefined
-// but the error is swallowed and next call tries again with
-// no way to distinguish "never tried" from "tried and failed"
+Any pattern that lazily creates and caches a client must reset the cached reference on initialization failure.
+
+Wrong:
+
+```ts
 private async getClient() {
   if (!this.client) {
     this.client = new OpenAI({ apiKey });
   }
+
   return this.client;
 }
+```
 
-// ✅ correct — null on failure so retry is possible
+Correct:
+
+```ts
 private async getClient() {
   try {
     if (!this.client) {
       this.client = new OpenAI({ apiKey });
     }
+
     return this.client;
-  } catch (err) {
+  } catch (err: unknown) {
     this.client = null;
     throw err;
   }
 }
-`
+```
 
-## API routes — NOT MOUNTED IN PRODUCTION (2026-04-05)
+Without this, failed initialization can leave a broken or ambiguous cached client state and make retries unreliable.
 
-the opensaas API routes in `packages/api/src/routes/` (queues, calls, parallel) are express-style `RouteDefinition[]` arrays. they are **NOT registered in the twenty-server NestJS app**. hitting `/api/v1/queues` returns the frontend HTML (SPA catch-all), not JSON.
+### Error format
 
-**DEV-1459** is the task to rewrite these as native NestJS controllers in `packages/twenty-server/src/engine/core-modules/consuelo-api/`. the controllers are thin wrappers — auth + request parsing + calling into `@consuelo/dialer` services. the business logic stays in the private packages.
+Keep errors consistent.
 
-**do NOT try to mount the express routes as middleware.** the decision is to go native NestJS.
+API error shape:
 
-## production auth flow for API testing
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable message"
+  }
+}
+```
 
-```bash
-# sign in (on /metadata endpoint, NOT /graphql)
+CLI errors should use the project error helper and exit non-zero.
+
+All CLI commands should support `--json` and `--quiet` where the command is part of the project CLI surface.
+
+### Config location
+
+Consuelo CLI config lives at:
+
+```text
+~/.consuelo/config.json
+```
+
+Load it through `loadConfig()` from:
+
+```text
+packages/cli/src/config.ts
+```
+
+Do not hand-roll parallel config loading.
+
+## Railway deployment
+
+### Services
+
+| Service | Purpose | Dockerfile |
+| --- | --- | --- |
+| `opensaas` | Twenty/Consuelo server | `packages/twenty-docker/twenty/Dockerfile` |
+| `twenty-worker` | BullMQ worker | Same Dockerfile, custom start command |
+| `postgres` | PostgreSQL | Railway managed |
+| `redis` | Redis | Railway managed |
+
+### Dockerfile path env vars
+
+Railway has two Dockerfile path env vars. Set both:
+
+```env
+RAILWAY_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
+NIXPACKS_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
+```
+
+`RAILWAY_DOCKERFILE_PATH` is the one that actually matters.
+
+Without it, Railway may fall back to the root Dockerfile, which can fail because this monorepo uses Yarn and does not have a root `package-lock.json`.
+
+### twenty-worker start command
+
+The worker uses the same Dockerfile as the main server but needs a custom Railway start command:
+
+```sh
+/bin/sh -c "node dist/queue-worker/queue-worker"
+```
+
+The `/bin/sh -c` wrapper is required because the Dockerfile uses an entrypoint:
+
+```text
+/app/entrypoint.sh
+```
+
+Railway treats the start command as an entrypoint override. Without the shell wrapper, env vars may not expand correctly.
+
+### Railway SSH lesson
+
+`railway ssh` output can swallow simple `echo` commands.
+
+Do not use:
+
+```sh
+railway ssh -- sh -c 'echo VAR=$VAR'
+```
+
+to verify env vars.
+
+Use:
+
+```sh
+railway ssh -- env | grep VAR_NAME
+```
+
+Env vars may be injected correctly even when `echo` output appears missing.
+
+### Yoga driver patch (DO NOT MODIFY)
+packages/twenty-server/patches/@graphql-yoga+nestjs+2.1.0.patch — patches the yoga NestJS driver to support conditional schema merging (workspace + core schemas). this is the code path that calls mergeSchemas(). do not touch this file.
+
+## Internal Consuelo instance
+
+The internal Consuelo workspace is:
+
+```text
+https://consuelo.consuelohq.com
+```
+
+This is not the same as:
+
+```text
+https://app.consuelohq.com
+```
+
+`consuelo.consuelohq.com` is the internal development/work workspace. `app.consuelohq.com` is the product customers use.
+
+### GraphQL endpoints
+
+Workspace data:
+
+```text
+https://consuelo.consuelohq.com/graphql
+```
+
+Contacts, companies, lists, tasks, notes, and other workspace-level data.
+
+Metadata:
+
+```text
+https://consuelo.consuelohq.com/metadata
+```
+
+Object definitions, field metadata, and auth mutations.
+
+Auth:
+
+```http
+Authorization: Bearer $INTERNAL_CONSUELO_API_KEY
+```
+
+The workspace token can query/mutate workspace-level data but cannot run core-level queries like `currentUser`. Core queries require a user JWT from the login flow.
+
+### Production auth flow for API testing
+
+Auth mutations live on `/metadata`, not `/graphql`.
+
+```sh
 TOKEN=$(curl -s https://consuelo.consuelohq.com/metadata \
   -H 'Content-Type: application/json' \
-  -d '{"query":"mutation { signIn(email: \"ryancaves22@gmail.com\", password: \"Consuelo2026!\") { tokens { accessOrWorkspaceAgnosticToken { token } } } }"}' \
+  -d '{"query":"mutation { signIn(email: \"<email>\", password: \"<password>\") { tokens { accessOrWorkspaceAgnosticToken { token } } } }"}' \
   | jq -r '.data.signIn.tokens.accessOrWorkspaceAgnosticToken.token')
 ```
 
-this returns a workspace-agnostic token. the auth mutations live on `/metadata`, not `/graphql`.
+Do not hardcode real credentials in committed files or chat-visible artifacts.
 
+### Database access for admin operations
 
-<!-- nx configuration start-->
-<!-- Leave the start & end comments to automatically receive updates. -->
+Use direct database or Redis access only when the API path is insufficient, such as:
 
-## General Guidelines for working with Nx
+- Bulk operations
+- Feature flags
+- Cache inspection
+- Emergency admin repair
 
-- For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
-- You have access to the Nx MCP server and its tools, use them to help the user
-- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
-- NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
+Credentials are in Railway service env vars. Retrieve through Railway tooling rather than hardcoding secrets.
 
-## Scaffolding & Generators
+Services:
 
-- For scaffolding tasks (creating apps, libs, project structure, setup), ALWAYS invoke the `nx-generate` skill FIRST before exploring or calling MCP tools
+- Postgres
+- Redis
 
-## When to use nx_docs
+Use Railway variables or the workspace deployment tooling to inspect connection values. Do not paste full credentials into logs, PRs, or workpads.
 
-- USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
-- DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
-- The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
+### Workspace IDs
 
-<!-- nx configuration end-->
+Internal Consuelo workspace:
 
-lesson 1: `railway ssh` output can swallow simple echo commands. don't use railway ssh
-  -- sh -c 'echo VAR=$VAR' to check env vars — the output gets eaten. use railway ssh --
-  env | grep VAR_NAME instead. the env vars ARE injected on deploy, they just don't show
-  up with echo in some cases.
-
-  lesson 2: APP_VERSION must match a version in the upgrade command's `allCommands`
-  record. setting it to an arbitrary version will pass
-  semver validation but fail with "No command found for version X."
-
-  lesson 3: workspace `version` column must be set to the previous minor version. the
-  upgrade command checks core.workspace.version and requires it to be at least one minor
-  version behind APP_VERSION. if it's null (never upgraded), set it to the previous
-  version (e.g. 1.17.0 for upgrading to 1.18.0).
-
-  lesson 4: the standard application sync is the ONLY correct way to apply metadata
-  changes to existing workspaces. manually inserting views/nav items into the DB creates
-  broken shells with no view fields, filters, or field groups. never do it.
-
-  lesson 5: custom-app view fields on standard-app views break the sync validator. fix:
-  reassign those view fields to the standard app's applicationId before running sync.
-
-  lesson 6: orphaned view fields (referencing deleted/moved field metadata) also crash
-  the sync. check for them before running sync.
-
-  lesson 7: "position" means different things. core.navigationMenuItem.position must be
-  >= 0 per the sync validator. workspace record position (listMember rows) can be
-  negative — that's twenty's prepend behavior.
-
-# key commands
-
-all commands run through `workspace.sandbox_exec({ command, timeout })`.
-
----
-
-## 1. code quality — workspace review tools
-
-`review.run` is the single quality gate. it runs 13 static checks, eslint, typecheck, spec compliance, confidence score, and tests. the typed facade requires an explicit task branch so review scope is teachable and deterministic.
-
-### review.run
-
-standard task review — `branch` is required:
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\"}"
-```
-
-skip tests (faster iteration):
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
-```
-
-review against a specific base:
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"base\":\"stream/workspace-agents\"}"
-```
-
-auto-fix eslint issues:
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"fix\":true}"
-```
-
-review all files in the task worktree:
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"all\":true}"
-```
-
-strict mode (surfaces hidden TS2564 errors):
-
-```bash
-workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"strict\":true}"
-```
-
-**facade input:** `branch` is required. flags: `fix`, `all`, `base`, `strict`, `noTests`. `mine` is applied internally after branch resolution. `--json` and `--quiet` are handled automatically by the facade.
-**what it runs, in order:**
-
-| step | check | details |
-|------|-------|---------|
-| 1 | 13 static checks | LOGGING, SENTRY, PHONE_NORM, SQL_PARAM, ERROR_HANDLING, TYPE_SAFETY, SECRETS, TODO_FIXME, IMPORT_SAFETY, ROUTE_ORDER, CATCH_TYPING, OPTIONAL_IMPORT, STUB_HANDLER |
-| 2 | eslint | changed files (or all with `all: true`) |
-| 3 | typecheck | `nx typecheck` on affected projects |
-| 4 | spec compliance | checks against task spec |
-| 5 | confidence score | reads decision engine state |
-| 6 | tests | jest on affected packages (skip with `noTests: true`) |
-
-findings are classified as "yours" (from your diff) vs "pre-existing" (already in the stream).
-
----
-
-### verify
-
-full safety gate. runs `review.run` internally, adds db migration safety checks, and stamps the result.
-
-full verification:
-
-```
-workspace verify '{"base": "stream/workspace-agents"}'
-```
-
-skip review (db checks only):
-
-```
-workspace verify '{"noReview": true}'
-```
-
-db warnings only (don't fail on migration risks):
-
-```
-workspace verify '{"dbWarnOnly": true}'
-```
-
-dry run (preview without stamping):
-
-```
-workspace verify '{"dryRun": true}'
-```
-
-skip stamp (run checks but don't write verify.json):
-
-```
-workspace verify '{"noStamp": true}'
-```
-
----
-
-### ai review
-
-sends diff + decision engine evidence to gemma via pi-proxy. posts structured findings to the PR on github. triggers automatically in tmux when `review.run` passes and a task PR exists.
-
-review a PR and post to github:
-
-```
-workspace aiReview '{"pr": 226}'
-```
-
-preview only (don't post):
-
-```
-workspace aiReview '{"pr": 226, "noPost": true}'
-```
-
----
-
-### pr review
-
-fetches all review comments from a PR (qodo, coderabbit, codex, ko, human reviewers) into `.task/reviews/<pr>.md`.
-
-```
-workspace prReview '{"pr": 226}'
-```
-
-print to stdout:
-
-```
-workspace prReview '{"pr": 226, "stdout": true}'
-```
-
----
-
-### file syntax checking
-
-```
-workspace checkFiles '{"files": ["packages/twenty-server/src/engine/core-modules/example.ts"]}'
-```
-
----
-
-## 2. development
-
-start full dev environment (frontend + backend + worker):
-
+```text
+7d0894c1-bdb1-4dd6-9a00-78681b52d5f6
 ```
-workspace task.exec '{"command": ["yarn", "start"]}'
-```
-
-individual services:
-
-```
-workspace task.exec '{"command": ["npx", "nx", "start", "twenty-front"]}'
-workspace task.exec '{"command": ["npx", "nx", "start", "twenty-server"]}'
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:worker"]}'
-```
-
----
-
-## 3. testing
-
-`review.run` runs tests on affected packages by default. use these for targeted testing.
-
-single test file (fast, preferred):
-
-```
-workspace task.exec '{"command": ["npx", "jest", "path/to/test.test.ts", "--config=packages/PROJECT/jest.config.mjs"]}'
-```
-
-all tests for a package:
-
-```
-workspace task.exec '{"command": ["npx", "nx", "test", "twenty-front"]}'
-workspace task.exec '{"command": ["npx", "nx", "test", "twenty-server"]}'
-```
-
-integration tests with DB reset:
 
-```
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:test:integration:with-db-reset"]}'
-```
+## Feature flags and cache invalidation
 
-storybook:
+Feature flags are stored in:
 
+```text
+core."featureFlag"
 ```
-workspace task.exec '{"command": ["npx", "nx", "storybook:build", "twenty-front"]}'
-workspace task.exec '{"command": ["npx", "nx", "storybook:test", "twenty-front"]}'
-```
-
-when testing the UI end to end, click "Continue with Email" and use the prefilled credentials.
 
----
+They are cached in three tiers:
 
-## 4. build
+1. Local in-memory server process
+2. Redis
+3. PostgreSQL source of truth
 
-twenty-shared must be built first:
+Redis keys:
 
+```text
+engine:workspace:feature-flag:feature-flags-map:<workspaceId>:data
+engine:workspace:feature-flag:feature-flags-map:<workspaceId>:hash
 ```
-workspace task.exec '{"command": ["npx", "nx", "build", "twenty-shared"]}'
-workspace task.exec '{"command": ["npx", "nx", "build", "twenty-front"]}'
-workspace task.exec '{"command": ["npx", "nx", "build", "twenty-server"]}'
-```
-
----
-
-## 5. database operations
-
-always run `db-backup.sh` before any migration, reset, or schema change. backups are saved to `.agent/backups/` and the last 5 are kept automatically.
 
-backup and restore:
+If feature flags are modified directly in PostgreSQL, Redis cache must also be flushed. A server redeploy only clears local memory, not Redis.
 
-```
-workspace task.exec '{"command": ["bash", "scripts/db-backup.sh"]}'
-workspace task.exec '{"command": ["bash", "scripts/db-restore.sh"]}'
-workspace task.exec '{"command": ["bash", "scripts/db-restore.sh", "<backup-file>"]}'
-```
+When possible, use the admin mutation that calls `invalidateAndRecompute`, because it handles cache invalidation correctly. That path requires `AdminPanelGuard` auth.
 
-database management:
-
-```
-workspace task.exec '{"command": ["npx", "nx", "database:reset", "twenty-server"]}'
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:database:init:prod"]}'
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:database:migrate:prod"]}'
-```
+If direct Redis invalidation is required, delete both keys for the workspace.
 
-generate migration (replace `[name]` with kebab-case name):
+## Standard application sync lessons
 
-```
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:typeorm", "migration:generate", "src/database/typeorm/core/migrations/common/[name]", "-d", "src/database/typeorm/core/core.datasource.ts"]}'
-```
+The standard application sync is the correct way to apply metadata changes to existing workspaces.
 
-sync metadata:
+Do not manually insert views, navigation items, or related metadata rows into the database to simulate a standard app update. Manual insertion can create broken shells with missing view fields, filters, or field groups.
 
-```
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:command", "workspace:sync-metadata"]}'
-```
+Known sync lessons:
 
----
+1. `APP_VERSION` must match a version in the upgrade command’s `allCommands` record. An arbitrary semver-valid value can still fail with `No command found for version X`.
+2. `core.workspace.version` must be set to the previous minor version before upgrade. If it is null, set it to the previous version, for example `1.17.0` when upgrading to `1.18.0`.
+3. Standard application sync is the only correct way to apply metadata changes to existing workspaces.
+4. Custom-app view fields on standard-app views break the sync validator. Reassign those view fields to the standard app’s `applicationId` before running sync.
+5. Orphaned view fields referencing deleted or moved field metadata can crash sync. Check for them before running sync.
+6. `position` means different things in different tables:
+   - `core.navigationMenuItem.position` must be `>= 0`.
+   - Workspace record positions such as `listMember` rows can be negative because Twenty prepends records.
 
-## 6. graphql
+## Nx guidance
 
-generate GraphQL types (run after schema changes):
+This repo uses Nx.
 
-```
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-front:graphql:generate"]}'
-workspace task.exec '{"command": ["npx", "nx", "run", "twenty-front:graphql:generate", "--configuration=metadata"]}'
-```
+For navigating projects, targets, dependencies, and affected tasks, prefer Nx-aware tooling where available.
 
----
+When running tasks such as build, lint, test, typecheck, or e2e, prefer Nx targets over invoking underlying tools directly.
 
-## 7. deploy and observability
+Use the repo package manager rather than a global Nx install.
 
-railway logs:
+Examples:
 
+```sh
+yarn nx run twenty-front:test
+yarn nx run twenty-server:typecheck
+yarn nx affected --target=typecheck
 ```
-workspace railway.logs '{"service": "opensaas", "lines": 50}'
-workspace railway.logs '{"service": "opensaas", "errors": true}'
-workspace railway.logs '{"service": "twenty-worker", "lines": 20}'
-```
-
-redeploy:
 
-```
-workspace railway.redeploy '{"service": "opensaas"}'
-workspace railway.redeploy '{"service": "opensaas", "dryRun": true}'
-```
+Do not guess unfamiliar Nx flags. Check help or Nx docs first.
 
-wait for deploy:
+For scaffolding or generators, use the dedicated Nx generation workflow/tooling before changing project structure manually.
 
-```
-workspace wait '{"deploy": true}'
-```
+## Build and generation notes
 
-check deploy status:
+Build `twenty-shared` before packages that depend on it when doing isolated builds.
 
-```
-workspace status
-```
+GraphQL type generation is required after schema changes. Use the existing Nx targets for the relevant frontend/server package.
 
----
+Do not manually edit generated GraphQL artifacts unless the generator is broken and the workaround is documented.
 
-## 8. nx commands ( fallback only)
+## Testing strategy
 
-`review.run` wraps eslint and typecheck. use these only for isolated package debugging.
+Use the smallest meaningful test first, then broader gates.
 
-lint a single project against main:
+General target shape:
 
-```
-workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "twenty-front"]}'
-```
+- Unit tests for pure logic
+- Integration tests for service boundaries
+- E2E tests for user-visible or multi-service behavior
+- Service-backed E2E for callbacks, queues, locks, jobs, external providers, and runtime side effects
 
-lint with auto-fix:
+Testing guidelines:
 
-```
-workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "twenty-front", "--configuration=fix"]}'
-```
+- Test behavior, not implementation.
+- Prefer user-visible queries over test IDs.
+- Use realistic user events.
+- Clear mocks between tests.
+- Include both success and failure paths when the code owns failure handling.
 
-typecheck a single project:
+## Deployment and observability
 
-```
-workspace task.exec '{"command": ["npx", "nx", "typecheck", "twenty-front"]}'
-workspace task.exec '{"command": ["npx", "nx", "typecheck", "twenty-server"]}'
-```
+Use workspace deployment tools for Railway logs, redeploys, and status checks where available.
 
-format:
+Relevant services:
 
-```
-workspace task.exec '{"command": ["npx", "nx", "fmt", "twenty-front"]}'
-```
+- `opensaas`
+- `twenty-worker`
+- `postgres`
+- `redis`
 
----
+When debugging production or Railway behavior:
 
-## when to use what
+- Check the deployed commit
+- Check service-specific logs
+- Check worker logs separately from server logs
+- Verify env vars through Railway-safe methods
+- Avoid printing secrets
+- Redact phone numbers and tokens
 
-| situation | command |
-|-----------|---------|
-| before pushing any code | `workspace review.run "{\"branch\":\"task/<area>/<task>\",\"noTests\":true}"` |
-| full pre-merge gate | `workspace verify '{"base": "stream/<area>"}'` |
-| after review.run passes | ai review triggers automatically via tmux |
-| addressing PR feedback | `workspace prReview '{"pr": N}'` then fix |
-| debugging one package's types | `workspace task.exec '{"command": ["npx", "nx", "typecheck", "<project>"]}'` |
-| debugging one package's lint | `workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "<project>"]}'` |
-| checking deploy health | `workspace railway.logs '{"service": "opensaas", "errors": true}'` |
-| running a single test | `workspace task.exec '{"command": ["npx", "jest", "<path>", "--config=packages/<pkg>/jest.config.mjs"]}'` |
+## Security and secrets
 
+- Never hardcode secrets.
+- Never paste full tokens, passwords, database URLs, or phone numbers into committed files.
+- Prefer presence checks, suffix checks, counts, and redacted values.
+- Sanitize before formatting.
+- Security first, formatting second.

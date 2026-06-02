@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 326,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/326",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-dev-1499-local-setup-and-scenario-validation",
+  "createdAt": "2026-05-05T21:08:08.269Z"
+}

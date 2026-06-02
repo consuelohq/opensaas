@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 309,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/309",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-fix-blog-homepage-post-links-and-featured-posts",
+  "createdAt": "2026-05-04T08:09:27.375Z"
+}

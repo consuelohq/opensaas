@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 388,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/388",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-research-ingest-extracted-text-selection",
+  "taskSession": "tsk_2f0becf92147",
+  "tmuxSession": "opensaas-workspace-agents-fix-research-ingest-extracted-text-selection-2f0becf9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-research-ingest-extracted-text-selection/.task/session.json",
+  "createdAt": "2026-05-13T05:38:06.401Z"
+}

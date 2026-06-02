@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/workspace-agents/add-neutral-workspace-command-aliases/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/generate-types.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-28T20:34:51.428Z"
+}

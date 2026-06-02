@@ -39,8 +39,9 @@ export async function runBatch(
         results,
         completed: results.length,
       },
-      durationMs: Math.max(0, Date.now() - startedAt),
+      durationMs: Math.max(0, (options.now || Date.now)() - startedAt),
       traceId,
+      now: options.now,
     });
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -53,8 +54,9 @@ export async function runBatch(
         completed: results.length,
       },
       stderr: message,
-      durationMs: Math.max(0, Date.now() - startedAt),
+      durationMs: Math.max(0, (options.now || Date.now)() - startedAt),
       traceId,
+      now: options.now,
     });
   }
 }
@@ -80,6 +82,36 @@ function hasFunctionArgs(step: BatchStep): boolean {
 function isReadOnly(toolName: string): boolean {
   return getToolManifestEntry(toolName)?.capabilities.readOnly === true;
 }
+
+function estimateTokens(value: unknown): number {
+  if (value === undefined || value === null) return 0;
+  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  return Math.max(1, Math.ceil(text.length / 4));
+}
+
+function cleanText(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function commandDetail(command: unknown): string {
+  if (!Array.isArray(command)) return '';
+  return command.map((part) => String(part)).join(' ').slice(0, 120);
+}
+
+function stepDetail(args: unknown): string {
+  const input = typeof args === 'object' && args !== null && !Array.isArray(args) ? args as Record<string, unknown> : {};
+  const candidates = [
+    input.path,
+    input.pattern ? 'pattern=' + input.pattern : '',
+    input.query ? 'query=' + input.query : '',
+    input.keyword ? 'keyword=' + input.keyword : '',
+    input.operation,
+    input.pr ? 'pr #' + input.pr : '',
+    input.repo,
+    commandDetail(input.command),
+  ];
+  return cleanText(candidates.find((value) => cleanText(value)) || '').slice(0, 120);
+}
 async function runStep(
   step: BatchStep,
   previous: ToolResult<unknown> | null,
@@ -94,5 +126,15 @@ async function runStep(
     ...options,
     logMode: options.logMode ?? "errors",
   };
-  return executeTool(step.tool, args as ToolInput, batchOptions);
+  const result = await executeTool(step.tool, args as ToolInput, batchOptions);
+  const inputTokens = estimateTokens(args);
+  const outputTokens = estimateTokens(result);
+  return {
+    ...result,
+    inputTokens,
+    outputTokens,
+    totalTokens: inputTokens + outputTokens,
+    detail: stepDetail(args),
+    changed: getToolManifestEntry(step.tool)?.capabilities.mutating === true,
+  };
 }

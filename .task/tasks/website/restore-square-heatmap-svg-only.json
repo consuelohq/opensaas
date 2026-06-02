@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/restore-square-heatmap-svg-only",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 333,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/333",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-restore-square-heatmap-svg-only",
+  "createdAt": "2026-05-05T23:51:20.276Z"
+}

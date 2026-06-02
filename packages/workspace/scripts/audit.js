@@ -1,13 +1,12 @@
 #!/usr/bin/env bun
 
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const { contentHash } = require('./lib/index/chunker');
-const { createStore } = require('./lib/index/store');
-const { getRemoteUrl, isIndexablePath } = require('./lib/index/indexer');
 const { resolveGitRoot } = require('./lib/paths');
+
+const HOMEBREW_SQLITE_LIB = '/opt/homebrew/opt/sqlite/lib';
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -49,6 +48,27 @@ function parseArgs(argv) {
   }
 
   return args;
+}
+
+function ensureSqliteExtensionEnvironment(args) {
+  if (!args.index || process.platform !== 'darwin') return;
+  if (process.env.WORKSPACE_AUDIT_DYLD_REEXEC === '1') return;
+
+  const currentPath = process.env.DYLD_LIBRARY_PATH || '';
+  if (currentPath.split(':').includes(HOMEBREW_SQLITE_LIB)) return;
+  if (!fs.existsSync(HOMEBREW_SQLITE_LIB)) return;
+
+  const result = spawnSync(process.execPath, [__filename, ...process.argv.slice(2)], {
+    env: {
+      ...process.env,
+      DYLD_LIBRARY_PATH: currentPath ? `${HOMEBREW_SQLITE_LIB}:${currentPath}` : HOMEBREW_SQLITE_LIB,
+      WORKSPACE_AUDIT_DYLD_REEXEC: '1',
+    },
+    stdio: 'inherit',
+  });
+
+  if (result.error) throw result.error;
+  process.exit(result.status ?? 1);
 }
 
 function readJson(filePath) {
@@ -123,7 +143,18 @@ function auditDocs(repoRoot) {
   };
 }
 
+function loadIndexAuditDependencies() {
+  // Keep index-only native dependencies out of --scripts/--docs startup.
+  const runtimeRequire = module.require.bind(module);
+  return {
+    ...runtimeRequire('./lib/index/chunker'),
+    ...runtimeRequire('./lib/index/store'),
+    ...runtimeRequire('./lib/index/indexer'),
+  };
+}
+
 function auditIndex(repoRoot) {
+  const { contentHash, createStore, getRemoteUrl, isIndexablePath } = loadIndexAuditDependencies();
   const store = createStore(repoRoot, getRemoteUrl(repoRoot));
   const stale = [];
   const deleted = [];
@@ -151,6 +182,15 @@ function auditIndex(repoRoot) {
     stats: store.getStats(),
     passed: stale.length === 0 && deleted.length === 0,
   };
+}
+
+function getAuditRoot() {
+  const taskWorktree = process.env.TASK_WORKTREE;
+  if (taskWorktree && fs.existsSync(taskWorktree)) {
+    return resolveGitRoot(taskWorktree);
+  }
+
+  return resolveGitRoot(process.cwd());
 }
 
 function printHuman(result) {
@@ -187,7 +227,9 @@ function main() {
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
+  ensureSqliteExtensionEnvironment(args);
+
+  const repoRoot = getAuditRoot();
   const result = {};
 
   if (args.scripts) result.scripts = auditScripts(repoRoot);

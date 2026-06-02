@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/rename-server-reload-command",
+  "base": "origin/main",
+  "headSha": "8484b86b8cd39fb7239a1e83239e6277482b4e0d",
+  "changeHash": "ce3ad4c6944d2d01efca395ed541bf3e509e97bb50277cde4146517f7dff780a",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/consuelo-reload.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/server.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T06:24:25.928Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

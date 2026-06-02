@@ -6,8 +6,11 @@ const path = require('path');
 const { Database } = require('bun:sqlite');
 const sqliteVec = require('sqlite-vec');
 
-const VECTOR_DIMENSIONS = 1024;
-const EMBEDDING_MODEL = 'Qwen3-Embedding-4B';
+const { getEmbeddingConfig, getEmbeddingConfigId, isLegacyDefaultEmbeddingConfig } = require('./embedding-config');
+
+const EMBEDDING_CONFIG = getEmbeddingConfig();
+const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
+const EMBEDDING_MODEL = EMBEDDING_CONFIG.model;
 
 function normalizePath(filePath) {
   return filePath.split(path.sep).join('/');
@@ -25,8 +28,10 @@ function getRepoHash(repoRoot, remoteUrl) {
   return sha256(getRepoIdentifier(repoRoot, remoteUrl)).slice(0, 24);
 }
 
-function getCacheRoot(repoRoot, remoteUrl) {
-  return path.join(os.homedir(), '.cache', 'workspace-index', getRepoHash(repoRoot, remoteUrl));
+function getCacheRoot(repoRoot, remoteUrl, embeddingConfig = EMBEDDING_CONFIG) {
+  const repoCacheRoot = path.join(os.homedir(), '.cache', 'workspace-index', getRepoHash(repoRoot, remoteUrl));
+  if (isLegacyDefaultEmbeddingConfig(embeddingConfig)) return repoCacheRoot;
+  return path.join(repoCacheRoot, getEmbeddingConfigId(embeddingConfig));
 }
 
 function vectorToBuffer(vector) {
@@ -37,8 +42,13 @@ function bufferToVector(buffer) {
   return new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
 }
 
-function createStore(repoRoot, remoteUrl) {
-  const cacheRoot = getCacheRoot(repoRoot, remoteUrl);
+function createStore(repoRoot, remoteUrl, options = {}) {
+  const embeddingConfig = options.embeddingConfig || EMBEDDING_CONFIG;
+  const vectorDimensions = embeddingConfig.dimensions;
+  const embeddingModel = embeddingConfig.model;
+  const embeddingConfigId = getEmbeddingConfigId(embeddingConfig);
+  const embeddingModelKey = isLegacyDefaultEmbeddingConfig(embeddingConfig) ? embeddingModel : embeddingConfigId;
+  const cacheRoot = getCacheRoot(repoRoot, remoteUrl, embeddingConfig);
   fs.mkdirSync(cacheRoot, { recursive: true });
 
   const dbPath = path.join(cacheRoot, 'index.db');
@@ -75,6 +85,9 @@ function createStore(repoRoot, remoteUrl) {
       end_line INTEGER NOT NULL,
       chunk_type TEXT NOT NULL,
       name TEXT,
+      symbol_path TEXT,
+      node_type TEXT,
+      parent_name TEXT,
       content TEXT NOT NULL,
       content_hash TEXT NOT NULL,
       UNIQUE(file_path, seq)
@@ -82,7 +95,7 @@ function createStore(repoRoot, remoteUrl) {
 
     CREATE TABLE IF NOT EXISTS chunk_embeddings (
       chunk_id INTEGER PRIMARY KEY REFERENCES chunks(id) ON DELETE CASCADE,
-      model TEXT NOT NULL DEFAULT '${EMBEDDING_MODEL}',
+      model TEXT NOT NULL DEFAULT '${embeddingModel}',
       embedded_at TEXT NOT NULL
     );
 
@@ -110,7 +123,7 @@ function createStore(repoRoot, remoteUrl) {
 
     CREATE TABLE IF NOT EXISTS embedding_cache (
       content_hash TEXT PRIMARY KEY,
-      model TEXT NOT NULL DEFAULT '${EMBEDDING_MODEL}',
+      model TEXT NOT NULL DEFAULT '${embeddingModel}',
       embedding BLOB NOT NULL,
       embedded_at TEXT NOT NULL
     );
@@ -156,6 +169,13 @@ function createStore(repoRoot, remoteUrl) {
     );
   `);
 
+  const chunkColumns = new Set(db.query('PRAGMA table_info(chunks)').all().map((row) => row.name));
+  for (const column of ['symbol_path', 'node_type', 'parent_name']) {
+    if (!chunkColumns.has(column)) {
+      db.exec(`ALTER TABLE chunks ADD COLUMN ${column} TEXT`);
+    }
+  }
+
   function setMeta(key, value) {
     db.query([
       'INSERT INTO index_meta(key, value)',
@@ -192,8 +212,8 @@ function createStore(repoRoot, remoteUrl) {
     db.query('DELETE FROM chunks WHERE file_path = ?').run(filePath);
 
     const insert = db.query([
-      'INSERT INTO chunks(file_path, seq, start_line, end_line, chunk_type, name, content, content_hash)',
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO chunks(file_path, seq, start_line, end_line, chunk_type, name, symbol_path, node_type, parent_name, content, content_hash)',
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       'RETURNING id',
     ].join('\n'));
 
@@ -205,6 +225,9 @@ function createStore(repoRoot, remoteUrl) {
         chunk.endLine,
         chunk.type,
         chunk.name || null,
+        chunk.symbolPath || chunk.name || null,
+        chunk.nodeType || null,
+        chunk.parentName || null,
         chunk.content,
         chunk.contentHash,
       );
@@ -220,11 +243,11 @@ function createStore(repoRoot, remoteUrl) {
       'INSERT INTO chunk_embeddings(chunk_id, model, embedded_at)',
       'VALUES (?, ?, ?)',
       'ON CONFLICT(chunk_id) DO UPDATE SET model = excluded.model, embedded_at = excluded.embedded_at',
-    ].join('\n')).run(chunkId, EMBEDDING_MODEL, new Date().toISOString());
+    ].join('\n')).run(chunkId, embeddingModelKey, new Date().toISOString());
   }
 
   function getCachedEmbedding(contentHash) {
-    const row = db.query('SELECT embedding FROM embedding_cache WHERE content_hash = ? AND model = ?').get(contentHash, EMBEDDING_MODEL);
+    const row = db.query('SELECT embedding FROM embedding_cache WHERE content_hash = ? AND model = ?').get(contentHash, embeddingModelKey);
     return row ? bufferToVector(row.embedding) : null;
   }
 
@@ -236,7 +259,7 @@ function createStore(repoRoot, remoteUrl) {
       '  model = excluded.model,',
       '  embedding = excluded.embedding,',
       '  embedded_at = excluded.embedded_at',
-    ].join('\n')).run(contentHash, EMBEDDING_MODEL, vectorToBuffer(vector), new Date().toISOString());
+    ].join('\n')).run(contentHash, embeddingModelKey, vectorToBuffer(vector), new Date().toISOString());
   }
 
   function replaceGraphEdges(edges) {
@@ -278,12 +301,65 @@ function createStore(repoRoot, remoteUrl) {
       '  chunks.end_line AS endLine,',
       '  chunks.chunk_type AS chunkType,',
       '  chunks.name AS name,',
-      '  chunks.content AS content',
+      '  chunks.symbol_path AS symbolPath,',
+      '  chunks.node_type AS nodeType,',
+      '  chunks.parent_name AS parentName,',
+      '  chunks.content AS content,',
+      '  chunks.content_hash AS contentHash',
       'FROM chunk_vectors',
       'JOIN chunks ON chunks.id = chunk_vectors.chunk_id',
       'WHERE embedding MATCH ? AND k = ?',
       'ORDER BY distance',
     ].join('\n')).all(vector, limit);
+  }
+
+  function searchChunksByText(terms, limit) {
+    const cleanTerms = Array.from(new Set((terms || [])
+      .map((term) => String(term || '').trim().toLowerCase())
+      .filter((term) => term.length >= 3)))
+      .slice(0, 24);
+    if (cleanTerms.length === 0) return [];
+
+    const rowsByChunk = new Map();
+    const perTermLimit = Math.max(8, Math.ceil(limit / Math.max(1, Math.min(cleanTerms.length, 8))));
+    const statement = db.query([
+      'SELECT',
+      '  chunks.id AS chunkId,',
+      '  0.18 AS distance,',
+      '  chunks.file_path AS filePath,',
+      '  chunks.start_line AS startLine,',
+      '  chunks.end_line AS endLine,',
+      '  chunks.chunk_type AS chunkType,',
+      '  chunks.name AS name,',
+      '  chunks.symbol_path AS symbolPath,',
+      '  chunks.node_type AS nodeType,',
+      '  chunks.parent_name AS parentName,',
+      '  chunks.content AS content,',
+      '  chunks.content_hash AS contentHash',
+      'FROM chunks',
+      'WHERE LOWER(chunks.file_path) LIKE ?',
+      '   OR LOWER(COALESCE(chunks.name, "")) LIKE ?',
+      '   OR LOWER(COALESCE(chunks.symbol_path, "")) LIKE ?',
+      '   OR LOWER(chunks.content) LIKE ?',
+      'ORDER BY',
+      '  CASE WHEN LOWER(chunks.file_path) LIKE ? THEN 0 ELSE 1 END,',
+      '  CASE WHEN LOWER(COALESCE(chunks.name, "")) LIKE ? THEN 0 ELSE 1 END,',
+      '  CASE WHEN LOWER(COALESCE(chunks.symbol_path, "")) LIKE ? THEN 0 ELSE 1 END,',
+      '  LENGTH(chunks.file_path),',
+      '  chunks.seq',
+      'LIMIT ?',
+    ].join('\n'));
+
+    for (const term of cleanTerms) {
+      const pattern = `%${term}%`;
+      const rows = statement.all(pattern, pattern, pattern, pattern, pattern, pattern, pattern, perTermLimit);
+      for (const row of rows) {
+        if (!rowsByChunk.has(row.chunkId)) rowsByChunk.set(row.chunkId, row);
+        if (rowsByChunk.size >= limit) return Array.from(rowsByChunk.values());
+      }
+    }
+
+    return Array.from(rowsByChunk.values());
   }
 
   function getFile(pathName) {
@@ -322,7 +398,7 @@ function createStore(repoRoot, remoteUrl) {
       '  COUNT(*) AS total_chunks,',
       "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
       "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
-      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN COALESCE(symbol_path, name) ELSE NULL END, ' ') AS implementation_names",
       'FROM chunks',
       'WHERE file_path IN (',
       placeholders,
@@ -392,7 +468,7 @@ function createStore(repoRoot, remoteUrl) {
       '  COUNT(*) AS total_chunks,',
       "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
       "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
-      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN COALESCE(symbol_path, name) ELSE NULL END, ' ') AS implementation_names",
       'FROM chunks',
       'GROUP BY file_path',
     ].join('\n')).all();
@@ -501,6 +577,10 @@ function createStore(repoRoot, remoteUrl) {
     return {
       cacheRoot,
       databasePath: dbPath,
+      embeddingConfig,
+      embeddingConfigId,
+      embeddingModelKey,
+      embeddingDimensions: vectorDimensions,
       totalFiles: Number(fileRow.count || 0),
       totalChunks: Number(chunkRow.count || 0),
       lastIndexed: indexedRow.lastIndexed || null,
@@ -511,6 +591,9 @@ function createStore(repoRoot, remoteUrl) {
   return {
     cacheRoot,
     db,
+    embeddingConfig,
+    embeddingConfigId,
+    embeddingModelKey,
     dbPath,
     deleteFile,
     getCachedEmbedding,
@@ -535,6 +618,7 @@ function createStore(repoRoot, remoteUrl) {
     replaceChunks,
     replaceGraphEdges,
     searchChunks,
+    searchChunksByText,
     setCachedEmbedding,
     setMeta,
     setOverlay,
@@ -543,10 +627,13 @@ function createStore(repoRoot, remoteUrl) {
 }
 
 module.exports = {
+  EMBEDDING_CONFIG,
   EMBEDDING_MODEL,
   VECTOR_DIMENSIONS,
   createStore,
   getCacheRoot,
+  getEmbeddingConfig,
+  getEmbeddingConfigId,
   getRepoHash,
   normalizePath,
   sha256,

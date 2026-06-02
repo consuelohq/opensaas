@@ -8,10 +8,15 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const {
+  collectTaskMetaFiles,
   findTaskMeta,
+  getTaskCurrentMetaPath,
+  getTaskStateDir,
+  getTaskWorkpadPath,
   isOnlyTaskMetadataConflict,
   readValidTaskMetaForWorktree,
   resolveTaskMetadataConflicts,
+  writeTaskMeta,
 } = require('./lib/task-meta');
 const { parseTaskSelectorPrefix, selectTaskFromCandidates } = require('./lib/task-selection');
 
@@ -64,6 +69,33 @@ function commitAll(repoPath, message) {
 function getConflictFiles(repoPath) {
   const output = git(repoPath, ['diff', '--name-only', '--diff-filter=U']);
   return output ? output.split('\n').filter(Boolean) : [];
+}
+
+function runNamespacedMetadataSmoke() {
+  const repoPath = fs.mkdtempSync(path.join(os.tmpdir(), 'task-meta-namespaced-'));
+  const taskBranch = 'task/workspace-agents/namespaced-task';
+  const meta = {
+    area: 'workspace-agents',
+    stream: 'stream/workspace-agents',
+    taskBranch,
+    createdAt: '2026-05-21T00:00:00.000Z',
+  };
+
+  writeTaskMeta(repoPath, meta);
+  const currentPath = getTaskCurrentMetaPath(repoPath, meta);
+  assert.equal(fs.existsSync(currentPath), true);
+  assert.equal(fs.existsSync(path.join(repoPath, '.task', 'current.json')), false);
+  assert.equal(readValidTaskMetaForWorktree(repoPath, taskBranch).taskBranch, taskBranch);
+  assert.equal(findTaskMeta(repoPath, { currentBranch: taskBranch }).path, currentPath);
+  assert.equal(getTaskStateDir(repoPath, meta), path.join(repoPath, '.task', 'workspace-agents', 'namespaced-task'));
+
+  writeFile(getTaskWorkpadPath(repoPath, meta), '# namespaced task\n');
+  const files = collectTaskMetaFiles(repoPath, 'workspace-agents', taskBranch).map((file) => file.path).sort();
+  assert.deepEqual(files, [
+    '.task/tasks/workspace-agents/namespaced-task.json',
+    '.task/workspace-agents/namespaced-task/current.json',
+    '.task/workspace-agents/namespaced-task/workpad.md',
+  ]);
 }
 
 function runStaleMetadataSmoke() {
@@ -151,6 +183,8 @@ function runMetadataConflictSmoke() {
 
 function runMixedConflictSmoke() {
   assert.equal(isOnlyTaskMetadataConflict(['.task/current.json', 'packages/workspace/SCRIPTS.md']), false);
+  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/current.json']), false);
+  assert.equal(isOnlyTaskMetadataConflict(['.task/workspace-agents/namespaced-task/workpad.md']), false);
 }
 
 function runTaskSelectionSmoke() {
@@ -194,6 +228,7 @@ function runTaskSelectionSmoke() {
 }
 
 function main() {
+  runNamespacedMetadataSmoke();
   runStaleMetadataSmoke();
   runMetadataConflictSmoke();
   runMixedConflictSmoke();

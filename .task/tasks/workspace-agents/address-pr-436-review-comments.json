@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/address-pr-436-review-comments",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 445,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/445",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/445",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/445/address-pr-436-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/445",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/445/address-pr-436-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-pr-436-review-comments",
+  "taskSession": "tsk_4070325d1156",
+  "tmuxSession": "opensaas-workspace-agents-address-pr-436-review-comments-4070325d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-pr-436-review-comments/.task/session.json",
+  "createdAt": "2026-05-22T03:44:03.434Z"
+}

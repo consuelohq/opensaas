@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/compact-trace-watch-success-rows",
+  "events": [
+    {
+      "id": "615bb89f-cf1c-4aec-a7dd-2d0b9f7b1b1a",
+      "occurred_at": "2026-05-23T10:24:37.813Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/compact-trace-watch-success-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/compact-trace-watch-success-rows"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T10:24:37.862Z"
+}

@@ -3,7 +3,7 @@ author: Kokayi Cobb
 pubDatetime: 2026-03-22T10:00:00Z
 title: Building a sales stack from scratch in 2026
 slug: building-sales-stack-2026
-featured: true
+featured: false
 draft: false
 tags:
   - infrastructure

@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/write-decision-infrastructure-blog-post",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 295,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/295",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-write-decision-infrastructure-blog-post",
+  "createdAt": "2026-05-04T03:03:15.925Z"
+}

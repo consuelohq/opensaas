@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/move-website-animations-stream-doc",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 310,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/310",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-move-website-animations-stream-doc",
+  "createdAt": "2026-05-04T08:19:12.201Z"
+}

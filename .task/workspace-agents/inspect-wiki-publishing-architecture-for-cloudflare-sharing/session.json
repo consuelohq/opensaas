@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a4e84bd65e36",
+  "tmuxSession": "opensaas-workspace-agents-inspect-wiki-publishing-architecture-for-cloudfl-a4e84bd6",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "branch": "task/workspace-agents/inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "prNumber": 615,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/615",
+  "createdAt": "2026-05-28T18:18:30.053Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-inspect-wiki-publishing-architecture-for-cloudflare-sharing/.task/workspace-agents/inspect-wiki-publishing-architecture-for-cloudflare-sharing/session.json"
+}
