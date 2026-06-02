@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-typed-browser-facade-primitives",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 385,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/385",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-browser-facade-primitives",
+  "taskSession": "tsk_309a4ed5f3cc",
+  "tmuxSession": "opensaas-workspace-agents-add-typed-browser-facade-primitives-309a4ed5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-browser-facade-primitives/.task/session.json",
+  "createdAt": "2026-05-13T03:27:28.386Z"
+}

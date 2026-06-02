@@ -482,6 +482,19 @@ function printHumanResult(result) {
   }
 }
 
+function getVerifyRoot() {
+  const taskWorktree = process.env.TASK_WORKTREE;
+  if (taskWorktree) {
+    try {
+      return resolveGitRoot(taskWorktree);
+    } catch (error) {
+      throw new Error(`task worktree not found or not a git repository: ${taskWorktree}`);
+    }
+  }
+
+  return resolveGitRoot(process.cwd());
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -490,11 +503,11 @@ async function main() {
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
+  const repoRoot = getVerifyRoot();
   process.chdir(repoRoot);
 
   const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot);
+  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
   const base = detectBase(repoRoot, args, branch, taskMeta);
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');

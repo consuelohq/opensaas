@@ -450,8 +450,10 @@ export class DialerCallStartService {
           AND person."deletedAt" IS NULL
         WHERE qi.queue_id = $1
           AND cq.workspace_id = $2
-          AND qi.status = 'pending'
-        ORDER BY qi.position ASC
+          AND qi.status IN ('calling', 'pending')
+        ORDER BY
+          CASE qi.status WHEN 'calling' THEN 0 ELSE 1 END,
+          qi.position ASC
         LIMIT $3`,
       [params.queueId, params.workspaceId, params.requestedFanout * 3],
     )) as QueueTargetRow[];

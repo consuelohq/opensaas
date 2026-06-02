@@ -571,63 +571,6 @@ start Open Design
 
 The Consuelo facade should preserve that loop. If a command says `generate website`, it should start or reuse Open Design, create/open a project, attach the right Consuelo prompt context, and take Ko to the working session.
 
-## operator commands
-
-Use these from the repo root:
-
-```bash
-bun run consuelo-design run
-bun run consuelo-design generate website
-bun run consuelo-design generate demo
-bun run consuelo-design generate image-brief
-bun run consuelo-design generate digital-eguide
-bun run consuelo-design generate email
-bun run consuelo-design generate motion-frame
-bun run consuelo-design render hyperframes
-bun run consuelo-design list-skills
-bun run consuelo-design list-design-systems
-bun run consuelo-design check
-```
-
-`run` starts the Open Design UI in the foreground. `generate ...` and `render hyperframes` should be smart enough to start the background web runtime and open the correct project URL.
-
-## typed tool facade
-
-Every important operator command must have a typed workspace tool entry.
-
-Expected tool names:
-
-```text
-consueloDesign.run
-consueloDesign.getDesignSystem
-consueloDesign.listSkills
-consueloDesign.listDesignSystems
-consueloDesign.check
-consueloDesign.railwayCheck
-consueloDesign.generateWebsite
-consueloDesign.generateDemo
-consueloDesign.generateImageBrief
-consueloDesign.generateDigitalEguide
-consueloDesign.generateEmail
-consueloDesign.generateMotionFrame
-consueloDesign.renderHyperframes
-consueloDesign.uiStatus
-consueloDesign.uiLogs
-consueloDesign.uiStop
-consueloDesign.odBuild
-```
-
-When adding commands, update:
-
-- `packages/workspace/scripts/consuelo-design.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- generated `packages/workspace/TOOLS.md`
-- generated `packages/workspace/src/generated/workspace.d.ts`
-
-Then run `bun run --cwd packages/workspace generate-docs` and `bun run --cwd packages/workspace generate-types`.
-
-
 
 ## workflow mapping
 
@@ -670,24 +613,6 @@ Keep `packages/consuelo-design` absent from Railway Dockerfile COPY lists unless
 Do not edit vendored Open Design internals to encode Consuelo-specific behavior unless the task explicitly says to patch upstream behavior. Put Consuelo behavior in the facade.
 
 Generated Open Design state belongs under ignored runtime paths such as `.od/`, `out/`, or `artifacts/`.
-
-
-## validation
-
-For facade changes, run at minimum:
-
-```bash
-bun run consuelo-design check
-bun run consuelo-design list-skills --json
-bun run consuelo-design list-design-systems --json
-bun run consuelo-design generate website --dry-run --json
-bun run consuelo-design render hyperframes --dry-run --json
-bun run --cwd packages/workspace workspace consueloDesign.generateWebsite '{"dryRun":true}'
-bun run --cwd packages/workspace generate-docs
-bun run --cwd packages/workspace generate-types
-```
-
-Also run branch-local review before publishing.
 
 
 ## Consuelo Wiki archive

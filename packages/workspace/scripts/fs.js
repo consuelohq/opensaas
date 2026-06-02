@@ -63,13 +63,15 @@ function writeHelp() {
   out('');
   out('options:');
   out('  --stdin        read content from stdin (default)');
-  out('  --content <t>  inline content (for short writes)');
-  out('  --force        overwrite existing file');
+  out('  --content <t>       inline content (for short writes)');
+  out('  --content-file <p>  read content from a file for multiline writes');
+  out('  --force             overwrite existing file');
   out('  --append       append instead of overwrite');
   out('  --mkdirs       create parent directories');
   out('');
   out('examples:');
   out('  cat /tmp/new.ts | bun run fs -- write src/foo.ts --force');
+  out('  bun run fs -- write src/foo.ts --content-file /tmp/new.ts --force');
   out('  echo "line" | bun run fs -- write src/foo.ts --append');
   out('  bun run fs -- write src/foo.ts --content "export const x = 1;" --mkdirs');
 }
@@ -376,6 +378,43 @@ function cmdList(argv) {
 
 // ── write ──
 
+function readFilePayload({ inlineContent, contentFile }) {
+  if (inlineContent !== null && contentFile !== null) {
+    err('error: use exactly one of --content or --content-file');
+    return null;
+  }
+
+  if (contentFile !== null) {
+    const contentPath = path.resolve(process.cwd(), contentFile);
+    try {
+      const contentFileStats = fs.statSync(contentPath);
+      fs.accessSync(contentPath, fs.constants.R_OK);
+      if (!contentFileStats.isFile()) {
+        err(`error: content file must be a regular file: ${contentFile}`);
+        return null;
+      }
+    } catch {
+      err(`error: content file not found or not readable: ${contentFile}`);
+      return null;
+    }
+    return fs.readFileSync(contentPath, 'utf8');
+  }
+
+  if (inlineContent !== null) return inlineContent;
+
+  if (process.stdin.isTTY) {
+    err('error: no content (pipe via stdin, use --content, or use --content-file)');
+    return null;
+  }
+
+  const stdinContent = readStdin();
+  if (stdinContent === '') {
+    err('error: no content received on stdin');
+    return null;
+  }
+  return stdinContent;
+}
+
 function cmdWrite(argv) {
   if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
 
@@ -384,11 +423,13 @@ function cmdWrite(argv) {
   const mkdirs = argv.includes('--mkdirs');
 
   let inlineContent = null;
+  let contentFile = null;
   let filePath = null;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--content') { inlineContent = argv[++i]; }
+    else if (a === '--content-file') { contentFile = argv[++i]; }
     else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
     else if (!a.startsWith('--') && !filePath) { filePath = a; }
   }
@@ -396,9 +437,9 @@ function cmdWrite(argv) {
   if (!filePath) { err('error: file path required'); writeHelp(); return; }
 
   const fp = resolve(filePath);
-  const content = inlineContent !== null ? inlineContent : readStdin();
+  const content = readFilePayload({ inlineContent, contentFile });
 
-  if (!content && inlineContent === null) { err('error: no content (pipe via stdin or use --content)'); return; }
+  if (content === null) return;
 
   if (fs.existsSync(fp) && !force && !append) {
     err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
@@ -429,27 +470,9 @@ function cmdWrite(argv) {
 
 // ── patch ──
 
-function readReplacementContent({ inlineContent, contentFile, stdinRequested }) {
-  if (inlineContent !== null && contentFile !== null) {
-    err('error: use exactly one of --content or --content-file');
-    return null;
-  }
-
-  if (contentFile !== null) {
-    const contentPath = path.resolve(process.cwd(), contentFile);
-    try {
-      const contentFileStats = fs.statSync(contentPath);
-      fs.accessSync(contentPath, fs.constants.R_OK);
-      if (!contentFileStats.isFile()) {
-        err(`error: content file must be a regular file: ${contentFile}`);
-        return null;
-      }
-    } catch {
-      err(`error: content file not found or not readable: ${contentFile}`);
-      return null;
-    }
-    return fs.readFileSync(contentPath, 'utf8');
-  }
+function readReplacementContent({ inlineContent, contentFile }) {
+  const content = readFilePayload({ inlineContent, contentFile });
+  if (content === null) return null;
 
   if (inlineContent !== null) {
     const newline = String.fromCharCode(10);
@@ -458,21 +481,9 @@ function readReplacementContent({ inlineContent, contentFile, stdinRequested }) 
       err('error: multiline --content is unsafe; use --content-file for multiline patches');
       return null;
     }
-
-    return inlineContent;
   }
 
-  if (process.stdin.isTTY) {
-    err('error: no replacement content (pipe via stdin, use --content, or use --content-file)');
-    return null;
-  }
-
-  const stdinContent = readStdin();
-  if (stdinContent === '') {
-    err('error: no replacement content received on stdin');
-    return null;
-  }
-  return stdinContent;
+  return content;
 }
 
 function cmdPatch(argv) {
@@ -484,15 +495,13 @@ function cmdPatch(argv) {
   let filePath = null;
   let inlineContent = null;
   let contentFile = null;
-  let stdinRequested = false;
-
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--from') { from = parseInt(argv[++i], 10); }
     else if (a === '--to') { to = parseInt(argv[++i], 10); }
     else if (a === '--content') { inlineContent = argv[++i]; }
     else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--stdin') { stdinRequested = true; }
+    else if (a === '--stdin') { /* skip */ }
     else if (a === '--dry-run') { /* skip */ }
     else if (!a.startsWith('--') && !filePath) { filePath = a; }
   }
@@ -507,7 +516,7 @@ function cmdPatch(argv) {
   const fp = resolve(filePath);
   if (!fs.existsSync(fp)) { err(`error: ${filePath} not found`); return; }
 
-  const replacement = readReplacementContent({ inlineContent, contentFile, stdinRequested });
+  const replacement = readReplacementContent({ inlineContent, contentFile });
   if (replacement === null) return;
 
   const lines = fs.readFileSync(fp, 'utf8').split('\n');

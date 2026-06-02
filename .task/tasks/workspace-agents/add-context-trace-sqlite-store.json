@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-context-trace-sqlite-store",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 398,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/398",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store",
+  "taskSession": "tsk_4a7f4887fe7a",
+  "tmuxSession": "opensaas-workspace-agents-add-context-trace-sqlite-store-4a7f4887",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store/.task/session.json",
+  "createdAt": "2026-05-13T12:12:10.426Z"
+}
