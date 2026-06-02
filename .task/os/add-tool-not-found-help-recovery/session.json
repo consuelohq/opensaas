@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fe7670f48977",
+  "tmuxSession": "opensaas-os-add-tool-not-found-help-recovery-fe7670f4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-tool-not-found-help-recovery",
+  "branch": "task/os/add-tool-not-found-help-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-tool-not-found-help-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-tool-not-found-help-recovery",
+  "prNumber": 629,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/629",
+  "createdAt": "2026-05-28T23:05:47.122Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-tool-not-found-help-recovery/.task/os/add-tool-not-found-help-recovery/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_34cda5226e45",
+  "tmuxSession": "opensaas-os-restore-os-task-metadata-history-34cda522",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-os-task-metadata-history",
+  "branch": "task/os/restore-os-task-metadata-history",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-os-task-metadata-history",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-os-task-metadata-history",
+  "prNumber": 702,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/702",
+  "createdAt": "2026-06-02T19:13:24.980Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-os-task-metadata-history/.task/os/restore-os-task-metadata-history/session.json"
+}

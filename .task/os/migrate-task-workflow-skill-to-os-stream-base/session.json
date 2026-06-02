@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d2841c421ad0",
+  "tmuxSession": "opensaas-os-migrate-task-workflow-skill-to-os-stream-base-d2841c42",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/migrate-task-workflow-skill-to-os-stream-base",
+  "branch": "task/os/migrate-task-workflow-skill-to-os-stream-base",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-task-workflow-skill-to-os-stream-base",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-task-workflow-skill-to-os-stream-base",
+  "prNumber": 617,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/617",
+  "createdAt": "2026-05-28T19:43:59.057Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-task-workflow-skill-to-os-stream-base/.task/os/migrate-task-workflow-skill-to-os-stream-base/session.json"
+}

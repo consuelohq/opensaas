@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/doctor-observability-logs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 579,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/579",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/579",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/579/doctor-observability-logs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/579",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/579/doctor-observability-logs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-doctor-observability-logs",
+  "taskSession": "tsk_227d24f2f50e",
+  "tmuxSession": "opensaas-os-doctor-observability-logs-227d24f2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-doctor-observability-logs/.task/os/doctor-observability-logs/session.json",
+  "createdAt": "2026-05-24T07:16:35.767Z"
+}
