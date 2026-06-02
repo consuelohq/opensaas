@@ -175,13 +175,8 @@ bash packages/os/scripts/bootstrap.sh --dry-run
 
 ## files changed
 
-- `packages/os/package.json`
-- `packages/os/README.md`
-- `packages/os/SCRIPTS.md`
 - `packages/os/scripts/bootstrap.sh`
-- `packages/os/scripts/install.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
+
 
 ## workspace-owned: files changed
 
@@ -204,15 +199,8 @@ bash packages/os/scripts/bootstrap.sh --dry-run
 
 ## workspace-owned: files read
 
+- `packages/os/scripts/lib/task-workpad.js`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller.ts`
-
-- 2026-06-02 02:11:47 patch lines 1-15: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
-
-- 2026-06-02 02:13:21 patch lines 1-14: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
-
-- 2026-06-02 02:14:27 patch lines 1-14: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
-
-- 2026-06-02 02:15:31 patch lines 1-14: `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`
 
 ## final review-gate update
 
@@ -229,3 +217,9 @@ The remaining typecheck failure is dependency resolution in the task worktree, e
 This matches the task instruction to record exact wrapper failures and use focused validation evidence when the wrapper is broken. Focused validation evidence includes shell syntax, bootstrap help/dry-run/no-install-bun dry-run, install dry-run JSON, LaunchAgent dry-run, route response smoke, docs/types generation, OS typecheck, ESLint pass, git diff check, no changed `server.py`, and no executable `sudo` use.
 
 - 2026-06-02 02:17:29 write: `.task/os/os-bootstrap-installer/publish-update.md`
+
+## final validation
+
+Implemented and validated the OS bootstrap installer path. Key changed files are `packages/os/scripts/bootstrap.sh`, `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`, `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`, `packages/os/scripts/install.ts`, `packages/os/package.json`, `packages/os/README.md`, and `packages/os/SCRIPTS.md`.
+
+Validation passed for shell syntax, help, dry-run, dry-run with `--no-install-bun`, onboarding dry-run JSON, LaunchAgent dry-run, docs/types generation, OS typecheck, route-smoke curl, ESLint import ordering, `git diff --check`, no changed `server.py`, and no executable `sudo` use. The broader server typecheck/start/review wrapper still fails in the task worktree because dependencies such as `@nestjs/common` and `@nestjs/core` cannot resolve; exact failures are recorded above.
