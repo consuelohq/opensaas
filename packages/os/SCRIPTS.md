@@ -2,11 +2,55 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` -- running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps -- that's why all scripts must run from repo root.
 
 every script supports `--help` and `--json`.
+
+---
+
+## first-time OS bootstrap
+
+`bootstrap` is the pre-Bun Mac installer entrypoint. It is also served by the production app route at `/os` so a first-time user can run:
+
+```bash
+curl -fsSL https://install.consuelo.com/os | bash
+```
+
+Repo-local checks:
+
+```bash
+bash packages/os/scripts/bootstrap.sh --dry-run
+bash packages/os/scripts/bootstrap.sh --yes --install-daemons
+bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
+bun --cwd packages/os run bootstrap -- --dry-run
+```
+
+Flags:
+
+- `--dry-run` checks the flow without installing Bun or LaunchAgents.
+- `--yes` accepts required prerequisite setup and runs onboarding without prompts.
+- `--no-install-bun` fails with manual Bun install instructions if Bun is missing.
+- `--install-daemons` installs the user LaunchAgents after onboarding.
+- `--skip-daemons` skips LaunchAgent setup.
+- `--json` prints a machine-readable summary.
+
+The bootstrap verifies macOS plus `launchctl`, `plutil`, and `lsof`, installs Bun with the official `curl -fsSL https://bun.sh/install | bash` command only when allowed, then hands off to:
+
+```bash
+bun --cwd packages/os ./scripts/install.ts --yes
+```
+
+Dry-run hands off to:
+
+```bash
+bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
+```
+
+Background services stay user-level only. Labels are `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`; plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
+
+The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelo.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
 
 ---
 
@@ -14,25 +58,25 @@ every script supports `--help` and `--json`.
 
 these three rules apply to every script, every task, every session. read them first.
 
-### rule 0 — where to run
+### rule 0 -- where to run
 
 always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start` and accessed through `task:fs` and `task:exec`.
 
 ```bash
 bad: cd /private/tmp/opensaas-worktrees/task-dialer-queue && bun run fs -- read src/foo.ts
- → error: Script not found "fs"
+ -> error: Script not found "fs"
 
 good: bun run task:fs -- --branch task/dialer/queue read src/foo.ts
- → reads from the exact task worktree without leaving repo root
+ -> reads from the exact task worktree without leaving repo root
 ```
 
-### rule 1 — response contract
+### rule 1 -- response contract
 
 when answering questions or reporting results, use this format:
 
-- **tl;dr** → one-line answer or status
-- **evidence** → what you checked (file paths, command output, error messages)
-- **action** → what to do next (or "nothing — done")
+- **tl;dr** -> one-line answer or status
+- **evidence** -> what you checked (file paths, command output, error messages)
+- **action** -> what to do next (or "nothing -- done")
 
 do not answer architecture questions from memory. search memory, read files, then answer with citations and paths.
 
@@ -57,7 +101,6 @@ every change — even tiny ones — follows this flow. no exceptions.
 12. bun run task:finish                                  # remove worktree, delete branch
 13. bun run tmp -- save handoffs "description"           # save context for next agent
 ```
-
 the verify → push dependency:
 ```text
 verify ✓ → writes .task/verify.json stamp → task:push reads stamp → push succeeds
