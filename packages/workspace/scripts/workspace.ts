@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 
-import manifestJson from '../tooling/tool-manifest.json';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,39 +22,6 @@ function printHelp(): void {
   ].join('\n'));
 }
 
-
-type ToolManifestEntry = {
-  name: string;
-  description: string;
-  category: string;
-  underlying: string;
-  command: { script: string; subcommand?: string; internal?: string };
-  sessionRequired?: boolean;
-};
-
-const manifestEntries = manifestJson as ToolManifestEntry[];
-
-function printToolHelp(toolName: string): boolean {
-  const family = toolName.split('.')[0] || toolName;
-  const matches = manifestEntries.filter((entry) => entry.name === toolName || entry.name.startsWith(`${toolName}.`) || entry.name.startsWith(`${family}.`) || entry.command.script === toolName || entry.command.script === family);
-  if (matches.length === 0) return false;
-
-  writeStdout([
-    `workspace ${toolName} --help`,
-    '',
-    "Use get_steering's tool manifest as the canonical tool list. This help output is a recovery aid for command syntax.",
-    '',
-    'matching tools:',
-    ...matches.slice(0, 20).map((entry) => `  ${entry.name} - ${entry.description}`),
-    matches.length > 20 ? `  ...and ${matches.length - 20} more` : '',
-    '',
-    'examples:',
-    ...matches.slice(0, 3).map((entry) => `  workspace ${entry.name} '<json-input>'`),
-    '',
-  ].filter(Boolean).join('\n'));
-  return true;
-}
-
 function runBunScript(scriptName: string, args: string[]): Promise<number> {
   const proc = Bun.spawn(['bun', path.join(scriptsDir, scriptName), ...args], {
     stdout: 'inherit',
@@ -74,13 +40,6 @@ async function main(): Promise<void> {
   const [toolName, rawInput, ...extra] = process.argv.slice(2);
   if (!toolName || toolName === '--help' || toolName === '-h') {
     printHelp();
-    return;
-  }
-
-  if (rawInput === '--help' || rawInput === '-h') {
-    if (!printToolHelp(toolName)) {
-      printHelp();
-    }
     return;
   }
 

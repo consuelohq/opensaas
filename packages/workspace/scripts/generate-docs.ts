@@ -199,7 +199,7 @@ function renderDocs(): string {
     '',
     '## branch resolution',
     '',
-    'Branch resolution order is: explicit `branch`, pinned branch from `workspace.task.pin`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.',
+    'Task-scoped work should pass `taskSession`. Branch fallback resolution is for diagnostics/manual commands only: explicit `branch`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.',
     '',
     '## dry-run',
     '',

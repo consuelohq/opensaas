@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/plan-ast-target-decision-engine-improvements",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 391,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/391",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-plan-ast-target-decision-engine-improvements",
+  "taskSession": "tsk_a734a81bfebe",
+  "tmuxSession": "opensaas-workspace-agents-plan-ast-target-decision-engine-improvements-a734a81b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-plan-ast-target-decision-engine-improvements/.task/session.json",
+  "createdAt": "2026-05-13T07:02:23.027Z"
+}
