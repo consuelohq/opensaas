@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Correu electrònic de prova"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Espai de treball suspès"
@@ -61,6 +56,31 @@ msgstr ""
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Update your subscription"
 msgstr "Actualitza la teva subscripció"
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Correu electrònic de prova"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "Confirma la teva adreça de correu electrònic"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "Verifica el correu electrònic"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -109,24 +129,29 @@ msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Deleted Workspace"
+msgstr "Espai de treball esborrat"
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
+msgstr "El teu espai de treball <0>{workspaceDisplayName}</0> s'ha eliminat ja que la teva subscripció va caducar fa {daysSinceInactive} dies."
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "All data in this workspace has been permanently deleted."
+msgstr "Totes les dades en aquest espai de treball s'han esborrat permanentment."
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
-msgstr "Confirma la teva adreça de correu electrònic"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
-msgstr "Verifica el correu electrònic"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Create a new workspace"
+msgstr "Crea un nou espai de treball"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
@@ -162,31 +187,6 @@ msgstr ""
 #: src/components/WhatIsTwenty.tsx
 msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
 msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Deleted Workspace"
-msgstr "Espai de treball esborrat"
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
-msgstr "El teu espai de treball <0>{workspaceDisplayName}</0> s'ha eliminat ja que la teva subscripció va caducar fa {daysSinceInactive} dies."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "All data in this workspace has been permanently deleted."
-msgstr "Totes les dades en aquest espai de treball s'han esborrat permanentment."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "If you wish to use Consuelo again, you can create a new workspace."
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Create a new workspace"
-msgstr "Crea un nou espai de treball"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
