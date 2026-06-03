@@ -30,6 +30,7 @@ type InstallOptions = {
   yes: boolean;
   json: boolean;
   quiet: boolean;
+  checkTty: boolean;
   home?: string;
   mode?: OsMode;
   connectAgents: AgentName[];
@@ -52,6 +53,7 @@ function parseArgs(argv: string[]): InstallOptions {
     yes: false,
     json: false,
     quiet: false,
+    checkTty: false,
     connectAgents: [],
   };
 
@@ -69,6 +71,7 @@ function parseArgs(argv: string[]): InstallOptions {
     else if (arg === '--yes' || arg === '-y') options.yes = true;
     else if (arg === '--json') options.json = true;
     else if (arg === '--quiet') options.quiet = true;
+    else if (arg === '--check-tty') options.checkTty = true;
     else if (arg === '--home') {
       options.home = readValue('--home', index);
       index += 1;
@@ -104,6 +107,7 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
           '  --quiet               reduce human output',
+          '  --check-tty          print safe terminal diagnostics',
           '',
         ].join('\n'),
       );
@@ -116,9 +120,55 @@ function parseArgs(argv: string[]): InstallOptions {
   return options;
 }
 
+function getTtyDiagnostics() {
+  const stdinWithRawMode = process.stdin as typeof process.stdin & {
+    setRawMode?: (enabled: boolean) => typeof process.stdin;
+  };
+
+  return {
+    stdinIsTTY: Boolean(process.stdin.isTTY),
+    stdoutIsTTY: Boolean(process.stdout.isTTY),
+    stderrIsTTY: Boolean(process.stderr.isTTY),
+    canSetRawMode: typeof stdinWithRawMode.setRawMode === 'function',
+    term: process.env.TERM ?? '',
+    ci: process.env.CI ?? '',
+  };
+}
+
+function printTtyDiagnostics(): void {
+  writeStdout(`${JSON.stringify(getTtyDiagnostics(), null, 2)}
+`);
+}
+
+function assertClackTtyReady(options: InstallOptions): void {
+  if (options.yes || options.json || options.checkTty) return;
+
+  const diagnostics = getTtyDiagnostics();
+  if (
+    diagnostics.stdinIsTTY &&
+    diagnostics.stdoutIsTTY &&
+    diagnostics.stderrIsTTY &&
+    diagnostics.canSetRawMode
+  ) {
+    return;
+  }
+
+  throw new Error(
+    [
+      'interactive Consuelo OS setup needs a real terminal for keyboard input.',
+      `stdin.isTTY=${diagnostics.stdinIsTTY}`,
+      `stdout.isTTY=${diagnostics.stdoutIsTTY}`,
+      `stderr.isTTY=${diagnostics.stderrIsTTY}`,
+      `canSetRawMode=${diagnostics.canSetRawMode}`,
+      'Re-run non-interactively with: curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemons',
+    ].join('\n'),
+  );
+}
+
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
+    assertClackTtyReady(options);
 
     printOsBanner(['home', 'skills', 'agents', 'artifacts', 'health']);
 
@@ -190,7 +240,13 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
 async function main(): Promise<void> {
   try {
-    const options = await promptOptions(parseArgs(process.argv.slice(2)));
+    const parsedOptions = parseArgs(process.argv.slice(2));
+    if (parsedOptions.checkTty) {
+      printTtyDiagnostics();
+      return;
+    }
+
+    const options = await promptOptions(parsedOptions);
     const spin =
       options.quiet || options.json
         ? null
