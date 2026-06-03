@@ -140,6 +140,13 @@ function printTtyDiagnostics(): void {
 `);
 }
 
+function getClackIo() {
+  return {
+    input: process.stdin,
+    output: process.stdout,
+  };
+}
+
 function assertClackTtyReady(options: InstallOptions): void {
   if (options.yes || options.json || options.checkTty) return;
 
@@ -171,8 +178,10 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     assertClackTtyReady(options);
 
     printOsBanner(['home', 'skills', 'agents', 'artifacts', 'health']);
+    const clackIo = getClackIo();
 
     const mode = await select({
+      ...clackIo,
       message: 'choose an OS mode',
       initialValue: options.mode ?? 'local',
       options: [
@@ -194,6 +203,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     }
 
     const home = await text({
+      ...clackIo,
       message: 'OS home',
       initialValue: resolveOsHome(options.home),
       validate: (value) => (value.length > 0 ? undefined : 'home is required'),
@@ -207,11 +217,13 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
       const shouldConnect = await confirm({
+        ...clackIo,
         message: 'connect detected agents to the OS portal?',
         initialValue: true,
       });
       if (!isCancel(shouldConnect) && shouldConnect) {
         const selectedAgents = await multiselect({
+          ...clackIo,
           message: 'select agents to connect',
           options: detectedAgents.map((agent) => ({
             value: agent.name,

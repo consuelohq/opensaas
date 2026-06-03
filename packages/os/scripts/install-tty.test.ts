@@ -8,13 +8,17 @@ describe('hosted Clack install TTY wiring', () => {
   test('bootstrap has an explicit helper for running Clack against the controlling terminal', () => {
     expect(bootstrap).toContain('run_install_with_tty()');
     expect(bootstrap).toContain('< /dev/tty');
-    expect(bootstrap).toContain('> /dev/tty');
-    expect(bootstrap).toContain('2> /dev/tty');
+    expect(bootstrap).not.toContain('./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty');
+    expect(bootstrap).not.toContain('./scripts/install.ts --check-tty < /dev/tty > /dev/tty');
+    expect(bootstrap).not.toContain('2> /dev/tty');
   });
 
-  test('interactive hosted onboarding uses the TTY helper instead of only redirecting stdin', () => {
+  test('interactive hosted onboarding binds stdin to the controlling terminal while inheriting output fds', () => {
     expect(bootstrap).toContain('run_install_with_tty "$os_dir" "$os_home"');
-    expect(bootstrap).not.toContain('OLD_STDIN_ONLY_INSTALL_CALL_SENTINEL');
+    expect(bootstrap).toContain('./scripts/install.ts --home "$os_home" < /dev/tty');
+    expect(bootstrap).toContain('./scripts/install.ts --check-tty < /dev/tty');
+    expect(bootstrap).not.toContain('./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty');
+    expect(bootstrap).not.toContain('./scripts/install.ts --check-tty < /dev/tty > /dev/tty');
   });
 
   test('non-interactive automation path still bypasses prompts with --yes', () => {
@@ -43,6 +47,13 @@ describe('install.ts Clack prompt preflight', () => {
     expect(install).toContain('term');
     expect(install).toContain('ci');
     expect(install).not.toContain('process.env.WORKSPACE_MCP_TOKEN');
+  });
+
+  test('Clack prompts use explicit process stdio streams after TTY preflight', () => {
+    expect(install).toContain('getClackIo');
+    expect(install).toContain('input: process.stdin');
+    expect(install).toContain('output: process.stdout');
+    expect(install).toContain('...clackIo');
   });
 
   test('Clack prompts fail before rendering if stdio is not a usable TTY', () => {
