@@ -1,0 +1,34 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/resolve-workspace-stream-conflicts",
+  "base": "origin/stream/workspace",
+  "headSha": "63a3f0a3b882c4a41d39bbc21b462dabb363574f",
+  "changeHash": "751f806586b67d64643b819f5a9901c103635fff7403cbf29a62e103fe3166b8",
+  "changedFiles": [
+    "package.json",
+    "packages/consuelo-design/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/consuelo-reload.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/task-workpad.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T06:33:45.172Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/resolve-workspace-stream-conflicts",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 498,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/498",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/498",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/498/resolve-workspace-stream-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/498",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/498/resolve-workspace-stream-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-resolve-workspace-stream-conflicts",
+  "taskSession": "tsk_79c1e735d0a0",
+  "tmuxSession": "opensaas-workspace-resolve-workspace-stream-conflicts-79c1e735",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-resolve-workspace-stream-conflicts/.task/workspace/resolve-workspace-stream-conflicts/session.json",
+  "createdAt": "2026-05-23T06:32:51.357Z"
+}
