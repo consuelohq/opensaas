@@ -7,12 +7,11 @@ Consuelo OS keeps a small OS portal while preserving powerful package capabiliti
 OS portal entrypoints are the agent entrypoints:
 
 - `get_steering`
-- `get_dev_steering`
 - `call`
 
 Business/revenue agents should start with `get_steering`.
 
-Build, design, deployment, and internal operator agents should start with `get_dev_steering`.
+Build, design, deployment, and internal operator agents should start with `get_steering`, then call `get_raw_steering` when they need full raw operator context.
 
 All operational work should run through `call` when it is a named skill/capability.
 

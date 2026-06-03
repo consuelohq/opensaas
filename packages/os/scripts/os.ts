@@ -93,11 +93,11 @@ export function getSteering(): string {
   return sections.join('\n');
 }
 
-export function getDevSteering(): string {
+export function getRawSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
-    '# Consuelo OS dev/operator steering',
+    '# Consuelo OS raw/operator steering',
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
@@ -168,6 +168,16 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
         code: 'APPROVAL_REQUIRED',
         message: `Skill "${entry.name}" requires explicit approval before execution.`,
       },
+    };
+  }
+
+  if (entry.name === 'get_raw_steering') {
+    return {
+      ok: true,
+      name: entry.name,
+      permission: entry.permission,
+      requiresApproval: entry.requiresApproval,
+      result: { steering: getRawSteering() },
     };
   }
 
@@ -354,8 +364,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'get-dev-steering') {
-    writeStdout(getDevSteering());
+  if (command === 'get-raw-steering') {
+    writeStdout(getRawSteering());
     return;
   }
 
@@ -375,7 +385,7 @@ async function main(): Promise<void> {
     [
       'usage:',
       '  bun ./scripts/os.ts get-steering',
-      '  bun ./scripts/os.ts get-dev-steering',
+      '  bun ./scripts/os.ts get-raw-steering',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

@@ -117,8 +117,8 @@ describe('tool manifest generator', () => {
     ])).sort();
 
     expect(generatedNames).toEqual(expectedNames);
-    expect(registry.full.tools).toHaveLength(132);
-    expect(registry.report.oldRegularToolCount).toBe(4);
+    expect(registry.full.tools).toHaveLength(133);
+    expect(registry.report.oldRegularToolCount).toBe(5);
     expect(registry.report.oldDevToolCount).toBe(128);
     expect(registry.report.duplicateNames).toEqual([]);
 
@@ -165,6 +165,7 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('design.publish');
     expect(coreNames).not.toContain('consueloDesign.generateWebsite');
     expect(coreNames).not.toContain('daily-revenue-brief');
+    expect(coreNames).not.toContain('get_raw_steering');
   });
 
   it('writes full and core manifests to override output paths', () => {
@@ -176,7 +177,7 @@ describe('tool manifest generator', () => {
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
 
-    expect(full.tools).toHaveLength(132);
+    expect(full.tools).toHaveLength(133);
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
   });
@@ -200,7 +201,25 @@ describe('tool manifest generator', () => {
     }) as SearchResult;
 
     expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBe(132);
+    expect(result.catalog?.toolCount).toBe(133);
     expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
+  });
+
+  it('keeps get_raw_steering discoverable through the full manifest without adding it to core', async () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+
+    expect(fullNames).toContain('get_raw_steering');
+    expect(coreNames).not.toContain('get_raw_steering');
+
+    const result = await runToolSearch({
+      query: 'raw steering',
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    }) as SearchResult;
+
+    expect(result.matches?.map((match) => match.name)).toContain('get_raw_steering');
   });
 });

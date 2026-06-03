@@ -114,29 +114,6 @@ def get_steering() -> str:
     return '\n'.join(sections)
 
 
-@mcp.tool(annotations=READ_ONLY)
-def get_dev_steering() -> str:
-    """Return original workspace steering with a short Consuelo OS dev/operator preface."""
-    sections = [
-        '# Consuelo OS dev/operator steering',
-        '',
-        'This surface is for build, design, deployment, debugging, and internal operator agents.',
-        'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-        'Use this context for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.',
-        '',
-    ]
-    dev_steering = _read_file(DEV_STEERING_FILE)
-    if dev_steering:
-        sections.extend(['# original workspace STEERING.md', '', dev_steering])
-    decision = _read_file(DEV_DECISION_FILE)
-    if decision:
-        sections.extend(['', '# original workspace decision.md', '', decision])
-    manifest = _read_file(DEV_MANIFEST_FILE)
-    if manifest:
-        sections.extend(['', '# canonical full tool manifest', '', '```json', manifest, '```'])
-    return '\n'.join(sections)
-
-
 @mcp.tool(annotations=CALL_TOOL)
 def call(
     name: str,
@@ -205,7 +182,7 @@ def call(
 
 
 async def health(request):
-    return JSONResponse({'status': 'ok', 'tools': 3, 'name': SERVER_NAME, 'toolNames': ['get_steering', 'get_dev_steering', 'call']})
+    return JSONResponse({'status': 'ok', 'tools': 2, 'name': SERVER_NAME, 'toolNames': ['get_steering', 'call']})
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
