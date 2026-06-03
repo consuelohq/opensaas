@@ -98,6 +98,32 @@
       ]
     },
     {
+      "name": "debugger",
+      "title": "Debugger",
+      "description": "Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions.",
+      "trigger": "Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/debugger/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "debugging",
+        "runtime",
+        "observability",
+        "browser",
+        "deployments"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
       "name": "handoff",
       "title": "Handoff",
       "description": "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely.",
