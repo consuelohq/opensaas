@@ -215,6 +215,8 @@ describe('createGithubPullRequestLoader', () => {
         author: 'kokayi',
         url: 'https://github.com/consuelohq/opensaas/commit/abc123',
         committedAt: '2026-06-03T03:59:00Z',
+        additions: 0,
+        deletions: 0,
       },
     ]);
   });
@@ -441,6 +443,23 @@ describe('renderReviewPage', () => {
     expect(script).toContain('scrollToFile(state.selected);');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
+    expect(html).toContain('id="commit-popover"');
+    expect(html).toContain('data-folder-path');
+    expect(html).toContain('aria-expanded');
+    expect(html).toContain('tree-branch');
+    expect(html).toContain('tree-children');
+    expect(html).toContain('tree-depth-');
+    expect(html).toContain('directory-toggle');
+    expect(script).toContain('collapsedFolders');
+    expect(script).toContain('toggleFolder');
+    expect(script).toContain('data-open-commits');
+    expect(script).toContain('renderCommitPopover');
+    expect(script).toContain('closeCommitPopover');
+    expect(script).toContain('relativeCommitTime');
+    expect(script).toContain('formatCommitDelta');
+    expect(script).toContain('data-comment-jump');
+    expect(script).toContain('data-comment-file');
+    expect(script).toContain('data-comment-line');
     expect(() => new Function(script || '')).not.toThrow();
   });
 });

@@ -91,6 +91,8 @@ export type StreamCommit = {
   author: string;
   url: string;
   committedAt: string;
+  additions: number;
+  deletions: number;
 };
 
 export type CheckSummary = {
@@ -471,6 +473,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
         <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
       </div>
     </aside>
+    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
   </main>
   <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
@@ -863,7 +866,19 @@ async function loadStreamCommits(
       return [];
     }
     const json = await response.json();
-    return normalizeStreamCommits(json);
+    const commits = normalizeStreamCommits(json);
+    return await Promise.all(commits.map(async (commit) => {
+      if (!commit.sha) return commit;
+      try {
+        const detail = await fetcher(`${apiBase}/commits/${encodeURIComponent(commit.sha)}`, { headers });
+        if (!detail.ok) return commit;
+        const record = optionalRecord(await detail.json());
+        const stats = optionalRecord(record?.stats);
+        return { ...commit, additions: numberValue(stats?.additions, commit.additions), deletions: numberValue(stats?.deletions, commit.deletions) };
+      } catch {
+        return commit;
+      }
+    }));
   } catch {
     return [];
   }
@@ -937,6 +952,7 @@ function normalizeStreamCommits(input: unknown): StreamCommit[] {
     const commitRecord = optionalRecord(record.commit);
     const authorRecord = optionalRecord(record.author);
     const commitAuthor = optionalRecord(commitRecord?.author);
+    const stats = optionalRecord(record.stats);
     const sha = stringValue(record.sha, '');
     const message = stringValue(commitRecord?.message, '').split('\n')[0] || 'Untitled commit';
     return {
@@ -946,6 +962,8 @@ function normalizeStreamCommits(input: unknown): StreamCommit[] {
       author: stringValue(authorRecord?.login ?? commitAuthor?.name, 'unknown'),
       url: stringValue(record.html_url, ''),
       committedAt: stringValue(commitAuthor?.date, ''),
+      additions: numberValue(stats?.additions, 0),
+      deletions: numberValue(stats?.deletions, 0),
     };
   });
 }
@@ -1147,7 +1165,16 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .file-icon { color:var(--quiet); width:16px; text-align:center; }
 .tree-node:hover, .tree-node[aria-current="true"], .tree-node.is-visible { background:var(--soft); text-decoration:none; }
 .tree-node.file { cursor:pointer; }
-.tree-children { margin-left:14px; }
+.tree-children { margin-left:14px; padding-left:10px; border-left:1px solid var(--line); }
+.tree-branch { position:relative; }
+.tree-branch::before { content:""; position:absolute; left:0; top:0; bottom:0; border-left:1px solid transparent; }
+.tree-branch .tree-branch::before { border-left-color:var(--line); }
+.tree-depth-0 { --tree-depth:0; }
+.tree-depth-1 { --tree-depth:1; }
+.tree-depth-2 { --tree-depth:2; }
+.tree-depth-3 { --tree-depth:3; }
+.directory-toggle { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); }
+.tree-twist { color:var(--quiet); width:12px; text-align:center; }
 .status { color:var(--quiet); font-size:12px; margin-right:5px; }
 .review-pane { min-width:0; overflow:auto; background:var(--paper); }
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); }
@@ -1175,6 +1202,13 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section { border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:hidden; }
 .drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
+.summary-chip { margin-right:6px; cursor:pointer; }
+.commit-popover { position:absolute; right:18px; top:88px; z-index:8; width:min(520px, calc(100vw - 36px)); max-height:min(620px, calc(100vh - 120px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
+.commit-popover[hidden] { display:none; }
+.commit-popover-head { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
+.commit-popover-list { display:grid; }
+.commit-title { margin:0 0 4px; font-weight:650; }
+.commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
 .comment-body { font-size:13px; line-height:1.5; }
 .comment-body pre, .comment-body code { font-family:"SFMono-Regular", Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
@@ -1431,7 +1465,7 @@ loadIndex();
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set() };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -1452,6 +1486,7 @@ const els = {
   drawerContent: document.getElementById('drawer-content'),
   filePane: document.getElementById('file-pane'),
   filePaneResizer: document.getElementById('file-pane-resizer'),
+  commitPopover: document.getElementById('commit-popover'),
 };
 
 els.drawerToggle.addEventListener('click', () => {
@@ -1463,6 +1498,16 @@ els.drawerToggle.addEventListener('click', () => {
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
+document.addEventListener('click', (event) => {
+  const folderButton = event.target.closest('[data-folder-path]');
+  if (folderButton) { toggleFolder(folderButton.dataset.folderPath); return; }
+  const commitButton = event.target.closest('[data-open-commits]');
+  if (commitButton) { renderCommitPopover(); return; }
+  const closeCommits = event.target.closest('[data-close-commits]');
+  if (closeCommits) { closeCommitPopover(); return; }
+  const jumpButton = event.target.closest('[data-comment-jump]');
+  if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
+});
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 document.addEventListener('keydown', (event) => {
@@ -1526,7 +1571,7 @@ function renderHeader() {
 }
 
 function renderTree() {
-  els.tree.innerHTML = renderTreeNode(state.data.tree);
+  els.tree.innerHTML = renderTreeNode(state.data.tree, 0);
   for (const button of els.tree.querySelectorAll('[data-file]')) {
     button.addEventListener('click', () => {
       state.selected = state.data.files.find((file) => file.filename === button.dataset.file);
@@ -1537,14 +1582,17 @@ function renderTree() {
   }
 }
 
-function renderTreeNode(node) {
-  if (node.type === 'root') return node.children.map(renderTreeNode).join('');
+function renderTreeNode(node, depth) {
+  if (node.type === 'root') return node.children.map((child) => renderTreeNode(child, depth)).join('');
   if (node.type === 'file') {
     const current = state.selected && state.selected.filename === node.file.filename;
     const visible = state.activeFile === node.file.filename;
-    return '<button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button>';
+    return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button></div>';
   }
-  return '<div class="tree-node directory">' + escapeHtml(node.name) + '</div><div class="tree-children">' + node.children.map(renderTreeNode).join('') + '</div>';
+  const folderPath = node.path || node.name;
+  const collapsed = state.collapsedFolders.has(folderPath);
+  const children = collapsed ? '' : '<div class="tree-children">' + node.children.map((child) => renderTreeNode(child, depth + 1)).join('') + '</div>';
+  return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="directory-toggle" type="button" data-folder-path="' + escapeAttribute(folderPath) + '" aria-expanded="' + String(!collapsed) + '"><span class="tree-twist">' + (collapsed ? '›' : '⌄') + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span></button>' + children + '</div>';
 }
 
 function fileCommentBadge(filename) {
@@ -1592,7 +1640,7 @@ function renderDrawer() {
   const pull = state.data.pull;
   els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <span class="badge">mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</span> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
   els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
-  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <span class="badge">' + commits.length + ' stream commits</span></div>';
+  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' stream commits</button></div>';
   els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
   els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
 }
@@ -1600,15 +1648,40 @@ function renderDrawer() {
 function renderComment(comment) {
   const location = comment.path ? ' · ' + comment.path + (comment.line ? ':' + comment.line : '') : '';
   const link = comment.url ? ' · <a href="' + escapeAttribute(comment.url) + '">open</a>' : '';
-  const jump = comment.path ? ' <button class="comment-jump" type="button" data-comment-file="' + escapeAttribute(comment.path) + '" data-comment-line="' + escapeAttribute(String(comment.line || '')) + '">jump</button>' : '';
+  const jump = comment.path ? ' <button class="comment-jump" type="button" data-comment-jump data-comment-file="' + escapeAttribute(comment.path) + '" data-comment-line="' + escapeAttribute(String(comment.line || '')) + '">jump</button>' : '';
   return '<article class="comment-card"><div class="comment-meta"><span class="badge">' + escapeHtml(comment.provider) + '</span> ' + escapeHtml(comment.author) + location + link + jump + '</div><div class="comment-body">' + renderMarkdown(comment.body) + '</div></article>';
 }
 
 function renderCommit(commit) {
   const link = commit.url ? '<a href="' + escapeAttribute(commit.url) + '">' + escapeHtml(commit.shortSha) + '</a>' : escapeHtml(commit.shortSha);
-  return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + '</div><div>' + escapeHtml(commit.message) + '</div></article>';
+  return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function renderCommitPopover() {
+  const commits = state.data?.streamCommits || [];
+  els.commitPopover.hidden = false;
+  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>stream commits</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found.</div>') + '</div>';
+}
+
+function closeCommitPopover() {
+  els.commitPopover.hidden = true;
+}
+
+function relativeCommitTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'time unknown';
+  const seconds = Math.max(1, Math.round((Date.now() - date.getTime()) / 1000));
+  if (seconds < 60) return seconds + 's ago';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return minutes + 'm ago';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h ago';
+  return Math.round(hours / 24) + 'd ago';
+}
+
+function formatCommitDelta(commit) {
+  return '+' + Number(commit.additions || 0).toLocaleString() + ' −' + Number(commit.deletions || 0).toLocaleString();
+}
 function buildCommentsMarkdown() {
   if (!state.data) return 'No PR data loaded yet.';
   const pull = state.data.pull;
@@ -1732,7 +1805,7 @@ function navigateToComment(file, line) {
 }
 
 function setupCommentJumps() {
-  document.querySelectorAll('[data-comment-file]').forEach((button) => {
+  document.querySelectorAll('[data-comment-jump]').forEach((button) => {
     button.addEventListener('click', () => navigateToComment(button.dataset.commentFile, button.dataset.commentLine));
   });
 }
@@ -1757,6 +1830,13 @@ function updateActiveFileFromScroll(entries) {
 
 function toggleFilePane() {
   document.body.dataset.filePaneCollapsed = document.body.dataset.filePaneCollapsed === 'true' ? 'false' : 'true';
+}
+
+function toggleFolder(folderPath) {
+  if (!folderPath) return;
+  if (state.collapsedFolders.has(folderPath)) state.collapsedFolders.delete(folderPath);
+  else state.collapsedFolders.add(folderPath);
+  renderTree();
 }
 
 function toggleCurrentView() {
