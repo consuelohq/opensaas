@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/polish-status-rows",
+  "events": [
+    {
+      "id": "6a6d8f93-9bf9-49a3-9736-6e4e29434d96",
+      "occurred_at": "2026-06-03T08:52:22.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "a6f08558-3024-4deb-905f-f6fde2c7ad19",
+      "occurred_at": "2026-06-03T08:52:31.568Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "a0066fff-9300-4bfa-925a-17e63057bcd4",
+      "occurred_at": "2026-06-03T08:52:41.547Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "60a03d7c-4f2b-48d9-9bbd-931a0cc269e4",
+      "occurred_at": "2026-06-03T08:54:02.964Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "3629ac76-c3ea-4d11-9ad8-5ef59202570c",
+      "occurred_at": "2026-06-03T08:54:11.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "9f7e0c71-0d9e-4901-b153-5a2bbc5361c0",
+      "occurred_at": "2026-06-03T08:54:48.255Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "0add4439-fd90-4569-90f5-acb5f92076d1",
+      "occurred_at": "2026-06-03T08:54:57.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "df7e5a14-3028-4d16-aa12-81534e6bd32a",
+      "occurred_at": "2026-06-03T08:55:12.759Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    },
+    {
+      "id": "98177788-169c-42a7-9103-1a8df091b9da",
+      "occurred_at": "2026-06-03T08:55:24.848Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-status-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-status-rows"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T08:55:24.904Z"
+}

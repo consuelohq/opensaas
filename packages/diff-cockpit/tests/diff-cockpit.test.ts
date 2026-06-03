@@ -72,6 +72,7 @@ describe('createGithubPullRequestIndexLoader', () => {
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2');
     expect(result.warnings).toEqual([]);
     expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
     expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
@@ -214,6 +215,8 @@ describe('createGithubPullRequestLoader', () => {
         author: 'kokayi',
         url: 'https://github.com/consuelohq/opensaas/commit/abc123',
         committedAt: '2026-06-03T03:59:00Z',
+        additions: 0,
+        deletions: 0,
       },
     ]);
   });
@@ -361,11 +364,16 @@ describe('renderIndexPage', () => {
     expect(html).toContain('pull.checkStatus === \'failure\'');
     expect(html).toContain('relativeTime');
     expect(html).toContain('formatDelta');
+    expect(html).toContain('pr-delta');
+    expect(html).toContain('check-');
+    expect(html).toContain('review-');
+    expect(html).toContain('post-list .post-item:last-child');
     expect(html).toContain('const sectionPageSize = 10');
     expect(html).toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
     expect(html).toContain('localStorage.getItem(cacheKey)');
+    expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
     expect(html).toContain('button:focus:not(:focus-visible)');
@@ -435,6 +443,23 @@ describe('renderReviewPage', () => {
     expect(script).toContain('scrollToFile(state.selected);');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
+    expect(html).toContain('id="commit-popover"');
+    expect(html).toContain('data-folder-path');
+    expect(html).toContain('aria-expanded');
+    expect(html).toContain('tree-branch');
+    expect(html).toContain('tree-children');
+    expect(html).toContain('tree-depth-');
+    expect(html).toContain('directory-toggle');
+    expect(script).toContain('collapsedFolders');
+    expect(script).toContain('toggleFolder');
+    expect(script).toContain('data-open-commits');
+    expect(script).toContain('renderCommitPopover');
+    expect(script).toContain('closeCommitPopover');
+    expect(script).toContain('relativeCommitTime');
+    expect(script).toContain('formatCommitDelta');
+    expect(script).toContain('data-comment-jump');
+    expect(script).toContain('data-comment-file');
+    expect(script).toContain('data-comment-line');
     expect(() => new Function(script || '')).not.toThrow();
   });
 });
