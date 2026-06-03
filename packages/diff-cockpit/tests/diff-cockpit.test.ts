@@ -373,6 +373,10 @@ describe('renderReviewPage', () => {
     expect(html).not.toContain(']).finally(loadLiveData)');
     const script = html.split('<script type="module">')[1]?.split('</script>')[0] ?? '';
     expect(script).toContain('buildCommentsMarkdown');
+    expect(script).toContain('renderLongDiffs();');
+    expect(script).toContain('scrollToFile(state.selected);');
+    expect(script).toContain('class=\"diff-file\"');
+    expect(script).not.toContain('new state.diffModule.FileDiff');
     expect(() => new Function(script || '')).not.toThrow();
   });
 });
