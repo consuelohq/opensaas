@@ -979,11 +979,19 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') setDrawer(false);
 });
 
-Promise.allSettled([
-  import('https://esm.sh/@pierre/diffs').then((module) => { state.diffModule = module; }),
-  import('https://esm.sh/@pierre/trees@1.0.0-beta.3').then((module) => { state.treeModule = module; }),
-]).finally(loadLiveData);
+loadLiveData();
+loadViewerLibraries();
 
+function loadViewerLibraries() {
+  Promise.allSettled([
+    import('https://esm.sh/@pierre/diffs').then((module) => { state.diffModule = module; }),
+    import('https://esm.sh/@pierre/trees@1.0.0-beta.3').then((module) => { state.treeModule = module; }),
+  ]).then(() => {
+    if (state.data && state.selected) {
+      renderSelectedFile();
+    }
+  });
+}
 function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
