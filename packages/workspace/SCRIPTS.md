@@ -39,6 +39,30 @@ do not answer architecture questions from memory. search memory, read files, the
 
 
 
+
+### diff_cockpit — open the live PR review cockpit
+
+Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first phase supports a single PR route with live GitHub data, a file tree, a diff/code review surface, and a right review drawer that stays closed by default.
+
+```bash
+bun run diff_cockpit -- 708
+bun run diff_cockpit -- 708 --print --no-open
+bun run diff_cockpit -- https://github.com/consuelohq/opensaas/pull/708
+bun run diff_cockpit -- consuelohq/opensaas/pull/708
+```
+
+Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--repo owner/repo`.
+
+Related package commands:
+
+```bash
+cd packages/diff-cockpit && bun run dev
+cd packages/diff-cockpit && bun run deploy
+cd packages/diff-cockpit && bun run test
+```
+
+Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
+
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.

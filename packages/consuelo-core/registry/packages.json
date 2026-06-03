@@ -13,7 +13,10 @@
         "path": "packages/consuelo-core",
         "reason": "This task establishes the shared registry source of truth for migration guardrails."
       },
-      "validation": ["packages/consuelo-core/tests/registry.test.ts", "packages/consuelo-core/scripts/audit-registry.ts"]
+      "validation": [
+        "packages/consuelo-core/tests/registry.test.ts",
+        "packages/consuelo-core/scripts/audit-registry.ts"
+      ]
     },
     {
       "id": "os",
@@ -28,7 +31,10 @@
         "path": "packages/os",
         "reason": "OS public local runtime and installer surfaces are owned by the OS stream."
       },
-      "validation": ["packages/os/tests/install-state.test.ts", "packages/os/tests/skills-registry.test.ts"]
+      "validation": [
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ]
     },
     {
       "id": "workspace",
@@ -43,7 +49,27 @@
         "path": "packages/workspace",
         "reason": "Workspace repair restored current operator script sources after OS copy drift."
       },
-      "validation": ["packages/workspace/tests/pr-links.test.js", "packages/workspace/tests/research-ingest.test.js"]
+      "validation": [
+        "packages/workspace/tests/pr-links.test.js",
+        "packages/workspace/tests/research-ingest.test.js"
+      ]
+    },
+    {
+      "id": "diff-cockpit",
+      "ownerPackage": "diff-cockpit",
+      "path": "packages/diff-cockpit",
+      "packageJsonPath": "packages/diff-cockpit/package.json",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/diff-cockpit",
+        "reason": "Diff cockpit is a workspace/operator review surface hosted separately so PR review can use live data without becoming OS runtime code."
+      },
+      "validation": [
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "wrangler deploy --dry-run"
+      ]
     }
   ]
 }

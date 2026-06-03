@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d4b9fc0f9f6b",
+  "tmuxSession": "opensaas-diff-cockpit-render-long-scroll-diffs-d4b9fc0f",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/render-long-scroll-diffs",
+  "branch": "task/diff-cockpit/render-long-scroll-diffs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-render-long-scroll-diffs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-render-long-scroll-diffs",
+  "prNumber": 732,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/732",
+  "createdAt": "2026-06-03T07:05:39.118Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-render-long-scroll-diffs/.task/diff-cockpit/render-long-scroll-diffs/session.json"
+}

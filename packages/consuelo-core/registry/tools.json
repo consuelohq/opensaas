@@ -15,7 +15,10 @@
         "path": "packages/workspace/scripts/code-run.ts",
         "reason": "Code mode composes workspace facade tools inside task sessions."
       },
-      "validation": ["script-target-audit", "local-import-audit"]
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
     },
     {
       "id": "os.call",
@@ -31,7 +34,10 @@
         "path": "packages/os/scripts/os.ts",
         "reason": "OS call is the public runtime tool surface for local user/agent OS behavior."
       },
-      "validation": ["script-target-audit", "packages/os/tests/facade"]
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/facade"
+      ]
     },
     {
       "id": "review.run",
@@ -47,7 +53,10 @@
         "path": "packages/workspace/scripts/review.js",
         "reason": "Review remains task-session operator validation in workspace."
       },
-      "validation": ["script-target-audit", "local-import-audit"]
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
     },
     {
       "id": "task.start",
@@ -63,7 +72,10 @@
         "path": "packages/workspace/scripts/task-start.js",
         "reason": "Task lifecycle creation remains workspace-owned while OS migration is incomplete."
       },
-      "validation": ["script-target-audit", "ownership-guardrail"]
+      "validation": [
+        "script-target-audit",
+        "ownership-guardrail"
+      ]
     },
     {
       "id": "verify",
@@ -79,7 +91,28 @@
         "path": "packages/workspace/scripts/verify.js",
         "reason": "Verify is the workspace task-session final validation surface."
       },
-      "validation": ["script-target-audit", "local-import-audit"]
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "diff_cockpit.open",
+      "ownerPackage": "diff-cockpit",
+      "surface": "workspace.diff_cockpit.open",
+      "scriptEntryId": "diff_cockpit",
+      "path": "packages/workspace/scripts/diff_cockpit.ts",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/workspace/scripts/diff_cockpit.ts",
+        "reason": "Diff cockpit launcher is the operator surface for opening live PR review pages."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ]
     }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b23ba5dbab24",
+  "tmuxSession": "opensaas-diff-cockpit-add-live-pr-diff-cockpit-b23ba5db",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-live-pr-diff-cockpit",
+  "branch": "task/diff-cockpit/add-live-pr-diff-cockpit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit",
+  "prNumber": 720,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/720",
+  "createdAt": "2026-06-03T03:37:13.472Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit/.task/diff-cockpit/add-live-pr-diff-cockpit/session.json"
+}

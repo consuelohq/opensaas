@@ -53,6 +53,7 @@ const DEFAULT_PACKAGE_JSON_PATHS = [
   'package.json',
   'packages/workspace/package.json',
   'packages/os/package.json',
+  'packages/diff-cockpit/package.json',
 ];
 
 const DEFAULT_SCRIPT_ROOTS = [
