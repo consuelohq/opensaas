@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 type Replacement = {
@@ -8,23 +8,40 @@ type Replacement = {
 };
 
 const root = process.cwd();
-const workspaceTaskSkillPath = join(root, 'tests', 'fixtures', 'skills', 'task-workspace.SKILL.md');
-const replacementsPath = join(root, 'tests', 'fixtures', 'skills', 'task-os-replacements.json');
-const osTaskSkillPath = join(root, 'skills', 'task', 'SKILL.md');
+const fixturesRoot = join(root, 'tests', 'fixtures', 'skills');
 
 function applyReplacements(source: string, replacements: Replacement[]): string {
-  return replacements.reduce((current, replacement) => current.split(replacement.from).join(replacement.to), source);
+  return replacements.reduce(
+    (current, replacement) => current.split(replacement.from).join(replacement.to),
+    source,
+  );
 }
 
+const migrationCases = [
+  'task',
+  'senior-engineer',
+];
+
 describe('skill migration guardrails', () => {
-  it('keeps the OS task skill identical except for approved workspace-to-os replacements', () => {
-    const source = readFileSync(workspaceTaskSkillPath, 'utf8');
-    expect(source).not.toContain('PLACEHOLDER:');
+  for (const skillName of migrationCases) {
+    it(`keeps the OS ${skillName} skill identical except for approved replacements`, () => {
+      const workspaceSkillPath = join(fixturesRoot, `${skillName}-workspace.SKILL.md`);
+      const replacementsPath = join(fixturesRoot, `${skillName}-os-replacements.json`);
+      const osSkillPath = join(root, 'skills', skillName, 'SKILL.md');
 
-    const replacements = JSON.parse(readFileSync(replacementsPath, 'utf8')) as Replacement[];
-    const expected = applyReplacements(source, replacements);
-    const actual = readFileSync(osTaskSkillPath, 'utf8');
+      expect(existsSync(workspaceSkillPath), `${basename(workspaceSkillPath)} is missing`).toBe(true);
+      expect(existsSync(replacementsPath), `${basename(replacementsPath)} is missing`).toBe(true);
+      expect(existsSync(osSkillPath), `${skillName}/SKILL.md is missing`).toBe(true);
 
-    expect(actual).toBe(expected);
-  });
+      const source = readFileSync(workspaceSkillPath, 'utf8');
+      expect(source).not.toContain('REPLACE WITH');
+      expect(source).not.toContain('PLACEHOLDER:');
+
+      const replacements = JSON.parse(readFileSync(replacementsPath, 'utf8')) as Replacement[];
+      const expected = applyReplacements(source, replacements);
+      const actual = readFileSync(osSkillPath, 'utf8');
+
+      expect(actual).toBe(expected);
+    });
+  }
 });

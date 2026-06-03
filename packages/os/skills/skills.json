@@ -74,6 +74,30 @@
       ]
     },
     {
+      "name": "senior-engineer",
+      "title": "Senior Engineer",
+      "description": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+      "trigger": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/senior-engineer/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "repo",
+        "engineering",
+        "review"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
       "name": "task",
       "title": "Task Workflow",
       "description": "PASTE Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
