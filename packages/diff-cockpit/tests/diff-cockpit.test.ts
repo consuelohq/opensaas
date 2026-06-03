@@ -320,8 +320,34 @@ describe('buildFileTree', () => {
   });
 });
 
+describe('createGithubPullRequestIndexLoader GraphQL mergeability', () => {
+  test('loads all PRs with mergeability in paginated GraphQL requests when token is available', async () => {
+    const calls: string[] = [];
+    const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
+      calls.push(String(input));
+      const body = JSON.parse(String(init?.body ?? '{}'));
+      if (body.variables.after) {
+        return Response.json({ data: { repository: { pullRequests: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [
+          { number: 2, title: 'merged pr', url: 'https://github.com/consuelohq/opensaas/pull/2', state: 'MERGED', isDraft: false, merged: true, mergedAt: '2026-06-03T00:00:00Z', closedAt: '2026-06-03T00:00:00Z', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:02:00Z', additions: 2, deletions: 1, changedFiles: 1, mergeStateStatus: 'UNKNOWN', author: { login: 'ko' }, headRefName: 'task/diff-cockpit/merged', headRefOid: 'sha2', baseRefName: 'stream/diff-cockpit', baseRefOid: 'base' },
+        ] } } } });
+      }
+      return Response.json({ data: { repository: { pullRequests: { pageInfo: { hasNextPage: true, endCursor: 'cursor-1' }, nodes: [
+        { number: 1, title: 'clean pr', url: 'https://github.com/consuelohq/opensaas/pull/1', state: 'OPEN', isDraft: false, merged: false, mergedAt: null, closedAt: null, createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', additions: 5, deletions: 3, changedFiles: 2, mergeStateStatus: 'CLEAN', author: { login: 'ko' }, headRefName: 'task/diff-cockpit/clean', headRefOid: 'sha1', baseRefName: 'stream/diff-cockpit', baseRefOid: 'base' },
+        { number: 3, title: 'conflict pr', url: 'https://github.com/consuelohq/opensaas/pull/3', state: 'OPEN', isDraft: false, merged: false, mergedAt: null, closedAt: null, createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:03:00Z', additions: 7, deletions: 4, changedFiles: 3, mergeStateStatus: 'DIRTY', author: { login: 'ko' }, headRefName: 'task/diff-cockpit/conflict', headRefOid: 'sha3', baseRefName: 'stream/diff-cockpit', baseRefOid: 'base' },
+      ] } } } });
+    };
+    const result = await createGithubPullRequestIndexLoader({ fetcher, token: 'token' })({ owner: 'consuelohq', repo: 'opensaas' });
+    expect(calls).toEqual(['https://api.github.com/graphql', 'https://api.github.com/graphql']);
+    expect(result.pulls.map((pull) => ({ number: pull.number, mergeability: pull.mergeability, additions: pull.additions, changedFiles: pull.changedFiles }))).toEqual([
+      { number: 1, mergeability: 'mergeable', additions: 5, changedFiles: 2 },
+      { number: 3, mergeability: 'conflicts', additions: 7, changedFiles: 3 },
+      { number: 2, mergeability: 'merged', additions: 2, changedFiles: 1 },
+    ]);
+  });
+});
+
 describe('pull request index grouping', () => {
-  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit' } as const;
+  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit', mergeability: 'mergeable' } as const;
   test('derives stream ownership from stream and task branches', () => {
     expect(deriveAssociatedStream({ ...basePull, headRef: 'stream/os', baseRef: 'main' })).toBe('stream/os');
     expect(deriveAssociatedStream({ ...basePull, headRef: 'task/workspace-agents/fix', baseRef: 'main' })).toBe('stream/workspace-agents');
@@ -361,12 +387,13 @@ describe('renderIndexPage', () => {
     expect(html).toContain('data-active-stream');
     expect(html).toContain('Streams');
     expect(html).toContain('Merging and recently merged');
-    expect(html).toContain('pull.checkStatus === \'failure\'');
+    expect(html).toContain("pull.mergeability === 'conflicts'");
     expect(html).toContain('relativeTime');
     expect(html).toContain('formatDelta');
     expect(html).toContain('pr-delta');
-    expect(html).toContain('check-');
-    expect(html).toContain('review-');
+    expect(html).toContain('mergeability-icon');
+    expect(html).toContain('mergeability-');
+    expect(html).toContain("pull.mergeability === 'conflicts'");
     expect(html).toContain('post-list .post-item:last-child');
     expect(html).toContain('const sectionPageSize = 10');
     expect(html).toContain('data-page-next');
