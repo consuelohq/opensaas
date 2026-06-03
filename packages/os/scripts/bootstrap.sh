@@ -22,6 +22,7 @@ ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
 SOURCE_STATUS="pending"
+ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 
 usage() {
@@ -330,7 +331,7 @@ run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
 }
 
 run_install_with_tty() {
@@ -340,7 +341,7 @@ run_install_with_tty() {
   run_install_with_script_pty "$os_dir" "$os_home"
 }
 
-run_onboarding() {
+run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
   local os_home="${CONSUELO_HOME:-$HOME/.consuelo/os}"
 
@@ -352,23 +353,39 @@ run_onboarding() {
       ONBOARDING_STATUS="dry_run"
     else
       log "dry-run: would run: bun --cwd $os_dir ./scripts/install.ts --dry-run --yes --json"
-      ONBOARDING_STATUS="would_run"
+      ONBOARDING_STATUS=
+"would_run"
     fi
     return 0
   fi
 
   if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home")
+    if [ "$INSTALL_DAEMONS" -eq 1 ]; then
+      install_args+=(--install-daemons)
+    fi
+    if [ "$SKIP_DAEMONS" -eq 1 ]; then
+      install_args+=(--skip-daemons)
+    fi
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
     if [ "$JSON" -eq 1 ]; then
-      "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --yes --json --home "$os_home"
-    else
-      "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --yes --home "$os_home"
+      printf '%s\n' "$ONBOARDING_JSON"
     fi
   else
     if ! has_tty; then
       fail "Consuelo OS onboarding needs an interactive terminal. Re-run with:
+
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
     fi
+    ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
     run_install_with_tty "$os_dir" "$os_home"
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    rm -f "$ONBOARDING_RESULT_FILE"
+    if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
+      INSTALL_DAEMONS=1
+    else
+      SKIP_DAEMONS=1
+    fi
   fi
   ONBOARDING_STATUS="installed"
 }

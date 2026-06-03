@@ -37,6 +37,7 @@ export type OsConfig = {
   home: string;
   port: number;
   artifactStorage: 'local';
+  selectedSkills?: string[];
   agents: Array<{
     name: AgentName;
     homePath: string;
@@ -53,6 +54,8 @@ export type ProvisionOptions = {
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
+  selectedSkills?: string[];
+  artifactStorage?: 'local';
   connectAgents?: AgentName[];
 };
 
@@ -352,6 +355,9 @@ export function provisionLocalOs(
       db.close();
     }
   }
+
+  config.selectedSkills = options.selectedSkills ?? config.selectedSkills ?? [];
+  config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
 
   const agents = detectAgents(home);
   const requestedAgents = new Set(options.connectAgents ?? []);

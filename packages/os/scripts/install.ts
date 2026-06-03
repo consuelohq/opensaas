@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import fs from 'node:fs';
 import {
   cancel,
   confirm,
@@ -25,14 +26,21 @@ import {
   type OsMode,
 } from './lib/install-state';
 
+type ArtifactMode = 'local';
+type SkillName = 'daily-revenue-brief' | 'artifact-search' | 'agent-handoff';
+
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
   json: boolean;
   quiet: boolean;
   checkTty: boolean;
+  installDaemons: boolean;
+  skipDaemons: boolean;
   home?: string;
   mode?: OsMode;
+  artifactMode: ArtifactMode;
+  selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
 
@@ -54,6 +62,10 @@ function parseArgs(argv: string[]): InstallOptions {
     json: false,
     quiet: false,
     checkTty: false,
+    installDaemons: false,
+    skipDaemons: false,
+    artifactMode: 'local',
+    selectedSkills: [],
     connectAgents: [],
   };
 
@@ -72,6 +84,8 @@ function parseArgs(argv: string[]): InstallOptions {
     else if (arg === '--json') options.json = true;
     else if (arg === '--quiet') options.quiet = true;
     else if (arg === '--check-tty') options.checkTty = true;
+    else if (arg === '--install-daemons') options.installDaemons = true;
+    else if (arg === '--skip-daemons') options.skipDaemons = true;
     else if (arg === '--home') {
       options.home = readValue('--home', index);
       index += 1;
@@ -172,12 +186,17 @@ function assertClackTtyReady(options: InstallOptions): void {
   );
 }
 
+function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
+  return `saved to ${result.home}`;
+}
+
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['home', 'skills', 'agents', 'artifacts', 'health']);
+    printOsBanner(['home', 'skills', 'artifacts', 'agents', 'health']);
+    info('finish home, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
     const mode = await select({
@@ -185,22 +204,11 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       message: 'choose an OS mode',
       initialValue: options.mode ?? 'local',
       options: [
-        {
-          value: 'local' as const,
-          label: 'local OS',
-          hint: 'runs on this machine',
-        },
-        {
-          value: 'cloud' as const,
-          label: 'connect to cloud OS',
-          hint: 'uses hosted workspace services later',
-        },
+        { value: 'local' as const, label: 'local OS', hint: 'runs on this machine' },
+        { value: 'cloud' as const, label: 'connect to cloud OS', hint: 'uses hosted workspace services later' },
       ],
     });
-    if (isCancel(mode)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(mode)) { cancel('setup cancelled.'); process.exit(0); }
 
     const home = await text({
       ...clackIo,
@@ -208,45 +216,50 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       initialValue: resolveOsHome(options.home),
       validate: (value) => (value.length > 0 ? undefined : 'home is required'),
     });
-    if (isCancel(home)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(home)) { cancel('setup cancelled.'); process.exit(0); }
+
+    const selectedSkills = await multiselect({
+      ...clackIo,
+      message: 'select skills to enable',
+      options: [
+        { value: 'daily-revenue-brief' as const, label: 'daily revenue brief', hint: 'creates a local artifact' },
+        { value: 'artifact-search' as const, label: 'artifact search', hint: 'lets agents find local artifacts' },
+        { value: 'agent-handoff' as const, label: 'agent handoff', hint: 'keeps task context portable' },
+      ],
+      required: false,
+    });
+    if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
+
+    const artifactMode = await select({
+      ...clackIo,
+      message: 'choose artifact storage',
+      initialValue: options.artifactMode,
+      options: [{ value: 'local' as const, label: 'local artifacts', hint: 'save generated files under OS home' }],
+    });
+    if (isCancel(artifactMode)) { cancel('setup cancelled.'); process.exit(0); }
 
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
-      const shouldConnect = await confirm({
-        ...clackIo,
-        message: 'connect detected agents to the OS portal?',
-        initialValue: true,
-      });
+      const shouldConnect = await confirm({ ...clackIo, message: 'connect detected agents to the OS portal?', initialValue: true });
       if (!isCancel(shouldConnect) && shouldConnect) {
         const selectedAgents = await multiselect({
           ...clackIo,
-          message: 'select agents to connect',
-          options: detectedAgents.map((agent) => ({
-            value: agent.name,
-            label: agent.label,
-            hint: agent.homePath,
-          })),
+          message: 'select agents to connect — Use Space to select agents, press Enter to continue',
+          options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
           required: false,
         });
-        if (!isCancel(selectedAgents))
-          connectAgents = selectedAgents as AgentName[];
+        if (!isCancel(selectedAgents)) connectAgents = selectedAgents as AgentName[];
       }
     }
 
-    return {
-      ...options,
-      mode,
-      home,
-      connectAgents,
-    };
+    const installDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
+    if (isCancel(installDaemons)) { cancel('setup cancelled.'); process.exit(0); }
+    info('background service is the final setup step; tokens and secrets stay local and are not printed.');
+
+    return { ...options, mode, home, selectedSkills: selectedSkills as SkillName[], artifactMode, connectAgents, installDaemons };
   } catch (error: unknown) {
-    throw new Error(
-      `install prompt failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    throw new Error(`install prompt failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -272,12 +285,30 @@ async function main(): Promise<void> {
       mode: options.mode ?? 'local',
       dryRun: options.dryRun,
       connectAgents: options.connectAgents,
+      selectedSkills: options.selectedSkills,
+      artifactStorage: options.artifactMode,
     });
+    const payload = {
+      ...result,
+      onboarding: {
+        selectedSkills: options.selectedSkills,
+        artifactMode: options.artifactMode,
+        connectAgents: options.connectAgents,
+        installDaemons: options.installDaemons,
+      },
+      installDaemons: options.installDaemons,
+    };
+    const resultFile = process.env.CONSUELO_ONBOARDING_RESULT_FILE;
+    if (resultFile) {
+      fs.writeFileSync(resultFile, `${JSON.stringify(payload, null, 2)}\n`, {
+        mode: 0o600,
+      });
+    }
 
-    spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS installed');
+    spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');
 
     if (options.json) {
-      writeStdout(`${JSON.stringify(result, null, 2)}\n`);
+      writeStdout(`${JSON.stringify(payload, null, 2)}\n`);
       return;
     }
 
@@ -287,12 +318,7 @@ async function main(): Promise<void> {
       stepComplete('artifacts');
       if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
-      info(
-        'Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.',
-      );
-      for (const action of result.actions) {
-        info(`${action.status}: ${action.path}`);
-      }
+      info(summarizeActions(result));
       info(
         `next: CONSUELO_HOME=${result.home} bun --cwd packages/os run doctor`,
       );
