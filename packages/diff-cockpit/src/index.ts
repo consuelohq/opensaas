@@ -797,10 +797,16 @@ footer { display:flex; align-items:center; justify-content:space-between; gap:18
 .status { color:var(--quiet); font-size:12px; margin-right:5px; }
 .review-pane { min-width:0; overflow:auto; background:var(--paper); }
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); }
-.diff-root { padding:16px; }
-.diff-fallback { margin:0; padding:14px; background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:auto; font:12px/1.55 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.diff-root { padding:0; }
+.diff-file { border-bottom:1px solid var(--line); scroll-margin-top:46px; }
+.diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:12px; }
+.diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.diff-file-stats { color:var(--quiet); white-space:nowrap; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:auto; font:12px/1.55 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.diff-line { min-height:18px; padding:0 14px; white-space:pre; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
+.diff-line.hunk { color:var(--quiet); background:var(--soft); }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); }
@@ -987,9 +993,7 @@ function loadViewerLibraries() {
     import('https://esm.sh/@pierre/diffs').then((module) => { state.diffModule = module; }),
     import('https://esm.sh/@pierre/trees@1.0.0-beta.3').then((module) => { state.treeModule = module; }),
   ]).then(() => {
-    if (state.data && state.selected) {
-      renderSelectedFile();
-    }
+    // Viewer libraries are optional progressive enhancement; the built-in long diff renders first.
   });
 }
 function setDrawer(open) {
@@ -1011,6 +1015,7 @@ function loadLiveData() {
         renderHeader();
         renderTree();
         renderSelectedFile();
+        renderLongDiffs();
         renderDrawer();
       },
       (error) => {
@@ -1034,6 +1039,7 @@ function renderTree() {
       state.selected = state.data.files.find((file) => file.filename === button.dataset.file);
       renderTree();
       renderSelectedFile();
+      scrollToFile(state.selected);
     });
   }
 }
@@ -1055,26 +1061,34 @@ function fileCommentBadge(filename) {
 function renderSelectedFile() {
   if (!state.selected) {
     els.selected.textContent = 'No changed files';
-    els.diff.innerHTML = '';
     return;
   }
-  els.selected.textContent = state.selected.filename + ' · +' + state.selected.additions + ' −' + state.selected.deletions;
-  renderDiff(state.selected);
+  els.selected.textContent = 'All changed files · ' + state.data.files.length + ' files · selected ' + state.selected.filename + ' · +' + state.selected.additions + ' −' + state.selected.deletions;
 }
 
-function renderDiff(file) {
-  els.diff.innerHTML = '';
-  if (state.diffModule && state.diffModule.FileDiff && file.patch) {
-    try {
-      const fileDiff = new state.diffModule.FileDiff({ theme: 'pierre-dark' });
-      fileDiff.render({
-        patchFile: { name: file.filename, contents: file.patch },
-        containerWrapper: els.diff,
-      });
-      return;
-    } catch {}
+function renderLongDiffs() {
+  if (!state.data || !Array.isArray(state.data.files) || state.data.files.length === 0) {
+    els.diff.innerHTML = '<div class="error">No changed files found.</div>';
+    return;
   }
-  els.diff.innerHTML = renderPatchFallback(file.patch || 'No patch available');
+  els.diff.innerHTML = state.data.files.map(renderDiffFile).join('');
+}
+
+function renderDiffFile(file) {
+  return '<section class="diff-file" id="' + escapeAttribute(fileDomId(file.filename)) + '">' +
+    '<div class="diff-file-header"><span class="diff-file-path">' + escapeHtml(file.filename) + '</span><span class="diff-file-stats">' + escapeHtml(statusToken(file.status)) + ' +' + escapeHtml(file.additions) + ' −' + escapeHtml(file.deletions) + '</span></div>' +
+    renderPatchFallback(file.patch || 'No patch available') +
+  '</section>';
+}
+
+function scrollToFile(file) {
+  if (!file) return;
+  const target = document.getElementById(fileDomId(file.filename));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function fileDomId(filename) {
+  return 'file-' + String(filename || '').replace(/[^a-zA-Z0-9_-]+/g, '-');
 }
 
 function renderDrawer() {
@@ -1149,10 +1163,10 @@ function copyText(text) {
 }
 
 function renderPatchFallback(patch) {
-  return '<pre class="diff-fallback">' + patch.split('\\n').map((line) => {
-    const className = line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : '';
-    return '<div class="diff-line ' + className + '">' + escapeHtml(line) + '</div>';
-  }).join('') + '</pre>';
+  return '<div class="diff-fallback">' + String(patch || '').split('\\n').map((line) => {
+    const className = line.startsWith('@@') ? 'hunk' : line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : '';
+    return '<div class="diff-line ' + className + '">' + escapeHtml(line || ' ') + '</div>';
+  }).join('') + '</div>';
 }
 
 function statusToken(status) {
