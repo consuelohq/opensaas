@@ -23,6 +23,7 @@ const migrationCases = [
   'research-ingest',
   'browser',
   'handoff',
+  'skill-creator',
 ];
 
 describe('skill migration guardrails', () => {
