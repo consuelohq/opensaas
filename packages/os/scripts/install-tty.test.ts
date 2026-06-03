@@ -13,10 +13,11 @@ describe('hosted Clack install TTY wiring', () => {
     expect(bootstrap).not.toContain('2> /dev/tty');
   });
 
-  test('interactive hosted onboarding binds stdin to the controlling terminal while inheriting output fds', () => {
+  test('interactive hosted onboarding runs Clack under a pseudo-terminal', () => {
     expect(bootstrap).toContain('run_install_with_tty "$os_dir" "$os_home"');
-    expect(bootstrap).toContain('./scripts/install.ts --home "$os_home" < /dev/tty');
-    expect(bootstrap).toContain('./scripts/install.ts --check-tty < /dev/tty');
+    expect(bootstrap).toContain('run_install_with_script_pty');
+    expect(bootstrap).toContain('script -q /dev/null');
+    expect(bootstrap).toContain('./scripts/install.ts --home "$os_home"');
     expect(bootstrap).not.toContain('./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty');
     expect(bootstrap).not.toContain('./scripts/install.ts --check-tty < /dev/tty > /dev/tty');
   });

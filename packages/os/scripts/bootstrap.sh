@@ -326,11 +326,18 @@ check_install_tty() {
   fi
 }
 
+run_install_with_script_pty() {
+  local os_dir="$1"
+  local os_home="$2"
+  require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+}
+
 run_install_with_tty() {
   local os_dir="$1"
   local os_home="$2"
   check_install_tty "$os_dir"
-  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+  run_install_with_script_pty "$os_dir" "$os_home"
 }
 
 run_onboarding() {
