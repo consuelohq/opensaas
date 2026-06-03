@@ -48,7 +48,7 @@ export type PullRequestSummary = GitHubPullRequest & {
 };
 
 export type PullRequestSection = {
-  id: 'streams' | 'open' | 'recently-merged' | 'closed';
+  id: 'streams' | 'recently-merged' | 'open' | 'closed';
   title: string;
   pulls: PullRequestSummary[];
 };
@@ -381,9 +381,9 @@ export function renderIndexPage(repo: RepoLocator): string {
       </label>
     </header>
     <main id="pull-requests" class="section-stack" data-sections-root data-pagefind-ignore>
-      <details class="section pr-section" open data-section-id="streams"><summary><h2>Streams</h2><span class="section-count">—</span></summary><div class="post-list"><article class="post-item muted"><h3>Loading live pull requests…</h3><p>${escapeHtml(apiPath)}</p></article></div></details>
-      <details class="section pr-section" open data-section-id="open"><summary><h2>Open</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" open data-section-id="streams"><summary><h2>Streams</h2><button class="section-count" type="button" data-toggle-streams aria-pressed="false" title="Show all streams">—</button></summary><div class="post-list"><article class="post-item muted"><h3>Loading live pull requests…</h3><p>${escapeHtml(apiPath)}</p></article></div></details>
       <details class="section pr-section" data-section-id="recently-merged"><summary><h2>Merging and recently merged</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" open data-section-id="open"><summary><h2>Open</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
       <details class="section pr-section" data-section-id="closed"><summary><h2>Closed</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
     </main>
     <footer data-pagefind-ignore>
@@ -732,20 +732,25 @@ export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' |
 
 export function groupPullRequestSummaries(
   pulls: PullRequestSummary[],
-  options: { stream?: string } = {},
+  options: { stream?: string; showAllStreams?: boolean } = {},
 ): PullRequestSection[] {
   const scoped = options.stream ? pulls.filter((pull) => pull.associatedStream === options.stream) : pulls;
+  const streamPulls = scoped.filter(
+    (pull) =>
+      pull.kind === 'stream' &&
+      (options.showAllStreams || pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
+  );
   const sections: PullRequestSection[] = [
-    { id: 'streams', title: 'Streams', pulls: scoped.filter((pull) => pull.kind === 'stream') },
-    {
-      id: 'open',
-      title: 'Open',
-      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
-    },
+    { id: 'streams', title: 'Streams', pulls: streamPulls },
     {
       id: 'recently-merged',
       title: 'Merging and recently merged',
       pulls: scoped.filter((pull) => pull.lifecycleStatus === 'merged'),
+    },
+    {
+      id: 'open',
+      title: 'Open',
+      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
     },
     { id: 'closed', title: 'Closed', pulls: scoped.filter((pull) => pull.lifecycleStatus === 'closed') },
   ];
@@ -1018,7 +1023,10 @@ function makeWeakEtag(input: string): string {
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data, null, 2), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': status === 200 ? 'public, max-age=45, stale-while-revalidate=300' : 'no-store',
+    },
   });
 }
 
@@ -1044,13 +1052,15 @@ function renderStyles(): string {
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
+html, body, button, a { -webkit-tap-highlight-color: transparent; }
 body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
 a { color:inherit; text-decoration:none; }
 a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
 button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
-button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-.shell { max-width:680px; margin:0 auto; padding:0 18px 32px; }
+button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline:none; }
+button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-soft); outline-offset:3px; }
+.shell { max-width:min(1180px, calc(100vw - 48px)); margin:0 auto; padding:0 18px 32px; }
 .wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
 .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; }
 .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
@@ -1078,11 +1088,16 @@ h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; f
 .post-list { display:grid; gap:0; margin-top:18px; border-top:1px solid var(--line); }
 .pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
 .section-count { color:var(--quiet); font-size:16px; }
-.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:16px; padding:13px 0; border-bottom:1px solid var(--line); }
-.post-item h3 { margin:0 0 3px; font-size:17px; line-height:1.35; letter-spacing:-.02em; font-weight:500; }
-.post-meta { color:var(--quiet); font-size:13px; line-height:1.35; margin-bottom:4px; }
+button.section-count { cursor:pointer; }
+.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:18px; padding:11px 0; border-bottom:1px solid var(--line); align-items:center; }
+.post-item h3 { margin:0; font-size:17px; line-height:1.35; letter-spacing:-.02em; font-weight:500; }
+.post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
-.pr-row-main { min-width:0; }
+.pr-row-main { min-width:0; display:grid; gap:4px; }
+.pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
+.pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
+.pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:13px; }
 .pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:10px; color:var(--quiet); font-size:13px; white-space:nowrap; }
 .pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; }
 .pr-status-icon.success { color:#2f8a44; }
@@ -1094,7 +1109,7 @@ h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; f
 .post-item[hidden] { display:none; }
 .empty, .muted { color:var(--quiet); }
 mark { background:var(--accent-soft); color:var(--ink); }
-.pagination { margin-top:28px; color:var(--quiet); }
+.section-pager { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:10px 0 0; color:var(--quiet); font-size:13px; }
 .page-status { color:var(--quiet); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
@@ -1175,10 +1190,14 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
+const cacheKey = 'diff-cockpit:index:' + apiPath;
+const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
 let activeQuery = '';
 let activeStream = '';
+let showAllStreams = false;
+const sectionPages = {};
 const sectionsRoot = document.querySelector('[data-sections-root]');
 const searchToggle = document.querySelector('[data-search-toggle]');
 const searchRow = document.querySelector('.search-row');
@@ -1199,9 +1218,9 @@ function visiblePulls() {
 }
 function groupSections(source) {
   const sections = [
-    { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream') },
-    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
+    { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream' && (showAllStreams || pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'recently-merged', title: 'Merging and recently merged', pulls: source.filter((pull) => pull.lifecycleStatus === 'merged') },
+    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
     { id: 'closed', title: 'Closed', pulls: source.filter((pull) => pull.lifecycleStatus === 'closed') },
   ];
   return sections.filter((section) => section.pulls.length > 0);
@@ -1210,11 +1229,21 @@ function renderCard(pull) {
   const route = routePrefix + pull.number;
   const stream = pull.associatedStream || 'No stream';
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
-    '<div class="pr-row-main"><h3><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
-    '<div class="post-meta">' + escapeText(pull.author) + ' · ' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</div>' +
-    '<p><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button> · ' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</p></div>' +
-    '<div class="pr-row-side"><span class="pr-status-icon ' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon ' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span><span>' + formatDelta(pull) + '</span><span>' + relativeTime(pull.updatedAt) + '</span></div>' +
+    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta">' + escapeText(pull.author) + ' · #' + escapeText(pull.number) + '</span></h3>' +
+    '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + formatDelta(pull) + '</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
+    '<div class="pr-row-side"><span class="pr-status-icon review-' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon check-' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span></div>' +
   '</article>';
+}
+function renderSection(section, index) {
+  const pageCount = Math.max(1, Math.ceil(section.pulls.length / sectionPageSize));
+  const current = Math.min(sectionPages[section.id] || 0, pageCount - 1);
+  sectionPages[section.id] = current;
+  const visible = section.pulls.slice(current * sectionPageSize, current * sectionPageSize + sectionPageSize);
+  const counter = section.id === 'streams'
+    ? '<button class="section-count" type="button" data-toggle-streams aria-pressed="' + String(showAllStreams) + '" title="' + (showAllStreams ? 'Show open streams only' : 'Show all streams') + '">' + section.pulls.length + '</button>'
+    : '<span class="section-count">' + section.pulls.length + '</span>';
+  const pager = pageCount > 1 ? '<div class="section-pager"><button class="page-button" type="button" data-page-prev="' + section.id + '" ' + (current === 0 ? 'disabled' : '') + '>←</button><span class="page-status">' + (current + 1) + ' / ' + pageCount + '</span><button class="page-button" type="button" data-page-next="' + section.id + '" ' + (current + 1 >= pageCount ? 'disabled' : '') + '>→</button></div>' : '';
+  return '<details class="section pr-section" data-section-id="' + section.id + '" ' + (index < 2 ? 'open' : '') + '><summary><h2>' + escapeText(section.title) + '</h2>' + counter + '</summary><div class="post-list">' + visible.map(renderCard).join('') + '</div>' + pager + '</details>';
 }
 function renderSections() {
   const visible = visiblePulls();
@@ -1222,7 +1251,7 @@ function renderSections() {
   document.body.dataset.activeStream = activeStream;
   streamRow.hidden = !activeStream;
   streamLabel.textContent = activeStream || '';
-  sectionsRoot.innerHTML = sections.length ? sections.map((section, index) => '<details class="section pr-section" data-section-id="' + section.id + '" ' + (index < 2 ? 'open' : '') + '><summary><h2>' + escapeText(section.title) + '</h2><span class="section-count">' + section.pulls.length + '</span></summary><div class="post-list">' + section.pulls.map(renderCard).join('') + '</div></details>').join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, search, or stream.</p></section>';
+  sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, search, or stream.</p></section>';
   document.querySelectorAll('[data-pr-route]').forEach((link) => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
@@ -1233,21 +1262,49 @@ function renderSections() {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       activeStream = button.getAttribute('data-stream-filter') || '';
+      resetSectionPages();
       renderSections();
     });
   });
+  document.querySelectorAll('[data-toggle-streams]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      showAllStreams = !showAllStreams;
+      sectionPages.streams = 0;
+      renderSections();
+    });
+  });
+  document.querySelectorAll('[data-page-prev]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-page-prev');
+      sectionPages[id] = Math.max(0, (sectionPages[id] || 0) - 1);
+      renderSections();
+    });
+  });
+  document.querySelectorAll('[data-page-next]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-page-next');
+      sectionPages[id] = (sectionPages[id] || 0) + 1;
+      renderSections();
+    });
+  });
+}
+function resetSectionPages() {
+  for (const key of Object.keys(sectionPages)) delete sectionPages[key];
 }
 function reviewIcon(status) {
   if (status === 'approved') return '✓';
   if (status === 'changes_requested') return '×';
   if (status === 'commented') return '◌';
-  return '–';
+  if (status === 'none') return '○';
+  return '?';
 }
 function checkIcon(status) {
   if (status === 'success') return '✓';
   if (status === 'failure') return '×';
   if (status === 'pending') return '◌';
-  return '–';
+  return '?';
 }
 function formatDelta(pull) {
   return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString() + ' · ' + Number(pull.changedFiles || 0).toLocaleString() + ' files';
@@ -1263,28 +1320,44 @@ function relativeTime(value) {
   if (hours < 48) return hours + 'h';
   return Math.round(hours / 24) + 'd';
 }
+function applyIndexData(data) {
+  pulls = Array.isArray(data.pulls) ? data.pulls : [];
+  resetSectionPages();
+  renderSections();
+}
+function loadCachedIndex() {
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) applyIndexData(JSON.parse(cached));
+  } catch {
+    localStorage.removeItem(cacheKey);
+  }
+}
 function loadIndex() {
-  fetch(apiPath, { headers: { accept: 'application/json' } })
+  loadCachedIndex();
+  fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
     .then((response) => {
       if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
       return response.json();
     })
     .then((data) => {
-      pulls = Array.isArray(data.pulls) ? data.pulls : [];
-      renderSections();
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      applyIndexData(data);
     }, (error) => {
-      sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
+      if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
     });
 }
 document.querySelectorAll('[data-filter]').forEach((button) => {
   button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
+    resetSectionPages();
     document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
     renderSections();
   });
 });
 clearStream.addEventListener('click', () => {
   activeStream = '';
+  resetSectionPages();
   renderSections();
 });
 searchToggle.addEventListener('click', () => {
@@ -1295,11 +1368,13 @@ searchToggle.addEventListener('click', () => {
   else {
     searchInput.value = '';
     activeQuery = '';
+    resetSectionPages();
     renderSections();
   }
 });
 searchInput.addEventListener('input', () => {
   activeQuery = searchInput.value;
+  resetSectionPages();
   window.clearTimeout(searchInput.dataset.timer);
   searchInput.dataset.timer = String(window.setTimeout(renderSections, 120));
 });
@@ -1309,13 +1384,13 @@ searchInput.addEventListener('keydown', (event) => {
     activeQuery = '';
     searchRow.hidden = true;
     searchToggle.setAttribute('aria-expanded', 'false');
+    resetSectionPages();
     renderSections();
   }
 });
 loadIndex();
 `;
 }
-
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
