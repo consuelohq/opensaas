@@ -435,7 +435,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -460,6 +460,8 @@ export function renderReviewPage(locator: PullRequestLocator): string {
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">▣</button>
+    <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
@@ -1180,7 +1182,8 @@ function cachedJson(data: unknown, request: Request): Response {
       status: 304,
       headers: {
         etag,
-        'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+        'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+        vary: 'Accept',
       },
     });
   }
@@ -1189,7 +1192,8 @@ function cachedJson(data: unknown, request: Request): Response {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      vary: 'Accept',
     },
   });
 }
@@ -1231,7 +1235,7 @@ function renderStyles(): string {
   return `
 :root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; --danger:#9b2d2d; }
 @media (prefers-color-scheme: dark) {
-  :root { color-scheme: dark; --paper:#111820; --surface:#18212b; --ink:#e9eef4; --muted:#a9b4bf; --quiet:#7f8b96; --line:#2a3642; --soft:#1d2732; --accent:#c7d0d9; --accent-soft:#263341; --danger:#ff9d9d; }
+  :root { color-scheme: dark; --paper:#070a0d; --surface:#0b0f13; --ink:#edf1f5; --muted:#a2abb4; --quiet:#737c85; --line:#20262d; --soft:#12181e; --accent:#d4d8dd; --accent-soft:#1b222a; --danger:#ff9d9d; }
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
@@ -1348,6 +1352,8 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:7; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-file-backdrop { display:none; }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
@@ -1380,7 +1386,16 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .post-item { grid-template-columns:1fr; gap:8px; }
   .pr-row-side { justify-content:flex-start; flex-wrap:wrap; }
   .topbar { height:auto; min-height:92px; align-items:flex-start; flex-direction:column; }
-  .layout { height:calc(100vh - 132px); grid-template-columns:minmax(160px, 40vw) minmax(0, 1fr); }
+  .layout { height:calc(100vh - 132px); grid-template-columns:minmax(0, 1fr); }
+  .file-pane-resizer { display:none; }
+  .file-pane { position:fixed; left:0; right:0; bottom:0; top:86px; z-index:9; transform:translateY(100%); transition:transform .18s ease; border-right:0; border-top:1px solid var(--line); border-radius:18px 18px 0 0; box-shadow:0 -22px 50px rgba(0,0,0,.36); background:var(--paper); font-size:16px; }
+  body[data-file-pane-drawer="open"] .file-pane { transform:translateY(0); }
+  .pane-heading { padding:18px 20px 12px; font-size:20px; }
+  .tree-root { padding:14px 18px 28px; }
+  .tree-node, .directory-toggle { min-height:42px; font-size:17px; }
+  .mobile-files-toggle { display:flex; }
+  .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
+  body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
 }
 `;
 }
@@ -1665,6 +1680,8 @@ const els = {
   drawerContent: document.getElementById('drawer-content'),
   filePane: document.getElementById('file-pane'),
   filePaneResizer: document.getElementById('file-pane-resizer'),
+  mobileFilesToggle: document.getElementById('mobile-files-toggle'),
+  mobileFileBackdrop: document.getElementById('mobile-file-backdrop'),
   commitPopover: document.getElementById('commit-popover'),
 };
 
@@ -1676,6 +1693,8 @@ els.drawerToggle.addEventListener('click', () => {
   setDrawer(true);
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
+els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
+els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
 document.addEventListener('click', (event) => {
   const folderButton = event.target.closest('[data-folder-path]');
@@ -1697,7 +1716,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
   if (event.key === 'g') openChatGptPrompt();
-  if (event.key === 'Escape') setDrawer(false);
+  if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); }
 });
 
 loadLiveData();
@@ -1716,6 +1735,10 @@ function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+function setFilePaneDrawer(open) {
+  document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
+  els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 function loadLiveData() {
@@ -1757,6 +1780,7 @@ function renderTree() {
       renderTree();
       renderSelectedFile();
       scrollToFile(state.selected);
+      setFilePaneDrawer(false);
     });
   }
 }
