@@ -238,7 +238,7 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
     return {
       repo,
       pulls,
-      updatedAt: new Date().toISOString(),
+      updatedAt: deriveIndexUpdatedAt(pulls),
       warnings,
     };
   };
@@ -512,7 +512,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             owner: decodeURIComponent(indexApiMatch[1] || ''),
             repo: decodeURIComponent(indexApiMatch[2] || ''),
           };
-          return json(await indexLoader(repo));
+          return cachedJson(await indexLoader(repo), request);
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -556,6 +556,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       return html(renderReviewPage(locator));
     },
   };
+}
+
+function deriveIndexUpdatedAt(pulls: PullRequestSummary[]): string {
+  let latest = '';
+  for (const pull of pulls) {
+    if (pull.updatedAt && (!latest || pull.updatedAt > latest)) latest = pull.updatedAt;
+  }
+  return latest;
 }
 
 function createGithubHeaders(token?: string): HeadersInit {
@@ -683,7 +691,7 @@ async function loadGraphqlPullRequestIndex(
   return {
     repo,
     pulls,
-    updatedAt: new Date().toISOString(),
+    updatedAt: deriveIndexUpdatedAt(pulls),
     warnings,
   };
 }
