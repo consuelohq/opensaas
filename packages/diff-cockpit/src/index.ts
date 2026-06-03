@@ -1393,6 +1393,9 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .pane-heading { padding:18px 20px 12px; font-size:20px; }
   .tree-root { padding:14px 18px 28px; }
   .tree-node, .directory-toggle { min-height:42px; font-size:17px; }
+  .diff-line { grid-template-columns:38px 38px minmax(0, 1fr); padding:0 8px 0 0; }
+  .diff-gutter { padding-right:6px; }
+  .inline-comment { margin-left:76px; }
   .mobile-files-toggle { display:flex; }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
