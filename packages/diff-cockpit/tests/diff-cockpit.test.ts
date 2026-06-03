@@ -514,6 +514,35 @@ describe('createWorker', () => {
     expect(html).toContain('Consuelo Diffs');
   });
 
+
+  test('returns homepage API shared cache headers and 304 for unchanged ETags', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
+          { number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/750')) return Response.json({ number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, additions: 12, deletions: 1, changed_files: 2, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
+      if (url.includes('/pulls/750/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'COMMENTED' }] : []);
+      throw new Error(`unexpected homepage cache url ${url}`);
+    };
+    const worker = createWorker({ fetcher });
+    const first = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls'));
+    const etag = first.headers.get('etag') || '';
+    const second = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls', { headers: { 'if-none-match': etag } }));
+
+    expect(first.status).toBe(200);
+    expect(first.headers.get('cache-control') || '').toContain('public');
+    expect(first.headers.get('cache-control') || '').toContain('s-maxage');
+    expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(first.headers.get('vary') || '').toBe('Accept');
+    expect(etag).toContain('W/');
+    expect(second.status).toBe(304);
+  });
+
   test('returns PR API cache headers and 304 for unchanged ETags', async () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);

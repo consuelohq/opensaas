@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/homepage-cache-headers",
+  "events": [
+    {
+      "id": "0fe85cf5-6e89-4380-835a-c54f059e3557",
+      "occurred_at": "2026-06-03T18:12:45.063Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/homepage-cache-headers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/homepage-cache-headers"
+      }
+    },
+    {
+      "id": "b3b340ed-1f74-4129-84c9-b2127d150b29",
+      "occurred_at": "2026-06-03T18:12:51.227Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/homepage-cache-headers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/homepage-cache-headers"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T18:12:51.275Z"
+}
