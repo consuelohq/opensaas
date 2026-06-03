@@ -32,10 +32,10 @@ STEERING_FILES = [
     APP_DIR / 'integrations.md',
     APP_DIR / 'skills.md',
 ]
-MANIFEST_FILE = APP_DIR / 'tooling' / 'tool-manifest.json'
+MANIFEST_FILE = APP_DIR / 'manifests' / 'core.manifest.json'
 DEV_STEERING_FILE = APP_DIR / 'dev-steering.md'
 DEV_DECISION_FILE = APP_DIR / 'decision.md'
-DEV_MANIFEST_FILE = APP_DIR / 'tooling' / 'dev-tool-manifest.json'
+DEV_MANIFEST_FILE = APP_DIR / 'manifests' / 'tool.manifest.json'
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 READ_ONLY = {'readOnlyHint': True, 'openWorldHint': False}
@@ -80,7 +80,7 @@ def _env_presence() -> dict[str, Any]:
 
 @mcp.tool(annotations=READ_ONLY)
 def get_steering() -> str:
-    """Return OS steering, business context, permissions, and raw default tool manifest."""
+    """Return OS steering, business context, permissions, and raw core tool manifest."""
     sections = [
         '# Consuelo OS runtime context',
         '',
@@ -98,7 +98,18 @@ def get_steering() -> str:
 
     manifest = _read_file(MANIFEST_FILE)
     if manifest:
-        sections.extend(['', '# raw default tool manifest', '', '```json', manifest, '```'])
+        sections.extend([
+            '',
+            '# tool discovery routing',
+            '',
+            'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
+            '',
+            '# raw core tool manifest',
+            '',
+            '```json',
+            manifest,
+            '```',
+        ])
 
     return '\n'.join(sections)
 
@@ -122,7 +133,7 @@ def get_dev_steering() -> str:
         sections.extend(['', '# original workspace decision.md', '', decision])
     manifest = _read_file(DEV_MANIFEST_FILE)
     if manifest:
-        sections.extend(['', '# original workspace tool manifest', '', '```json', manifest, '```'])
+        sections.extend(['', '# canonical full tool manifest', '', '```json', manifest, '```'])
     return '\n'.join(sections)
 
 

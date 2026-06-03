@@ -53,7 +53,7 @@ The agent should avoid development-workspace assumptions:
 - permission rules
 - integration notes
 - available skills
-- raw default tool manifest
+- raw core tool manifest
 - docs pointers
 
 `get_dev_steering` gives build, design, deployment, debugging, and internal operator agents the original proven workspace steering pattern with an OS preface. Use it for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.

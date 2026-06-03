@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import {
   findManifestEntry,
   getPackageRoot,
-  readManifest,
+  readCoreToolManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
@@ -80,10 +80,14 @@ export function getSteering(): string {
 
   sections.push(
     '',
-    '# raw default tool manifest',
+    '# tool discovery routing',
+    '',
+    'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
+    '',
+    '# raw core tool manifest',
     '',
     '```json',
-    safeJson(readManifest()),
+    safeJson(readCoreToolManifest()),
     '```',
   );
   return sections.join('\n');
@@ -107,12 +111,12 @@ export function getDevSteering(): string {
   if (decision)
     sections.push('', '# original workspace decision.md', '', decision);
   const manifest = readIfExists(
-    path.join(packageRoot, 'tooling', 'dev-tool-manifest.json'),
+    path.join(packageRoot, 'manifests', 'tool.manifest.json'),
   );
   if (manifest)
     sections.push(
       '',
-      '# original workspace tool manifest',
+      '# canonical full tool manifest',
       '',
       '```json',
       manifest,

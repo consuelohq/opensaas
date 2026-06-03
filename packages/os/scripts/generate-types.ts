@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../tooling/dev-tool-manifest.json';
+import manifestJson from '../manifests/tool.manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 
@@ -13,8 +13,20 @@ type TypeTree = {
   children: Map<string, TypeTree>;
 };
 
+type CanonicalManifestEntry = {
+  kind: 'os-skill' | 'facade-tool';
+  definition: ToolManifestEntry;
+};
+
+type CanonicalToolManifest = {
+  tools: CanonicalManifestEntry[];
+};
+
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifest = manifestJson as ToolManifestEntry[];
+const fullToolManifest = manifestJson as CanonicalToolManifest;
+const manifest = fullToolManifest.tools
+  .filter((entry) => entry.kind === 'facade-tool')
+  .map((entry) => entry.definition);
 
 function createTree(): TypeTree {
   return { methods: new Map(), children: new Map() };
