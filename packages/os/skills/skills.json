@@ -75,8 +75,8 @@
     },
     {
       "name": "task",
-      "title": "Task Workflow",
-      "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
+      "title": "PASTE taskE",
+      "description": "PASTE Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
       "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
       "entrypoint": "SKILL.md",
       "load": {
@@ -92,8 +92,8 @@
         "task-lifecycle"
       ],
       "tools": [
-        "workspace.get_steering",
-        "workspace.call"
+        "os.get_steering",
+        "os.call"
       ],
       "subskills": []
     }
