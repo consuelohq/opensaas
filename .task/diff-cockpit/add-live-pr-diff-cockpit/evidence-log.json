@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/add-live-pr-diff-cockpit",
+  "events": [
+    {
+      "id": "3aaa1531-4877-4441-9cf1-e6647e6922ee",
+      "occurred_at": "2026-06-03T03:45:32.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-live-pr-diff-cockpit",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-live-pr-diff-cockpit"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T03:45:32.428Z"
+}
