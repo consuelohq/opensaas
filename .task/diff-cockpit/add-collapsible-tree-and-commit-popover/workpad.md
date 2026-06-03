@@ -46,3 +46,4 @@ Promote to `stream/diff-cockpit`, merge into `main`, then redeploy `packages/dif
 ## workspace-owned: validation evidence
 
 - 2026-06-03 09:21:18 `review.run`: passed — OK
+- 2026-06-03 09:23:24 `review.run`: passed — OK
