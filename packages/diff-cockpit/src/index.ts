@@ -1108,7 +1108,7 @@ function buildCommentsMarkdown() {
     if (comment.url) lines.push('- URL: ' + comment.url);
     lines.push('', comment.body);
   }
-  return lines.join('\n');
+  return lines.join('\\n');
 }
 
 function buildChatGptPrompt() {
@@ -1122,11 +1122,11 @@ function buildChatGptPrompt() {
     'URL: ' + pull.htmlUrl,
     '',
     buildCommentsMarkdown(),
-  ].join('\n');
+  ].join('\\n');
 }
 
 function buildCodexPrompt() {
-  return '@codex please address the actionable review feedback in this PR.\n\n' + buildCommentsMarkdown();
+  return '@codex please address the actionable review feedback in this PR.\\n\\n' + buildCommentsMarkdown();
 }
 
 function openChatGptPrompt() {
@@ -1149,7 +1149,7 @@ function copyText(text) {
 }
 
 function renderPatchFallback(patch) {
-  return '<pre class="diff-fallback">' + patch.split('\n').map((line) => {
+  return '<pre class="diff-fallback">' + patch.split('\\n').map((line) => {
     const className = line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : '';
     return '<div class="diff-line ' + className + '">' + escapeHtml(line) + '</div>';
   }).join('') + '</pre>';
