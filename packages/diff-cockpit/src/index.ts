@@ -135,7 +135,7 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
-const INDEX_MAX_PAGES = 1;
+const INDEX_MAX_PAGES = MAX_PAGES;
 const INDEX_ENRICH_LIMIT = 10;
 
 export function parsePullRequestLocator(
@@ -213,10 +213,15 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
       'GitHub pull requests fetch failed',
       { maxPages: INDEX_MAX_PAGES },
     );
-    const pullsToEnrich = pullsJson.slice(0, INDEX_ENRICH_LIMIT);
-    const pulls = await Promise.all(
-      pullsToEnrich.map((pullJson) => enrichPullRequestSummary(fetcher, apiBase, headers, repo, pullJson, warnings)),
+    const enrichedPulls = await Promise.all(
+      pullsJson
+        .slice(0, INDEX_ENRICH_LIMIT)
+        .map((pullJson) => enrichPullRequestSummary(fetcher, apiBase, headers, repo, pullJson, warnings)),
     );
+    const fallbackPulls = pullsJson
+      .slice(INDEX_ENRICH_LIMIT)
+      .map((pullJson) => normalizePullRequestSummary(repo, pullJson, [], []));
+    const pulls = [...enrichedPulls, ...fallbackPulls];
 
     return {
       repo,
@@ -1328,29 +1333,53 @@ function relativeTime(value) {
   if (hours < 48) return hours + 'h';
   return Math.round(hours / 24) + 'd';
 }
+function readCachedIndex() {
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    localStorage.removeItem(cacheKey);
+    return null;
+  }
+}
+function mergePullWithCache(pull, cachedPull) {
+  if (!cachedPull) return pull;
+  return {
+    ...cachedPull,
+    ...pull,
+    additions: Number(pull.additions || 0) || Number(cachedPull.additions || 0),
+    deletions: Number(pull.deletions || 0) || Number(cachedPull.deletions || 0),
+    changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0),
+    checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus,
+    reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus,
+  };
+}
+function mergeIndexWithCache(data, cached) {
+  if (!cached || !Array.isArray(cached.pulls) || !Array.isArray(data.pulls)) return data;
+  const cachedByNumber = new Map(cached.pulls.map((pull) => [pull.number, pull]));
+  return { ...data, pulls: data.pulls.map((pull) => mergePullWithCache(pull, cachedByNumber.get(pull.number))) };
+}
 function applyIndexData(data) {
   pulls = Array.isArray(data.pulls) ? data.pulls : [];
   resetSectionPages();
   renderSections();
 }
 function loadCachedIndex() {
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) applyIndexData(JSON.parse(cached));
-  } catch {
-    localStorage.removeItem(cacheKey);
-  }
+  const cached = readCachedIndex();
+  if (cached) applyIndexData(cached);
+  return cached;
 }
 function loadIndex() {
-  loadCachedIndex();
+  const cached = loadCachedIndex();
   fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
     .then((response) => {
       if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
       return response.json();
     })
     .then((data) => {
-      localStorage.setItem(cacheKey, JSON.stringify(data));
-      applyIndexData(data);
+      const merged = mergeIndexWithCache(data, cached);
+      localStorage.setItem(cacheKey, JSON.stringify(merged));
+      applyIndexData(merged);
     }, (error) => {
       if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
     });
