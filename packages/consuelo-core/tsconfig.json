@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "types": ["node", "vitest"]
+  },
+  "include": ["src", "scripts", "tests"]
+}
