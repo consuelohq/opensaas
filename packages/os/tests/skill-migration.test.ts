@@ -21,6 +21,7 @@ const migrationCases = [
   'task',
   'senior-engineer',
   'research-ingest',
+  'browser',
 ];
 
 describe('skill migration guardrails', () => {
