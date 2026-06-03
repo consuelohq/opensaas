@@ -314,6 +314,25 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   DEPENDENCY_STATUS="installed"
 }
 
+
+check_install_tty() {
+  local os_dir="$1"
+  if ! has_tty; then
+    fail "Consuelo OS interactive setup needs a real terminal. Re-run non-interactively with:
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  fi
+  if [ "$DEBUG" = "1" ]; then
+    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --check-tty < /dev/tty > /dev/tty 2> /dev/tty
+  fi
+}
+
+run_install_with_tty() {
+  local os_dir="$1"
+  local os_home="$2"
+  check_install_tty "$os_dir"
+  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty 2> /dev/tty
+}
+
 run_onboarding() {
   local os_dir="$REPO_DIR/packages/os"
   local os_home="${CONSUELO_HOME:-$HOME/.consuelo/os}"
@@ -342,7 +361,7 @@ run_onboarding() {
       fail "Consuelo OS onboarding needs an interactive terminal. Re-run with:
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
     fi
-    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+    run_install_with_tty "$os_dir" "$os_home"
   fi
   ONBOARDING_STATUS="installed"
 }
