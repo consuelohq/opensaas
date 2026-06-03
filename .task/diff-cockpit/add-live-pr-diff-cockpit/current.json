@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-live-pr-diff-cockpit",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 720,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/720",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/720",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/720/add-live-pr-diff-cockpit",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/720",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/720/add-live-pr-diff-cockpit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit",
+  "taskSession": "tsk_b23ba5dbab24",
+  "tmuxSession": "opensaas-diff-cockpit-add-live-pr-diff-cockpit-b23ba5db",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit/.task/diff-cockpit/add-live-pr-diff-cockpit/session.json",
+  "createdAt": "2026-06-03T03:37:13.473Z"
+}
