@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2e2592e0b8bf",
+  "tmuxSession": "opensaas-consuelo-core-add-shared-registry-migration-guardrails-2e2592e0",
+  "area": "consuelo-core",
+  "stream": "stream/consuelo-core",
+  "taskBranch": "task/consuelo-core/add-shared-registry-migration-guardrails",
+  "branch": "task/consuelo-core/add-shared-registry-migration-guardrails",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-core-add-shared-registry-migration-guardrails",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-core-add-shared-registry-migration-guardrails",
+  "prNumber": 714,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/714",
+  "createdAt": "2026-06-02T23:53:40.775Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-core-add-shared-registry-migration-guardrails/.task/consuelo-core/add-shared-registry-migration-guardrails/session.json"
+}

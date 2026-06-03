@@ -1577,3 +1577,16 @@ bun run trace:home -- --trace-id trc_example --limit 100
 Live mode uses OpenTUI alternate-screen rendering, so it updates in place rather than printing repeated dashboards into scrollback. `--once` keeps deterministic text output for tests and CI. The default JSON/inspect views sanitize wrapper internals; use `--raw-json` only when raw selected-row payloads are explicitly needed.
 
 Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `task.call` and `task.exec` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+
+
+## consuelo-core registry audits
+
+`packages/consuelo-core` owns the shared migration registry for workspace, OS, and future Consuelo packages. Use it before copying or moving scripts/helpers between `packages/workspace` and `packages/os`.
+
+```bash
+bun --cwd packages/consuelo-core audit:registry
+bun --cwd packages/consuelo-core drift:registry
+bun --cwd packages/consuelo-core test tests/registry.test.ts
+```
+
+`audit:registry` checks root/workspace/OS script targets, local script imports, and workspace-owned source guardrails. `drift:registry` prints JSON for duplicate workspace/OS script paths with hashes and ownership hints; it is informational unless a follow-up task promotes a duplicate into shared core.
