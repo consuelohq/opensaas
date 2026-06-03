@@ -136,7 +136,7 @@ const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
 const INDEX_MAX_PAGES = 1;
-const INDEX_ENRICH_LIMIT = 40;
+const INDEX_ENRICH_LIMIT = 10;
 
 export function parsePullRequestLocator(
   input: string,
