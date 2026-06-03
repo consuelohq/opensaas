@@ -29,6 +29,7 @@ export type PullRequestKind = 'stream' | 'task' | 'draft' | 'open';
 export type PullRequestCheckStatus = 'success' | 'failure' | 'pending' | 'unknown';
 export type PullRequestReviewStatus = 'approved' | 'changes_requested' | 'commented' | 'none' | 'unknown';
 export type PullRequestLifecycleStatus = 'open' | 'draft' | 'closed' | 'merged';
+export type PullRequestMergeability = 'mergeable' | 'conflicts' | 'merged' | 'closed' | 'draft' | 'unknown';
 
 export type PullRequestSummary = GitHubPullRequest & {
   kind: PullRequestKind;
@@ -45,6 +46,7 @@ export type PullRequestSummary = GitHubPullRequest & {
   mergedAt: string;
   closedAt: string;
   associatedStream: string;
+  mergeability: PullRequestMergeability;
 };
 
 export type PullRequestSection = {
@@ -205,8 +207,16 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
   const fetcher = options.fetcher ?? fetch;
 
   return async (repo: RepoLocator): Promise<PullRequestIndexData> => {
-    const headers = createGithubHeaders(options.token);
     const warnings: string[] = [];
+    if (options.token) {
+      try {
+        return await loadGraphqlPullRequestIndex(fetcher, repo, options.token, warnings);
+      } catch (error: unknown) {
+        warnings.push(`graphql index: ${getErrorMessage(error)}`);
+      }
+    }
+
+    const headers = createGithubHeaders(options.token);
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
     const pullsJson = await fetchJsonArrayPages(
       fetcher,
@@ -627,6 +637,137 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
   };
 }
 
+async function loadGraphqlPullRequestIndex(
+  fetcher: Fetcher,
+  repo: RepoLocator,
+  token: string,
+  warnings: string[],
+): Promise<PullRequestIndexData> {
+  const pulls: PullRequestSummary[] = [];
+  let after: string | null = null;
+  for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        ...createGithubHeaders(token),
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+        variables: { owner: repo.owner, name: repo.repo, after },
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
+    }
+    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+    if (Array.isArray(json.errors) && json.errors.length > 0) {
+      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    const repository = optionalRecord(optionalRecord(json.data)?.repository);
+    const connection = optionalRecord(repository?.pullRequests);
+    const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
+    pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
+    const pageInfo = optionalRecord(connection?.pageInfo);
+    if (!booleanValue(pageInfo?.hasNextPage)) {
+      break;
+    }
+    after = stringValue(pageInfo?.endCursor, '');
+    if (!after) {
+      warnings.push('GitHub GraphQL pagination stopped without an end cursor');
+      break;
+    }
+  }
+  return {
+    repo,
+    pulls,
+    updatedAt: new Date().toISOString(),
+    warnings,
+  };
+}
+
+const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
+query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(first: 100, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        number
+        title
+        url
+        state
+        isDraft
+        merged
+        mergedAt
+        closedAt
+        createdAt
+        updatedAt
+        additions
+        deletions
+        changedFiles
+        mergeStateStatus
+        author { login }
+        headRefName
+        headRefOid
+        baseRefName
+        baseRefOid
+      }
+    }
+  }
+}
+`;
+
+function normalizeGraphqlPullRequestSummary(repo: RepoLocator, input: unknown): PullRequestSummary {
+  const source = requireRecord(input, 'Invalid GitHub GraphQL pull request data');
+  const author = optionalRecord(source.author);
+  const state = stringValue(source.state, 'UNKNOWN').toLowerCase();
+  const pull: GitHubPullRequest = {
+    number: numberValue(source.number, 0),
+    title: stringValue(source.title, 'Untitled pull request'),
+    htmlUrl: stringValue(source.url, ''),
+    state: state === 'merged' ? 'closed' : state,
+    draft: booleanValue(source.isDraft),
+    author: stringValue(author?.login, 'unknown'),
+    headRef: stringValue(source.headRefName, ''),
+    headSha: stringValue(source.headRefOid, ''),
+    baseRef: stringValue(source.baseRefName, ''),
+    baseSha: stringValue(source.baseRefOid, ''),
+    mergeable: stringValue(source.mergeStateStatus, '').toUpperCase() === 'DIRTY' ? false : null,
+    mergeableState: stringValue(source.mergeStateStatus, 'unknown').toLowerCase(),
+    updatedAt: stringValue(source.updatedAt, ''),
+  };
+  const lifecycleStatus = normalizeGraphqlLifecycleStatus(pull, source);
+  const associatedStream = deriveAssociatedStream(pull);
+  return {
+    ...pull,
+    kind: classifyPullRequest(pull),
+    createdAt: stringValue(source.createdAt, ''),
+    updatedAt: stringValue(source.updatedAt, ''),
+    cockpitUrl: buildDiffCockpitPath({ owner: repo.owner, repo: repo.repo, number: pull.number }),
+    additions: numberValue(source.additions, 0),
+    deletions: numberValue(source.deletions, 0),
+    changedFiles: numberValue(source.changedFiles, 0),
+    checkStatus: 'unknown',
+    reviewStatus: 'none',
+    lifecycleStatus,
+    mergeStatus: lifecycleStatus,
+    mergedAt: stringValue(source.mergedAt, ''),
+    closedAt: stringValue(source.closedAt, ''),
+    associatedStream,
+    mergeability: normalizeMergeability(pull, lifecycleStatus),
+  };
+}
+
+function normalizeGraphqlLifecycleStatus(
+  pull: GitHubPullRequest,
+  source: Record<string, unknown>,
+): PullRequestLifecycleStatus {
+  if (pull.draft) return 'draft';
+  if (booleanValue(source.merged) || stringValue(source.mergedAt, '')) return 'merged';
+  if (pull.state === 'closed') return 'closed';
+  return 'open';
+}
+
 async function enrichPullRequestSummary(
   fetcher: Fetcher,
   apiBase: string,
@@ -727,7 +868,20 @@ function normalizePullRequestSummary(
     mergedAt: stringValue(source.merged_at, ''),
     closedAt: stringValue(source.closed_at, ''),
     associatedStream,
+    mergeability: normalizeMergeability(pull, lifecycleStatus),
   };
+}
+
+function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullRequestLifecycleStatus): PullRequestMergeability {
+  if (lifecycleStatus === 'merged') return 'merged';
+  if (lifecycleStatus === 'closed') return 'closed';
+  if (lifecycleStatus === 'draft') return 'draft';
+  const state = pull.mergeableState.toLowerCase();
+  if (state === 'dirty') return 'conflicts';
+  if (state && state !== 'unknown') return 'mergeable';
+  if (pull.mergeable === true) return 'mergeable';
+  if (pull.mergeable === false) return 'conflicts';
+  return 'unknown';
 }
 
 export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
@@ -1128,12 +1282,13 @@ button.section-count { cursor:pointer; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
 .pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:13px; }
-.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:9px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:190px; }
+.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:150px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
-.pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
-.pr-status-icon.review-approved, .pr-status-icon.check-success { color:#2f8a44; }
-.pr-status-icon.review-changes_requested, .pr-status-icon.check-failure { color:#bc3b3b; }
-.pr-status-icon.review-commented, .pr-status-icon.check-pending { color:#b77b1a; }
+.mergeability-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
+.mergeability-icon.mergeability-mergeable { color:#2f8a44; }
+.mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
+.mergeability-icon.mergeability-merged { color:#6f4bd8; }
+.mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
 .stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
 .stream-filter-row[hidden] { display:none; }
@@ -1254,7 +1409,7 @@ const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.checkStatus === 'failure') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => {
   const query = activeQuery.trim().toLowerCase();
   if (!query) return true;
@@ -1278,7 +1433,7 @@ function renderCard(pull) {
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta">' + escapeText(pull.author) + ' · #' + escapeText(pull.number) + '</span></h3>' +
     '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + Number(pull.changedFiles || 0).toLocaleString() + ' files</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="pr-status-icon review-' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon check-' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
+    '<div class="pr-row-side"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
   '</article>';
 }
 function renderSection(section, index) {
@@ -1340,6 +1495,14 @@ function renderSections() {
 function resetSectionPages() {
   for (const key of Object.keys(sectionPages)) delete sectionPages[key];
 }
+function mergeabilityIcon(status) {
+  if (status === 'mergeable') return '✓';
+  if (status === 'conflicts') return '×';
+  if (status === 'merged') return '◆';
+  if (status === 'draft') return '◌';
+  if (status === 'closed') return '○';
+  return '?';
+}
 function reviewIcon(status) {
   if (status === 'approved') return '✓';
   if (status === 'changes_requested') return '×';
@@ -1386,6 +1549,7 @@ function mergePullWithCache(pull, cachedPull) {
     changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0),
     checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus,
     reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus,
+    mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability,
   };
 }
 function mergeIndexWithCache(data, cached) {
