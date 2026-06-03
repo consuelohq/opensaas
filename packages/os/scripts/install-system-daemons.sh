@@ -132,7 +132,7 @@ print_repair_hint() {
 }
 
 print_success_summary() {
-  log "LaunchAgent setup complete"
+  log "background service setup complete"
   log "Services: $workspace_label, $portless_label, $watchdog_label"
   log "LaunchAgents: $launch_agent_dir"
   log "Logs: $log_dir"

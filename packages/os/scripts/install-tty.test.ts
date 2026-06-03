@@ -23,8 +23,8 @@ describe('hosted Clack install TTY wiring', () => {
   });
 
   test('non-interactive automation path still bypasses prompts with --yes', () => {
-    expect(bootstrap).toContain('./scripts/install.ts --yes --home "$os_home"');
-    expect(bootstrap).toContain('./scripts/install.ts --yes --json --home "$os_home"');
+    expect(bootstrap).toContain('./scripts/install.ts --yes --json --home');
+    expect(bootstrap).toContain('install_args+=(--install-daemons)');
   });
 
   test('bootstrap exposes debug-friendly TTY checking for local diagnosis', () => {
