@@ -399,6 +399,8 @@ describe('renderIndexPage', () => {
     expect(html).toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
+    expect(html).toContain("cacheSchemaVersion = 'v2-mergeability'");
+    expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');

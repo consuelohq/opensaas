@@ -1392,7 +1392,9 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheKey = 'diff-cockpit:index:' + apiPath;
+const cacheSchemaVersion = 'v2-mergeability';
+const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
+const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
@@ -1562,7 +1564,20 @@ function applyIndexData(data) {
   resetSectionPages();
   renderSections();
 }
+function clearStaleIndexCaches() {
+  try {
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // best-effort cleanup only
+  }
+}
 function loadCachedIndex() {
+  clearStaleIndexCaches();
   const cached = readCachedIndex();
   if (cached) applyIndexData(cached);
   return cached;
