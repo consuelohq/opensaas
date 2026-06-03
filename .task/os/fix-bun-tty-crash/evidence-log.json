@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-bun-tty-crash",
+  "events": [
+    {
+      "id": "7b60e28d-38b6-4a6c-b5f2-1cca176ee215",
+      "occurred_at": "2026-06-03T07:15:49.337Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bun-tty-crash",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bun-tty-crash"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T07:15:49.400Z"
+}

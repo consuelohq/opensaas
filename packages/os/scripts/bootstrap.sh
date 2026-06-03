@@ -322,7 +322,7 @@ check_install_tty() {
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
   fi
   if [ "$DEBUG" = "1" ]; then
-    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --check-tty < /dev/tty > /dev/tty 2> /dev/tty
+    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --check-tty < /dev/tty
   fi
 }
 
@@ -330,7 +330,7 @@ run_install_with_tty() {
   local os_dir="$1"
   local os_home="$2"
   check_install_tty "$os_dir"
-  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty 2> /dev/tty
+  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
 }
 
 run_onboarding() {
