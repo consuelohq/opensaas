@@ -331,8 +331,20 @@ describe('pull request index grouping', () => {
       { ...basePull, number: 12, kind: 'task', lifecycleStatus: 'merged', mergeStatus: 'merged', state: 'closed', mergedAt: '2026-06-03T00:02:00Z' },
       { ...basePull, number: 13, kind: 'open', lifecycleStatus: 'closed', mergeStatus: 'closed', state: 'closed', closedAt: '2026-06-03T00:03:00Z' },
     ]);
-    expect(sections.map((section) => section.title)).toEqual(['Streams', 'Open', 'Merging and recently merged', 'Closed']);
+    expect(sections.map((section) => section.title)).toEqual(['Streams', 'Merging and recently merged', 'Open', 'Closed']);
     expect(groupPullRequestSummaries([{ ...basePull }, { ...basePull, number: 2, associatedStream: 'stream/os' }], { stream: 'stream/diff-cockpit' }).flatMap((section) => section.pulls.map((pull) => pull.number))).toEqual([1]);
+  });
+  test('streams section shows open streams by default and all streams when toggled', () => {
+    const sections = groupPullRequestSummaries([
+      { ...basePull, number: 20, kind: 'stream', headRef: 'stream/diff-cockpit' },
+      { ...basePull, number: 21, kind: 'stream', headRef: 'stream/closed', associatedStream: 'stream/closed', lifecycleStatus: 'closed', mergeStatus: 'closed', state: 'closed', closedAt: '2026-06-03T00:03:00Z' },
+    ]);
+    const allSections = groupPullRequestSummaries([
+      { ...basePull, number: 20, kind: 'stream', headRef: 'stream/diff-cockpit' },
+      { ...basePull, number: 21, kind: 'stream', headRef: 'stream/closed', associatedStream: 'stream/closed', lifecycleStatus: 'closed', mergeStatus: 'closed', state: 'closed', closedAt: '2026-06-03T00:03:00Z' },
+    ], { showAllStreams: true });
+    expect(sections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20]);
+    expect(allSections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20, 21]);
   });
 });
 
@@ -349,6 +361,17 @@ describe('renderIndexPage', () => {
     expect(html).toContain('pull.checkStatus === \'failure\'');
     expect(html).toContain('relativeTime');
     expect(html).toContain('formatDelta');
+    expect(html).toContain('const sectionPageSize = 10');
+    expect(html).toContain('data-page-next');
+    expect(html).toContain('data-toggle-streams');
+    expect(html).toContain('showAllStreams');
+    expect(html).toContain('localStorage.getItem(cacheKey)');
+    expect(html).toContain('localStorage.setItem(cacheKey');
+    expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('button:focus:not(:focus-visible)');
+    expect(html).toContain('-webkit-tap-highlight-color: transparent');
+    expect(html).toContain('pr-title-line');
+    expect(html).toContain('pr-row-meta-line');
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
