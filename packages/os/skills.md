@@ -2,7 +2,7 @@
 
 Skills are the capabilities behind `call`.
 
-The raw default manifest at `tooling/tool-manifest.json` is the source of truth for what business/revenue agents can discover. Bun scripts under `scripts/` are the runtime implementations.
+The canonical full manifest at `manifests/tool.manifest.json` is the source of truth for what OS tools and skills exist. Default steering includes the generated core subset at `manifests/core.manifest.json`; use `tools.search` for extended tools. Bun scripts under `scripts/` are the runtime implementations.
 
 ## Current skill
 

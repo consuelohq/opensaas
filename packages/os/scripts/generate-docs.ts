@@ -4,12 +4,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../tooling/dev-tool-manifest.json';
+import manifestJson from '../manifests/tool.manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 
+type CanonicalManifestEntry = {
+  kind: 'os-skill' | 'facade-tool';
+  definition: ToolManifestEntry;
+};
+
+type CanonicalToolManifest = {
+  tools: CanonicalManifestEntry[];
+};
+
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifest = manifestJson as ToolManifestEntry[];
+const fullToolManifest = manifestJson as CanonicalToolManifest;
+const manifest = fullToolManifest.tools
+  .filter((entry) => entry.kind === 'facade-tool')
+  .map((entry) => entry.definition);
 
 function renderSignature(entry: ToolManifestEntry): string {
   const input = schemaTypeSignatures[entry.inputSchema] || 'Record<string, unknown>';
@@ -94,7 +106,7 @@ function renderDocs(): string {
     '',
     'Task-scoped work must pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Passing both `taskSession` and `input.branch` is rejected to avoid silent branch overrides.',
     '',
-    'This file is generated from `packages/os/tooling/dev-tool-manifest.json`. The typed facade validates inputs, invokes the restored Bun operator scripts, and wraps every result in the standard tool envelope.',
+    'This file is generated from `packages/os/manifests/tool.manifest.json`. The typed facade validates inputs, invokes the restored Bun operator scripts, and wraps every result in the standard tool envelope.',
     '',
     '## quick start',
     '',

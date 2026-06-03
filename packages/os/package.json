@@ -13,6 +13,7 @@
     "smoke:dev-steering": "bun ./scripts/os.ts get-dev-steering",
     "smoke:daily-revenue-brief": "bun ./scripts/os.ts call '{\"name\":\"daily-revenue-brief\"}'",
     "generate-skills-registry": "bun ./scripts/generate-skills-registry.ts",
+    "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "typecheck": "node ./scripts/check-syntax.js",
     "server": "bun ./scripts/server.js",
     "server:run": "bun ./scripts/server.ts",
