@@ -393,10 +393,10 @@ run_onboarding() { # run_onboarding_json
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -n "$BUN_BIN" ]; then
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run
+    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run -- --quiet
     DAEMON_STATUS="dry_run"
   else
-    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run"
+    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run -- --quiet"
     DAEMON_STATUS="would_dry_run"
   fi
 }
@@ -435,7 +435,9 @@ Press Enter to install these user LaunchAgents, or press Control-C to cancel." "
   if [ "$DEBUG" = "1" ]; then
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+    log "setting up background service..."
+    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:quiet
+    log "background service ready"
   fi
   DAEMON_STATUS="installed"
 }
