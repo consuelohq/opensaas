@@ -6,7 +6,7 @@
       "label": "regular",
       "kind": "os-skill",
       "path": "packages/os/tooling/tool-manifest.json",
-      "entryCount": 4
+      "entryCount": 5
     },
     {
       "label": "dev-tooling",
@@ -4042,6 +4042,38 @@
           "dryRun": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "get_raw_steering",
+      "kind": "os-skill",
+      "source": "regular",
+      "sourcePath": "packages/os/tooling/tool-manifest.json",
+      "category": "consuelo os skill",
+      "description": "Returns dev/operator OS steering with the canonical full tool manifest through the normal OS call path.",
+      "title": "Raw OS Steering",
+      "core": false,
+      "definition": {
+        "name": "get_raw_steering",
+        "title": "Raw OS Steering",
+        "description": "Returns dev/operator OS steering with the canonical full tool manifest through the normal OS call path.",
+        "permission": "guidance",
+        "requiresApproval": false,
+        "writesRecords": false,
+        "externalSideEffects": false,
+        "implementation": {
+          "script": "scripts/os.ts#getRawSteering"
+        },
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "outputSchema": {
+          "type": "object",
+          "required": [
+            "steering"
+          ]
+        }
       }
     },
     {
