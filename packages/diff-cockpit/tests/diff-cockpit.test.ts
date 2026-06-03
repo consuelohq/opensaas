@@ -371,6 +371,9 @@ describe('renderReviewPage', () => {
     expect(html).toContain('loadViewerLibraries();');
     expect(html.indexOf('loadLiveData();')).toBeLessThan(html.indexOf('loadViewerLibraries();'));
     expect(html).not.toContain(']).finally(loadLiveData)');
+    const script = html.split('<script type="module">')[1]?.split('</script>')[0] ?? '';
+    expect(script).toContain('buildCommentsMarkdown');
+    expect(() => new Function(script || '')).not.toThrow();
   });
 });
 
