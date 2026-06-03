@@ -135,6 +135,8 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
+const INDEX_MAX_PAGES = 1;
+const INDEX_ENRICH_LIMIT = 40;
 
 export function parsePullRequestLocator(
   input: string,
@@ -209,9 +211,11 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
       `${apiBase}/pulls?state=all&sort=updated&direction=desc`,
       headers,
       'GitHub pull requests fetch failed',
+      { maxPages: INDEX_MAX_PAGES },
     );
+    const pullsToEnrich = pullsJson.slice(0, INDEX_ENRICH_LIMIT);
     const pulls = await Promise.all(
-      pullsJson.map((pullJson) => enrichPullRequestSummary(fetcher, apiBase, headers, repo, pullJson, warnings)),
+      pullsToEnrich.map((pullJson) => enrichPullRequestSummary(fetcher, apiBase, headers, repo, pullJson, warnings)),
     );
 
     return {
@@ -547,9 +551,11 @@ async function fetchJsonArrayPages(
   url: string,
   headers: HeadersInit,
   errorPrefix: string,
+  options: { maxPages?: number } = {},
 ): Promise<unknown[]> {
   const items: unknown[] = [];
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
+  const maxPages = options.maxPages ?? MAX_PAGES;
+  for (let page = 1; page <= maxPages; page += 1) {
     const response = await fetcher(`${url}${url.includes('?') ? '&' : '?'}per_page=100&page=${page}`, { headers });
     if (!response.ok) {
       throw new Error(`${errorPrefix}: ${response.status}`);
@@ -1086,10 +1092,11 @@ button.active::after { content:"]"; color:var(--quiet); }
 .section summary h2 { display:inline; }
 h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
 .post-list { display:grid; gap:0; margin-top:18px; border-top:1px solid var(--line); }
+.post-list .post-item:last-child { border-bottom:0; }
 .pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
-.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:18px; padding:11px 0; border-bottom:1px solid var(--line); align-items:center; }
+.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:22px; padding:11px 0; border-bottom:1px solid var(--line); align-items:center; }
 .post-item h3 { margin:0; font-size:17px; line-height:1.35; letter-spacing:-.02em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
@@ -1098,11 +1105,12 @@ button.section-count { cursor:pointer; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
 .pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:13px; }
-.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:10px; color:var(--quiet); font-size:13px; white-space:nowrap; }
-.pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; }
-.pr-status-icon.success { color:#2f8a44; }
-.pr-status-icon.failure { color:#bc3b3b; }
-.pr-status-icon.pending { color:#b77b1a; }
+.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:9px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:190px; }
+.pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
+.pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
+.pr-status-icon.review-approved, .pr-status-icon.check-success { color:#2f8a44; }
+.pr-status-icon.review-changes_requested, .pr-status-icon.check-failure { color:#bc3b3b; }
+.pr-status-icon.review-commented, .pr-status-icon.check-pending { color:#b77b1a; }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
 .stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
 .stream-filter-row[hidden] { display:none; }
@@ -1230,8 +1238,8 @@ function renderCard(pull) {
   const stream = pull.associatedStream || 'No stream';
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta">' + escapeText(pull.author) + ' · #' + escapeText(pull.number) + '</span></h3>' +
-    '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + formatDelta(pull) + '</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="pr-status-icon review-' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon check-' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span></div>' +
+    '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + Number(pull.changedFiles || 0).toLocaleString() + ' files</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
+    '<div class="pr-row-side"><span class="pr-status-icon review-' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon check-' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
   '</article>';
 }
 function renderSection(section, index) {
@@ -1307,7 +1315,7 @@ function checkIcon(status) {
   return '?';
 }
 function formatDelta(pull) {
-  return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString() + ' · ' + Number(pull.changedFiles || 0).toLocaleString() + ' files';
+  return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString();
 }
 function relativeTime(value) {
   const date = new Date(value);

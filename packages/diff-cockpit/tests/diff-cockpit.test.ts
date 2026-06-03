@@ -72,6 +72,7 @@ describe('createGithubPullRequestIndexLoader', () => {
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
+    expect(calls).not.toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2');
     expect(result.warnings).toEqual([]);
     expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
     expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
@@ -361,6 +362,10 @@ describe('renderIndexPage', () => {
     expect(html).toContain('pull.checkStatus === \'failure\'');
     expect(html).toContain('relativeTime');
     expect(html).toContain('formatDelta');
+    expect(html).toContain('pr-delta');
+    expect(html).toContain('check-');
+    expect(html).toContain('review-');
+    expect(html).toContain('post-list .post-item:last-child');
     expect(html).toContain('const sectionPageSize = 10');
     expect(html).toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
