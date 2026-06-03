@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f0d9714b921a",
+  "tmuxSession": "opensaas-diff-cockpit-complete-diff-cockpit-workpad-f0d9714b",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/complete-diff-cockpit-workpad",
+  "branch": "task/diff-cockpit/complete-diff-cockpit-workpad",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-complete-diff-cockpit-workpad",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-complete-diff-cockpit-workpad",
+  "prNumber": 723,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/723",
+  "createdAt": "2026-06-03T03:56:53.362Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-complete-diff-cockpit-workpad/.task/diff-cockpit/complete-diff-cockpit-workpad/session.json"
+}
