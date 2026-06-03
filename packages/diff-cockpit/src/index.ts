@@ -27,11 +27,36 @@ export type GitHubPullRequestFile = {
   blobUrl: string;
 };
 
+export type ReviewProvider = 'github' | 'codex' | 'coderabbit' | 'claude' | 'unknown';
+
+export type ReviewComment = {
+  id: string;
+  provider: ReviewProvider;
+  author: string;
+  body: string;
+  url: string;
+  createdAt: string;
+  source: 'review' | 'issue-comment' | 'review-comment';
+  path?: string;
+  line?: number;
+};
+
+export type StreamCommit = {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  url: string;
+  committedAt: string;
+};
+
 export type PullRequestReviewData = {
   locator: PullRequestLocator;
   pull: GitHubPullRequest;
   files: GitHubPullRequestFile[];
   tree: FileTreeNode;
+  comments: ReviewComment[];
+  streamCommits: StreamCommit[];
 };
 
 export type FileTreeNode = {
@@ -105,9 +130,18 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         locator.owner,
       )}/${encodeURIComponent(locator.repo)}`;
 
-      const [pullResponse, filesResponse] = await Promise.all([
+      const [
+        pullResponse,
+        filesResponse,
+        reviewsResponse,
+        issueCommentsResponse,
+        reviewCommentsResponse,
+      ] = await Promise.all([
         fetcher(`${apiBase}/pulls/${locator.number}`, { headers }),
         fetcher(`${apiBase}/pulls/${locator.number}/files?per_page=100`, { headers }),
+        fetcher(`${apiBase}/pulls/${locator.number}/reviews?per_page=100`, { headers }),
+        fetcher(`${apiBase}/issues/${locator.number}/comments?per_page=100`, { headers }),
+        fetcher(`${apiBase}/pulls/${locator.number}/comments?per_page=100`, { headers }),
       ]);
 
       if (!pullResponse.ok) {
@@ -119,13 +153,24 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
 
       const pullJson = await pullResponse.json();
       const filesJson = await filesResponse.json();
+      const pull = normalizePullRequest(pullJson);
       const files = normalizeFiles(filesJson);
+      const comments = [
+        ...normalizeReviewComments(await optionalJsonArray(reviewsResponse), 'review'),
+        ...normalizeReviewComments(await optionalJsonArray(issueCommentsResponse), 'issue-comment'),
+        ...normalizeReviewComments(await optionalJsonArray(reviewCommentsResponse), 'review-comment'),
+      ];
+      const streamCommits = pull.headRef.startsWith('stream/')
+        ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
+        : [];
 
       return {
         locator,
-        pull: normalizePullRequest(pullJson),
+        pull,
         files,
         tree: buildFileTree(files),
+        comments,
+        streamCommits,
       };
     } catch (error: unknown) {
       throw new Error(`GitHub live pull request load failed: ${getErrorMessage(error)}`);
@@ -227,7 +272,15 @@ export function renderReviewPage(locator: PullRequestLocator): string {
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
-        <p class="muted">Checks, comments, CodeRabbit notes, and agent actions will live here. Phase 1 keeps this drawer closed by default.</p>
+        <div class="action-grid" aria-label="Review actions">
+          <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
+          <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
+          <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
+        </div>
+        <p class="muted">Keyboard: <span class="kbd">r</span> drawer · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
+        <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
+        <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
       </div>
     </aside>
   </main>
@@ -319,6 +372,103 @@ function normalizeFiles(input: unknown): GitHubPullRequestFile[] {
   }));
 }
 
+async function optionalJsonArray(response: Response): Promise<unknown[]> {
+  try {
+    if (!response.ok) {
+      return [];
+    }
+    const json = await response.json();
+    return Array.isArray(json) ? json : [];
+  } catch {
+    return [];
+  }
+}
+
+async function loadStreamCommits(
+  fetcher: Fetcher,
+  apiBase: string,
+  headRef: string,
+  headers: HeadersInit,
+): Promise<StreamCommit[]> {
+  try {
+    const response = await fetcher(
+      `${apiBase}/commits?sha=${encodeURIComponent(headRef)}&per_page=10`,
+      { headers },
+    );
+    if (!response.ok) {
+      return [];
+    }
+    const json = await response.json();
+    return normalizeStreamCommits(json);
+  } catch {
+    return [];
+  }
+}
+
+function normalizeReviewComments(
+  input: unknown[],
+  source: ReviewComment['source'],
+): ReviewComment[] {
+  return input
+    .map((comment) => {
+      const record = comment as Record<string, any>;
+      const author = String(record.user?.login ?? 'unknown');
+      const body = String(record.body ?? '').trim();
+      if (!body) {
+        return null;
+      }
+      const line = Number(record.line ?? record.original_line ?? 0);
+      return {
+        id: String(record.id ?? `${source}-${author}-${body}`),
+        provider: detectReviewProvider(author),
+        author,
+        body,
+        url: String(record.html_url ?? ''),
+        createdAt: String(record.submitted_at ?? record.created_at ?? ''),
+        source,
+        ...(record.path ? { path: String(record.path) } : {}),
+        ...(line > 0 ? { line } : {}),
+      };
+    })
+    .filter((comment): comment is ReviewComment => Boolean(comment));
+}
+
+function normalizeStreamCommits(input: unknown): StreamCommit[] {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+  return input.map((commit) => {
+    const record = commit as Record<string, any>;
+    const sha = String(record.sha ?? '');
+    const message = String(record.commit?.message ?? '').split('\\n')[0] || 'Untitled commit';
+    return {
+      sha,
+      shortSha: sha.slice(0, 7),
+      message,
+      author: String(record.author?.login ?? record.commit?.author?.name ?? 'unknown'),
+      url: String(record.html_url ?? ''),
+      committedAt: String(record.commit?.author?.date ?? ''),
+    };
+  });
+}
+
+function detectReviewProvider(author: string): ReviewProvider {
+  const normalized = author.toLowerCase();
+  if (normalized.includes('codex') || normalized.includes('chatgpt')) {
+    return 'codex';
+  }
+  if (normalized.includes('coderabbit')) {
+    return 'coderabbit';
+  }
+  if (normalized.includes('claude')) {
+    return 'claude';
+  }
+  if (normalized === 'unknown') {
+    return 'unknown';
+  }
+  return 'github';
+}
+
 const PREFERRED_PACKAGE_ORDER = [
   'workspace',
   'os',
@@ -396,10 +546,19 @@ h1 { margin: 0; font-size: 18px; line-height: 1.2; font-weight: 650; }
 .diff-fallback { margin: 0; padding: 14px; background: #101116; border: 1px solid #272a34; border-radius: 10px; overflow: auto; font: 12px/1.55 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .diff-line.add { background: rgba(31, 136, 61, .18); }
 .diff-line.del { background: rgba(248, 81, 73, .18); }
-.review-drawer { position: absolute; top: 0; right: 0; width: min(440px, 90vw); height: 100%; transform: translateX(100%); transition: transform .16s ease; background: #15161c; border-left: 1px solid #30323a; box-shadow: -18px 0 45px rgba(0, 0, 0, .35); z-index: 5; }
+.review-drawer { position: absolute; top: 0; right: 0; width: min(480px, 92vw); height: 100%; transform: translateX(100%); transition: transform .16s ease; background: #15161c; border-left: 1px solid #30323a; box-shadow: -18px 0 45px rgba(0, 0, 0, .35); z-index: 5; overflow: auto; }
 body[data-review-drawer="open"] .review-drawer { transform: translateX(0); }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 14px; border-bottom: 1px solid #2a2d36; }
-.drawer-content { padding: 14px; }
+.drawer-content { padding: 14px; display: grid; gap: 16px; }
+.action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.action-button { display: flex; justify-content: center; align-items: center; min-height: 38px; }
+.drawer-section { border: 1px solid #292c36; border-radius: 12px; background: #111217; overflow: hidden; }
+.drawer-section h2 { margin: 0; padding: 12px 12px 8px; font-size: 13px; color: #eceef2; }
+.comment-card, .commit-card { padding: 10px 12px; border-top: 1px solid #252832; }
+.comment-meta, .commit-meta { color: #9aa0ad; font-size: 12px; margin-bottom: 5px; }
+.comment-body { white-space: pre-wrap; font-size: 13px; line-height: 1.45; }
+.badge { display: inline-flex; align-items: center; border: 1px solid #30323a; border-radius: 999px; padding: 2px 7px; font-size: 11px; color: #cbd0dd; background: #1a1c23; }
+.kbd { font: 11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border: 1px solid #393c46; border-bottom-color: #252832; border-radius: 5px; padding: 2px 5px; background: #20222a; color: #dfe3ed; }
 .error { border: 1px solid #753236; color: #ffb4b4; background: #241114; padding: 14px; border-radius: 10px; }
 `;
 }
@@ -417,10 +576,26 @@ const els = {
   diff: document.getElementById('diff-root'),
   drawerToggle: document.getElementById('drawer-toggle'),
   drawerClose: document.getElementById('drawer-close'),
+  copyAll: document.getElementById('copy-all-comments'),
+  openChatGpt: document.getElementById('open-chatgpt-prompt'),
+  copyCodex: document.getElementById('copy-codex-prompt'),
+  drawerSummary: document.getElementById('drawer-summary'),
+  drawerComments: document.getElementById('drawer-comments'),
+  drawerCommits: document.getElementById('drawer-commits'),
 };
 
 els.drawerToggle.addEventListener('click', () => setDrawer(true));
 els.drawerClose.addEventListener('click', () => setDrawer(false));
+els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
+els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
+els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
+document.addEventListener('keydown', (event) => {
+  if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
+  if (event.key === 'r') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'c') copyText(buildCommentsMarkdown());
+  if (event.key === 'g') openChatGptPrompt();
+  if (event.key === 'Escape') setDrawer(false);
+});
 
 Promise.allSettled([
   import('https://esm.sh/@pierre/diffs').then((module) => { state.diffModule = module; }),
@@ -446,6 +621,7 @@ function loadLiveData() {
         renderHeader();
         renderTree();
         renderSelectedFile();
+        renderDrawer();
       },
       (error) => {
         els.tree.textContent = error.message || String(error);
@@ -455,8 +631,9 @@ function loadLiveData() {
 
 function renderHeader() {
   const pull = state.data.pull;
+  const commentCount = state.data.comments ? state.data.comments.length : 0;
   els.title.textContent = pull.title;
-  els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author;
+  els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author + ' · ' + commentCount + ' review comments';
   els.count.textContent = String(state.data.files.length);
 }
 
@@ -475,9 +652,14 @@ function renderTreeNode(node) {
   if (node.type === 'root') return node.children.map(renderTreeNode).join('');
   if (node.type === 'file') {
     const current = state.selected && state.selected.filename === node.file.filename;
-    return '<button class="tree-node file" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span>' + escapeHtml(node.name) + '</button>';
+    return '<button class="tree-node file" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span>' + escapeHtml(node.name) + fileCommentBadge(node.file.filename) + '</button>';
   }
   return '<div class="tree-node directory">' + escapeHtml(node.name) + '</div><div class="tree-children">' + node.children.map(renderTreeNode).join('') + '</div>';
+}
+
+function fileCommentBadge(filename) {
+  const count = (state.data.comments || []).filter((comment) => comment.path === filename).length;
+  return count ? ' <span class="badge">' + count + '</span>' : '';
 }
 
 function renderSelectedFile() {
@@ -502,13 +684,92 @@ function renderDiff(file) {
         containerWrapper: els.diff,
       });
       return;
+    } catch {
+      // fall through to the local renderer
+    }
   }
 
   els.diff.innerHTML = renderPatchFallback(file.patch || 'No patch available');
 }
 
+function renderDrawer() {
+  const comments = state.data.comments || [];
+  const commits = state.data.streamCommits || [];
+  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <span class="badge">' + commits.length + ' stream commits</span></div>';
+  els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
+  els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
+}
+
+function renderComment(comment) {
+  const location = comment.path ? ' · ' + comment.path + (comment.line ? ':' + comment.line : '') : '';
+  const link = comment.url ? ' · <a href="' + escapeAttribute(comment.url) + '">open</a>' : '';
+  return '<article class="comment-card"><div class="comment-meta"><span class="badge">' + escapeHtml(comment.provider) + '</span> ' + escapeHtml(comment.author) + location + link + '</div><div class="comment-body">' + escapeHtml(comment.body) + '</div></article>';
+}
+
+function renderCommit(commit) {
+  const link = commit.url ? '<a href="' + escapeAttribute(commit.url) + '">' + escapeHtml(commit.shortSha) + '</a>' : escapeHtml(commit.shortSha);
+  return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + '</div><div>' + escapeHtml(commit.message) + '</div></article>';
+}
+
+function buildCommentsMarkdown() {
+  if (!state.data) return 'No PR data loaded yet.';
+  const pull = state.data.pull;
+  const comments = state.data.comments || [];
+  const lines = ['# Review comments for PR #' + pull.number, '', pull.title, '', '## Comments'];
+  if (!comments.length) lines.push('No review comments found.');
+  for (const comment of comments) {
+    lines.push('', '### ' + comment.provider + ' · ' + comment.author);
+    if (comment.path) lines.push('- Location: ' + comment.path + (comment.line ? ':' + comment.line : ''));
+    if (comment.url) lines.push('- URL: ' + comment.url);
+    lines.push('', comment.body);
+  }
+  return lines.join('
+');
+}
+
+function buildChatGptPrompt() {
+  if (!state.data) return 'Review this PR once data loads.';
+  const pull = state.data.pull;
+  return [
+    'Please help me address the review feedback for this PR.',
+    '',
+    'PR: #' + pull.number + ' ' + pull.title,
+    'Branch: ' + pull.headRef + ' → ' + pull.baseRef,
+    'URL: ' + pull.htmlUrl,
+    '',
+    buildCommentsMarkdown(),
+  ].join('
+');
+}
+
+function buildCodexPrompt() {
+  return '@codex please address the actionable review feedback in this PR.
+
+' + buildCommentsMarkdown();
+}
+
+function openChatGptPrompt() {
+  copyText(buildChatGptPrompt()).finally(() => {
+    window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer');
+  });
+}
+
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  textarea.remove();
+  return Promise.resolve();
+}
+
 function renderPatchFallback(patch) {
-  return '<pre class="diff-fallback">' + patch.split('\n').map((line) => {
+  return '<pre class="diff-fallback">' + patch.split('
+').map((line) => {
     const className = line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : '';
     return '<div class="diff-line ' + className + '">' + escapeHtml(line) + '</div>';
   }).join('') + '</pre>';
