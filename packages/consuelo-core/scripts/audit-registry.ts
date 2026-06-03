@@ -14,8 +14,20 @@ function printTextReport(report: ReturnType<typeof runRegistryAudit>): void {
   }
 }
 
-const args = new Set(process.argv.slice(2));
-const report = runRegistryAudit({ driftOnly: args.has('--drift') });
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
+
+function stringArg(name: string): string | undefined {
+  const index = rawArgs.indexOf(name);
+
+  return index === -1 ? undefined : rawArgs[index + 1];
+}
+
+const report = runRegistryAudit({
+  driftOnly: args.has('--drift'),
+  packageRoot: stringArg('--package-root'),
+  repoRoot: stringArg('--repo-root'),
+});
 
 if (args.has('--json')) {
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

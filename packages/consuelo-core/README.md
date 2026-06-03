@@ -31,4 +31,4 @@ bun --cwd packages/consuelo-core audit:registry
 bun --cwd packages/consuelo-core drift:registry
 ```
 
-`drift:registry` is informational. It reports duplicate or similar paths across `packages/workspace/scripts` and `packages/os/scripts` with SHA-256 hashes and ownership hints.
+`drift:registry` is informational. It reports duplicate relative paths across `packages/workspace/scripts` and `packages/os/scripts` with SHA-256 hashes and ownership hints.

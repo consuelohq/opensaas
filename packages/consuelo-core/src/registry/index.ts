@@ -65,6 +65,14 @@ const SOURCE_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.ts', '.tsx']);
 const DRIFT_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.ts', '.tsx', '.json', '.sh']);
 const RESOLVE_EXTENSIONS = ['.ts', '.tsx', '.js', '.cjs', '.mjs', '.json', '.sh'];
 
+type SafeJsonReadResult =
+  | { ok: true; value: unknown }
+  | { ok: false; error: Error };
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function defaultPackageRoot(): string {
   return fileURLToPath(new URL('../..', import.meta.url));
 }
@@ -93,6 +101,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function readJsonFile(filePath: string): unknown {
   return JSON.parse(readFileSync(filePath, 'utf8'));
+}
+
+function safeReadJsonFile(filePath: string): SafeJsonReadResult {
+  try {
+    return { ok: true, value: readJsonFile(filePath) };
+  } catch (error) {
+    return { ok: false, error: new Error(errorMessage(error)) };
+  }
 }
 
 function readRegistryArray<TEntry>(filePath: string, key: string): TEntry[] {
@@ -135,7 +151,18 @@ function readPackageScripts(repoRoot: string, packageJsonPath: string): Record<s
     };
   }
 
-  const parsed = readJsonFile(absolutePackageJsonPath);
+  const parsedResult = safeReadJsonFile(absolutePackageJsonPath);
+
+  if (!parsedResult.ok) {
+    return {
+      code: 'PACKAGE_SCRIPTS_INVALID',
+      message: `package.json could not be parsed: ${packageJsonPath}: ${parsedResult.error.message}`,
+      path: packageJsonPath,
+      packageJsonPath,
+    };
+  }
+
+  const parsed = parsedResult.value;
 
   if (!isRecord(parsed)) {
     return {
@@ -266,11 +293,11 @@ export function resolveScriptCommandTargets(packageJsonPath: string, command: st
       continue;
     }
 
-    if (token === 'bun' && tokens[index + 1] === 'run') {
-      continue;
-    }
-
     let cursor = index + 1;
+
+    if (token === 'bun' && tokens[cursor] === 'run') {
+      cursor += 1;
+    }
 
     while (cursor < tokens.length) {
       const candidate = tokens[cursor];
@@ -372,24 +399,14 @@ function listFiles(rootPath: string, includeFile: (filePath: string) => boolean)
 
 function extractLocalImportSpecifiers(sourceText: string): string[] {
   const specifiers = new Set<string>();
-  const executableLines = sourceText.split(/\r?\n/).filter((line) => {
-    const trimmedLine = line.trim();
-
-    return !trimmedLine.startsWith('"') && !trimmedLine.startsWith("'") && !trimmedLine.startsWith('`');
-  });
   const patterns = [
-    /^(?:import|export)\s+(?:[^'";]+?\s+from\s+)?['"]([^'"]+)['"]/,
-    /import\s*\(\s*['"]([^'"]+)['"]\s*\)/,
-    /require\s*\(\s*['"]([^'"]+)['"]\s*\)/,
+    /^\s*(?:import|export)\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/gm,
+    /^\s*import\s+['"]([^'"]+)['"]/gm,
+    /(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
   ];
-  for (const line of executableLines) {
-    for (const pattern of patterns) {
-      const match = pattern.exec(line);
 
-      if (match === null) {
-        continue;
-      }
-
+  for (const pattern of patterns) {
+    for (const match of sourceText.matchAll(pattern)) {
       const specifier = match[1];
 
       if (specifier.startsWith('./') || specifier.startsWith('../')) {
@@ -472,6 +489,60 @@ function isWorkspaceOwned(scriptEntry: ScriptRegistryEntry): boolean {
   return scriptEntry.ownerPackage === 'workspace' || scriptEntry.migrationStatus === 'workspace-owned';
 }
 
+function arraysEqual(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function registryEntryByPackageScript(
+  registry: ConsueloCoreRegistry,
+  packageJsonPath: string,
+  scriptName: string,
+): ScriptRegistryEntry | undefined {
+  return registry.scripts.find((scriptEntry) => {
+    return scriptEntry.packageJsonPath === packageJsonPath && scriptEntry.scriptName === scriptName;
+  });
+}
+
+function packageScriptTargetDriftIssues(options: OwnershipGuardrailOptions): RegistryAuditIssue[] {
+  const issues: RegistryAuditIssue[] = [];
+
+  for (const packageJsonPath of DEFAULT_PACKAGE_JSON_PATHS) {
+    const scripts = readPackageScripts(options.repoRoot, packageJsonPath);
+
+    if (isRegistryAuditIssue(scripts)) {
+      continue;
+    }
+
+    for (const [scriptName, command] of Object.entries(scripts)) {
+      const registryEntry = registryEntryByPackageScript(options.registry, packageJsonPath, scriptName);
+
+      if (registryEntry === undefined) {
+        continue;
+      }
+
+      const commandTargets = resolveScriptCommandTargets(packageJsonPath, command).sort();
+      const registryTargets = [...registryEntry.resolvedTargets].sort();
+
+      if (commandTargets.length === 0 || arraysEqual(commandTargets, registryTargets)) {
+        continue;
+      }
+
+      issues.push({
+        code: 'SCRIPT_TARGET_REGISTRY_DRIFT',
+        message: `Script ${scriptName} resolves to ${commandTargets.join(', ')} but registry expects ${registryTargets.join(', ')}`,
+        path: packageJsonPath,
+        packageJsonPath,
+        scriptName,
+        command,
+        registryEntryId: registryEntry.id,
+        ownerPackage: registryEntry.ownerPackage,
+      });
+    }
+  }
+
+  return issues;
+}
+
 export function auditOwnershipGuardrails(options: OwnershipGuardrailOptions): RegistryAuditIssue[] {
   const issues: RegistryAuditIssue[] = [];
 
@@ -499,6 +570,8 @@ export function auditOwnershipGuardrails(options: OwnershipGuardrailOptions): Re
       });
     }
   }
+
+  issues.push(...packageScriptTargetDriftIssues(options));
 
   return sortIssues(issues);
 }
