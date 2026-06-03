@@ -334,7 +334,7 @@ describe('renderIndexPage', () => {
     expect(html).toContain('Recently Updated');
     expect(html).toContain('data-search-toggle');
     expect(html).toContain('id="diff-cockpit-search"');
-    expect(html).toContain('font-family: "Geist Mono"');
+    expect(html).toContain('font-family: Inter');
     expect(html).toContain('@media (prefers-color-scheme: dark)');
     expect(html).toContain('font-size:16px');
     expect(html).toContain('data-filter="stream"');
@@ -363,7 +363,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('id="open-chatgpt-prompt"');
     expect(html).toContain('id="copy-codex-prompt"');
     expect(html).toContain('Keyboard:');
-    expect(html).toContain("event.key === 'r'");
+    expect(html).not.toContain("event.key === 'r'");
     expect(html).toContain("event.key === 'c'");
     expect(html).toContain("event.key === 'g'");
     expect(html).toContain("event.key === 'Escape'");
@@ -373,7 +373,35 @@ describe('renderReviewPage', () => {
     expect(html).not.toContain(']).finally(loadLiveData)');
     const script = html.split('<script type="module">')[1]?.split('</script>')[0] ?? '';
     expect(script).toContain('buildCommentsMarkdown');
+    expect(html).toContain('data-review-drawer="closed"');
+    expect(html).toContain('data-file-pane-collapsed="false"');
+    expect(html).toContain('data-comments-visible="true"');
+    expect(html).toContain('data-current-view="diff"');
+    expect(html).toContain('<strong>review notes</strong>');
+    expect(html).toContain('id="drawer-status"');
+    expect(html).toContain('id="drawer-checks"');
+    expect(html).toContain('id="file-pane-resizer"');
+    expect(html).toContain('font-family: Inter');
+    expect(html).toContain('font-size:13px');
+    expect(html).toContain('font-size:12px');
     expect(script).toContain('renderLongDiffs();');
+    expect(script).toContain("event.key === 'd'");
+    expect(script).not.toContain("event.key === 'r'");
+    expect(script).toContain("event.key === 'f'");
+    expect(script).toContain("event.key === 'v'");
+    expect(script).toContain("event.key === 'i'");
+    expect(script).toContain('renderMarkdown');
+    expect(script).toContain('renderInlineComments');
+    expect(script).toContain('navigateToComment');
+    expect(script).toContain('IntersectionObserver');
+    expect(script).toContain('updateActiveFileFromScroll');
+    expect(script).toContain('parseHunkHeader');
+    expect(script).toContain('oldLine');
+    expect(script).toContain('newLine');
+    expect(script).toContain('toggleFilePane');
+    expect(script).toContain('toggleCurrentView');
+    expect(script).toContain('toggleInlineComments');
+    expect(script).toContain('drawerContent.scrollTo');
     expect(script).toContain('scrollToFile(state.selected);');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
@@ -389,5 +417,44 @@ describe('createWorker', () => {
 
     expect(response.status).toBe(200);
     expect(html).toContain('Consuelo Diffs');
+  });
+
+  test('returns PR API cache headers and 304 for unchanged ETags', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/pulls/708')) {
+        return Response.json({
+          number: 708,
+          title: 'Stream/os',
+          html_url: 'https://github.com/consuelohq/opensaas/pull/708',
+          state: 'open',
+          draft: false,
+          mergeable: true,
+          mergeable_state: 'clean',
+          user: { login: 'ko' },
+          head: { ref: 'stream/os', sha: 'abc123' },
+          base: { ref: 'main', sha: 'def456' },
+        });
+      }
+      if (url.includes('/files?')) {
+        return Response.json([{ filename: 'a.ts', status: 'modified', additions: 1, deletions: 1, changes: 2, patch: '@@ -1 +1 @@\n-old\n+new', blob_url: '' }]);
+      }
+      if (url.includes('/reviews?') || url.includes('/comments?')) {
+        return Response.json([]);
+      }
+      if (url.includes('/commits?')) {
+        return Response.json([]);
+      }
+      throw new Error(`unexpected cache url ${url}`);
+    };
+    const worker = createWorker({ fetcher });
+    const first = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708'));
+    const etag = first.headers.get('etag') || '';
+    const second = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708', { headers: { 'if-none-match': etag } }));
+
+    expect(first.status).toBe(200);
+    expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(etag).toContain('W/');
+    expect(second.status).toBe(304);
   });
 });
