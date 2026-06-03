@@ -6,6 +6,8 @@ import {
   createGithubPullRequestIndexLoader,
   createGithubPullRequestLoader,
   createWorker,
+  deriveAssociatedStream,
+  groupPullRequestSummaries,
   parsePullRequestLocator,
   renderIndexPage,
   renderReviewPage,
@@ -44,47 +46,36 @@ describe('buildDiffCockpitUrl', () => {
 });
 
 describe('createGithubPullRequestIndexLoader', () => {
-  test('fetches live open PR data for the wiki-inspired index', async () => {
+  test('fetches all PR states and enriches homepage metadata', async () => {
     const calls: string[] = [];
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
       calls.push(url);
-      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
-          {
-            number: 722,
-            title: 'Stream/diff-cockpit',
-            html_url: 'https://github.com/consuelohq/opensaas/pull/722',
-            state: 'open',
-            draft: false,
-            updated_at: '2026-06-03T05:04:00Z',
-            created_at: '2026-06-03T03:44:00Z',
-            user: { login: 'ko' },
-            head: { ref: 'stream/diff-cockpit', sha: 'abc123' },
-            base: { ref: 'main', sha: 'def456' },
-          },
+          { number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } },
+          { number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+          { number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) {
-        return Response.json([]);
-      }
-      throw new Error(`unexpected index url ${url}`);
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/722')) return Response.json({ number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, additions: 3879, deletions: 32, changed_files: 12, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } });
+      if (url.endsWith('/pulls/734')) return Response.json({ number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, additions: 250, deletions: 10, changed_files: 2, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/pulls/726')) return Response.json({ number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, additions: 0, deletions: 0, changed_files: 0, merged_at: '2026-06-03T04:30:00Z', closed_at: '2026-06-03T04:30:00Z', updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.includes('/commits/streamsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
+      if (url.includes('/commits/tasksha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'failure' }] });
+      if (url.includes('/commits/mergedsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
+      if (url.includes('/pulls/722/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'APPROVED' }] : []);
+      if (url.includes('/pulls/734/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'CHANGES_REQUESTED' }] : []);
+      if (url.includes('/pulls/726/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'COMMENTED' }] : []);
+      throw new Error('unexpected index url ' + url);
     };
-
-    const loader = createGithubPullRequestIndexLoader({ fetcher });
-    const result = await loader({ owner: 'consuelohq', repo: 'opensaas' });
-
-    expect(calls).toEqual([
-      'https://api.github.com/repos/consuelohq/opensaas/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1',
-      'https://api.github.com/repos/consuelohq/opensaas/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2',
-    ]);
-    expect(result.pulls).toHaveLength(1);
-    expect(result.pulls[0]).toMatchObject({
-      number: 722,
-      title: 'Stream/diff-cockpit',
-      kind: 'stream',
-      cockpitUrl: '/consuelohq/opensaas/pull/722',
-    });
+    const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
+    expect(result.warnings).toEqual([]);
+    expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
+    expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
+    expect(result.pulls[2]).toMatchObject({ number: 726, lifecycleStatus: 'merged', associatedStream: 'stream/diff-cockpit' });
   });
 });
 
@@ -326,24 +317,40 @@ describe('buildFileTree', () => {
   });
 });
 
-describe('renderIndexPage', () => {
-  test('renders the Consuelo Wiki-inspired shell for live PR index review', () => {
-    const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+describe('pull request index grouping', () => {
+  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit' } as const;
+  test('derives stream ownership from stream and task branches', () => {
+    expect(deriveAssociatedStream({ ...basePull, headRef: 'stream/os', baseRef: 'main' })).toBe('stream/os');
+    expect(deriveAssociatedStream({ ...basePull, headRef: 'task/workspace-agents/fix', baseRef: 'main' })).toBe('stream/workspace-agents');
+    expect(deriveAssociatedStream({ ...basePull, headRef: 'fix/random', baseRef: 'stream/diff-cockpit' })).toBe('stream/diff-cockpit');
+  });
+  test('groups pull requests into collapsible sections and filters by stream', () => {
+    const sections = groupPullRequestSummaries([
+      { ...basePull, number: 10, kind: 'stream', headRef: 'stream/diff-cockpit' },
+      { ...basePull, number: 11, kind: 'task' },
+      { ...basePull, number: 12, kind: 'task', lifecycleStatus: 'merged', mergeStatus: 'merged', state: 'closed', mergedAt: '2026-06-03T00:02:00Z' },
+      { ...basePull, number: 13, kind: 'open', lifecycleStatus: 'closed', mergeStatus: 'closed', state: 'closed', closedAt: '2026-06-03T00:03:00Z' },
+    ]);
+    expect(sections.map((section) => section.title)).toEqual(['Streams', 'Open', 'Merging and recently merged', 'Closed']);
+    expect(groupPullRequestSummaries([{ ...basePull }, { ...basePull, number: 2, associatedStream: 'stream/os' }], { stream: 'stream/diff-cockpit' }).flatMap((section) => section.pulls.map((pull) => pull.number))).toEqual([1]);
+  });
+});
 
-    expect(html).toContain('Consuelo Diffs');
-    expect(html).toContain('Recently Updated');
-    expect(html).toContain('data-search-toggle');
-    expect(html).toContain('id="diff-cockpit-search"');
-    expect(html).toContain('font-family: "Geist Mono"');
-    expect(html).toContain('@media (prefers-color-scheme: dark)');
-    expect(html).toContain('font-size:16px');
-    expect(html).toContain('data-filter="stream"');
-    expect(html).toContain('data-filter="task"');
-    expect(html).toContain('data-filter="failing"');
-    expect(html).toContain('<details class="section" id="recently-updated" open');
-    expect(html).toContain('/api/consuelohq/opensaas/pulls');
-    expect(html).toContain('const routePrefix = \"/consuelohq/opensaas/pull/\"');
-    expect(html).not.toContain('.post-item { border');
+describe('renderIndexPage', () => {
+  test('renders a Pull Requests inbox with stream filters and no pagination', () => {
+    const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+    expect(html).toContain('Pull Requests');
+    expect(html).not.toContain('Recently Updated');
+    expect(html).toContain('data-sections-root');
+    expect(html).toContain('data-stream-filter');
+    expect(html).toContain('data-active-stream');
+    expect(html).toContain('Streams');
+    expect(html).toContain('Merging and recently merged');
+    expect(html).toContain('pull.checkStatus === \'failure\'');
+    expect(html).toContain('relativeTime');
+    expect(html).toContain('formatDelta');
+    expect(html).not.toContain('class="pagination"');
+    expect(html).not.toContain('pageSize');
   });
 });
 

@@ -22,17 +22,39 @@ export type GitHubPullRequest = {
   baseSha: string;
 };
 
+export type PullRequestKind = 'stream' | 'task' | 'draft' | 'open';
+export type PullRequestCheckStatus = 'success' | 'failure' | 'pending' | 'unknown';
+export type PullRequestReviewStatus = 'approved' | 'changes_requested' | 'commented' | 'none' | 'unknown';
+export type PullRequestLifecycleStatus = 'open' | 'draft' | 'closed' | 'merged';
+
 export type PullRequestSummary = GitHubPullRequest & {
-  kind: 'stream' | 'task' | 'draft' | 'open';
+  kind: PullRequestKind;
   createdAt: string;
   updatedAt: string;
   cockpitUrl: string;
+  additions: number;
+  deletions: number;
+  changedFiles: number;
+  checkStatus: PullRequestCheckStatus;
+  reviewStatus: PullRequestReviewStatus;
+  lifecycleStatus: PullRequestLifecycleStatus;
+  mergeStatus: PullRequestLifecycleStatus;
+  mergedAt: string;
+  closedAt: string;
+  associatedStream: string;
+};
+
+export type PullRequestSection = {
+  id: 'streams' | 'open' | 'recently-merged' | 'closed';
+  title: string;
+  pulls: PullRequestSummary[];
 };
 
 export type PullRequestIndexData = {
   repo: RepoLocator;
   pulls: PullRequestSummary[];
   updatedAt: string;
+  warnings: string[];
 };
 
 export type GitHubPullRequestFile = {
@@ -75,6 +97,7 @@ export type PullRequestReviewData = {
   tree: FileTreeNode;
   comments: ReviewComment[];
   streamCommits: StreamCommit[];
+  warnings: string[];
 };
 
 export type FileTreeNode = {
@@ -169,18 +192,23 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
 
   return async (repo: RepoLocator): Promise<PullRequestIndexData> => {
     const headers = createGithubHeaders(options.token);
+    const warnings: string[] = [];
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
     const pullsJson = await fetchJsonArrayPages(
       fetcher,
-      `${apiBase}/pulls?state=open&sort=updated&direction=desc`,
+      `${apiBase}/pulls?state=all&sort=updated&direction=desc`,
       headers,
-      'GitHub open pull requests fetch failed',
+      'GitHub pull requests fetch failed',
+    );
+    const pulls = await Promise.all(
+      pullsJson.map((pullJson) => enrichPullRequestSummary(fetcher, apiBase, headers, repo, pullJson, warnings)),
     );
 
     return {
       repo,
-      pulls: normalizePullRequestSummaries(repo, pullsJson),
+      pulls,
       updatedAt: new Date().toISOString(),
+      warnings,
     };
   };
 }
@@ -208,20 +236,27 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         headers,
         'GitHub pull request files fetch failed',
       );
-      const reviewsJson = await fetchOptionalJsonArrayPages(
+      const warnings: string[] = [];
+      const reviewsJson = await fetchPartialJsonArrayPages(
         fetcher,
         `${apiBase}/pulls/${locator.number}/reviews`,
         headers,
+        warnings,
+        'reviews',
       );
-      const issueCommentsJson = await fetchOptionalJsonArrayPages(
+      const issueCommentsJson = await fetchPartialJsonArrayPages(
         fetcher,
         `${apiBase}/issues/${locator.number}/comments`,
         headers,
+        warnings,
+        'issue comments',
       );
-      const reviewCommentsJson = await fetchOptionalJsonArrayPages(
+      const reviewCommentsJson = await fetchPartialJsonArrayPages(
         fetcher,
         `${apiBase}/pulls/${locator.number}/comments`,
         headers,
+        warnings,
+        'review comments',
       );
       const files = normalizeFiles(filesJson);
       const comments = [
@@ -240,6 +275,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         tree: buildFileTree(files),
         comments,
         streamCommits,
+        warnings,
       };
     } catch (error: unknown) {
       throw new Error(`GitHub live pull request load failed: ${getErrorMessage(error)}`);
@@ -292,7 +328,6 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
 export function renderIndexPage(repo: RepoLocator): string {
   const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
-
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -301,18 +336,18 @@ export function renderIndexPage(repo: RepoLocator): string {
   <title>Consuelo Diffs · ${escapeHtml(repoLabel)}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="index-page" data-api-path="${escapeAttribute(apiPath)}">
-  <div class="shell">
+<body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="">
+  <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
       <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="#recently-updated">Recently Updated</a>
+        <a href="#pull-requests">Pull Requests</a>
         <span aria-hidden="true">▣</span>
         <button class="search-button" type="button" data-search-toggle aria-controls="diff-cockpit-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
     <header class="hero" data-pagefind-ignore>
-      <h1>Diffs</h1>
+      <h1>Pull Requests</h1>
       <p class="lead">Live pull request review cockpit for ${escapeHtml(repoLabel)}.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
@@ -323,25 +358,25 @@ export function renderIndexPage(repo: RepoLocator): string {
         <button data-filter="draft">Draft</button>
         <button data-filter="open">Open</button>
       </div>
+      <div class="stream-filter-row" data-stream-filter-row hidden>
+        <span class="filter-label">Stream:</span>
+        <button class="stream-chip active" type="button" data-clear-stream>All streams</button>
+        <span data-stream-filter-label></span>
+      </div>
       <label class="search-row" hidden>
         <span class="filter-label">Search:</span>
         <input id="diff-cockpit-search" class="search-input" type="search" placeholder="type to filter pull requests" autocomplete="off" spellcheck="false" />
       </label>
     </header>
-    <details class="section" id="recently-updated" open data-section="recently-updated" data-pagefind-ignore>
-      <summary><h2 data-results-title>Recently Updated</h2></summary>
-      <div class="post-list" data-results-list>
-        <article class="post-item muted" data-placeholder="loading"><h3>Loading live pull requests…</h3><p>${escapeHtml(apiPath)}</p></article>
-      </div>
-      <nav class="pagination" aria-label="Recently updated pagination" hidden data-pagefind-ignore>
-        <button class="page-button" data-page="prev" type="button">Previous</button>
-        <span class="page-status" aria-live="polite"></span>
-        <button class="page-button" data-page="next" type="button">Next</button>
-      </nav>
-    </details>
+    <main id="pull-requests" class="section-stack" data-sections-root data-pagefind-ignore>
+      <details class="section pr-section" open data-section-id="streams"><summary><h2>Streams</h2><span class="section-count">—</span></summary><div class="post-list"><article class="post-item muted"><h3>Loading live pull requests…</h3><p>${escapeHtml(apiPath)}</p></article></div></details>
+      <details class="section pr-section" open data-section-id="open"><summary><h2>Open</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" data-section-id="recently-merged"><summary><h2>Merging and recently merged</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" data-section-id="closed"><summary><h2>Closed</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+    </main>
     <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date().getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#recently-updated">Recently Updated</a></div>
+      <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Pull Requests</a></div>
     </footer>
   </div>
   <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
@@ -470,14 +505,16 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         }));
       }
 
+      let locator: PullRequestLocator;
       try {
-        return html(renderReviewPage(parsePullRequestLocator(url.pathname, defaultRepo)));
-      } catch {
+        locator = parsePullRequestLocator(url.pathname, defaultRepo);
+      } catch (error: unknown) {
         return new Response(renderNotFoundPage(), {
           status: 404,
           headers: { 'content-type': 'text/html; charset=utf-8' },
         });
       }
+      return html(renderReviewPage(locator));
     },
   };
 }
@@ -524,6 +561,21 @@ async function fetchOptionalJsonArrayPages(
   }
 }
 
+async function fetchPartialJsonArrayPages(
+  fetcher: Fetcher,
+  url: string,
+  headers: HeadersInit,
+  warnings: string[],
+  label: string,
+): Promise<unknown[]> {
+  try {
+    return await fetchJsonArrayPages(fetcher, url, headers, `GitHub ${label} fetch failed`);
+  } catch (error: unknown) {
+    warnings.push(`${label}: ${getErrorMessage(error)}`);
+    return [];
+  }
+}
+
 function normalizePullRequest(input: unknown): GitHubPullRequest {
   const source = requireRecord(input, 'Invalid pull request data');
   const user = optionalRecord(source.user);
@@ -543,25 +595,204 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
   };
 }
 
-function normalizePullRequestSummaries(repo: RepoLocator, input: unknown[]): PullRequestSummary[] {
-  return input.map((item) => {
-    const pull = normalizePullRequest(item);
-    const source = requireRecord(item, 'Invalid pull request summary data');
-    return {
-      ...pull,
-      kind: classifyPullRequest(pull),
-      createdAt: stringValue(source.created_at, ''),
-      updatedAt: stringValue(source.updated_at, ''),
-      cockpitUrl: buildDiffCockpitPath({ owner: repo.owner, repo: repo.repo, number: pull.number }),
-    };
-  });
+async function enrichPullRequestSummary(
+  fetcher: Fetcher,
+  apiBase: string,
+  headers: HeadersInit,
+  repo: RepoLocator,
+  pullJson: unknown,
+  warnings: string[],
+): Promise<PullRequestSummary> {
+  try {
+    const basePull = normalizePullRequest(pullJson);
+    const detailJson = await fetchPullRequestDetail(fetcher, apiBase, headers, basePull.number, pullJson, warnings);
+    const detailPull = normalizePullRequest(detailJson);
+    const checkRuns = await fetchCheckRuns(fetcher, apiBase, detailPull.headSha || basePull.headSha, headers, warnings);
+    const reviews = await fetchPartialJsonArrayPages(
+      fetcher,
+      `${apiBase}/pulls/${detailPull.number || basePull.number}/reviews`,
+      headers,
+      warnings,
+      `reviews for #${detailPull.number || basePull.number}`,
+    );
+    return normalizePullRequestSummary(repo, detailJson, checkRuns, reviews);
+  } catch (error: unknown) {
+    warnings.push(`summary: ${getErrorMessage(error)}`);
+    return normalizePullRequestSummary(repo, pullJson, [], []);
+  }
 }
 
-function classifyPullRequest(pull: GitHubPullRequest): PullRequestSummary['kind'] {
+async function fetchPullRequestDetail(
+  fetcher: Fetcher,
+  apiBase: string,
+  headers: HeadersInit,
+  number: number,
+  fallback: unknown,
+  warnings: string[],
+): Promise<unknown> {
+  try {
+    const response = await fetcher(`${apiBase}/pulls/${number}`, { headers });
+    if (!response.ok) {
+      warnings.push(`pull #${number}: ${response.status}`);
+      return fallback;
+    }
+    return await response.json();
+  } catch (error: unknown) {
+    warnings.push(`pull #${number}: ${getErrorMessage(error)}`);
+    return fallback;
+  }
+}
+
+async function fetchCheckRuns(
+  fetcher: Fetcher,
+  apiBase: string,
+  sha: string,
+  headers: HeadersInit,
+  warnings: string[],
+): Promise<unknown[]> {
+  if (!sha) {
+    return [];
+  }
+  try {
+    const response = await fetcher(`${apiBase}/commits/${encodeURIComponent(sha)}/check-runs?per_page=100`, { headers });
+    if (!response.ok) {
+      warnings.push(`check runs for ${sha.slice(0, 7)}: ${response.status}`);
+      return [];
+    }
+    const json = await response.json();
+    const record = optionalRecord(json);
+    const checkRuns = record && Array.isArray(record.check_runs) ? record.check_runs : json;
+    return Array.isArray(checkRuns) ? checkRuns : [];
+  } catch (error: unknown) {
+    warnings.push(`check runs for ${sha.slice(0, 7)}: ${getErrorMessage(error)}`);
+    return [];
+  }
+}
+
+function normalizePullRequestSummary(
+  repo: RepoLocator,
+  input: unknown,
+  checkRuns: unknown[],
+  reviews: unknown[],
+): PullRequestSummary {
+  const pull = normalizePullRequest(input);
+  const source = requireRecord(input, 'Invalid pull request summary data');
+  const lifecycleStatus = normalizeLifecycleStatus(pull, source);
+  const associatedStream = deriveAssociatedStream(pull);
+  return {
+    ...pull,
+    kind: classifyPullRequest(pull),
+    createdAt: stringValue(source.created_at, ''),
+    updatedAt: stringValue(source.updated_at, ''),
+    cockpitUrl: buildDiffCockpitPath({ owner: repo.owner, repo: repo.repo, number: pull.number }),
+    additions: numberValue(source.additions, 0),
+    deletions: numberValue(source.deletions, 0),
+    changedFiles: numberValue(source.changed_files, 0),
+    checkStatus: normalizeCheckStatus(checkRuns),
+    reviewStatus: normalizeReviewStatus(reviews),
+    lifecycleStatus,
+    mergeStatus: lifecycleStatus,
+    mergedAt: stringValue(source.merged_at, ''),
+    closedAt: stringValue(source.closed_at, ''),
+    associatedStream,
+  };
+}
+
+export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
+  if (pull.headRef.startsWith('stream/')) {
+    return pull.headRef;
+  }
+  if (pull.baseRef.startsWith('stream/')) {
+    return pull.baseRef;
+  }
+  const taskMatch = pull.headRef.match(/^task\/([^/]+)/);
+  if (taskMatch && taskMatch[1]) {
+    return `stream/${taskMatch[1]}`;
+  }
+  return '';
+}
+
+export function groupPullRequestSummaries(
+  pulls: PullRequestSummary[],
+  options: { stream?: string } = {},
+): PullRequestSection[] {
+  const scoped = options.stream ? pulls.filter((pull) => pull.associatedStream === options.stream) : pulls;
+  const sections: PullRequestSection[] = [
+    { id: 'streams', title: 'Streams', pulls: scoped.filter((pull) => pull.kind === 'stream') },
+    {
+      id: 'open',
+      title: 'Open',
+      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
+    },
+    {
+      id: 'recently-merged',
+      title: 'Merging and recently merged',
+      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'merged'),
+    },
+    { id: 'closed', title: 'Closed', pulls: scoped.filter((pull) => pull.lifecycleStatus === 'closed') },
+  ];
+  return sections.filter((section) => section.pulls.length > 0);
+}
+
+function classifyPullRequest(pull: GitHubPullRequest): PullRequestKind {
   if (pull.draft) return 'draft';
   if (pull.headRef.startsWith('stream/')) return 'stream';
   if (pull.headRef.startsWith('task/')) return 'task';
   return 'open';
+}
+
+function normalizeLifecycleStatus(
+  pull: GitHubPullRequest,
+  source: Record<string, unknown>,
+): PullRequestLifecycleStatus {
+  if (pull.draft) return 'draft';
+  if (stringValue(source.merged_at, '')) return 'merged';
+  if (pull.state === 'closed') return 'closed';
+  return 'open';
+}
+
+function normalizeCheckStatus(checkRuns: unknown[]): PullRequestCheckStatus {
+  if (checkRuns.length === 0) {
+    return 'unknown';
+  }
+  if (checkRuns.some((item) => isPendingCheckRun(item))) {
+    return 'pending';
+  }
+  if (checkRuns.some((item) => isFailedCheckRun(item))) {
+    return 'failure';
+  }
+  if (checkRuns.every((item) => isSuccessfulCheckRun(item))) {
+    return 'success';
+  }
+  return 'unknown';
+}
+
+function isPendingCheckRun(input: unknown): boolean {
+  const record = optionalRecord(input) ?? {};
+  return stringValue(record.status, '').toLowerCase() !== 'completed';
+}
+
+function isFailedCheckRun(input: unknown): boolean {
+  const record = optionalRecord(input) ?? {};
+  const conclusion = stringValue(record.conclusion, '').toLowerCase();
+  return ['failure', 'timed_out', 'cancelled', 'action_required'].includes(conclusion);
+}
+
+function isSuccessfulCheckRun(input: unknown): boolean {
+  const record = optionalRecord(input) ?? {};
+  const conclusion = stringValue(record.conclusion, '').toLowerCase();
+  return ['success', 'skipped', 'neutral'].includes(conclusion);
+}
+
+function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
+  const states = reviews
+    .map((item) => optionalRecord(item))
+    .filter((item): item is Record<string, unknown> => Boolean(item))
+    .map((item) => stringValue(item.state, '').toUpperCase());
+  if (states.includes('CHANGES_REQUESTED')) return 'changes_requested';
+  if (states.includes('APPROVED')) return 'approved';
+  if (states.includes('COMMENTED')) return 'commented';
+  return states.length > 0 ? 'unknown' : 'none';
 }
 
 function normalizeFiles(input: unknown): GitHubPullRequestFile[] {
@@ -768,10 +999,22 @@ button.active::after { content:"]"; color:var(--quiet); }
 .section summary::-webkit-details-marker { display:none; }
 .section summary h2 { display:inline; }
 h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
-.post-list { display:grid; gap:26px; margin-top:24px; }
-.post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; letter-spacing:-.02em; font-weight:500; }
-.post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
+.post-list { display:grid; gap:0; margin-top:18px; border-top:1px solid var(--line); }
+.pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.section-count { color:var(--quiet); font-size:16px; }
+.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:16px; padding:13px 0; border-bottom:1px solid var(--line); }
+.post-item h3 { margin:0 0 3px; font-size:17px; line-height:1.35; letter-spacing:-.02em; font-weight:500; }
+.post-meta { color:var(--quiet); font-size:13px; line-height:1.35; margin-bottom:4px; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+.pr-row-main { min-width:0; }
+.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:10px; color:var(--quiet); font-size:13px; white-space:nowrap; }
+.pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; }
+.pr-status-icon.success { color:#2f8a44; }
+.pr-status-icon.failure { color:#bc3b3b; }
+.pr-status-icon.pending { color:#b77b1a; }
+.stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
+.stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
+.stream-filter-row[hidden] { display:none; }
 .post-item[hidden] { display:none; }
 .empty, .muted { color:var(--quiet); }
 mark { background:var(--accent-soft); color:var(--ink); }
@@ -827,6 +1070,8 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   header.hero { padding-top:44px; }
   h1 { font-size:38px; }
   footer { flex-direction:column; align-items:flex-start; }
+  .post-item { grid-template-columns:1fr; gap:8px; }
+  .pr-row-side { justify-content:flex-start; flex-wrap:wrap; }
   .topbar { height:auto; min-height:92px; align-items:flex-start; flex-direction:column; }
   .layout { height:calc(100vh - 132px); grid-template-columns:minmax(160px, 40vw) minmax(0, 1fr); }
 }
@@ -835,60 +1080,98 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 
 function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
   const routePrefix = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/`;
+  const repoLabel = `${repo.owner}/${repo.repo}`;
   return `
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
-const pageSize = 10;
+const repoLabel = ${JSON.stringify(repoLabel)};
 let pulls = [];
 let activeFilter = 'all';
 let activeQuery = '';
-let currentPage = 1;
-const list = document.querySelector('[data-results-list]');
-const title = document.querySelector('[data-results-title]');
-const pagination = document.querySelector('.pagination');
-const pageStatus = document.querySelector('.page-status');
-const prevButton = document.querySelector('[data-page="prev"]');
-const nextButton = document.querySelector('[data-page="next"]');
+let activeStream = '';
+const sectionsRoot = document.querySelector('[data-sections-root]');
 const searchToggle = document.querySelector('[data-search-toggle]');
 const searchRow = document.querySelector('.search-row');
 const searchInput = document.querySelector('#diff-cockpit-search');
+const streamRow = document.querySelector('[data-stream-filter-row]');
+const streamLabel = document.querySelector('[data-stream-filter-label]');
+const clearStream = document.querySelector('[data-clear-stream]');
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.state !== 'open');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.checkStatus === 'failure') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => {
   const query = activeQuery.trim().toLowerCase();
   if (!query) return true;
-  return [pull.title, pull.headRef, pull.baseRef, pull.author, String(pull.number), pull.kind].some((value) => String(value || '').toLowerCase().includes(query));
+  return [pull.title, pull.headRef, pull.baseRef, pull.author, String(pull.number), pull.kind, pull.associatedStream].some((value) => String(value || '').toLowerCase().includes(query));
 };
+function visiblePulls() {
+  return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull) && (!activeStream || pull.associatedStream === activeStream));
+}
+function groupSections(source) {
+  const sections = [
+    { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream') },
+    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
+    { id: 'recently-merged', title: 'Merging and recently merged', pulls: source.filter((pull) => pull.lifecycleStatus === 'merged') },
+    { id: 'closed', title: 'Closed', pulls: source.filter((pull) => pull.lifecycleStatus === 'closed') },
+  ];
+  return sections.filter((section) => section.pulls.length > 0);
+}
 function renderCard(pull) {
   const route = routePrefix + pull.number;
-  const updated = pull.updatedAt ? new Date(pull.updatedAt).toLocaleDateString() : 'Live PR';
-  return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.state) + '">' +
-    '<h3><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
-    '<div class="post-meta" aria-label="Updated date">▣ Updated ' + escapeText(updated) + ' · #' + escapeText(pull.number) + ' · ' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</div>' +
-    '<p>' + escapeText(route) + '</p>' +
+  const stream = pull.associatedStream || 'No stream';
+  return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+    '<div class="pr-row-main"><h3><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
+    '<div class="post-meta">' + escapeText(pull.author) + ' · ' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</div>' +
+    '<p><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button> · ' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</p></div>' +
+    '<div class="pr-row-side"><span class="pr-status-icon ' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon ' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span><span>' + formatDelta(pull) + '</span><span>' + relativeTime(pull.updatedAt) + '</span></div>' +
   '</article>';
 }
-function visiblePulls() {
-  return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull));
-}
-function renderPage() {
+function renderSections() {
   const visible = visiblePulls();
-  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
-  currentPage = Math.min(currentPage, totalPages);
-  const pagePulls = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  list.innerHTML = pagePulls.length ? pagePulls.map(renderCard).join('') : '<article class="post-item muted"><h3>No matching pull requests</h3><p>Try another filter or search.</p></article>';
-  title.textContent = activeQuery.trim() ? 'Search Results' : 'Recently Updated';
-  pagination.hidden = visible.length <= pageSize;
-  pageStatus.textContent = visible.length === 0 ? 'No results' : 'Page ' + currentPage + ' of ' + totalPages;
-  prevButton.disabled = currentPage === 1;
-  nextButton.disabled = currentPage === totalPages;
+  const sections = groupSections(visible);
+  document.body.dataset.activeStream = activeStream;
+  streamRow.hidden = !activeStream;
+  streamLabel.textContent = activeStream || '';
+  sectionsRoot.innerHTML = sections.length ? sections.map((section, index) => '<details class="section pr-section" data-section-id="' + section.id + '" ' + (index < 2 ? 'open' : '') + '><summary><h2>' + escapeText(section.title) + '</h2><span class="section-count">' + section.pulls.length + '</span></summary><div class="post-list">' + section.pulls.map(renderCard).join('') + '</div></details>').join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, search, or stream.</p></section>';
   document.querySelectorAll('[data-pr-route]').forEach((link) => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       openPull(link.getAttribute('data-pr-route'));
     });
   });
+  document.querySelectorAll('[data-stream-filter]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      activeStream = button.getAttribute('data-stream-filter') || '';
+      renderSections();
+    });
+  });
+}
+function reviewIcon(status) {
+  if (status === 'approved') return '✓';
+  if (status === 'changes_requested') return '×';
+  if (status === 'commented') return '◌';
+  return '–';
+}
+function checkIcon(status) {
+  if (status === 'success') return '✓';
+  if (status === 'failure') return '×';
+  if (status === 'pending') return '◌';
+  return '–';
+}
+function formatDelta(pull) {
+  return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString() + ' · ' + Number(pull.changedFiles || 0).toLocaleString() + ' files';
+}
+function relativeTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'live';
+  const seconds = Math.max(1, Math.round((Date.now() - date.getTime()) / 1000));
+  if (seconds < 60) return seconds + 's';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return minutes + 'm';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h';
+  return Math.round(hours / 24) + 'd';
 }
 function loadIndex() {
   fetch(apiPath, { headers: { accept: 'application/json' } })
@@ -898,18 +1181,21 @@ function loadIndex() {
     })
     .then((data) => {
       pulls = Array.isArray(data.pulls) ? data.pulls : [];
-      renderPage();
+      renderSections();
     }, (error) => {
-      list.innerHTML = '<article class="post-item error"><h3>Could not load pull requests</h3><p>' + escapeText(error.message || error) + '</p></article>';
+      sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
     });
 }
 document.querySelectorAll('[data-filter]').forEach((button) => {
   button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
-    currentPage = 1;
     document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-    renderPage();
+    renderSections();
   });
+});
+clearStream.addEventListener('click', () => {
+  activeStream = '';
+  renderSections();
 });
 searchToggle.addEventListener('click', () => {
   const shouldOpen = searchRow.hidden;
@@ -919,14 +1205,13 @@ searchToggle.addEventListener('click', () => {
   else {
     searchInput.value = '';
     activeQuery = '';
-    renderPage();
+    renderSections();
   }
 });
 searchInput.addEventListener('input', () => {
   activeQuery = searchInput.value;
-  currentPage = 1;
   window.clearTimeout(searchInput.dataset.timer);
-  searchInput.dataset.timer = String(window.setTimeout(renderPage, 120));
+  searchInput.dataset.timer = String(window.setTimeout(renderSections, 120));
 });
 searchInput.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
@@ -934,18 +1219,8 @@ searchInput.addEventListener('keydown', (event) => {
     activeQuery = '';
     searchRow.hidden = true;
     searchToggle.setAttribute('aria-expanded', 'false');
-    renderPage();
+    renderSections();
   }
-});
-prevButton.addEventListener('click', () => {
-  if (currentPage > 1) {
-    currentPage -= 1;
-    renderPage();
-  }
-});
-nextButton.addEventListener('click', () => {
-  currentPage += 1;
-  renderPage();
 });
 loadIndex();
 `;
