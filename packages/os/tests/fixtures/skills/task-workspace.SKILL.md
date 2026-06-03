@@ -1,4 +1,4 @@
-PASTE # Ko must explicitly provide or approve the stream before task work begins.
+# Ko must explicitly provide or approve the stream before task work begins.
 
 If no stream or area was provided, stop and ask. You may suggest likely streams, but never choose one silently.
 
