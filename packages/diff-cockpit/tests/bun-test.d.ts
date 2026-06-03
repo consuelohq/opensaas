@@ -6,6 +6,7 @@ declare module 'bun:test' {
     toMatchObject(expected: Record<string, unknown>): void;
     toContain(expected: string): void;
     toHaveLength(expected: number): void;
+    toBeLessThan(expected: number): void;
     toThrow(expected?: string | RegExp): void;
   };
   type PromiseMatchers = {

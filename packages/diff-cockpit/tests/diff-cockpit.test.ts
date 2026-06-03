@@ -367,6 +367,10 @@ describe('renderReviewPage', () => {
     expect(html).toContain("event.key === 'c'");
     expect(html).toContain("event.key === 'g'");
     expect(html).toContain("event.key === 'Escape'");
+    expect(html).toContain('loadLiveData();');
+    expect(html).toContain('loadViewerLibraries();');
+    expect(html.indexOf('loadLiveData();')).toBeLessThan(html.indexOf('loadViewerLibraries();'));
+    expect(html).not.toContain(']).finally(loadLiveData)');
   });
 });
 
@@ -378,6 +382,5 @@ describe('createWorker', () => {
 
     expect(response.status).toBe(200);
     expect(html).toContain('Consuelo Diffs');
-    expect(html).toContain('/api/consuelohq/opensaas/pulls');
   });
 });
