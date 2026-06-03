@@ -20,6 +20,9 @@ export type GitHubPullRequest = {
   headSha: string;
   baseRef: string;
   baseSha: string;
+  mergeable: boolean | null;
+  mergeableState: string;
+  updatedAt: string;
 };
 
 export type PullRequestKind = 'stream' | 'task' | 'draft' | 'open';
@@ -90,6 +93,12 @@ export type StreamCommit = {
   committedAt: string;
 };
 
+export type CheckSummary = {
+  name: string;
+  status: string;
+  conclusion: string;
+  url: string;
+};
 export type PullRequestReviewData = {
   locator: PullRequestLocator;
   pull: GitHubPullRequest;
@@ -98,6 +107,7 @@ export type PullRequestReviewData = {
   comments: ReviewComment[];
   streamCommits: StreamCommit[];
   warnings: string[];
+  checks: CheckSummary[];
 };
 
 export type FileTreeNode = {
@@ -264,6 +274,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         ...normalizeReviewComments(issueCommentsJson, 'issue-comment'),
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
+      const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
       const streamCommits = pull.headRef.startsWith('stream/')
         ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
         : [];
@@ -276,6 +287,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         comments,
         streamCommits,
         warnings,
+        checks,
       };
     } catch (error: unknown) {
       throw new Error(`GitHub live pull request load failed: ${getErrorMessage(error)}`);
@@ -402,7 +414,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -419,20 +431,21 @@ export function renderReviewPage(locator: PullRequestLocator): string {
     </nav>
   </header>
   <main class="layout">
-    <aside class="file-pane" aria-label="Changed files">
+    <aside class="file-pane" id="file-pane" aria-label="Changed files">
       <div class="pane-heading">
         <span>Files</span>
         <span id="file-count" class="muted">—</span>
       </div>
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
+    <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
     </section>
     <aside id="review-drawer" class="review-drawer" aria-label="Review drawer" aria-hidden="true">
       <div class="drawer-head">
-        <strong>Review notes</strong>
+        <strong>review notes</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -441,7 +454,9 @@ export function renderReviewPage(locator: PullRequestLocator): string {
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">r</span> drawer · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
+        <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
         <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
         <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
         <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
@@ -487,7 +502,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             repo: decodeURIComponent(apiMatch[2] || ''),
             number: Number(apiMatch[3]),
           };
-          return json(await reviewLoader(locator));
+          return cachedJson(await reviewLoader(locator), request);
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -592,6 +607,9 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
     headSha: stringValue(head?.sha, ''),
     baseRef: stringValue(base?.ref, ''),
     baseSha: stringValue(base?.sha, ''),
+    mergeable: typeof source.mergeable === 'boolean' ? source.mergeable : null,
+    mergeableState: stringValue(source.mergeable_state, 'unknown'),
+    updatedAt: stringValue(source.updated_at, ''),
   };
 }
 
@@ -835,6 +853,33 @@ async function loadStreamCommits(
   }
 }
 
+async function loadChecks(
+  fetcher: Fetcher,
+  apiBase: string,
+  headSha: string,
+  headers: HeadersInit,
+): Promise<CheckSummary[]> {
+  if (!headSha) return [];
+  try {
+    const response = await fetcher(`${apiBase}/commits/${encodeURIComponent(headSha)}/check-runs?per_page=100`, { headers });
+    if (!response.ok) return [];
+    const json = await response.json();
+    const record = optionalRecord(json);
+    const checks = Array.isArray(record?.check_runs) ? record.check_runs : [];
+    return checks.map((check) => {
+      const item = optionalRecord(check) ?? {};
+      return {
+        name: stringValue(item.name, 'check'),
+        status: stringValue(item.status, 'unknown'),
+        conclusion: stringValue(item.conclusion, ''),
+        url: stringValue(item.html_url ?? item.details_url, ''),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 function normalizeReviewComments(
   input: unknown[],
   source: ReviewComment['source'],
@@ -939,6 +984,37 @@ function normalizeOrderIndex(index: number): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
+function cachedJson(data: unknown, request: Request): Response {
+  const body = JSON.stringify(data, null, 2);
+  const etag = makeWeakEtag(body);
+  if (request.headers.get('if-none-match') === etag) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        etag,
+        'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+      },
+    });
+  }
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      etag,
+      'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+    },
+  });
+}
+
+function makeWeakEtag(input: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `W/\"${(hash >>> 0).toString(16)}-${input.length}\"`;
+}
+
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data, null, 2), {
     status,
@@ -968,7 +1044,7 @@ function renderStyles(): string {
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
-body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
+body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
 a { color:inherit; text-decoration:none; }
 a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
@@ -1023,18 +1099,25 @@ mark { background:var(--accent-soft); color:var(--ink); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
 .footer-links { display:flex; gap:10px; }
-.review-page { overflow:hidden; }
+.review-page { overflow:hidden; --file-pane-width:330px; }
 .topbar { height:76px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper); }
 .eyebrow { margin:0 0 4px; font-size:12px; color:var(--quiet); text-transform:uppercase; letter-spacing:.08em; }
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
-.layout { height:calc(100vh - 76px); display:grid; grid-template-columns:minmax(260px, 330px) minmax(0, 1fr); position:relative; }
-.file-pane { border-right:1px solid var(--line); overflow:auto; background:var(--paper); }
+.layout { height:calc(100vh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; }
+body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
+body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed="true"] .file-pane-resizer { display:none; }
+.file-pane { border-right:1px solid var(--line); overflow:auto; background:var(--paper); font-size:12px; }
+.file-pane-resizer { cursor:col-resize; background:var(--line); opacity:.55; }
+.file-pane-resizer:hover { opacity:1; }
 .pane-heading { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; padding:14px 14px 10px; background:var(--paper); border-bottom:1px solid var(--line); font-weight:650; }
 .tree-root { padding:8px; }
-.tree-node { display:block; width:100%; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tree-node:hover, .tree-node[aria-current="true"] { background:var(--soft); text-decoration:none; }
+.tree-node { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; white-space:nowrap; }
+.tree-label { overflow:hidden; text-overflow:ellipsis; flex:1; }
+.tree-stats { color:var(--quiet); margin-left:auto; font-variant-numeric:tabular-nums; }
+.file-icon { color:var(--quiet); width:16px; text-align:center; }
+.tree-node:hover, .tree-node[aria-current="true"], .tree-node.is-visible { background:var(--soft); text-decoration:none; }
 .tree-node.file { cursor:pointer; }
 .tree-children { margin-left:14px; }
 .status { color:var(--quiet); font-size:12px; margin-right:5px; }
@@ -1042,17 +1125,22 @@ footer { display:flex; align-items:center; justify-content:space-between; gap:18
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); }
 .diff-root { padding:0; }
 .diff-file { border-bottom:1px solid var(--line); scroll-margin-top:46px; }
-.diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:12px; }
+.diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:13px; }
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
-.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:auto; font:12px/1.55 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.diff-line { min-height:18px; padding:0 14px; white-space:pre; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:auto; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.diff-line { min-height:20px; display:grid; grid-template-columns:68px 68px minmax(0, 1fr); padding:0 14px 0 0; white-space:pre; }
+.diff-gutter { color:var(--quiet); text-align:right; padding-right:10px; user-select:none; font-variant-numeric:tabular-nums; }
+.diff-code { overflow:visible; }
+body[data-current-view="current"] .diff-line.del { display:none; }
+body[data-comments-visible="false"] .inline-comment { display:none; }
+.inline-comment { margin:6px 14px 10px 136px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-size:13px; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
-.drawer-head { display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); }
+.drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .drawer-content { padding:14px; display:grid; gap:16px; }
 .action-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
 .action-button { display:flex; justify-content:center; align-items:center; min-height:38px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
@@ -1060,7 +1148,9 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
-.comment-body { white-space:pre-wrap; font-size:13px; line-height:1.45; }
+.comment-body { font-size:13px; line-height:1.5; }
+.comment-body pre, .comment-body code { font-family:"SFMono-Regular", Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
 .error { border:1px solid var(--danger); color:var(--danger); background:var(--surface); padding:14px; border-radius:10px; }
@@ -1229,7 +1319,7 @@ loadIndex();
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -1243,18 +1333,32 @@ const els = {
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
   copyCodex: document.getElementById('copy-codex-prompt'),
   drawerSummary: document.getElementById('drawer-summary'),
+  drawerStatus: document.getElementById('drawer-status'),
+  drawerChecks: document.getElementById('drawer-checks'),
   drawerComments: document.getElementById('drawer-comments'),
   drawerCommits: document.getElementById('drawer-commits'),
+  drawerContent: document.getElementById('drawer-content'),
+  filePane: document.getElementById('file-pane'),
+  filePaneResizer: document.getElementById('file-pane-resizer'),
 };
 
-els.drawerToggle.addEventListener('click', () => setDrawer(true));
+els.drawerToggle.addEventListener('click', () => {
+  if (document.body.dataset.reviewDrawer === 'open') {
+    els.drawerContent.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  setDrawer(true);
+});
 els.drawerClose.addEventListener('click', () => setDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === 'r') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'f') toggleFilePane();
+  if (event.key === 'v') toggleCurrentView();
+  if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
   if (event.key === 'g') openChatGptPrompt();
   if (event.key === 'Escape') setDrawer(false);
@@ -1262,6 +1366,7 @@ document.addEventListener('keydown', (event) => {
 
 loadLiveData();
 loadViewerLibraries();
+setupFilePaneResize();
 
 function loadViewerLibraries() {
   Promise.allSettled([
@@ -1291,6 +1396,7 @@ function loadLiveData() {
         renderTree();
         renderSelectedFile();
         renderLongDiffs();
+        setupActiveFileObserver();
         renderDrawer();
       },
       (error) => {
@@ -1323,7 +1429,8 @@ function renderTreeNode(node) {
   if (node.type === 'root') return node.children.map(renderTreeNode).join('');
   if (node.type === 'file') {
     const current = state.selected && state.selected.filename === node.file.filename;
-    return '<button class="tree-node file" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span>' + escapeHtml(node.name) + fileCommentBadge(node.file.filename) + '</button>';
+    const visible = state.activeFile === node.file.filename;
+    return '<button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button>';
   }
   return '<div class="tree-node directory">' + escapeHtml(node.name) + '</div><div class="tree-children">' + node.children.map(renderTreeNode).join('') + '</div>';
 }
@@ -1352,7 +1459,7 @@ function renderLongDiffs() {
 function renderDiffFile(file) {
   return '<section class="diff-file" id="' + escapeAttribute(fileDomId(file.filename)) + '">' +
     '<div class="diff-file-header"><span class="diff-file-path">' + escapeHtml(file.filename) + '</span><span class="diff-file-stats">' + escapeHtml(statusToken(file.status)) + ' +' + escapeHtml(file.additions) + ' −' + escapeHtml(file.deletions) + '</span></div>' +
-    renderPatchFallback(file.patch || 'No patch available') +
+    renderPatchFallback(file.patch || 'No patch available', file.filename) +
   '</section>';
 }
 
@@ -1369,6 +1476,10 @@ function fileDomId(filename) {
 function renderDrawer() {
   const comments = state.data.comments || [];
   const commits = state.data.streamCommits || [];
+  const checks = state.data.checks || [];
+  const pull = state.data.pull;
+  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <span class="badge">mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</span> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
+  els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
   els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <span class="badge">' + commits.length + ' stream commits</span></div>';
   els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
   els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
@@ -1377,7 +1488,8 @@ function renderDrawer() {
 function renderComment(comment) {
   const location = comment.path ? ' · ' + comment.path + (comment.line ? ':' + comment.line : '') : '';
   const link = comment.url ? ' · <a href="' + escapeAttribute(comment.url) + '">open</a>' : '';
-  return '<article class="comment-card"><div class="comment-meta"><span class="badge">' + escapeHtml(comment.provider) + '</span> ' + escapeHtml(comment.author) + location + link + '</div><div class="comment-body">' + escapeHtml(comment.body) + '</div></article>';
+  const jump = comment.path ? ' <button class="comment-jump" type="button" data-comment-file="' + escapeAttribute(comment.path) + '" data-comment-line="' + escapeAttribute(String(comment.line || '')) + '">jump</button>' : '';
+  return '<article class="comment-card"><div class="comment-meta"><span class="badge">' + escapeHtml(comment.provider) + '</span> ' + escapeHtml(comment.author) + location + link + jump + '</div><div class="comment-body">' + renderMarkdown(comment.body) + '</div></article>';
 }
 
 function renderCommit(commit) {
@@ -1437,11 +1549,129 @@ function copyText(text) {
   return Promise.resolve();
 }
 
-function renderPatchFallback(patch) {
-  return '<div class="diff-fallback">' + String(patch || '').split('\\n').map((line) => {
-    const className = line.startsWith('@@') ? 'hunk' : line.startsWith('+') ? 'add' : line.startsWith('-') ? 'del' : '';
-    return '<div class="diff-line ' + className + '">' + escapeHtml(line || ' ') + '</div>';
-  }).join('') + '</div>';
+function renderPatchFallback(patch, filename) {
+  let oldLine = 0;
+  let newLine = 0;
+  const comments = commentsForFile(filename);
+  const rows = [];
+  for (const line of String(patch || '').split('\\n')) {
+    if (line.startsWith('@@')) {
+      const hunk = parseHunkHeader(line);
+      oldLine = hunk.oldStart;
+      newLine = hunk.newStart;
+      rows.push(renderDiffLine(line, 'hunk', '', ''));
+      continue;
+    }
+    if (line.startsWith('+')) {
+      rows.push(renderDiffLine(line, 'add', '', String(newLine)) + renderInlineComments(filename, newLine, comments));
+      newLine += 1;
+      continue;
+    }
+    if (line.startsWith('-')) {
+      rows.push(renderDiffLine(line, 'del', String(oldLine), ''));
+      oldLine += 1;
+      continue;
+    }
+    rows.push(renderDiffLine(line || ' ', '', String(oldLine), String(newLine)) + renderInlineComments(filename, newLine, comments));
+    oldLine += 1;
+    newLine += 1;
+  }
+  return '<div class="diff-fallback">' + rows.join('') + '</div>';
+}
+
+function parseHunkHeader(line) {
+  const match = String(line).match(/@@ -(\\d+)(?:,\\d+)? \\+(\\d+)(?:,\\d+)? @@/);
+  return { oldStart: match ? Number(match[1]) : 0, newStart: match ? Number(match[2]) : 0 };
+}
+
+function renderDiffLine(line, className, oldLine, newLine) {
+  return '<div class="diff-line ' + className + '" data-old-line="' + escapeAttribute(String(oldLine)) + '" data-new-line="' + escapeAttribute(String(newLine)) + '"><span class="diff-gutter oldLine">' + escapeHtml(String(oldLine || '')) + '</span><span class="diff-gutter newLine">' + escapeHtml(String(newLine || '')) + '</span><span class="diff-code">' + escapeHtml(line || ' ') + '</span></div>';
+}
+
+function commentsForFile(filename) {
+  return (state.data?.comments || []).filter((comment) => comment.path === filename);
+}
+
+function renderInlineComments(filename, line, comments) {
+  const matching = comments.filter((comment) => comment.line === line);
+  return matching.map((comment) => '<aside class="inline-comment" data-comment-file="' + escapeAttribute(filename) + '" data-comment-line="' + escapeAttribute(String(line)) + '"><div class="comment-meta"><span class="badge">' + escapeHtml(comment.provider) + '</span> ' + escapeHtml(comment.author) + '</div><div class="comment-body">' + renderMarkdown(comment.body) + '</div></aside>').join('');
+}
+
+function renderCheck(check) {
+  const conclusion = check.conclusion || check.status || 'unknown';
+  const link = check.url ? ' · <a href="' + escapeAttribute(check.url) + '">open</a>' : '';
+  return '<div class="comment-card"><span class="badge">' + escapeHtml(conclusion) + '</span> ' + escapeHtml(check.name) + link + '</div>';
+}
+
+function renderMarkdown(markdown) {
+  return escapeHtml(String(markdown || ''))
+    .replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
+    .replace(/\`([^\`]+)\`/g, '<code>$1</code>')
+    .replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>')
+    .replace(/\\[([^\\]]+)\\]\\((https?:[^)]+)\\)/g, '<a href="$2">$1</a>')
+    .replace(/\\n/g, '<br>');
+}
+
+function navigateToComment(file, line) {
+  const target = document.getElementById(fileDomId(file));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const comment = document.querySelector('[data-comment-file="' + CSS.escape(file) + '"][data-comment-line="' + CSS.escape(String(line || '')) + '"]');
+  if (comment) comment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function setupCommentJumps() {
+  document.querySelectorAll('[data-comment-file]').forEach((button) => {
+    button.addEventListener('click', () => navigateToComment(button.dataset.commentFile, button.dataset.commentLine));
+  });
+}
+
+function setupActiveFileObserver() {
+  if (state.observer) state.observer.disconnect();
+  state.observer = new IntersectionObserver((entries) => updateActiveFileFromScroll(entries), { root: els.diff.closest('.review-pane'), threshold: 0.2 });
+  document.querySelectorAll('.diff-file').forEach((section) => state.observer.observe(section));
+  setupCommentJumps();
+}
+
+function updateActiveFileFromScroll(entries) {
+  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (!visible) return;
+  const matched = (state.data.files || []).find((item) => fileDomId(item.filename) === visible.target.id);
+  if (!matched) return;
+  state.activeFile = matched.filename;
+  renderTree();
+  const button = els.tree.querySelector('[data-file="' + CSS.escape(matched.filename) + '"]');
+  if (button) button.scrollIntoView({ block: 'nearest' });
+}
+
+function toggleFilePane() {
+  document.body.dataset.filePaneCollapsed = document.body.dataset.filePaneCollapsed === 'true' ? 'false' : 'true';
+}
+
+function toggleCurrentView() {
+  state.currentView = !state.currentView;
+  document.body.dataset.currentView = state.currentView ? 'current' : 'diff';
+}
+
+function toggleInlineComments() {
+  state.inlineCommentsVisible = !state.inlineCommentsVisible;
+  document.body.dataset.commentsVisible = state.inlineCommentsVisible ? 'true' : 'false';
+}
+
+function setupFilePaneResize() {
+  let dragging = false;
+  els.filePaneResizer.addEventListener('pointerdown', (event) => { dragging = true; els.filePaneResizer.setPointerCapture(event.pointerId); });
+  els.filePaneResizer.addEventListener('pointermove', (event) => { if (!dragging) return; document.body.style.setProperty('--file-pane-width', Math.max(220, Math.min(560, event.clientX)) + 'px'); });
+  els.filePaneResizer.addEventListener('pointerup', () => { dragging = false; });
+}
+
+function fileIcon(filename) {
+  const extension = String(filename || '').split('.').pop();
+  if (extension === 'ts' || extension === 'tsx') return 'TS';
+  if (extension === 'js' || extension === 'jsx') return 'JS';
+  if (extension === 'json') return '{}';
+  if (extension === 'md') return 'M';
+  if (extension === 'toml' || extension === 'yml' || extension === 'yaml') return '⚙';
+  return '•';
 }
 
 function statusToken(status) {
