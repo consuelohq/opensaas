@@ -299,6 +299,7 @@ async function main(): Promise<void> {
       installDaemons: options.installDaemons,
     };
     const resultFile = process.env.CONSUELO_ONBOARDING_RESULT_FILE;
+    const suppressFinalSummary = Boolean(resultFile);
     if (resultFile) {
       fs.writeFileSync(resultFile, `${JSON.stringify(payload, null, 2)}\n`, {
         mode: 0o600,
@@ -319,10 +320,12 @@ async function main(): Promise<void> {
       if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
       info(summarizeActions(result));
-      info(
-        `next: CONSUELO_HOME=${result.home} bun --cwd packages/os run doctor`,
-      );
-      printEnd('OS ready');
+      if (!suppressFinalSummary) {
+        info(
+          `next: CONSUELO_HOME=${result.home} bun --cwd packages/os run doctor`,
+        );
+        printEnd('OS ready');
+      }
     }
   } catch (error: unknown) {
     throw new Error(

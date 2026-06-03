@@ -67,6 +67,7 @@
     "generate:docs": "bun ./scripts/generate-docs.ts",
     "generate:types": "bun ./scripts/generate-types.ts",
     "install:system-daemons": "bash ./scripts/install-system-daemons.sh",
+    "install:system-daemons:quiet": "bash ./scripts/install-system-daemons.sh --quiet",
     "install:system-daemons:dry-run": "bash ./scripts/install-system-daemons.sh --dry-run",
     "task:init": "bun ./scripts/task-init.js",
     "task:exec": "bun ./scripts/task-exec.js",
