@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 type Replacement = {
   from: string;
   to: string;
 };
-
-const root = process.cwd();
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const fixturesRoot = join(root, 'tests', 'fixtures', 'skills');
 
 function applyReplacements(source: string, replacements: Replacement[]): string {
@@ -20,6 +20,7 @@ function applyReplacements(source: string, replacements: Replacement[]): string 
 const migrationCases = [
   'task',
   'senior-engineer',
+  'research-ingest',
 ];
 
 describe('skill migration guardrails', () => {
