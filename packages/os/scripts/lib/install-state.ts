@@ -39,6 +39,7 @@ export type OsConfig = {
   home: string;
   port: number;
   artifactStorage: 'local';
+  selectedSkills?: string[];
   agents: Array<{
     name: AgentName;
     homePath: string;
@@ -55,6 +56,8 @@ export type ProvisionOptions = {
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
+  selectedSkills?: string[];
+  artifactStorage?: 'local';
   connectAgents?: AgentName[];
 };
 
@@ -602,6 +605,8 @@ export function provisionLocalOs(
     }
   }
 
+  config.selectedSkills = options.selectedSkills ?? config.selectedSkills ?? [];
+  config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
   actions.push(...seedBundledSkills(home, dryRun));
 
   const agents = detectAgents(home);

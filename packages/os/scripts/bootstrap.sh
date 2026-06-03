@@ -14,6 +14,7 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
+DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
 REPO_DIR=""
@@ -21,6 +22,7 @@ ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
 SOURCE_STATUS="pending"
+ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 
 usage() {
@@ -43,6 +45,7 @@ Options:
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
   --json            print a machine-readable summary at the end
+  --debug           print detailed daemon diagnostics
   --help, -h        show this help
 
 Environment overrides:
@@ -96,6 +99,7 @@ parse_args() {
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
       --json) JSON=1 ;;
+      --debug) DEBUG=1 ;;
       --help|-h)
         usage
         exit 0
@@ -311,8 +315,35 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   DEPENDENCY_STATUS="installed"
 }
 
-run_onboarding() {
+
+check_install_tty() {
+  local os_dir="$1"
+  if ! has_tty; then
+    fail "Consuelo OS interactive setup needs a real terminal. Re-run non-interactively with:
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  fi
+  if [ "$DEBUG" = "1" ]; then
+    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --check-tty < /dev/tty
+  fi
+}
+
+run_install_with_script_pty() {
+  local os_dir="$1"
+  local os_home="$2"
+  require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+}
+
+run_install_with_tty() {
+  local os_dir="$1"
+  local os_home="$2"
+  check_install_tty "$os_dir"
+  run_install_with_script_pty "$os_dir" "$os_home"
+}
+
+run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
+  local os_home="${CONSUELO_HOME:-$HOME/.consuelo/os}"
 
   log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
 
@@ -322,22 +353,50 @@ run_onboarding() {
       ONBOARDING_STATUS="dry_run"
     else
       log "dry-run: would run: bun --cwd $os_dir ./scripts/install.ts --dry-run --yes --json"
-      ONBOARDING_STATUS="would_run"
+      ONBOARDING_STATUS=
+"would_run"
     fi
     return 0
   fi
 
-  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --yes
+  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home")
+    if [ "$INSTALL_DAEMONS" -eq 1 ]; then
+      install_args+=(--install-daemons)
+    fi
+    if [ "$SKIP_DAEMONS" -eq 1 ]; then
+      install_args+=(--skip-daemons)
+    fi
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
+    if [ "$JSON" -eq 1 ]; then
+      printf '%s\n' "$ONBOARDING_JSON"
+    fi
+  else
+    if ! has_tty; then
+      fail "Consuelo OS onboarding needs an interactive terminal. Re-run with:
+
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
+    fi
+    ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
+    run_install_with_tty "$os_dir" "$os_home"
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    rm -f "$ONBOARDING_RESULT_FILE"
+    if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
+      INSTALL_DAEMONS=1
+    else
+      SKIP_DAEMONS=1
+    fi
+  fi
   ONBOARDING_STATUS="installed"
 }
 
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -n "$BUN_BIN" ]; then
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run
+    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run -- --quiet
     DAEMON_STATUS="dry_run"
   else
-    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run"
+    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run -- --quiet"
     DAEMON_STATUS="would_dry_run"
   fi
 }
@@ -373,8 +432,46 @@ Labels:
 Press Enter to install these user LaunchAgents, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
   fi
 
-  "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+  if [ "$DEBUG" = "1" ]; then
+    CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+  else
+    log "setting up background service..."
+    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:quiet
+    log "background service ready"
+  fi
   DAEMON_STATUS="installed"
+}
+
+
+print_success_summary() {
+  [ "$JSON" -eq 0 ] || return 0
+
+  local os_home="$HOME/.consuelo/os"
+  local config_file="$os_home/config.json"
+  local db_file="$os_home/consuelo.db"
+  local log_dir="$HOME/Library/Logs/Consuelo"
+  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $REPO_DIR/packages/os run doctor"
+
+  log ""
+  log "Consuelo OS setup complete"
+  log "Home: $os_home"
+  log "Source: $REPO_DIR"
+  log "Config: $config_file"
+  log "Database: $db_file"
+  log "Logs: $log_dir"
+
+  case "$DAEMON_STATUS" in
+    installed)
+      log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
+      ;;
+    skipped)
+      log "Services: skipped"
+      log "Install services later: $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+      ;;
+  esac
+
+  log "Doctor: $doctor_cmd"
+  log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
 main() {
@@ -385,6 +482,7 @@ main() {
   ensure_dependencies
   run_onboarding
   maybe_install_daemons
+  print_success_summary
   emit_json_summary
 }
 

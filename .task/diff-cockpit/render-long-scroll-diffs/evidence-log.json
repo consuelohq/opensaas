@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+  "events": [
+    {
+      "id": "febb9557-f4bf-4808-811d-3a8bfaa1cc8a",
+      "occurred_at": "2026-06-03T07:05:54.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "d6d2edcd-03fe-48bd-8e9f-2256104bea59",
+      "occurred_at": "2026-06-03T07:06:08.010Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "efd7d895-c78e-4472-ba34-98209ccda04e",
+      "occurred_at": "2026-06-03T07:06:16.536Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "67314fb7-bfb7-401a-9b67-57f902b02651",
+      "occurred_at": "2026-06-03T07:06:32.370Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "6426c22b-cf08-4fb3-836b-41b654b0522e",
+      "occurred_at": "2026-06-03T07:07:15.984Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "120aa59f-006b-42ad-a63e-779d5f9d24ce",
+      "occurred_at": "2026-06-03T07:07:26.700Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    },
+    {
+      "id": "810b8869-34aa-4b0e-aa5c-267671c35bb0",
+      "occurred_at": "2026-06-03T07:08:26.131Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/render-long-scroll-diffs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/render-long-scroll-diffs"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T07:08:26.180Z"
+}

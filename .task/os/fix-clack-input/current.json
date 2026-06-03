@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-clack-input",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 736,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/736",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/736",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/736/fix-clack-input",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/736",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/736/fix-clack-input",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-clack-input",
+  "taskSession": "tsk_d6c69b06ceb1",
+  "tmuxSession": "opensaas-os-fix-clack-input-d6c69b06",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-clack-input/.task/os/fix-clack-input/session.json",
+  "createdAt": "2026-06-03T08:04:07.071Z"
+}
