@@ -63,3 +63,30 @@ Write tests before implementation for:
 ## workspace-owned: activity log
 
 - 2026-06-03 03:46:38 fs.patch: `packages/diff-cockpit/src/index.ts`
+
+## Implementation summary
+
+Created the new `diff-cockpit` area/package as a Cloudflare Worker app rather than a static tmp viewer. The worker serves a single live PR route at `/:owner/:repo/pull/:number` and a live JSON API at `/api/:owner/:repo/pull/:number`. The API fetches current GitHub PR metadata and changed files on request, using `GITHUB_TOKEN`/`GH_TOKEN` when provided.
+
+Added the workspace operator script `diff_cockpit` with root and workspace package aliases. The script accepts a bare PR number, GitHub PR URL, or canonical route and opens the canonical `https://diffs.consuelohq.com/:owner/:repo/pull/:number` URL in Arc. It supports `--print`, `--no-open`, and `--repo owner/repo`.
+
+The review page keeps the right review drawer closed by default. The default review surface is file tree on the left and diff/code in the center. The page loads `@pierre/diffs` and `@pierre/trees` as browser integration points, with local fallback rendering for the diff content.
+
+Updated the Consuelo core registry so the new package, root script, workspace alias, and operator tool surface are tracked. Also expanded the registry script-target audit to include `packages/diff-cockpit/package.json`.
+
+## Validation run
+
+- `bun test packages/diff-cockpit/tests/diff-cockpit.test.ts` passed: 7 tests.
+- `cd packages/diff-cockpit && bun run typecheck` passed.
+- Live GitHub smoke fetch for PR #708 succeeded and returned 100 changed files.
+- `cd packages/diff-cockpit && wrangler deploy src/worker.ts --dry-run --outdir /tmp/diff-cockpit-worker-dry-run` passed after correcting the custom-domain route to `diffs.consuelohq.com`.
+- `bun packages/consuelo-core/scripts/audit-registry.ts` passed with package/script/tool registry counts updated.
+- `bunx vitest run packages/consuelo-core/tests/registry.test.ts` passed: 11 tests.
+- `git diff --check` passed.
+- Formal `verify` passed and wrote `.task/diff-cockpit/add-live-pr-diff-cockpit/verify.json` before the task branch was promoted.
+
+## Follow-ups
+
+- Deploy the worker to Cloudflare and bind `diffs.consuelohq.com` after review/merge.
+- Phase 2: add the open-PR homepage and stream/status filters.
+- Phase 3: wire the closed-by-default drawer to CodeRabbit/Codex comments and fix-prompt actions.
