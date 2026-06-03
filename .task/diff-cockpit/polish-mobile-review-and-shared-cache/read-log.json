@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/diff-cockpit/polish-mobile-review-and-shared-cache/workpad.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/diff-cockpit/tsconfig.json"
+  ],
+  "updatedAt": "2026-06-03T17:50:00.996Z"
+}

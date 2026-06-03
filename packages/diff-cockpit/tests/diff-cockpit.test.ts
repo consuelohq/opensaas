@@ -447,6 +447,14 @@ describe('renderReviewPage', () => {
     expect(html).toContain('<strong>review notes</strong>');
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
+    expect(html).toContain('id="mobile-files-toggle"');
+    expect(html).toContain('aria-label="Open files"');
+    expect(html).toContain('class="mobile-file-backdrop"');
+    expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
+    expect(html).toContain('@media (max-width: 760px)');
+    expect(html).toContain('.layout { height:calc(100vh - 132px); grid-template-columns:minmax(0, 1fr); }');
+    expect(html).toContain('--paper:#070a0d');
+    expect(html).toContain('--surface:#0b0f13');
     expect(html).toContain('id="file-pane-resizer"');
     expect(html).toContain('font-family: Inter');
     expect(html).toContain('font-size:13px');
@@ -537,7 +545,10 @@ describe('createWorker', () => {
     const second = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708', { headers: { 'if-none-match': etag } }));
 
     expect(first.status).toBe(200);
+    expect(first.headers.get('cache-control') || '').toContain('public');
+    expect(first.headers.get('cache-control') || '').toContain('s-maxage');
     expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(first.headers.get('vary') || '').toBe('Accept');
     expect(etag).toContain('W/');
     expect(second.status).toBe(304);
   });
