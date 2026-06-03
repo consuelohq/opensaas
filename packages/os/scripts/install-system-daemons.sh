@@ -2,11 +2,13 @@
 set -euo pipefail
 
 dry_run=0
+debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
+    --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
       exit 0
       ;;
@@ -84,8 +86,14 @@ wait_for_health() {
   local sleep_seconds="$3"
   local attempt
   for attempt in $(seq 1 "$attempts"); do
-    if curl --fail --silent --show-error --max-time 5 "$url" >/dev/null; then
-      return 0
+    if [ "$debug" = "1" ]; then
+      if curl --fail --silent --show-error --max-time 5 "$url" >/dev/null; then
+        return 0
+      fi
+    else
+      if curl --fail --silent --max-time 5 "$url" >/dev/null 2>&1; then
+        return 0
+      fi
     fi
     sleep "$sleep_seconds"
   done
@@ -109,6 +117,34 @@ rollback_agents() {
   bootout_agent "$watchdog_label"
   bootout_agent "$portless_label"
   bootout_agent "$workspace_label"
+}
+
+print_repair_hint() {
+  log "Consuelo OS services were not healthy after LaunchAgent setup."
+  log "Log directory: $log_dir"
+  log "System log: $log_dir/system.log"
+  log "Portless log: $log_dir/portless.log"
+  log "Watchdog log: $log_dir/watchdog.log"
+  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Retry services: bash $script_dir/install-system-daemons.sh"
+  log "Remove services only: bash $script_dir/uninstall-system-daemons.sh"
+  log "Debug details: CONSUELO_OS_DEBUG=1 bash $script_dir/install-system-daemons.sh --debug"
+}
+
+print_success_summary() {
+  log "LaunchAgent setup complete"
+  log "Services: $workspace_label, $portless_label, $watchdog_label"
+  log "LaunchAgents: $launch_agent_dir"
+  log "Logs: $log_dir"
+  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Tokens and secrets are saved in local config/state files and are not printed."
+}
+
+print_debug_state() {
+  [ "$debug" = "1" ] || return 0
+  launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
+  launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
+  launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
 }
 
 if [ "$dry_run" -eq 0 ]; then
@@ -155,6 +191,7 @@ bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
 if ! wait_for_health "$local_health_url" 20 1; then
   log "local Consuelo OS health failed after LaunchAgent cutover"
+  print_repair_hint
   rollback_agents
   exit 1
 fi
@@ -162,11 +199,10 @@ fi
 external_health_url="$(derive_external_health_url || true)"
 if [ -n "$external_health_url" ] && ! wait_for_health "$external_health_url" 20 1; then
   log "external health failed after LaunchAgent cutover"
+  print_repair_hint
   rollback_agents
   exit 1
 fi
 
-log "LaunchAgent cutover complete"
-launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
-launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
-launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
+print_success_summary
+print_debug_state
