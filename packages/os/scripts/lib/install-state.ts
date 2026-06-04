@@ -1,7 +1,9 @@
 import { Database } from 'bun:sqlite';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
@@ -65,7 +67,8 @@ export type ProvisionAction = {
     | 'create_file'
     | 'preserve_file'
     | 'connect_agent'
-    | 'skip_agent';
+    | 'skip_agent'
+    | 'seed_skill';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'skipped';
   message: string;
@@ -104,6 +107,42 @@ const REQUIRED_DIRS = [
   'tmp',
 ] as const;
 const DEFAULT_PORT = 8850;
+
+const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
+const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
+const SKILL_METADATA_FILE = '.consuelo-skill.json';
+const SKILLS_REGISTRY_FILE = 'skills.json';
+
+const COMPACT_SKILL_FIELDS = [
+  'name',
+  'title',
+  'description',
+  'trigger',
+  'entrypoint',
+  'load',
+  'permission',
+  'requiresApproval',
+  'status',
+  'capabilities',
+  'tools',
+  'subskills',
+  'visibility',
+  'distribution',
+  'audience',
+] as const;
+
+type JsonObject = Record<string, unknown>;
+
+type SkillInstallMetadata = {
+  version: 1;
+  name: string;
+  source: 'bundled';
+  sourcePath: string;
+  hash: string;
+  installedAt: string;
+  updatedAt: string;
+};
 
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
@@ -287,6 +326,216 @@ function connectAgent(
   };
   if (existingIndex >= 0) config.agents[existingIndex] = agentConfig;
   else config.agents.push(agentConfig);
+
+  return actions;
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readJsonObject(filePath: string): JsonObject {
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
+  if (!isJsonObject(parsed)) {
+    throw new Error(`${filePath}: expected JSON object`);
+  }
+  return parsed;
+}
+
+function toRepoRelative(filePath: string): string {
+  return path.relative(path.join(PACKAGE_ROOT, '..', '..'), filePath).split(path.sep).join('/');
+}
+
+function toPortableSkillJson(skillDir: string, skillName: string): JsonObject {
+  const skill = readJsonObject(path.join(skillDir, 'skill.json'));
+  const entrypoint = typeof skill.entrypoint === 'string' && skill.entrypoint.length > 0
+    ? skill.entrypoint
+    : 'skill.json';
+  const load = isJsonObject(skill.load) ? skill.load : {};
+  return {
+    ...skill,
+    entrypoint,
+    load: {
+      ...load,
+      type: typeof load.type === 'string' ? load.type : 'resource',
+      path: `skills/${skillName}/${entrypoint}`,
+    },
+  };
+}
+
+function compactSkillMetadata(skill: JsonObject): JsonObject {
+  const compact: JsonObject = {};
+  for (const field of COMPACT_SKILL_FIELDS) {
+    if (field in skill) compact[field] = skill[field];
+  }
+  return compact;
+}
+
+function listSkillDirs(skillsRoot: string): string[] {
+  if (!fs.existsSync(skillsRoot)) return [];
+  return fs.readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(skillsRoot, entry.name))
+    .filter((skillDir) => fs.existsSync(path.join(skillDir, 'skill.json')));
+}
+
+function getSkillName(skillDir: string): string {
+  const skill = readJsonObject(path.join(skillDir, 'skill.json'));
+  return typeof skill.name === 'string' && skill.name.length > 0
+    ? skill.name
+    : path.basename(skillDir);
+}
+
+function collectSkillFiles(skillDir: string): string[] {
+  const files: string[] = [];
+  for (const entry of fs.readdirSync(skillDir, { withFileTypes: true })) {
+    if (entry.name === SKILL_METADATA_FILE) continue;
+    const filePath = path.join(skillDir, entry.name);
+    if (entry.isDirectory()) files.push(...collectSkillFiles(filePath));
+    else if (entry.isFile()) files.push(filePath);
+  }
+  return files.sort((left, right) => left.localeCompare(right));
+}
+
+function skillTreeHash(skillDir: string, skillName: string, portable: boolean): string {
+  const hash = createHash('sha256');
+  for (const filePath of collectSkillFiles(skillDir)) {
+    const relativePath = path.relative(skillDir, filePath).split(path.sep).join('/');
+    const content = portable && relativePath === 'skill.json'
+      ? `${JSON.stringify(toPortableSkillJson(skillDir, skillName), null, 2)}\n`
+      : fs.readFileSync(filePath);
+    hash.update(relativePath);
+    hash.update('\0');
+    hash.update(content);
+    hash.update('\0');
+  }
+  return `sha256:${hash.digest('hex')}`;
+}
+
+function copyBundledSkill(skillDir: string, targetDir: string, skillName: string): void {
+  fs.mkdirSync(targetDir, { recursive: true });
+  for (const filePath of collectSkillFiles(skillDir)) {
+    const relativePath = path.relative(skillDir, filePath).split(path.sep).join('/');
+    const targetPath = path.join(targetDir, relativePath);
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    if (relativePath === 'skill.json') {
+      fs.writeFileSync(targetPath, `${JSON.stringify(toPortableSkillJson(skillDir, skillName), null, 2)}\n`);
+    } else {
+      fs.copyFileSync(filePath, targetPath);
+    }
+  }
+}
+
+function readSkillInstallMetadata(filePath: string): SkillInstallMetadata | null {
+  const metadata = readJsonFile<SkillInstallMetadata>(filePath);
+  return metadata?.source === 'bundled' ? metadata : null;
+}
+
+function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): ProvisionAction[] {
+  const outputPath = path.join(skillsRoot, SKILLS_REGISTRY_FILE);
+  if (dryRun) {
+    return [{
+      type: 'create_file',
+      path: outputPath,
+      status: 'planned',
+      message: 'skills registry will be written',
+    }];
+  }
+
+  const skills = listSkillDirs(skillsRoot)
+    .map((skillDir) => compactSkillMetadata(readJsonObject(path.join(skillDir, 'skill.json'))))
+    .sort((left, right) => String(left.name).localeCompare(String(right.name)));
+  fs.writeFileSync(outputPath, `${JSON.stringify({ version: 1, skills }, null, 2)}\n`, { mode: 0o600 });
+  return [{
+    type: 'create_file',
+    path: outputPath,
+    status: 'created',
+    message: 'skills registry written',
+  }];
+}
+
+function seedBundledSkills(home: string, dryRun: boolean): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+  const skillsRoot = path.join(home, 'skills');
+  const bundledSkillNames = new Set<string>();
+  const now = nowIso();
+
+  for (const sourceDir of listSkillDirs(BUNDLED_SKILLS_ROOT)) {
+    const skillName = getSkillName(sourceDir);
+    bundledSkillNames.add(skillName);
+    const targetDir = path.join(skillsRoot, skillName);
+    const metadataPath = path.join(targetDir, SKILL_METADATA_FILE);
+    const sourceHash = skillTreeHash(sourceDir, skillName, true);
+    const existingMetadata = readSkillInstallMetadata(metadataPath);
+    const targetExists = fs.existsSync(targetDir);
+
+    if (targetExists && !existingMetadata) {
+      actions.push({
+        type: 'seed_skill',
+        path: targetDir,
+        status: 'skipped',
+        message: 'local skill preserved',
+      });
+      continue;
+    }
+
+    if (existingMetadata) {
+      const installedHash = skillTreeHash(targetDir, skillName, false);
+      if (installedHash !== existingMetadata.hash) {
+        actions.push({
+          type: 'seed_skill',
+          path: targetDir,
+          status: 'skipped',
+          message: 'bundled skill has local changes; preserved',
+        });
+        continue;
+      }
+      if (existingMetadata.hash === sourceHash) {
+        actions.push({
+          type: 'seed_skill',
+          path: targetDir,
+          status: 'preserved',
+          message: 'bundled skill already installed',
+        });
+        continue;
+      }
+    }
+
+    actions.push({
+      type: 'seed_skill',
+      path: targetDir,
+      status: dryRun ? 'planned' : 'created',
+      message: targetExists ? 'bundled skill refreshed' : 'bundled skill installed',
+    });
+
+    if (!dryRun) {
+      if (targetExists) fs.rmSync(targetDir, { recursive: true, force: true });
+      copyBundledSkill(sourceDir, targetDir, skillName);
+      const metadata: SkillInstallMetadata = {
+        version: 1,
+        name: skillName,
+        source: 'bundled',
+        sourcePath: toRepoRelative(sourceDir),
+        hash: sourceHash,
+        installedAt: existingMetadata?.installedAt ?? now,
+        updatedAt: now,
+      };
+      fs.writeFileSync(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, { mode: 0o600 });
+    }
+  }
+
+  for (const installedSkillDir of listSkillDirs(skillsRoot)) {
+    const skillName = getSkillName(installedSkillDir);
+    if (bundledSkillNames.has(skillName)) continue;
+    actions.push({
+      type: 'seed_skill',
+      path: installedSkillDir,
+      status: 'skipped',
+      message: 'local skill preserved',
+    });
+  }
+
+  actions.push(...writeInstalledSkillsRegistry(skillsRoot, dryRun));
   return actions;
 }
 
@@ -358,6 +607,7 @@ export function provisionLocalOs(
 
   config.selectedSkills = options.selectedSkills ?? config.selectedSkills ?? [];
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
+  actions.push(...seedBundledSkills(home, dryRun));
 
   const agents = detectAgents(home);
   const requestedAgents = new Set(options.connectAgents ?? []);
