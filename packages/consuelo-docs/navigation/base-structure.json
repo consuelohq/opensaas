@@ -440,21 +440,36 @@
           ]
         },
         {
-          "key": "osRunbooks",
-          "label": "Runbooks",
+          "key": "osSkills",
+          "label": "Skills",
           "icon": "bolt",
           "pages": [
-            "os/runbooks/overview",
-            "os/runbooks/daily-revenue-brief",
-            "os/runbooks/lead-prioritizer",
-            "os/runbooks/post-call-analysis",
-            "os/runbooks/sales-coaching",
-            "os/runbooks/follow-up-generator",
-            "os/runbooks/landing-page-builder",
-            "os/runbooks/meta-ads-review",
-            "os/runbooks/google-ads-review",
-            "os/runbooks/campaign-brief",
-            "os/runbooks/weekly-manager-report"
+            "os/skills/browser",
+            "os/skills/consuelo-design",
+            "os/skills/consuelo-design-landing-page",
+            "os/skills/consuelo-workspace-snapshot",
+            "os/skills/daily-revenue-brief",
+            "os/skills/debugger",
+            "os/skills/handoff",
+            "os/skills/research-ingest",
+            "os/skills/senior-engineer",
+            "os/skills/skill-creator",
+            "os/skills/task",
+            {
+              "key": "osPlannedSkills",
+              "label": "Planned Skills",
+              "pages": [
+                "os/skills/planned/campaign-brief",
+                "os/skills/planned/follow-up-generator",
+                "os/skills/planned/google-ads-review",
+                "os/skills/planned/landing-page-builder",
+                "os/skills/planned/lead-prioritizer",
+                "os/skills/planned/meta-ads-review",
+                "os/skills/planned/post-call-analysis",
+                "os/skills/planned/sales-coaching",
+                "os/skills/planned/weekly-manager-report"
+              ]
+            }
           ]
         },
         {
