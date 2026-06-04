@@ -121,6 +121,45 @@ has_tty() {
   [ -r /dev/tty ] && [ -w /dev/tty ]
 }
 
+use_loading_dots() {
+  [ "$JSON" -eq 0 ] && [ "$DEBUG" != "1" ] && [ -t 1 ]
+}
+
+run_with_loading_dots() {
+  local loading_message="$1"
+  shift
+
+  if ! use_loading_dots; then
+    log "${loading_message}..."
+    "$@"
+    return $?
+  fi
+
+  local frames=("" "." ".." "...")
+  local frame_index=0
+  local command_pid
+  local status=0
+
+  "$@" &
+  command_pid=$!
+
+  while kill -0 "$command_pid" >/dev/null 2>&1; do
+    printf '\r%s%s   ' "$loading_message" "${frames[$frame_index]}"
+    frame_index=$(( (frame_index + 1) % ${#frames[@]} ))
+    sleep 0.25
+  done
+
+  wait "$command_pid" || status=$?
+
+  if [ "$status" -eq 0 ]; then
+    printf '\r%s... done\n' "$loading_message"
+  else
+    printf '\r%s... failed\n' "$loading_message"
+  fi
+
+  return "$status"
+}
+
 prompt_enter() {
   local message="$1"
   local rerun_hint="$2"
@@ -139,7 +178,6 @@ This shell is non-interactive. Re-run with:
   printf '%s\n' "$message" > /dev/tty
   IFS= read -r _ < /dev/tty
 }
-
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -148,7 +186,6 @@ require_command() {
   fi
   fail "$explanation"
 }
-
 check_mac_prerequisites() {
   local os_name
   os_name="$(uname -s 2>/dev/null || true)"
@@ -230,6 +267,27 @@ current_repo_dir() {
   return 1
 }
 
+download_source_archive() {
+  local tmp_dir archive_file parent_dir
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
+  archive_file="$tmp_dir/source.tar.gz"
+  parent_dir="$(dirname "$SOURCE_DIR")"
+
+  mkdir -p "$parent_dir" "$SOURCE_DIR"
+
+  if ! curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  if ! tar -xzf "$archive_file" -C "$SOURCE_DIR" --strip-components=1; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  rm -rf "$tmp_dir"
+}
+
 download_source() {
   if [ "$DRY_RUN" -eq 1 ]; then
     SOURCE_STATUS="would_download"
@@ -255,16 +313,7 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
     return 0
   fi
 
-  local tmp_dir archive_file parent_dir
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
-  archive_file="$tmp_dir/source.tar.gz"
-  parent_dir="$(dirname "$SOURCE_DIR")"
-
-  mkdir -p "$parent_dir" "$SOURCE_DIR"
-  log "Downloading Consuelo OS source..."
-  curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"
-  tar -xzf "$archive_file" -C "$SOURCE_DIR" --strip-components=1
-  rm -rf "$tmp_dir"
+  run_with_loading_dots "Downloading Consuelo OS source" download_source_archive
 
   if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
     fail "downloaded source did not contain packages/os/scripts/install.ts"
@@ -292,7 +341,6 @@ resolve_source() {
 
   download_source
 }
-
 ensure_dependencies() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
@@ -353,8 +401,7 @@ run_onboarding() { # run_onboarding_json
       ONBOARDING_STATUS="dry_run"
     else
       log "dry-run: would run: bun --cwd $os_dir ./scripts/install.ts --dry-run --yes --json"
-      ONBOARDING_STATUS=
-"would_run"
+      ONBOARDING_STATUS="would_run"
     fi
     return 0
   fi
@@ -392,18 +439,16 @@ run_onboarding() { # run_onboarding_json
 
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
-  if [ -n "$BUN_BIN" ]; then
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run -- --quiet
-    DAEMON_STATUS="dry_run"
-  else
-    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run -- --quiet"
-    DAEMON_STATUS="would_dry_run"
-  fi
+  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --dry-run --quiet)
+  DAEMON_STATUS="dry_run"
+}
+
+install_daemons_quiet() {
+  local os_dir="$REPO_DIR/packages/os"
+  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
 maybe_install_daemons() {
-  local os_dir="$REPO_DIR/packages/os"
-
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
     log "Skipping Consuelo OS user LaunchAgent setup."
@@ -433,15 +478,14 @@ Press Enter to install these user LaunchAgents, or press Control-C to cancel." "
   fi
 
   if [ "$DEBUG" = "1" ]; then
+    local os_dir="$REPO_DIR/packages/os"
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
-    log "setting up background service..."
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:quiet
+    run_with_loading_dots "setting up background service" install_daemons_quiet
     log "background service ready"
   fi
   DAEMON_STATUS="installed"
 }
-
 
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
