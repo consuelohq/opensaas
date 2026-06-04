@@ -11,6 +11,10 @@ import {
 } from '@clack/prompts';
 
 import {
+  getDefaultSelectedSkillNames,
+  getOnboardingSkillOptions,
+} from './lib/onboarding-skills';
+import {
   info,
   printEnd,
   printOsBanner,
@@ -27,7 +31,7 @@ import {
 } from './lib/install-state';
 
 type ArtifactMode = 'local';
-type SkillName = 'daily-revenue-brief' | 'artifact-search' | 'agent-handoff';
+type SkillName = string;
 
 type InstallOptions = {
   dryRun: boolean;
@@ -65,7 +69,7 @@ function parseArgs(argv: string[]): InstallOptions {
     installDaemons: false,
     skipDaemons: false,
     artifactMode: 'local',
-    selectedSkills: [],
+    selectedSkills: getDefaultSelectedSkillNames(),
     connectAgents: [],
   };
 
@@ -218,14 +222,16 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     });
     if (isCancel(home)) { cancel('setup cancelled.'); process.exit(0); }
 
+    const skillOptions = getOnboardingSkillOptions();
     const selectedSkills = await multiselect({
       ...clackIo,
       message: 'select skills to enable',
-      options: [
-        { value: 'daily-revenue-brief' as const, label: 'daily revenue brief', hint: 'creates a local artifact' },
-        { value: 'artifact-search' as const, label: 'artifact search', hint: 'lets agents find local artifacts' },
-        { value: 'agent-handoff' as const, label: 'agent handoff', hint: 'keeps task context portable' },
-      ],
+      options: skillOptions.map((skill) => ({
+        value: skill.value,
+        label: skill.label,
+        hint: skill.hint,
+      })),
+      initialValues: options.selectedSkills,
       required: false,
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }

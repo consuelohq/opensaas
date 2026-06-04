@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-skills/fix-onboarding-skill-selection-and-install-seeding",
+  "base": "origin/stream/os-skills",
+  "headSha": "b8d2b9a8412380eafa977ad96a177a22e895f29d",
+  "changeHash": "cdf4ee4219962263366e006af23ff7773340ac605ca6effb52aaf89343931290",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/onboarding-skills.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/onboarding-skills.test.ts"
+  ],
+  "verifiedAt": "2026-06-04T15:18:05.122Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/current.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/session.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/verify.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/workpad.md",
+        ".task/os/add-subtle-os-installer-loading-dots/current.json",
+        ".task/os/add-subtle-os-installer-loading-dots/evidence-log.json",
+        ".task/os/add-subtle-os-installer-loading-dots/read-log.json",
+        ".task/os/add-subtle-os-installer-loading-dots/session.json",
+        ".task/os/add-subtle-os-installer-loading-dots/verify.json",
+        ".task/os/add-subtle-os-installer-loading-dots/workpad.md",
+        ".task/tasks/os-skills/fix-onboarding-skill-selection-and-install-seeding.json",
+        ".task/tasks/os/add-subtle-os-installer-loading-dots.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/compact-daemon-output.test.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/onboarding-skills.ts",
+        "packages/os/scripts/lib/skills.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
