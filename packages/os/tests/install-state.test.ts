@@ -107,6 +107,43 @@ describe('local OS install state', () => {
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
   });
 
+  it('materializes only selected bundled skills on fresh install', () => {
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', selectedSkills: ['task', 'senior-engineer'] });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(false);
+    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('skills', 'research-ingest')) && action.status === 'skipped' && action.message === 'bundled skill not selected')).toBe(true);
+
+    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
+    const installedNames = installedRegistry.skills.map((skill: { name: string }) => skill.name);
+    expect(installedNames).toContain('task');
+    expect(installedNames).toContain('senior-engineer');
+    expect(installedNames).not.toContain('research-ingest');
+  });
+
+  it('uses default selected bundled skills when no selectedSkills option is provided', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'consuelo-design-landing-page', 'skill.json'))).toBe(false);
+
+    const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
+    expect(config.selectedSkills).toContain('senior-engineer');
+    expect(config.selectedSkills).toContain('research-ingest');
+    expect(config.selectedSkills).not.toContain('consuelo-design-landing-page');
+  });
+
+
   it('records detected agent connections without editing unknown config files', () => {
     mkdirSync(join(tempUserHome, '.codex'), { recursive: true });
 

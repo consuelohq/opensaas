@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
+import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { validateBundledSkills } from './skills';
 
 export type OsMode = 'local' | 'cloud';
@@ -454,7 +455,11 @@ function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): Prov
   }];
 }
 
-function seedBundledSkills(home: string, dryRun: boolean): ProvisionAction[] {
+function seedBundledSkills(
+  home: string,
+  dryRun: boolean,
+  selectedSkills?: readonly string[],
+): ProvisionAction[] {
   const actions: ProvisionAction[] = [];
   const skillsRoot = path.join(home, 'skills');
   const bundledSkillNames = new Set<string>();
@@ -468,6 +473,19 @@ function seedBundledSkills(home: string, dryRun: boolean): ProvisionAction[] {
     const sourceHash = skillTreeHash(sourceDir, skillName, true);
     const existingMetadata = readSkillInstallMetadata(metadataPath);
     const targetExists = fs.existsSync(targetDir);
+    const selectedSet = selectedSkills ? new Set(selectedSkills) : null;
+
+    if (selectedSet && !selectedSet.has(skillName)) {
+      actions.push({
+        type: 'seed_skill',
+        path: targetDir,
+        status: 'skipped',
+        message: targetExists
+          ? 'bundled skill not selected; existing install preserved'
+          : 'bundled skill not selected',
+      });
+      continue;
+    }
 
     if (targetExists && !existingMetadata) {
       actions.push({
@@ -605,9 +623,12 @@ export function provisionLocalOs(
     }
   }
 
-  config.selectedSkills = options.selectedSkills ?? config.selectedSkills ?? [];
+  config.selectedSkills =
+    options.selectedSkills ??
+    config.selectedSkills ??
+    getDefaultSelectedSkillNames();
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
-  actions.push(...seedBundledSkills(home, dryRun));
+  actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
 
   const agents = detectAgents(home);
   const requestedAgents = new Set(options.connectAgents ?? []);

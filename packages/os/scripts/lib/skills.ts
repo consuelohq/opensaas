@@ -13,6 +13,8 @@ export type SkillMetadata = {
   name: string;
   title: string;
   description: string;
+  trigger?: string;
+  status?: string;
   script?: string;
   entrypoint?: string;
   load?: GuidanceSkillLoad;
