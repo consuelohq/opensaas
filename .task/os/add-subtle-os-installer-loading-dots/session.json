@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2edfa16b5387",
+  "tmuxSession": "opensaas-os-add-subtle-os-installer-loading-dots-2edfa16b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-subtle-os-installer-loading-dots",
+  "branch": "task/os/add-subtle-os-installer-loading-dots",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-subtle-os-installer-loading-dots",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-subtle-os-installer-loading-dots",
+  "prNumber": 753,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/753",
+  "createdAt": "2026-06-04T04:04:58.723Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-subtle-os-installer-loading-dots/.task/os/add-subtle-os-installer-loading-dots/session.json"
+}
