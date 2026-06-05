@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {
   cancel,
   confirm,
+  groupMultiselect,
   isCancel,
   multiselect,
   select,
@@ -12,7 +13,7 @@ import {
 
 import {
   getDefaultSelectedSkillNames,
-  getOnboardingSkillOptions,
+  getGroupedOnboardingSkillOptions,
 } from './lib/onboarding-skills';
 import {
   info,
@@ -222,16 +223,15 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     });
     if (isCancel(home)) { cancel('setup cancelled.'); process.exit(0); }
 
-    const skillOptions = getOnboardingSkillOptions();
-    const selectedSkills = await multiselect({
+    const skillPrompt = getGroupedOnboardingSkillOptions();
+    const selectedSkills = await groupMultiselect({
       ...clackIo,
       message: 'select skills to enable',
-      options: skillOptions.map((skill) => ({
-        value: skill.value,
-        label: skill.label,
-        hint: skill.hint,
-      })),
-      initialValues: options.selectedSkills,
+      options: skillPrompt.options,
+      initialValues: skillPrompt.initialValues,
+      cursorAt: skillPrompt.cursorAt,
+      selectableGroups: skillPrompt.selectableGroups,
+      groupSpacing: skillPrompt.groupSpacing,
       required: false,
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
