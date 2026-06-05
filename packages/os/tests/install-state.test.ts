@@ -97,6 +97,61 @@ describe('local OS install state', () => {
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
   });
 
+  it('materializes the local Office page from persisted artifacts', () => {
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const { createWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
+      provisionLocalOs({ mode: 'local' });
+      const artifact = createWorkspaceArtifact({
+        traceId: 'trc_office_page_test',
+        workspaceId: 'workspace-id',
+        createdByUserId: 'user-id',
+        skillName: 'daily-revenue-brief',
+        title: 'Quarterly Pipeline Brief',
+        fileName: 'quarterly-pipeline-brief.json',
+        type: 'brief',
+        format: 'json',
+        content: { summary: 'pipeline is healthy' },
+        inputSummary: { source: 'office-test' },
+      });
+      provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify({ artifact }));
+    `)) as { artifact: { id: string; localPath: string; path: string } };
+
+    const officeIndexPath = join(tempHome, 'pages', 'office', 'index.html');
+    const officeDataPath = join(tempHome, 'pages', 'office', 'data', 'artifacts.json');
+    const officeAssetsPath = join(tempHome, 'pages', 'office', 'assets');
+
+    expect(existsSync(officeIndexPath)).toBe(true);
+    expect(existsSync(officeDataPath)).toBe(true);
+    expect(existsSync(officeAssetsPath)).toBe(true);
+
+    const officePage = readFileSync(officeIndexPath, 'utf8');
+    expect(officePage).toContain('Office');
+    expect(officePage).toContain('Quarterly Pipeline Brief');
+
+    const officeData = JSON.parse(readFileSync(officeDataPath, 'utf8')) as {
+      artifacts: Array<{
+        id: string;
+        title: string;
+        traceId: string;
+        storageMode: string;
+        path: string;
+        localPath: string;
+      }>;
+    };
+    expect(officeData.artifacts).toEqual([
+      expect.objectContaining({
+        id: result.artifact.id,
+        title: 'Quarterly Pipeline Brief',
+        traceId: 'trc_office_page_test',
+        storageMode: 'local',
+        path: result.artifact.path,
+        localPath: result.artifact.localPath,
+      }),
+    ]);
+  });
+
   it('preserves local user skills while refreshing the installed registry', () => {
     const localSkillDir = join(tempHome, 'skills', 'local-research');
     mkdirSync(localSkillDir, { recursive: true });
