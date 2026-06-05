@@ -839,6 +839,11 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
       </div>
       <a class="history-button" data-history-link href="${escapeAttribute(historyPath)}">History</a>
     </header>
+    <label class="code-search-row" for="code-search" data-pagefind-ignore>
+      <span class="filter-label">Search</span>
+      <input id="code-search" class="search-input code-search-input" type="search" placeholder="Search current folder or file" autocomplete="off" spellcheck="false" />
+      <span class="search-hint">Press / to search</span>
+    </label>
     <main class="code-browser-card" data-code-browser-root>
       <div class="code-browser-toolbar">
         <span class="branch-pill">main</span>
@@ -909,7 +914,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/internal/cache/refresh') {
-        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, edgeCache });
+        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
       }
 
 
@@ -1648,6 +1653,7 @@ type CacheRefreshInput = {
   repo?: string;
   pulls?: unknown;
   reason?: string;
+  codePaths?: unknown;
 };
 
 type CacheRefreshDeps = {
@@ -1656,6 +1662,8 @@ type CacheRefreshDeps = {
   defaultRepo: string;
   indexLoader: ReturnType<typeof createGithubPullRequestIndexLoader>;
   reviewLoader: ReturnType<typeof createGithubPullRequestLoader>;
+  codeLoader: ReturnType<typeof createGithubCodeBrowserLoader>;
+  historyLoader: ReturnType<typeof createGithubCodeHistoryLoader>;
   edgeCache: EdgeCache | null;
 };
 
@@ -1680,11 +1688,27 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
 
   const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
   const pullNumbers = normalizeRefreshPulls(input.pulls);
+  const codePaths = normalizeRefreshCodePaths(input.codePaths);
   const refreshedPulls: string[] = [];
+  const refreshedCode: string[] = [];
+  const refreshedHistory: string[] = [];
   const homepageUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
   const homepageData = await deps.indexLoader(repo);
   await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+
+  for (const path of codePaths) {
+    const codeUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
+    const historyUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
+    const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
+    const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
+    const codeData = await deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
+    const historyData = await deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
+    await replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest));
+    await replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest));
+    refreshedCode.push(cachePathLabel(codeUrl));
+    refreshedHistory.push(cachePathLabel(historyUrl));
+  }
 
   for (const pullNumber of pullNumbers) {
     const pullUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
@@ -1701,8 +1725,15 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
     refreshed: {
       homepage: new URL(homepageUrl).pathname,
       pulls: refreshedPulls,
+      code: refreshedCode,
+      history: refreshedHistory,
     },
   });
+}
+
+function cachePathLabel(url: string): string {
+  const parsed = new URL(url);
+  return `${parsed.pathname}${parsed.search}`;
 }
 
 function isAuthorizedRefreshRequest(request: Request, expectedToken: string): boolean {
@@ -1720,6 +1751,17 @@ function normalizeRefreshPulls(value: unknown): number[] {
     if (Number.isInteger(pull) && pull > 0) pulls.add(pull);
   }
   return [...pulls];
+}
+
+function normalizeRefreshCodePaths(value: unknown): string[] {
+  const paths = new Set<string>(['packages']);
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const path = normalizeCodePath(String(item || ''));
+      if (path.startsWith('packages')) paths.add(path);
+    }
+  }
+  return [...paths];
 }
 
 function makeApiCacheRequest(url: URL): Request {
@@ -1876,9 +1918,17 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 
 .code-shell { max-width:min(1180px, calc(100vw - 48px)); }
 .code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
-.code-hero h1 { margin-bottom:10px; }
+.code-hero h1 { font-size:34px; line-height:1.05; margin-bottom:8px; font-weight:700; }
 .active-nav { font-weight:700; color:var(--accent); }
 .history-button, .branch-pill, .path-pill { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:7px 10px; font-size:13px; }
+.code-search-row { display:flex; align-items:center; gap:10px; margin:18px 0 0; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+.code-search-input { flex:1 1 auto; min-width:180px; }
+.search-hint { color:var(--quiet); font-size:12px; white-space:nowrap; }
+.file-path-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:500; }
+.file-view-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-left:auto; color:var(--muted); font-size:13px; }
+.copy-file-path { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1px solid var(--line); border-radius:7px; background:var(--paper); color:var(--muted); }
+.copy-file-path:hover { color:var(--accent); text-decoration:none; }
+.file-match-count { color:var(--quiet); }
 .code-browser-card { margin-top:22px; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
 .code-browser-toolbar { min-height:48px; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
 .code-browser-list { display:grid; }
@@ -1886,7 +1936,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .code-row:last-child { border-bottom:0; }
 .code-row:hover { background:var(--soft); text-decoration:none; }
 .file-icon { color:var(--quiet); text-align:center; }
-.code-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-name { font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .code-message { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .code-date { color:var(--quiet); text-align:right; font-variant-numeric:tabular-nums; }
 .file-view-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
@@ -2057,23 +2107,69 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 function renderCodeBrowserClientScript(apiPath: string): string {
   return `
 const root = document.querySelector('[data-code-browser-root]');
+const searchInput = document.querySelector('#code-search');
 const apiPath = '${escapeJs(apiPath)}';
+const state = { data: null, search: '' };
+setupSearch();
 loadCodeBrowser();
 function loadCodeBrowser() {
   fetch(apiPath, { cache: 'no-cache' })
     .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
-    .then(renderCode)
+    .then((data) => { state.data = data; renderCode(); })
     .catch((error) => { root.innerHTML = '<div class="code-row error">Failed to load code browser: ' + escapeHtml(String(error && error.message || error)) + '</div>'; });
 }
-function renderCode(data) {
+function setupSearch() {
+  if (searchInput) {
+    searchInput.addEventListener('input', () => { state.search = String(searchInput.value || '').trim().toLowerCase(); renderCode(); });
+  }
+  document.addEventListener('keydown', (event) => {
+    const tag = String(event.target && event.target.tagName || '').toLowerCase();
+    if (event.key === '/' && tag !== 'input' && tag !== 'textarea' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      focusSearch();
+    }
+  });
+}
+function focusSearch() {
+  if (!searchInput) return;
+  searchInput.focus();
+  searchInput.select();
+}
+function renderCode() {
+  const data = state.data;
+  if (!data) return;
   const count = root.querySelector('[data-commit-count]');
   if (count) count.textContent = (data.commitCount || 0).toLocaleString() + ' commits';
   const list = root.querySelector('.code-browser-list');
   if (data.file) {
-    list.innerHTML = '<div class="file-view-header"><strong>' + escapeHtml(data.file.path) + '</strong><a href="' + escapeAttribute(data.historyUrl) + '">History</a></div><div class="file-view ' + (data.file.isMarkdown ? 'markdown-body' : 'code-body') + '">' + data.file.renderedHtml + '</div>';
+    const query = state.search;
+    const text = String(data.file.text || '');
+    const matchCount = query ? (text.toLowerCase().split(query).length - 1) : 0;
+    const matchLabel = query ? '<span class="file-match-count">' + matchCount + ' matches</span>' : '';
+    list.innerHTML = '<div class="file-view-header"><span class="file-path-label">' + escapeHtml(data.file.path) + '</span><div class="file-view-actions">' + matchLabel + '<a href="' + escapeAttribute(data.historyUrl) + '">History</a><button class="copy-file-path" type="button" data-copy-path="' + escapeAttribute(data.file.path) + '" title="Copy file path">⧉</button></div></div><div class="file-view ' + (data.file.isMarkdown ? 'markdown-body' : 'code-body') + '">' + data.file.renderedHtml + '</div>';
+    bindCopyButtons();
     return;
   }
-  list.innerHTML = (data.entries || []).map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">No files found.</div>';
+  const entries = filterEntries(data.entries || [], state.search);
+  list.innerHTML = entries.map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">' + (state.search ? 'No files match "' + escapeHtml(state.search) + '".' : 'No files found.') + '</div>';
+}
+function filterEntries(entries, query) {
+  if (!query) return entries;
+  return entries.filter((entry) => [entry.name, entry.path, entry.latestCommitMessage, entry.latestCommitAuthor].some((value) => String(value || '').toLowerCase().includes(query)));
+}
+function bindCopyButtons() {
+  root.querySelectorAll('[data-copy-path]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const path = button.getAttribute('data-copy-path') || '';
+      const markCopied = () => { button.textContent = 'Copied'; window.setTimeout(() => { button.textContent = '⧉'; }, 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(path).then(markCopied, () => { button.textContent = path; });
+      } else {
+        button.textContent = path;
+      }
+    });
+  });
 }
 function relativeTime(value) {
   if (!value) return '';

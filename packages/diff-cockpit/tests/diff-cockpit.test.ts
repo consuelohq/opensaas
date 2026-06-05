@@ -457,6 +457,15 @@ describe('renderCodeBrowserPage', () => {
     expect(codeHtml).toContain('/api/consuelohq/opensaas/code?ref=main&amp;path=packages');
     expect(codeHtml).toContain('data-history-link');
     expect(codeHtml).toContain('/consuelohq/opensaas/history/main/packages');
+    expect(codeHtml).toContain('id="code-search"');
+    expect(codeHtml).toContain('Press / to search');
+    expect(codeHtml).toContain('focusSearch');
+    expect(codeHtml).toContain('state.search');
+    expect(codeHtml).toContain('No files match');
+    expect(codeHtml).toContain('copy-file-path');
+    expect(codeHtml).toContain('navigator.clipboard.writeText');
+    expect(codeHtml).toContain('.code-hero h1 { font-size:34px;');
+    expect(codeHtml).toContain('.code-name { font-weight:500;');
     expect(codeHtml).toContain('main');
     expect(codeHtml).toContain('packages');
 
@@ -656,9 +665,14 @@ describe('createWorker', () => {
       }
       if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([{ name: 'diff-cockpit', path: 'packages/diff-cockpit', type: 'dir', html_url: '', sha: 'pkgsha' }]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([{ sha: 'pkgcommit', html_url: '', commit: { message: 'feat(diff-cockpit): add browser', author: { name: 'Ko', date: '2026-06-05T05:00:00Z' } }, author: { login: 'kokayicobb' } }]);
+      if (url.endsWith('/commits?sha=main&path=packages%2Fdiff-cockpit&per_page=1')) return Response.json([{ sha: 'entrycommit', html_url: '', commit: { message: 'feat(diff-cockpit): add browser', author: { name: 'Ko', date: '2026-06-05T05:01:00Z' } }, author: { login: 'kokayicobb' } }]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([{ sha: 'historysha', html_url: '', commit: { message: 'history', author: { name: 'Ko', date: '2026-06-05T05:02:00Z' } }, author: { login: 'kokayicobb' } }]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
       if (url.includes('/files?')) return Response.json([{ filename: 'packages/diff-cockpit/src/index.ts', status: 'modified', additions: 1, deletions: 1, changes: 2, patch: '@@ -1 +1 @@\n-old\n+new', blob_url: '' }]);
-      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
       if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
       throw new Error(`unexpected refresh url ${url}`);
     };
     const worker = createWorker({ fetcher, cache });
@@ -669,17 +683,23 @@ describe('createWorker', () => {
       headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
       body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [757], reason: 'task.pr' }),
     }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
-    const refreshed = await refresh.json() as { refreshed: { homepage: string; pulls: string[] } };
+    const refreshed = await refresh.json() as { refreshed: { homepage: string; pulls: string[]; code: string[]; history: string[] } };
     const callsAfterRefresh = calls;
     const homepage = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls'));
     const detail = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757'));
+    const code = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/code?ref=main&path=packages'));
+    const history = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/history?ref=main&path=packages'));
 
     expect(unauthorized.status).toBe(401);
     expect(refresh.status).toBe(200);
     expect(refreshed.refreshed.homepage).toContain('/api/consuelohq/opensaas/pulls');
     expect(refreshed.refreshed.pulls).toContain('/api/consuelohq/opensaas/pull/757');
+    expect(refreshed.refreshed.code).toContain('/api/consuelohq/opensaas/code?ref=main&path=packages');
+    expect(refreshed.refreshed.history).toContain('/api/consuelohq/opensaas/history?ref=main&path=packages');
     expect(homepage.status).toBe(200);
     expect(detail.status).toBe(200);
+    expect(code.status).toBe(200);
+    expect(history.status).toBe(200);
     expect(calls).toBe(callsAfterRefresh);
   });
 

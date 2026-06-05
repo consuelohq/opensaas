@@ -2,6 +2,7 @@ export type DiffCockpitCacheRefreshOptions = {
   origin?: string;
   repo: string;
   pulls?: number[];
+  codePaths?: string[];
   reason?: string;
   token?: string;
   fetcher?: typeof fetch;
@@ -14,6 +15,8 @@ export type DiffCockpitCacheRefreshResult = {
   refreshed: {
     homepage: string;
     pulls: string[];
+    code: string[];
+    history: string[];
   };
 };
 
@@ -38,6 +41,7 @@ export async function refreshDiffCockpitCache(
     body: JSON.stringify({
       repo: options.repo,
       pulls: options.pulls || [],
+      codePaths: options.codePaths || ['packages'],
       reason: options.reason || 'manual',
     }),
   });
@@ -77,5 +81,9 @@ function isRefreshResult(value: unknown): value is DiffCockpitCacheRefreshResult
     && !!result.refreshed
     && typeof result.refreshed.homepage === 'string'
     && Array.isArray(result.refreshed.pulls)
-    && result.refreshed.pulls.every((pull) => typeof pull === 'string');
+    && result.refreshed.pulls.every((pull) => typeof pull === 'string')
+    && Array.isArray(result.refreshed.code)
+    && result.refreshed.code.every((path) => typeof path === 'string')
+    && Array.isArray(result.refreshed.history)
+    && result.refreshed.history.every((path) => typeof path === 'string');
 }
