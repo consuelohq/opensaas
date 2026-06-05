@@ -174,8 +174,13 @@
         "osAgentInterface": {
           "label": "Agent Interface"
         },
-        "osRunbooks": {
-          "label": "Runbooks"
+        "osSkills": {
+          "label": "Skills",
+          "groups": {
+            "osPlannedSkills": {
+              "label": "Planned Skills"
+            }
+          }
         },
         "osWorkspaceFilesystem": {
           "label": "Workspace Filesystem"
