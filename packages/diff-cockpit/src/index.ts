@@ -1993,13 +1993,22 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .code-browser-card { margin-top:22px; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
 .code-browser-toolbar { min-height:48px; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
 .code-browser-list { display:grid; }
-.code-row { min-height:44px; display:grid; grid-template-columns:28px minmax(160px, 1fr) minmax(160px, 1.6fr) 88px; gap:10px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
+.code-table-head, .history-table-head { min-height:38px; display:grid; grid-template-columns:minmax(160px, 1fr) 132px; gap:12px; align-items:center; padding:8px 12px; border-bottom:1px solid var(--line); color:var(--muted); font-size:13px; font-weight:600; letter-spacing:.01em; }
+.code-table-head span:last-child, .history-table-head span:last-child { text-align:right; }
+.code-row { min-height:44px; display:grid; grid-template-columns:28px minmax(0, 1fr) 132px; gap:10px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
 .code-row:last-child { border-bottom:0; }
 .code-row:hover { background:var(--soft); text-decoration:none; }
 .file-icon { color:var(--quiet); text-align:center; }
 .code-name { font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.code-message { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-message { display:none; }
 .code-date { color:var(--quiet); text-align:right; font-variant-numeric:tabular-nums; }
+.history-row { min-height:58px; display:grid; grid-template-columns:28px minmax(0, 1fr); grid-template-rows:auto auto; column-gap:10px; row-gap:3px; align-items:center; padding:10px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
+.history-row:hover { background:var(--soft); text-decoration:none; }
+.history-row .file-icon { grid-row:1 / span 2; align-self:start; padding-top:3px; }
+.history-main { min-width:0; display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:14px; align-items:center; }
+.history-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+.history-meta { grid-column:2; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.history-row .code-date { text-align:right; }
 .file-view-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
 .file-view { padding:18px; overflow:auto; }
 .markdown-body { line-height:1.7; }
@@ -2008,9 +2017,23 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
 .code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
 @media (max-width: 760px) {
-  .code-hero { align-items:flex-start; flex-direction:column; }
-  .code-row { grid-template-columns:24px minmax(0, 1fr); }
-  .code-message, .code-date { grid-column:2; text-align:left; }
+  .code-shell { max-width:calc(100vw - 20px); }
+  .code-hero { align-items:flex-start; flex-direction:column; gap:14px; padding:34px 0 20px; }
+  .code-hero h1 { font-size:32px; }
+  .code-search-row { padding:9px 10px; gap:8px; }
+  .search-hint { display:none; }
+  .code-browser-card { margin-top:16px; border-radius:8px; }
+  .code-browser-toolbar { min-height:42px; padding:7px 10px; }
+  .code-table-head { grid-template-columns:minmax(0, 1fr) 116px; padding:8px 10px; }
+  .code-row { grid-template-columns:24px minmax(0, 1fr) 116px; min-height:42px; padding:9px 10px; gap:8px; }
+  .code-name { font-weight:500; }
+  .code-date { grid-column:auto; text-align:right; }
+  .history-table-head { grid-template-columns:minmax(0, 1fr) 72px; padding:8px 10px; }
+  .history-row { min-height:62px; padding:10px 10px; grid-template-columns:24px minmax(0, 1fr); }
+  .history-main { grid-template-columns:minmax(0, 1fr) 54px; gap:10px; }
+  .history-title { white-space:nowrap; }
+  .history-meta { grid-column:2; }
+  .file-view { padding:14px; overflow:auto; }
 }
 .search-button { display:inline-flex; align-items:center; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -2212,7 +2235,7 @@ function renderCode() {
     return;
   }
   const entries = filterEntries(data.entries || [], state.search);
-  list.innerHTML = entries.map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">' + (state.search ? 'No files match "' + escapeHtml(state.search) + '".' : 'No files found.') + '</div>';
+  list.innerHTML = '<div class="code-table-head" data-pagefind-ignore><span>Name</span><span>Last commit date</span></div>' + (entries.map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">' + (state.search ? 'No files match "' + escapeHtml(state.search) + '".' : 'No files found.') + '</div>');
 }
 function filterEntries(entries, query) {
   if (!query) return entries;
@@ -2259,7 +2282,7 @@ function loadHistory() {
 }
 function renderHistory(data) {
   const list = root.querySelector('.code-browser-list');
-  list.innerHTML = (data.commits || []).map((commit) => '<a class="code-row history-row" href="' + escapeAttribute(commit.treeUrl) + '"><span class="file-icon">◆</span><span class="code-name">' + escapeHtml(commit.message) + '</span><span class="code-message">' + escapeHtml(commit.author) + ' · ' + escapeHtml(commit.shortSha) + '</span><time class="code-date" datetime="' + escapeAttribute(commit.committedAt || '') + '">' + relativeTime(commit.committedAt) + '</time></a>').join('') || '<div class="code-row muted">No commits found.</div>';
+  list.innerHTML = '<div class="history-table-head" data-pagefind-ignore><span>Commit</span><span>Time</span></div>' + ((data.commits || []).map((commit) => '<a class="history-row" href="' + escapeAttribute(commit.treeUrl) + '"><span class="file-icon">◆</span><span class="history-main"><span class="history-title">' + escapeHtml(commit.message) + '</span><time class="code-date" datetime="' + escapeAttribute(commit.committedAt || '') + '">' + relativeTime(commit.committedAt) + '</time></span><span class="history-meta">' + escapeHtml(commit.author) + ' · ' + escapeHtml(commit.shortSha) + '</span></a>').join('') || '<div class="code-row muted">No commits found.</div>');
 }
 function relativeTime(value) {
   if (!value) return '';

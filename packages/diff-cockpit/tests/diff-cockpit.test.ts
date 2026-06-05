@@ -471,6 +471,13 @@ describe('renderCodeBrowserPage', () => {
     expect(codeHtml).toContain('navigator.clipboard.writeText');
     expect(codeHtml).toContain('.code-hero h1 { font-size:34px;');
     expect(codeHtml).toContain('.code-name { font-weight:500;');
+    expect(codeHtml).toContain('code-table-head');
+    expect(codeHtml).toContain('Last commit date');
+    expect(codeHtml).toContain('.code-message { display:none; }');
+    expect(codeHtml).toContain('grid-template-columns:24px minmax(0, 1fr) 116px');
+    expect(codeHtml).toContain('history-table-head');
+    expect(codeHtml).toContain('history-main');
+    expect(codeHtml).toContain('history-meta');
     expect(codeHtml).toContain('main');
     expect(codeHtml).toContain('packages');
 

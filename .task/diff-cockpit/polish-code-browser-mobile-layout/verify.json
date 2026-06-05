@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/polish-code-browser-mobile-layout",
+  "base": "origin/stream/diff-cockpit",
+  "headSha": "423672a9b6c76923a4f2221a9dda96eca6a40ebe",
+  "changeHash": "918d49348df3f440d4826615d436becdeaa161da4618b4a4601e2353c6bf0249",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-05T16:28:02.261Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/polish-code-browser-mobile-layout/current.json",
+        ".task/diff-cockpit/polish-code-browser-mobile-layout/evidence-log.json",
+        ".task/diff-cockpit/polish-code-browser-mobile-layout/read-log.json",
+        ".task/diff-cockpit/polish-code-browser-mobile-layout/session.json",
+        ".task/diff-cockpit/polish-code-browser-mobile-layout/workpad.md",
+        ".task/tasks/diff-cockpit/polish-code-browser-mobile-layout.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
