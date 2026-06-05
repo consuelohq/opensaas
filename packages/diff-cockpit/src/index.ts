@@ -29,6 +29,7 @@ export type PullRequestKind = 'stream' | 'task' | 'draft' | 'open';
 export type PullRequestCheckStatus = 'success' | 'failure' | 'pending' | 'unknown';
 export type PullRequestReviewStatus = 'approved' | 'changes_requested' | 'commented' | 'none' | 'unknown';
 export type PullRequestLifecycleStatus = 'open' | 'draft' | 'closed' | 'merged';
+export type PullRequestMergeability = 'mergeable' | 'conflicts' | 'merged' | 'closed' | 'draft' | 'unknown';
 
 export type PullRequestSummary = GitHubPullRequest & {
   kind: PullRequestKind;
@@ -45,6 +46,7 @@ export type PullRequestSummary = GitHubPullRequest & {
   mergedAt: string;
   closedAt: string;
   associatedStream: string;
+  mergeability: PullRequestMergeability;
 };
 
 export type PullRequestSection = {
@@ -120,17 +122,84 @@ export type FileTreeNode = {
   file?: GitHubPullRequestFile;
 };
 
+
+export type CodeBrowserLocator = RepoLocator & {
+  ref: string;
+  path: string;
+};
+
+export type CodeBrowserEntryType = 'dir' | 'file';
+
+export type CodeBrowserCommit = {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  committedAt: string;
+  htmlUrl: string;
+  treeUrl: string;
+};
+
+export type CodeBrowserEntry = {
+  name: string;
+  path: string;
+  type: CodeBrowserEntryType;
+  sha: string;
+  htmlUrl: string;
+  treeUrl: string;
+  latestCommitSha: string;
+  latestCommitMessage: string;
+  latestCommitAuthor: string;
+  latestCommitDate: string;
+};
+
+export type CodeBrowserFile = {
+  name: string;
+  path: string;
+  sha: string;
+  htmlUrl: string;
+  text: string;
+  renderedHtml: string;
+  language: string;
+  isMarkdown: boolean;
+};
+
+export type CodeBrowserData = {
+  locator: CodeBrowserLocator;
+  entries: CodeBrowserEntry[];
+  file: CodeBrowserFile | null;
+  commitCount: number;
+  latestCommit: CodeBrowserCommit | null;
+  historyUrl: string;
+  githubUrl: string;
+  parentUrl: string;
+};
+
+export type CodeHistoryData = {
+  locator: CodeBrowserLocator;
+  commits: CodeBrowserCommit[];
+  codeUrl: string;
+};
+
 type Fetcher = (input: string | URL, init?: RequestInit) => Promise<Response>;
+
+type EdgeCache = {
+  match(request: Request): Promise<Response | undefined>;
+  put(request: Request, response: Response): Promise<void>;
+  delete(request: Request): Promise<boolean>;
+};
 
 type GithubLoaderOptions = {
   fetcher?: Fetcher;
   token?: string;
+  cache?: EdgeCache;
 };
 
 type DiffCockpitEnv = {
   GITHUB_TOKEN?: string;
   GH_TOKEN?: string;
   DIFF_COCKPIT_DEFAULT_REPO?: string;
+  DIFF_COCKPIT_REFRESH_TOKEN?: string;
 };
 
 const DEFAULT_OWNER = 'consuelohq';
@@ -201,12 +270,268 @@ export function buildDiffCockpitPath(locator: PullRequestLocator): string {
   return `/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`;
 }
 
+
+
+export function buildCodeBrowserPath(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  return `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/${encodeURIComponent(ref)}/${encodeCodePath(path)}`;
+}
+
+export function buildCodeHistoryPath(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  return `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history/${encodeURIComponent(ref)}/${encodeCodePath(path)}`;
+}
+
+export function createGithubCodeBrowserLoader(options: GithubLoaderOptions = {}) {
+  const fetcher = options.fetcher ?? fetch;
+  return async (locator: CodeBrowserLocator): Promise<CodeBrowserData> => {
+    try {
+      const normalized = normalizeCodeBrowserLocator(locator);
+      const headers = createGithubHeaders(options.token);
+      const apiBase = `https://api.github.com/repos/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}`;
+      const contentUrl = `${apiBase}/contents/${encodeURIComponent(normalized.path)}?ref=${encodeURIComponent(normalized.ref)}`;
+      const contentResponse = await fetcher(contentUrl, { headers });
+      if (!contentResponse.ok) {
+        throw new Error(`GitHub contents fetch failed: ${contentResponse.status}`);
+      }
+      const contentJson = await contentResponse.json();
+      const pathCommitResponse = await fetcher(`${apiBase}/commits?${new URLSearchParams({ sha: normalized.ref, path: normalized.path, per_page: '1' }).toString()}`, { headers });
+      if (!pathCommitResponse.ok) {
+        throw new Error(`GitHub path commits fetch failed: ${pathCommitResponse.status}`);
+      }
+      const pathCommitJson = await pathCommitResponse.json();
+      const pathCommitItems = Array.isArray(pathCommitJson) ? pathCommitJson : [];
+      const latestCommit = pathCommitItems.length > 0 ? normalizeCodeCommit(normalized, pathCommitItems[0]) : null;
+      const commitCount = parseCommitCount(pathCommitResponse.headers.get('link'), pathCommitItems.length);
+      const githubPath = normalized.path ? `/${normalized.path}` : '';
+      const githubUrl = `https://github.com/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}/${Array.isArray(contentJson) ? 'tree' : 'blob'}/${encodeURIComponent(normalized.ref)}${githubPath}`;
+      const parentPath = parentCodePath(normalized.path);
+      const parentUrl = parentPath === normalized.path ? buildCodeBrowserPath(normalized, normalized.ref, normalized.path) : buildCodeBrowserPath(normalized, normalized.ref, parentPath);
+
+      if (Array.isArray(contentJson)) {
+        const entries = await Promise.all(contentJson.map((entryJson) => enrichCodeBrowserEntry(fetcher, apiBase, headers, normalized, entryJson)));
+        return {
+          locator: normalized,
+          entries: entries.sort(compareCodeEntries),
+          file: null,
+          commitCount,
+          latestCommit,
+          historyUrl: buildCodeHistoryPath(normalized, normalized.ref, normalized.path),
+          githubUrl,
+          parentUrl,
+        };
+      }
+
+      const record = requireRecord(contentJson, 'GitHub contents file response was not an object');
+      const filePath = stringValue(record.path, normalized.path);
+      const text = decodeGitHubContent(record);
+      return {
+        locator: { ...normalized, path: filePath },
+        entries: [],
+        file: {
+          name: stringValue(record.name, filePath.split('/').pop() || filePath),
+          path: filePath,
+          sha: stringValue(record.sha, ''),
+          htmlUrl: stringValue(record.html_url, githubUrl),
+          text,
+          renderedHtml: isMarkdownPath(filePath) ? renderMarkdownLite(text) : `<pre><code>${escapeHtml(text)}</code></pre>`,
+          language: detectLanguage(filePath),
+          isMarkdown: isMarkdownPath(filePath),
+        },
+        commitCount,
+        latestCommit,
+        historyUrl: buildCodeHistoryPath(normalized, normalized.ref, filePath),
+        githubUrl,
+        parentUrl,
+      };
+    } catch (error: unknown) {
+      throw new Error(`failed to load code browser data: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+export function createGithubCodeHistoryLoader(options: GithubLoaderOptions = {}) {
+  const fetcher = options.fetcher ?? fetch;
+  return async (locator: CodeBrowserLocator): Promise<CodeHistoryData> => {
+    try {
+      const normalized = normalizeCodeBrowserLocator(locator);
+      const headers = createGithubHeaders(options.token);
+      const apiBase = `https://api.github.com/repos/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}`;
+      const commitsJson = await fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/commits?${new URLSearchParams({ sha: normalized.ref, path: normalized.path }).toString()}`,
+        headers,
+        'GitHub code history fetch failed',
+        { maxPages: 2 },
+      );
+      return {
+        locator: normalized,
+        commits: commitsJson.map((item) => normalizeCodeCommit(normalized, item)),
+        codeUrl: buildCodeBrowserPath(normalized, normalized.ref, normalized.path),
+      };
+    } catch (error: unknown) {
+      throw new Error(`failed to load code history: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+async function enrichCodeBrowserEntry(
+  fetcher: Fetcher,
+  apiBase: string,
+  headers: HeadersInit,
+  locator: CodeBrowserLocator,
+  entryJson: unknown,
+): Promise<CodeBrowserEntry> {
+  const entry = requireRecord(entryJson, 'GitHub contents entry was not an object');
+  const path = stringValue(entry.path, '');
+  const type = stringValue(entry.type, 'file') === 'dir' ? 'dir' : 'file';
+  let latestCommit: CodeBrowserCommit | null = null;
+  try {
+    const response = await fetcher(`${apiBase}/commits?${new URLSearchParams({ sha: locator.ref, path, per_page: '1' }).toString()}`, { headers });
+    if (response.ok) {
+      const json = await response.json();
+      const commits = Array.isArray(json) ? json : [];
+      latestCommit = commits.length > 0 ? normalizeCodeCommit(locator, commits[0]) : null;
+    }
+  } catch {
+    latestCommit = null;
+  }
+  return {
+    name: stringValue(entry.name, path.split('/').pop() || path),
+    path,
+    type,
+    sha: stringValue(entry.sha, ''),
+    htmlUrl: stringValue(entry.html_url, ''),
+    treeUrl: buildCodeBrowserPath(locator, locator.ref, path),
+    latestCommitSha: latestCommit?.sha ?? '',
+    latestCommitMessage: latestCommit?.message ?? 'No commit metadata',
+    latestCommitAuthor: latestCommit?.author ?? '',
+    latestCommitDate: latestCommit?.committedAt ?? '',
+  };
+}
+
+function normalizeCodeCommit(locator: CodeBrowserLocator, input: unknown): CodeBrowserCommit {
+  const record = requireRecord(input, 'GitHub commit was not an object');
+  const commit = optionalRecord(record.commit) ?? {};
+  const author = optionalRecord(record.author);
+  const commitAuthor = optionalRecord(commit.author) ?? {};
+  const sha = stringValue(record.sha, '');
+  return {
+    sha,
+    shortSha: sha.slice(0, 7),
+    message: firstLine(stringValue(commit.message, 'Untitled commit')),
+    author: stringValue(author?.login, stringValue(commitAuthor.name, 'unknown')),
+    committedAt: stringValue(commitAuthor.date, ''),
+    htmlUrl: stringValue(record.html_url, `https://github.com/${locator.owner}/${locator.repo}/commit/${sha}`),
+    treeUrl: buildCodeBrowserPath(locator, sha, locator.path),
+  };
+}
+
+function compareCodeEntries(a: CodeBrowserEntry, b: CodeBrowserEntry): number {
+  if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+  return a.name.localeCompare(b.name);
+}
+
+function normalizeCodeBrowserLocator(locator: CodeBrowserLocator): CodeBrowserLocator {
+  return {
+    owner: locator.owner || DEFAULT_OWNER,
+    repo: locator.repo || DEFAULT_REPO,
+    ref: locator.ref || 'main',
+    path: normalizeCodePath(locator.path),
+  };
+}
+
+function normalizeCodePath(path: string): string {
+  const normalized = String(path || '').replace(/^\/+/, '').replace(/\/+$/, '');
+  return normalized || 'packages';
+}
+
+function parentCodePath(path: string): string {
+  const normalized = normalizeCodePath(path);
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.length <= 1) return 'packages';
+  return parts.slice(0, -1).join('/');
+}
+
+function encodeCodePath(path: string): string {
+  return normalizeCodePath(path).split('/').map((part) => encodeURIComponent(part)).join('/');
+}
+
+function firstLine(message: string): string {
+  return message.split('\n')[0] || message;
+}
+
+function parseCommitCount(linkHeader: string | null, fallback: number): number {
+  if (!linkHeader) return fallback;
+  const match = linkHeader.match(/[?&]page=(\d+)>; rel="last"/);
+  return match ? Number(match[1]) : fallback;
+}
+
+function decodeGitHubContent(record: Record<string, unknown>): string {
+  const encoding = stringValue(record.encoding, '');
+  const content = stringValue(record.content, '');
+  if (encoding !== 'base64') return content;
+  try {
+    const binary = atob(content.replace(/\s/g, ''));
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (error: unknown) {
+    throw new Error(`failed to decode GitHub file content: ${getErrorMessage(error)}`);
+  }
+}
+
+function isMarkdownPath(path: string): boolean {
+  return /(^|\.)(md|mdx|markdown)$/i.test(path);
+}
+
+function detectLanguage(path: string): string {
+  const extension = path.split('.').pop()?.toLowerCase() || '';
+  return extension || 'text';
+}
+
+function renderMarkdownLite(markdown: string): string {
+  const blocks: string[] = [];
+  let paragraph: string[] = [];
+  const flush = () => {
+    if (paragraph.length > 0) {
+      blocks.push(`<p>${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+      paragraph = [];
+    }
+  };
+  for (const line of markdown.split(/\r?\n/)) {
+    if (!line.trim()) {
+      flush();
+      continue;
+    }
+    const heading = line.match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      flush();
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+    paragraph.push(line.trim());
+  }
+  flush();
+  return blocks.join('\n');
+}
+
+function renderInlineMarkdown(value: string): string {
+  return escapeHtml(value).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
 export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions = {}) {
   const fetcher = options.fetcher ?? fetch;
 
   return async (repo: RepoLocator): Promise<PullRequestIndexData> => {
-    const headers = createGithubHeaders(options.token);
     const warnings: string[] = [];
+    if (options.token) {
+      try {
+        return await loadGraphqlPullRequestIndex(fetcher, repo, options.token, warnings);
+      } catch (error: unknown) {
+        warnings.push(`graphql index: ${getErrorMessage(error)}`);
+      }
+    }
+
+    const headers = createGithubHeaders(options.token);
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
     const pullsJson = await fetchJsonArrayPages(
       fetcher,
@@ -228,7 +553,7 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
     return {
       repo,
       pulls,
-      updatedAt: new Date().toISOString(),
+      updatedAt: deriveIndexUpdatedAt(pulls),
       warnings,
     };
   };
@@ -365,7 +690,7 @@ export function renderIndexPage(repo: RepoLocator): string {
       <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="#pull-requests">Pull Requests</a>
-        <span aria-hidden="true">▣</span>
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages">main</a>
         <button class="search-button" type="button" data-search-toggle aria-controls="diff-cockpit-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
@@ -425,7 +750,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -450,6 +775,8 @@ export function renderReviewPage(locator: PullRequestLocator): string {
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">▣</button>
+    <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
@@ -482,6 +809,96 @@ export function renderReviewPage(locator: PullRequestLocator): string {
 </html>`;
 }
 
+
+
+export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  const normalizedPath = normalizeCodePath(path);
+  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const historyPath = buildCodeHistoryPath(repo, ref, normalizedPath);
+  const repoLabel = `${repo.owner}/${repo.repo}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code · ${escapeHtml(repoLabel)} · ${escapeHtml(normalizedPath)}</title>
+  <style>${renderStyles()}</style>
+</head>
+<body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
+  <div class="shell code-shell">
+    <div class="wiki-topbar" data-pagefind-ignore>
+      <a class="brand" href="/">Consuelo Diffs</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+      </nav>
+    </div>
+    <header class="code-hero" data-pagefind-ignore>
+      <div>
+        <p class="eyebrow">${escapeHtml(repoLabel)}</p>
+        <h1>main</h1>
+        <p class="lead">Browse live code from <code>${escapeHtml(normalizedPath)}</code>.</p>
+      </div>
+      <a class="history-button" data-history-link href="${escapeAttribute(historyPath)}">History</a>
+    </header>
+    <label class="code-search-row" for="code-search" data-pagefind-ignore>
+      <span class="filter-label">Search</span>
+      <input id="code-search" class="search-input code-search-input" type="search" placeholder="Search current folder or file" autocomplete="off" spellcheck="false" />
+      <span class="search-hint">Press / to search</span>
+    </label>
+    <main class="code-browser-card" data-code-browser-root>
+      <div class="code-browser-toolbar">
+        <span class="branch-pill">main</span>
+        <span class="path-pill">${escapeHtml(normalizedPath)}</span>
+        <span class="muted" data-commit-count>Loading commits…</span>
+      </div>
+      <div class="code-browser-list"><div class="code-row muted">Loading live GitHub files…</div></div>
+    </main>
+  </div>
+  <script type="module">${renderCodeBrowserClientScript(apiPath)}</script>
+</body>
+</html>`;
+}
+
+export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  const normalizedPath = normalizeCodePath(path);
+  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const codePath = buildCodeBrowserPath(repo, ref, normalizedPath);
+  const repoLabel = `${repo.owner}/${repo.repo}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>History · ${escapeHtml(repoLabel)} · ${escapeHtml(normalizedPath)}</title>
+  <style>${renderStyles()}</style>
+</head>
+<body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
+  <div class="shell code-shell">
+    <div class="wiki-topbar" data-pagefind-ignore>
+      <a class="brand" href="/">Consuelo Diffs</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+      </nav>
+    </div>
+    <header class="code-hero" data-pagefind-ignore>
+      <div>
+        <p class="eyebrow">${escapeHtml(repoLabel)}</p>
+        <h1>History</h1>
+        <p class="lead">Commits touching <code>${escapeHtml(normalizedPath)}</code>.</p>
+      </div>
+      <a class="history-button" href="${escapeAttribute(codePath)}">Back to code</a>
+    </header>
+    <main class="code-browser-card" data-code-history-root>
+      <div class="code-browser-list"><div class="code-row muted">Loading commit history…</div></div>
+    </main>
+  </div>
+  <script type="module">${renderCodeHistoryClientScript(apiPath)}</script>
+</body>
+</html>`;
+}
+
 export function createWorker(options: GithubLoaderOptions = {}) {
   return {
     async fetch(request: Request, env?: DiffCockpitEnv) {
@@ -490,9 +907,50 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
       const reviewLoader = createGithubPullRequestLoader({ fetcher: options.fetcher, token });
       const indexLoader = createGithubPullRequestIndexLoader({ fetcher: options.fetcher, token });
+      const codeLoader = createGithubCodeBrowserLoader({ fetcher: options.fetcher, token });
+      const historyLoader = createGithubCodeHistoryLoader({ fetcher: options.fetcher, token });
+      const edgeCache = options.cache ?? getDefaultEdgeCache();
 
       if (url.pathname === '/healthz') {
         return new Response('ok', { headers: { 'content-type': 'text/plain' } });
+      }
+
+      if (url.pathname === '/internal/cache/refresh') {
+        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
+      }
+
+
+
+      const codeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/code$/);
+      if (codeApiMatch) {
+        try {
+          const locator = {
+            owner: decodeURIComponent(codeApiMatch[1] || ''),
+            repo: decodeURIComponent(codeApiMatch[2] || ''),
+            ref: url.searchParams.get('ref') || 'main',
+            path: url.searchParams.get('path') || 'packages',
+          };
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => codeLoader(locator));
+        } catch (error: unknown) {
+          return json({ error: getErrorMessage(error) }, 502);
+        }
+      }
+
+      const historyApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/history$/);
+      if (historyApiMatch) {
+        try {
+          const locator = {
+            owner: decodeURIComponent(historyApiMatch[1] || ''),
+            repo: decodeURIComponent(historyApiMatch[2] || ''),
+            ref: url.searchParams.get('ref') || 'main',
+            path: url.searchParams.get('path') || 'packages',
+          };
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => historyLoader(locator));
+        } catch (error: unknown) {
+          return json({ error: getErrorMessage(error) }, 502);
+        }
       }
 
       const indexApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pulls$/);
@@ -502,7 +960,8 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             owner: decodeURIComponent(indexApiMatch[1] || ''),
             repo: decodeURIComponent(indexApiMatch[2] || ''),
           };
-          return json(await indexLoader(repo));
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => indexLoader(repo));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -516,7 +975,8 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             repo: decodeURIComponent(apiMatch[2] || ''),
             number: Number(apiMatch[3]),
           };
-          return cachedJson(await reviewLoader(locator), request);
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => reviewLoader(locator));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -524,6 +984,24 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       if (url.pathname === '/') {
         return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+      }
+
+
+
+      const treeRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/tree\/([^/]+)(?:\/(.*))?$/);
+      if (treeRouteMatch) {
+        return html(renderCodeBrowserPage({
+          owner: decodeURIComponent(treeRouteMatch[1] || ''),
+          repo: decodeURIComponent(treeRouteMatch[2] || ''),
+        }, decodeURIComponent(treeRouteMatch[3] || 'main'), decodeURIComponent(treeRouteMatch[4] || 'packages')));
+      }
+
+      const historyRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/history\/([^/]+)(?:\/(.*))?$/);
+      if (historyRouteMatch) {
+        return html(renderHistoryPage({
+          owner: decodeURIComponent(historyRouteMatch[1] || ''),
+          repo: decodeURIComponent(historyRouteMatch[2] || ''),
+        }, decodeURIComponent(historyRouteMatch[3] || 'main'), decodeURIComponent(historyRouteMatch[4] || 'packages')));
       }
 
       const repoRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/?$/);
@@ -546,6 +1024,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       return html(renderReviewPage(locator));
     },
   };
+}
+
+function deriveIndexUpdatedAt(pulls: PullRequestSummary[]): string {
+  let latest = '';
+  for (const pull of pulls) {
+    if (pull.updatedAt && (!latest || pull.updatedAt > latest)) latest = pull.updatedAt;
+  }
+  return latest;
 }
 
 function createGithubHeaders(token?: string): HeadersInit {
@@ -627,6 +1113,137 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
     mergeableState: stringValue(source.mergeable_state, 'unknown'),
     updatedAt: stringValue(source.updated_at, ''),
   };
+}
+
+async function loadGraphqlPullRequestIndex(
+  fetcher: Fetcher,
+  repo: RepoLocator,
+  token: string,
+  warnings: string[],
+): Promise<PullRequestIndexData> {
+  const pulls: PullRequestSummary[] = [];
+  let after: string | null = null;
+  for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        ...createGithubHeaders(token),
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+        variables: { owner: repo.owner, name: repo.repo, after },
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
+    }
+    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+    if (Array.isArray(json.errors) && json.errors.length > 0) {
+      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    const repository = optionalRecord(optionalRecord(json.data)?.repository);
+    const connection = optionalRecord(repository?.pullRequests);
+    const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
+    pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
+    const pageInfo = optionalRecord(connection?.pageInfo);
+    if (!booleanValue(pageInfo?.hasNextPage)) {
+      break;
+    }
+    after = stringValue(pageInfo?.endCursor, '');
+    if (!after) {
+      warnings.push('GitHub GraphQL pagination stopped without an end cursor');
+      break;
+    }
+  }
+  return {
+    repo,
+    pulls,
+    updatedAt: deriveIndexUpdatedAt(pulls),
+    warnings,
+  };
+}
+
+const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
+query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(first: 100, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        number
+        title
+        url
+        state
+        isDraft
+        merged
+        mergedAt
+        closedAt
+        createdAt
+        updatedAt
+        additions
+        deletions
+        changedFiles
+        mergeStateStatus
+        author { login }
+        headRefName
+        headRefOid
+        baseRefName
+        baseRefOid
+      }
+    }
+  }
+}
+`;
+
+function normalizeGraphqlPullRequestSummary(repo: RepoLocator, input: unknown): PullRequestSummary {
+  const source = requireRecord(input, 'Invalid GitHub GraphQL pull request data');
+  const author = optionalRecord(source.author);
+  const state = stringValue(source.state, 'UNKNOWN').toLowerCase();
+  const pull: GitHubPullRequest = {
+    number: numberValue(source.number, 0),
+    title: stringValue(source.title, 'Untitled pull request'),
+    htmlUrl: stringValue(source.url, ''),
+    state: state === 'merged' ? 'closed' : state,
+    draft: booleanValue(source.isDraft),
+    author: stringValue(author?.login, 'unknown'),
+    headRef: stringValue(source.headRefName, ''),
+    headSha: stringValue(source.headRefOid, ''),
+    baseRef: stringValue(source.baseRefName, ''),
+    baseSha: stringValue(source.baseRefOid, ''),
+    mergeable: stringValue(source.mergeStateStatus, '').toUpperCase() === 'DIRTY' ? false : null,
+    mergeableState: stringValue(source.mergeStateStatus, 'unknown').toLowerCase(),
+    updatedAt: stringValue(source.updatedAt, ''),
+  };
+  const lifecycleStatus = normalizeGraphqlLifecycleStatus(pull, source);
+  const associatedStream = deriveAssociatedStream(pull);
+  return {
+    ...pull,
+    kind: classifyPullRequest(pull),
+    createdAt: stringValue(source.createdAt, ''),
+    updatedAt: stringValue(source.updatedAt, ''),
+    cockpitUrl: buildDiffCockpitPath({ owner: repo.owner, repo: repo.repo, number: pull.number }),
+    additions: numberValue(source.additions, 0),
+    deletions: numberValue(source.deletions, 0),
+    changedFiles: numberValue(source.changedFiles, 0),
+    checkStatus: 'unknown',
+    reviewStatus: 'none',
+    lifecycleStatus,
+    mergeStatus: lifecycleStatus,
+    mergedAt: stringValue(source.mergedAt, ''),
+    closedAt: stringValue(source.closedAt, ''),
+    associatedStream,
+    mergeability: normalizeMergeability(pull, lifecycleStatus),
+  };
+}
+
+function normalizeGraphqlLifecycleStatus(
+  pull: GitHubPullRequest,
+  source: Record<string, unknown>,
+): PullRequestLifecycleStatus {
+  if (pull.draft) return 'draft';
+  if (booleanValue(source.merged) || stringValue(source.mergedAt, '')) return 'merged';
+  if (pull.state === 'closed') return 'closed';
+  return 'open';
 }
 
 async function enrichPullRequestSummary(
@@ -729,7 +1346,20 @@ function normalizePullRequestSummary(
     mergedAt: stringValue(source.merged_at, ''),
     closedAt: stringValue(source.closed_at, ''),
     associatedStream,
+    mergeability: normalizeMergeability(pull, lifecycleStatus),
   };
+}
+
+function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullRequestLifecycleStatus): PullRequestMergeability {
+  if (lifecycleStatus === 'merged') return 'merged';
+  if (lifecycleStatus === 'closed') return 'closed';
+  if (lifecycleStatus === 'draft') return 'draft';
+  const state = pull.mergeableState.toLowerCase();
+  if (state === 'dirty') return 'conflicts';
+  if (state && state !== 'unknown') return 'mergeable';
+  if (pull.mergeable === true) return 'mergeable';
+  if (pull.mergeable === false) return 'conflicts';
+  return 'unknown';
 }
 
 export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
@@ -1018,6 +1648,184 @@ function normalizeOrderIndex(index: number): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
+
+type CacheRefreshInput = {
+  repo?: string;
+  pulls?: unknown;
+  reason?: string;
+  codePaths?: unknown;
+};
+
+type CacheRefreshDeps = {
+  request: Request;
+  env?: DiffCockpitEnv;
+  defaultRepo: string;
+  indexLoader: ReturnType<typeof createGithubPullRequestIndexLoader>;
+  reviewLoader: ReturnType<typeof createGithubPullRequestLoader>;
+  codeLoader: ReturnType<typeof createGithubCodeBrowserLoader>;
+  historyLoader: ReturnType<typeof createGithubCodeHistoryLoader>;
+  edgeCache: EdgeCache | null;
+};
+
+async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
+  if (deps.request.method !== 'POST') {
+    return internalJson({ error: 'cache refresh requires POST' }, 405);
+  }
+  const expectedToken = deps.env?.DIFF_COCKPIT_REFRESH_TOKEN;
+  if (!expectedToken) {
+    return internalJson({ error: 'DIFF_COCKPIT_REFRESH_TOKEN is not configured' }, 503);
+  }
+  if (!isAuthorizedRefreshRequest(deps.request, expectedToken)) {
+    return internalJson({ error: 'unauthorized' }, 401);
+  }
+
+  let input: CacheRefreshInput;
+  try {
+    input = await deps.request.json() as CacheRefreshInput;
+  } catch (error: unknown) {
+    return internalJson({ error: `invalid JSON body: ${getErrorMessage(error)}` }, 400);
+  }
+
+  const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
+  const pullNumbers = normalizeRefreshPulls(input.pulls);
+  const codePaths = normalizeRefreshCodePaths(input.codePaths);
+  const refreshedPulls: string[] = [];
+  const refreshedCode: string[] = [];
+  const refreshedHistory: string[] = [];
+  const homepageUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+  const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+  const homepageData = await deps.indexLoader(repo);
+  await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+
+  for (const path of codePaths) {
+    const codeUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
+    const historyUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
+    const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
+    const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
+    const codeData = await deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
+    const historyData = await deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
+    await replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest));
+    await replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest));
+    refreshedCode.push(cachePathLabel(codeUrl));
+    refreshedHistory.push(cachePathLabel(historyUrl));
+  }
+
+  for (const pullNumber of pullNumbers) {
+    const pullUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
+    const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
+    const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
+    await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
+    refreshedPulls.push(new URL(pullUrl).pathname);
+  }
+
+  return internalJson({
+    ok: true,
+    reason: stringValue(input.reason, 'manual'),
+    cache: deps.edgeCache ? 'edge' : 'none',
+    refreshed: {
+      homepage: new URL(homepageUrl).pathname,
+      pulls: refreshedPulls,
+      code: refreshedCode,
+      history: refreshedHistory,
+    },
+  });
+}
+
+function cachePathLabel(url: string): string {
+  const parsed = new URL(url);
+  return `${parsed.pathname}${parsed.search}`;
+}
+
+function isAuthorizedRefreshRequest(request: Request, expectedToken: string): boolean {
+  const authorization = request.headers.get('authorization') || '';
+  const bearer = authorization.startsWith('Bearer ') ? authorization.slice('Bearer '.length).trim() : '';
+  const headerToken = request.headers.get('x-diff-cockpit-refresh-token') || '';
+  return bearer === expectedToken || headerToken === expectedToken;
+}
+
+function normalizeRefreshPulls(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  const pulls = new Set<number>();
+  for (const item of value) {
+    const pull = typeof item === 'number' ? item : Number(item);
+    if (Number.isInteger(pull) && pull > 0) pulls.add(pull);
+  }
+  return [...pulls];
+}
+
+function normalizeRefreshCodePaths(value: unknown): string[] {
+  const paths = new Set<string>(['packages']);
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const path = normalizeCodePath(String(item || ''));
+      if (path.startsWith('packages')) paths.add(path);
+    }
+  }
+  return [...paths];
+}
+
+function makeApiCacheRequest(url: URL): Request {
+  return new Request(url.toString(), { headers: { accept: 'application/json' } });
+}
+
+async function getOrSetCachedJson(
+  edgeCache: EdgeCache | null,
+  cacheRequest: Request,
+  clientRequest: Request,
+  load: () => Promise<unknown>,
+): Promise<Response> {
+  try {
+    const cached = await readCachedJson(edgeCache, cacheRequest, clientRequest);
+    if (cached) return cached;
+    const response = cachedJson(await load(), clientRequest);
+    await replaceCachedJson(edgeCache, cacheRequest, response);
+    return response;
+  } catch (error: unknown) {
+    throw new Error(`failed to build cached JSON response: ${getErrorMessage(error)}`);
+  }
+}
+
+async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
+  try {
+    if (!edgeCache) return null;
+    const cached = await edgeCache.match(cacheRequest);
+    if (!cached) return null;
+    const etag = cached.headers.get('etag') || '';
+    if (etag && clientRequest.headers.get('if-none-match') === etag) {
+      return cachedJsonNotModified(etag);
+    }
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
+  try {
+    if (!edgeCache || response.status !== 200) return;
+    await edgeCache.delete(cacheRequest);
+    await edgeCache.put(cacheRequest, response.clone());
+  } catch {
+    // Cache writes are opportunistic; live GitHub fetches still provide correctness.
+  }
+}
+
+function cachedJsonNotModified(etag: string): Response {
+  return new Response(null, {
+    status: 304,
+    headers: {
+      etag,
+      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      vary: 'Accept',
+    },
+  });
+}
+
+function getDefaultEdgeCache(): EdgeCache | null {
+  const maybeCaches = globalThis.caches as (CacheStorage & { default?: EdgeCache }) | undefined;
+  return maybeCaches?.default ?? null;
+}
+
 function cachedJson(data: unknown, request: Request): Response {
   const body = JSON.stringify(data, null, 2);
   const etag = makeWeakEtag(body);
@@ -1026,7 +1834,8 @@ function cachedJson(data: unknown, request: Request): Response {
       status: 304,
       headers: {
         etag,
-        'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+        'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+        vary: 'Accept',
       },
     });
   }
@@ -1035,7 +1844,8 @@ function cachedJson(data: unknown, request: Request): Response {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': 'private, max-age=30, stale-while-revalidate=120',
+      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      vary: 'Accept',
     },
   });
 }
@@ -1047,6 +1857,17 @@ function makeWeakEtag(input: string): string {
     hash = Math.imul(hash, 16777619);
   }
   return `W/\"${(hash >>> 0).toString(16)}-${input.length}\"`;
+}
+
+
+function internalJson(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+  });
 }
 
 function json(data: unknown, status = 200): Response {
@@ -1077,7 +1898,7 @@ function renderStyles(): string {
   return `
 :root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; --danger:#9b2d2d; }
 @media (prefers-color-scheme: dark) {
-  :root { color-scheme: dark; --paper:#111820; --surface:#18212b; --ink:#e9eef4; --muted:#a9b4bf; --quiet:#7f8b96; --line:#2a3642; --soft:#1d2732; --accent:#c7d0d9; --accent-soft:#263341; --danger:#ff9d9d; }
+  :root { color-scheme: dark; --paper:#070a0d; --surface:#0b0f13; --ink:#edf1f5; --muted:#a2abb4; --quiet:#737c85; --line:#20262d; --soft:#12181e; --accent:#d4d8dd; --accent-soft:#1b222a; --danger:#ff9d9d; }
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
@@ -1094,6 +1915,42 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; }
 .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
 .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+
+.code-shell { max-width:min(1180px, calc(100vw - 48px)); }
+.code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
+.code-hero h1 { font-size:34px; line-height:1.05; margin-bottom:8px; font-weight:700; }
+.active-nav { font-weight:700; color:var(--accent); }
+.history-button, .branch-pill, .path-pill { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:7px 10px; font-size:13px; }
+.code-search-row { display:flex; align-items:center; gap:10px; margin:18px 0 0; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+.code-search-input { flex:1 1 auto; min-width:180px; }
+.search-hint { color:var(--quiet); font-size:12px; white-space:nowrap; }
+.file-path-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:500; }
+.file-view-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-left:auto; color:var(--muted); font-size:13px; }
+.copy-file-path { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1px solid var(--line); border-radius:7px; background:var(--paper); color:var(--muted); }
+.copy-file-path:hover { color:var(--accent); text-decoration:none; }
+.file-match-count { color:var(--quiet); }
+.code-browser-card { margin-top:22px; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
+.code-browser-toolbar { min-height:48px; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
+.code-browser-list { display:grid; }
+.code-row { min-height:44px; display:grid; grid-template-columns:28px minmax(160px, 1fr) minmax(160px, 1.6fr) 88px; gap:10px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
+.code-row:last-child { border-bottom:0; }
+.code-row:hover { background:var(--soft); text-decoration:none; }
+.file-icon { color:var(--quiet); text-align:center; }
+.code-name { font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-message { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-date { color:var(--quiet); text-align:right; font-variant-numeric:tabular-nums; }
+.file-view-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+.file-view { padding:18px; overflow:auto; }
+.markdown-body { line-height:1.7; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 { letter-spacing:-.03em; margin:0 0 16px; }
+.markdown-body p { margin:0 0 14px; color:var(--ink); }
+.markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
+.code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
+@media (max-width: 760px) {
+  .code-hero { align-items:flex-start; flex-direction:column; }
+  .code-row { grid-template-columns:24px minmax(0, 1fr); }
+  .code-message, .code-date { grid-column:2; text-align:left; }
+}
 .search-button { display:inline-flex; align-items:center; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
@@ -1128,12 +1985,13 @@ button.section-count { cursor:pointer; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
 .pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:13px; }
-.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:9px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:190px; }
+.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:150px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
-.pr-status-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
-.pr-status-icon.review-approved, .pr-status-icon.check-success { color:#2f8a44; }
-.pr-status-icon.review-changes_requested, .pr-status-icon.check-failure { color:#bc3b3b; }
-.pr-status-icon.review-commented, .pr-status-icon.check-pending { color:#b77b1a; }
+.mergeability-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
+.mergeability-icon.mergeability-mergeable { color:#2f8a44; }
+.mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
+.mergeability-icon.mergeability-merged { color:#6f4bd8; }
+.mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
 .stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
 .stream-filter-row[hidden] { display:none; }
@@ -1193,6 +2051,8 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:7; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-file-backdrop { display:none; }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
@@ -1226,15 +2086,131 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .pr-row-side { justify-content:flex-start; flex-wrap:wrap; }
   .topbar { height:auto; min-height:92px; align-items:flex-start; flex-direction:column; }
   .layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }
-  .file-pane { position:absolute; inset:0 auto 0 0; width:min(88vw, 390px); max-width:calc(100vw - 24px); transform:translateX(-105%); transition:transform .16s ease; z-index:7; box-shadow:18px 0 45px rgba(0,0,0,.18); }
-  body[data-file-pane-collapsed="false"] .file-pane { transform:translateX(0); }
   .file-pane-resizer { display:none; }
-  body[data-file-pane-collapsed="true"] .layout { grid-template-columns:minmax(0, 1fr); }
-  body[data-file-pane-collapsed="true"] .file-pane { display:block; transform:translateX(-105%); }
-  .diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding-right:6px; }
+  .file-pane { position:fixed; left:0; right:0; bottom:0; top:86px; z-index:9; transform:translateY(100%); transition:transform .18s ease; border-right:0; border-top:1px solid var(--line); border-radius:18px 18px 0 0; box-shadow:0 -22px 50px rgba(0,0,0,.36); background:var(--paper); font-size:16px; }
+  body[data-file-pane-drawer="open"] .file-pane { transform:translateY(0); }
+  .pane-heading { padding:18px 20px 12px; font-size:20px; }
+  .tree-root { padding:14px 18px 28px; }
+  .tree-node, .directory-toggle { min-height:42px; font-size:17px; }
+  .diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }
   .diff-gutter { padding-right:4px; }
   .inline-comment { margin-left:68px; }
+  .mobile-files-toggle { display:flex; }
+  .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
+  body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
 }
+`;
+}
+
+
+
+function renderCodeBrowserClientScript(apiPath: string): string {
+  return `
+const root = document.querySelector('[data-code-browser-root]');
+const searchInput = document.querySelector('#code-search');
+const apiPath = '${escapeJs(apiPath)}';
+const state = { data: null, search: '' };
+setupSearch();
+loadCodeBrowser();
+function loadCodeBrowser() {
+  fetch(apiPath, { cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
+    .then((data) => { state.data = data; renderCode(); })
+    .catch((error) => { root.innerHTML = '<div class="code-row error">Failed to load code browser: ' + escapeHtml(String(error && error.message || error)) + '</div>'; });
+}
+function setupSearch() {
+  if (searchInput) {
+    searchInput.addEventListener('input', () => { state.search = String(searchInput.value || '').trim().toLowerCase(); renderCode(); });
+  }
+  document.addEventListener('keydown', (event) => {
+    const tag = String(event.target && event.target.tagName || '').toLowerCase();
+    if (event.key === '/' && tag !== 'input' && tag !== 'textarea' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      focusSearch();
+    }
+  });
+}
+function focusSearch() {
+  if (!searchInput) return;
+  searchInput.focus();
+  searchInput.select();
+}
+function renderCode() {
+  const data = state.data;
+  if (!data) return;
+  const count = root.querySelector('[data-commit-count]');
+  if (count) count.textContent = (data.commitCount || 0).toLocaleString() + ' commits';
+  const list = root.querySelector('.code-browser-list');
+  if (data.file) {
+    const query = state.search;
+    const text = String(data.file.text || '');
+    const matchCount = query ? (text.toLowerCase().split(query).length - 1) : 0;
+    const matchLabel = query ? '<span class="file-match-count">' + matchCount + ' matches</span>' : '';
+    list.innerHTML = '<div class="file-view-header"><span class="file-path-label">' + escapeHtml(data.file.path) + '</span><div class="file-view-actions">' + matchLabel + '<a href="' + escapeAttribute(data.historyUrl) + '">History</a><button class="copy-file-path" type="button" data-copy-path="' + escapeAttribute(data.file.path) + '" title="Copy file path">⧉</button></div></div><div class="file-view ' + (data.file.isMarkdown ? 'markdown-body' : 'code-body') + '">' + data.file.renderedHtml + '</div>';
+    bindCopyButtons();
+    return;
+  }
+  const entries = filterEntries(data.entries || [], state.search);
+  list.innerHTML = entries.map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">' + (state.search ? 'No files match "' + escapeHtml(state.search) + '".' : 'No files found.') + '</div>';
+}
+function filterEntries(entries, query) {
+  if (!query) return entries;
+  return entries.filter((entry) => [entry.name, entry.path, entry.latestCommitMessage, entry.latestCommitAuthor].some((value) => String(value || '').toLowerCase().includes(query)));
+}
+function bindCopyButtons() {
+  root.querySelectorAll('[data-copy-path]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const path = button.getAttribute('data-copy-path') || '';
+      const markCopied = () => { button.textContent = 'Copied'; window.setTimeout(() => { button.textContent = '⧉'; }, 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(path).then(markCopied, () => { button.textContent = path; });
+      } else {
+        button.textContent = path;
+      }
+    });
+  });
+}
+function relativeTime(value) {
+  if (!value) return '';
+  const delta = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(delta / 60000));
+  if (minutes < 60) return minutes + 'm';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h';
+  return Math.round(hours / 24) + 'd';
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
+function escapeAttribute(value) { return escapeHtml(value); }
+`;
+}
+
+function renderCodeHistoryClientScript(apiPath: string): string {
+  return `
+const root = document.querySelector('[data-code-history-root]');
+const apiPath = '${escapeJs(apiPath)}';
+loadHistory();
+function loadHistory() {
+  fetch(apiPath, { cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
+    .then(renderHistory)
+    .catch((error) => { root.innerHTML = '<div class="code-row error">Failed to load history: ' + escapeHtml(String(error && error.message || error)) + '</div>'; });
+}
+function renderHistory(data) {
+  const list = root.querySelector('.code-browser-list');
+  list.innerHTML = (data.commits || []).map((commit) => '<a class="code-row history-row" href="' + escapeAttribute(commit.treeUrl) + '"><span class="file-icon">◆</span><span class="code-name">' + escapeHtml(commit.message) + '</span><span class="code-message">' + escapeHtml(commit.author) + ' · ' + escapeHtml(commit.shortSha) + '</span><time class="code-date" datetime="' + escapeAttribute(commit.committedAt || '') + '">' + relativeTime(commit.committedAt) + '</time></a>').join('') || '<div class="code-row muted">No commits found.</div>';
+}
+function relativeTime(value) {
+  if (!value) return '';
+  const delta = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(delta / 60000));
+  if (minutes < 60) return minutes + 'm';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h';
+  return Math.round(hours / 24) + 'd';
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
+function escapeAttribute(value) { return escapeHtml(value); }
 `;
 }
 
@@ -1245,7 +2221,9 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheKey = 'diff-cockpit:index:' + apiPath;
+const cacheSchemaVersion = 'v2-mergeability';
+const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
+const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
@@ -1262,7 +2240,7 @@ const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.checkStatus === 'failure') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => {
   const query = activeQuery.trim().toLowerCase();
   if (!query) return true;
@@ -1286,7 +2264,7 @@ function renderCard(pull) {
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta">' + escapeText(pull.author) + ' · #' + escapeText(pull.number) + '</span></h3>' +
     '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + Number(pull.changedFiles || 0).toLocaleString() + ' files</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="pr-status-icon review-' + escapeText(pull.reviewStatus) + '" title="review: ' + escapeText(pull.reviewStatus) + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="pr-status-icon check-' + escapeText(pull.checkStatus) + '" title="checks: ' + escapeText(pull.checkStatus) + '">' + checkIcon(pull.checkStatus) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
+    '<div class="pr-row-side"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
   '</article>';
 }
 function renderSection(section, index) {
@@ -1348,6 +2326,14 @@ function renderSections() {
 function resetSectionPages() {
   for (const key of Object.keys(sectionPages)) delete sectionPages[key];
 }
+function mergeabilityIcon(status) {
+  if (status === 'mergeable') return '✓';
+  if (status === 'conflicts') return '×';
+  if (status === 'merged') return '◆';
+  if (status === 'draft') return '◌';
+  if (status === 'closed') return '○';
+  return '?';
+}
 function reviewIcon(status) {
   if (status === 'approved') return '✓';
   if (status === 'changes_requested') return '×';
@@ -1394,6 +2380,7 @@ function mergePullWithCache(pull, cachedPull) {
     changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0),
     checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus,
     reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus,
+    mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability,
   };
 }
 function mergeIndexWithCache(data, cached) {
@@ -1406,7 +2393,20 @@ function applyIndexData(data) {
   resetSectionPages();
   renderSections();
 }
+function clearStaleIndexCaches() {
+  try {
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // best-effort cleanup only
+  }
+}
 function loadCachedIndex() {
+  clearStaleIndexCaches();
   const cached = readCachedIndex();
   if (cached) applyIndexData(cached);
   return cached;
@@ -1495,6 +2495,8 @@ const els = {
   drawerContent: document.getElementById('drawer-content'),
   filePane: document.getElementById('file-pane'),
   filePaneResizer: document.getElementById('file-pane-resizer'),
+  mobileFilesToggle: document.getElementById('mobile-files-toggle'),
+  mobileFileBackdrop: document.getElementById('mobile-file-backdrop'),
   commitPopover: document.getElementById('commit-popover'),
   mergeabilityPopover: document.getElementById('mergeability-popover'),
 };
@@ -1503,6 +2505,8 @@ els.drawerToggle.addEventListener('click', () => {
   setDrawer(document.body.dataset.reviewDrawer !== 'open');
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
+els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
+els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
 document.addEventListener('click', (event) => {
   const folderButton = event.target.closest('[data-folder-path]');
@@ -1530,7 +2534,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
   if (event.key === 'g') openChatGptPrompt();
-  if (event.key === 'Escape') { setDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
+  if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
 loadLiveData();
@@ -1549,6 +2553,10 @@ function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+function setFilePaneDrawer(open) {
+  document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
+  els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 function loadLiveData() {
@@ -1590,6 +2598,7 @@ function renderTree() {
       renderTree();
       renderSelectedFile();
       scrollToFile(state.selected);
+      setFilePaneDrawer(false);
     });
   }
 }

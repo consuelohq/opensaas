@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const AUTHOR = { name: 'kokayicobb', email: 'kokayicobb@users.noreply.github.com' };
@@ -376,6 +377,36 @@ function printPlan(branch, files, useJson) {
   }
 }
 
+
+async function runPostTaskPushHooks({ repo, taskMeta }) {
+  const hooks = [];
+  if (!process.env.DIFF_COCKPIT_REFRESH_TOKEN) {
+    hooks.push({ name: 'diff-cockpit/cache-refresh', skipped: true, reason: 'DIFF_COCKPIT_REFRESH_TOKEN not set' });
+    return hooks;
+  }
+
+  const pulls = [];
+  const prNumber = Number(taskMeta && taskMeta.prNumber);
+  if (Number.isInteger(prNumber) && prNumber > 0) pulls.push(prNumber);
+
+  try {
+    const hookPath = path.join(__dirname, '..', 'hooks', 'diff-cockpit', 'cache-refresh.ts');
+    const hookModule = await import(pathToFileURL(hookPath).href);
+    const result = await hookModule.refreshDiffCockpitCache({
+      repo,
+      pulls,
+      reason: 'task.push',
+    });
+    hooks.push({ name: 'diff-cockpit/cache-refresh', ok: true, refreshed: result.refreshed });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    hooks.push({ name: 'diff-cockpit/cache-refresh', ok: false, error: message });
+    writeStderr(`hook warning: diff-cockpit/cache-refresh failed: ${message}`);
+  }
+
+  return hooks;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -552,6 +583,8 @@ async function main() {
     }
   }
 
+  const hooks = await runPostTaskPushHooks({ repo: args.repo, taskMeta: taskMeta?.data });
+
   const result = {
     repo: args.repo,
     branch,
@@ -560,6 +593,7 @@ async function main() {
     approved: Boolean(args.approved && verifyMismatch),
     approvalReason: args.approved && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
+    hooks,
   };
 
   if (args.json) {
