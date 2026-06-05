@@ -26,7 +26,7 @@ await workspace.call({
 
 Task-scoped work must pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Passing both `taskSession` and `input.branch` is rejected to avoid silent branch overrides.
 
-This file is generated from `packages/os/tooling/dev-tool-manifest.json`. The typed facade validates inputs, invokes the restored Bun operator scripts, and wraps every result in the standard tool envelope.
+This file is generated from `packages/os/manifests/tool.manifest.json`. The typed facade validates inputs, invokes the restored Bun operator scripts, and wraps every result in the standard tool envelope.
 
 ## quick start
 
