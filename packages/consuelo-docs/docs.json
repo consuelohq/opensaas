@@ -427,8 +427,20 @@
                   "os/agent-interface/get-dev-steering",
                   "os/agent-interface/call",
                   "os/agent-interface/steering-files",
-                  "os/agent-interface/tool-manifest",
                   "os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "os/tools/overview",
+                  "os/tools/tool-search",
+                  "os/tools/filesystem-tools",
+                  "os/tools/task-and-stream-tools",
+                  "os/tools/github-and-review-tools",
+                  "os/tools/exploration-tools",
+                  "os/tools/browser-tools"
                 ]
               },
               {
@@ -1094,8 +1106,20 @@
                   "l/fr/os/agent-interface/get-dev-steering",
                   "l/fr/os/agent-interface/call",
                   "l/fr/os/agent-interface/steering-files",
-                  "l/fr/os/agent-interface/tool-manifest",
                   "l/fr/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/fr/os/tools/overview",
+                  "l/fr/os/tools/tool-search",
+                  "l/fr/os/tools/filesystem-tools",
+                  "l/fr/os/tools/task-and-stream-tools",
+                  "l/fr/os/tools/github-and-review-tools",
+                  "l/fr/os/tools/exploration-tools",
+                  "l/fr/os/tools/browser-tools"
                 ]
               },
               {
@@ -1761,8 +1785,20 @@
                   "l/ar/os/agent-interface/get-dev-steering",
                   "l/ar/os/agent-interface/call",
                   "l/ar/os/agent-interface/steering-files",
-                  "l/ar/os/agent-interface/tool-manifest",
                   "l/ar/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/ar/os/tools/overview",
+                  "l/ar/os/tools/tool-search",
+                  "l/ar/os/tools/filesystem-tools",
+                  "l/ar/os/tools/task-and-stream-tools",
+                  "l/ar/os/tools/github-and-review-tools",
+                  "l/ar/os/tools/exploration-tools",
+                  "l/ar/os/tools/browser-tools"
                 ]
               },
               {
@@ -2428,8 +2464,20 @@
                   "l/cs/os/agent-interface/get-dev-steering",
                   "l/cs/os/agent-interface/call",
                   "l/cs/os/agent-interface/steering-files",
-                  "l/cs/os/agent-interface/tool-manifest",
                   "l/cs/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/cs/os/tools/overview",
+                  "l/cs/os/tools/tool-search",
+                  "l/cs/os/tools/filesystem-tools",
+                  "l/cs/os/tools/task-and-stream-tools",
+                  "l/cs/os/tools/github-and-review-tools",
+                  "l/cs/os/tools/exploration-tools",
+                  "l/cs/os/tools/browser-tools"
                 ]
               },
               {
@@ -3095,8 +3143,20 @@
                   "l/de/os/agent-interface/get-dev-steering",
                   "l/de/os/agent-interface/call",
                   "l/de/os/agent-interface/steering-files",
-                  "l/de/os/agent-interface/tool-manifest",
                   "l/de/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/de/os/tools/overview",
+                  "l/de/os/tools/tool-search",
+                  "l/de/os/tools/filesystem-tools",
+                  "l/de/os/tools/task-and-stream-tools",
+                  "l/de/os/tools/github-and-review-tools",
+                  "l/de/os/tools/exploration-tools",
+                  "l/de/os/tools/browser-tools"
                 ]
               },
               {
@@ -3762,8 +3822,20 @@
                   "l/es/os/agent-interface/get-dev-steering",
                   "l/es/os/agent-interface/call",
                   "l/es/os/agent-interface/steering-files",
-                  "l/es/os/agent-interface/tool-manifest",
                   "l/es/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/es/os/tools/overview",
+                  "l/es/os/tools/tool-search",
+                  "l/es/os/tools/filesystem-tools",
+                  "l/es/os/tools/task-and-stream-tools",
+                  "l/es/os/tools/github-and-review-tools",
+                  "l/es/os/tools/exploration-tools",
+                  "l/es/os/tools/browser-tools"
                 ]
               },
               {
@@ -4429,8 +4501,20 @@
                   "l/it/os/agent-interface/get-dev-steering",
                   "l/it/os/agent-interface/call",
                   "l/it/os/agent-interface/steering-files",
-                  "l/it/os/agent-interface/tool-manifest",
                   "l/it/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/it/os/tools/overview",
+                  "l/it/os/tools/tool-search",
+                  "l/it/os/tools/filesystem-tools",
+                  "l/it/os/tools/task-and-stream-tools",
+                  "l/it/os/tools/github-and-review-tools",
+                  "l/it/os/tools/exploration-tools",
+                  "l/it/os/tools/browser-tools"
                 ]
               },
               {
@@ -5096,8 +5180,20 @@
                   "l/ja/os/agent-interface/get-dev-steering",
                   "l/ja/os/agent-interface/call",
                   "l/ja/os/agent-interface/steering-files",
-                  "l/ja/os/agent-interface/tool-manifest",
                   "l/ja/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/ja/os/tools/overview",
+                  "l/ja/os/tools/tool-search",
+                  "l/ja/os/tools/filesystem-tools",
+                  "l/ja/os/tools/task-and-stream-tools",
+                  "l/ja/os/tools/github-and-review-tools",
+                  "l/ja/os/tools/exploration-tools",
+                  "l/ja/os/tools/browser-tools"
                 ]
               },
               {
@@ -5763,8 +5859,20 @@
                   "l/ko/os/agent-interface/get-dev-steering",
                   "l/ko/os/agent-interface/call",
                   "l/ko/os/agent-interface/steering-files",
-                  "l/ko/os/agent-interface/tool-manifest",
                   "l/ko/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/ko/os/tools/overview",
+                  "l/ko/os/tools/tool-search",
+                  "l/ko/os/tools/filesystem-tools",
+                  "l/ko/os/tools/task-and-stream-tools",
+                  "l/ko/os/tools/github-and-review-tools",
+                  "l/ko/os/tools/exploration-tools",
+                  "l/ko/os/tools/browser-tools"
                 ]
               },
               {
@@ -6430,8 +6538,20 @@
                   "l/pt/os/agent-interface/get-dev-steering",
                   "l/pt/os/agent-interface/call",
                   "l/pt/os/agent-interface/steering-files",
-                  "l/pt/os/agent-interface/tool-manifest",
                   "l/pt/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/pt/os/tools/overview",
+                  "l/pt/os/tools/tool-search",
+                  "l/pt/os/tools/filesystem-tools",
+                  "l/pt/os/tools/task-and-stream-tools",
+                  "l/pt/os/tools/github-and-review-tools",
+                  "l/pt/os/tools/exploration-tools",
+                  "l/pt/os/tools/browser-tools"
                 ]
               },
               {
@@ -7097,8 +7217,20 @@
                   "l/ro/os/agent-interface/get-dev-steering",
                   "l/ro/os/agent-interface/call",
                   "l/ro/os/agent-interface/steering-files",
-                  "l/ro/os/agent-interface/tool-manifest",
                   "l/ro/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/ro/os/tools/overview",
+                  "l/ro/os/tools/tool-search",
+                  "l/ro/os/tools/filesystem-tools",
+                  "l/ro/os/tools/task-and-stream-tools",
+                  "l/ro/os/tools/github-and-review-tools",
+                  "l/ro/os/tools/exploration-tools",
+                  "l/ro/os/tools/browser-tools"
                 ]
               },
               {
@@ -7764,8 +7896,20 @@
                   "l/ru/os/agent-interface/get-dev-steering",
                   "l/ru/os/agent-interface/call",
                   "l/ru/os/agent-interface/steering-files",
-                  "l/ru/os/agent-interface/tool-manifest",
                   "l/ru/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/ru/os/tools/overview",
+                  "l/ru/os/tools/tool-search",
+                  "l/ru/os/tools/filesystem-tools",
+                  "l/ru/os/tools/task-and-stream-tools",
+                  "l/ru/os/tools/github-and-review-tools",
+                  "l/ru/os/tools/exploration-tools",
+                  "l/ru/os/tools/browser-tools"
                 ]
               },
               {
@@ -8431,8 +8575,20 @@
                   "l/tr/os/agent-interface/get-dev-steering",
                   "l/tr/os/agent-interface/call",
                   "l/tr/os/agent-interface/steering-files",
-                  "l/tr/os/agent-interface/tool-manifest",
                   "l/tr/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/tr/os/tools/overview",
+                  "l/tr/os/tools/tool-search",
+                  "l/tr/os/tools/filesystem-tools",
+                  "l/tr/os/tools/task-and-stream-tools",
+                  "l/tr/os/tools/github-and-review-tools",
+                  "l/tr/os/tools/exploration-tools",
+                  "l/tr/os/tools/browser-tools"
                 ]
               },
               {
@@ -9098,8 +9254,20 @@
                   "l/zh/os/agent-interface/get-dev-steering",
                   "l/zh/os/agent-interface/call",
                   "l/zh/os/agent-interface/steering-files",
-                  "l/zh/os/agent-interface/tool-manifest",
                   "l/zh/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "wrench",
+                "pages": [
+                  "l/zh/os/tools/overview",
+                  "l/zh/os/tools/tool-search",
+                  "l/zh/os/tools/filesystem-tools",
+                  "l/zh/os/tools/task-and-stream-tools",
+                  "l/zh/os/tools/github-and-review-tools",
+                  "l/zh/os/tools/exploration-tools",
+                  "l/zh/os/tools/browser-tools"
                 ]
               },
               {
