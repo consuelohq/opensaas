@@ -792,8 +792,9 @@ export function renderReviewPage(locator: PullRequestLocator): string {
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
           <button id="mergeability-button" class="action-button" type="button">Mergeability</button>
+          <button id="merge-pr-button" class="action-button" type="button">Merge PR</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
         <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
         <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
         <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
@@ -967,6 +968,19 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         }
       }
 
+      const mergeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/merge$/);
+      if (mergeApiMatch) {
+        if (request.method !== 'POST') {
+          return json({ ok: false, error: 'Use POST to merge a pull request.' }, 405);
+        }
+        const locator = {
+          owner: decodeURIComponent(mergeApiMatch[1] || ''),
+          repo: decodeURIComponent(mergeApiMatch[2] || ''),
+          number: Number(mergeApiMatch[3]),
+        };
+        return mergeGithubPullRequest(options.fetcher ?? fetch, token, locator);
+      }
+
       const apiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)$/);
       if (apiMatch) {
         try {
@@ -1040,6 +1054,48 @@ function createGithubHeaders(token?: string): HeadersInit {
     'user-agent': 'consuelo-diff-cockpit',
     ...(token ? { authorization: `Bearer ${token}` } : {}),
   };
+}
+
+async function mergeGithubPullRequest(fetcher: Fetcher, token: string | undefined, locator: PullRequestLocator): Promise<Response> {
+  if (!token) {
+    return json({ ok: false, error: 'Missing GitHub token for merge.' }, 401);
+  }
+  try {
+    const response = await fetcher(
+      `https://api.github.com/repos/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pulls/${locator.number}/merge`,
+      {
+        method: 'PUT',
+        headers: {
+          ...createGithubHeaders(token),
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ merge_method: 'merge' }),
+      },
+    );
+    let payload: unknown = {};
+    try {
+      payload = await response.json();
+    } catch {
+      payload = {};
+    }
+    const record = optionalRecord(payload) ?? {};
+    if (!response.ok) {
+      return json({
+        ok: false,
+        status: response.status,
+        error: stringValue(record.message, `GitHub merge failed: ${response.status}`),
+        details: record,
+      }, response.status);
+    }
+    return json({
+      ok: true,
+      merged: booleanValue(record.merged),
+      sha: stringValue(record.sha, ''),
+      message: stringValue(record.message, 'Merged'),
+    });
+  } catch (error: unknown) {
+    return json({ ok: false, error: getErrorMessage(error) }, 502);
+  }
 }
 
 async function fetchJsonArrayPages(
@@ -2039,17 +2095,17 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .directory-toggle { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); }
 .tree-twist { color:var(--quiet); width:12px; text-align:center; }
 .status { color:var(--quiet); font-size:12px; margin-right:5px; }
-.review-pane { min-width:0; overflow:auto; background:var(--paper); overscroll-behavior:contain; }
-.selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); }
-.diff-root { padding:0; }
+.review-pane { min-width:0; overflow-y:auto; overflow-x:hidden; background:var(--paper); overscroll-behavior:contain; }
+.selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
+.diff-root { padding:0; max-width:100%; overflow-x:hidden; }
 .diff-file { border-bottom:1px solid var(--line); scroll-margin-top:46px; }
 .diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:13px; }
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
-.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:auto; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-.diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); padding:0 8px 0 0; white-space:pre; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); align-items:start; padding:0 8px 0 0; white-space:normal; max-width:100%; }
 .diff-gutter { color:var(--quiet); text-align:right; padding-right:5px; user-select:none; font-variant-numeric:tabular-nums; }
-.diff-code { overflow:visible; }
+.diff-code { min-width:0; overflow:visible; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
 body[data-current-view="current"] .diff-line.del { display:none; }
 body[data-comments-visible="false"] .inline-comment { display:none; }
 .inline-comment { margin:6px 12px 10px 84px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-size:13px; }
@@ -2492,6 +2548,7 @@ const els = {
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
   copyCodex: document.getElementById('copy-codex-prompt'),
   mergeabilityButton: document.getElementById('mergeability-button'),
+  mergePrButton: document.getElementById('merge-pr-button'),
   drawerSummary: document.getElementById('drawer-summary'),
   drawerStatus: document.getElementById('drawer-status'),
   drawerChecks: document.getElementById('drawer-checks'),
@@ -2530,10 +2587,12 @@ document.addEventListener('click', (event) => {
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover());
+els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
   if (event.key === 'm') renderMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
@@ -2585,6 +2644,33 @@ function loadLiveData() {
         els.tree.textContent = error.message || String(error);
       },
     );
+}
+
+async function mergePullRequest() {
+  if (!state.data?.pull) {
+    renderMergeResult('Load PR data before merging.');
+    return;
+  }
+  const pull = state.data.pull;
+  if (!window.confirm('Merge PR #' + pull.number + ' into ' + pull.baseRef + '?')) return;
+  renderMergeResult('Merging PR #' + pull.number + '…');
+  try {
+    const response = await fetch(apiPath + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) {
+      renderMergeResult('Merge failed: ' + (result.error || response.status));
+      return;
+    }
+    renderMergeResult(result.message || 'Merged.');
+    loadLiveData();
+  } catch {
+    renderMergeResult('Merge failed.');
+  }
+}
+
+function renderMergeResult(message) {
+  els.mergeabilityPopover.hidden = false;
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Merge PR</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + escapeHtml(message) + '</p></div>';
 }
 
 function renderHeader() {
@@ -2696,12 +2782,17 @@ function renderMergeabilityPopover() {
   const pull = state.data?.pull || {};
   const files = state.data?.files || [];
   const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
-  const clean = pull.mergeable === true || ['clean', 'has_hooks', 'unstable'].includes(stateLabel);
-  const dirty = ['dirty', 'blocked', 'unknown'].includes(stateLabel) && !clean;
-  const title = clean ? 'clean' : 'mergeability: ' + escapeHtml(stateLabel || 'unknown');
+  const clean = stateLabel === 'clean';
+  const dirty = ['dirty', 'blocked'].includes(stateLabel) || pull.mergeable === false;
+  const title = clean ? 'clean' : escapeHtml(stateLabel || 'unknown');
   const fileList = dirty && files.length ? '<ul class="mergeability-files">' + files.map((file) => '<li>' + escapeHtml(file.filename) + '</li>').join('') + '</ul>' : '';
+  const body = clean
+    ? '<p class="muted">This PR reports a clean merge state.</p>'
+    : dirty
+      ? '<p class="muted">Files to inspect before merging:</p>' + fileList
+      : '<p class="muted">This PR is mergeable but GitHub reports state: ' + escapeHtml(stateLabel || 'unknown') + '.</p>';
   els.mergeabilityPopover.hidden = false;
-  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + (dirty ? '<p class="muted">Files to inspect before merging:</p>' + fileList : '<p class="muted">This PR reports a clean merge state.</p>') + '</div>';
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + body + '</div>';
 }
 
 function closeMergeabilityPopover() {
