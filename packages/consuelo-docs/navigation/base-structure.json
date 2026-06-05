@@ -435,8 +435,15 @@
             "os/agent-interface/get-dev-steering",
             "os/agent-interface/call",
             "os/agent-interface/steering-files",
-            "os/agent-interface/tool-manifest",
             "os/agent-interface/permissions"
+          ]
+        },
+        {
+          "key": "osTools",
+          "label": "Tools",
+          "icon": "wrench",
+          "pages": [
+            "os/tools/overview"
           ]
         },
         {
