@@ -48,9 +48,20 @@ No-test waiver:
 
 ## files changed
 
-- `packages/consuelo-docs/docs.json`
-- `packages/consuelo-docs/navigation/base-structure.json`
-- `packages/consuelo-docs/navigation/navigation.template.json`
+- `packages/consuelo-docs/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/ar/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/cs/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/de/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/es/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/fr/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/it/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/ja/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/ko/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/pt/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/ro/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/ru/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/tr/os/tools/overview.mdx`
+- `packages/consuelo-docs/l/zh/os/tools/overview.mdx`
 
 
 ## workspace-owned: validation evidence
