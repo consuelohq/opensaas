@@ -120,7 +120,6 @@ export const DOCUMENTATION_PATHS = {
   OS_AGENT_INTERFACE_GET_STEERING: '/os/agent-interface/get-steering',
   OS_AGENT_INTERFACE_PERMISSIONS: '/os/agent-interface/permissions',
   OS_AGENT_INTERFACE_STEERING_FILES: '/os/agent-interface/steering-files',
-  OS_AGENT_INTERFACE_TOOL_MANIFEST: '/os/agent-interface/tool-manifest',
   OS_DATA_LAYER_DATA_MODEL_AS_OS_ONTOLOGY:
     '/os/data-layer/data-model-as-os-ontology',
   OS_DATA_LAYER_DECISION_ENGINE: '/os/data-layer/decision-engine',
@@ -174,6 +173,13 @@ export const DOCUMENTATION_PATHS = {
   OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
   OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
   OS_SKILLS_TASK: '/os/skills/task',
+  OS_TOOLS_BROWSER_TOOLS: '/os/tools/browser-tools',
+  OS_TOOLS_EXPLORATION_TOOLS: '/os/tools/exploration-tools',
+  OS_TOOLS_FILESYSTEM_TOOLS: '/os/tools/filesystem-tools',
+  OS_TOOLS_GITHUB_AND_REVIEW_TOOLS: '/os/tools/github-and-review-tools',
+  OS_TOOLS_OVERVIEW: '/os/tools/overview',
+  OS_TOOLS_TASK_AND_STREAM_TOOLS: '/os/tools/task-and-stream-tools',
+  OS_TOOLS_TOOL_SEARCH: '/os/tools/tool-search',
   OS_WORKSPACE_FILESYSTEM_ARTIFACTS: '/os/workspace-filesystem/artifacts',
   OS_WORKSPACE_FILESYSTEM_LOCAL_DEVELOPMENT_FILESYSTEM:
     '/os/workspace-filesystem/local-development-filesystem',
