@@ -553,6 +553,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('>Drawer</button>');
     expect(html).toContain('<strong>drawer</strong>');
     expect(html).toContain('id="mergeability-button"');
+    expect(html).toContain('id="merge-pr-button"');
     expect(html).toContain('id="mergeability-popover"');
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
@@ -572,6 +573,9 @@ describe('renderReviewPage', () => {
     expect(html).toContain('font-size:13px');
     expect(html).toContain('font-size:12px');
     expect(html).toContain('grid-template-columns:42px 42px minmax(0, 1fr)');
+    expect(html).toContain('overflow-x:hidden');
+    expect(html).toContain('white-space:pre-wrap');
+    expect(html).toContain('overflow-wrap:anywhere');
     expect(html).toContain('grid-template-columns:34px 34px minmax(0, 1fr)');
     expect(html).toContain('height:calc(100dvh - 76px)');
     expect(html).toContain('height:calc(100dvh - 132px)');
@@ -613,6 +617,11 @@ describe('renderReviewPage', () => {
     expect(script).toContain('renderMergeabilityPopover');
     expect(script).toContain('closeMergeabilityPopover');
     expect(script).toContain('data-open-mergeability');
+    expect(script).toContain('mergePullRequest');
+    expect(script).toContain("apiPath + '/merge'");
+    expect(script).toContain('event.metaKey || event.ctrlKey');
+    expect(script).toContain("stateLabel === 'clean'");
+    expect(script).toContain('Files to inspect before merging');
     expect(script).toContain('relativeCommitTime');
     expect(script).toContain('formatCommitDelta');
     expect(script).toContain('data-comment-jump');
@@ -630,6 +639,29 @@ describe('createWorker', () => {
 
     expect(response.status).toBe(200);
     expect(html).toContain('Consuelo Diffs');
+  });
+
+
+  test('merges a pull request through the merge API endpoint', async () => {
+    const calls: Array<{ url: string; method?: string; body?: string }> = [];
+    const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
+      calls.push({ url: String(input), method: init?.method, body: String(init?.body ?? '') });
+      if (String(input).endsWith('/repos/consuelohq/opensaas/pulls/708/merge')) {
+        return Response.json({ merged: true, sha: 'mergedsha', message: 'Pull Request successfully merged' });
+      }
+      throw new Error('unexpected merge url ' + String(input));
+    };
+    const worker = createWorker({ fetcher });
+    const methodNotAllowed = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/merge'));
+    const missingToken = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/merge', { method: 'POST' }));
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/merge', { method: 'POST' }), { GITHUB_TOKEN: 'token' });
+    const payload = await response.json();
+
+    expect(methodNotAllowed.status).toBe(405);
+    expect(missingToken.status).toBe(401);
+    expect(response.status).toBe(200);
+    expect(payload).toEqual({ ok: true, merged: true, sha: 'mergedsha', message: 'Pull Request successfully merged' });
+    expect(calls).toEqual([{ url: 'https://api.github.com/repos/consuelohq/opensaas/pulls/708/merge', method: 'PUT', body: '{"merge_method":"merge"}' }]);
   });
 
 
