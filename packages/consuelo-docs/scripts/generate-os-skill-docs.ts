@@ -62,7 +62,8 @@ const plannedSkills = [
   ['weekly-manager-report', 'Weekly Manager Report'],
 ] as const;
 
-const generatedNotice = '<!-- Generated from packages/os/skills. Do not edit this page directly. -->';
+const generatedNotice = '{/* Generated from packages/os/skills. Do not edit this page directly. */}';
+const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'ko', 'pt', 'ro', 'ru', 'tr', 'zh'] as const;
 
 const readJson = <T>(filePath: string): T => JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
 
@@ -81,6 +82,9 @@ const writeOrCheck = (filePath: string, content: string): void => {
 
 const yaml = (value: string): string => JSON.stringify(value);
 
+const docsSafePlaceholderText = (value: string): string => value.replace(/<([A-Za-z0-9_.:-]+)>/g, '{$1}');
+const frontmatterSafePlaceholderText = (value: string): string => value.replace(/<([A-Za-z0-9_.:-]+)>/g, '($1)');
+
 const stripFrontmatter = (markdown: string): string => {
   if (!markdown.startsWith('---\n')) {
     return markdown.trimStart();
@@ -94,34 +98,48 @@ const stripFrontmatter = (markdown: string): string => {
   return markdown.slice(end + '\n---'.length).trimStart();
 };
 
-const skillPage = (skill: SkillJson, body: string): string => [
-  '---',
-  `title: ${yaml(skill.title)}`,
-  `description: ${yaml(skill.description)}`,
-  '---',
-  '',
-  generatedNotice,
-  '',
-  stripFrontmatter(body).trimEnd(),
-  '',
-].join('\n');
+const markdownFence = (body: string): string => {
+  const longestFence = Math.max(3, ...Array.from(body.matchAll(/`+/g), (match) => match[0].length));
+  return '`'.repeat(longestFence + 1);
+};
 
-const metadataSkillPage = (skill: SkillJson): string => {
-  const skillPath = path.join(skillsRoot, skill.name, 'skill.json');
-  const metadata = readJson<Record<string, unknown>>(skillPath);
-  const trigger = typeof metadata.trigger === 'string' ? metadata.trigger : skill.description;
+const skillPage = (skill: SkillJson, body: string): string => {
+  const skillBody = docsSafePlaceholderText(stripFrontmatter(body).trimEnd());
+  const fence = markdownFence(skillBody);
 
   return [
     '---',
     `title: ${yaml(skill.title)}`,
-    `description: ${yaml(skill.description)}`,
+    `description: ${yaml(frontmatterSafePlaceholderText(skill.description))}`,
+    '---',
+    '',
+    generatedNotice,
+    '',
+    '## Skill body',
+    '',
+    `${fence}md`,
+    skillBody,
+    fence,
+    '',
+  ].join('\n');
+};
+
+const metadataSkillPage = (skill: SkillJson): string => {
+  const skillPath = path.join(skillsRoot, skill.name, 'skill.json');
+  const metadata = readJson<Record<string, unknown>>(skillPath);
+  const trigger = frontmatterSafePlaceholderText(typeof metadata.trigger === 'string' ? metadata.trigger : skill.description);
+
+  return [
+    '---',
+    `title: ${yaml(skill.title)}`,
+    `description: ${yaml(frontmatterSafePlaceholderText(skill.description))}`,
     '---',
     '',
     generatedNotice,
     '',
     `# ${skill.title}`,
     '',
-    skill.description,
+    frontmatterSafePlaceholderText(skill.description),
     '',
     '## Trigger',
     '',
@@ -264,7 +282,7 @@ const navPlaceholderPage = (slug: string): string => {
     `description: ${yaml(`${title} is an OS documentation page that is being rebuilt.`)}`,
     '---',
     '',
-    '<!-- Generated from packages/consuelo-docs/navigation/base-structure.json to prevent OS docs 404s. Replace with authored docs when ready. -->',
+    '{/* Generated from packages/consuelo-docs/navigation/base-structure.json to prevent OS docs 404s. Replace with authored docs when ready. */}',
     '',
     `# ${title}`,
     '',
@@ -289,9 +307,57 @@ const ensureOsNavPages = (): void => {
   for (const slug of osPages) {
     const filePath = path.join(docsRoot, `${slug}.mdx`);
     if (fs.existsSync(filePath)) {
-      continue;
+      const current = fs.readFileSync(filePath, 'utf8');
+      const generatedPlaceholder = current.includes('Generated from packages/consuelo-docs/navigation/base-structure.json');
+      if (!generatedPlaceholder) {
+        continue;
+      }
     }
     writeOrCheck(filePath, navPlaceholderPage(slug));
+  }
+};
+
+const writeLocalizedFallback = (slug: string): void => {
+  const englishPath = path.join(docsRoot, `${slug}.mdx`);
+  if (!fs.existsSync(englishPath)) {
+    throw new Error(`${slug}.mdx must exist before locale fallbacks are generated.`);
+  }
+
+  const content = fs.readFileSync(englishPath, 'utf8');
+  for (const language of localizedFallbackLanguages) {
+    const localizedPath = path.join(docsRoot, 'l', language, `${slug}.mdx`);
+    if (checkOnly) {
+      if (!fs.existsSync(localizedPath)) {
+        throw new Error(`${path.relative(repoRoot, localizedPath)} is missing. Run bun run generate-os-skill-docs.`);
+      }
+      continue;
+    }
+
+    if (fs.existsSync(localizedPath)) {
+      const localizedContent = fs.readFileSync(localizedPath, 'utf8');
+      const generatedFallback =
+        localizedContent.includes('Generated from packages/os/skills') ||
+        localizedContent.includes('Generated from packages/consuelo-docs/navigation/base-structure.json');
+      if (!generatedFallback) {
+        continue;
+      }
+    }
+
+    fs.mkdirSync(path.dirname(localizedPath), { recursive: true });
+    fs.writeFileSync(localizedPath, content);
+  }
+};
+
+const ensureLocalizedOsNavPages = (): void => {
+  const structure = readJson<BaseStructure>(baseStructurePath);
+  const osTab = structure.tabs.find((tab) => tab.key === 'os');
+  if (!osTab) {
+    throw new Error('navigation/base-structure.json is missing the os tab.');
+  }
+
+  const osPages = osTab.groups.flatMap((group) => collectPageSlugs(group.pages));
+  for (const slug of osPages) {
+    writeLocalizedFallback(slug);
   }
 };
 
@@ -301,5 +367,6 @@ const plannedGroup = generatePlannedPages(new Set(skills.map((skill) => skill.na
 updateBaseStructure(skillPages, plannedGroup);
 updateNavigationTemplate();
 ensureOsNavPages();
+ensureLocalizedOsNavPages();
 
 process.stdout.write(`${checkOnly ? 'checked' : 'generated'} ${skills.length} skill docs\n`);
