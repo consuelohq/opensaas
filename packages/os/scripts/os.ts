@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 
 import {
   findManifestEntry,
@@ -16,6 +17,11 @@ import {
   recordExecutionFinished,
   recordExecutionStarted,
 } from './lib/runtime-state';
+import {
+  getOfficePagePaths,
+  materializeOfficePages,
+  readOfficePageData,
+} from './lib/office-pages';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -52,6 +58,151 @@ function envPresence(): Record<string, unknown> {
   };
 }
 
+export type OfficeCommandResult = {
+  ok: boolean;
+  command: string;
+  home: string;
+  indexPath: string;
+  dataPath: string;
+  assetsDir: string;
+  url: string;
+  artifacts: number;
+  generatedAt: string | null;
+  indexExists: boolean;
+  dataExists: boolean;
+  message: string;
+  actions?: Array<{ type: string; path: string; status: string; message: string }>;
+  error?: { code: string; message: string };
+};
+
+export type RunOfficeCommandOptions = {
+  home?: string;
+  openUrl?: boolean;
+};
+
+type GeneratedOfficeData = {
+  generatedAt?: string;
+  artifacts?: unknown[];
+};
+
+function hasFlag(args: readonly string[], flag: string): boolean {
+  return args.includes(flag);
+}
+
+function firstOfficeSubcommand(args: readonly string[]): string {
+  return args.find((arg) => !arg.startsWith('-')) ?? 'status';
+}
+
+function runtimePathsForHome(home?: string): { home: string; dbPath: string } {
+  if (home) return { home, dbPath: path.join(home, 'consuelo.db') };
+  const paths = getRuntimePaths();
+  return { home: paths.home, dbPath: paths.dbPath };
+}
+
+function readGeneratedOfficeData(dataPath: string): GeneratedOfficeData | null {
+  if (!fs.existsSync(dataPath)) return null;
+  const parsed = JSON.parse(fs.readFileSync(dataPath, 'utf8')) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  return parsed as GeneratedOfficeData;
+}
+
+function officeStatusResult(command: string, home: string, dbPath: string): OfficeCommandResult {
+  const officePaths = getOfficePagePaths(home);
+  const generated = readGeneratedOfficeData(officePaths.dataPath);
+  const currentData = generated ?? readOfficePageData(dbPath);
+  const artifacts = Array.isArray(currentData.artifacts) ? currentData.artifacts.length : 0;
+  return {
+    ok: true,
+    command,
+    home,
+    indexPath: officePaths.indexPath,
+    dataPath: officePaths.dataPath,
+    assetsDir: officePaths.assetsDir,
+    url: pathToFileURL(officePaths.indexPath).href,
+    artifacts,
+    generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
+    indexExists: fs.existsSync(officePaths.indexPath),
+    dataExists: fs.existsSync(officePaths.dataPath),
+    message: `Office page: ${officePaths.indexPath}`,
+  };
+}
+
+export async function runOfficeCommand(
+  args: readonly string[],
+  options: RunOfficeCommandOptions = {},
+): Promise<OfficeCommandResult> {
+  const command = firstOfficeSubcommand(args);
+  const paths = runtimePathsForHome(options.home);
+
+  if (command === 'path') {
+    return officeStatusResult(command, paths.home, paths.dbPath);
+  }
+
+  if (command === 'status') {
+    return officeStatusResult(command, paths.home, paths.dbPath);
+  }
+
+  if (command === 'refresh') {
+    const result = materializeOfficePages({
+      home: paths.home,
+      dbPath: paths.dbPath,
+      dryRun: hasFlag(args, '--dry-run'),
+    });
+    return {
+      ...officeStatusResult(command, paths.home, paths.dbPath),
+      artifacts: result.data.artifacts.length,
+      generatedAt: result.data.generatedAt,
+      actions: result.actions,
+      message: `Office refreshed: ${result.indexPath}`,
+    };
+  }
+
+  if (command === 'open') {
+    const result = materializeOfficePages({ home: paths.home, dbPath: paths.dbPath, dryRun: false });
+    if (options.openUrl !== false) {
+      const openProcess = Bun.spawn(['open', result.indexPath], {
+        stdout: 'ignore',
+        stderr: 'pipe',
+      });
+      const exitCode = await openProcess.exited;
+      if (exitCode !== 0) {
+        const errorText = await new Response(openProcess.stderr).text();
+        return {
+          ...officeStatusResult(command, paths.home, paths.dbPath),
+          ok: false,
+          error: { code: 'OPEN_FAILED', message: errorText.trim() || 'open command failed' },
+          message: `Office open failed: ${result.indexPath}`,
+        };
+      }
+    }
+    return {
+      ...officeStatusResult(command, paths.home, paths.dbPath),
+      artifacts: result.data.artifacts.length,
+      generatedAt: result.data.generatedAt,
+      actions: result.actions,
+      message: `Office opened: ${result.indexPath}`,
+    };
+  }
+
+  return {
+    ...officeStatusResult(command, paths.home, paths.dbPath),
+    ok: false,
+    error: {
+      code: 'UNKNOWN_OFFICE_COMMAND',
+      message: `Unknown office command: ${command}`,
+    },
+    message: 'Unknown Office command.',
+  };
+}
+
+function renderOfficeCommandResult(result: OfficeCommandResult): string {
+  return [
+    result.message,
+    `Path: ${result.indexPath}`,
+    `URL: ${result.url}`,
+    `Artifacts: ${result.artifacts}`,
+  ].join('\n');
+}
 export function getSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
@@ -357,7 +508,8 @@ export function parseCallInput(rawInput: string | undefined): CallInput {
 }
 
 async function main(): Promise<void> {
-  const [command, rawInput] = process.argv.slice(2);
+  const [command, ...args] = process.argv.slice(2);
+  const rawInput = args[0];
 
   if (command === 'get-steering') {
     writeStdout(getSteering());
@@ -366,6 +518,14 @@ async function main(): Promise<void> {
 
   if (command === 'get-raw-steering') {
     writeStdout(getRawSteering());
+    return;
+  }
+
+  if (command === 'office') {
+    const result = await runOfficeCommand(args);
+    if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
+    else writeStdout(`${renderOfficeCommandResult(result)}\n`);
+    if (!result.ok) process.exitCode = 1;
     return;
   }
 
@@ -386,6 +546,10 @@ async function main(): Promise<void> {
       'usage:',
       '  bun ./scripts/os.ts get-steering',
       '  bun ./scripts/os.ts get-raw-steering',
+      '  bun ./scripts/os.ts office path [--json]',
+      '  bun ./scripts/os.ts office status [--json]',
+      '  bun ./scripts/os.ts office refresh [--json]',
+      '  bun ./scripts/os.ts office open [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

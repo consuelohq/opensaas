@@ -171,8 +171,11 @@
         "osOverview": {
           "label": "Overview"
         },
-        "osAgentInterface": {
-          "label": "Agent Interface"
+        "osConcepts": {
+          "label": "Concepts"
+        },
+        "osAgentContext": {
+          "label": "Agent Context"
         },
         "osTools": {
           "label": "Tools"
@@ -184,21 +187,6 @@
               "label": "Planned Skills"
             }
           }
-        },
-        "osWorkspaceFilesystem": {
-          "label": "Workspace Filesystem"
-        },
-        "osDataLayer": {
-          "label": "Data Layer"
-        },
-        "osRuntime": {
-          "label": "Runtime"
-        },
-        "osIntegrations": {
-          "label": "Integrations"
-        },
-        "osPilot": {
-          "label": "Pilot"
         }
       }
     },

@@ -56,6 +56,33 @@ if (!osTab) {
   throw new Error('docs.json is missing the OS tab.');
 }
 
+
+const placeholderHits: string[] = [];
+const scanForPlaceholders = (dir: string): void => {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const filePath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      scanForPlaceholders(filePath);
+      continue;
+    }
+    if (!entry.name.endsWith('.mdx')) {
+      continue;
+    }
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (content.includes('documentation page is being rebuilt')) {
+      placeholderHits.push(path.relative(docsRoot, filePath));
+    }
+  }
+};
+scanForPlaceholders(path.join(docsRoot, 'os'));
+if (placeholderHits.length) {
+  throw new Error(`OS docs still contain generated placeholder pages:
+${placeholderHits.join('\n')}`);
+}
+
 const skillsGroup = osTab.groups.find((group) => group.group === 'Skills');
 if (!skillsGroup) {
   throw new Error('OS tab is missing the Skills group.');

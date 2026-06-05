@@ -413,21 +413,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "os/overview/what-is-consuelo-os",
-                  "os/overview/core-concepts",
-                  "os/overview/quickstart",
-                  "os/overview/architecture"
+                  "os/overview",
+                  "os/how-it-works",
+                  "os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "os/agent-interface/get-steering",
-                  "os/agent-interface/get-dev-steering",
-                  "os/agent-interface/call",
-                  "os/agent-interface/steering-files",
-                  "os/agent-interface/permissions"
+                  "os/concepts/portal",
+                  "os/concepts/skills",
+                  "os/concepts/scripts",
+                  "os/concepts/files-and-artifacts",
+                  "os/concepts/approvals",
+                  "os/concepts/data-model-and-graphql",
+                  "os/concepts/context-and-memory",
+                  "os/concepts/integrations-and-capabilities",
+                  "os/concepts/observability",
+                  "os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "os/agent-context/steering",
+                  "os/agent-context/decision",
+                  "os/agent-context/tools",
+                  "os/agent-context/scripts"
                 ]
               },
               {
@@ -472,64 +486,6 @@
                       "os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "os/workspace-filesystem/overview",
-                  "os/workspace-filesystem/local-development-filesystem",
-                  "os/workspace-filesystem/s3-files-production-target",
-                  "os/workspace-filesystem/artifacts",
-                  "os/workspace-filesystem/reports",
-                  "os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "os/data-layer/data-model-as-os-ontology",
-                  "os/data-layer/graphql-facades",
-                  "os/data-layer/structured-queries",
-                  "os/data-layer/vectorized-context",
-                  "os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "os/runtime/bun-runtime",
-                  "os/runtime/sandbox-executor",
-                  "os/runtime/package-scripts-vs-mcp-tools",
-                  "os/runtime/operator-scripts",
-                  "os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "os/integrations/twilio",
-                  "os/integrations/ghl",
-                  "os/integrations/meta-ads",
-                  "os/integrations/google-ads",
-                  "os/integrations/supabase-auth",
-                  "os/integrations/s3-s3-files",
-                  "os/integrations/stripe",
-                  "os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "os/pilot/insurance-revenue-workspace",
-                  "os/pilot/setup-checklist",
-                  "os/pilot/demo-flow",
-                  "os/pilot/success-criteria"
                 ]
               }
             ]
@@ -1092,21 +1048,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/fr/os/overview/what-is-consuelo-os",
-                  "l/fr/os/overview/core-concepts",
-                  "l/fr/os/overview/quickstart",
-                  "l/fr/os/overview/architecture"
+                  "l/fr/os/overview",
+                  "l/fr/os/how-it-works",
+                  "l/fr/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/fr/os/agent-interface/get-steering",
-                  "l/fr/os/agent-interface/get-dev-steering",
-                  "l/fr/os/agent-interface/call",
-                  "l/fr/os/agent-interface/steering-files",
-                  "l/fr/os/agent-interface/permissions"
+                  "l/fr/os/concepts/portal",
+                  "l/fr/os/concepts/skills",
+                  "l/fr/os/concepts/scripts",
+                  "l/fr/os/concepts/files-and-artifacts",
+                  "l/fr/os/concepts/approvals",
+                  "l/fr/os/concepts/data-model-and-graphql",
+                  "l/fr/os/concepts/context-and-memory",
+                  "l/fr/os/concepts/integrations-and-capabilities",
+                  "l/fr/os/concepts/observability",
+                  "l/fr/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/fr/os/agent-context/steering",
+                  "l/fr/os/agent-context/decision",
+                  "l/fr/os/agent-context/tools",
+                  "l/fr/os/agent-context/scripts"
                 ]
               },
               {
@@ -1151,64 +1121,6 @@
                       "l/fr/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/fr/os/workspace-filesystem/overview",
-                  "l/fr/os/workspace-filesystem/local-development-filesystem",
-                  "l/fr/os/workspace-filesystem/s3-files-production-target",
-                  "l/fr/os/workspace-filesystem/artifacts",
-                  "l/fr/os/workspace-filesystem/reports",
-                  "l/fr/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/fr/os/data-layer/data-model-as-os-ontology",
-                  "l/fr/os/data-layer/graphql-facades",
-                  "l/fr/os/data-layer/structured-queries",
-                  "l/fr/os/data-layer/vectorized-context",
-                  "l/fr/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/fr/os/runtime/bun-runtime",
-                  "l/fr/os/runtime/sandbox-executor",
-                  "l/fr/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/fr/os/runtime/operator-scripts",
-                  "l/fr/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/fr/os/integrations/twilio",
-                  "l/fr/os/integrations/ghl",
-                  "l/fr/os/integrations/meta-ads",
-                  "l/fr/os/integrations/google-ads",
-                  "l/fr/os/integrations/supabase-auth",
-                  "l/fr/os/integrations/s3-s3-files",
-                  "l/fr/os/integrations/stripe",
-                  "l/fr/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/fr/os/pilot/insurance-revenue-workspace",
-                  "l/fr/os/pilot/setup-checklist",
-                  "l/fr/os/pilot/demo-flow",
-                  "l/fr/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -1771,21 +1683,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ar/os/overview/what-is-consuelo-os",
-                  "l/ar/os/overview/core-concepts",
-                  "l/ar/os/overview/quickstart",
-                  "l/ar/os/overview/architecture"
+                  "l/ar/os/overview",
+                  "l/ar/os/how-it-works",
+                  "l/ar/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ar/os/agent-interface/get-steering",
-                  "l/ar/os/agent-interface/get-dev-steering",
-                  "l/ar/os/agent-interface/call",
-                  "l/ar/os/agent-interface/steering-files",
-                  "l/ar/os/agent-interface/permissions"
+                  "l/ar/os/concepts/portal",
+                  "l/ar/os/concepts/skills",
+                  "l/ar/os/concepts/scripts",
+                  "l/ar/os/concepts/files-and-artifacts",
+                  "l/ar/os/concepts/approvals",
+                  "l/ar/os/concepts/data-model-and-graphql",
+                  "l/ar/os/concepts/context-and-memory",
+                  "l/ar/os/concepts/integrations-and-capabilities",
+                  "l/ar/os/concepts/observability",
+                  "l/ar/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/ar/os/agent-context/steering",
+                  "l/ar/os/agent-context/decision",
+                  "l/ar/os/agent-context/tools",
+                  "l/ar/os/agent-context/scripts"
                 ]
               },
               {
@@ -1830,64 +1756,6 @@
                       "l/ar/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ar/os/workspace-filesystem/overview",
-                  "l/ar/os/workspace-filesystem/local-development-filesystem",
-                  "l/ar/os/workspace-filesystem/s3-files-production-target",
-                  "l/ar/os/workspace-filesystem/artifacts",
-                  "l/ar/os/workspace-filesystem/reports",
-                  "l/ar/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ar/os/data-layer/data-model-as-os-ontology",
-                  "l/ar/os/data-layer/graphql-facades",
-                  "l/ar/os/data-layer/structured-queries",
-                  "l/ar/os/data-layer/vectorized-context",
-                  "l/ar/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ar/os/runtime/bun-runtime",
-                  "l/ar/os/runtime/sandbox-executor",
-                  "l/ar/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ar/os/runtime/operator-scripts",
-                  "l/ar/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ar/os/integrations/twilio",
-                  "l/ar/os/integrations/ghl",
-                  "l/ar/os/integrations/meta-ads",
-                  "l/ar/os/integrations/google-ads",
-                  "l/ar/os/integrations/supabase-auth",
-                  "l/ar/os/integrations/s3-s3-files",
-                  "l/ar/os/integrations/stripe",
-                  "l/ar/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ar/os/pilot/insurance-revenue-workspace",
-                  "l/ar/os/pilot/setup-checklist",
-                  "l/ar/os/pilot/demo-flow",
-                  "l/ar/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -2450,21 +2318,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/cs/os/overview/what-is-consuelo-os",
-                  "l/cs/os/overview/core-concepts",
-                  "l/cs/os/overview/quickstart",
-                  "l/cs/os/overview/architecture"
+                  "l/cs/os/overview",
+                  "l/cs/os/how-it-works",
+                  "l/cs/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/cs/os/agent-interface/get-steering",
-                  "l/cs/os/agent-interface/get-dev-steering",
-                  "l/cs/os/agent-interface/call",
-                  "l/cs/os/agent-interface/steering-files",
-                  "l/cs/os/agent-interface/permissions"
+                  "l/cs/os/concepts/portal",
+                  "l/cs/os/concepts/skills",
+                  "l/cs/os/concepts/scripts",
+                  "l/cs/os/concepts/files-and-artifacts",
+                  "l/cs/os/concepts/approvals",
+                  "l/cs/os/concepts/data-model-and-graphql",
+                  "l/cs/os/concepts/context-and-memory",
+                  "l/cs/os/concepts/integrations-and-capabilities",
+                  "l/cs/os/concepts/observability",
+                  "l/cs/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/cs/os/agent-context/steering",
+                  "l/cs/os/agent-context/decision",
+                  "l/cs/os/agent-context/tools",
+                  "l/cs/os/agent-context/scripts"
                 ]
               },
               {
@@ -2509,64 +2391,6 @@
                       "l/cs/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/cs/os/workspace-filesystem/overview",
-                  "l/cs/os/workspace-filesystem/local-development-filesystem",
-                  "l/cs/os/workspace-filesystem/s3-files-production-target",
-                  "l/cs/os/workspace-filesystem/artifacts",
-                  "l/cs/os/workspace-filesystem/reports",
-                  "l/cs/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/cs/os/data-layer/data-model-as-os-ontology",
-                  "l/cs/os/data-layer/graphql-facades",
-                  "l/cs/os/data-layer/structured-queries",
-                  "l/cs/os/data-layer/vectorized-context",
-                  "l/cs/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/cs/os/runtime/bun-runtime",
-                  "l/cs/os/runtime/sandbox-executor",
-                  "l/cs/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/cs/os/runtime/operator-scripts",
-                  "l/cs/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/cs/os/integrations/twilio",
-                  "l/cs/os/integrations/ghl",
-                  "l/cs/os/integrations/meta-ads",
-                  "l/cs/os/integrations/google-ads",
-                  "l/cs/os/integrations/supabase-auth",
-                  "l/cs/os/integrations/s3-s3-files",
-                  "l/cs/os/integrations/stripe",
-                  "l/cs/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/cs/os/pilot/insurance-revenue-workspace",
-                  "l/cs/os/pilot/setup-checklist",
-                  "l/cs/os/pilot/demo-flow",
-                  "l/cs/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -3129,21 +2953,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/de/os/overview/what-is-consuelo-os",
-                  "l/de/os/overview/core-concepts",
-                  "l/de/os/overview/quickstart",
-                  "l/de/os/overview/architecture"
+                  "l/de/os/overview",
+                  "l/de/os/how-it-works",
+                  "l/de/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/de/os/agent-interface/get-steering",
-                  "l/de/os/agent-interface/get-dev-steering",
-                  "l/de/os/agent-interface/call",
-                  "l/de/os/agent-interface/steering-files",
-                  "l/de/os/agent-interface/permissions"
+                  "l/de/os/concepts/portal",
+                  "l/de/os/concepts/skills",
+                  "l/de/os/concepts/scripts",
+                  "l/de/os/concepts/files-and-artifacts",
+                  "l/de/os/concepts/approvals",
+                  "l/de/os/concepts/data-model-and-graphql",
+                  "l/de/os/concepts/context-and-memory",
+                  "l/de/os/concepts/integrations-and-capabilities",
+                  "l/de/os/concepts/observability",
+                  "l/de/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/de/os/agent-context/steering",
+                  "l/de/os/agent-context/decision",
+                  "l/de/os/agent-context/tools",
+                  "l/de/os/agent-context/scripts"
                 ]
               },
               {
@@ -3188,64 +3026,6 @@
                       "l/de/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/de/os/workspace-filesystem/overview",
-                  "l/de/os/workspace-filesystem/local-development-filesystem",
-                  "l/de/os/workspace-filesystem/s3-files-production-target",
-                  "l/de/os/workspace-filesystem/artifacts",
-                  "l/de/os/workspace-filesystem/reports",
-                  "l/de/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/de/os/data-layer/data-model-as-os-ontology",
-                  "l/de/os/data-layer/graphql-facades",
-                  "l/de/os/data-layer/structured-queries",
-                  "l/de/os/data-layer/vectorized-context",
-                  "l/de/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/de/os/runtime/bun-runtime",
-                  "l/de/os/runtime/sandbox-executor",
-                  "l/de/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/de/os/runtime/operator-scripts",
-                  "l/de/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/de/os/integrations/twilio",
-                  "l/de/os/integrations/ghl",
-                  "l/de/os/integrations/meta-ads",
-                  "l/de/os/integrations/google-ads",
-                  "l/de/os/integrations/supabase-auth",
-                  "l/de/os/integrations/s3-s3-files",
-                  "l/de/os/integrations/stripe",
-                  "l/de/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/de/os/pilot/insurance-revenue-workspace",
-                  "l/de/os/pilot/setup-checklist",
-                  "l/de/os/pilot/demo-flow",
-                  "l/de/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -3808,21 +3588,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/es/os/overview/what-is-consuelo-os",
-                  "l/es/os/overview/core-concepts",
-                  "l/es/os/overview/quickstart",
-                  "l/es/os/overview/architecture"
+                  "l/es/os/overview",
+                  "l/es/os/how-it-works",
+                  "l/es/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/es/os/agent-interface/get-steering",
-                  "l/es/os/agent-interface/get-dev-steering",
-                  "l/es/os/agent-interface/call",
-                  "l/es/os/agent-interface/steering-files",
-                  "l/es/os/agent-interface/permissions"
+                  "l/es/os/concepts/portal",
+                  "l/es/os/concepts/skills",
+                  "l/es/os/concepts/scripts",
+                  "l/es/os/concepts/files-and-artifacts",
+                  "l/es/os/concepts/approvals",
+                  "l/es/os/concepts/data-model-and-graphql",
+                  "l/es/os/concepts/context-and-memory",
+                  "l/es/os/concepts/integrations-and-capabilities",
+                  "l/es/os/concepts/observability",
+                  "l/es/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/es/os/agent-context/steering",
+                  "l/es/os/agent-context/decision",
+                  "l/es/os/agent-context/tools",
+                  "l/es/os/agent-context/scripts"
                 ]
               },
               {
@@ -3867,64 +3661,6 @@
                       "l/es/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/es/os/workspace-filesystem/overview",
-                  "l/es/os/workspace-filesystem/local-development-filesystem",
-                  "l/es/os/workspace-filesystem/s3-files-production-target",
-                  "l/es/os/workspace-filesystem/artifacts",
-                  "l/es/os/workspace-filesystem/reports",
-                  "l/es/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/es/os/data-layer/data-model-as-os-ontology",
-                  "l/es/os/data-layer/graphql-facades",
-                  "l/es/os/data-layer/structured-queries",
-                  "l/es/os/data-layer/vectorized-context",
-                  "l/es/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/es/os/runtime/bun-runtime",
-                  "l/es/os/runtime/sandbox-executor",
-                  "l/es/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/es/os/runtime/operator-scripts",
-                  "l/es/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/es/os/integrations/twilio",
-                  "l/es/os/integrations/ghl",
-                  "l/es/os/integrations/meta-ads",
-                  "l/es/os/integrations/google-ads",
-                  "l/es/os/integrations/supabase-auth",
-                  "l/es/os/integrations/s3-s3-files",
-                  "l/es/os/integrations/stripe",
-                  "l/es/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/es/os/pilot/insurance-revenue-workspace",
-                  "l/es/os/pilot/setup-checklist",
-                  "l/es/os/pilot/demo-flow",
-                  "l/es/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -4487,21 +4223,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/it/os/overview/what-is-consuelo-os",
-                  "l/it/os/overview/core-concepts",
-                  "l/it/os/overview/quickstart",
-                  "l/it/os/overview/architecture"
+                  "l/it/os/overview",
+                  "l/it/os/how-it-works",
+                  "l/it/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/it/os/agent-interface/get-steering",
-                  "l/it/os/agent-interface/get-dev-steering",
-                  "l/it/os/agent-interface/call",
-                  "l/it/os/agent-interface/steering-files",
-                  "l/it/os/agent-interface/permissions"
+                  "l/it/os/concepts/portal",
+                  "l/it/os/concepts/skills",
+                  "l/it/os/concepts/scripts",
+                  "l/it/os/concepts/files-and-artifacts",
+                  "l/it/os/concepts/approvals",
+                  "l/it/os/concepts/data-model-and-graphql",
+                  "l/it/os/concepts/context-and-memory",
+                  "l/it/os/concepts/integrations-and-capabilities",
+                  "l/it/os/concepts/observability",
+                  "l/it/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/it/os/agent-context/steering",
+                  "l/it/os/agent-context/decision",
+                  "l/it/os/agent-context/tools",
+                  "l/it/os/agent-context/scripts"
                 ]
               },
               {
@@ -4546,64 +4296,6 @@
                       "l/it/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/it/os/workspace-filesystem/overview",
-                  "l/it/os/workspace-filesystem/local-development-filesystem",
-                  "l/it/os/workspace-filesystem/s3-files-production-target",
-                  "l/it/os/workspace-filesystem/artifacts",
-                  "l/it/os/workspace-filesystem/reports",
-                  "l/it/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/it/os/data-layer/data-model-as-os-ontology",
-                  "l/it/os/data-layer/graphql-facades",
-                  "l/it/os/data-layer/structured-queries",
-                  "l/it/os/data-layer/vectorized-context",
-                  "l/it/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/it/os/runtime/bun-runtime",
-                  "l/it/os/runtime/sandbox-executor",
-                  "l/it/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/it/os/runtime/operator-scripts",
-                  "l/it/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/it/os/integrations/twilio",
-                  "l/it/os/integrations/ghl",
-                  "l/it/os/integrations/meta-ads",
-                  "l/it/os/integrations/google-ads",
-                  "l/it/os/integrations/supabase-auth",
-                  "l/it/os/integrations/s3-s3-files",
-                  "l/it/os/integrations/stripe",
-                  "l/it/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/it/os/pilot/insurance-revenue-workspace",
-                  "l/it/os/pilot/setup-checklist",
-                  "l/it/os/pilot/demo-flow",
-                  "l/it/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -5166,21 +4858,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ja/os/overview/what-is-consuelo-os",
-                  "l/ja/os/overview/core-concepts",
-                  "l/ja/os/overview/quickstart",
-                  "l/ja/os/overview/architecture"
+                  "l/ja/os/overview",
+                  "l/ja/os/how-it-works",
+                  "l/ja/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ja/os/agent-interface/get-steering",
-                  "l/ja/os/agent-interface/get-dev-steering",
-                  "l/ja/os/agent-interface/call",
-                  "l/ja/os/agent-interface/steering-files",
-                  "l/ja/os/agent-interface/permissions"
+                  "l/ja/os/concepts/portal",
+                  "l/ja/os/concepts/skills",
+                  "l/ja/os/concepts/scripts",
+                  "l/ja/os/concepts/files-and-artifacts",
+                  "l/ja/os/concepts/approvals",
+                  "l/ja/os/concepts/data-model-and-graphql",
+                  "l/ja/os/concepts/context-and-memory",
+                  "l/ja/os/concepts/integrations-and-capabilities",
+                  "l/ja/os/concepts/observability",
+                  "l/ja/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/ja/os/agent-context/steering",
+                  "l/ja/os/agent-context/decision",
+                  "l/ja/os/agent-context/tools",
+                  "l/ja/os/agent-context/scripts"
                 ]
               },
               {
@@ -5225,64 +4931,6 @@
                       "l/ja/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ja/os/workspace-filesystem/overview",
-                  "l/ja/os/workspace-filesystem/local-development-filesystem",
-                  "l/ja/os/workspace-filesystem/s3-files-production-target",
-                  "l/ja/os/workspace-filesystem/artifacts",
-                  "l/ja/os/workspace-filesystem/reports",
-                  "l/ja/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ja/os/data-layer/data-model-as-os-ontology",
-                  "l/ja/os/data-layer/graphql-facades",
-                  "l/ja/os/data-layer/structured-queries",
-                  "l/ja/os/data-layer/vectorized-context",
-                  "l/ja/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ja/os/runtime/bun-runtime",
-                  "l/ja/os/runtime/sandbox-executor",
-                  "l/ja/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ja/os/runtime/operator-scripts",
-                  "l/ja/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ja/os/integrations/twilio",
-                  "l/ja/os/integrations/ghl",
-                  "l/ja/os/integrations/meta-ads",
-                  "l/ja/os/integrations/google-ads",
-                  "l/ja/os/integrations/supabase-auth",
-                  "l/ja/os/integrations/s3-s3-files",
-                  "l/ja/os/integrations/stripe",
-                  "l/ja/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ja/os/pilot/insurance-revenue-workspace",
-                  "l/ja/os/pilot/setup-checklist",
-                  "l/ja/os/pilot/demo-flow",
-                  "l/ja/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -5845,21 +5493,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ko/os/overview/what-is-consuelo-os",
-                  "l/ko/os/overview/core-concepts",
-                  "l/ko/os/overview/quickstart",
-                  "l/ko/os/overview/architecture"
+                  "l/ko/os/overview",
+                  "l/ko/os/how-it-works",
+                  "l/ko/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ko/os/agent-interface/get-steering",
-                  "l/ko/os/agent-interface/get-dev-steering",
-                  "l/ko/os/agent-interface/call",
-                  "l/ko/os/agent-interface/steering-files",
-                  "l/ko/os/agent-interface/permissions"
+                  "l/ko/os/concepts/portal",
+                  "l/ko/os/concepts/skills",
+                  "l/ko/os/concepts/scripts",
+                  "l/ko/os/concepts/files-and-artifacts",
+                  "l/ko/os/concepts/approvals",
+                  "l/ko/os/concepts/data-model-and-graphql",
+                  "l/ko/os/concepts/context-and-memory",
+                  "l/ko/os/concepts/integrations-and-capabilities",
+                  "l/ko/os/concepts/observability",
+                  "l/ko/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/ko/os/agent-context/steering",
+                  "l/ko/os/agent-context/decision",
+                  "l/ko/os/agent-context/tools",
+                  "l/ko/os/agent-context/scripts"
                 ]
               },
               {
@@ -5904,64 +5566,6 @@
                       "l/ko/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ko/os/workspace-filesystem/overview",
-                  "l/ko/os/workspace-filesystem/local-development-filesystem",
-                  "l/ko/os/workspace-filesystem/s3-files-production-target",
-                  "l/ko/os/workspace-filesystem/artifacts",
-                  "l/ko/os/workspace-filesystem/reports",
-                  "l/ko/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ko/os/data-layer/data-model-as-os-ontology",
-                  "l/ko/os/data-layer/graphql-facades",
-                  "l/ko/os/data-layer/structured-queries",
-                  "l/ko/os/data-layer/vectorized-context",
-                  "l/ko/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ko/os/runtime/bun-runtime",
-                  "l/ko/os/runtime/sandbox-executor",
-                  "l/ko/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ko/os/runtime/operator-scripts",
-                  "l/ko/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ko/os/integrations/twilio",
-                  "l/ko/os/integrations/ghl",
-                  "l/ko/os/integrations/meta-ads",
-                  "l/ko/os/integrations/google-ads",
-                  "l/ko/os/integrations/supabase-auth",
-                  "l/ko/os/integrations/s3-s3-files",
-                  "l/ko/os/integrations/stripe",
-                  "l/ko/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ko/os/pilot/insurance-revenue-workspace",
-                  "l/ko/os/pilot/setup-checklist",
-                  "l/ko/os/pilot/demo-flow",
-                  "l/ko/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -6524,21 +6128,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/pt/os/overview/what-is-consuelo-os",
-                  "l/pt/os/overview/core-concepts",
-                  "l/pt/os/overview/quickstart",
-                  "l/pt/os/overview/architecture"
+                  "l/pt/os/overview",
+                  "l/pt/os/how-it-works",
+                  "l/pt/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/pt/os/agent-interface/get-steering",
-                  "l/pt/os/agent-interface/get-dev-steering",
-                  "l/pt/os/agent-interface/call",
-                  "l/pt/os/agent-interface/steering-files",
-                  "l/pt/os/agent-interface/permissions"
+                  "l/pt/os/concepts/portal",
+                  "l/pt/os/concepts/skills",
+                  "l/pt/os/concepts/scripts",
+                  "l/pt/os/concepts/files-and-artifacts",
+                  "l/pt/os/concepts/approvals",
+                  "l/pt/os/concepts/data-model-and-graphql",
+                  "l/pt/os/concepts/context-and-memory",
+                  "l/pt/os/concepts/integrations-and-capabilities",
+                  "l/pt/os/concepts/observability",
+                  "l/pt/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/pt/os/agent-context/steering",
+                  "l/pt/os/agent-context/decision",
+                  "l/pt/os/agent-context/tools",
+                  "l/pt/os/agent-context/scripts"
                 ]
               },
               {
@@ -6583,64 +6201,6 @@
                       "l/pt/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/pt/os/workspace-filesystem/overview",
-                  "l/pt/os/workspace-filesystem/local-development-filesystem",
-                  "l/pt/os/workspace-filesystem/s3-files-production-target",
-                  "l/pt/os/workspace-filesystem/artifacts",
-                  "l/pt/os/workspace-filesystem/reports",
-                  "l/pt/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/pt/os/data-layer/data-model-as-os-ontology",
-                  "l/pt/os/data-layer/graphql-facades",
-                  "l/pt/os/data-layer/structured-queries",
-                  "l/pt/os/data-layer/vectorized-context",
-                  "l/pt/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/pt/os/runtime/bun-runtime",
-                  "l/pt/os/runtime/sandbox-executor",
-                  "l/pt/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/pt/os/runtime/operator-scripts",
-                  "l/pt/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/pt/os/integrations/twilio",
-                  "l/pt/os/integrations/ghl",
-                  "l/pt/os/integrations/meta-ads",
-                  "l/pt/os/integrations/google-ads",
-                  "l/pt/os/integrations/supabase-auth",
-                  "l/pt/os/integrations/s3-s3-files",
-                  "l/pt/os/integrations/stripe",
-                  "l/pt/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/pt/os/pilot/insurance-revenue-workspace",
-                  "l/pt/os/pilot/setup-checklist",
-                  "l/pt/os/pilot/demo-flow",
-                  "l/pt/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -7203,21 +6763,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ro/os/overview/what-is-consuelo-os",
-                  "l/ro/os/overview/core-concepts",
-                  "l/ro/os/overview/quickstart",
-                  "l/ro/os/overview/architecture"
+                  "l/ro/os/overview",
+                  "l/ro/os/how-it-works",
+                  "l/ro/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ro/os/agent-interface/get-steering",
-                  "l/ro/os/agent-interface/get-dev-steering",
-                  "l/ro/os/agent-interface/call",
-                  "l/ro/os/agent-interface/steering-files",
-                  "l/ro/os/agent-interface/permissions"
+                  "l/ro/os/concepts/portal",
+                  "l/ro/os/concepts/skills",
+                  "l/ro/os/concepts/scripts",
+                  "l/ro/os/concepts/files-and-artifacts",
+                  "l/ro/os/concepts/approvals",
+                  "l/ro/os/concepts/data-model-and-graphql",
+                  "l/ro/os/concepts/context-and-memory",
+                  "l/ro/os/concepts/integrations-and-capabilities",
+                  "l/ro/os/concepts/observability",
+                  "l/ro/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/ro/os/agent-context/steering",
+                  "l/ro/os/agent-context/decision",
+                  "l/ro/os/agent-context/tools",
+                  "l/ro/os/agent-context/scripts"
                 ]
               },
               {
@@ -7262,64 +6836,6 @@
                       "l/ro/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ro/os/workspace-filesystem/overview",
-                  "l/ro/os/workspace-filesystem/local-development-filesystem",
-                  "l/ro/os/workspace-filesystem/s3-files-production-target",
-                  "l/ro/os/workspace-filesystem/artifacts",
-                  "l/ro/os/workspace-filesystem/reports",
-                  "l/ro/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ro/os/data-layer/data-model-as-os-ontology",
-                  "l/ro/os/data-layer/graphql-facades",
-                  "l/ro/os/data-layer/structured-queries",
-                  "l/ro/os/data-layer/vectorized-context",
-                  "l/ro/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ro/os/runtime/bun-runtime",
-                  "l/ro/os/runtime/sandbox-executor",
-                  "l/ro/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ro/os/runtime/operator-scripts",
-                  "l/ro/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ro/os/integrations/twilio",
-                  "l/ro/os/integrations/ghl",
-                  "l/ro/os/integrations/meta-ads",
-                  "l/ro/os/integrations/google-ads",
-                  "l/ro/os/integrations/supabase-auth",
-                  "l/ro/os/integrations/s3-s3-files",
-                  "l/ro/os/integrations/stripe",
-                  "l/ro/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ro/os/pilot/insurance-revenue-workspace",
-                  "l/ro/os/pilot/setup-checklist",
-                  "l/ro/os/pilot/demo-flow",
-                  "l/ro/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -7882,21 +7398,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ru/os/overview/what-is-consuelo-os",
-                  "l/ru/os/overview/core-concepts",
-                  "l/ru/os/overview/quickstart",
-                  "l/ru/os/overview/architecture"
+                  "l/ru/os/overview",
+                  "l/ru/os/how-it-works",
+                  "l/ru/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ru/os/agent-interface/get-steering",
-                  "l/ru/os/agent-interface/get-dev-steering",
-                  "l/ru/os/agent-interface/call",
-                  "l/ru/os/agent-interface/steering-files",
-                  "l/ru/os/agent-interface/permissions"
+                  "l/ru/os/concepts/portal",
+                  "l/ru/os/concepts/skills",
+                  "l/ru/os/concepts/scripts",
+                  "l/ru/os/concepts/files-and-artifacts",
+                  "l/ru/os/concepts/approvals",
+                  "l/ru/os/concepts/data-model-and-graphql",
+                  "l/ru/os/concepts/context-and-memory",
+                  "l/ru/os/concepts/integrations-and-capabilities",
+                  "l/ru/os/concepts/observability",
+                  "l/ru/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/ru/os/agent-context/steering",
+                  "l/ru/os/agent-context/decision",
+                  "l/ru/os/agent-context/tools",
+                  "l/ru/os/agent-context/scripts"
                 ]
               },
               {
@@ -7941,64 +7471,6 @@
                       "l/ru/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ru/os/workspace-filesystem/overview",
-                  "l/ru/os/workspace-filesystem/local-development-filesystem",
-                  "l/ru/os/workspace-filesystem/s3-files-production-target",
-                  "l/ru/os/workspace-filesystem/artifacts",
-                  "l/ru/os/workspace-filesystem/reports",
-                  "l/ru/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ru/os/data-layer/data-model-as-os-ontology",
-                  "l/ru/os/data-layer/graphql-facades",
-                  "l/ru/os/data-layer/structured-queries",
-                  "l/ru/os/data-layer/vectorized-context",
-                  "l/ru/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ru/os/runtime/bun-runtime",
-                  "l/ru/os/runtime/sandbox-executor",
-                  "l/ru/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ru/os/runtime/operator-scripts",
-                  "l/ru/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ru/os/integrations/twilio",
-                  "l/ru/os/integrations/ghl",
-                  "l/ru/os/integrations/meta-ads",
-                  "l/ru/os/integrations/google-ads",
-                  "l/ru/os/integrations/supabase-auth",
-                  "l/ru/os/integrations/s3-s3-files",
-                  "l/ru/os/integrations/stripe",
-                  "l/ru/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ru/os/pilot/insurance-revenue-workspace",
-                  "l/ru/os/pilot/setup-checklist",
-                  "l/ru/os/pilot/demo-flow",
-                  "l/ru/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -8561,21 +8033,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/tr/os/overview/what-is-consuelo-os",
-                  "l/tr/os/overview/core-concepts",
-                  "l/tr/os/overview/quickstart",
-                  "l/tr/os/overview/architecture"
+                  "l/tr/os/overview",
+                  "l/tr/os/how-it-works",
+                  "l/tr/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/tr/os/agent-interface/get-steering",
-                  "l/tr/os/agent-interface/get-dev-steering",
-                  "l/tr/os/agent-interface/call",
-                  "l/tr/os/agent-interface/steering-files",
-                  "l/tr/os/agent-interface/permissions"
+                  "l/tr/os/concepts/portal",
+                  "l/tr/os/concepts/skills",
+                  "l/tr/os/concepts/scripts",
+                  "l/tr/os/concepts/files-and-artifacts",
+                  "l/tr/os/concepts/approvals",
+                  "l/tr/os/concepts/data-model-and-graphql",
+                  "l/tr/os/concepts/context-and-memory",
+                  "l/tr/os/concepts/integrations-and-capabilities",
+                  "l/tr/os/concepts/observability",
+                  "l/tr/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/tr/os/agent-context/steering",
+                  "l/tr/os/agent-context/decision",
+                  "l/tr/os/agent-context/tools",
+                  "l/tr/os/agent-context/scripts"
                 ]
               },
               {
@@ -8620,64 +8106,6 @@
                       "l/tr/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/tr/os/workspace-filesystem/overview",
-                  "l/tr/os/workspace-filesystem/local-development-filesystem",
-                  "l/tr/os/workspace-filesystem/s3-files-production-target",
-                  "l/tr/os/workspace-filesystem/artifacts",
-                  "l/tr/os/workspace-filesystem/reports",
-                  "l/tr/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/tr/os/data-layer/data-model-as-os-ontology",
-                  "l/tr/os/data-layer/graphql-facades",
-                  "l/tr/os/data-layer/structured-queries",
-                  "l/tr/os/data-layer/vectorized-context",
-                  "l/tr/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/tr/os/runtime/bun-runtime",
-                  "l/tr/os/runtime/sandbox-executor",
-                  "l/tr/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/tr/os/runtime/operator-scripts",
-                  "l/tr/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/tr/os/integrations/twilio",
-                  "l/tr/os/integrations/ghl",
-                  "l/tr/os/integrations/meta-ads",
-                  "l/tr/os/integrations/google-ads",
-                  "l/tr/os/integrations/supabase-auth",
-                  "l/tr/os/integrations/s3-s3-files",
-                  "l/tr/os/integrations/stripe",
-                  "l/tr/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/tr/os/pilot/insurance-revenue-workspace",
-                  "l/tr/os/pilot/setup-checklist",
-                  "l/tr/os/pilot/demo-flow",
-                  "l/tr/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -9240,21 +8668,35 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/zh/os/overview/what-is-consuelo-os",
-                  "l/zh/os/overview/core-concepts",
-                  "l/zh/os/overview/quickstart",
-                  "l/zh/os/overview/architecture"
+                  "l/zh/os/overview",
+                  "l/zh/os/how-it-works",
+                  "l/zh/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/zh/os/agent-interface/get-steering",
-                  "l/zh/os/agent-interface/get-dev-steering",
-                  "l/zh/os/agent-interface/call",
-                  "l/zh/os/agent-interface/steering-files",
-                  "l/zh/os/agent-interface/permissions"
+                  "l/zh/os/concepts/portal",
+                  "l/zh/os/concepts/skills",
+                  "l/zh/os/concepts/scripts",
+                  "l/zh/os/concepts/files-and-artifacts",
+                  "l/zh/os/concepts/approvals",
+                  "l/zh/os/concepts/data-model-and-graphql",
+                  "l/zh/os/concepts/context-and-memory",
+                  "l/zh/os/concepts/integrations-and-capabilities",
+                  "l/zh/os/concepts/observability",
+                  "l/zh/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Agent Context",
+                "icon": "brain",
+                "pages": [
+                  "l/zh/os/agent-context/steering",
+                  "l/zh/os/agent-context/decision",
+                  "l/zh/os/agent-context/tools",
+                  "l/zh/os/agent-context/scripts"
                 ]
               },
               {
@@ -9299,64 +8741,6 @@
                       "l/zh/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/zh/os/workspace-filesystem/overview",
-                  "l/zh/os/workspace-filesystem/local-development-filesystem",
-                  "l/zh/os/workspace-filesystem/s3-files-production-target",
-                  "l/zh/os/workspace-filesystem/artifacts",
-                  "l/zh/os/workspace-filesystem/reports",
-                  "l/zh/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/zh/os/data-layer/data-model-as-os-ontology",
-                  "l/zh/os/data-layer/graphql-facades",
-                  "l/zh/os/data-layer/structured-queries",
-                  "l/zh/os/data-layer/vectorized-context",
-                  "l/zh/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/zh/os/runtime/bun-runtime",
-                  "l/zh/os/runtime/sandbox-executor",
-                  "l/zh/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/zh/os/runtime/operator-scripts",
-                  "l/zh/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/zh/os/integrations/twilio",
-                  "l/zh/os/integrations/ghl",
-                  "l/zh/os/integrations/meta-ads",
-                  "l/zh/os/integrations/google-ads",
-                  "l/zh/os/integrations/supabase-auth",
-                  "l/zh/os/integrations/s3-s3-files",
-                  "l/zh/os/integrations/stripe",
-                  "l/zh/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/zh/os/pilot/insurance-revenue-workspace",
-                  "l/zh/os/pilot/setup-checklist",
-                  "l/zh/os/pilot/demo-flow",
-                  "l/zh/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -9554,40 +8938,8 @@
   },
   "redirects": [
     {
-      "source": "/developers/local-setup",
-      "destination": "/developers/contribute/capabilities/local-setup"
-    },
-    {
-      "source": "/developers/self-hosting",
-      "destination": "/developers/self-host/self-host"
-    },
-    {
-      "source": "/developers/self-hosting/docker-compose",
-      "destination": "/developers/self-host/capabilities/docker-compose"
-    },
-    {
-      "source": "/developers/self-hosting/setup",
-      "destination": "/developers/self-host/capabilities/setup"
-    },
-    {
-      "source": "/developers/self-hosting/upgrade-guide",
-      "destination": "/developers/self-host/capabilities/upgrade-guide"
-    },
-    {
-      "source": "/developers/self-hosting/cloud-providers",
-      "destination": "/developers/self-host/capabilities/cloud-providers"
-    },
-    {
-      "source": "/developers/self-hosting/troubleshooting",
-      "destination": "/developers/self-host/capabilities/troubleshooting"
-    },
-    {
       "source": "/developers/api-and-webhooks",
       "destination": "/developers/extend/extend"
-    },
-    {
-      "source": "/developers/api-and-webhooks/apis-overview",
-      "destination": "/developers/extend/capabilities/apis"
     },
     {
       "source": "/developers/api-and-webhooks/api",
@@ -9598,56 +8950,20 @@
       "destination": "/developers/extend/capabilities/apis"
     },
     {
-      "source": "/developers/api-and-webhooks/webhooks",
-      "destination": "/developers/extend/capabilities/webhooks"
+      "source": "/developers/api-and-webhooks/apis-overview",
+      "destination": "/developers/extend/capabilities/apis"
     },
     {
       "source": "/developers/api-and-webhooks/integrations",
       "destination": "/developers/extend/capabilities/apis"
     },
     {
-      "source": "/developers/bugs-and-requests",
-      "destination": "/developers/contribute/capabilities/bug-and-requests"
-    },
-    {
-      "source": "/developers/frontend-development",
-      "destination": "/developers/contribute/contribute"
-    },
-    {
-      "source": "/developers/frontend-development/frontend-commands",
-      "destination": "/developers/contribute/capabilities/frontend-development/frontend-commands"
-    },
-    {
-      "source": "/developers/frontend-development/best-practices-front",
-      "destination": "/developers/contribute/capabilities/frontend-development/best-practices-front"
-    },
-    {
-      "source": "/developers/frontend-development/folder-architecture-front",
-      "destination": "/developers/contribute/capabilities/frontend-development/folder-architecture-front"
-    },
-    {
-      "source": "/developers/frontend-development/hotkeys",
-      "destination": "/developers/contribute/capabilities/frontend-development/hotkeys"
-    },
-    {
-      "source": "/developers/frontend-development/storybook",
-      "destination": "/developers/contribute/capabilities/frontend-development/storybook"
-    },
-    {
-      "source": "/developers/frontend-development/style-guide",
-      "destination": "/developers/contribute/capabilities/frontend-development/style-guide"
-    },
-    {
-      "source": "/developers/frontend-development/work-with-figma",
-      "destination": "/developers/contribute/capabilities/frontend-development/work-with-figma"
+      "source": "/developers/api-and-webhooks/webhooks",
+      "destination": "/developers/extend/capabilities/webhooks"
     },
     {
       "source": "/developers/backend-development",
       "destination": "/developers/contribute/contribute"
-    },
-    {
-      "source": "/developers/backend-development/server-commands",
-      "destination": "/developers/contribute/capabilities/backend-development/server-commands"
     },
     {
       "source": "/developers/backend-development/best-practices-server",
@@ -9670,52 +8986,644 @@
       "destination": "/developers/contribute/capabilities/backend-development/queue"
     },
     {
+      "source": "/developers/backend-development/server-commands",
+      "destination": "/developers/contribute/capabilities/backend-development/server-commands"
+    },
+    {
       "source": "/developers/backend-development/zapier",
       "destination": "/developers/contribute/capabilities/backend-development/zapier"
     },
     {
-      "source": "/user-guide/getting-started/what-is-consuelo",
-      "destination": "/user-guide/getting-started/capabilities/what-is-consuelo"
+      "source": "/developers/bugs-and-requests",
+      "destination": "/developers/contribute/capabilities/bug-and-requests"
     },
     {
-      "source": "/user-guide/getting-started/implementation-services",
-      "destination": "/user-guide/getting-started/capabilities/implementation-services"
+      "source": "/developers/frontend-development",
+      "destination": "/developers/contribute/contribute"
     },
     {
-      "source": "/user-guide/getting-started/glossary",
-      "destination": "/user-guide/getting-started/capabilities/glossary"
+      "source": "/developers/frontend-development/best-practices-front",
+      "destination": "/developers/contribute/capabilities/frontend-development/best-practices-front"
     },
     {
-      "source": "/user-guide/getting-started/create-workspace",
-      "destination": "/user-guide/getting-started/how-tos/create-workspace"
+      "source": "/developers/frontend-development/folder-architecture-front",
+      "destination": "/developers/contribute/capabilities/frontend-development/folder-architecture-front"
     },
     {
-      "source": "/user-guide/getting-started/navigate-around-consuelo",
-      "destination": "/user-guide/getting-started/how-tos/navigate-around-consuelo"
+      "source": "/developers/frontend-development/frontend-commands",
+      "destination": "/developers/contribute/capabilities/frontend-development/frontend-commands"
     },
     {
-      "source": "/user-guide/getting-started/configure-your-workspace",
-      "destination": "/user-guide/getting-started/how-tos/configure-your-workspace"
+      "source": "/developers/frontend-development/hotkeys",
+      "destination": "/developers/contribute/capabilities/frontend-development/hotkeys"
     },
     {
-      "source": "/user-guide/data-model/objects",
-      "destination": "/user-guide/data-model/capabilities/objects"
+      "source": "/developers/frontend-development/storybook",
+      "destination": "/developers/contribute/capabilities/frontend-development/storybook"
     },
     {
-      "source": "/user-guide/data-model/fields",
-      "destination": "/user-guide/data-model/capabilities/fields"
+      "source": "/developers/frontend-development/style-guide",
+      "destination": "/developers/contribute/capabilities/frontend-development/style-guide"
     },
     {
-      "source": "/user-guide/data-model/relation-fields",
-      "destination": "/user-guide/data-model/capabilities/relation-fields"
+      "source": "/developers/frontend-development/work-with-figma",
+      "destination": "/developers/contribute/capabilities/frontend-development/work-with-figma"
     },
     {
-      "source": "/user-guide/data-model/create-custom-objects",
-      "destination": "/user-guide/data-model/how-tos/create-custom-objects"
+      "source": "/developers/local-setup",
+      "destination": "/developers/contribute/capabilities/local-setup"
+    },
+    {
+      "source": "/developers/self-hosting",
+      "destination": "/developers/self-host/self-host"
+    },
+    {
+      "source": "/developers/self-hosting/cloud-providers",
+      "destination": "/developers/self-host/capabilities/cloud-providers"
+    },
+    {
+      "source": "/developers/self-hosting/docker-compose",
+      "destination": "/developers/self-host/capabilities/docker-compose"
+    },
+    {
+      "source": "/developers/self-hosting/setup",
+      "destination": "/developers/self-host/capabilities/setup"
+    },
+    {
+      "source": "/developers/self-hosting/troubleshooting",
+      "destination": "/developers/self-host/capabilities/troubleshooting"
+    },
+    {
+      "source": "/developers/self-hosting/upgrade-guide",
+      "destination": "/developers/self-host/capabilities/upgrade-guide"
+    },
+    {
+      "source": "/l/ar/os/tools/decision-engine",
+      "destination": "/l/ar/os/agent-context/decision"
+    },
+    {
+      "source": "/l/ar/os/tools/default-steering",
+      "destination": "/l/ar/os/agent-context/steering"
+    },
+    {
+      "source": "/l/ar/os/tools/scripts",
+      "destination": "/l/ar/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/ar/os/tools/tool-manifest",
+      "destination": "/l/ar/os/agent-context/tools"
+    },
+    {
+      "source": "/l/cs/os/tools/decision-engine",
+      "destination": "/l/cs/os/agent-context/decision"
+    },
+    {
+      "source": "/l/cs/os/tools/default-steering",
+      "destination": "/l/cs/os/agent-context/steering"
+    },
+    {
+      "source": "/l/cs/os/tools/scripts",
+      "destination": "/l/cs/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/cs/os/tools/tool-manifest",
+      "destination": "/l/cs/os/agent-context/tools"
+    },
+    {
+      "source": "/l/de/os/tools/decision-engine",
+      "destination": "/l/de/os/agent-context/decision"
+    },
+    {
+      "source": "/l/de/os/tools/default-steering",
+      "destination": "/l/de/os/agent-context/steering"
+    },
+    {
+      "source": "/l/de/os/tools/scripts",
+      "destination": "/l/de/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/de/os/tools/tool-manifest",
+      "destination": "/l/de/os/agent-context/tools"
+    },
+    {
+      "source": "/l/es/os/tools/decision-engine",
+      "destination": "/l/es/os/agent-context/decision"
+    },
+    {
+      "source": "/l/es/os/tools/default-steering",
+      "destination": "/l/es/os/agent-context/steering"
+    },
+    {
+      "source": "/l/es/os/tools/scripts",
+      "destination": "/l/es/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/es/os/tools/tool-manifest",
+      "destination": "/l/es/os/agent-context/tools"
+    },
+    {
+      "source": "/l/fr/os/tools/decision-engine",
+      "destination": "/l/fr/os/agent-context/decision"
+    },
+    {
+      "source": "/l/fr/os/tools/default-steering",
+      "destination": "/l/fr/os/agent-context/steering"
+    },
+    {
+      "source": "/l/fr/os/tools/scripts",
+      "destination": "/l/fr/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/fr/os/tools/tool-manifest",
+      "destination": "/l/fr/os/agent-context/tools"
+    },
+    {
+      "source": "/l/it/os/tools/decision-engine",
+      "destination": "/l/it/os/agent-context/decision"
+    },
+    {
+      "source": "/l/it/os/tools/default-steering",
+      "destination": "/l/it/os/agent-context/steering"
+    },
+    {
+      "source": "/l/it/os/tools/scripts",
+      "destination": "/l/it/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/it/os/tools/tool-manifest",
+      "destination": "/l/it/os/agent-context/tools"
+    },
+    {
+      "source": "/l/ja/os/tools/decision-engine",
+      "destination": "/l/ja/os/agent-context/decision"
+    },
+    {
+      "source": "/l/ja/os/tools/default-steering",
+      "destination": "/l/ja/os/agent-context/steering"
+    },
+    {
+      "source": "/l/ja/os/tools/scripts",
+      "destination": "/l/ja/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/ja/os/tools/tool-manifest",
+      "destination": "/l/ja/os/agent-context/tools"
+    },
+    {
+      "source": "/l/ko/os/tools/decision-engine",
+      "destination": "/l/ko/os/agent-context/decision"
+    },
+    {
+      "source": "/l/ko/os/tools/default-steering",
+      "destination": "/l/ko/os/agent-context/steering"
+    },
+    {
+      "source": "/l/ko/os/tools/scripts",
+      "destination": "/l/ko/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/ko/os/tools/tool-manifest",
+      "destination": "/l/ko/os/agent-context/tools"
+    },
+    {
+      "source": "/l/pt/os/tools/decision-engine",
+      "destination": "/l/pt/os/agent-context/decision"
+    },
+    {
+      "source": "/l/pt/os/tools/default-steering",
+      "destination": "/l/pt/os/agent-context/steering"
+    },
+    {
+      "source": "/l/pt/os/tools/scripts",
+      "destination": "/l/pt/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/pt/os/tools/tool-manifest",
+      "destination": "/l/pt/os/agent-context/tools"
+    },
+    {
+      "source": "/l/ro/os/tools/decision-engine",
+      "destination": "/l/ro/os/agent-context/decision"
+    },
+    {
+      "source": "/l/ro/os/tools/default-steering",
+      "destination": "/l/ro/os/agent-context/steering"
+    },
+    {
+      "source": "/l/ro/os/tools/scripts",
+      "destination": "/l/ro/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/ro/os/tools/tool-manifest",
+      "destination": "/l/ro/os/agent-context/tools"
+    },
+    {
+      "source": "/l/ru/os/tools/decision-engine",
+      "destination": "/l/ru/os/agent-context/decision"
+    },
+    {
+      "source": "/l/ru/os/tools/default-steering",
+      "destination": "/l/ru/os/agent-context/steering"
+    },
+    {
+      "source": "/l/ru/os/tools/scripts",
+      "destination": "/l/ru/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/ru/os/tools/tool-manifest",
+      "destination": "/l/ru/os/agent-context/tools"
+    },
+    {
+      "source": "/l/tr/os/tools/decision-engine",
+      "destination": "/l/tr/os/agent-context/decision"
+    },
+    {
+      "source": "/l/tr/os/tools/default-steering",
+      "destination": "/l/tr/os/agent-context/steering"
+    },
+    {
+      "source": "/l/tr/os/tools/scripts",
+      "destination": "/l/tr/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/tr/os/tools/tool-manifest",
+      "destination": "/l/tr/os/agent-context/tools"
+    },
+    {
+      "source": "/l/zh/os/tools/decision-engine",
+      "destination": "/l/zh/os/agent-context/decision"
+    },
+    {
+      "source": "/l/zh/os/tools/default-steering",
+      "destination": "/l/zh/os/agent-context/steering"
+    },
+    {
+      "source": "/l/zh/os/tools/scripts",
+      "destination": "/l/zh/os/agent-context/scripts"
+    },
+    {
+      "source": "/l/zh/os/tools/tool-manifest",
+      "destination": "/l/zh/os/agent-context/tools"
+    },
+    {
+      "source": "/os/agent-interface/call",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/get-dev-steering",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/get-steering",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/permissions",
+      "destination": "/os/concepts/approvals"
+    },
+    {
+      "source": "/os/agent-interface/steering-files",
+      "destination": "/os/concepts/context-and-memory"
+    },
+    {
+      "source": "/os/agent-interface/tool-manifest",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/data-layer/data-model-as-os-ontology",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/decision-engine",
+      "destination": "/os/concepts/observability"
+    },
+    {
+      "source": "/os/data-layer/graphql-facades",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/structured-queries",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/vectorized-context",
+      "destination": "/os/concepts/context-and-memory"
+    },
+    {
+      "source": "/os/integrations/ghl",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/google-ads",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/meta-ads",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/s3-s3-files",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/sentry-posthog",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/stripe",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/supabase-auth",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/twilio",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/overview/architecture",
+      "destination": "/os/how-it-works"
+    },
+    {
+      "source": "/os/overview/core-concepts",
+      "destination": "/os/how-it-works"
+    },
+    {
+      "source": "/os/overview/quickstart",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/overview/what-is-consuelo-os",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/demo-flow",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/insurance-revenue-workspace",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/setup-checklist",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/success-criteria",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/runbooks/campaign-brief",
+      "destination": "/os/skills/planned/campaign-brief"
+    },
+    {
+      "source": "/os/runbooks/daily-revenue-brief",
+      "destination": "/os/skills/daily-revenue-brief"
+    },
+    {
+      "source": "/os/runbooks/follow-up-generator",
+      "destination": "/os/skills/planned/follow-up-generator"
+    },
+    {
+      "source": "/os/runbooks/google-ads-review",
+      "destination": "/os/skills/planned/google-ads-review"
+    },
+    {
+      "source": "/os/runbooks/landing-page-builder",
+      "destination": "/os/skills/planned/landing-page-builder"
+    },
+    {
+      "source": "/os/runbooks/lead-prioritizer",
+      "destination": "/os/skills/planned/lead-prioritizer"
+    },
+    {
+      "source": "/os/runbooks/meta-ads-review",
+      "destination": "/os/skills/planned/meta-ads-review"
+    },
+    {
+      "source": "/os/runbooks/overview",
+      "destination": "/os/concepts/skills"
+    },
+    {
+      "source": "/os/runbooks/post-call-analysis",
+      "destination": "/os/skills/planned/post-call-analysis"
+    },
+    {
+      "source": "/os/runbooks/sales-coaching",
+      "destination": "/os/skills/planned/sales-coaching"
+    },
+    {
+      "source": "/os/runbooks/weekly-manager-report",
+      "destination": "/os/skills/planned/weekly-manager-report"
+    },
+    {
+      "source": "/os/runtime/bun-runtime",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/runtime/operator-scripts",
+      "destination": "/os/concepts/scripts"
+    },
+    {
+      "source": "/os/runtime/package-scripts-vs-mcp-tools",
+      "destination": "/os/concepts/scripts"
+    },
+    {
+      "source": "/os/runtime/sandbox-executor",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/runtime/scheduled-runbooks",
+      "destination": "/os/concepts/skills"
+    },
+    {
+      "source": "/os/tools/decision-engine",
+      "destination": "/os/agent-context/decision"
+    },
+    {
+      "source": "/os/tools/default-steering",
+      "destination": "/os/agent-context/steering"
+    },
+    {
+      "source": "/os/tools/scripts",
+      "destination": "/os/agent-context/scripts"
+    },
+    {
+      "source": "/os/tools/tool-manifest",
+      "destination": "/os/agent-context/tools"
+    },
+    {
+      "source": "/os/workspace-filesystem/artifacts",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/local-development-filesystem",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/workspace-filesystem/overview",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/reports",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/runbook-outputs",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/s3-files-production-target",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/user-guide/ai/ai-agents",
+      "destination": "/user-guide/ai/capabilities/ai-agents"
+    },
+    {
+      "source": "/user-guide/ai/ai-chatbot",
+      "destination": "/user-guide/ai/capabilities/ai-chatbot"
+    },
+    {
+      "source": "/user-guide/ai/ai-faq",
+      "destination": "/user-guide/ai/how-tos/ai-faq"
+    },
+    {
+      "source": "/user-guide/ai/permissions-access-control",
+      "destination": "/user-guide/ai/capabilities/permissions-access-control"
+    },
+    {
+      "source": "/user-guide/billing/billing-faq",
+      "destination": "/user-guide/billing/how-tos/billing-faq"
+    },
+    {
+      "source": "/user-guide/billing/capabilities/billing-and-pricing-faq",
+      "destination": "/user-guide/billing/how-tos/billing-faq"
+    },
+    {
+      "source": "/user-guide/billing/pricing-plans",
+      "destination": "/user-guide/billing/capabilities/pricing-plans"
+    },
+    {
+      "source": "/user-guide/billing/workflow-credits",
+      "destination": "/user-guide/billing/capabilities/workflow-credits"
+    },
+    {
+      "source": "/user-guide/calendar-emails/calendar",
+      "destination": "/user-guide/calendar-emails/capabilities/calendar"
+    },
+    {
+      "source": "/user-guide/calendar-emails/can-i-book-meetings-from-consuelo",
+      "destination": "/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo"
+    },
+    {
+      "source": "/user-guide/calendar-emails/can-i-send-emails-from-consuelo",
+      "destination": "/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo"
+    },
+    {
+      "source": "/user-guide/calendar-emails/can-i-track-email-activity-on-all-objects",
+      "destination": "/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects"
+    },
+    {
+      "source": "/user-guide/calendar-emails/capabilities/emails-and-calendars",
+      "destination": "/user-guide/calendar-emails/capabilities/mailbox"
+    },
+    {
+      "source": "/user-guide/calendar-emails/connect-several-mailboxes-per-user",
+      "destination": "/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user"
+    },
+    {
+      "source": "/user-guide/calendar-emails/i-dont-see-emails-on-records",
+      "destination": "/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
+    },
+    {
+      "source": "/user-guide/calendar-emails/limit-emails-imported",
+      "destination": "/user-guide/calendar-emails/how-tos/limit-emails-imported"
+    },
+    {
+      "source": "/user-guide/calendar-emails/mailbox",
+      "destination": "/user-guide/calendar-emails/capabilities/mailbox"
+    },
+    {
+      "source": "/user-guide/dashboards/dashboards",
+      "destination": "/user-guide/dashboards/capabilities/dashboards"
+    },
+    {
+      "source": "/user-guide/dashboards/dashboards-faq",
+      "destination": "/user-guide/dashboards/how-tos/dashboards-faq"
+    },
+    {
+      "source": "/user-guide/dashboards/widgets",
+      "destination": "/user-guide/dashboards/capabilities/widgets"
+    },
+    {
+      "source": "/user-guide/data-migration/error-handling",
+      "destination": "/user-guide/data-migration/capabilities/error-handling"
+    },
+    {
+      "source": "/user-guide/data-migration/export-your-data",
+      "destination": "/user-guide/data-migration/how-tos/export-your-data"
+    },
+    {
+      "source": "/user-guide/data-migration/field-mapping",
+      "destination": "/user-guide/data-migration/capabilities/field-mapping"
+    },
+    {
+      "source": "/user-guide/data-migration/file-formats",
+      "destination": "/user-guide/data-migration/capabilities/file-formats"
+    },
+    {
+      "source": "/user-guide/data-migration/fix-import-errors",
+      "destination": "/user-guide/data-migration/how-tos/fix-import-errors"
+    },
+    {
+      "source": "/user-guide/data-migration/import-companies-via-csv",
+      "destination": "/user-guide/data-migration/how-tos/import-companies-via-csv"
+    },
+    {
+      "source": "/user-guide/data-migration/import-contacts-via-csv",
+      "destination": "/user-guide/data-migration/how-tos/import-contacts-via-csv"
+    },
+    {
+      "source": "/user-guide/data-migration/import-data-via-api",
+      "destination": "/user-guide/data-migration/how-tos/import-data-via-api"
+    },
+    {
+      "source": "/user-guide/data-migration/import-relations",
+      "destination": "/user-guide/data-migration/capabilities/import-relations"
+    },
+    {
+      "source": "/user-guide/data-migration/import-relations-between-objects-via-csv",
+      "destination": "/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv"
+    },
+    {
+      "source": "/user-guide/data-migration/migrating-from-other-crms",
+      "destination": "/user-guide/data-migration/how-tos/migrating-from-other-crms"
+    },
+    {
+      "source": "/user-guide/data-migration/migrating-from-self-hosted-to-cloud",
+      "destination": "/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+    },
+    {
+      "source": "/user-guide/data-migration/prepare-your-csv-files",
+      "destination": "/user-guide/data-migration/how-tos/prepare-your-csv-files"
+    },
+    {
+      "source": "/user-guide/data-migration/uniqueness-constraints",
+      "destination": "/user-guide/data-migration/capabilities/uniqueness-constraints"
+    },
+    {
+      "source": "/user-guide/data-migration/update-existing-records-via-import",
+      "destination": "/user-guide/data-migration/how-tos/update-existing-records-via-import"
     },
     {
       "source": "/user-guide/data-model/create-custom-fields",
       "destination": "/user-guide/data-model/how-tos/create-custom-fields"
+    },
+    {
+      "source": "/user-guide/data-model/create-custom-objects",
+      "destination": "/user-guide/data-model/how-tos/create-custom-objects"
     },
     {
       "source": "/user-guide/data-model/create-relation-fields",
@@ -9730,196 +9638,116 @@
       "destination": "/user-guide/data-model/how-tos/data-model-faq"
     },
     {
-      "source": "/user-guide/data-migration/file-formats",
-      "destination": "/user-guide/data-migration/capabilities/file-formats"
+      "source": "/user-guide/data-model/fields",
+      "destination": "/user-guide/data-model/capabilities/fields"
     },
     {
-      "source": "/user-guide/data-migration/field-mapping",
-      "destination": "/user-guide/data-migration/capabilities/field-mapping"
+      "source": "/user-guide/data-model/objects",
+      "destination": "/user-guide/data-model/capabilities/objects"
     },
     {
-      "source": "/user-guide/data-migration/uniqueness-constraints",
-      "destination": "/user-guide/data-migration/capabilities/uniqueness-constraints"
+      "source": "/user-guide/data-model/relation-fields",
+      "destination": "/user-guide/data-model/capabilities/relation-fields"
     },
     {
-      "source": "/user-guide/data-migration/import-relations",
-      "destination": "/user-guide/data-migration/capabilities/import-relations"
+      "source": "/user-guide/getting-started/configure-your-workspace",
+      "destination": "/user-guide/getting-started/how-tos/configure-your-workspace"
     },
     {
-      "source": "/user-guide/data-migration/error-handling",
-      "destination": "/user-guide/data-migration/capabilities/error-handling"
+      "source": "/user-guide/getting-started/create-workspace",
+      "destination": "/user-guide/getting-started/how-tos/create-workspace"
     },
     {
-      "source": "/user-guide/data-migration/prepare-your-csv-files",
-      "destination": "/user-guide/data-migration/how-tos/prepare-your-csv-files"
+      "source": "/user-guide/getting-started/glossary",
+      "destination": "/user-guide/getting-started/capabilities/glossary"
     },
     {
-      "source": "/user-guide/data-migration/import-companies-via-csv",
-      "destination": "/user-guide/data-migration/how-tos/import-companies-via-csv"
+      "source": "/user-guide/getting-started/implementation-services",
+      "destination": "/user-guide/getting-started/capabilities/implementation-services"
     },
     {
-      "source": "/user-guide/data-migration/import-contacts-via-csv",
-      "destination": "/user-guide/data-migration/how-tos/import-contacts-via-csv"
+      "source": "/user-guide/getting-started/navigate-around-consuelo",
+      "destination": "/user-guide/getting-started/how-tos/navigate-around-consuelo"
     },
     {
-      "source": "/user-guide/data-migration/import-relations-between-objects-via-csv",
-      "destination": "/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv"
+      "source": "/user-guide/getting-started/what-is-consuelo",
+      "destination": "/user-guide/getting-started/capabilities/what-is-consuelo"
     },
     {
-      "source": "/user-guide/data-migration/update-existing-records-via-import",
-      "destination": "/user-guide/data-migration/how-tos/update-existing-records-via-import"
+      "source": "/user-guide/permissions-access/permissions",
+      "destination": "/user-guide/permissions-access/capabilities/permissions"
     },
     {
-      "source": "/user-guide/data-migration/fix-import-errors",
-      "destination": "/user-guide/data-migration/how-tos/fix-import-errors"
+      "source": "/user-guide/permissions-access/permissions-faq",
+      "destination": "/user-guide/permissions-access/how-tos/permissions-faq"
     },
     {
-      "source": "/user-guide/data-migration/export-your-data",
-      "destination": "/user-guide/data-migration/how-tos/export-your-data"
+      "source": "/user-guide/permissions-access/sso-configuration",
+      "destination": "/user-guide/permissions-access/capabilities/sso-configuration"
     },
     {
-      "source": "/user-guide/data-migration/import-data-via-api",
-      "destination": "/user-guide/data-migration/how-tos/import-data-via-api"
+      "source": "/user-guide/settings/domains-settings",
+      "destination": "/user-guide/settings/capabilities/domains-settings"
     },
     {
-      "source": "/user-guide/data-migration/migrating-from-other-crms",
-      "destination": "/user-guide/data-migration/how-tos/migrating-from-other-crms"
+      "source": "/user-guide/settings/experience-settings",
+      "destination": "/user-guide/settings/capabilities/experience-settings"
     },
     {
-      "source": "/user-guide/data-migration/migrating-from-self-hosted-to-cloud",
-      "destination": "/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+      "source": "/user-guide/settings/member-management",
+      "destination": "/user-guide/settings/capabilities/member-management"
     },
     {
-      "source": "/user-guide/calendar-emails/mailbox",
-      "destination": "/user-guide/calendar-emails/capabilities/mailbox"
+      "source": "/user-guide/settings/profile-settings",
+      "destination": "/user-guide/settings/capabilities/profile-settings"
     },
     {
-      "source": "/user-guide/calendar-emails/calendar",
-      "destination": "/user-guide/calendar-emails/capabilities/calendar"
+      "source": "/user-guide/settings/releases-settings",
+      "destination": "/user-guide/settings/capabilities/updates-settings"
     },
     {
-      "source": "/user-guide/calendar-emails/connect-several-mailboxes-per-user",
-      "destination": "/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user"
+      "source": "/user-guide/settings/settings-faq",
+      "destination": "/user-guide/settings/how-tos/settings-faq"
     },
     {
-      "source": "/user-guide/calendar-emails/limit-emails-imported",
-      "destination": "/user-guide/calendar-emails/how-tos/limit-emails-imported"
-    },
-    {
-      "source": "/user-guide/calendar-emails/can-i-track-email-activity-on-all-objects",
-      "destination": "/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects"
-    },
-    {
-      "source": "/user-guide/calendar-emails/can-i-send-emails-from-consuelo",
-      "destination": "/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo"
-    },
-    {
-      "source": "/user-guide/calendar-emails/can-i-book-meetings-from-consuelo",
-      "destination": "/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo"
-    },
-    {
-      "source": "/user-guide/calendar-emails/i-dont-see-emails-on-records",
-      "destination": "/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-triggers",
-      "destination": "/user-guide/workflows/capabilities/workflow-triggers"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-actions",
-      "destination": "/user-guide/workflows/capabilities/workflow-actions"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-branches",
-      "destination": "/user-guide/workflows/capabilities/workflow-branches"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-runs",
-      "destination": "/user-guide/workflows/capabilities/workflow-runs"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-versions",
-      "destination": "/user-guide/workflows/capabilities/workflow-versions"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-credits",
-      "destination": "/user-guide/workflows/capabilities/workflow-credits"
-    },
-    {
-      "source": "/user-guide/workflows/use-branches-in-workflows",
-      "destination": "/user-guide/workflows/capabilities/use-branches-in-workflows"
-    },
-    {
-      "source": "/user-guide/workflows/use-iterator",
-      "destination": "/user-guide/workflows/capabilities/use-iterator"
-    },
-    {
-      "source": "/user-guide/workflows/send-emails-from-workflows",
-      "destination": "/user-guide/workflows/capabilities/send-emails-from-workflows"
-    },
-    {
-      "source": "/user-guide/workflows/workflow-troubleshooting",
-      "destination": "/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting"
-    },
-    {
-      "source": "/user-guide/workflows/workflows-faq",
-      "destination": "/user-guide/workflows/how-tos/need-more-help/workflows-faq"
-    },
-    {
-      "source": "/user-guide/workflows/professional-services",
-      "destination": "/user-guide/workflows/how-tos/need-more-help/professional-services"
-    },
-    {
-      "source": "/user-guide/ai/ai-chatbot",
-      "destination": "/user-guide/ai/capabilities/ai-chatbot"
-    },
-    {
-      "source": "/user-guide/ai/ai-agents",
-      "destination": "/user-guide/ai/capabilities/ai-agents"
-    },
-    {
-      "source": "/user-guide/ai/permissions-access-control",
-      "destination": "/user-guide/ai/capabilities/permissions-access-control"
-    },
-    {
-      "source": "/user-guide/ai/ai-faq",
-      "destination": "/user-guide/ai/how-tos/ai-faq"
-    },
-    {
-      "source": "/user-guide/views-pipelines/table-views",
-      "destination": "/user-guide/views-pipelines/capabilities/table-views"
-    },
-    {
-      "source": "/user-guide/views-pipelines/kanban-views",
-      "destination": "/user-guide/views-pipelines/capabilities/kanban-views"
+      "source": "/user-guide/settings/workspace-settings",
+      "destination": "/user-guide/settings/capabilities/workspace-settings"
     },
     {
       "source": "/user-guide/views-pipelines/calendar-view",
       "destination": "/user-guide/views-pipelines/capabilities/calendar-view"
     },
     {
-      "source": "/user-guide/views-pipelines/filters-and-sorting",
-      "destination": "/user-guide/views-pipelines/capabilities/filters-and-sorting"
-    },
-    {
-      "source": "/user-guide/views-pipelines/fields-and-columns",
-      "destination": "/user-guide/views-pipelines/capabilities/fields-and-columns"
-    },
-    {
-      "source": "/user-guide/views-pipelines/view-settings",
-      "destination": "/user-guide/views-pipelines/capabilities/view-settings"
-    },
-    {
-      "source": "/user-guide/views-pipelines/create-a-table-view-with-grouping",
-      "destination": "/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping"
+      "source": "/user-guide/views-pipelines/create-a-calendar-view-for-tasks-due",
+      "destination": "/user-guide/views-pipelines/how-tos/create-a-calendar-view-for-tasks-due"
     },
     {
       "source": "/user-guide/views-pipelines/create-a-kanban-view-for-projects",
       "destination": "/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects"
     },
     {
-      "source": "/user-guide/views-pipelines/create-a-calendar-view-for-tasks-due",
-      "destination": "/user-guide/views-pipelines/how-tos/create-a-calendar-view-for-tasks-due"
+      "source": "/user-guide/views-pipelines/create-a-table-view-with-grouping",
+      "destination": "/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping"
+    },
+    {
+      "source": "/user-guide/views-pipelines/fields-and-columns",
+      "destination": "/user-guide/views-pipelines/capabilities/fields-and-columns"
+    },
+    {
+      "source": "/user-guide/views-pipelines/filters-and-sorting",
+      "destination": "/user-guide/views-pipelines/capabilities/filters-and-sorting"
+    },
+    {
+      "source": "/user-guide/views-pipelines/getting-started/view-management",
+      "destination": "/user-guide/views-pipelines/overview"
+    },
+    {
+      "source": "/user-guide/views-pipelines/how-tos/create-custom-views",
+      "destination": "/user-guide/views-pipelines/overview"
+    },
+    {
+      "source": "/user-guide/views-pipelines/kanban-views",
+      "destination": "/user-guide/views-pipelines/capabilities/kanban-views"
     },
     {
       "source": "/user-guide/views-pipelines/restrict-access-to-your-view",
@@ -9934,80 +9762,20 @@
       "destination": "/user-guide/views-pipelines/how-tos/show-expected-amount-in-pipeline"
     },
     {
+      "source": "/user-guide/views-pipelines/table-views",
+      "destination": "/user-guide/views-pipelines/capabilities/table-views"
+    },
+    {
       "source": "/user-guide/views-pipelines/track-time-in-stage",
       "destination": "/user-guide/views-pipelines/how-tos/track-time-in-stage"
     },
     {
-      "source": "/user-guide/dashboards/dashboards",
-      "destination": "/user-guide/dashboards/capabilities/dashboards"
+      "source": "/user-guide/views-pipelines/view-settings",
+      "destination": "/user-guide/views-pipelines/capabilities/view-settings"
     },
     {
-      "source": "/user-guide/dashboards/widgets",
-      "destination": "/user-guide/dashboards/capabilities/widgets"
-    },
-    {
-      "source": "/user-guide/dashboards/dashboards-faq",
-      "destination": "/user-guide/dashboards/how-tos/dashboards-faq"
-    },
-    {
-      "source": "/user-guide/permissions-access/permissions",
-      "destination": "/user-guide/permissions-access/capabilities/permissions"
-    },
-    {
-      "source": "/user-guide/permissions-access/sso-configuration",
-      "destination": "/user-guide/permissions-access/capabilities/sso-configuration"
-    },
-    {
-      "source": "/user-guide/permissions-access/permissions-faq",
-      "destination": "/user-guide/permissions-access/how-tos/permissions-faq"
-    },
-    {
-      "source": "/user-guide/billing/pricing-plans",
-      "destination": "/user-guide/billing/capabilities/pricing-plans"
-    },
-    {
-      "source": "/user-guide/billing/workflow-credits",
-      "destination": "/user-guide/billing/capabilities/workflow-credits"
-    },
-    {
-      "source": "/user-guide/billing/billing-faq",
-      "destination": "/user-guide/billing/how-tos/billing-faq"
-    },
-    {
-      "source": "/user-guide/settings/workspace-settings",
-      "destination": "/user-guide/settings/capabilities/workspace-settings"
-    },
-    {
-      "source": "/user-guide/settings/member-management",
-      "destination": "/user-guide/settings/capabilities/member-management"
-    },
-    {
-      "source": "/user-guide/settings/profile-settings",
-      "destination": "/user-guide/settings/capabilities/profile-settings"
-    },
-    {
-      "source": "/user-guide/settings/experience-settings",
-      "destination": "/user-guide/settings/capabilities/experience-settings"
-    },
-    {
-      "source": "/user-guide/settings/domains-settings",
-      "destination": "/user-guide/settings/capabilities/domains-settings"
-    },
-    {
-      "source": "/user-guide/settings/releases-settings",
-      "destination": "/user-guide/settings/capabilities/updates-settings"
-    },
-    {
-      "source": "/user-guide/settings/settings-faq",
-      "destination": "/user-guide/settings/how-tos/settings-faq"
-    },
-    {
-      "source": "/user-guide/workflows/how-tos/send-emails-from-workflows",
-      "destination": "/user-guide/workflows/capabilities/send-emails-from-workflows"
-    },
-    {
-      "source": "/user-guide/calendar-emails/capabilities/emails-and-calendars",
-      "destination": "/user-guide/calendar-emails/capabilities/mailbox"
+      "source": "/user-guide/workflows/getting-started/getting-started-workflows",
+      "destination": "/user-guide/workflows/overview"
     },
     {
       "source": "/user-guide/workflows/how-tos/crm-automations/update-companies-and-create-tasks-when-deal-closed",
@@ -10018,20 +9786,56 @@
       "destination": "/user-guide/workflows/capabilities/use-branches-in-workflows"
     },
     {
-      "source": "/user-guide/workflows/getting-started/getting-started-workflows",
-      "destination": "/user-guide/workflows/overview"
+      "source": "/user-guide/workflows/how-tos/send-emails-from-workflows",
+      "destination": "/user-guide/workflows/capabilities/send-emails-from-workflows"
     },
     {
-      "source": "/user-guide/views-pipelines/how-tos/create-custom-views",
-      "destination": "/user-guide/views-pipelines/overview"
+      "source": "/user-guide/workflows/professional-services",
+      "destination": "/user-guide/workflows/how-tos/need-more-help/professional-services"
     },
     {
-      "source": "/user-guide/views-pipelines/getting-started/view-management",
-      "destination": "/user-guide/views-pipelines/overview"
+      "source": "/user-guide/workflows/send-emails-from-workflows",
+      "destination": "/user-guide/workflows/capabilities/send-emails-from-workflows"
     },
     {
-      "source": "/user-guide/billing/capabilities/billing-and-pricing-faq",
-      "destination": "/user-guide/billing/how-tos/billing-faq"
+      "source": "/user-guide/workflows/use-branches-in-workflows",
+      "destination": "/user-guide/workflows/capabilities/use-branches-in-workflows"
+    },
+    {
+      "source": "/user-guide/workflows/use-iterator",
+      "destination": "/user-guide/workflows/capabilities/use-iterator"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-actions",
+      "destination": "/user-guide/workflows/capabilities/workflow-actions"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-branches",
+      "destination": "/user-guide/workflows/capabilities/workflow-branches"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-credits",
+      "destination": "/user-guide/workflows/capabilities/workflow-credits"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-runs",
+      "destination": "/user-guide/workflows/capabilities/workflow-runs"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-triggers",
+      "destination": "/user-guide/workflows/capabilities/workflow-triggers"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-troubleshooting",
+      "destination": "/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting"
+    },
+    {
+      "source": "/user-guide/workflows/workflow-versions",
+      "destination": "/user-guide/workflows/capabilities/workflow-versions"
+    },
+    {
+      "source": "/user-guide/workflows/workflows-faq",
+      "destination": "/user-guide/workflows/how-tos/need-more-help/workflows-faq"
     }
   ],
   "description": "Documentation for Consuelo — open-source sales infrastructure with power dialer, AI coaching, CRM, and automation. Everything your sales team needs in one platform.",

@@ -420,22 +420,37 @@
           "label": "Overview",
           "icon": "sparkles",
           "pages": [
-            "os/overview/what-is-consuelo-os",
-            "os/overview/core-concepts",
-            "os/overview/quickstart",
-            "os/overview/architecture"
+            "os/overview",
+            "os/how-it-works",
+            "os/glossary"
           ]
         },
         {
-          "key": "osAgentInterface",
-          "label": "Agent Interface",
-          "icon": "terminal",
+          "key": "osConcepts",
+          "label": "Concepts",
+          "icon": "book-open",
           "pages": [
-            "os/agent-interface/get-steering",
-            "os/agent-interface/get-dev-steering",
-            "os/agent-interface/call",
-            "os/agent-interface/steering-files",
-            "os/agent-interface/permissions"
+            "os/concepts/portal",
+            "os/concepts/skills",
+            "os/concepts/scripts",
+            "os/concepts/files-and-artifacts",
+            "os/concepts/approvals",
+            "os/concepts/data-model-and-graphql",
+            "os/concepts/context-and-memory",
+            "os/concepts/integrations-and-capabilities",
+            "os/concepts/observability",
+            "os/concepts/local-and-cloud"
+          ]
+        },
+        {
+          "key": "osAgentContext",
+          "label": "Agent Context",
+          "icon": "brain",
+          "pages": [
+            "os/agent-context/steering",
+            "os/agent-context/decision",
+            "os/agent-context/tools",
+            "os/agent-context/scripts"
           ]
         },
         {
@@ -483,69 +498,6 @@
                 "os/skills/planned/weekly-manager-report"
               ]
             }
-          ]
-        },
-        {
-          "key": "osWorkspaceFilesystem",
-          "label": "Workspace Filesystem",
-          "icon": "folder",
-          "pages": [
-            "os/workspace-filesystem/overview",
-            "os/workspace-filesystem/local-development-filesystem",
-            "os/workspace-filesystem/s3-files-production-target",
-            "os/workspace-filesystem/artifacts",
-            "os/workspace-filesystem/reports",
-            "os/workspace-filesystem/runbook-outputs"
-          ]
-        },
-        {
-          "key": "osDataLayer",
-          "label": "Data Layer",
-          "icon": "database",
-          "pages": [
-            "os/data-layer/data-model-as-os-ontology",
-            "os/data-layer/graphql-facades",
-            "os/data-layer/structured-queries",
-            "os/data-layer/vectorized-context",
-            "os/data-layer/decision-engine"
-          ]
-        },
-        {
-          "key": "osRuntime",
-          "label": "Runtime",
-          "icon": "cpu",
-          "pages": [
-            "os/runtime/bun-runtime",
-            "os/runtime/sandbox-executor",
-            "os/runtime/package-scripts-vs-mcp-tools",
-            "os/runtime/operator-scripts",
-            "os/runtime/scheduled-runbooks"
-          ]
-        },
-        {
-          "key": "osIntegrations",
-          "label": "Integrations",
-          "icon": "plug",
-          "pages": [
-            "os/integrations/twilio",
-            "os/integrations/ghl",
-            "os/integrations/meta-ads",
-            "os/integrations/google-ads",
-            "os/integrations/supabase-auth",
-            "os/integrations/s3-s3-files",
-            "os/integrations/stripe",
-            "os/integrations/sentry-posthog"
-          ]
-        },
-        {
-          "key": "osPilot",
-          "label": "Pilot",
-          "icon": "flag",
-          "pages": [
-            "os/pilot/insurance-revenue-workspace",
-            "os/pilot/setup-checklist",
-            "os/pilot/demo-flow",
-            "os/pilot/success-criteria"
           ]
         }
       ]

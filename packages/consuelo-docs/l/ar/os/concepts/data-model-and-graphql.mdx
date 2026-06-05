@@ -1,0 +1,68 @@
+---
+title: Data Model and GraphQL
+description: How Consuelo OS reads structured workspace data.
+---
+
+# Data model and GraphQL
+
+Consuelo OS has an ontology and an app schema.
+
+The ontology is how agents understand the company: people, companies, calls, tasks, notes, files, skills, reports, approvals, and artifacts. The schema is how Consuelo stores records today. Some ontology objects already exist as app records. Others begin as artifacts or integration-backed records before becoming first-class objects.
+
+## Ontology vs schema
+
+Concept | Meaning | Example
+--- | --- | ---
+OS ontology | Product map agents use to reason about work | Campaign brief, approval, skill, artifact.
+App schema | Records stored in the app today | Person, company, task, note, opportunity.
+Integration record | Data owned by a connected system | Ad campaign or call state.
+Artifact category | Output tracked by OS first | Report, landing page draft, campaign brief.
+
+This split keeps docs honest. Product docs should name the concept. Implementation docs should say where it lives today.
+
+## Structured data path
+
+Skills should use structured GraphQL/API facades for workspace records.
+
+```text
+skill
+  -> OS data facade
+    -> GraphQL/API
+      -> workspace records
+```
+
+GraphQL is useful because it preserves workspace scope, user context, object metadata, and backend guardrails.
+
+## Current structured objects
+
+The current app already has a strong workspace object model. OS docs can safely talk about people, companies, tasks, notes, opportunities, attachments, dashboards, workflows, workflow runs, calendar objects, messaging objects, connected accounts, and workspace members as structured concepts.
+
+Call, dialer, queue, voice, and cadence behavior exists in Consuelo-specific backend modules and should be surfaced through app-shaped facades when OS skills need it.
+
+## Objects that can start as artifacts
+
+Concept | First home | Why
+--- | --- | ---
+Campaign brief | Artifact | Useful before campaign lifecycle management.
+Landing page draft | Artifact | Draft content and provenance matter first.
+Ad variants | Artifact or integration draft | External platform state comes later.
+Weekly report | Artifact | Reports need storage, provenance, and sharing.
+Skill output | Artifact | Durable outputs should be tracked.
+
+## Structured first, vector second
+
+Structured records are the source of truth. Vector context is supporting memory, search, and recall.
+
+Use structured queries for exact records, relationships, status, money, permissions, approvals, artifact metadata, and execution logs. Use vector context to locate relevant text, summarize prior decisions, or retrieve supporting context.
+
+## First useful data query
+
+The first real revenue brief should fetch a small workspace snapshot through approved data facades: workspace identity, recent calls, recent tasks, recent notes, touched people and companies, useful opportunities, and recent artifacts.
+
+The exact field names should follow the current generated schema. Docs should describe the stable product contract and leave implementation-specific query text to reference docs once the facade is final.
+
+## Related
+
+- [Context and memory](/os/concepts/context-and-memory)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Observability](/os/concepts/observability)
