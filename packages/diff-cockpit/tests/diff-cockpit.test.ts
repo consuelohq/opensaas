@@ -515,6 +515,59 @@ describe('createWorker', () => {
   });
 
 
+
+  test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    let calls = 0;
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
+          { number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.includes('/files?')) return Response.json([{ filename: 'packages/diff-cockpit/src/index.ts', status: 'modified', additions: 1, deletions: 1, changes: 2, patch: '@@ -1 +1 @@\n-old\n+new', blob_url: '' }]);
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
+      throw new Error(`unexpected refresh url ${url}`);
+    };
+    const worker = createWorker({ fetcher, cache });
+
+    const unauthorized = await worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh', { method: 'POST' }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    const refresh = await worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [757], reason: 'task.pr' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    const refreshed = await refresh.json() as { refreshed: { homepage: string; pulls: string[] } };
+    const callsAfterRefresh = calls;
+    const homepage = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls'));
+    const detail = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757'));
+
+    expect(unauthorized.status).toBe(401);
+    expect(refresh.status).toBe(200);
+    expect(refreshed.refreshed.homepage).toContain('/api/consuelohq/opensaas/pulls');
+    expect(refreshed.refreshed.pulls).toContain('/api/consuelohq/opensaas/pull/757');
+    expect(homepage.status).toBe(200);
+    expect(detail.status).toBe(200);
+    expect(calls).toBe(callsAfterRefresh);
+  });
+
   test('returns homepage API shared cache headers and 304 for unchanged ETags', async () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
