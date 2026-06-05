@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bdc9b6b86f44",
+  "tmuxSession": "opensaas-workspace-agents-restore-workspace-pr-links-helper-bdc9b6b8",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/restore-workspace-pr-links-helper",
+  "branch": "task/workspace-agents/restore-workspace-pr-links-helper",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restore-workspace-pr-links-helper",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restore-workspace-pr-links-helper",
+  "prNumber": 788,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/788",
+  "createdAt": "2026-06-05T07:10:25.309Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restore-workspace-pr-links-helper/.task/workspace-agents/restore-workspace-pr-links-helper/session.json"
+}
