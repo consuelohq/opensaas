@@ -6,7 +6,7 @@
   "license": "AGPL-3.0",
   "scripts": {
     "dev": "mintlify dev",
-    "build": "mintlify build",
+    "build": "mintlify validate",
     "fix-links": "bash scripts/fix-translated-links.sh",
     "lint": "eslint **/*.mdx --max-warnings=0",
     "generate-os-skill-docs": "bun scripts/generate-os-skill-docs.ts",
