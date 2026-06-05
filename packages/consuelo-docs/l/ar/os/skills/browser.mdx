@@ -5,9 +5,6 @@ description: "use for known-url browser work, rendered-page extraction, authenti
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 Core rule
 Use built-in web search for discovery. Use OS browser tools for known URLs, rendered-page extraction, authenticated pages, UI verification, screenshots, and interaction replay.
 
@@ -16,27 +13,27 @@ Browser output is runtime evidence. Built-in web output is citation evidence.
 Tool surface
 All browser operations must go through the workspace facade:
 
-os.call({ tool: "browser.test", input: { url: "{url}" } })
-os.call({ tool: "browser.open", input: { url: "{url}" } })
-os.call({ tool: "browser.snap", input: {} })
-os.call({ tool: "browser.eval", input: { js: "{javascript}" } })
-os.call({ tool: "browser.screenshot", input: { name: "{name}", full: true } })
-os.call({ tool: "browser.click", input: { ref: "@e1" } })
-os.call({ tool: "browser.fill", input: { ref: "@e1", text: "{text}" } })
-os.call({ tool: "browser.get", input: { target: "title" } })
-os.call({ tool: "browser.find", input: { by: "role", value: "button", action: "click", name: "Submit" } })
-os.call({ tool: "browser.wait", input: { load: "networkidle" } })
-os.call({ tool: "browser.download", input: { ref: "@e1", path: "/tmp/download.bin" } })
-os.call({ tool: "browser.tabs", input: { action: "list" } })
-os.call({ tool: "browser.cookies", input: { action: "list" } })
-os.call({ tool: "browser.network", input: { args: ["requests"] } })
-os.call({ tool: "browser.dialog", input: { action: "dismiss" } })
-os.call({ tool: "browser.trace", input: { action: "start" } })
-os.call({ tool: "browser.clipboard", input: { action: "read" } })
-os.call({ tool: "browser.login", input: { name: "consuelo" } })
-os.call({ tool: "browser.reauth", input: { name: "consuelo", headed: true } })
-os.call({ tool: "browser.raw", input: { args: ["<agent-browser command>"] } })
-os.call({ tool: "browser.close", input: {} })
+os.call(\{ tool: "browser.test", input: \{ url: "(url)" \} \})
+os.call(\{ tool: "browser.open", input: \{ url: "(url)" \} \})
+os.call(\{ tool: "browser.snap", input: \{\} \})
+os.call(\{ tool: "browser.eval", input: \{ js: "(javascript)" \} \})
+os.call(\{ tool: "browser.screenshot", input: \{ name: "(name)", full: true \} \})
+os.call(\{ tool: "browser.click", input: \{ ref: "@e1" \} \})
+os.call(\{ tool: "browser.fill", input: \{ ref: "@e1", text: "(text)" \} \})
+os.call(\{ tool: "browser.get", input: \{ target: "title" \} \})
+os.call(\{ tool: "browser.find", input: \{ by: "role", value: "button", action: "click", name: "Submit" \} \})
+os.call(\{ tool: "browser.wait", input: \{ load: "networkidle" \} \})
+os.call(\{ tool: "browser.download", input: \{ ref: "@e1", path: "/tmp/download.bin" \} \})
+os.call(\{ tool: "browser.tabs", input: \{ action: "list" \} \})
+os.call(\{ tool: "browser.cookies", input: \{ action: "list" \} \})
+os.call(\{ tool: "browser.network", input: \{ args: ["requests"] \} \})
+os.call(\{ tool: "browser.dialog", input: \{ action: "dismiss" \} \})
+os.call(\{ tool: "browser.trace", input: \{ action: "start" \} \})
+os.call(\{ tool: "browser.clipboard", input: \{ action: "read" \} \})
+os.call(\{ tool: "browser.login", input: \{ name: "consuelo" \} \})
+os.call(\{ tool: "browser.reauth", input: \{ name: "consuelo", headed: true \} \})
+os.call(\{ tool: "browser.raw", input: \{ args: ["(agent-browser command)"] \} \})
+os.call(\{ tool: "browser.close", input: \{\} \})
 Do not use stale command forms such as workspace.browser.test(...) in instructions or handoffs.
 
 Use typed browser tools for repeated primitives. Use browser.raw only when an upstream agent-browser command is not yet represented by a typed facade alias.
@@ -82,23 +79,23 @@ Known-URL fetch workflow
 Use this flow when the user gives a URL and asks to inspect, fetch, summarize, scrape, or compare it.
 
 Open the URL with browser evidence:
-os.call({ tool: "browser.test", input: { url: "{url}", full: true }, timeout: 300000 })
+os.call(\{ tool: "browser.test", input: \{ url: "(url)", full: true \}, timeout: 300000 \})
 Read the returned title, URL, screenshot path, headings, links, and interactive refs.
 
 Extract rendered page content with browser.eval when the snapshot is too structural or incomplete:
 
-os.call({
+os.call(\{
   tool: "browser.eval",
-  input: {
-    js: "JSON.stringify({ title: document.title, url: location.href, text: (document.querySelector('main') || document.body).innerText, links: [...document.querySelectorAll('a')].map(a => ({ text: a.innerText.trim(), href: a.href })).filter(x => x.text || x.href), codeBlocks: [...document.querySelectorAll('pre, code')].map(el => el.innerText.trim()).filter(Boolean) })"
-  },
+  input: \{
+    js: "JSON.stringify(\{ title: document.title, url: location.href, text: (document.querySelector('main') || document.body).innerText, links: [...document.querySelectorAll('a')].map(a =&gt; (\{ text: a.innerText.trim(), href: a.href \})).filter(x =&gt; x.text || x.href), codeBlocks: [...document.querySelectorAll('pre, code')].map(el =&gt; el.innerText.trim()).filter(Boolean) \})"
+  \},
   timeout: 300000
-})
+\})
 If the page has tabs, accordions, pagination, modals, or language switches, use browser.snap to get refs, interact with browser.click, then rerun browser.eval.
 
 Capture a named screenshot when the visual state matters:
 
-os.call({ tool: "browser.screenshot", input: { name: "after-extraction", full: true }, timeout: 300000 })
+os.call(\{ tool: "browser.screenshot", input: \{ name: "after-extraction", full: true \}, timeout: 300000 \})
 In the final response, say what was inspected and what evidence was captured. If the answer needs citations, pair this with built-in web citations.
 Discovery-to-browser workflow
 Use this flow when the user asks a question but does not provide the exact page.
@@ -126,52 +123,52 @@ Use this flow for pages that require Ko’s browser session.
 
 Open the target page.
 If logged out, run:
-os.call({ tool: "browser.login", input: { name: "consuelo" }, timeout: 300000 })
+os.call(\{ tool: "browser.login", input: \{ name: "consuelo" \}, timeout: 300000 \})
 If login requires visible user interaction, run:
-os.call({ tool: "browser.reauth", input: { name: "consuelo", headed: true }, timeout: 300000 })
+os.call(\{ tool: "browser.reauth", input: \{ name: "consuelo", headed: true \}, timeout: 300000 \})
 Reopen the target page after auth.
 Avoid copying secrets, tokens, credentials, or private customer data into final responses.
 Ask before submitting forms, sending messages, purchasing, deleting, changing customer-visible state, or making account/security changes.
 Extraction recipes
 Extract headings and outline
-JSON.stringify({
+JSON.stringify(\{
   title: document.title,
   url: location.href,
-  headings: [...document.querySelectorAll('h1,h2,h3,h4')].map(h => ({
+  headings: [...document.querySelectorAll('h1,h2,h3,h4')].map(h =&gt; (\{
     level: h.tagName,
     text: h.innerText.trim()
-  })).filter(h => h.text)
-}, null, 2)
+  \})).filter(h =&gt; h.text)
+\}, null, 2)
 Extract readable main text
-JSON.stringify({
+JSON.stringify(\{
   title: document.title,
   url: location.href,
-  text: (document.querySelector('main') || document.body).innerText.trim().replace(/\n{3,}/g, '\n\n')
-}, null, 2)
+  text: (document.querySelector('main') || document.body).innerText.trim().replace(/\n\{3,\}/g, '\n\n')
+\}, null, 2)
 Extract links
-JSON.stringify([...document.querySelectorAll('a')].map(a => ({
+JSON.stringify([...document.querySelectorAll('a')].map(a =&gt; (\{
   text: a.innerText.trim(),
   href: a.href
-})).filter(x => x.text || x.href), null, 2)
+\})).filter(x =&gt; x.text || x.href), null, 2)
 Extract code blocks
-JSON.stringify([...document.querySelectorAll('pre, code')].map((el, i) => ({
+JSON.stringify([...document.querySelectorAll('pre, code')].map((el, i) =&gt; (\{
   index: i,
   text: el.innerText.trim()
-})).filter(x => x.text), null, 2)
+\})).filter(x =&gt; x.text), null, 2)
 Extract tables
-JSON.stringify([...document.querySelectorAll('table')].map((table, tableIndex) => ({
+JSON.stringify([...document.querySelectorAll('table')].map((table, tableIndex) =&gt; (\{
   tableIndex,
-  rows: [...table.querySelectorAll('tr')].map(row => [...row.querySelectorAll('th,td')].map(cell => cell.innerText.trim()))
-})), null, 2)
+  rows: [...table.querySelectorAll('tr')].map(row =&gt; [...row.querySelectorAll('th,td')].map(cell =&gt; cell.innerText.trim()))
+\})), null, 2)
 Extract page metadata
-JSON.stringify({
+JSON.stringify(\{
   title: document.title,
   url: location.href,
   canonical: document.querySelector('link[rel="canonical"]')?.href || null,
   description: document.querySelector('meta[name="description"]')?.content || null,
   ogTitle: document.querySelector('meta[property="og:title"]')?.content || null,
   ogDescription: document.querySelector('meta[property="og:description"]')?.content || null
-}, null, 2)
+\}, null, 2)
 Interaction rules
 Use accessibility refs from browser.snap or browser.test; do not guess refs.
 Re-snapshot after navigation, modal opens, tab switches, form submissions, and dynamic updates.
@@ -205,7 +202,7 @@ Common failure modes
 Browser opened the wrong tab
 Use browser.raw to list tabs, then reopen the target URL with browser.open if selection is unreliable.
 
-os.call({ tool: "browser.raw", input: { args: ["tab", "list"] }, timeout: 300000 })
+os.call(\{ tool: "browser.raw", input: \{ args: ["tab", "list"] \}, timeout: 300000 \})
 browser.eval returns empty title or missing body
 The active tab may be wrong, the page may still be loading, or the current document may be a file/blank page. Reopen the target URL with browser.open, wait for load, and retry.
 
@@ -221,11 +218,11 @@ Use built-in web search/open for citation evidence. Use browser to verify the re
 Example: OpenAI docs known-url extraction
 For a known documentation URL:
 
-os.call({
+os.call(\{
   tool: "browser.test",
-  input: { url: "https://developers.openai.com/api/docs/guides/tools-computer-use", full: true },
+  input: \{ url: "https://developers.openai.com/api/docs/guides/tools-computer-use", full: true \},
   timeout: 300000
-})
+\})
 Expected useful evidence:
 
 Page title
@@ -234,12 +231,11 @@ Accessibility tree with headings, links, buttons, code switchers, and table cell
 Interactive refs for copy buttons, tabs, accordions, and nav items
 Then extract rendered text and code count:
 
-os.call({
+os.call(\{
   tool: "browser.eval",
-  input: {
-    js: "JSON.stringify({ title: document.title, url: location.href, text: (document.querySelector('main') || document.body).innerText.slice(0, 8000), codeCount: document.querySelectorAll('pre, code').length })"
-  },
+  input: \{
+    js: "JSON.stringify(\{ title: document.title, url: location.href, text: (document.querySelector('main') || document.body).innerText.slice(0, 8000), codeCount: document.querySelectorAll('pre, code').length \})"
+  \},
   timeout: 300000
-})
+\})
 Use this pattern when a docs page is rendered, interactive, or easier to inspect through the DOM than through plain HTTP fetch.
-````

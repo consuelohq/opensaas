@@ -1,0 +1,68 @@
+---
+title: Context and Memory
+description: How Consuelo OS gives agents useful workspace context.
+---
+
+# Context and memory
+
+Consuelo OS gives agents the context they need to do useful work without loading the entire workspace into the conversation.
+
+Context is what the agent needs for the current task. Memory is reusable context that helps the agent behave better over time. Structured records remain the source of truth.
+
+## Use structured records first
+
+Structured records should be used when exactness matters.
+
+Keep these structured:
+
+- people
+- companies
+- calls
+- notes
+- tasks
+- opportunities
+- appointments
+- artifact records
+- approval records
+- execution logs
+- integration state
+- workspace identity
+
+These records should be read through approved API facades when OS is connected to the app.
+
+## Use memory for supporting context
+
+Memory is useful for context that helps the agent work better but does not need to be the canonical business record.
+
+Good memory examples include writing preferences, customer language patterns, prior strategic decisions, reusable summaries, team preferences, playbook notes, and known workflow conventions.
+
+Memory should not be the only copy of business-critical records.
+
+## Context sources
+
+Source | Use for | Notes
+--- | --- | ---
+Structured API data | Exact records and relationships | Source of truth for workspace objects.
+Artifact metadata | Generated outputs and provenance | Links results back to executions.
+Local files | Local-only workflows and self-hosted use | Should be selected or scoped.
+Memory | Reusable context and preferences | Support layer, not authority.
+Vector context | Finding relevant text | Useful for retrieval, not final truth.
+Capability health | What OS can currently use | Prevents skills from failing late.
+
+## What context should include
+
+For most agent sessions, OS should provide workspace identity, runtime mode, available skills, capability health, artifact storage mode, approval behavior, useful docs links, and recent execution summary when useful.
+
+The goal is to give the agent enough context to work correctly, not to preload every record.
+
+## Design rule
+
+Structured first. Memory second. Vector context third.
+
+If a value needs to be exact, query the structured source. If a value helps with judgment or recall, memory can help. If a value needs broad text retrieval, vector context can help locate it before the skill checks structured sources.
+
+## Related
+
+- [Data model and GraphQL](/os/concepts/data-model-and-graphql)
+- [OS portal](/os/concepts/portal)
+- [Observability](/os/concepts/observability)

@@ -5,9 +5,6 @@ description: "Use this skill for any opensaas task lifecycle work: starting a ta
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 # Ko must explicitly provide or approve the stream before task work begins.
 
 If no stream or area was provided, stop and ask. You may suggest likely streams, but never choose one silently.
@@ -52,7 +49,7 @@ Normal non-task calls must use the typed facade shape:
 ```ts
 await os.call({
   tool: "stream.context",
-  input: { area: "{area}" },
+  input: { area: "(area)" },
   timeout: 120,
 })
 ```
@@ -107,7 +104,7 @@ Run stream context before starting task work:
 ```ts
 await os.call({
   tool: "stream.context",
-  input: { area: "{area}" },
+  input: { area: "(area)" },
   timeout: 120,
 })
 ```
@@ -143,8 +140,8 @@ Create one focused task branch:
 await os.call({
   tool: "task.start",
   input: {
-    area: "{area}",
-    title: "<task title>",
+    area: "(area)",
+    title: "(task title)",
     startFrom: "main",
   },
   timeout: 120,
@@ -264,7 +261,7 @@ The workpad is the durable task record. Chat, terminal output, traces, and memor
 The active task workpad lives at:
 
 ```text
-.task/{area}/{task-slug}/workpad.md
+.task/(area)/(task-slug)/workpad.md
 ```
 
 Example:
@@ -328,7 +325,7 @@ Temporary validation tasks must be obvious from the title, branch, and PR.
 Use this naming format:
 
 ```text
-tmp({stream-area}): {purpose}
+tmp((stream-area)): (purpose)
 ```
 
 Examples:
@@ -341,7 +338,7 @@ tmp(os): explore codebase for OS landing page direction
 Temporary task branches should use matching slugs:
 
 ```text
-task/{area}/tmp-{purpose}
+task/(area)/tmp-(purpose)
 ```
 
 Temporary PRs must be closed or cleaned up after the evidence is captured unless Ko explicitly wants them preserved.
@@ -373,7 +370,7 @@ Context and exploration are not one-time kickoff steps; they are tools for stayi
 ```ts
 await os.call({
   tool: "context.search",
-  input: { keyword: "<feature or behavior>", limit: 5 },
+  input: { keyword: "(feature or behavior)", limit: 5 },
   timeout: 120,
 })
 
@@ -392,7 +389,7 @@ await os.call({
 await os.call({
   tool: "explore",
   input: {
-    query: "<feature or behavior> workspace facade script manifest docs tests",
+    query: "(feature or behavior) workspace facade script manifest docs tests",
     limit: 8,
   },
   timeout: 120,
@@ -415,7 +412,7 @@ Read recommended files through task-scoped file tools:
 await os.call({
   tool: "fs.read",
   taskSession,
-  input: { path: "{recommended-file}" },
+  input: { path: "(recommended-file)" },
   timeout: 120,
 })
 ```
@@ -455,8 +452,8 @@ await os.call({
   tool: "fs.search",
   taskSession,
   input: {
-    pattern: "{symbol-or-string}",
-    paths: ["{path}"],
+    pattern: "(symbol-or-string)",
+    paths: ["(path)"],
     maxResults: 80,
   },
   timeout: 120,
@@ -467,9 +464,9 @@ await os.call({
 
 | Score | Action |
 | --- | --- |
-| `< 0.55` | Continue evidence gathering |
+| `&lt; 0.55` | Continue evidence gathering |
 | `0.55–0.75` | Read at least one more high-value implementation file or test |
-| `>= 0.75` | Proceed when acceptance criteria and edit target are clear |
+| `&gt;= 0.75` | Proceed when acceptance criteria and edit target are clear |
 
 Confidence comes from evidence, not from the first explore result.
 
@@ -513,7 +510,7 @@ Default context loop:
 await os.call({
   tool: "context.search",
   input: {
-    keyword: "{feature-or-failure-keyword}",
+    keyword: "(feature-or-failure-keyword)",
     limit: 5,
   },
   timeout: 120,
@@ -799,7 +796,7 @@ await os.call({
   tool: "git.diff",
   taskSession,
   input: {
-    base: "origin/stream/{area}",
+    base: "origin/stream/(area)",
     stat: true,
     files: true,
     hunks: true,
@@ -816,7 +813,7 @@ await os.call({
   tool: "git.diff",
   taskSession,
   input: {
-    base: "origin/stream/{area}",
+    base: "origin/stream/(area)",
     patch: true,
     maxBytes: 20000,
   },
@@ -877,7 +874,7 @@ await os.call({
   tool: "task.call",
   taskSession,
   input: {
-    command: ["python3", "-m", "py_compile", "{file.py}"],
+    command: ["python3", "-m", "py_compile", "(file.py)"],
   },
   timeout: 120,
 })
@@ -890,7 +887,7 @@ await os.call({
   tool: "task.call",
   taskSession,
   input: {
-    command: ["bun", "--cwd", "packages/workspace", "run", "test", "{test-file}"],
+    command: ["bun", "--cwd", "packages/workspace", "run", "test", "(test-file)"],
     tddPhase: "red",
     timeout: 300000,
   },
@@ -905,7 +902,7 @@ await os.call({
   tool: "task.call",
   taskSession,
   input: {
-    command: ["bun", "--cwd", "packages/workspace", "run", "test", "{test-file}"],
+    command: ["bun", "--cwd", "packages/workspace", "run", "test", "(test-file)"],
     tddPhase: "green",
     timeout: 300000,
   },
@@ -920,7 +917,7 @@ await os.call({
   tool: "review.run",
   taskSession,
   input: {
-    base: "origin/stream/{area}",
+    base: "origin/stream/(area)",
     noTests: true,
   },
   timeout: 300000,
@@ -934,7 +931,7 @@ await os.call({
   tool: "verify",
   taskSession,
   input: {
-    base: "<origin/main-or-origin/stream/area>",
+    base: "(origin/main-or-origin/stream/area)",
     noDb: true,
   },
   timeout: 300000,
@@ -1070,7 +1067,7 @@ Validation base must match the task start point:
 | Task start point | Review/verify base |
 | --- | --- |
 | `startFrom: "main"` | `origin/main` |
-| `startFrom: "stream"` | `origin/stream/{area}` |
+| `startFrom: "stream"` | `origin/stream/(area)` |
 
 Do not mix bases inside one task unless the task was explicitly rebased or restacked.
 
@@ -1079,7 +1076,7 @@ await os.call({
   tool: "review.run",
   taskSession,
   input: {
-    base: "<origin/main-or-origin/stream/area>",
+    base: "(origin/main-or-origin/stream/area)",
     noTests: true,
   },
   timeout: 900,
@@ -1098,7 +1095,7 @@ await os.call({
 
 If `startFrom` is `main`, validate/review against `origin/main`.
 
-If `startFrom` is `stream`, validate/review against `origin/stream/{area}`.
+If `startFrom` is `stream`, validate/review against `origin/stream/(area)`.
 
 Use the relevant truth source. Confirmation should produce evidence. A syntax check alone is not enough for a behavior change.
 
@@ -1157,13 +1154,13 @@ await os.call({
 Default expected path:
 
 ```text
-task/{area}/{slug} → stream/{area} → main
+task/(area)/(slug) → stream/(area) → main
 ```
 
 The PR Ko reviews is the stream review PR:
 
 ```text
-stream/{area} → main
+stream/(area) → main
 ```
 
 The task PR is intermediate automation state. Reporting only the task PR is incomplete.
@@ -1175,7 +1172,7 @@ If `task.pr` returns only a task PR, treat that as incomplete unless `taskOnly: 
 Required checks:
 
 - task PR exists or was created
-- task PR targets `stream/{area}`
+- task PR targets `stream/(area)`
 - task merge into stream succeeds when applicable
 - stream review PR exists, is reused, or is updated
 - stream review PR targets `main`
@@ -1212,11 +1209,11 @@ The current durable metadata model is scoped.
 Primary task metadata:
 
 ```text
-.task/{area}/{task-slug}/current.json
-.task/{area}/{task-slug}/session.json
-.task/{area}/{task-slug}/workpad.md
-.task/{area}/{task-slug}/verify.json
-.task/tasks/{area}/{task-slug}.json
+.task/(area)/(task-slug)/current.json
+.task/(area)/(task-slug)/session.json
+.task/(area)/(task-slug)/workpad.md
+.task/(area)/(task-slug)/verify.json
+.task/tasks/(area)/(task-slug).json
 ```
 
 Legacy root task pointers are not task truth and should not be reintroduced:
@@ -1235,10 +1232,10 @@ Scoped metadata-only conflicts may be auto-resolved. Mixed conflicts must stop.
 Auto-resolvable task metadata includes:
 
 ```text
-.task/{area}/{task-slug}/current.json
-.task/{area}/{task-slug}/session.json
-.task/{area}/{task-slug}/workpad.md
-.task/{area}/{task-slug}/verify.json
+.task/(area)/(task-slug)/current.json
+.task/(area)/(task-slug)/session.json
+.task/(area)/(task-slug)/workpad.md
+.task/(area)/(task-slug)/verify.json
 .task/tasks/**
 .task/evidence-log.json
 .task/read-log.json
@@ -1287,7 +1284,7 @@ When Ko asks to ship the stream, merge the stream review PR:
 await os.call({
   tool: "task.merge",
   input: {
-    pr: {stream-pr-number},
+    pr: (stream-pr-number),
     squash: true,
     wait: true,
   },
@@ -1302,7 +1299,7 @@ await os.call({
   tool: "github",
   input: {
     operation: "pr.view",
-    pr: {stream-pr-number},
+    pr: (stream-pr-number),
     repo: "consuelohq/opensaas",
     preset: "merge",
   },
@@ -1315,7 +1312,7 @@ If the stream PR has conflicts with main, run stream sync:
 ```ts
 await os.call({
   tool: "stream.sync",
-  input: { area: "{area}" },
+  input: { area: "(area)" },
   timeout: 300,
 })
 ```
@@ -1378,7 +1375,7 @@ Before reporting done, confirm:
 - `task.pr` returned `ok: true`
 - stream review PR URL was captured
 - task PR exists when applicable
-- task PR targets `stream/{area}`
+- task PR targets `stream/(area)`
 - stream review PR targets `main`
 - Graphite stream PR link is included for reviewable work
 - temporary/smoke task PRs are closed or explicitly accounted for
@@ -1416,7 +1413,7 @@ For temporary/smoke tasks, cleanup also includes PR state:
 - do not promote temporary PRs into the stream unless Ko asked for the temp work to become durable
 - do not leave temporary PRs open without naming the reason
 
-Temporary PRs should use `tmp({stream-area}): ...` in the title so Ko can identify them quickly.
+Temporary PRs should use `tmp((stream-area)): ...` in the title so Ko can identify them quickly.
 
 ---
 
@@ -1439,9 +1436,9 @@ This keeps publishing stateful, reviewable, and task-safe.
 Completed tasks may leave scoped metadata on main, such as:
 
 ```text
-.task/workspace-agents/{old-task}/current.json
-.task/workspace-agents/{old-task}/workpad.md
-.task/tasks/workspace-agents/{old-task}.json
+.task/workspace-agents/(old-task)/current.json
+.task/workspace-agents/(old-task)/workpad.md
+.task/tasks/workspace-agents/(old-task).json
 ```
 
 `status` may report this as `staleTask` when the metadata belongs to a different branch than the current checkout.
@@ -1504,7 +1501,7 @@ Use it early, especially before broad `fs.search` or raw shell search.
 - report stream PRs, not only task PRs
 - context and decision engine can be used at any point
 - if root `.task/current.json`, `.task/session.json`, `.task/workpad.md`, or `.task/verify.json` appears, treat it as legacy/stale unless the task explicitly concerns migration compatibility
-- active task truth comes from `taskSession` and scoped `.task/{area}/{task-slug}/...` metadata
+- active task truth comes from `taskSession` and scoped `.task/(area)/(task-slug)/...` metadata
 
 ---
 
@@ -1536,4 +1533,3 @@ Before saying “done,” verify and report:
 - files changed
 - validation run
 - local state if the user requested
-````

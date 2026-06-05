@@ -5,21 +5,18 @@ description: "Use this skill when the user asks to create, read, update, search,
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 purpose
 create a continuation-ready handoff so a fresh agent can start immediately without guessing tools, scripts, files, or context.
 
 this is not the final tagging system. for now:
 
 for task handoffs, draft in canvas first, review with ko, then save after explicit approval
-for learning/memory handoffs where ko explicitly asks for a tmp file or says not to use canvas, write the handoff directly to /tmp/{descriptive-name}.md
+for learning/memory handoffs where ko explicitly asks for a tmp file or says not to use canvas, write the handoff directly to /tmp/(descriptive-name).md
 save to memory only after explicit approval, or when ko explicitly asks to save the handoff to context in the same request
 include exact skills, scripts, tools, files, branch/PR/runtime context when applicable
 non-negotiable rules
 draft in canvas first for task handoffs unless ko explicitly asks for tmp-file-first or no canvas
-when ko asks for tmp/no-canvas, write the handoff directly to /tmp/{descriptive-name}.md
+when ko asks for tmp/no-canvas, write the handoff directly to /tmp/(descriptive-name).md
 do not save memory until ko explicitly approves, unless ko explicitly asks to save to context in the same request
 use real current-state facts from this conversation; do not invent examples
 no tables unless ko explicitly asks
@@ -32,7 +29,7 @@ optimize for zero-context handoff: assume next agent knows nothing
 include exact skills/scripts/tools/files to use next
 include both the agent-facing os.call(...) command and the CLI bun ... context.js ... command for retrieval
 canvas doc name must be timestamped and task-descriptive
-format: Apr 29, 2026 at 16:04 {next-task-name}
+format: Apr 29, 2026 at 16:04 (next-task-name)
 user override for handoff surface
 If ko explicitly says “do not use canvas,” “go straight to tmp file,” “save to context,” or similar, follow that surface request.
 
@@ -44,7 +41,7 @@ tmp-file handoff shortcut
 Use this path when ko explicitly asks for @handoff no canvas, tmp file, go straight to tmp, or save to context.
 
 Collect the durable decisions and current state.
-Write the full handoff directly to /tmp/{descriptive-name}.md.
+Write the full handoff directly to /tmp/(descriptive-name).md.
 Save the tmp file to context with a descriptive title.
 Return:
 tmp file path
@@ -84,22 +81,22 @@ Save the tmp file to context with a descriptive title.
 Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
 For tmp-file-first handoffs:
 
-Write the full handoff directly to /tmp/{descriptive-name}.md.
+Write the full handoff directly to /tmp/(descriptive-name).md.
 Save that tmp file to context with a descriptive title.
 Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
 Preferred typed facade save shape:
 
-await os.call({
+await os.call(\{
   tool: "context.save",
-  input: {
-    title: "<descriptive context title>",
-    file: "/tmp/{descriptive-name}.md"
-  },
+  input: \{
+    title: "(descriptive context title)",
+    file: "/tmp/(descriptive-name).md"
+  \},
   timeout: 120,
-})
+\})
 CLI fallback save shape:
 
-bun packages/workspace/scripts/context.js save "<descriptive context title>" "/tmp/{descriptive-name}.md" --category handoff --json
+bun packages/workspace/scripts/context.js save "(descriptive context title)" "/tmp/(descriptive-name).md" --category handoff --json
 5) memory save rule
 Save the full handoff, not a summary.
 
@@ -140,36 +137,36 @@ Agent retrieval command:
 
 await os.get_steering()
 
-await os.call({
+await os.call(\{
   tool: "context.search",
-  input: {
-    keyword: "{handoff-title-or-best-keyword}",
+  input: \{
+    keyword: "(handoff-title-or-best-keyword)",
     limit: 5
-  },
+  \},
   timeout: 120,
-})
+\})
 Agent save command:
 
-await os.call({
+await os.call(\{
   tool: "context.save",
-  input: {
-    title: "<descriptive context title>",
-    file: "/tmp/{handoff-file}.md"
-  },
+  input: \{
+    title: "(descriptive context title)",
+    file: "/tmp/(handoff-file).md"
+  \},
   timeout: 120,
-})
+\})
 CLI save command:
 
-bun packages/workspace/scripts/context.js save "<descriptive context title>" "/tmp/{handoff-file}.md" --category handoff --json
+bun packages/workspace/scripts/context.js save "(descriptive context title)" "/tmp/(handoff-file).md" --category handoff --json
 CLI search command:
 
-bun packages/workspace/scripts/context.js find "{handoff-title-or-best-keyword}" --category handoff --limit 5
+bun packages/workspace/scripts/context.js find "(handoff-title-or-best-keyword)" --category handoff --limit 5
 CLI content search command:
 
-bun packages/workspace/scripts/context.js search "{tag-or-keyword}" --category handoff --limit 5
+bun packages/workspace/scripts/context.js search "(tag-or-keyword)" --category handoff --limit 5
 CLI full-read command after finding the handoff:
 
-bun packages/workspace/scripts/context.js get 1 "{handoff-title-or-best-keyword}" --by-title --category handoff
+bun packages/workspace/scripts/context.js get 1 "(handoff-title-or-best-keyword)" --by-title --category handoff
 Clear Communication
 Purpose
 
@@ -321,23 +318,23 @@ Minimum agent command:
 
 await os.get_steering()
 
-await os.call({
+await os.call(\{
   tool: "context.search",
-  input: {
-    keyword: "{handoff-title-or-best-keyword}",
+  input: \{
+    keyword: "(handoff-title-or-best-keyword)",
     limit: 5
-  },
+  \},
   timeout: 120,
-})
+\})
 Minimum CLI search command:
 
-bun packages/workspace/scripts/context.js find "{handoff-title-or-best-keyword}" --category handoff --limit 5
+bun packages/workspace/scripts/context.js find "(handoff-title-or-best-keyword)" --category handoff --limit 5
 Minimum CLI full-read command:
 
-bun packages/workspace/scripts/context.js get 1 "{handoff-title-or-best-keyword}" --by-title --category handoff
+bun packages/workspace/scripts/context.js get 1 "(handoff-title-or-best-keyword)" --by-title --category handoff
 If the handoff is better retrieved by content tags than title, also include:
 
-bun packages/workspace/scripts/context.js search "{tag-or-keyword}" --category handoff --limit 5
+bun packages/workspace/scripts/context.js search "(tag-or-keyword)" --category handoff --limit 5
 approval prompt format
 When requesting approval for canvas-reviewed handoffs, include this exact heading:
 
@@ -350,7 +347,7 @@ Small reminder: SEND "SAVE" OR "S" WHEN YOU'RE READY.
 Do not use this approval prompt when ko already asked to save directly to context or explicitly requested a tmp-file handoff.
 
 Tagging Memories for Retrieval
-When saving context via os.call({ tool: "context.save", ... }) or bun packages/workspace/scripts/context.js save, prepend a tags: line at the top of the content. This makes memories searchable by concept even when the title is generic.
+When saving context via os.call(\{ tool: "context.save", ... \}) or bun packages/workspace/scripts/context.js save, prepend a tags: line at the top of the content. This makes memories searchable by concept even when the title is generic.
 
 format
 tags: tag1, tag2, tag3
@@ -369,25 +366,25 @@ Keep tags lowercase, hyphenated, comma-separated. Aim for 5–10 tags per memory
 to search by tag
 Agent command:
 
-await os.call({
+await os.call(\{
   tool: "context.search",
-  input: {
+  input: \{
     keyword: "evidence-ledger",
     limit: 5
-  },
+  \},
   timeout: 120,
-})
+\})
 Agent command with category:
 
-await os.call({
+await os.call(\{
   tool: "context.search",
-  input: {
+  input: \{
     keyword: "bayesian",
     category: "decision",
     limit: 5
-  },
+  \},
   timeout: 120,
-})
+\})
 CLI fallback:
 
 bun packages/workspace/scripts/context.js search "evidence-ledger"
@@ -398,4 +395,3 @@ A single word in an instruction can flip agent behavior from correct to broken. 
 When writing instructions, constraints, or acceptance criteria, read the sentence as a literal-minded agent would. If removing or adding one word changes the meaning from “ignore this” to “balance this against something else,” that word is load-bearing. Include it deliberately.
 
 The failure mode: writing an absolute prohibition when you meant a priority ordering. The fix: use “only,” “solely,” or “at the expense of” to signal that the thing still matters; it just is not the whole picture.
-````

@@ -1,0 +1,19 @@
+{
+  "area": "docs-repair",
+  "stream": "stream/docs-repair",
+  "taskBranch": "task/docs-repair/restore-authored-os-docs-and-proper-skill-rendering",
+  "baseBranch": "stream/docs-repair",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 762,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/762",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/762",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/762/restore-authored-os-docs-and-proper-skill-rendering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/762",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/762/restore-authored-os-docs-and-proper-skill-rendering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-repair-restore-authored-os-docs-and-proper-skill-rendering",
+  "taskSession": "tsk_cfc55a0322a7",
+  "tmuxSession": "opensaas-docs-repair-restore-authored-os-docs-and-proper-skill-render-cfc55a03",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-repair-restore-authored-os-docs-and-proper-skill-rendering/.task/docs-repair/restore-authored-os-docs-and-proper-skill-rendering/session.json",
+  "createdAt": "2026-06-05T01:21:04.773Z"
+}

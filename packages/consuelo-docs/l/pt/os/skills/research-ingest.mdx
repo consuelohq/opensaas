@@ -5,9 +5,6 @@ description: "use this skill when ko sends a youtube, podcast, article, paper, p
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 Research Ingest
 Use the workspace research:ingest tool to turn research sources into durable context before analysis.
 
@@ -32,41 +29,41 @@ Workspace tools
 The workspace app exposes:
 
 os.get_steering()
-os.call({ tool, input, taskSession, timeout })
+os.call(\{ tool, input, taskSession, timeout \})
 Use typed facade calls. For research ingestion, the normal call is:
 
-await os.call({
+await os.call(\{
   tool: "research.ingest",
-  input: {
-    source: "{url-or-file}",
-    question: "<what Ko wants to learn>",
+  input: \{
+    source: "(url-or-file)",
+    question: "(what Ko wants to learn)",
     visual: false
-  },
+  \},
   timeout: 600,
-})
+\})
 Use visual: true only when visual content matters: slides, diagrams, demos, screen recordings, whiteboards, charts, or UI walkthroughs.
 
-await os.call({
+await os.call(\{
   tool: "research.ingest",
-  input: {
-    source: "{video-url}",
-    question: "<what Ko wants to learn>",
+  input: \{
+    source: "(video-url)",
+    question: "(what Ko wants to learn)",
     visual: true,
     slidesMax: 8
-  },
+  \},
   timeout: 600,
-})
+\})
 Use contextTitle when Ko gives a clear title or when a better durable title is obvious:
 
-await os.call({
+await os.call(\{
   tool: "research.ingest",
-  input: {
-    source: "{source}",
-    question: "{question}",
-    contextTitle: "Research Bundle: <clear title>"
-  },
+  input: \{
+    source: "(source)",
+    question: "(question)",
+    contextTitle: "Research Bundle: (clear title)"
+  \},
   timeout: 600,
-})
+\})
 Do not use noContextSave in normal user-facing work. It is only for tests/debugging or when Ko explicitly asks not to save.
 
 Output artifacts
@@ -139,4 +136,3 @@ Do not use external web browsing as a substitute for ingestion when Ko asks to p
 
 
 Try in chat
-````
