@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/package-consuelo-os-as-installed-product-root",
+  "base": "origin/stream/os",
+  "headSha": "0ca222af1a15e9a6013b3cd17710fb6238ea2a54",
+  "changeHash": "171bedb0cdf194c2b1fb5b5232d9c51ee844425c1ef0329ff366dc8994f36713",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "verifiedAt": "2026-06-05T06:09:12.844Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/package-consuelo-os-as-installed-product-root/current.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/evidence-log.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/read-log.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/session.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/verify.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/workpad.md",
+        ".task/tasks/os/package-consuelo-os-as-installed-product-root.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
