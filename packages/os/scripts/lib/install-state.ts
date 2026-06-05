@@ -69,7 +69,8 @@ export type ProvisionAction = {
     | 'preserve_file'
     | 'connect_agent'
     | 'skip_agent'
-    | 'seed_skill';
+    | 'seed_skill'
+    | 'seed_tool';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'skipped';
   message: string;
@@ -98,6 +99,7 @@ export type DoctorResult = {
 const REQUIRED_DIRS = [
   'agents',
   'skills',
+  'tools',
   'scripts',
   'artifacts',
   'logs',
@@ -112,8 +114,13 @@ const DEFAULT_PORT = 8850;
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
+const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
+const TOOL_METADATA_FILE = '.consuelo-tool.json';
+const TOOL_REGISTRY_FILE = 'tools.json';
+const TOOL_DEFINITION_FILE = 'tool.json';
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -136,6 +143,35 @@ const COMPACT_SKILL_FIELDS = [
 type JsonObject = Record<string, unknown>;
 
 type SkillInstallMetadata = {
+  version: 1;
+  name: string;
+  source: 'bundled';
+  sourcePath: string;
+  hash: string;
+  installedAt: string;
+  updatedAt: string;
+};
+
+
+type CanonicalToolEntry = {
+  name: string;
+  kind: string;
+  source?: string;
+  sourcePath?: string;
+  category?: string;
+  description?: string;
+  core?: boolean;
+  definition?: JsonObject;
+};
+
+type CanonicalToolManifest = {
+  version: 1;
+  kind: string;
+  generatedFrom?: unknown[];
+  tools: CanonicalToolEntry[];
+};
+
+type ToolInstallMetadata = {
   version: 1;
   name: string;
   source: 'bundled';
@@ -557,6 +593,219 @@ function seedBundledSkills(
   return actions;
 }
 
+
+function readBundledToolManifest(): CanonicalToolManifest {
+  const parsed = readJsonFile<CanonicalToolManifest>(BUNDLED_TOOL_MANIFEST_PATH);
+  if (!parsed || !Array.isArray(parsed.tools)) {
+    throw new Error(`${BUNDLED_TOOL_MANIFEST_PATH}: expected full OS tool manifest with tools array`);
+  }
+  for (const entry of parsed.tools) {
+    if (!entry || typeof entry.name !== 'string' || entry.name.length === 0) {
+      throw new Error(`${BUNDLED_TOOL_MANIFEST_PATH}: every tool entry needs a name`);
+    }
+  }
+  return parsed;
+}
+
+function compactToolEntry(entry: CanonicalToolEntry): JsonObject {
+  return {
+    name: entry.name,
+    kind: entry.kind,
+    source: entry.source,
+    sourcePath: entry.sourcePath,
+    category: entry.category,
+    description: entry.description,
+    core: Boolean(entry.core),
+    definition: entry.definition,
+  };
+}
+
+function toolEntryHash(entry: CanonicalToolEntry): string {
+  const hash = createHash('sha256');
+  hash.update(JSON.stringify(compactToolEntry(entry)));
+  return `sha256:${hash.digest('hex')}`;
+}
+
+function listToolDirs(toolsRoot: string): string[] {
+  if (!fs.existsSync(toolsRoot)) return [];
+  return fs.readdirSync(toolsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(toolsRoot, entry.name))
+    .filter((toolDir) => fs.existsSync(path.join(toolDir, TOOL_DEFINITION_FILE)));
+}
+
+function readToolInstallMetadata(filePath: string): ToolInstallMetadata | null {
+  const metadata = readJsonFile<ToolInstallMetadata>(filePath);
+  return metadata?.source === 'bundled' ? metadata : null;
+}
+
+function readInstalledToolDefinition(toolDir: string): JsonObject {
+  return readJsonObject(path.join(toolDir, TOOL_DEFINITION_FILE));
+}
+
+function shellSingleQuote(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+function toolWrapperScript(entry: CanonicalToolEntry): string {
+  const toolName = entry.name;
+  const description = entry.description ?? 'Consuelo OS tool.';
+  const fallbackSource = shellSingleQuote(REPO_ROOT);
+  const quotedName = shellSingleQuote(toolName);
+  const jsonName = shellSingleQuote(JSON.stringify(toolName));
+  const runner = entry.kind === 'facade-tool'
+    ? `exec bun ./scripts/tool-runner.ts ${quotedName} "$INPUT"`
+    : `exec bun ./scripts/os.ts call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
+
+  return [
+    '#!/usr/bin/env bash',
+    'set -euo pipefail',
+    `TOOL_NAME=${quotedName}`,
+    `TOOL_DESCRIPTION=${shellSingleQuote(description)}`,
+    'OS_HOME="${CONSUELO_OS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
+    'SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$OS_HOME/../../source/opensaas}"',
+    `if [ ! -d "$SOURCE_DIR/packages/os" ]; then SOURCE_DIR=${fallbackSource}; fi`,
+    'if [ ! -d "$SOURCE_DIR/packages/os" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS source not found. Set CONSUELO_OS_SOURCE_DIR." >&2',
+    '  exit 1',
+    'fi',
+    'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
+    '  printf "%s\\n" "usage: $TOOL_NAME [json-input]"',
+    '  printf "%s\\n" ""',
+    '  printf "%s\\n" "$TOOL_DESCRIPTION"',
+    '  exit 0',
+    'fi',
+    'INPUT="${1:-{}}"',
+    'cd "$SOURCE_DIR/packages/os"',
+    runner,
+    '',
+  ].join('\n');
+}
+
+function writeBundledTool(entry: CanonicalToolEntry, targetDir: string, binDir: string, dryRun: boolean): void {
+  if (dryRun) return;
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(targetDir, TOOL_DEFINITION_FILE),
+    `${JSON.stringify(compactToolEntry(entry), null, 2)}\n`,
+    { mode: 0o600 },
+  );
+  const wrapperPath = path.join(binDir, entry.name);
+  fs.mkdirSync(path.dirname(wrapperPath), { recursive: true });
+  fs.writeFileSync(wrapperPath, toolWrapperScript(entry), { mode: 0o755 });
+  fs.chmodSync(wrapperPath, 0o755);
+}
+
+function writeInstalledToolsRegistry(toolsRoot: string, dryRun: boolean): ProvisionAction[] {
+  const outputPath = path.join(toolsRoot, TOOL_REGISTRY_FILE);
+  if (dryRun) {
+    return [{
+      type: 'create_file',
+      path: outputPath,
+      status: 'planned',
+      message: 'tools registry will be written',
+    }];
+  }
+
+  const tools = listToolDirs(toolsRoot)
+    .map((toolDir) => readInstalledToolDefinition(toolDir))
+    .sort((left, right) => String(left.name).localeCompare(String(right.name)));
+  fs.writeFileSync(outputPath, `${JSON.stringify({ version: 1, kind: 'consuelo-os-installed-tool-manifest', tools }, null, 2)}\n`, { mode: 0o600 });
+  return [{
+    type: 'create_file',
+    path: outputPath,
+    status: 'created',
+    message: 'tools registry written',
+  }];
+}
+
+function seedBundledTools(home: string, dryRun: boolean): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+  const toolsRoot = path.join(home, 'tools');
+  const binDir = path.join(home, 'bin');
+  const manifest = readBundledToolManifest();
+  const bundledToolNames = new Set<string>();
+  const now = nowIso();
+
+  for (const entry of manifest.tools) {
+    bundledToolNames.add(entry.name);
+    const targetDir = path.join(toolsRoot, entry.name);
+    const metadataPath = path.join(targetDir, TOOL_METADATA_FILE);
+    const sourceHash = toolEntryHash(entry);
+    const existingMetadata = readToolInstallMetadata(metadataPath);
+    const targetExists = fs.existsSync(targetDir);
+
+    if (targetExists && !existingMetadata) {
+      actions.push({
+        type: 'seed_tool',
+        path: targetDir,
+        status: 'skipped',
+        message: 'local tool preserved',
+      });
+      continue;
+    }
+
+    if (existingMetadata) {
+      const installedDefinition = readInstalledToolDefinition(targetDir);
+      const installedHash = `sha256:${createHash('sha256').update(JSON.stringify(installedDefinition)).digest('hex')}`;
+      if (installedHash !== existingMetadata.hash) {
+        actions.push({
+          type: 'seed_tool',
+          path: targetDir,
+          status: 'skipped',
+          message: 'bundled tool has local changes; preserved',
+        });
+        continue;
+      }
+      if (existingMetadata.hash === sourceHash) {
+        actions.push({
+          type: 'seed_tool',
+          path: targetDir,
+          status: 'preserved',
+          message: 'bundled tool already installed',
+        });
+        continue;
+      }
+    }
+
+    actions.push({
+      type: 'seed_tool',
+      path: targetDir,
+      status: dryRun ? 'planned' : 'created',
+      message: targetExists ? 'bundled tool refreshed' : 'bundled tool installed',
+    });
+
+    if (!dryRun) {
+      if (targetExists) fs.rmSync(targetDir, { recursive: true, force: true });
+      writeBundledTool(entry, targetDir, binDir, false);
+      const metadata: ToolInstallMetadata = {
+        version: 1,
+        name: entry.name,
+        source: 'bundled',
+        sourcePath: toRepoRelative(BUNDLED_TOOL_MANIFEST_PATH),
+        hash: sourceHash,
+        installedAt: existingMetadata?.installedAt ?? now,
+        updatedAt: now,
+      };
+      fs.writeFileSync(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, { mode: 0o600 });
+    }
+  }
+
+  for (const installedToolDir of listToolDirs(toolsRoot)) {
+    const toolName = String(readInstalledToolDefinition(installedToolDir).name ?? path.basename(installedToolDir));
+    if (bundledToolNames.has(toolName)) continue;
+    actions.push({
+      type: 'seed_tool',
+      path: installedToolDir,
+      status: 'skipped',
+      message: 'local tool preserved',
+    });
+  }
+
+  actions.push(...writeInstalledToolsRegistry(toolsRoot, dryRun));
+  return actions;
+}
+
 export function provisionLocalOs(
   options: ProvisionOptions = {},
 ): ProvisionResult {
@@ -629,6 +878,7 @@ export function provisionLocalOs(
     getDefaultSelectedSkillNames();
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
   actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
+  actions.push(...seedBundledTools(home, dryRun));
 
   const agents = detectAgents(home);
   const requestedAgents = new Set(options.connectAgents ?? []);
