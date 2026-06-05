@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "測試電子郵件"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "暫停的工作區"
@@ -61,6 +56,11 @@ msgstr ""
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Update your subscription"
 msgstr "更新您的訂閱"
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "測試電子郵件"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -109,31 +109,6 @@ msgid "Accept invite"
 msgstr "接受邀請"
 
 #. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset your password 🗝"
-msgstr "重設您的密碼 🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set your password 🗝"
-msgstr "設置您的密碼🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset"
-msgstr "重設"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set"
-msgstr "設置"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
-msgstr "此鏈接僅在接下來的 {duration} 內有效。如果鏈接無效，您可以直接使用登錄驗證鏈接："
-
-#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "已刪除工作區"
@@ -157,6 +132,31 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "創建新的工作區"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset your password 🗝"
+msgstr "重設您的密碼 🗝"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "Set your password 🗝"
+msgstr "設置您的密碼🗝"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset"
+msgstr "重設"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "Set"
+msgstr "設置"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
+msgstr "此鏈接僅在接下來的 {duration} 內有效。如果鏈接無效，您可以直接使用登錄驗證鏈接："
 
 #. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
