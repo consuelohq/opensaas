@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fd77d8cfb25e",
+  "tmuxSession": "opensaas-diff-cockpit-main-packages-code-browser-fd77d8cf",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/main-packages-code-browser",
+  "branch": "task/diff-cockpit/main-packages-code-browser",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-main-packages-code-browser",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-main-packages-code-browser",
+  "prNumber": 773,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/773",
+  "createdAt": "2026-06-05T05:02:37.827Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-main-packages-code-browser/.task/diff-cockpit/main-packages-code-browser/session.json"
+}
