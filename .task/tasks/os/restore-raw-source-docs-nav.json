@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-raw-source-docs-nav",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 775,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/775",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/775",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/775/restore-raw-source-docs-nav",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/775",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/775/restore-raw-source-docs-nav",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav",
+  "taskSession": "tsk_9b4ec743b883",
+  "tmuxSession": "opensaas-os-restore-raw-source-docs-nav-9b4ec743",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav/.task/os/restore-raw-source-docs-nav/session.json",
+  "createdAt": "2026-06-05T05:10:26.765Z"
+}

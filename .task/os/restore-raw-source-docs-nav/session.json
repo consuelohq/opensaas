@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b4ec743b883",
+  "tmuxSession": "opensaas-os-restore-raw-source-docs-nav-9b4ec743",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-raw-source-docs-nav",
+  "branch": "task/os/restore-raw-source-docs-nav",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav",
+  "prNumber": 775,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/775",
+  "createdAt": "2026-06-05T05:10:26.763Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav/.task/os/restore-raw-source-docs-nav/session.json"
+}

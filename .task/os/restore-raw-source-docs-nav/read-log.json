@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/consuelo-docs/package.json",
+    "packages/consuelo-docs/scripts/generate-docs-json.ts",
+    "packages/consuelo-docs/scripts/generate-os-source-docs.ts",
+    "packages/consuelo-docs/scripts/validate-os-docs.ts"
+  ],
+  "updatedAt": "2026-06-05T05:14:22.744Z"
+}
