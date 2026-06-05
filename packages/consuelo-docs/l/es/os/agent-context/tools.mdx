@@ -1,22 +1,43 @@
 ---
 title: "tools.md"
-description: "Human-readable catalog of callable Consuelo OS tools."
+description: "The human-readable catalog of workspace facade tools available through `workspace.call`."
 ---
 
-{/* Generated from packages/os/TOOLS.md. Do not edit this page directly. */}
+{/* Generated from packages/workspace/TOOLS.md. Do not edit this page directly. */}
 
-This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.
+> The human-readable catalog of workspace facade tools available through `workspace.call`.
 
-The workspace app exposes two MCP entrypoints:
+<Note>
+This page is generated from `packages/workspace/TOOLS.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
+</Note>
+
+## What this file controls
+
+| Field | Value |
+| --- | --- |
+| Source file | `packages/workspace/TOOLS.md` |
+| Runtime role | Tool contracts, call shapes, examples, envelopes, categories, and operational affordances. |
+| Controls | Which tool names exist, how they are called, and what each tool returns. |
+| Generated route | `/os/agent-context/tools` |
+
+## Source document
+
+# workspace typed tools
+
+This file is the human-readable tool catalog for the workspace facade. It is generated from `packages/workspace/tooling/tool-manifest.json`, so tool additions, schema changes, and timeout changes update this reference through the generator.
+
+The workspace app exposes exactly two MCP entrypoints:
 
 - `workspace.get_steering()` for bootstrap context
 - `workspace.call(\{ tool, input, taskSession, timeout \})` for every typed operation
 
-Use the tables below to understand what each tool does, which runtime it wraps, and what envelope shape to expect.
+\{Note\}
+Use this file as a contract map. The manifest remains the executable source of truth; this page makes the available tools easier to scan.
+&lt;/Note&gt;
 
-## call contract
+## Call contract
 
-Every operation is called through the same envelope:
+Every operation travels through the same envelope:
 
 ```ts
 await workspace.call({
@@ -26,9 +47,9 @@ await workspace.call({
 })
 ```
 
-Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct task worktree and branch before invoking the underlying script.
+Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct branch and worktree before invoking the underlying script.
 
-## tool index
+## Tool index
 
 | Category | Tools |
 | --- | ---: |
@@ -52,7 +73,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | utilities | 34 |
 | worker | 1 |
 
-## tools by category
+## Tools by category
 
 ## codemode
 
@@ -139,7 +160,7 @@ await workspace.call({
   "input": {
     "branch": "task/workspace-agents/example",
     "files": [
-      "packages/os/scripts/fs.js"
+      "packages/workspace/scripts/fs.js"
     ],
     "stopOnFirstError": true
   }
@@ -203,7 +224,7 @@ await workspace.call({
     "branch": "task/workspace-agents/example",
     "searchPattern": "oldFn",
     "searchPaths": [
-      "packages/os/scripts"
+      "packages/workspace/scripts"
     ],
     "from": 1,
     "to": 1,
@@ -2267,7 +2288,7 @@ await workspace.call({
   "tool": "fs.list",
   "input": {
     "branch": "task/workspace-agents/example",
-    "path": "packages/os/scripts",
+    "path": "packages/workspace/scripts",
     "depth": 1
   }
 });
@@ -2392,7 +2413,7 @@ await workspace.call({
   "tool": "fs.read",
   "input": {
     "branch": "task/workspace-agents/example",
-    "path": "packages/os/package.json"
+    "path": "packages/workspace/package.json"
   }
 });
 ```
@@ -2454,7 +2475,7 @@ await workspace.call({
     "branch": "task/workspace-agents/example",
     "pattern": "task:fs",
     "paths": [
-      "packages/os/SCRIPTS.md"
+      "packages/workspace/SCRIPTS.md"
     ]
   }
 });
@@ -5616,7 +5637,75 @@ await workspace.call({
   "code": "OK",
   "message": "command completed",
   "data": {
-    "raw": "example"
+    "query": "linear issue",
+    "limit": 5,
+    "searchedCount": 128,
+    "returnedCount": 1,
+    "filters": {},
+    "totalMatches": 1,
+    "confidence": "high",
+    "ambiguous": false,
+    "detectedIntent": "read or search Linear issues",
+    "recommended": "linear.issue",
+    "matches": [
+      {
+        "name": "linear.issue",
+        "methodPath": [
+          "linear",
+          "issue"
+        ],
+        "category": "linear",
+        "score": 142,
+        "scoreParts": {
+          "exact": 0,
+          "name": 22,
+          "lexical": 31,
+          "bm25": 34,
+          "intent": 55,
+          "capability": 0,
+          "embedding": 0
+        },
+        "description": "Read one Linear issue by identifier.",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "safeToRetry": true
+        },
+        "sessionRequired": false,
+        "inputSchema": "LinearIssueInput",
+        "outputSchema": "RawOutput",
+        "inputSignature": "{ identifier: string; requestId?: string; taskSession?: string }",
+        "usage": {
+          "workspaceCall": "await workspace.call({ tool: \"linear.issue\", input: { \"identifier\": \"DEV-123\" } })",
+          "script": "linear",
+          "subcommand": "issue",
+          "arguments": []
+        },
+        "why": [
+          "intent: read or search Linear issues"
+        ]
+      }
+    ],
+    "guidance": {
+      "summary": "Use the recommended tool when its intent matches the user request. Inspect alternatives when ambiguous.",
+      "recommendedUse": "Read-only recommendation is safe for investigation.",
+      "ambiguous": false,
+      "safeDefaults": [],
+      "mutatingGuidance": []
+    },
+    "catalog": {
+      "source": [
+        "tool-manifest.json",
+        "TOOLS.md"
+      ],
+      "catalogHash": "abc123",
+      "toolCount": 128,
+      "searchedCount": 128,
+      "cardVersion": "tools-search-card-v2",
+      "embeddingConfigId": "disabled",
+      "cardsEmbedded": 0,
+      "cardsReused": 0
+    }
   },
   "stderr": "",
   "exitCode": 0,
@@ -7759,14 +7848,14 @@ await workspace.call({
 }
 ```
 
-## result envelope
+## Result envelope
 
-Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, and `apiVersion`. When callers pass a `requestId`, the facade echoes it back so work can be correlated across logs and task evidence.
+Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, and `apiVersion`. When callers pass a `requestId`, the facade echoes it so work can be correlated across logs and task evidence.
 
-## error codes
+## Error codes
 
 `OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
-## final rule
+## Final rule
 
-The tool manifest is executable contract, not prose. If the docs and manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.
+The tool manifest is executable contract. If this file and the manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.
