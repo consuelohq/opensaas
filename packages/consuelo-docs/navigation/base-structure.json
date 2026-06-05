@@ -443,14 +443,14 @@
           ]
         },
         {
-          "key": "osTools",
-          "label": "Tools",
-          "icon": "terminal",
+          "key": "osAgentContext",
+          "label": "Agent Context",
+          "icon": "brain",
           "pages": [
-            "os/tools/default-steering",
-            "os/tools/tool-manifest",
-            "os/tools/scripts",
-            "os/tools/decision-engine"
+            "os/agent-context/steering",
+            "os/agent-context/decision",
+            "os/agent-context/tools",
+            "os/agent-context/scripts"
           ]
         },
         {

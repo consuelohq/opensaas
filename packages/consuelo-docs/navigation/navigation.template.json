@@ -174,8 +174,8 @@
         "osConcepts": {
           "label": "Concepts"
         },
-        "osTools": {
-          "label": "Tools"
+        "osAgentContext": {
+          "label": "Agent Context"
         },
         "osSkills": {
           "label": "Skills",
