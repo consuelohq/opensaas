@@ -14,6 +14,7 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
+REFRESH_SOURCE=0
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
@@ -37,6 +38,7 @@ Repo-local testing:
   bash packages/os/scripts/bootstrap.sh --yes
   bash packages/os/scripts/bootstrap.sh --yes --install-daemons
   bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
+  bash packages/os/scripts/bootstrap.sh --yes --refresh-source
 
 Options:
   --dry-run          print what would happen without installing Bun or LaunchAgents
@@ -44,6 +46,7 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
+  --refresh-source  refresh an existing hosted source checkout/archive before onboarding
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
   --help, -h        show this help
@@ -98,6 +101,7 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
+      --refresh-source) REFRESH_SOURCE=1 ;;
       --json) JSON=1 ;;
       --debug) DEBUG=1 ;;
       --help|-h)
@@ -266,33 +270,45 @@ current_repo_dir() {
   fi
   return 1
 }
-
 download_source_archive() {
-  local tmp_dir archive_file parent_dir
+  local tmp_dir archive_file parent_dir staged_dir
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
   archive_file="$tmp_dir/source.tar.gz"
+  staged_dir="$tmp_dir/source"
   parent_dir="$(dirname "$SOURCE_DIR")"
 
-  mkdir -p "$parent_dir" "$SOURCE_DIR"
+  mkdir -p "$parent_dir" "$staged_dir"
 
   if ! curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"; then
     rm -rf "$tmp_dir"
     return 1
   fi
 
-  if ! tar -xzf "$archive_file" -C "$SOURCE_DIR" --strip-components=1; then
+  if ! tar -xzf "$archive_file" -C "$staged_dir" --strip-components=1; then
     rm -rf "$tmp_dir"
     return 1
   fi
 
+  if [ ! -f "$staged_dir/packages/os/scripts/install.ts" ]; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  rm -rf "$SOURCE_DIR"
+  mv "$staged_dir" "$SOURCE_DIR"
   rm -rf "$tmp_dir"
 }
 
 download_source() {
   if [ "$DRY_RUN" -eq 1 ]; then
-    SOURCE_STATUS="would_download"
     REPO_DIR="$SOURCE_DIR"
-    log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
+    if [ "$REFRESH_SOURCE" -eq 1 ] && [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+      SOURCE_STATUS="would_refresh"
+      log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
+    else
+      SOURCE_STATUS="would_download"
+      log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
+    fi
     return 0
   fi
 
@@ -308,8 +324,19 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   fi
 
   if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+    if [ "$REFRESH_SOURCE" -eq 1 ]; then
+      run_with_loading_dots "Refreshing Consuelo OS source" download_source_archive
+      if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+        fail "refreshed source did not contain packages/os/scripts/install.ts"
+      fi
+      REPO_DIR="$SOURCE_DIR"
+      SOURCE_STATUS="refreshed"
+      return 0
+    fi
+
     REPO_DIR="$SOURCE_DIR"
     SOURCE_STATUS="present"
+    log "Using existing Consuelo OS source: $REPO_DIR (pass --refresh-source to refresh it)"
     return 0
   fi
 
@@ -328,14 +355,11 @@ resolve_source() {
   if local_repo="$(current_repo_dir 2>/dev/null)"; then
     REPO_DIR="$local_repo"
     SOURCE_STATUS="local"
-    log "Using local Consuelo OS source: $REPO_DIR"
-    return 0
-  fi
-
-  if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="present"
-    log "Using Consuelo OS source: $REPO_DIR"
+    if [ "$REFRESH_SOURCE" -eq 1 ]; then
+      log "Using local Consuelo OS source: $REPO_DIR (--refresh-source applies only to hosted source checkouts)"
+    else
+      log "Using local Consuelo OS source: $REPO_DIR"
+    fi
     return 0
   fi
 
