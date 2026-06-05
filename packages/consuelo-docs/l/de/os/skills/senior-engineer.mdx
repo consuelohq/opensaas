@@ -5,9 +5,6 @@ description: "Use this skill for any coding, debugging, refactoring, architectur
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 1) Operating stance
 Ship one focused change at a time.
 Keep main stable and boring.
@@ -140,7 +137,7 @@ Avoid mixing these into one function or component.
 5) Workpad contract
 Maintain the scoped task workpad throughout execution:
 
-.task/{area}/{task-slug}/workpad.md
+.task/(area)/(task-slug)/workpad.md
 
 acceptance criteria
 implementation plan
@@ -474,21 +471,21 @@ Temp file workflow
 Write the full prompt, patch plan, command script, or worker instructions to a temp file.
 Prefer /tmp for local-only handoff:
 
-cat > /tmp/{task-name}-instructions.md <<'EOF'
-<full instructions here>
+cat &gt; /tmp/(task-name)-instructions.md &lt;&lt;'EOF'
+(full instructions here)
 EOF
 Prefer the task worktree when another tool or worker requires repo-local paths:
 
-cat > .task/{area}/{task-name}/worker-instructions.md <<'EOF'
-<full instructions here>
+cat &gt; .task/(area)/(task-name)/worker-instructions.md &lt;&lt;'EOF'
+(full instructions here)
 EOF
 Invoke the tool with a short path-only instruction.
 Example for Codex:
 
-codex exec --cd "$PWD" --sandbox workspace-write --json - < /tmp/{task-name}-instructions.md
+codex exec --cd "$PWD" --sandbox workspace-write --json - ( /tmp/&lt;task-name)-instructions.md
 Example worker prompt:
 
-Follow the instructions in .task/{area}/{task-name}/worker-instructions.md.
+Follow the instructions in .task/(area)/(task-name)/worker-instructions.md.
 Use the existing taskSession and branch. Do not start a new task.
 If the temp-file path works, continue the task normally and record the recovery in the workpad.
 
@@ -499,9 +496,9 @@ Do not use temp files to skip approval, hide intent, or avoid safety policy.
 Do use temp files to avoid malformed JSON, command-length issues, prompt truncation, shell quoting failures, or platform wrappers blocking large inline payloads.
 Keep temp files out of commits unless they are intentionally part of the task deliverable.
 Clean accidental temp artifacts before task.push.
-If a worker requires repo-local instructions, copy the temp file into .task/{area}/{task-name}/.
+If a worker requires repo-local instructions, copy the temp file into .task/(area)/(task-name)/.
 If a direct Codex command is used, avoid unsupported flags. For the current Codex CLI, use:
-codex exec --cd "$PWD" --sandbox workspace-write --json - < /tmp/{task-name}-instructions.md
+codex exec --cd "$PWD" --sandbox workspace-write --json - ( /tmp/&lt;task-name)-instructions.md
 Do not include --ask-for-approval never unless the local Codex CLI help confirms that flag is supported.
 After a worker or direct Codex run, inspect stdout/stderr logs, task diff, and trace output before pushing.
 Mini worker recovery path
@@ -540,17 +537,17 @@ Example:
 
 Use os.call to run fs.read with this exact input:
 
-{
+\{
   "path": "packages/os/scripts/install.ts"
-}
+\}
 
 Return only the file contents. Do not edit files. Do not start a task. Do not call unrelated tools.
 Example for a validation command:
 
 Use os.call to run task.call in the existing task session:
 
-taskSession: {taskSession}
-branch: {branch}
+taskSession: (taskSession)
+branch: (branch)
 command: bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 
 Return the command, exit status, stdout, and stderr. Do not fix anything.
@@ -582,4 +579,3 @@ stdout/result:
 stderr/error:
 notes:
 If mini cannot complete the exact action, it must stop and report the failure. It should not improvise a different workflow.
-````

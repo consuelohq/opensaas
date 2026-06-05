@@ -51,7 +51,6 @@ const templatePath = path.join(docsRoot, 'navigation', 'navigation.template.json
 
 const plannedSkills = [
   ['campaign-brief', 'Campaign Brief'],
-  ['daily-revenue-brief', 'Daily Revenue Brief'],
   ['follow-up-generator', 'Follow-Up Generator'],
   ['google-ads-review', 'Google Ads Review'],
   ['landing-page-builder', 'Landing Page Builder'],
@@ -71,7 +70,7 @@ const writeOrCheck = (filePath: string, content: string): void => {
   const current = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : null;
   if (checkOnly) {
     if (current !== content) {
-      throw new Error(`${path.relative(repoRoot, filePath)} is stale. Run bun run generate-os-skill-docs.`);
+      throw new Error(`${path.relative(repoRoot, filePath)} is stale. Run yarn docs:generate-os-skill-docs.`);
     }
     return;
   }
@@ -80,93 +79,61 @@ const writeOrCheck = (filePath: string, content: string): void => {
   fs.writeFileSync(filePath, content);
 };
 
-const yaml = (value: string): string => JSON.stringify(value);
+const yaml = (value: string): string => JSON.stringify(value.replace(/<([^>\n]+)>/g, '($1)'));
 
-const docsSafePlaceholderText = (value: string): string => value.replace(/<([A-Za-z0-9_.:-]+)>/g, '{$1}');
-const frontmatterSafePlaceholderText = (value: string): string => value.replace(/<([A-Za-z0-9_.:-]+)>/g, '($1)');
-
-const stripFrontmatter = (markdown: string): string => {
-  if (!markdown.startsWith('---\n')) {
-    return markdown.trimStart();
+const stripFrontmatter = (body: string): string => {
+  if (!body.startsWith('---\n')) {
+    return body;
   }
 
-  const end = markdown.indexOf('\n---', 4);
+  const end = body.indexOf('\n---\n', 4);
   if (end === -1) {
-    return markdown.trimStart();
+    return body;
   }
 
-  return markdown.slice(end + '\n---'.length).trimStart();
+  return body.slice(end + '\n---\n'.length);
 };
 
-const markdownFence = (body: string): string => {
-  const longestFence = Math.max(3, ...Array.from(body.matchAll(/`+/g), (match) => match[0].length));
-  return '`'.repeat(longestFence + 1);
+const normalizePlaceholderText = (line: string): string => line.replace(/<([^>\n]+)>/g, '($1)');
+
+const mdxSafeMarkdown = (body: string): string => {
+  const output: string[] = [];
+  let inFence = false;
+
+  for (const line of stripFrontmatter(body).trimEnd().split('\n').map(normalizePlaceholderText)) {
+    if (line.trim().startsWith('```')) {
+      inFence = !inFence;
+      output.push(line);
+      continue;
+    }
+
+    output.push(inFence ? line : line.replace(/\{/g, '\\{').replace(/\}/g, '\\}').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+  }
+
+  return output.join('\n');
 };
 
-const skillPage = (skill: SkillJson, body: string): string => {
-  const skillBody = docsSafePlaceholderText(stripFrontmatter(body).trimEnd());
-  const fence = markdownFence(skillBody);
+const skillPage = (skill: SkillJson, body: string): string => [
+  '---',
+  `title: ${yaml(skill.title)}`,
+  `description: ${yaml(skill.description)}`,
+  '---',
+  '',
+  generatedNotice,
+  '',
+  mdxSafeMarkdown(body),
+  '',
+].join('\n');
 
-  return [
-    '---',
-    `title: ${yaml(skill.title)}`,
-    `description: ${yaml(frontmatterSafePlaceholderText(skill.description))}`,
-    '---',
-    '',
-    generatedNotice,
-    '',
-    '## Skill body',
-    '',
-    `${fence}md`,
-    skillBody,
-    fence,
-    '',
-  ].join('\n');
-};
-
-const metadataSkillPage = (skill: SkillJson): string => {
-  const skillPath = path.join(skillsRoot, skill.name, 'skill.json');
-  const metadata = readJson<Record<string, unknown>>(skillPath);
-  const trigger = frontmatterSafePlaceholderText(typeof metadata.trigger === 'string' ? metadata.trigger : skill.description);
-
-  return [
-    '---',
-    `title: ${yaml(skill.title)}`,
-    `description: ${yaml(frontmatterSafePlaceholderText(skill.description))}`,
-    '---',
-    '',
-    generatedNotice,
-    '',
-    `# ${skill.title}`,
-    '',
-    frontmatterSafePlaceholderText(skill.description),
-    '',
-    '## Trigger',
-    '',
-    trigger,
-    '',
-    '## Skill metadata',
-    '',
-    '```json',
-    JSON.stringify(metadata, null, 2),
-    '```',
-    '',
-  ].join('\n');
-};
-
-const plannedPage = (slug: string, title: string): string => [
+const plannedSkillPage = (slug: string, title: string): string => [
   '---',
   `title: ${yaml(title)}`,
   `description: ${yaml(`${title} is a planned Consuelo OS skill.`)}`,
   '---',
   '',
-  generatedNotice,
-  '',
   `# ${title}`,
   '',
-  `${title} is a planned Consuelo OS skill. This page keeps the skill visible in the docs while the bundled skill workflow is being migrated into Consuelo OS.`,
-  '',
-  `When the skill is added under \`packages/os/skills/${slug}\`, this generated placeholder should be replaced by the generated page from that skill's \`SKILL.md\`.`,
+  `${title} is a planned Consuelo OS skill. Keep this page as a placeholder until the skill is available for install.`,
   '',
 ].join('\n');
 
@@ -174,148 +141,60 @@ const loadSkills = (): SkillJson[] =>
   fs
     .readdirSync(skillsRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const skillJsonPath = path.join(skillsRoot, entry.name, 'skill.json');
-      if (!fs.existsSync(skillJsonPath)) {
-        return null;
-      }
-
-      const skill = readJson<SkillJson>(skillJsonPath);
-      if (!skill.name || !skill.title || !skill.description) {
-        throw new Error(`${path.relative(repoRoot, skillJsonPath)} must include name, title, and description.`);
-      }
-      return skill;
-    })
-    .filter((skill): skill is SkillJson => Boolean(skill))
+    .map((entry) => readJson<SkillJson>(path.join(skillsRoot, entry.name, 'skill.json')))
+    .filter((skill) => skill.status !== 'inactive')
     .sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }));
 
-const generateSkillPages = (skills: SkillJson[]): string[] => {
-  const pages: string[] = [];
-
+const syncSkillDocs = (skills: SkillJson[]): void => {
   for (const skill of skills) {
-    const bodyPath = path.join(skillsRoot, skill.name, 'SKILL.md');
-    const outPath = path.join(skillDocsRoot, `${skill.name}.mdx`);
-    const page = fs.existsSync(bodyPath) ? skillPage(skill, fs.readFileSync(bodyPath, 'utf8')) : metadataSkillPage(skill);
-    writeOrCheck(outPath, page);
-    pages.push(`os/skills/${skill.name}`);
+    const skillBodyPath = path.join(skillsRoot, skill.name, skill.entrypoint ?? 'SKILL.md');
+    const body = fs.readFileSync(skillBodyPath, 'utf8');
+    writeOrCheck(path.join(skillDocsRoot, `${skill.name}.mdx`), skillPage(skill, body));
   }
 
-  return pages;
+  for (const [slug, title] of plannedSkills) {
+    writeOrCheck(path.join(skillDocsRoot, 'planned', `${slug}.mdx`), plannedSkillPage(slug, title));
+  }
 };
 
-const generatePlannedPages = (actualSkillNames: Set<string>): BaseGroup | null => {
-  const pages = plannedSkills
-    .filter(([slug]) => !actualSkillNames.has(slug))
-    .map(([slug, title]) => {
-      const outPath = path.join(skillDocsRoot, 'planned', `${slug}.mdx`);
-      writeOrCheck(outPath, plannedPage(slug, title));
-      return `os/skills/planned/${slug}`;
-    });
-
-  if (!pages.length) {
-    return null;
-  }
-
-  return {
+const skillPages = (skills: SkillJson[]): Array<string | BaseGroup> => [
+  ...skills.map((skill) => `os/skills/${skill.name}`),
+  {
     key: 'osPlannedSkills',
     label: 'Planned Skills',
-    pages,
-  };
-};
+    pages: plannedSkills.map(([slug]) => `os/skills/planned/${slug}`),
+  },
+];
 
-const updateBaseStructure = (skillPages: string[], plannedGroup: BaseGroup | null): void => {
+const syncNavigation = (skills: SkillJson[]): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
   const osTab = structure.tabs.find((tab) => tab.key === 'os');
   if (!osTab) {
     throw new Error('navigation/base-structure.json is missing the os tab.');
   }
 
-  const groupIndex = osTab.groups.findIndex((group) => group.key === 'osRunbooks' || group.key === 'osSkills');
-  if (groupIndex === -1) {
-    throw new Error('OS tab is missing the runbooks/skills group.');
+  const skillsGroup = osTab.groups.find((group) => group.key === 'osSkills');
+  if (!skillsGroup) {
+    throw new Error('navigation/base-structure.json is missing osSkills.');
   }
-
-  osTab.groups[groupIndex] = {
-    key: 'osSkills',
-    label: 'Skills',
-    icon: 'bolt',
-    pages: plannedGroup ? [...skillPages, plannedGroup] : skillPages,
-  };
-
+  skillsGroup.label = 'Skills';
+  skillsGroup.pages = skillPages(skills);
   writeOrCheck(baseStructurePath, `${JSON.stringify(structure, null, 2)}\n`);
-};
 
-const updateNavigationTemplate = (): void => {
   const template = readJson<NavigationTemplate>(templatePath);
   const osGroups = template.tabs?.os?.groups;
-  if (!osGroups) {
-    throw new Error('navigation.template.json is missing tabs.os.groups.');
+  if (osGroups) {
+    delete osGroups.osRunbooks;
+    if (!osGroups.osSkills) {
+      osGroups.osSkills = { label: 'Skills' };
+    }
+    osGroups.osSkills.label = 'Skills';
   }
-
-  delete osGroups.osRunbooks;
-  osGroups.osSkills = {
-    label: 'Skills',
-    groups: {
-      osPlannedSkills: {
-        label: 'Planned Skills',
-      },
-    },
-  };
-
   writeOrCheck(templatePath, `${JSON.stringify(template, null, 2)}\n`);
-};
-
-const titleFromSlug = (slug: string): string =>
-  slug
-    .split('/')
-    .at(-1)!
-    .split('-')
-    .map((part) => (part.toLowerCase() === 'os' ? 'OS' : part.charAt(0).toUpperCase() + part.slice(1)))
-    .join(' ');
-
-const navPlaceholderPage = (slug: string): string => {
-  const title = titleFromSlug(slug);
-
-  return [
-    '---',
-    `title: ${yaml(title)}`,
-    `description: ${yaml(`${title} is an OS documentation page that is being rebuilt.`)}`,
-    '---',
-    '',
-    '{/* Generated from packages/consuelo-docs/navigation/base-structure.json to prevent OS docs 404s. Replace with authored docs when ready. */}',
-    '',
-    `# ${title}`,
-    '',
-    'This OS documentation page is being rebuilt from the navigation map. It exists so linked OS docs routes resolve instead of returning 404 while the authored documentation catches up.',
-    '',
-    'If you are updating this page, replace this generated placeholder with authored documentation and keep the path in `navigation/base-structure.json` unchanged unless you also update the nav.',
-    '',
-  ].join('\n');
 };
 
 const collectPageSlugs = (pages: BasePage[]): string[] =>
   pages.flatMap((page) => (typeof page === 'string' ? [page] : collectPageSlugs(page.pages)));
-
-const ensureOsNavPages = (): void => {
-  const structure = readJson<BaseStructure>(baseStructurePath);
-  const osTab = structure.tabs.find((tab) => tab.key === 'os');
-  if (!osTab) {
-    throw new Error('navigation/base-structure.json is missing the os tab.');
-  }
-
-  const osPages = osTab.groups.flatMap((group) => collectPageSlugs(group.pages));
-  for (const slug of osPages) {
-    const filePath = path.join(docsRoot, `${slug}.mdx`);
-    if (fs.existsSync(filePath)) {
-      const current = fs.readFileSync(filePath, 'utf8');
-      const generatedPlaceholder = current.includes('Generated from packages/consuelo-docs/navigation/base-structure.json');
-      if (!generatedPlaceholder) {
-        continue;
-      }
-    }
-    writeOrCheck(filePath, navPlaceholderPage(slug));
-  }
-};
 
 const writeLocalizedFallback = (slug: string): void => {
   const englishPath = path.join(docsRoot, `${slug}.mdx`);
@@ -325,48 +204,25 @@ const writeLocalizedFallback = (slug: string): void => {
 
   const content = fs.readFileSync(englishPath, 'utf8');
   for (const language of localizedFallbackLanguages) {
-    const localizedPath = path.join(docsRoot, 'l', language, `${slug}.mdx`);
-    if (checkOnly) {
-      if (!fs.existsSync(localizedPath)) {
-        throw new Error(`${path.relative(repoRoot, localizedPath)} is missing. Run bun run generate-os-skill-docs.`);
-      }
-      continue;
-    }
-
-    if (fs.existsSync(localizedPath)) {
-      const localizedContent = fs.readFileSync(localizedPath, 'utf8');
-      const generatedFallback =
-        localizedContent.includes('Generated from packages/os/skills') ||
-        localizedContent.includes('Generated from packages/consuelo-docs/navigation/base-structure.json');
-      if (!generatedFallback) {
-        continue;
-      }
-    }
-
-    fs.mkdirSync(path.dirname(localizedPath), { recursive: true });
-    fs.writeFileSync(localizedPath, content);
+    writeOrCheck(path.join(docsRoot, 'l', language, `${slug}.mdx`), content);
   }
 };
 
-const ensureLocalizedOsNavPages = (): void => {
+const syncLocalizedOsPages = (): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
   const osTab = structure.tabs.find((tab) => tab.key === 'os');
   if (!osTab) {
     throw new Error('navigation/base-structure.json is missing the os tab.');
   }
 
-  const osPages = osTab.groups.flatMap((group) => collectPageSlugs(group.pages));
-  for (const slug of osPages) {
+  for (const slug of osTab.groups.flatMap((group) => collectPageSlugs(group.pages))) {
     writeLocalizedFallback(slug);
   }
 };
 
 const skills = loadSkills();
-const skillPages = generateSkillPages(skills);
-const plannedGroup = generatePlannedPages(new Set(skills.map((skill) => skill.name)));
-updateBaseStructure(skillPages, plannedGroup);
-updateNavigationTemplate();
-ensureOsNavPages();
-ensureLocalizedOsNavPages();
+syncSkillDocs(skills);
+syncNavigation(skills);
+syncLocalizedOsPages();
 
 process.stdout.write(`${checkOnly ? 'checked' : 'generated'} ${skills.length} skill docs\n`);
