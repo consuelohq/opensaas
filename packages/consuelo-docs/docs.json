@@ -435,6 +435,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "os/tools/default-steering",
+                  "os/tools/tool-manifest",
+                  "os/tools/scripts",
+                  "os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -1044,6 +1054,16 @@
                   "l/fr/os/concepts/integrations-and-capabilities",
                   "l/fr/os/concepts/observability",
                   "l/fr/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/fr/os/tools/default-steering",
+                  "l/fr/os/tools/tool-manifest",
+                  "l/fr/os/tools/scripts",
+                  "l/fr/os/tools/decision-engine"
                 ]
               },
               {
@@ -1659,6 +1679,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ar/os/tools/default-steering",
+                  "l/ar/os/tools/tool-manifest",
+                  "l/ar/os/tools/scripts",
+                  "l/ar/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -2268,6 +2298,16 @@
                   "l/cs/os/concepts/integrations-and-capabilities",
                   "l/cs/os/concepts/observability",
                   "l/cs/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/cs/os/tools/default-steering",
+                  "l/cs/os/tools/tool-manifest",
+                  "l/cs/os/tools/scripts",
+                  "l/cs/os/tools/decision-engine"
                 ]
               },
               {
@@ -2883,6 +2923,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/de/os/tools/default-steering",
+                  "l/de/os/tools/tool-manifest",
+                  "l/de/os/tools/scripts",
+                  "l/de/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -3492,6 +3542,16 @@
                   "l/es/os/concepts/integrations-and-capabilities",
                   "l/es/os/concepts/observability",
                   "l/es/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/es/os/tools/default-steering",
+                  "l/es/os/tools/tool-manifest",
+                  "l/es/os/tools/scripts",
+                  "l/es/os/tools/decision-engine"
                 ]
               },
               {
@@ -4107,6 +4167,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/it/os/tools/default-steering",
+                  "l/it/os/tools/tool-manifest",
+                  "l/it/os/tools/scripts",
+                  "l/it/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -4716,6 +4786,16 @@
                   "l/ja/os/concepts/integrations-and-capabilities",
                   "l/ja/os/concepts/observability",
                   "l/ja/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ja/os/tools/default-steering",
+                  "l/ja/os/tools/tool-manifest",
+                  "l/ja/os/tools/scripts",
+                  "l/ja/os/tools/decision-engine"
                 ]
               },
               {
@@ -5331,6 +5411,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ko/os/tools/default-steering",
+                  "l/ko/os/tools/tool-manifest",
+                  "l/ko/os/tools/scripts",
+                  "l/ko/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -5940,6 +6030,16 @@
                   "l/pt/os/concepts/integrations-and-capabilities",
                   "l/pt/os/concepts/observability",
                   "l/pt/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/pt/os/tools/default-steering",
+                  "l/pt/os/tools/tool-manifest",
+                  "l/pt/os/tools/scripts",
+                  "l/pt/os/tools/decision-engine"
                 ]
               },
               {
@@ -6555,6 +6655,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ro/os/tools/default-steering",
+                  "l/ro/os/tools/tool-manifest",
+                  "l/ro/os/tools/scripts",
+                  "l/ro/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -7164,6 +7274,16 @@
                   "l/ru/os/concepts/integrations-and-capabilities",
                   "l/ru/os/concepts/observability",
                   "l/ru/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ru/os/tools/default-steering",
+                  "l/ru/os/tools/tool-manifest",
+                  "l/ru/os/tools/scripts",
+                  "l/ru/os/tools/decision-engine"
                 ]
               },
               {
@@ -7779,6 +7899,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/tr/os/tools/default-steering",
+                  "l/tr/os/tools/tool-manifest",
+                  "l/tr/os/tools/scripts",
+                  "l/tr/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Skills",
                 "icon": "bolt",
                 "pages": [
@@ -8388,6 +8518,16 @@
                   "l/zh/os/concepts/integrations-and-capabilities",
                   "l/zh/os/concepts/observability",
                   "l/zh/os/concepts/local-and-cloud"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/zh/os/tools/default-steering",
+                  "l/zh/os/tools/tool-manifest",
+                  "l/zh/os/tools/scripts",
+                  "l/zh/os/tools/decision-engine"
                 ]
               },
               {

@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  assertRawSourceDocsFresh,
+  rawSourceDocs,
+} from './generate-os-source-docs';
 type Page = string | Group;
 
 type Group = {
@@ -83,6 +87,19 @@ if (placeholderHits.length) {
 ${placeholderHits.join('\n')}`);
 }
 
+assertRawSourceDocsFresh();
+
+const toolsGroup = osTab.groups.find((group) => group.group === 'Tools');
+if (!toolsGroup) {
+  throw new Error('OS tab is missing the Tools group.');
+}
+
+const expectedToolPages = rawSourceDocs.map((doc) => doc.slug);
+const toolPages = toolsGroup.pages?.filter((page): page is string => typeof page === 'string') ?? [];
+if (toolPages.join('\n') !== expectedToolPages.join('\n')) {
+  throw new Error(`OS Tools nav entries are stale. Expected:\n${expectedToolPages.join('\n')}\nActual:\n${toolPages.join('\n')}`);
+}
+
 const skillsGroup = osTab.groups.find((group) => group.group === 'Skills');
 if (!skillsGroup) {
   throw new Error('OS tab is missing the Skills group.');
@@ -120,4 +137,4 @@ if (osMissing.length) {
   throw new Error(`OS docs nav has missing pages:\n${osMissing.join('\n')}`);
 }
 
-process.stdout.write(`validated ${skillPages.length} generated skill pages and localized OS routes\n`);
+process.stdout.write(`validated ${skillPages.length} generated skill pages, ${expectedToolPages.length} generated raw-source pages, and localized OS routes\n`);
