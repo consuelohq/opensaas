@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-review-page-regressions",
+  "base": "origin/task/diff-cockpit/fix-review-page-regressions",
+  "headSha": "6589bd4bbd868115a5e72ae78cb0b8b220bc20d7",
+  "changeHash": "ca1251491abdde9183309e5261ff2aaa64d8fda3e4098b5ee1ad8008e87c3221",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-05T07:36:00.975Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-review-page-regressions/current.json",
+        ".task/diff-cockpit/fix-review-page-regressions/evidence-log.json",
+        ".task/diff-cockpit/fix-review-page-regressions/read-log.json",
+        ".task/diff-cockpit/fix-review-page-regressions/session.json",
+        ".task/diff-cockpit/fix-review-page-regressions/verify.json",
+        ".task/diff-cockpit/fix-review-page-regressions/workpad.md",
+        ".task/tasks/diff-cockpit/fix-review-page-regressions.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -168,7 +168,7 @@ describe('createGithubPullRequestLoader', () => {
         return Response.json([]);
       }
 
-      if (url.endsWith('/commits?sha=stream%2Fos&per_page=10')) {
+      if (url.endsWith('/commits?sha=stream%2Fos&per_page=100&page=1')) {
         return Response.json([
           {
             sha: 'abc123',
@@ -180,6 +180,10 @@ describe('createGithubPullRequestLoader', () => {
             author: { login: 'kokayi' },
           },
         ]);
+      }
+
+      if (url.endsWith('/commits?sha=stream%2Fos&per_page=100&page=2')) {
+        return Response.json([]);
       }
 
       throw new Error(`unexpected url ${url}`);
@@ -197,7 +201,8 @@ describe('createGithubPullRequestLoader', () => {
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/issues/708/comments?per_page=100&page=2');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=2');
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=10');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=100&page=2');
     expect(result.pull.title).toBe('Stream/os');
     expect(result.files).toHaveLength(1);
     expect(result.files[0]?.filename).toBe('packages/workspace/scripts/status.js');
@@ -415,17 +420,25 @@ describe('renderReviewPage', () => {
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
     expect(html).toContain('data-current-view="diff"');
-    expect(html).toContain('<strong>review notes</strong>');
+    expect(html).toContain('>Drawer</button>');
+    expect(html).toContain('<strong>drawer</strong>');
+    expect(html).toContain('id="mergeability-button"');
+    expect(html).toContain('id="mergeability-popover"');
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
     expect(html).toContain('id="file-pane-resizer"');
     expect(html).toContain('font-family: Inter');
     expect(html).toContain('font-size:13px');
     expect(html).toContain('font-size:12px');
+    expect(html).toContain('grid-template-columns:42px 42px minmax(0, 1fr)');
+    expect(html).toContain('grid-template-columns:34px 34px minmax(0, 1fr)');
+    expect(html).toContain('height:calc(100dvh - 76px)');
+    expect(html).toContain('height:calc(100dvh - 132px)');
     expect(script).toContain('renderLongDiffs();');
     expect(script).toContain("event.key === 'd'");
     expect(script).not.toContain("event.key === 'r'");
     expect(script).toContain("event.key === 'f'");
+    expect(script).toContain("event.key === 'm'");
     expect(script).toContain("event.key === 'v'");
     expect(script).toContain("event.key === 'i'");
     expect(script).toContain('renderMarkdown');
@@ -439,7 +452,8 @@ describe('renderReviewPage', () => {
     expect(script).toContain('toggleFilePane');
     expect(script).toContain('toggleCurrentView');
     expect(script).toContain('toggleInlineComments');
-    expect(script).toContain('drawerContent.scrollTo');
+    expect(script).toContain("setDrawer(document.body.dataset.reviewDrawer !== 'open')");
+    expect(script).not.toContain('drawerContent.scrollTo');
     expect(script).toContain('scrollToFile(state.selected);');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
@@ -455,6 +469,9 @@ describe('renderReviewPage', () => {
     expect(script).toContain('data-open-commits');
     expect(script).toContain('renderCommitPopover');
     expect(script).toContain('closeCommitPopover');
+    expect(script).toContain('renderMergeabilityPopover');
+    expect(script).toContain('closeMergeabilityPopover');
+    expect(script).toContain('data-open-mergeability');
     expect(script).toContain('relativeCommitTime');
     expect(script).toContain('formatCommitDelta');
     expect(script).toContain('data-comment-jump');

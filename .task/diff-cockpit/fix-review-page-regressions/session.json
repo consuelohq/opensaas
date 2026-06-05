@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_111aae01f6dd",
+  "tmuxSession": "opensaas-diff-cockpit-fix-review-page-regressions-111aae01",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-review-page-regressions",
+  "branch": "task/diff-cockpit/fix-review-page-regressions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions",
+  "prNumber": 791,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/791",
+  "createdAt": "2026-06-05T07:13:54.010Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions/.task/diff-cockpit/fix-review-page-regressions/session.json"
+}

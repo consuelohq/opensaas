@@ -438,7 +438,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
       <a href="${escapeAttribute(githubUrl)}">GitHub</a>
       <a href="${escapeAttribute(graphiteUrl)}">Graphite</a>
       <a href="${escapeAttribute(diffsHubUrl)}">DiffsHub</a>
-      <button id="drawer-toggle" type="button" aria-expanded="false">Review notes</button>
+      <button id="drawer-toggle" type="button" aria-expanded="false">Drawer</button>
     </nav>
   </header>
   <main class="layout">
@@ -456,7 +456,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
     </section>
     <aside id="review-drawer" class="review-drawer" aria-label="Review drawer" aria-hidden="true">
       <div class="drawer-head">
-        <strong>review notes</strong>
+        <strong>drawer</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -464,8 +464,9 @@ export function renderReviewPage(locator: PullRequestLocator): string {
           <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
+          <button id="mergeability-button" class="action-button" type="button">Mergeability</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
         <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
         <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
         <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
@@ -474,6 +475,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
       </div>
     </aside>
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
+    <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
   <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
@@ -858,14 +860,12 @@ async function loadStreamCommits(
   headers: HeadersInit,
 ): Promise<StreamCommit[]> {
   try {
-    const response = await fetcher(
-      `${apiBase}/commits?sha=${encodeURIComponent(headRef)}&per_page=10`,
-      { headers },
+    const json = await fetchJsonArrayPages(
+      fetcher,
+      `${apiBase}/commits?sha=${encodeURIComponent(headRef)}`,
+      headers,
+      'GitHub stream commits fetch failed',
     );
-    if (!response.ok) {
-      return [];
-    }
-    const json = await response.json();
     const commits = normalizeStreamCommits(json);
     return await Promise.all(commits.map(async (commit) => {
       if (!commit.sha) return commit;
@@ -1151,7 +1151,7 @@ footer { display:flex; align-items:center; justify-content:space-between; gap:18
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
-.layout { height:calc(100vh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; }
+  .layout { height:calc(100dvh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; overflow:hidden; border-top:1px solid var(--line); }
 body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
 body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed="true"] .file-pane-resizer { display:none; }
 .file-pane { border-right:1px solid var(--line); overflow:auto; background:var(--paper); font-size:12px; }
@@ -1176,7 +1176,7 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .directory-toggle { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); }
 .tree-twist { color:var(--quiet); width:12px; text-align:center; }
 .status { color:var(--quiet); font-size:12px; margin-right:5px; }
-.review-pane { min-width:0; overflow:auto; background:var(--paper); }
+.review-pane { min-width:0; overflow:auto; background:var(--paper); overscroll-behavior:contain; }
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); }
 .diff-root { padding:0; }
 .diff-file { border-bottom:1px solid var(--line); scroll-margin-top:46px; }
@@ -1184,12 +1184,12 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
 .diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:auto; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-.diff-line { min-height:20px; display:grid; grid-template-columns:68px 68px minmax(0, 1fr); padding:0 14px 0 0; white-space:pre; }
-.diff-gutter { color:var(--quiet); text-align:right; padding-right:10px; user-select:none; font-variant-numeric:tabular-nums; }
+.diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); padding:0 8px 0 0; white-space:pre; }
+.diff-gutter { color:var(--quiet); text-align:right; padding-right:5px; user-select:none; font-variant-numeric:tabular-nums; }
 .diff-code { overflow:visible; }
 body[data-current-view="current"] .diff-line.del { display:none; }
 body[data-comments-visible="false"] .inline-comment { display:none; }
-.inline-comment { margin:6px 14px 10px 136px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-size:13px; }
+.inline-comment { margin:6px 12px 10px 84px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-size:13px; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
@@ -1225,7 +1225,15 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .post-item { grid-template-columns:1fr; gap:8px; }
   .pr-row-side { justify-content:flex-start; flex-wrap:wrap; }
   .topbar { height:auto; min-height:92px; align-items:flex-start; flex-direction:column; }
-  .layout { height:calc(100vh - 132px); grid-template-columns:minmax(160px, 40vw) minmax(0, 1fr); }
+  .layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }
+  .file-pane { position:absolute; inset:0 auto 0 0; width:min(88vw, 390px); max-width:calc(100vw - 24px); transform:translateX(-105%); transition:transform .16s ease; z-index:7; box-shadow:18px 0 45px rgba(0,0,0,.18); }
+  body[data-file-pane-collapsed="false"] .file-pane { transform:translateX(0); }
+  .file-pane-resizer { display:none; }
+  body[data-file-pane-collapsed="true"] .layout { grid-template-columns:minmax(0, 1fr); }
+  body[data-file-pane-collapsed="true"] .file-pane { display:block; transform:translateX(-105%); }
+  .diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding-right:6px; }
+  .diff-gutter { padding-right:4px; }
+  .inline-comment { margin-left:68px; }
 }
 `;
 }
@@ -1478,6 +1486,7 @@ const els = {
   copyAll: document.getElementById('copy-all-comments'),
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
   copyCodex: document.getElementById('copy-codex-prompt'),
+  mergeabilityButton: document.getElementById('mergeability-button'),
   drawerSummary: document.getElementById('drawer-summary'),
   drawerStatus: document.getElementById('drawer-status'),
   drawerChecks: document.getElementById('drawer-checks'),
@@ -1487,14 +1496,11 @@ const els = {
   filePane: document.getElementById('file-pane'),
   filePaneResizer: document.getElementById('file-pane-resizer'),
   commitPopover: document.getElementById('commit-popover'),
+  mergeabilityPopover: document.getElementById('mergeability-popover'),
 };
 
 els.drawerToggle.addEventListener('click', () => {
-  if (document.body.dataset.reviewDrawer === 'open') {
-    els.drawerContent.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-  setDrawer(true);
+  setDrawer(document.body.dataset.reviewDrawer !== 'open');
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
@@ -1505,20 +1511,26 @@ document.addEventListener('click', (event) => {
   if (commitButton) { renderCommitPopover(); return; }
   const closeCommits = event.target.closest('[data-close-commits]');
   if (closeCommits) { closeCommitPopover(); return; }
+  const mergeabilityButton = event.target.closest('[data-open-mergeability]');
+  if (mergeabilityButton) { renderMergeabilityPopover(); return; }
+  const closeMergeability = event.target.closest('[data-close-mergeability]');
+  if (closeMergeability) { closeMergeabilityPopover(); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
   if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
 });
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
+els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
+  if (event.key === 'm') renderMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
   if (event.key === 'g') openChatGptPrompt();
-  if (event.key === 'Escape') setDrawer(false);
+  if (event.key === 'Escape') { setDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
 loadLiveData();
@@ -1638,7 +1650,7 @@ function renderDrawer() {
   const commits = state.data.streamCommits || [];
   const checks = state.data.checks || [];
   const pull = state.data.pull;
-  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <span class="badge">mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</span> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
+  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <button class="badge summary-chip" type="button" data-open-mergeability>mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</button> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
   els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
   els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' stream commits</button></div>';
   els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
@@ -1665,6 +1677,21 @@ function renderCommitPopover() {
 
 function closeCommitPopover() {
   els.commitPopover.hidden = true;
+}
+function renderMergeabilityPopover() {
+  const pull = state.data?.pull || {};
+  const files = state.data?.files || [];
+  const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
+  const clean = pull.mergeable === true || ['clean', 'has_hooks', 'unstable'].includes(stateLabel);
+  const dirty = ['dirty', 'blocked', 'unknown'].includes(stateLabel) && !clean;
+  const title = clean ? 'clean' : 'mergeability: ' + escapeHtml(stateLabel || 'unknown');
+  const fileList = dirty && files.length ? '<ul class="mergeability-files">' + files.map((file) => '<li>' + escapeHtml(file.filename) + '</li>').join('') + '</ul>' : '';
+  els.mergeabilityPopover.hidden = false;
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + (dirty ? '<p class="muted">Files to inspect before merging:</p>' + fileList : '<p class="muted">This PR reports a clean merge state.</p>') + '</div>';
+}
+
+function closeMergeabilityPopover() {
+  els.mergeabilityPopover.hidden = true;
 }
 
 function relativeCommitTime(value) {
