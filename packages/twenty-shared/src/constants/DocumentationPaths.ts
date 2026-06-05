@@ -154,6 +154,10 @@ export const DOCUMENTATION_PATHS = {
   OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
   OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
   OS_SKILLS_TASK: '/os/skills/task',
+  OS_TOOLS_DECISION_ENGINE: '/os/tools/decision-engine',
+  OS_TOOLS_DEFAULT_STEERING: '/os/tools/default-steering',
+  OS_TOOLS_SCRIPTS: '/os/tools/scripts',
+  OS_TOOLS_TOOL_MANIFEST: '/os/tools/tool-manifest',
   USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
   USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
     '/user-guide/ai/capabilities/ai-chatbot',
