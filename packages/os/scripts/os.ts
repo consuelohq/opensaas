@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import {
   findManifestEntry,
   getPackageRoot,
-  readManifest,
+  readCoreToolManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
@@ -80,20 +80,24 @@ export function getSteering(): string {
 
   sections.push(
     '',
-    '# raw default tool manifest',
+    '# tool discovery routing',
+    '',
+    'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
+    '',
+    '# raw core tool manifest',
     '',
     '```json',
-    safeJson(readManifest()),
+    safeJson(readCoreToolManifest()),
     '```',
   );
   return sections.join('\n');
 }
 
-export function getDevSteering(): string {
+export function getRawSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
-    '# Consuelo OS dev/operator steering',
+    '# Consuelo OS raw/operator steering',
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
@@ -107,12 +111,12 @@ export function getDevSteering(): string {
   if (decision)
     sections.push('', '# original workspace decision.md', '', decision);
   const manifest = readIfExists(
-    path.join(packageRoot, 'tooling', 'dev-tool-manifest.json'),
+    path.join(packageRoot, 'manifests', 'tool.manifest.json'),
   );
   if (manifest)
     sections.push(
       '',
-      '# original workspace tool manifest',
+      '# canonical full tool manifest',
       '',
       '```json',
       manifest,
@@ -164,6 +168,16 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
         code: 'APPROVAL_REQUIRED',
         message: `Skill "${entry.name}" requires explicit approval before execution.`,
       },
+    };
+  }
+
+  if (entry.name === 'get_raw_steering') {
+    return {
+      ok: true,
+      name: entry.name,
+      permission: entry.permission,
+      requiresApproval: entry.requiresApproval,
+      result: { steering: getRawSteering() },
     };
   }
 
@@ -350,8 +364,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'get-dev-steering') {
-    writeStdout(getDevSteering());
+  if (command === 'get-raw-steering') {
+    writeStdout(getRawSteering());
     return;
   }
 
@@ -371,7 +385,7 @@ async function main(): Promise<void> {
     [
       'usage:',
       '  bun ./scripts/os.ts get-steering',
-      '  bun ./scripts/os.ts get-dev-steering',
+      '  bun ./scripts/os.ts get-raw-steering',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

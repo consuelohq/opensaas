@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/setup-summary/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/scripts/uninstall-system-daemons.sh"
+  ],
+  "updatedAt": "2026-06-03T00:36:53.311Z"
+}

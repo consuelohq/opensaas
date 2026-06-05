@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9200e7c9aeef",
+  "tmuxSession": "opensaas-os-rename-consuelo-daemon-entrypoint-9200e7c9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-consuelo-daemon-entrypoint",
+  "branch": "task/os/rename-consuelo-daemon-entrypoint",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-consuelo-daemon-entrypoint",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-consuelo-daemon-entrypoint",
+  "prNumber": 711,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/711",
+  "createdAt": "2026-06-02T21:48:35.538Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-consuelo-daemon-entrypoint/.task/os/rename-consuelo-daemon-entrypoint/session.json"
+}
