@@ -57,9 +57,10 @@ function printHelp() {
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
   writeStdout('  --pr <number>          select task by pr number');
+  writeStdout('  --task-session <id>    select exact task session metadata');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
-  writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
+  writeStdout('  --verify               require a matching task-scoped verify stamp (default)');
   writeStdout('  --no-verify            visibly bypass the verify stamp check');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
@@ -120,6 +121,9 @@ function parseArgs(argv) {
       case '--pr':
         args.prNumber = Number.parseInt(value, 10);
         break;
+      case '--task-session':
+        args.taskSession = value;
+        break;
       case '--cwd':
         args.cwd = value;
         break;
@@ -156,7 +160,7 @@ function parseArgs(argv) {
 }
 
 function hasExplicitTaskSelector(args) {
-  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+  return Boolean(args.area || args.branch || args.prNumber !== undefined || args.taskSession);
 }
 
 function getSelectedTaskContext(args, startDirectory) {
@@ -165,6 +169,7 @@ function getSelectedTaskContext(args, startDirectory) {
     area: args.area || null,
     branch: args.branch || null,
     prNumber: args.prNumber === undefined ? null : args.prNumber,
+    taskSession: args.taskSession || null,
   });
 
   if (selected.error) {
@@ -383,7 +388,7 @@ async function main() {
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
 
   if (args.verify) {
-    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
+    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch, taskMeta && taskMeta.data);
     if (verifyMismatch) {
       throw new Error(
         `verify required before task:push: ${verifyMismatch}.\n` +
