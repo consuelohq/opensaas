@@ -115,6 +115,10 @@ export const DOCUMENTATION_PATHS = {
   GRAPHQL_API_OVERVIEW: '/graphql-api/overview',
   GRAPHQL_API_TROUBLESHOOTING_COMMON_OPS_ISSUES:
     '/graphql-api/troubleshooting/common-ops-issues',
+  OS_AGENT_CONTEXT_DECISION: '/os/agent-context/decision',
+  OS_AGENT_CONTEXT_SCRIPTS: '/os/agent-context/scripts',
+  OS_AGENT_CONTEXT_STEERING: '/os/agent-context/steering',
+  OS_AGENT_CONTEXT_TOOLS: '/os/agent-context/tools',
   OS_CONCEPTS_APPROVALS: '/os/concepts/approvals',
   OS_CONCEPTS_CONTEXT_AND_MEMORY: '/os/concepts/context-and-memory',
   OS_CONCEPTS_DATA_MODEL_AND_GRAPHQL: '/os/concepts/data-model-and-graphql',
@@ -154,10 +158,6 @@ export const DOCUMENTATION_PATHS = {
   OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
   OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
   OS_SKILLS_TASK: '/os/skills/task',
-  OS_TOOLS_DECISION_ENGINE: '/os/tools/decision-engine',
-  OS_TOOLS_DEFAULT_STEERING: '/os/tools/default-steering',
-  OS_TOOLS_SCRIPTS: '/os/tools/scripts',
-  OS_TOOLS_TOOL_MANIFEST: '/os/tools/tool-manifest',
   USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
   USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
     '/user-guide/ai/capabilities/ai-chatbot',
