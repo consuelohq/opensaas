@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/debug-stream-sync-conflicts",
+  "events": [
+    {
+      "id": "b1e8bb18-5fe2-448b-8419-eca1f52f8ae5",
+      "occurred_at": "2026-06-05T03:54:24.493Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/TOOLS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "68e207e6-ad46-4a82-8df9-cc40ab5d0a2a",
+      "occurred_at": "2026-06-05T03:54:53.161Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "bde325fc-bbdf-4f67-9a31-af4918ce2bde",
+      "occurred_at": "2026-06-05T03:55:23.293Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "f9b92e1c-3127-44e3-8c23-cf08d6f7594d",
+      "occurred_at": "2026-06-05T03:57:03.245Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "21aef644-f973-47ba-9dc9-2234ed60fafd",
+      "occurred_at": "2026-06-05T03:57:24.147Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "9a7726e5-b7da-4f74-93b8-0edf0559a40b",
+      "occurred_at": "2026-06-05T03:57:29.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "53fcef06-8c08-4807-8b5a-62da42fbf8dd",
+      "occurred_at": "2026-06-05T03:58:33.435Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "5ff29fa5-2c67-449b-b9b6-ea031d742147",
+      "occurred_at": "2026-06-05T03:58:38.078Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "f4babf65-fc40-4b33-ace3-9386123c1e79",
+      "occurred_at": "2026-06-05T03:58:44.750Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "ad8bee0f-7d03-4d36-a7c5-41e7cc892463",
+      "occurred_at": "2026-06-05T03:59:10.469Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "11007e52-e37a-4098-abda-abd1be0d6043",
+      "occurred_at": "2026-06-05T03:59:29.554Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "18f2c7a9-492f-443d-801c-b59bacaad415",
+      "occurred_at": "2026-06-05T04:00:27.727Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/debug-stream-sync-conflicts/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/debug-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/debug-stream-sync-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-05T04:00:27.907Z"
+}
