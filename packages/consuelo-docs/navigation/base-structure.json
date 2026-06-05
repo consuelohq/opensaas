@@ -440,6 +440,17 @@
           ]
         },
         {
+          "key": "osTools",
+          "label": "Tools",
+          "icon": "terminal",
+          "pages": [
+            "os/tools/default-steering",
+            "os/tools/tool-manifest",
+            "os/tools/scripts",
+            "os/tools/decision-engine"
+          ]
+        },
+        {
           "key": "osRunbooks",
           "label": "Runbooks",
           "icon": "bolt",

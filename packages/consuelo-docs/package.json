@@ -8,7 +8,10 @@
     "dev": "mintlify dev",
     "build": "mintlify build",
     "fix-links": "bash scripts/fix-translated-links.sh",
-    "lint": "eslint **/*.mdx --max-warnings=0"
+    "lint": "eslint **/*.mdx --max-warnings=0",
+    "generate-os-source-docs": "bun scripts/generate-os-source-docs.ts",
+    "check-os-source-docs": "bun scripts/generate-os-source-docs.ts --check",
+    "validate-os-docs": "bun scripts/validate-os-docs.ts"
   },
   "dependencies": {
     "mintlify": "latest"

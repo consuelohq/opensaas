@@ -432,6 +432,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "os/tools/default-steering",
+                  "os/tools/tool-manifest",
+                  "os/tools/scripts",
+                  "os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -1082,6 +1092,16 @@
                   "l/fr/os/agent-interface/steering-files",
                   "l/fr/os/agent-interface/tool-manifest",
                   "l/fr/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/fr/os/tools/default-steering",
+                  "l/fr/os/tools/tool-manifest",
+                  "l/fr/os/tools/scripts",
+                  "l/fr/os/tools/decision-engine"
                 ]
               },
               {
@@ -1738,6 +1758,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ar/os/tools/default-steering",
+                  "l/ar/os/tools/tool-manifest",
+                  "l/ar/os/tools/scripts",
+                  "l/ar/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -2388,6 +2418,16 @@
                   "l/cs/os/agent-interface/steering-files",
                   "l/cs/os/agent-interface/tool-manifest",
                   "l/cs/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/cs/os/tools/default-steering",
+                  "l/cs/os/tools/tool-manifest",
+                  "l/cs/os/tools/scripts",
+                  "l/cs/os/tools/decision-engine"
                 ]
               },
               {
@@ -3044,6 +3084,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/de/os/tools/default-steering",
+                  "l/de/os/tools/tool-manifest",
+                  "l/de/os/tools/scripts",
+                  "l/de/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -3694,6 +3744,16 @@
                   "l/es/os/agent-interface/steering-files",
                   "l/es/os/agent-interface/tool-manifest",
                   "l/es/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/es/os/tools/default-steering",
+                  "l/es/os/tools/tool-manifest",
+                  "l/es/os/tools/scripts",
+                  "l/es/os/tools/decision-engine"
                 ]
               },
               {
@@ -4350,6 +4410,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/it/os/tools/default-steering",
+                  "l/it/os/tools/tool-manifest",
+                  "l/it/os/tools/scripts",
+                  "l/it/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -5000,6 +5070,16 @@
                   "l/ja/os/agent-interface/steering-files",
                   "l/ja/os/agent-interface/tool-manifest",
                   "l/ja/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ja/os/tools/default-steering",
+                  "l/ja/os/tools/tool-manifest",
+                  "l/ja/os/tools/scripts",
+                  "l/ja/os/tools/decision-engine"
                 ]
               },
               {
@@ -5656,6 +5736,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ko/os/tools/default-steering",
+                  "l/ko/os/tools/tool-manifest",
+                  "l/ko/os/tools/scripts",
+                  "l/ko/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -6306,6 +6396,16 @@
                   "l/pt/os/agent-interface/steering-files",
                   "l/pt/os/agent-interface/tool-manifest",
                   "l/pt/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/pt/os/tools/default-steering",
+                  "l/pt/os/tools/tool-manifest",
+                  "l/pt/os/tools/scripts",
+                  "l/pt/os/tools/decision-engine"
                 ]
               },
               {
@@ -6962,6 +7062,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ro/os/tools/default-steering",
+                  "l/ro/os/tools/tool-manifest",
+                  "l/ro/os/tools/scripts",
+                  "l/ro/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -7612,6 +7722,16 @@
                   "l/ru/os/agent-interface/steering-files",
                   "l/ru/os/agent-interface/tool-manifest",
                   "l/ru/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/ru/os/tools/default-steering",
+                  "l/ru/os/tools/tool-manifest",
+                  "l/ru/os/tools/scripts",
+                  "l/ru/os/tools/decision-engine"
                 ]
               },
               {
@@ -8268,6 +8388,16 @@
                 ]
               },
               {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/tr/os/tools/default-steering",
+                  "l/tr/os/tools/tool-manifest",
+                  "l/tr/os/tools/scripts",
+                  "l/tr/os/tools/decision-engine"
+                ]
+              },
+              {
                 "group": "Runbooks",
                 "icon": "bolt",
                 "pages": [
@@ -8918,6 +9048,16 @@
                   "l/zh/os/agent-interface/steering-files",
                   "l/zh/os/agent-interface/tool-manifest",
                   "l/zh/os/agent-interface/permissions"
+                ]
+              },
+              {
+                "group": "Tools",
+                "icon": "terminal",
+                "pages": [
+                  "l/zh/os/tools/default-steering",
+                  "l/zh/os/tools/tool-manifest",
+                  "l/zh/os/tools/scripts",
+                  "l/zh/os/tools/decision-engine"
                 ]
               },
               {
