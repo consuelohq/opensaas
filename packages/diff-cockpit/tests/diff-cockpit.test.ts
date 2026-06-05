@@ -561,10 +561,10 @@ describe('renderReviewPage', () => {
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
     expect(html).toContain('@media (max-width: 760px)');
-    expect(html).toContain('.layout { height:calc(100vh - 132px); grid-template-columns:minmax(0, 1fr); }');
-    expect(html).toContain('.diff-line { grid-template-columns:38px 38px minmax(0, 1fr); padding:0 8px 0 0; }');
-    expect(html).toContain('.diff-gutter { padding-right:6px; }');
-    expect(html).toContain('.inline-comment { margin-left:76px; }');
+    expect(html).toContain('.layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }');
+    expect(html).toContain('.diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }');
+    expect(html).toContain('.diff-gutter { padding-right:4px; }');
+    expect(html).toContain('.inline-comment { margin-left:68px; }');
     expect(html).toContain('--paper:#070a0d');
     expect(html).toContain('--surface:#0b0f13');
     expect(html).toContain('id="file-pane-resizer"');

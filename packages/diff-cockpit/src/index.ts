@@ -1124,35 +1124,40 @@ async function loadGraphqlPullRequestIndex(
   const pulls: PullRequestSummary[] = [];
   let after: string | null = null;
   for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
-    const response = await fetcher('https://api.github.com/graphql', {
-      method: 'POST',
-      headers: {
-        ...createGithubHeaders(token),
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
-        variables: { owner: repo.owner, name: repo.repo, after },
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
-    }
-    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
-    if (Array.isArray(json.errors) && json.errors.length > 0) {
-      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
-    }
-    const repository = optionalRecord(optionalRecord(json.data)?.repository);
-    const connection = optionalRecord(repository?.pullRequests);
-    const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
-    pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
-    const pageInfo = optionalRecord(connection?.pageInfo);
-    if (!booleanValue(pageInfo?.hasNextPage)) {
-      break;
-    }
-    after = stringValue(pageInfo?.endCursor, '');
-    if (!after) {
-      warnings.push('GitHub GraphQL pagination stopped without an end cursor');
+    try {
+      const response = await fetcher('https://api.github.com/graphql', {
+        method: 'POST',
+        headers: {
+          ...createGithubHeaders(token),
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+          variables: { owner: repo.owner, name: repo.repo, after },
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
+      }
+      const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+      if (Array.isArray(json.errors) && json.errors.length > 0) {
+        throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+      }
+      const repository = optionalRecord(optionalRecord(json.data)?.repository);
+      const connection = optionalRecord(repository?.pullRequests);
+      const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
+      pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
+      const pageInfo = optionalRecord(connection?.pageInfo);
+      if (!booleanValue(pageInfo?.hasNextPage)) {
+        break;
+      }
+      after = stringValue(pageInfo?.endCursor, '');
+      if (!after) {
+        warnings.push('GitHub GraphQL pagination stopped without an end cursor');
+        break;
+      }
+    } catch (error: unknown) {
+      warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
       break;
     }
   }
