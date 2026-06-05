@@ -1,71 +1,63 @@
 # workspace typed tools
 
-This file is the human-readable tool catalog for the workspace facade. It is generated from `packages/workspace/tooling/tool-manifest.json`, so tool additions, schema changes, and timeout changes update this reference through the generator.
+## mandatory workspace app transport
 
-The workspace app exposes exactly two MCP entrypoints:
+You are working inside the workspace MCP app. The app exposes exactly two tools:
 
-- `workspace.get_steering()` for bootstrap context
-- `workspace.call({ tool, input, taskSession, timeout })` for every typed operation
+- `workspace.get_steering()`
+- `workspace.call({ tool, input, taskSession, timeout })`
 
-<Note>
-Use this file as a contract map. The manifest remains the executable source of truth; this page makes the available tools easier to scan.
-</Note>
+`get_steering` is bootstrap-only. After that, every workspace operation goes through `workspace.call` with a manifest tool name and typed input object.
 
-## Call contract
+```ts
+await workspace.call({
+  tool: "stream.context",
+  input: { area: "workspace-agents" },
+  timeout: 120
+})
+```
 
-Every operation travels through the same envelope:
+Task-scoped work must pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Passing both `taskSession` and `input.branch` is rejected to avoid silent branch overrides.
+
+This file is generated from `packages/workspace/tooling/tool-manifest.json`. The typed facade validates inputs, invokes the existing Bun workspace scripts, and wraps every result in the standard tool envelope.
+
+## quick start
+
+Inside the workspace app, invoke the same tool through `workspace.call`:
 
 ```ts
 await workspace.call({
   tool: "fs.read",
   input: { path: "packages/workspace/package.json" },
-  timeout: 120,
+  timeout: 120
 })
 ```
 
-Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct branch and worktree before invoking the underlying script.
+The TypeScript shape below documents the facade schema and return envelope:
 
-## Tool index
+```ts
+const result = await workspace.call({
+  tool: "fs.read",
+  input: { path: "packages/workspace/package.json" },
+  timeout: 120,
+})
+if (!result.ok) throw new Error(result.message);
+```
 
-| Category | Tools |
-| --- | ---: |
-| codemode | 1 |
-| composed | 2 |
-| consuelo design | 21 |
-| context | 7 |
-| decision engine | 6 |
-| filesystem | 6 |
-| generation | 2 |
-| git | 1 |
-| github | 2 |
-| http | 1 |
-| linear | 8 |
-| mac | 8 |
-| review | 4 |
-| sentry | 7 |
-| stream | 3 |
-| task lifecycle | 13 |
-| tooling | 1 |
-| utilities | 34 |
-| worker | 1 |
-
-## Tools by category
+## commands by category
 
 ## codemode
 
-### workspace.code.run
+### code.run
 
 run workspace-native codemode JavaScript against allowed workspace tools
 
-| Field | Value |
-| --- | --- |
-| Category | codemode |
-| Signature | `workspace.code.run({ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace code.run` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.code.run({ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace code.run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -78,7 +70,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -96,7 +88,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -116,19 +108,16 @@ await workspace.call({
 
 ## composed
 
-### workspace.checkFiles
+### checkFiles
 
 run syntax checks over a set of files through task:exec
 
-| Field | Value |
-| --- | --- |
-| Category | composed |
-| Signature | `workspace.checkFiles({ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace checkFiles` |
-| Capability | read-only · non-mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.checkFiles({ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace checkFiles`
+- capabilities: readOnly=true, mutating=false, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -143,7 +132,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -161,7 +150,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -179,19 +168,16 @@ await workspace.call({
 }
 ```
 
-### workspace.editFlow
+### editFlow
 
 run a search-read-patch-verify flow as a composed script
 
-| Field | Value |
-| --- | --- |
-| Category | composed |
-| Signature | `workspace.editFlow({ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace editFlow` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.editFlow({ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace editFlow`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -210,7 +196,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -228,7 +214,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -248,19 +234,16 @@ await workspace.call({
 
 ## consuelo design
 
-### workspace.consueloDesign.check
+### consueloDesign.check
 
 run consuelo-design package boundary and Railway checks
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.check({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design check` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.check({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design check`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -269,7 +252,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -287,7 +270,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -305,19 +288,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateDemo
+### consueloDesign.generateDemo
 
 create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-demo` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-demo`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -328,7 +308,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -346,7 +326,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -364,19 +344,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateDigitalEguide
+### consueloDesign.generateDigitalEguide
 
 create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-digital-eguide` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-digital-eguide`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -387,7 +364,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -405,7 +382,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -423,19 +400,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateEmail
+### consueloDesign.generateEmail
 
 create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-email` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-email`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -446,7 +420,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -464,7 +438,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -482,19 +456,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateImageBrief
+### consueloDesign.generateImageBrief
 
 create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-image-brief` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-image-brief`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -505,7 +476,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -523,7 +494,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -541,19 +512,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateMotionFrame
+### consueloDesign.generateMotionFrame
 
 create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-motion-frame` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-motion-frame`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -564,7 +532,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -582,7 +550,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -600,19 +568,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.generateWebsite
+### consueloDesign.generateWebsite
 
 create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design generate-website` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design generate-website`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -623,7 +588,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -641,7 +606,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -659,19 +624,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.getDesignSystem
+### consueloDesign.getDesignSystem
 
 return base Consuelo DESIGN.md and consuelo-design AGENTS.md only
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.getDesignSystem({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design get-design-system` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.getDesignSystem({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design get-design-system`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -680,7 +642,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -698,7 +660,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -716,19 +678,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.listDesignSystems
+### consueloDesign.listDesignSystems
 
 list Consuelo default design system and upstream reference systems
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.listDesignSystems({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design list-design-systems` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.listDesignSystems({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design list-design-systems`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -737,7 +696,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -755,7 +714,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -773,19 +732,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.listSkills
+### consueloDesign.listSkills
 
 list upstream Open Design skills and Consuelo workflow mappings
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.listSkills({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design list-skills` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.listSkills({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design list-skills`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -794,7 +750,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -812,7 +768,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -830,19 +786,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.odBuild
+### consueloDesign.odBuild
 
 build the vendored Open Design daemon CLI through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.odBuild({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design od:build` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.consueloDesign.odBuild({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design od:build`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -853,7 +806,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -871,7 +824,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -889,19 +842,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.railwayCheck
+### consueloDesign.railwayCheck
 
 verify consuelo-design is excluded from Railway deploy paths
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.railwayCheck({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design railway:check` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.railwayCheck({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design railway:check`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -910,7 +860,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -928,7 +878,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -946,19 +896,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.renderHyperframes
+### consueloDesign.renderHyperframes
 
 create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design render-hyperframes` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design render-hyperframes`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -969,7 +916,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -987,7 +934,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1005,19 +952,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.run
+### consueloDesign.run
 
 start Open Design daemon and web UI in the foreground through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.run({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design run` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.consueloDesign.run({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1028,7 +972,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1046,7 +990,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1064,19 +1008,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.uiBg
+### consueloDesign.uiBg
 
 start Open Design managed runtimes in the background through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiBg({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design ui:bg` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.consueloDesign.uiBg({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design ui:bg`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1087,7 +1028,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1105,7 +1046,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1123,19 +1064,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.uiLogs
+### consueloDesign.uiLogs
 
 show Open Design managed runtime logs through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiLogs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design ui:logs` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.uiLogs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design ui:logs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1144,7 +1082,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1162,7 +1100,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1180,19 +1118,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.uiStatus
+### consueloDesign.uiStatus
 
 show Open Design managed runtime status through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design ui:status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.uiStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design ui:status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1201,7 +1136,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1219,7 +1154,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1237,19 +1172,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.uiStop
+### consueloDesign.uiStop
 
 stop Open Design managed runtimes through the Bun facade
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiStop({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design ui:stop` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.consueloDesign.uiStop({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design ui:stop`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1260,7 +1192,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1278,7 +1210,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1296,19 +1228,16 @@ await workspace.call({
 }
 ```
 
-### workspace.consueloDesign.upstreamStatus
+### consueloDesign.upstreamStatus
 
 show vendored Open Design metadata and runtime requirements
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.upstreamStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design upstream-status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.consueloDesign.upstreamStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design upstream-status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1317,7 +1246,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1335,7 +1264,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1353,19 +1282,16 @@ await workspace.call({
 }
 ```
 
-### workspace.design.publish
+### design.publish
 
 publish a design artifact through private Tailscale Serve and update the design wiki archive
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.design.publish({ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design publish` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.design.publish({ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design publish`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1377,7 +1303,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1395,7 +1321,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1413,19 +1339,16 @@ await workspace.call({
 }
 ```
 
-### workspace.design.refresh
+### design.refresh
 
 regenerate and publish the existing Consuelo Wiki archive without adding an artifact
 
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.design.refresh({ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace consuelo-design refresh` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.design.refresh({ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace consuelo-design refresh`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1436,7 +1359,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1454,7 +1377,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1474,19 +1397,16 @@ await workspace.call({
 
 ## context
 
-### workspace.context.categories
+### context.categories
 
 list project memory categories
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.categories({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.categories` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.categories({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.categories`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1495,7 +1415,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1513,7 +1433,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1531,19 +1451,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.find
+### context.find
 
 search project memory by title
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.find({ keyword: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.find` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.find({ keyword: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.find`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1555,7 +1472,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1573,7 +1490,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1591,19 +1508,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.get
+### context.get
 
 read a full project memory search result
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.get({ index: number; keyword: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.get` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.get({ index: number; keyword: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.get`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1615,7 +1529,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1633,7 +1547,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1651,19 +1565,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.list
+### context.list
 
 list recent project memories
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.list({ category?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.list` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.list({ category?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1675,7 +1586,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1693,7 +1604,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1711,19 +1622,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.save
+### context.save
 
 save a file or text into project memory
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.save({ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.save` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.context.save({ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.save`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1736,7 +1644,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1754,7 +1662,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1772,19 +1680,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.search
+### context.search
 
 search project memory by content
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.search({ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.search` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.search({ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1796,7 +1701,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1814,7 +1719,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1832,19 +1737,16 @@ await workspace.call({
 }
 ```
 
-### workspace.context.trace
+### context.trace
 
 query local workspace tool traces from the repo-scoped SQLite trace store
 
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.trace({ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace context.trace` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.context.trace({ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1856,7 +1758,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1874,7 +1776,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1894,19 +1796,16 @@ await workspace.call({
 
 ## decision engine
 
-### workspace.audit
+### audit
 
 audit workspace scripts, docs, or index freshness
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.audit({ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace audit` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.audit({ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace audit`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1917,7 +1816,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1935,7 +1834,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -1953,19 +1852,16 @@ await workspace.call({
 }
 ```
 
-### workspace.confidenceScore
+### confidenceScore
 
 score confidence from evidence state
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.confidenceScore({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace confidenceScore` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.confidenceScore({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace confidenceScore`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -1974,7 +1870,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -1992,7 +1888,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2010,19 +1906,16 @@ await workspace.call({
 }
 ```
 
-### workspace.confirm
+### confirm
 
 run verification or targeted validation through confirm
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.confirm({ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace confirm` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.confirm({ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace confirm`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2033,7 +1926,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2051,7 +1944,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2069,19 +1962,16 @@ await workspace.call({
 }
 ```
 
-### workspace.decideNext
+### decideNext
 
 recommend the next action from evidence state
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.decideNext({ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace decideNext` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.decideNext({ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace decideNext`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2090,7 +1980,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2108,7 +1998,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2126,19 +2016,16 @@ await workspace.call({
 }
 ```
 
-### workspace.exploit
+### exploit
 
 select the highest-confidence editing target
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.exploit({ query?: string; target?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace exploit` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.exploit({ query?: string; target?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace exploit`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2147,7 +2034,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2165,7 +2052,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2183,19 +2070,16 @@ await workspace.call({
 }
 ```
 
-### workspace.explore
+### explore
 
 run repository exploration retrieval
 
-| Field | Value |
-| --- | --- |
-| Category | decision engine |
-| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace explore` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace explore`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2207,7 +2091,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2225,7 +2109,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2245,19 +2129,16 @@ await workspace.call({
 
 ## filesystem
 
-### workspace.fs.list
+### fs.list
 
 list or find files in the repo root or a resolved task worktree
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.list({ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace fs list, or task:fs list when a branch is resolved` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.list({ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace fs list, or task:fs list when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2270,7 +2151,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2288,7 +2169,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2306,19 +2187,16 @@ await workspace.call({
 }
 ```
 
-### workspace.fs.patch
+### fs.patch
 
 replace a line range in a task worktree file
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.patch({ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace fs.patch` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.patch({ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace fs.patch`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2334,7 +2212,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2352,7 +2230,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2370,19 +2248,16 @@ await workspace.call({
 }
 ```
 
-### workspace.fs.read
+### fs.read
 
 read file contents with an optional line range
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>` |
-| Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>`
+- wraps: `workspace fs read, or task:fs read when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2394,7 +2269,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2412,7 +2287,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2430,19 +2305,16 @@ await workspace.call({
 }
 ```
 
-### workspace.fs.search
+### fs.search
 
 search files with ripgrep through the workspace script
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>` |
-| Runtime | `workspace fs search, or task:fs search when a branch is resolved` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>`
+- wraps: `workspace fs search, or task:fs search when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2457,7 +2329,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2475,7 +2347,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2493,19 +2365,16 @@ await workspace.call({
 }
 ```
 
-### workspace.fs.trash
+### fs.trash
 
 move a task worktree file to trash
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.trash({ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace fs.trash` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.trash({ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace fs.trash`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2518,7 +2387,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2536,7 +2405,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2554,19 +2423,16 @@ await workspace.call({
 }
 ```
 
-### workspace.fs.write
+### fs.write
 
 write a file in a task worktree
 
-| Field | Value |
-| --- | --- |
-| Category | filesystem |
-| Signature | `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace fs.write` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 30000ms |
+- signature: `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace fs.write`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2580,7 +2446,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2598,7 +2464,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2618,19 +2484,16 @@ await workspace.call({
 
 ## generation
 
-### workspace.generate.docs
+### generate.docs
 
 generate TOOLS.md from the tool manifest
 
-| Field | Value |
-| --- | --- |
-| Category | generation |
-| Signature | `workspace.generate.docs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace generate.docs` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.generate.docs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace generate.docs`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2641,7 +2504,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2659,7 +2522,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2677,19 +2540,16 @@ await workspace.call({
 }
 ```
 
-### workspace.generate.types
+### generate.types
 
 generate workspace.d.ts from the tool manifest
 
-| Field | Value |
-| --- | --- |
-| Category | generation |
-| Signature | `workspace.generate.types({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace generate.types` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.generate.types({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace generate.types`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2700,7 +2560,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2718,7 +2578,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2738,19 +2598,16 @@ await workspace.call({
 
 ## git
 
-### workspace.git.diff
+### git.diff
 
 inspect task or working-tree diffs as bounded structured JSON for agents
 
-| Field | Value |
-| --- | --- |
-| Category | git |
-| Signature | `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace git:diff` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.git.diff({ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace git:diff`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2766,7 +2623,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2784,7 +2641,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2804,19 +2661,16 @@ await workspace.call({
 
 ## github
 
-### workspace.gh
+### gh
 
 run the workspace GitHub helper with an explicit action
 
-| Field | Value |
-| --- | --- |
-| Category | github |
-| Signature | `workspace.gh({ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace gh` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.gh({ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace gh`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2830,7 +2684,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2848,7 +2702,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2866,19 +2720,16 @@ await workspace.call({
 }
 ```
 
-### workspace.github
+### github
 
 typed GitHub facade with semantic operations and presets; prefer over raw gh
 
-| Field | Value |
-| --- | --- |
-| Category | github |
-| Signature | `workspace.github({ operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace github` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.github({ operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace github`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2891,7 +2742,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2909,7 +2760,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2929,19 +2780,16 @@ await workspace.call({
 
 ## http
 
-### workspace.http
+### http
 
 make HTTP requests through the workspace http wrapper (wraps xh)
 
-| Field | Value |
-| --- | --- |
-| Category | http |
-| Signature | `workspace.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace http` |
-| Capability | writes state · mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace http`
+- capabilities: readOnly=false, mutating=true, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -2953,7 +2801,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -2971,7 +2819,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -2991,19 +2839,16 @@ await workspace.call({
 
 ## linear
 
-### workspace.linear.createIssue
+### linear.createIssue
 
 create a Linear issue with DEV/open defaults and the opensaas label
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.createIssue({ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.createIssue` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.createIssue({ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.createIssue`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3017,7 +2862,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3035,7 +2880,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3053,19 +2898,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.issue
+### linear.issue
 
 read a Linear issue by identifier or id
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.issue({ identifier: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.issue` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.issue({ identifier: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.issue`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3076,7 +2918,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3094,7 +2936,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3112,19 +2954,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.labels
+### linear.labels
 
 list Linear issue labels for label consistency
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.labels({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.labels` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.labels({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.labels`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3135,7 +2974,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3153,7 +2992,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3171,19 +3010,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.projects
+### linear.projects
 
 list Linear projects and ids
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.projects({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.projects` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.projects({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.projects`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3194,7 +3030,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3212,7 +3048,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3230,19 +3066,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.search
+### linear.search
 
 search Linear issues with DEV default team support
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.search({ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.search` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.search({ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3253,7 +3086,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3271,7 +3104,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3289,19 +3122,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.states
+### linear.states
 
 list workflow states for a Linear team
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.states({ team?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.states` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.states({ team?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.states`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3312,7 +3142,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3330,7 +3160,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3348,19 +3178,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.teams
+### linear.teams
 
 list Linear teams and workflow states
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.teams({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.teams` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.teams({ first?: number; after?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.teams`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3371,7 +3198,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3389,7 +3216,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3407,19 +3234,16 @@ await workspace.call({
 }
 ```
 
-### workspace.linear.updateIssue
+### linear.updateIssue
 
 update Linear issue fields including labels, project, cycle, and parent
 
-| Field | Value |
-| --- | --- |
-| Category | linear |
-| Signature | `workspace.linear.updateIssue({ issueId: string; title?: string; description?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace linear.updateIssue` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.linear.updateIssue({ issueId: string; title?: string; description?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace linear.updateIssue`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3433,7 +3257,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3451,7 +3275,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3471,19 +3295,16 @@ await workspace.call({
 
 ## mac
 
-### workspace.mac.call
+### mac.call
 
 run a non-repo shell command on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.call({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.call({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3495,7 +3316,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3513,7 +3334,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3531,19 +3352,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.exec
+### mac.exec
 
 legacy alias for mac.call; run a non-repo shell command on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.exec({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.exec` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.exec({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.exec`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3555,7 +3373,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3573,7 +3391,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3591,19 +3409,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.list
+### mac.list
 
 list non-repo files on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.list({ path?: string; depth?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.list` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.list({ path?: string; depth?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3615,7 +3430,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3633,7 +3448,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3651,19 +3466,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.port
+### mac.port
 
 check or find a local port
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.port({ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.port` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.port({ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.port`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3674,7 +3486,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3692,7 +3504,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3710,19 +3522,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.process
+### mac.process
 
 list or kill local Mac processes
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.process({ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.process` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.process({ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.process`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3733,7 +3542,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3751,7 +3560,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3769,19 +3578,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.read
+### mac.read
 
 read a non-repo file on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.read({ path: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.read` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.read({ path: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.read`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3792,7 +3598,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3810,7 +3616,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3828,19 +3634,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.search
+### mac.search
 
 search non-repo files on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.search({ pattern: string; path?: string; include?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.search` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.search({ pattern: string; path?: string; include?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3852,7 +3655,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3870,7 +3673,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3888,19 +3691,16 @@ await workspace.call({
 }
 ```
 
-### workspace.mac.write
+### mac.write
 
 write a non-repo file on the Mac
 
-| Field | Value |
-| --- | --- |
-| Category | mac |
-| Signature | `workspace.mac.write({ path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace mac.write` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.mac.write({ path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace mac.write`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3913,7 +3713,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3931,7 +3731,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -3951,19 +3751,16 @@ await workspace.call({
 
 ## review
 
-### workspace.aiReview
+### aiReview
 
 run the AI PR review helper
 
-| Field | Value |
-| --- | --- |
-| Category | review |
-| Signature | `workspace.aiReview({ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace aiReview` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.aiReview({ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace aiReview`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -3975,7 +3772,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -3993,7 +3790,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4011,19 +3808,16 @@ await workspace.call({
 }
 ```
 
-### workspace.prReview
+### prReview
 
 fetch review comments for a PR
 
-| Field | Value |
-| --- | --- |
-| Category | review |
-| Signature | `workspace.prReview({ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace prReview` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.prReview({ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace prReview`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4035,7 +3829,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4053,7 +3847,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4071,19 +3865,16 @@ await workspace.call({
 }
 ```
 
-### workspace.review.run
+### review.run
 
 run the workspace review checks
 
-| Field | Value |
-| --- | --- |
-| Category | review |
-| Signature | `workspace.review.run({ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace review.run` |
-| Capability | read-only · non-mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.review.run({ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace review.run`
+- capabilities: readOnly=true, mutating=false, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4095,7 +3886,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4113,7 +3904,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4131,19 +3922,16 @@ await workspace.call({
 }
 ```
 
-### workspace.verify
+### verify
 
 run the full task safety gate
 
-| Field | Value |
-| --- | --- |
-| Category | review |
-| Signature | `workspace.verify({ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace verify` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.verify({ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace verify`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4156,7 +3944,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4174,7 +3962,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4194,19 +3982,16 @@ await workspace.call({
 
 ## sentry
 
-### workspace.sentry.config
+### sentry.config
 
 show Sentry API configuration status from Keychain without exposing secrets
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.config({ verify?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.config` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.config({ verify?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.config`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4217,7 +4002,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4235,7 +4020,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4253,19 +4038,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.event
+### sentry.event
 
 retrieve or resolve a Sentry event id, using a project slug when available
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.event({ eventId: string; project?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.event` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.event({ eventId: string; project?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.event`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4276,7 +4058,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4294,7 +4076,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4312,19 +4094,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.issue
+### sentry.issue
 
 retrieve one Sentry issue by short id or numeric issue id
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.issue({ identifier: string; expand?: string[]; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.issue` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.issue({ identifier: string; expand?: string[]; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.issue`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4335,7 +4114,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4353,7 +4132,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4371,19 +4150,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.issueEvent
+### sentry.issueEvent
 
 retrieve a latest, recommended, oldest, or concrete Sentry event for an issue
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.issueEvent({ issueId: string; eventId?: string; full?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.issueEvent` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.issueEvent({ issueId: string; eventId?: string; full?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.issueEvent`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4396,7 +4172,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4414,7 +4190,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4432,19 +4208,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.issues
+### sentry.issues
 
 search Sentry issues across the configured organization
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.issues({ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.issues` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.issues({ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.issues`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4456,7 +4229,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4474,7 +4247,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4492,19 +4265,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.projects
+### sentry.projects
 
 list Sentry projects for the configured organization
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.projects({ limit?: number; cursor?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.projects` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.projects({ limit?: number; cursor?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.projects`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4515,7 +4285,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4533,7 +4303,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4551,19 +4321,16 @@ await workspace.call({
 }
 ```
 
-### workspace.sentry.trace
+### sentry.trace
 
 perform a best-effort Sentry trace lookup across organization events and issues
 
-| Field | Value |
-| --- | --- |
-| Category | sentry |
-| Signature | `workspace.sentry.trace({ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace sentry.trace` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.sentry.trace({ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace sentry.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4575,7 +4342,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4593,7 +4360,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4613,19 +4380,16 @@ await workspace.call({
 
 ## stream
 
-### workspace.stream.context
+### stream.context
 
 show recent stream context
 
-| Field | Value |
-| --- | --- |
-| Category | stream |
-| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace stream.context` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace stream.context`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4636,7 +4400,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4654,7 +4418,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4672,19 +4436,16 @@ await workspace.call({
 }
 ```
 
-### workspace.stream.list
+### stream.list
 
 list stream branches
 
-| Field | Value |
-| --- | --- |
-| Category | stream |
-| Signature | `workspace.stream.list({ repo?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace stream.list` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.stream.list({ repo?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace stream.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4693,7 +4454,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4711,7 +4472,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4729,19 +4490,16 @@ await workspace.call({
 }
 ```
 
-### workspace.stream.sync
+### stream.sync
 
 sync a stream branch with main
 
-| Field | Value |
-| --- | --- |
-| Category | stream |
-| Signature | `workspace.stream.sync({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace stream.sync` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.stream.sync({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace stream.sync`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4753,7 +4511,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4771,7 +4529,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4791,19 +4549,16 @@ await workspace.call({
 
 ## task lifecycle
 
-### workspace.task.call
+### task.call
 
 run a command inside a task worktree
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.call({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.task.call({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4820,7 +4575,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4838,7 +4593,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4856,19 +4611,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.cleanup
+### task.cleanup
 
 preview or remove stale task worktrees and branches
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.cleanup({ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.cleanup` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.task.cleanup({ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.cleanup`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4881,7 +4633,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4899,7 +4651,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4917,19 +4669,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.current
+### task.current
 
 resolve the current task branch without running a mutating command
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.current({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string; area: string; prNumber?: number; worktree: string } | null>>` |
-| Runtime | `branch resolver` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.task.current({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string; area: string; prNumber?: number; worktree: string } | null>>`
+- wraps: `branch resolver`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4938,7 +4687,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -4956,7 +4705,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -4974,19 +4723,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.ensureSynced
+### task.ensureSynced
 
 check whether the task stream appears synced
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.ensureSynced({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>` |
-| Runtime | `workspace task.ensureSynced` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.task.ensureSynced({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>`
+- wraps: `workspace task.ensureSynced`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -4997,7 +4743,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5015,7 +4761,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5033,19 +4779,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.exec
+### task.exec
 
 legacy alias for task.call; run a command inside a task worktree
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.exec({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.exec` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.task.exec({ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.exec`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5062,7 +4805,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5080,7 +4823,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5098,19 +4841,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.finish
+### task.finish
 
 finish a task branch after merge
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.finish({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.finish` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.task.finish({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.finish`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5122,7 +4862,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5140,7 +4880,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5158,19 +4898,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.init
+### task.init
 
 write task metadata for an existing worktree
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.init({ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.init` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.task.init({ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.init`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5183,7 +4920,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5201,7 +4938,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5219,19 +4956,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.merge
+### task.merge
 
 merge a pull request through the workspace task merge script
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.merge` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.merge`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5243,7 +4977,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5261,7 +4995,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5279,19 +5013,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.pr
+### task.pr
 
 merge task to stream and create or refresh the stream review PR
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.pr({ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.pr` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.task.pr({ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.pr`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5304,7 +5035,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5322,7 +5053,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5340,19 +5071,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.prs
+### task.prs
 
 show task and review PR links
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.prs({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.prs` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.task.prs({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.prs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5363,7 +5091,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5381,7 +5109,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5399,19 +5127,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.push
+### task.push
 
 push changed task files to the task branch through GitHub API
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.push` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.push`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5425,7 +5150,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5443,7 +5168,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5461,19 +5186,16 @@ await workspace.call({
 }
 ```
 
-### workspace.task.start
+### task.start
 
 create a task branch, worktree, and draft PR
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace task.start` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace task.start`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5486,7 +5208,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5504,7 +5226,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5522,19 +5244,16 @@ await workspace.call({
 }
 ```
 
-### workspace.taskMeta.smoke
+### taskMeta.smoke
 
 run the task metadata smoke suite
 
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.taskMeta.smoke({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace taskMeta.smoke` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.taskMeta.smoke({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace taskMeta.smoke`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5543,7 +5262,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5561,7 +5280,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5581,19 +5300,16 @@ await workspace.call({
 
 ## tooling
 
-### workspace.tools.search
+### tools.search
 
 search workspace tools by intent and return ranked usage guidance
 
-| Field | Value |
-| --- | --- |
-| Category | tooling |
-| Signature | `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>` |
-| Runtime | `workspace tools.search` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
+- signature: `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>`
+- wraps: `workspace tools.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5605,7 +5321,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5691,7 +5407,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5711,19 +5427,16 @@ await workspace.call({
 
 ## utilities
 
-### workspace.browser
+### browser
 
 run the generic workspace browser wrapper command
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5736,7 +5449,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5754,7 +5467,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5772,19 +5485,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.app
+### browser.app
 
 open app.consuelohq.com with the browser wrapper
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.app({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.app` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.app`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5796,7 +5506,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5814,7 +5524,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5832,19 +5542,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.click
+### browser.click
 
 click a browser element by ref
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.click({ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.click` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.click({ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.click`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5856,7 +5563,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5874,7 +5581,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5892,19 +5599,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.clipboard
+### browser.clipboard
 
 read from or write to the browser clipboard
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.clipboard({ action: "read" | "write"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.clipboard` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.clipboard({ action: "read" | "write"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.clipboard`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5916,7 +5620,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5934,7 +5638,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -5952,19 +5656,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.close
+### browser.close
 
 close active browser sessions
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.close({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.close` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.close({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.close`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -5975,7 +5676,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -5993,7 +5694,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6011,19 +5712,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.consuelo
+### browser.consuelo
 
 open consuelo.consuelohq.com with the browser wrapper
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.consuelo({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.consuelo` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.consuelo`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6035,7 +5733,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6053,7 +5751,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6071,19 +5769,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.cookies
+### browser.cookies
 
 list, set, or clear browser cookies for the current browser session
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.cookies({ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.cookies` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.cookies({ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.cookies`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6095,7 +5790,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6113,7 +5808,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6131,19 +5826,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.dialog
+### browser.dialog
 
 accept or dismiss browser dialogs
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.dialog({ action: "accept" | "dismiss"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.dialog` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.dialog({ action: "accept" | "dismiss"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.dialog`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6155,7 +5847,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6173,7 +5865,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6191,19 +5883,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.download
+### browser.download
 
 click an element and save the triggered download to a path
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.download({ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.download` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.download({ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.download`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6216,7 +5905,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6234,7 +5923,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6252,19 +5941,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.eval
+### browser.eval
 
 execute JavaScript on the current browser page
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.eval({ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.eval` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.eval({ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.eval`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6276,7 +5962,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6294,7 +5980,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6312,19 +5998,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.fill
+### browser.fill
 
 fill a browser input by ref
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.fill({ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.fill` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.fill({ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.fill`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6337,7 +6020,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6355,7 +6038,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6373,19 +6056,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.find
+### browser.find
 
 find an element by role, text, label, placeholder, alt text, title, or test id and run an action
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.find({ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.find` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.find({ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.find`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6400,7 +6080,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6418,7 +6098,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6436,19 +6116,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.get
+### browser.get
 
 get text, html, value, attributes, title, or URL from the current page
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.get({ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.get` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.get({ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.get`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6460,7 +6137,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6478,7 +6155,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6496,19 +6173,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.login
+### browser.login
 
 run a saved browser auth login profile
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.login({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.login` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.login({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.login`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6521,7 +6195,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6539,7 +6213,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6557,19 +6231,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.network
+### browser.network
 
 inspect or manage browser network requests, routes, and HAR capture
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.network({ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.network` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.network({ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.network`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6583,7 +6254,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6601,7 +6272,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6619,19 +6290,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.open
+### browser.open
 
 open a URL with the browser wrapper
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.open` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.open`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6645,7 +6313,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6663,7 +6331,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6681,19 +6349,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.raw
+### browser.raw
 
 pass raw arguments through to agent-browser
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.raw({ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.raw` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.raw({ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.raw`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6708,7 +6373,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6726,7 +6391,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6744,19 +6409,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.reauth
+### browser.reauth
 
 restart the browser daemon and run a saved auth login profile
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.reauth({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.reauth` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.reauth({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.reauth`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6769,7 +6431,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6787,7 +6449,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6805,19 +6467,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.screenshot
+### browser.screenshot
 
 capture a browser screenshot
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.screenshot` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.screenshot`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6830,7 +6489,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6848,7 +6507,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6866,19 +6525,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.snap
+### browser.snap
 
 capture an accessibility snapshot
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.snap({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.snap` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.snap({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.snap`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6889,7 +6545,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6907,7 +6563,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6925,19 +6581,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.tabs
+### browser.tabs
 
 list, create, select, or close browser tabs with stable labels when needed
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.tabs({ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.tabs` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.tabs({ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.tabs`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -6949,7 +6602,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -6967,7 +6620,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -6985,19 +6638,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.test
+### browser.test
 
 open a URL, wait for load, snapshot, and screenshot
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.test` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.test`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7011,7 +6661,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7029,7 +6679,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7047,19 +6697,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.trace
+### browser.trace
 
 start or stop browser tracing and optionally write a trace file
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.trace({ action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.trace` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.trace({ action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.trace`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7071,7 +6718,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7089,7 +6736,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7107,19 +6754,16 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.wait
+### browser.wait
 
 wait for a selector, duration, text, URL, load state, JavaScript condition, or download
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.wait({ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace browser.wait` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.browser.wait({ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.wait`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7131,7 +6775,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7149,7 +6793,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7167,19 +6811,16 @@ await workspace.call({
 }
 ```
 
-### workspace.doctor
+### doctor
 
 run workspace diagnostics
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.doctor({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace doctor` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.doctor({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace doctor`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7188,7 +6829,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7206,7 +6847,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7224,19 +6865,16 @@ await workspace.call({
 }
 ```
 
-### workspace.git.status
+### git.status
 
 alias for status; use status directly in new code
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.git.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.git.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7245,7 +6883,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7263,7 +6901,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7281,19 +6919,16 @@ await workspace.call({
 }
 ```
 
-### workspace.railway.logs
+### railway.logs
 
 read Railway deploy/runtime logs through the workspace script
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.railway.logs({ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace railway.logs` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
+- signature: `workspace.railway.logs({ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace railway.logs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7305,7 +6940,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7323,7 +6958,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7341,19 +6976,16 @@ await workspace.call({
 }
 ```
 
-### workspace.railway.redeploy
+### railway.redeploy
 
 trigger a Railway redeploy
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.railway.redeploy({ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace railway.redeploy` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.railway.redeploy({ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace railway.redeploy`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7365,7 +6997,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7383,7 +7015,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7401,19 +7033,16 @@ await workspace.call({
 }
 ```
 
-### workspace.research.ingest
+### research.ingest
 
 generate a local research packet and autosave its text bundle to context
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.research.ingest({ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace research.ingest` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.research.ingest({ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace research.ingest`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7426,7 +7055,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7444,7 +7073,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7462,19 +7091,16 @@ await workspace.call({
 }
 ```
 
-### workspace.server
+### server
 
 manage the workspace MCP server reload/status lifecycle
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.server({ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace server` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
+- signature: `workspace.server({ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace server`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7485,7 +7111,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7503,7 +7129,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7521,19 +7147,16 @@ await workspace.call({
 }
 ```
 
-### workspace.status
+### status
 
 show compact workspace status
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 120000ms |
+- signature: `workspace.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7542,7 +7165,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7560,7 +7183,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7578,19 +7201,16 @@ await workspace.call({
 }
 ```
 
-### workspace.tmp
+### tmp
 
 run the workspace temp-file helper
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.tmp({ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace tmp` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
+- signature: `workspace.tmp({ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace tmp`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7604,7 +7224,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7622,7 +7242,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7640,30 +7260,29 @@ await workspace.call({
 }
 ```
 
-### workspace.wait
+### wait
 
-sleep or wait for a PR/deploy
+sleep, create detached wait checkpoints, or wait for a PR/deploy
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.wait({ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace wait` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 300000ms |
+- signature: `workspace.wait({ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace wait`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
   "tool": "wait",
   "input": {
-    "seconds": 1
+    "duration": "24h",
+    "detached": true,
+    "reason": "wake after long-running external work"
   }
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7681,7 +7300,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7699,19 +7318,16 @@ await workspace.call({
 }
 ```
 
-### workspace.website.deploy
+### website.deploy
 
 deploy the Consuelo website
 
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.website.deploy({ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace website.deploy` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
+- signature: `workspace.website.deploy({ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace website.deploy`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7723,7 +7339,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7741,7 +7357,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7761,19 +7377,16 @@ await workspace.call({
 
 ## worker
 
-### workspace.worker.call
+### worker.call
 
 delegate a bounded instruction file to a configured local worker provider
 
-| Field | Value |
-| --- | --- |
-| Category | worker |
-| Signature | `workspace.worker.call({ provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }) => Promise<ToolResult<{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }>>` |
-| Runtime | `workspace worker.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+- signature: `workspace.worker.call({ provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }) => Promise<ToolResult<{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }>>`
+- wraps: `workspace worker.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
 
-#### Example call
+example call:
 
 ```ts
 await workspace.call({
@@ -7788,7 +7401,7 @@ await workspace.call({
 });
 ```
 
-#### Success envelope
+example success envelope:
 
 ```json
 {
@@ -7806,7 +7419,7 @@ await workspace.call({
 }
 ```
 
-#### Error envelope
+example error envelope:
 
 ```json
 {
@@ -7824,15 +7437,45 @@ await workspace.call({
 }
 ```
 
-## Result envelope
+## composed methods
 
-Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, and `apiVersion`. When callers pass a `requestId`, the facade echoes it so work can be correlated across logs and task evidence.
+`workspace.checkFiles` wraps `bun run check-files`. `workspace.editFlow` wraps `bun run edit-flow`. Both are real scripts; the facade does not duplicate their multi-step behavior.
 
-## Error codes
+## batch execution
+
+Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `args` remains a compatibility alias and can be a function receiving the previous result. Read-only steps can set `parallel: true`; mutating steps are always sequential.
+
+## branch resolution
+
+Task-scoped work should pass `taskSession`. Branch fallback resolution is for diagnostics/manual commands only: explicit `branch`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
+
+## dry-run
+
+Mutating tools accept `dryRun: true`. The facade validates input, resolves branch state, builds the command, returns code `DRY_RUN`, and does not execute the mutation.
+
+## error codes
 
 `OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
-## Final rule
+## tracing
 
-The tool manifest is executable contract. If this file and the manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.
+Every result includes `traceId`, optional echoed `requestId`, `durationMs`, `exitCode`, and `apiVersion`. The executor emits one `tool.executed` JSON event to stderr.
+
+## mac operations
+
+`workspace.mac.*` methods wrap `bun run mac` and operate outside the repository. They never perform task branch resolution.
+
+## decision engine walkthrough
+
+The decision engine wrappers call the existing scripts as-is: `workspace.explore`, `workspace.decideNext`, `workspace.confidenceScore`, and `workspace.exploit`. Retrieval is treated as a prior; confidence comes from evidence written by those scripts.
+
+## migration from lower-level scripts
+
+Do not call lower-level workspace scripts from the workspace app during normal work.
+
+Use the MCP facade instead: `workspace.call({ tool: "fs.read", taskSession, input: { path: "packages/workspace/package.json" }, timeout: 120 })`.
+
+## final reminder
+
+Every workspace operation above is invoked through `workspace.call({ tool, input, taskSession, timeout })`. There are no per-operation MCP tools beyond `get_steering` and `call`. The workspace app is the environment, so work inside it and fix any typed facade call that does not run there.
 

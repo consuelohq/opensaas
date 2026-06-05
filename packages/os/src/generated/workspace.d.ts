@@ -197,7 +197,7 @@ declare const workspace: {
   status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   tmp: (input: { action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   verify: (input: { branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  wait: (input: { seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  wait: (input: { seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   batch: (steps: BatchStep[]) => Promise<ToolResult<{ results: ToolResult[]; completed: number }>>;
 };
 

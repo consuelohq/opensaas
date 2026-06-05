@@ -4,7 +4,9 @@ const path = require('path');
 
 const { getCurrentBranch, getRefSha, getTrackedChanges } = require('./git');
 
-const VERIFY_STAMP_PATH = path.join('.task', 'verify.json');
+const TASK_DIR = '.task';
+const VERIFY_FILENAME = 'verify.json';
+const LEGACY_VERIFY_STAMP_PATH = path.join(TASK_DIR, VERIFY_FILENAME);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -54,39 +56,86 @@ function computeVerificationState(repoRoot, branchOverride) {
   };
 }
 
-function getVerifyStampPath(repoRoot) {
-  return path.join(repoRoot, VERIFY_STAMP_PATH);
+function getTaskSlug(taskBranch) {
+  if (!taskBranch) return null;
+  const parts = String(taskBranch).split('/');
+  return parts[parts.length - 1] || null;
 }
 
-function readVerifyStamp(repoRoot) {
-  const stampPath = getVerifyStampPath(repoRoot);
+function normalizeTaskMeta(taskMeta) {
+  if (!taskMeta) return null;
+  if (taskMeta.data && typeof taskMeta.data === 'object') return taskMeta.data;
+  return taskMeta;
+}
 
-  if (!fs.existsSync(stampPath)) {
-    return null;
+function getVerifyStampPath(repoRoot, taskMeta) {
+  const meta = normalizeTaskMeta(taskMeta);
+  const area = meta && meta.area;
+  const slug = meta && getTaskSlug(meta.taskBranch || meta.branch);
+
+  if (area && slug) {
+    return path.join(repoRoot, TASK_DIR, area, slug, VERIFY_FILENAME);
   }
 
+  return path.join(repoRoot, LEGACY_VERIFY_STAMP_PATH);
+}
+
+function readJsonFile(filePath) {
   try {
-    return JSON.parse(fs.readFileSync(stampPath, 'utf8'));
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch {
     return null;
   }
 }
 
-function writeVerifyStamp(repoRoot, stamp) {
-  const stampPath = getVerifyStampPath(repoRoot);
-  fs.mkdirSync(path.dirname(stampPath), { recursive: true });
-  fs.writeFileSync(stampPath, `${JSON.stringify(stamp, null, 2)}\n`, 'utf8');
+function readVerifyStamp(repoRoot, taskMeta) {
+  const stampPath = getVerifyStampPath(repoRoot, taskMeta);
+
+  if (fs.existsSync(stampPath)) {
+    return readJsonFile(stampPath);
+  }
+
+  const legacyPath = path.join(repoRoot, LEGACY_VERIFY_STAMP_PATH);
+  if (stampPath !== legacyPath && fs.existsSync(legacyPath)) {
+    return readJsonFile(legacyPath);
+  }
+
+  return null;
 }
 
-function getVerifyStampMismatch(repoRoot, branchOverride) {
-  const stamp = readVerifyStamp(repoRoot);
+function writeVerifyStamp(repoRoot, stamp, taskMeta) {
+  const stampPath = getVerifyStampPath(repoRoot, taskMeta);
+  fs.mkdirSync(path.dirname(stampPath), { recursive: true });
+  fs.writeFileSync(stampPath, `${JSON.stringify(stamp, null, 2)}\n`, 'utf8');
+  return stampPath;
+}
+
+function getVerifyStampMismatch(repoRoot, branchOverride, taskMeta) {
+  const stamp = readVerifyStamp(repoRoot, taskMeta);
 
   if (!stamp) {
-    return 'missing .task/verify.json stamp';
+    const relativePath = path.relative(repoRoot, getVerifyStampPath(repoRoot, taskMeta)).split(path.sep).join('/');
+    return `missing ${relativePath} stamp`;
   }
 
   if (stamp.result !== 'pass') {
     return `last verify result was ${stamp.result || 'unknown'}`;
+  }
+
+  if (stamp.publishValid !== true) {
+    return 'last verify stamp is not publish-valid';
+  }
+
+  if (stamp.mode !== 'full') {
+    return `last verify mode was ${stamp.mode || 'unknown'}, not full`;
+  }
+
+  if (!stamp.review || stamp.review.skipped || stamp.review.passed !== true) {
+    return 'last verify did not complete review successfully';
+  }
+
+  if (!stamp.db || stamp.db.skipped || stamp.db.passed !== true || stamp.db.warnOnly) {
+    return 'last verify did not complete db guardrails successfully';
   }
 
   const state = computeVerificationState(repoRoot, branchOverride);

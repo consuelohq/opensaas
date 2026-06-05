@@ -7572,12 +7572,12 @@ await workspace.call({
 
 ### workspace.wait
 
-sleep or wait for a PR/deploy
+sleep, create detached wait checkpoints, or wait for a PR/deploy
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.wait({ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.wait({ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace wait` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -7588,7 +7588,9 @@ sleep or wait for a PR/deploy
 await workspace.call({
   "tool": "wait",
   "input": {
-    "seconds": 1
+    "duration": "24h",
+    "detached": true,
+    "reason": "wake after long-running external work"
   }
 });
 ```

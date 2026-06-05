@@ -454,6 +454,20 @@
           ]
         },
         {
+          "key": "osTools",
+          "label": "Tools",
+          "icon": "wrench",
+          "pages": [
+            "os/tools/overview",
+            "os/tools/tool-search",
+            "os/tools/filesystem-tools",
+            "os/tools/task-and-stream-tools",
+            "os/tools/github-and-review-tools",
+            "os/tools/exploration-tools",
+            "os/tools/browser-tools"
+          ]
+        },
+        {
           "key": "osSkills",
           "label": "Skills",
           "icon": "bolt",
