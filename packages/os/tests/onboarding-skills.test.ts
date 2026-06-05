@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CORE_SKILL_GROUP_LABEL,
+  OPTIONAL_SKILL_GROUP_LABEL,
+  getCoreSelectedSkillNames,
   getDefaultSelectedSkillNames,
+  getGroupedOnboardingSkillOptions,
   getOnboardingSkillOptions,
 } from '../scripts/lib/onboarding-skills';
 
@@ -18,12 +22,52 @@ describe('onboarding skill choices', () => {
     expect(names).not.toContain('agent-handoff');
   });
 
-  it('preselects active skills and excludes deprecated compatibility aliases', () => {
+  it('defaults to core skills and excludes optional plus deprecated skills', () => {
     const selected = getDefaultSelectedSkillNames();
 
-    expect(selected).toContain('senior-engineer');
+    expect(selected).toEqual(getCoreSelectedSkillNames());
+    expect(selected).toContain('browser');
+    expect(selected).toContain('consuelo-design');
+    expect(selected).toContain('debugger');
+    expect(selected).toContain('handoff');
     expect(selected).toContain('research-ingest');
+    expect(selected).toContain('senior-engineer');
+    expect(selected).toContain('skill-creator');
     expect(selected).toContain('task');
+    expect(selected).not.toContain('consuelo-workspace-snapshot');
+    expect(selected).not.toContain('daily-revenue-brief');
     expect(selected).not.toContain('consuelo-design-landing-page');
+  });
+
+  it('groups the interactive prompt with core first, optional second, title-only rows', () => {
+    const grouped = getGroupedOnboardingSkillOptions();
+    const groupNames = Object.keys(grouped.options);
+
+    expect(groupNames).toEqual([
+      CORE_SKILL_GROUP_LABEL,
+      OPTIONAL_SKILL_GROUP_LABEL,
+    ]);
+    expect(grouped.cursorAt).toBe(CORE_SKILL_GROUP_LABEL);
+    expect(grouped.initialValues).toEqual([]);
+    expect(grouped.selectableGroups).toBe(true);
+    expect(grouped.groupSpacing).toBeGreaterThan(0);
+
+    const coreNames = grouped.options[CORE_SKILL_GROUP_LABEL].map(
+      (option) => option.value,
+    );
+    const optionalNames = grouped.options[OPTIONAL_SKILL_GROUP_LABEL].map(
+      (option) => option.value,
+    );
+
+    expect(coreNames).toEqual(getCoreSelectedSkillNames());
+    expect(optionalNames).toEqual([
+      'consuelo-workspace-snapshot',
+      'daily-revenue-brief',
+    ]);
+
+    for (const option of Object.values(grouped.options).flat()) {
+      expect(option.label).toBeTruthy();
+      expect(option.hint).toBeUndefined();
+    }
   });
 });
