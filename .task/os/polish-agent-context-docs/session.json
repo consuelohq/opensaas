@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7884974a8fd4",
+  "tmuxSession": "opensaas-os-polish-agent-context-docs-7884974a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-agent-context-docs",
+  "branch": "task/os/polish-agent-context-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-agent-context-docs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-agent-context-docs",
+  "prNumber": 781,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/781",
+  "createdAt": "2026-06-05T06:13:04.924Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-agent-context-docs/.task/os/polish-agent-context-docs/session.json"
+}

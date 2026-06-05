@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 type RawSourceDoc = {
   sourcePath: string;
   slug: string;
+  legacySlugs: string[];
   title: string;
   description: string;
 };
@@ -39,39 +40,57 @@ type NavigationTemplate = {
   };
 };
 
+type DocsJson = {
+  redirects?: Array<{
+    source: string;
+    destination: string;
+  }>;
+  [key: string]: unknown;
+};
+
 const checkOnly = process.argv.includes('--check');
 const thisFile = fileURLToPath(import.meta.url);
 const docsRoot = path.resolve(path.dirname(thisFile), '..');
 const repoRoot = path.resolve(docsRoot, '..', '..');
 const baseStructurePath = path.join(docsRoot, 'navigation', 'base-structure.json');
 const templatePath = path.join(docsRoot, 'navigation', 'navigation.template.json');
+const docsJsonPath = path.join(docsRoot, 'docs.json');
+
+const agentContextGroupKey = 'osAgentContext';
+const legacyGroupKey = 'osTools';
+const agentContextGroupLabel = 'Agent Context';
+const agentContextGroupIcon = 'brain';
 
 const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'ko', 'pt', 'ro', 'ru', 'tr', 'zh'] as const;
 
 export const rawSourceDocs: RawSourceDoc[] = [
   {
     sourcePath: 'packages/os/STEERING.md',
-    slug: 'os/tools/default-steering',
-    title: 'Default Steering',
-    description: 'Generated documentation for the default Consuelo OS steering source.',
-  },
-  {
-    sourcePath: 'packages/os/TOOLS.md',
-    slug: 'os/tools/tool-manifest',
-    title: 'Tool Manifest',
-    description: 'Generated documentation for the human-readable Consuelo OS tool catalog.',
-  },
-  {
-    sourcePath: 'packages/os/SCRIPTS.md',
-    slug: 'os/tools/scripts',
-    title: 'Scripts',
-    description: 'Generated documentation for the Consuelo OS scripts source.',
+    slug: 'os/agent-context/steering',
+    legacySlugs: ['os/tools/default-steering'],
+    title: 'steering.md',
+    description: 'Runtime steering loaded into the Consuelo OS agent.',
   },
   {
     sourcePath: 'packages/os/decision.md',
-    slug: 'os/tools/decision-engine',
-    title: 'Decision Engine',
-    description: 'Generated documentation for the Consuelo OS decision process source.',
+    slug: 'os/agent-context/decision',
+    legacySlugs: ['os/tools/decision-engine'],
+    title: 'decision.md',
+    description: 'Decision-process doctrine used by Consuelo OS agents.',
+  },
+  {
+    sourcePath: 'packages/os/TOOLS.md',
+    slug: 'os/agent-context/tools',
+    legacySlugs: ['os/tools/tool-manifest'],
+    title: 'tools.md',
+    description: 'Human-readable catalog of callable Consuelo OS tools.',
+  },
+  {
+    sourcePath: 'packages/os/SCRIPTS.md',
+    slug: 'os/agent-context/scripts',
+    legacySlugs: ['os/tools/scripts'],
+    title: 'scripts.md',
+    description: 'Procedural script reference for Consuelo OS runtime work.',
   },
 ];
 
@@ -95,6 +114,8 @@ const stripFrontmatter = (body: string): string => {
   return body.slice(end + '\n---\n'.length);
 };
 
+const stripFirstHeading = (body: string): string => body.replace(/^# .+\n+/, '');
+
 const isFenceBoundary = (line: string): boolean => {
   const trimmed = line.trim();
   return trimmed.startsWith('```') || trimmed.startsWith('~~~');
@@ -107,7 +128,7 @@ const mdxSafeMarkdown = (body: string): string => {
   const output: string[] = [];
   let inFence = false;
 
-  for (const line of stripFrontmatter(body).trimEnd().split('\n')) {
+  for (const line of stripFirstHeading(stripFrontmatter(body)).trimEnd().split('\n')) {
     if (isFenceBoundary(line)) {
       inFence = !inFence;
       output.push(line);
@@ -178,7 +199,26 @@ const syncRawSourceDocs = (): void => {
   }
 };
 
-const expectedToolPages = (): string[] => rawSourceDocs.map((doc) => doc.slug);
+const expectedAgentContextPages = (): string[] => rawSourceDocs.map((doc) => doc.slug);
+
+const buildAgentContextGroup = (): BaseGroup => ({
+  key: agentContextGroupKey,
+  label: agentContextGroupLabel,
+  icon: agentContextGroupIcon,
+  pages: expectedAgentContextPages(),
+});
+
+const insertAgentContextGroup = (groups: BaseGroup[]): BaseGroup[] => {
+  const cleaned = groups.filter((group) => group.key !== agentContextGroupKey && group.key !== legacyGroupKey);
+  const insertAfter = ['osConcepts', 'osAgentInterface', 'osOverview']
+    .map((key) => cleaned.findIndex((group) => group.key === key))
+    .find((index) => index !== -1);
+  const insertBefore = cleaned.findIndex((group) => group.key === 'osSkills');
+  const insertAt = insertAfter !== undefined ? insertAfter + 1 : insertBefore === -1 ? cleaned.length : insertBefore;
+
+  cleaned.splice(insertAt, 0, buildAgentContextGroup());
+  return cleaned;
+};
 
 const syncBaseNavigation = (): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
@@ -187,25 +227,7 @@ const syncBaseNavigation = (): void => {
     throw new Error('navigation/base-structure.json is missing the os tab.');
   }
 
-  const toolsGroup = osTab.groups.find((group) => group.key === 'osTools');
-  if (toolsGroup) {
-    toolsGroup.label = 'Tools';
-    toolsGroup.icon = 'terminal';
-    toolsGroup.pages = expectedToolPages();
-  } else {
-    const insertAfter = ['osAgentInterface', 'osConcepts', 'osOverview']
-      .map((key) => osTab.groups.findIndex((group) => group.key === key))
-      .find((index) => index !== -1);
-    const insertBefore = osTab.groups.findIndex((group) => group.key === 'osSkills');
-    const insertAt = insertAfter !== undefined ? insertAfter + 1 : insertBefore === -1 ? osTab.groups.length : insertBefore;
-    osTab.groups.splice(insertAt, 0, {
-      key: 'osTools',
-      label: 'Tools',
-      icon: 'terminal',
-      pages: expectedToolPages(),
-    });
-  }
-
+  osTab.groups = insertAgentContextGroup(osTab.groups);
   writeOrCheck(baseStructurePath, `${JSON.stringify(structure, null, 2)}\n`);
 };
 
@@ -216,23 +238,59 @@ const syncTemplateNavigation = (): void => {
     throw new Error('navigation/navigation.template.json is missing tabs.os.groups.');
   }
 
-  const insertAfterKey = ['osAgentInterface', 'osConcepts', 'osOverview'].find((key) => key in osGroups);
   const nextGroups: Record<string, TemplateGroup> = {};
   let inserted = false;
+  const insertAfterKey = ['osConcepts', 'osAgentInterface', 'osOverview'].find((key) => key in osGroups);
+
   for (const [key, value] of Object.entries(osGroups)) {
+    if (key === legacyGroupKey || key === agentContextGroupKey) {
+      continue;
+    }
+
     nextGroups[key] = value;
     if (key === insertAfterKey) {
-      nextGroups.osTools = { label: 'Tools' };
+      nextGroups[agentContextGroupKey] = { label: agentContextGroupLabel };
       inserted = true;
     }
   }
 
   if (!inserted) {
-    nextGroups.osTools = { label: 'Tools' };
+    nextGroups[agentContextGroupKey] = { label: agentContextGroupLabel };
   }
 
   template.tabs!.os!.groups = nextGroups;
   writeOrCheck(templatePath, `${JSON.stringify(template, null, 2)}\n`);
+};
+
+const redirectFor = (slug: string, target: string, language?: string): { source: string; destination: string } => {
+  const prefix = language ? `/l/${language}/` : '/';
+  return {
+    source: `${prefix}${slug}`,
+    destination: `${prefix}${target}`,
+  };
+};
+
+const expectedRedirects = (): Array<{ source: string; destination: string }> => {
+  const redirects: Array<{ source: string; destination: string }> = [];
+  for (const doc of rawSourceDocs) {
+    for (const legacySlug of doc.legacySlugs) {
+      redirects.push(redirectFor(legacySlug, doc.slug));
+      for (const language of localizedFallbackLanguages) {
+        redirects.push(redirectFor(legacySlug, doc.slug, language));
+      }
+    }
+  }
+  return redirects;
+};
+
+const syncDocsRedirects = (): void => {
+  const docsJson = readJson<DocsJson>(docsJsonPath);
+  const required = expectedRedirects();
+  const requiredSources = new Set(required.map((redirect) => redirect.source));
+  const existing = (docsJson.redirects ?? []).filter((redirect) => !requiredSources.has(redirect.source));
+  const next = [...existing, ...required].sort((a, b) => a.source.localeCompare(b.source));
+  docsJson.redirects = next;
+  writeOrCheck(docsJsonPath, `${JSON.stringify(docsJson, null, 2)}\n`);
 };
 
 const writeLocalizedFallback = (doc: RawSourceDoc): void => {
@@ -255,6 +313,7 @@ export const runRawSourceDocsGenerator = (): void => {
   syncRawSourceDocs();
   syncBaseNavigation();
   syncTemplateNavigation();
+  syncDocsRedirects();
   syncLocalizedRawSourceDocs();
   process.stdout.write(`${checkOnly ? 'checked' : 'generated'} ${rawSourceDocs.length} raw source docs\n`);
 };
