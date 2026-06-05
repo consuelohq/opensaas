@@ -7262,9 +7262,9 @@ example error envelope:
 
 ### wait
 
-sleep or wait for a PR/deploy
+sleep, create detached wait checkpoints, or wait for a PR/deploy
 
-- signature: `workspace.wait({ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.wait({ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace wait`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
@@ -7275,7 +7275,9 @@ example call:
 await workspace.call({
   "tool": "wait",
   "input": {
-    "seconds": 1
+    "duration": "24h",
+    "detached": true,
+    "reason": "wake after long-running external work"
   }
 });
 ```
