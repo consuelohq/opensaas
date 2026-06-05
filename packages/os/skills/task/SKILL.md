@@ -1,10 +1,3 @@
----
-name: task
-description: Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.
----
-
-# Task Workflow
-
 # Ko must explicitly provide or approve the stream before task work begins.
 
 If no stream or area was provided, stop and ask. You may suggest likely streams, but never choose one silently.
@@ -28,30 +21,26 @@ start → work → publish → clean up
 Canonical flow:
 
 ```text
-stream.context
-→ task.start
-→ decision-engine research
-→ implementation
-→ validation
-→ task.push
-→ task.pr
-→ stream review PR
-→ task.finish
+stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 ```
+For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:
 
-## Workspace Tool Surface
+a focused test has been written or updated and run red, or
+a no-test waiver explains why no test is appropriate and what validation replaces it.
 
-The workspace app exposes exactly two MCP tools:
+## OS Tool Surface
+
+The OS app exposes exactly two MCP tools:
 
 ```ts
-workspace.get_steering()
-workspace.call({ tool, input, taskSession, timeout })
+os.get_steering()
+os.call({ tool, input, taskSession, timeout })
 ```
 
 Normal non-task calls must use the typed facade shape:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "stream.context",
   input: { area: "<area>" },
   timeout: 120,
@@ -66,17 +55,17 @@ Treat that exact value as the task handle for the rest of the task:
 const taskSession = result.data.taskSession
 ```
 
-Pass `taskSession` at the top level of every task-scoped `workspace.call`:
+Pass `taskSession` at the top level of every task-scoped `os.call`:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.read",
   taskSession,
   input: { path: "AGENTS.md" },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "status",
   taskSession,
   input: {},
@@ -97,7 +86,7 @@ Do not normally put `taskSession` inside `input`.
 
 The server propagates the top-level `taskSession` into the facade. `input.taskSession` exists only for compatibility and must match the top-level value if both are present.
 
-Branch names still matter for GitHub, PRs, logs, and debugging. Normal workspace calls should be task-session scoped instead of branch-threaded.
+Branch names still matter for GitHub, PRs, logs, and debugging. Normal OS calls should be task-session scoped instead of branch-threaded.
 
 ---
 
@@ -106,7 +95,7 @@ Branch names still matter for GitHub, PRs, logs, and debugging. Normal workspace
 Run stream context before starting task work:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "stream.context",
   input: { area: "<area>" },
   timeout: 120,
@@ -116,7 +105,7 @@ await workspace.call({
 Use `stream.list` first only when the correct stream area is unknown:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "stream.list",
   input: {},
   timeout: 120,
@@ -141,7 +130,7 @@ Stop and ask Ko when the correct stream is ambiguous.
 Create one focused task branch:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.start",
   input: {
     area: "<area>",
@@ -164,14 +153,14 @@ Capture these fields from the result:
 Use `taskSession` for later task-scoped calls:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.read",
   taskSession,
   input: { path: "AGENTS.md" },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "status",
   taskSession,
   input: {},
@@ -198,7 +187,7 @@ const taskSession = result.data.taskSession
 Every task-scoped call must pass that value at the top level:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.read",
   taskSession,
   input: {
@@ -213,7 +202,7 @@ await workspace.call({
 Correct:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.exec",
   taskSession,
   input: {
@@ -227,7 +216,7 @@ await workspace.call({
 Avoid this unless testing fallback compatibility:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.exec",
   input: {
     taskSession,
@@ -240,7 +229,7 @@ await workspace.call({
 Never pass conflicting task sessions:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.read",
   taskSession: "tsk_outer",
   input: {
@@ -254,7 +243,7 @@ That should return `VALIDATION_ERROR`.
 
 If a task-scoped call returns `TASK_SESSION_REQUIRED` or `TASK_SESSION_NOT_FOUND`, first check that the exact `taskSession` returned by `task.start` was passed at the top level. Do not switch to branch-threading or root task metadata as the default recovery path.
 
-Inside `code.run` and `batch`, pass `taskSession` on the outer `workspace.call`. Nested `workspace.*` calls inherit task context.
+Inside `code.run` and `batch`, pass `taskSession` on the outer `os.call`. Nested `workspace.*` calls inherit task context.
 
 ## Non-Negotiable: Scoped Workpad Writes
 
@@ -280,18 +269,31 @@ Agents must update the workpad at these checkpoints:
    - acceptance criteria
    - plan
    - initial assumptions
+   - `Test-first contract` stub
 
-2. Before any meaningful code edit
-   - what will change
-   - why it is safe
-   - expected validation
+2. Before any meaningful production code edit
+   - behavior under test
+   - existing local test pattern to follow
+   - new or changed tests
+   - focused red command
+   - expected red failure
+   - no-test waiver, only when genuinely appropriate
 
-3. Before `task.push`, `task.pr`, or `task.finish`
+3. After the focused red run
+   - red command
+   - red result
+   - meaningful failure signal
+
+4. Before `task.push`, `task.pr`, or `task.finish`
    - final summary
    - files changed
    - key decisions
-   - validation evidence
+   - green evidence
+   - broader validation evidence
    - issues encountered
+
+Workspace-owned workpad sections may auto-populate read files, changed files, red/green TDD evidence, test selection, activity, and validation output. Agent-owned sections still must explain intent, behavior, local pattern, and any waiver.
+
 
 Also update the workpad whenever the task meaningfully changes:
 
@@ -307,6 +309,7 @@ Never delete useful prior workpad notes while updating it. The workpad is what K
 Do not publish a task unless the scoped workpad reflects the current task state.
 
 If the task-local scoped workpad is missing, create it before continuing. If task metadata points to the wrong task, repair or explicitly select the correct task-local workpad before continuing.
+
 
 ## Temporary and Smoke-Test Task PRs
 
@@ -358,25 +361,25 @@ Use the decision engine and project context before direct symbol hunting, and re
 Context and exploration are not one-time kickoff steps; they are tools for staying aligned throughout the task.
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "context.search",
   input: { keyword: "<feature or behavior>", limit: 5 },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "context.search",
   input: { keyword: "typed workspace facade", limit: 5 },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "context.search",
   input: { keyword: "workspace scripts docs", limit: 5 },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "explore",
   input: {
     query: "<feature or behavior> workspace facade script manifest docs tests",
@@ -389,7 +392,7 @@ await workspace.call({
 Ask for the next best action:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "decideNext",
   input: {},
   timeout: 120,
@@ -399,7 +402,7 @@ await workspace.call({
 Read recommended files through task-scoped file tools:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.read",
   taskSession,
   input: { path: "<recommended-file>" },
@@ -410,13 +413,13 @@ await workspace.call({
 Then rerun the loop:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "decideNext",
   input: {},
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "confidenceScore",
   input: {},
   timeout: 120,
@@ -428,7 +431,7 @@ Repeat until the implementation path is supported by evidence.
 Use `exploit` when the path is clear enough to commit to an editing target:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "exploit",
   input: {},
   timeout: 120,
@@ -438,7 +441,7 @@ await workspace.call({
 Use targeted `fs.search` only after the decision engine has narrowed the direction:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "fs.search",
   taskSession,
   input: {
@@ -497,7 +500,7 @@ Use it mid-task when:
 Default context loop:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "context.search",
   input: {
     keyword: "<feature-or-failure-keyword>",
@@ -558,10 +561,10 @@ Use `code.run` for:
 
 Inside `code.run`, prefer the typed `workspace.*` helper surface.
 
-Pass `taskSession` on the outer `workspace.call`; nested calls inherit the task context.
+Pass `taskSession` on the outer `os.call`; nested calls inherit the task context.
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "code.run",
   taskSession,
   input: {
@@ -600,7 +603,7 @@ Use:
 For edits, keep the same pattern: call typed tools, reread the changed range, and return a compact summary.
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "code.run",
   taskSession,
   input: {
@@ -656,7 +659,7 @@ Do not use `code.run` for final durable transitions such as:
 - publishing
 - destructive cleanup
 
-Run those as direct outer `workspace.call` operations so the state transition is visible.
+Run those as direct outer `os.call` operations so the state transition is visible.
 
 ## Phase 4b — Use `batch` Only for Fixed Independent Lists
 
@@ -680,7 +683,7 @@ Use `code.run` instead when:
 Current `batch` shape:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "batch",
   taskSession,
   input: {
@@ -714,7 +717,7 @@ await workspace.call({
 })
 ```
 
-When using `batch`, pass `taskSession` on the outer `workspace.call`. Child steps inherit task context.
+When using `batch`, pass `taskSession` on the outer `os.call`. Child steps inherit task context.
 
 Do not pass raw branch state unless debugging task-session routing.
 
@@ -766,7 +769,7 @@ After edits, inspect the diff through `git.diff`.
 Use summary-first diff inspection:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "git.diff",
   taskSession,
   input: {
@@ -782,7 +785,7 @@ await workspace.call({
 When reviewing against a base branch, include `base`:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "git.diff",
   taskSession,
   input: {
@@ -799,7 +802,7 @@ await workspace.call({
 Request `patch: true` only when the actual changed lines are needed:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "git.diff",
   taskSession,
   input: {
@@ -846,7 +849,7 @@ Run validation that matches the change.
 For syntax-level changes:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "checkFiles",
   taskSession,
   input: {
@@ -860,8 +863,8 @@ await workspace.call({
 For Python changes:
 
 ```ts
-await workspace.call({
-  tool: "task.exec",
+await os.call({
+  tool: "task.call",
   taskSession,
   input: {
     command: ["python3", "-m", "py_compile", "<file.py>"],
@@ -870,44 +873,61 @@ await workspace.call({
 })
 ```
 
-For focused tests:
+For focused tests, prefer explicit TDD phase markers so the workpad can auto-populate red/green evidence:
 
 ```ts
-await workspace.call({
-  tool: "task.exec",
+await os.call({
+  tool: "task.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
+    tddPhase: "red",
+    timeout: 300000,
   },
-  timeout: 600,
+  timeout: 300000,
+})
+```
+
+After implementation:
+
+```ts
+await os.call({
+  tool: "task.call",
+  taskSession,
+  input: {
+    command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
+    tddPhase: "green",
+    timeout: 300000,
+  },
+  timeout: 300000,
 })
 ```
 
 For workspace review:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "review.run",
   taskSession,
   input: {
     base: "origin/stream/<area>",
     noTests: true,
   },
-  timeout: 600,
+  timeout: 300000,
 })
 ```
 
 For full task safety gate:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "verify",
   taskSession,
   input: {
     base: "<origin/main-or-origin/stream/area>",
     noDb: true,
   },
-  timeout: 700,
+  timeout: 300000,
 })
 ```
 
@@ -996,7 +1016,7 @@ For dialer-like flows, a valid proof usually includes:
 A successful API response alone is not sufficient when the behavior depends on callbacks, queues, locks, or external lifecycle events.
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "confirm",
   taskSession,
   input: { verify: true },
@@ -1007,7 +1027,7 @@ await workspace.call({
 For workspace tooling/docs/index changes:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "audit",
   taskSession,
   input: { scripts: true },
@@ -1018,14 +1038,14 @@ await workspace.call({
 Other useful audit modes:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "audit",
   taskSession,
   input: { docs: true },
   timeout: 120,
 })
 
-await workspace.call({
+await os.call({
   tool: "audit",
   taskSession,
   input: { index: true },
@@ -1045,7 +1065,7 @@ Validation base must match the task start point:
 Do not mix bases inside one task unless the task was explicitly rebased or restacked.
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "review.run",
   taskSession,
   input: {
@@ -1055,7 +1075,7 @@ await workspace.call({
   timeout: 900,
 })
 
-await workspace.call({
+await os.call({
   tool: "verify",
   taskSession,
   input: {
@@ -1081,7 +1101,7 @@ Use the relevant truth source. Confirmation should produce evidence. A syntax ch
 Typical call:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.push",
   taskSession,
   input: {
@@ -1116,7 +1136,7 @@ Expected behavior:
 Run the full PR promotion flow:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.pr",
   taskSession,
   input: { ready: true },
@@ -1254,7 +1274,7 @@ Record the resolution in the scoped workpad or final report.
 When Ko asks to ship the stream, merge the stream review PR:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.merge",
   input: {
     pr: <stream-pr-number>,
@@ -1268,7 +1288,7 @@ await workspace.call({
 If the merge tool times out, verify actual GitHub state:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "github",
   input: {
     operation: "pr.view",
@@ -1283,7 +1303,7 @@ await workspace.call({
 If the stream PR has conflicts with main, run stream sync:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "stream.sync",
   input: { area: "<area>" },
   timeout: 300,
@@ -1299,14 +1319,14 @@ After the stream PR merges, tell Ko to pull and restart the server when the chan
 Use typed workspace server tooling when available:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "server",
   input: { action: "restart" },
   timeout: 120,
 })
 ```
 
-Then smoke the affected path through `workspace.call`.
+Then smoke the affected path through `os.call`.
 
 ---
 
@@ -1315,7 +1335,7 @@ Then smoke the affected path through `workspace.call`.
 Use `task.finish` only when cleanup is safe:
 
 ```ts
-await workspace.call({
+await os.call({
   tool: "task.finish",
   taskSession,
   input: {},
@@ -1403,48 +1423,6 @@ When any publish step returns non-OK:
 This keeps publishing stateful, reviewable, and task-safe.
 
 ---
-
-# Why `taskSession` Replaced Branch-Threading for Normal Calls
-
-Multiple agents work concurrently on the same repo. Shared mutable pointers can drift, and branch-only calls can lose the richer task context.
-
-`taskSession` identifies the task metadata, tmux session, branch, and worktree together. The server resolves the correct worktree from the task session and injects context into task-scoped calls.
-
-Use this:
-
-```ts
-await workspace.call({
-  tool: "fs.read",
-  taskSession,
-  input: { path: "packages/workspace/server.py" },
-  timeout: 120,
-})
-```
-
-Use explicit branch mainly for GitHub/manual debugging, not as the standard ChatGPT workflow.
-
-Resolver priority for task work:
-
-1. top-level `taskSession`
-2. matching `input.taskSession` compatibility fallback
-3. explicit branch where supported by lower-level scripts
-4. scoped task metadata inside the task worktree
-5. environment variables or single-active-task fallback only for compatibility
-
-Agents should rely on source 1.
-
-Do not rely on:
-
-```text
-.task/current.json
-.task/session.json
-.task/workpad.md
-.task/verify.json
-```
-
-Those are legacy pointer files and must not be treated as active task truth.
-
-If status reports a scoped `staleTask`, that means it found historical task metadata that does not match the current branch or task session. Treat it as informational noise unless it matches the active `taskSession`.
 
 ## Stale Scoped Metadata Is Not Active Task Truth
 
@@ -1547,12 +1525,4 @@ Before saying “done,” verify and report:
 - commit SHA or merge SHA
 - files changed
 - validation run
-- local state if the user requested local sync
-
-Before saying “blocked,” report:
-
-- exact command/tool
-- exact error
-- taskSession and branch involved
-- evidence that the failure is outside normal task recovery
-- safest next action
+- local state if the user requested

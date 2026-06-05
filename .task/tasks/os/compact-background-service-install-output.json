@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compact-background-service-install-output",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 752,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/752",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/752",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/752/compact-background-service-install-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/752",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/752/compact-background-service-install-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-compact-background-service-install-output",
+  "taskSession": "tsk_7cd218014f72",
+  "tmuxSession": "opensaas-os-compact-background-service-install-output-7cd21801",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-compact-background-service-install-output/.task/os/compact-background-service-install-output/session.json",
+  "createdAt": "2026-06-03T20:54:03.050Z"
+}

@@ -1,0 +1,11 @@
+name = "consuelo-diff-cockpit"
+main = "src/worker.ts"
+compatibility_date = "2025-12-01"
+workers_dev = true
+
+routes = [
+  { pattern = "diffs.consuelohq.com", custom_domain = true }
+]
+
+[vars]
+DIFF_COCKPIT_DEFAULT_REPO = "consuelohq/opensaas"

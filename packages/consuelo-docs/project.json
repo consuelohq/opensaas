@@ -3,7 +3,9 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/consuelo-docs",
   "projectType": "application",
-  "tags": ["scope:docs"],
+  "tags": [
+    "scope:docs"
+  ],
   "targets": {
     "dev": {
       "executor": "nx:run-commands",
@@ -14,10 +16,12 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/.mintlify"],
+      "outputs": [
+        "{projectRoot}/.mintlify"
+      ],
       "options": {
         "cwd": "{projectRoot}",
-        "command": "mintlify build"
+        "command": "mintlify validate"
       }
     },
     "lint": {

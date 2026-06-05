@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-clack-input",
+  "base": "origin/main",
+  "headSha": "6af02810aa6ec75c975bdd3f0ce7de61c0167c0c",
+  "changeHash": "0701d7f21c6dacfb2189d0e58b48aa132bc993a9678cdca038b90f13883c8116",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-tty.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T08:06:48.502Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-clack-input/current.json",
+        ".task/os/fix-clack-input/evidence-log.json",
+        ".task/os/fix-clack-input/read-log.json",
+        ".task/os/fix-clack-input/session.json",
+        ".task/os/fix-clack-input/workpad.md",
+        ".task/tasks/os/fix-clack-input.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install-tty.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

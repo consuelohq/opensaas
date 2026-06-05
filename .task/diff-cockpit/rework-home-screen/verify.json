@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/rework-home-screen",
+  "base": "stream/diff-cockpit",
+  "headSha": "9e46985634084b353da138d5a9e6fca06a9f0989",
+  "changeHash": "8f11f6aef16338b0cb11eb0e0e5447a846c853c5a04e12f215da955be1e0d5c5",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T08:05:52.677Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/rework-home-screen/current.json",
+        ".task/diff-cockpit/rework-home-screen/evidence-log.json",
+        ".task/diff-cockpit/rework-home-screen/read-log.json",
+        ".task/diff-cockpit/rework-home-screen/session.json",
+        ".task/diff-cockpit/rework-home-screen/verify.json",
+        ".task/diff-cockpit/rework-home-screen/workpad.md",
+        ".task/tasks/diff-cockpit/rework-home-screen.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

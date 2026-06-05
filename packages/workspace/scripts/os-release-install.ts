@@ -13,6 +13,15 @@ const DEFAULT_DOMAIN = 'install.consuelohq.com';
 const DEFAULT_PATHNAME = '/os';
 const DEFAULT_COMPATIBILITY_DATE = '2026-06-02';
 
+
+function writeOut(message = ''): void {
+  process.stdout.write(`${message}\n`);
+}
+
+function writeErr(message = ''): void {
+  process.stderr.write(`${message}\n`);
+}
+
 type Options = {
   scriptPath: string;
   workerName: string;
@@ -29,7 +38,7 @@ type Options = {
 };
 
 function printHelp() {
-  console.log(`Usage: bun run os:release-install -- [options]
+  writeOut(`Usage: bun run os:release-install -- [options]
 
 Release the Consuelo OS curl installer to Cloudflare Workers.
 
@@ -153,7 +162,7 @@ function normalizePathname(value: string): string {
 }
 
 function run(command: string, args: string[], options: { allowFailure?: boolean } = {}) {
-  console.log(`$ ${[command, ...args].join(' ')}`);
+  writeOut(`$ ${[command, ...args].join(' ')}`);
   const result = spawnSync(command, args, {
     cwd: REPO_ROOT,
     encoding: 'utf8',
@@ -230,7 +239,7 @@ async function verifyInstallUrl(
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= options.verifyAttempts; attempt += 1) {
-    console.log(`Verifying ${url} (attempt ${attempt}/${options.verifyAttempts})`);
+    writeOut(`Verifying ${url} (attempt ${attempt}/${options.verifyAttempts})`);
 
     try {
       const response = await fetch(url, {
@@ -253,14 +262,14 @@ async function verifyInstallUrl(
         throw new Error(`Installer SHA mismatch. expected=${expectedSha256} actual=${actualSha256}`);
       }
 
-      console.log(`Verified ${url}`);
-      console.log(`sha256=${actualSha256}`);
+      writeOut(`Verified ${url}`);
+      writeOut(`sha256=${actualSha256}`);
       return;
-    } catch (error) {
+    } catch (error: unknown) {
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);
       if (attempt === options.verifyAttempts) break;
-      console.warn(`Verification not ready: ${message}`);
+      writeErr(`Verification not ready: ${message}`);
       await sleep(options.verifyDelayMs);
     }
   }
@@ -278,9 +287,9 @@ async function main() {
   const sha256 = createHash('sha256').update(bootstrap).digest('hex');
   const installUrl = `https://${options.domain}${options.pathname}`;
 
-  console.log(`bootstrap=${options.scriptPath}`);
-  console.log(`sha256=${sha256}`);
-  console.log(`installUrl=${installUrl}`);
+  writeOut(`bootstrap=${options.scriptPath}`);
+  writeOut(`sha256=${sha256}`);
+  writeOut(`installUrl=${installUrl}`);
 
   if (options.verifyOnly) {
     await verifyInstallUrl(installUrl, sha256, options);
@@ -290,7 +299,7 @@ async function main() {
   const tempDir = mkdtempSync(join(tmpdir(), 'consuelo-os-install-worker-'));
   const workerPath = join(tempDir, 'worker.js');
   writeFileSync(workerPath, buildWorkerSource(bootstrap, options, sha256));
-  console.log(`generated=${workerPath}`);
+  writeOut(`generated=${workerPath}`);
 
   try {
     if (!options.noDeploy) {
@@ -318,7 +327,7 @@ async function main() {
     }
   } finally {
     if (options.keepTemp) {
-      console.log(`kept temp dir: ${tempDir}`);
+      writeOut(`kept temp dir: ${tempDir}`);
     } else {
       rmSync(tempDir, { recursive: true, force: true });
     }
@@ -326,6 +335,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
+  writeErr(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

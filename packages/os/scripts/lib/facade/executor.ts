@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import manifestJson from '../../../tooling/dev-tool-manifest.json';
+import manifestJson from '../../../manifests/tool.manifest.json';
 
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
@@ -22,11 +22,23 @@ import type {
   ToolResult,
   ToolRunner,
 } from './types';
-
 const require = createRequire(import.meta.url);
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 
-export const manifestEntries = manifestJson as ToolManifestEntry[];
+type CanonicalManifestEntry = {
+  kind: 'os-skill' | 'facade-tool';
+  definition: ToolManifestEntry;
+};
+
+type CanonicalToolManifest = {
+  tools: CanonicalManifestEntry[];
+};
+
+const fullToolManifest = manifestJson as CanonicalToolManifest;
+
+export const manifestEntries = fullToolManifest.tools
+  .filter((entry) => entry.kind === 'facade-tool')
+  .map((entry) => entry.definition);
 
 type TaskSessionMetadata = {
   taskSession: string;

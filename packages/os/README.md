@@ -12,13 +12,12 @@ The product runtime path is Bun/TypeScript. Python files remain only as temporar
 
 ## OS portal
 
-The OS portal exposes three package entrypoints:
+The OS portal exposes two package entrypoints:
 
 - `get_steering`
-- `get_dev_steering`
 - `call`
 
-The customer-facing portal is `get_steering` and `call`. `get_dev_steering` is internal/dev/operator context.
+The visible OS portal is `get_steering` and `call`. Internal/dev/operator raw steering is available through `call` with `name: "get_raw_steering"`.
 
 Skills live behind `call` as Bun scripts under `scripts/`. They are exposed through manifests in `tooling/`.
 
@@ -71,10 +70,10 @@ Return OS steering:
 bun --cwd packages/os ./scripts/os.ts get-steering
 ```
 
-Return dev/operator steering:
+Return raw dev/operator steering through `call`:
 
 ```bash
-bun --cwd packages/os ./scripts/os.ts get-dev-steering
+bun --cwd packages/os ./scripts/os.ts call '{"name":"get_raw_steering"}'
 ```
 
 Run the smoke skill:
@@ -112,7 +111,6 @@ The server exposes:
 
 - `/health`
 - `/get_steering`
-- `/get_dev_steering`
 - `/call`
 
 Manage the background server through:

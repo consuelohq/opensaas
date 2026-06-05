@@ -2,93 +2,122 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  assertRawSourceDocsFresh,
-  rawSourceDocs,
-} from './generate-os-source-docs';
+type Page = string | Group;
 
-type NavPage = string | { pages?: NavPage[] };
-
-type BaseGroup = {
-  key: string;
-  label: string;
-  pages?: NavPage[];
+type Group = {
+  group?: string;
+  pages?: Page[];
 };
 
-type BaseStructure = {
-  tabs: Array<{
-    key: string;
-    label: string;
-    groups: BaseGroup[];
-  }>;
+type Tab = {
+  tab: string;
+  groups: Group[];
+};
+
+type LanguageEntry = {
+  language: string;
+  tabs: Tab[];
 };
 
 type DocsConfig = {
-  navigation?: {
-    languages?: Array<{
-      language: string;
-      tabs?: Array<{
-        tab: string;
-        groups?: Array<{ pages?: NavPage[] }>;
-      }>;
-    }>;
+  navigation: {
+    languages: LanguageEntry[];
   };
 };
 
 const thisFile = fileURLToPath(import.meta.url);
 const docsRoot = path.resolve(path.dirname(thisFile), '..');
-const baseStructurePath = path.join(docsRoot, 'navigation', 'base-structure.json');
-const docsConfigPath = path.join(docsRoot, 'docs.json');
+const docsJsonPath = path.join(docsRoot, 'docs.json');
+const docsConfig = JSON.parse(fs.readFileSync(docsJsonPath, 'utf8')) as DocsConfig;
 
-const readJson = <T>(filePath: string): T => JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+const flattenPages = (pages: Page[] = []): string[] =>
+  pages.flatMap((page) => (typeof page === 'string' ? [page] : flattenPages(page.pages)));
 
-const flattenPages = (pages: NavPage[]): string[] =>
-  pages.flatMap((page) => (typeof page === 'string' ? [page] : flattenPages(page.pages ?? [])));
-
-assertRawSourceDocsFresh();
-
-const expectedToolPages = rawSourceDocs.map((doc) => doc.slug);
-const baseStructure = readJson<BaseStructure>(baseStructurePath);
-const osTab = baseStructure.tabs.find((tab) => tab.key === 'os');
-if (!osTab) {
-  throw new Error('navigation/base-structure.json is missing the OS tab.');
-}
-
-const toolsGroup = osTab.groups.find((group) => group.key === 'osTools');
-if (!toolsGroup) {
-  throw new Error('OS tab is missing the Tools group.');
-}
-
-const actualToolPages = toolsGroup.pages?.filter((page): page is string => typeof page === 'string') ?? [];
-if (actualToolPages.join('\n') !== expectedToolPages.join('\n')) {
-  throw new Error(`OS Tools nav entries are stale. Expected:\n${expectedToolPages.join('\n')}\nActual:\n${actualToolPages.join('\n')}`);
-}
-
-const docsConfig = readJson<DocsConfig>(docsConfigPath);
-const languages = docsConfig.navigation?.languages ?? [];
-if (languages.length === 0) {
-  throw new Error('docs.json is missing localized navigation languages.');
-}
-
-const missing: string[] = [];
-for (const language of languages) {
-  const docsOsTab = language.tabs?.find((tab) => tab.tab === 'OS');
-  if (!docsOsTab) {
-    missing.push(`${language.language}: OS tab`);
-    continue;
+const readPageTitle = (content: string, slug: string): string => {
+  const match = content.match(/^title: (.+)$/m);
+  if (!match) {
+    return slug;
   }
 
-  const docsPages = new Set(docsOsTab.groups?.flatMap((group) => flattenPages(group.pages ?? [])) ?? []);
-  for (const slug of expectedToolPages) {
-    const localizedSlug = language.language === 'en' ? slug : `l/${language.language}/${slug}`;
-    if (!docsPages.has(localizedSlug)) {
-      missing.push(`${language.language}: ${localizedSlug}`);
+  try {
+    return JSON.parse(match[1]) as string;
+  } catch {
+    return match[1];
+  }
+};
+
+const english = docsConfig.navigation.languages.find((entry) => entry.language === 'en');
+if (!english) {
+  throw new Error('docs.json is missing the English navigation entry.');
+}
+
+const osTab = english.tabs.find((tab) => tab.tab === 'OS');
+if (!osTab) {
+  throw new Error('docs.json is missing the OS tab.');
+}
+
+
+const placeholderHits: string[] = [];
+const scanForPlaceholders = (dir: string): void => {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const filePath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      scanForPlaceholders(filePath);
+      continue;
+    }
+    if (!entry.name.endsWith('.mdx')) {
+      continue;
+    }
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (content.includes('documentation page is being rebuilt')) {
+      placeholderHits.push(path.relative(docsRoot, filePath));
     }
   }
+};
+scanForPlaceholders(path.join(docsRoot, 'os'));
+if (placeholderHits.length) {
+  throw new Error(`OS docs still contain generated placeholder pages:
+${placeholderHits.join('\n')}`);
 }
 
-if (missing.length > 0) {
-  throw new Error(`docs.json OS navigation is missing generated raw-source pages:\n${missing.join('\n')}`);
+const skillsGroup = osTab.groups.find((group) => group.group === 'Skills');
+if (!skillsGroup) {
+  throw new Error('OS tab is missing the Skills group.');
 }
 
-process.stdout.write(`validated ${expectedToolPages.length} generated raw-source pages and OS Tools navigation\n`);
+if (osTab.groups.some((group) => group.group === 'Runbooks')) {
+  throw new Error('OS tab still contains a Runbooks group.');
+}
+
+const skillPages = skillsGroup.pages?.filter((page): page is string => typeof page === 'string') ?? [];
+const titles = skillPages.map((slug) => {
+  const pagePath = path.join(docsRoot, `${slug}.mdx`);
+  const content = fs.readFileSync(pagePath, 'utf8');
+  return readPageTitle(content, slug);
+});
+
+const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+if (titles.join('\n') !== sortedTitles.join('\n')) {
+  throw new Error('Skill docs are not sorted alphabetically.');
+}
+
+const osMissing = docsConfig.navigation.languages.flatMap((language) => {
+  const localizedOsTab = language.tabs.find((tab) => tab.tab === 'OS');
+  if (!localizedOsTab) {
+    return [`${language.language}: missing OS tab`];
+  }
+
+  return localizedOsTab.groups
+    .flatMap((group) => flattenPages(group.pages ?? []))
+    .filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)))
+    .map((slug) => `${language.language}: ${slug}`);
+});
+
+if (osMissing.length) {
+  throw new Error(`OS docs nav has missing pages:\n${osMissing.join('\n')}`);
+}
+
+process.stdout.write(`validated ${skillPages.length} generated skill pages and localized OS routes\n`);

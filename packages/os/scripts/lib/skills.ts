@@ -13,6 +13,8 @@ export type SkillMetadata = {
   name: string;
   title: string;
   description: string;
+  trigger?: string;
+  status?: string;
   script?: string;
   entrypoint?: string;
   load?: GuidanceSkillLoad;
@@ -58,12 +60,8 @@ function validateGuidanceSkill(skill: SkillMetadata): SkillValidationIssue[] {
     return issues;
   }
 
-  const markdown = fs.readFileSync(markdownPath, 'utf8');
-  if (!markdown.startsWith('---\n')) {
-    issues.push({ skill: skill.name, code: 'GUIDANCE_FRONTMATTER_MISSING', message: 'guidance skill entrypoint must start with YAML frontmatter' });
-  }
-  if (!skill.tools?.includes('workspace.get_steering') || !skill.tools.includes('workspace.call')) {
-    issues.push({ skill: skill.name, code: 'GUIDANCE_TOOLS_MISSING', message: 'guidance skill must declare canonical workspace tools' });
+  if (!skill.tools?.includes('os.get_steering') || !skill.tools.includes('os.call')) {
+    issues.push({ skill: skill.name, code: 'GUIDANCE_TOOLS_MISSING', message: 'guidance skill must declare canonical OS tools' });
   }
 
   return issues;

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6c69b06ceb1",
+  "tmuxSession": "opensaas-os-fix-clack-input-d6c69b06",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-clack-input",
+  "branch": "task/os/fix-clack-input",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-clack-input",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-clack-input",
+  "prNumber": 736,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/736",
+  "createdAt": "2026-06-03T08:04:07.069Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-clack-input/.task/os/fix-clack-input/session.json"
+}
