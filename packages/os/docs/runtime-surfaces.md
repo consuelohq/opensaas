@@ -7,12 +7,11 @@ Consuelo OS keeps a small OS portal while preserving powerful package capabiliti
 OS portal entrypoints are the agent entrypoints:
 
 - `get_steering`
-- `get_dev_steering`
 - `call`
 
 Business/revenue agents should start with `get_steering`.
 
-Build, design, deployment, and internal operator agents should start with `get_dev_steering`.
+Build, design, deployment, and internal operator agents should start with `get_steering`, then call `get_raw_steering` when they need full raw operator context.
 
 All operational work should run through `call` when it is a named skill/capability.
 
@@ -49,14 +48,19 @@ Examples:
 - `sync-leads`
 - `review-meta-ads`
 
-The default/revenue manifest is:
+The canonical full manifest is:
 
 ```text
-packages/os/tooling/tool-manifest.json
+packages/os/manifests/tool.manifest.json
+```
+
+The generated core steering subset is:
+
+```text
+packages/os/manifests/core.manifest.json
 ```
 
 Each exposed skill declares permission metadata, approval rules, required env, and integration requirements for agent steering. Runtime behavior lives in the Bun script itself.
-
 Manifests are manifests. Skills are capabilities. Scripts are executable implementation.
 
 ## Package and operator scripts
@@ -76,10 +80,11 @@ These scripts are not automatically customer-facing skills. Preserve them, class
 
 ## Tool manifests
 
-There are two manifest surfaces in this scaffold:
+There are generated runtime manifests and preserved source inputs in this scaffold:
 
-- `tooling/tool-manifest.json`: default business/revenue agent map used by `get_steering` and `call`.
-- `tooling/dev-tool-manifest.json`: restored original workspace/operator typed facade registry used by `get_dev_steering` and operator scripts.
+- `manifests/tool.manifest.json`: canonical full OS tool manifest used as the execution/search source of truth.
+- `manifests/core.manifest.json`: generated default steering subset derived from the full manifest.
+- `tooling/tool-manifest.json` and `tooling/dev-tool-manifest.json`: preserved source inputs consumed by `manifests/manifest.config.json`.
 
 The principle is:
 

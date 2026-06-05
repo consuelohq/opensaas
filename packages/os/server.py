@@ -32,10 +32,10 @@ STEERING_FILES = [
     APP_DIR / 'integrations.md',
     APP_DIR / 'skills.md',
 ]
-MANIFEST_FILE = APP_DIR / 'tooling' / 'tool-manifest.json'
+MANIFEST_FILE = APP_DIR / 'manifests' / 'core.manifest.json'
 DEV_STEERING_FILE = APP_DIR / 'dev-steering.md'
 DEV_DECISION_FILE = APP_DIR / 'decision.md'
-DEV_MANIFEST_FILE = APP_DIR / 'tooling' / 'dev-tool-manifest.json'
+DEV_MANIFEST_FILE = APP_DIR / 'manifests' / 'tool.manifest.json'
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 READ_ONLY = {'readOnlyHint': True, 'openWorldHint': False}
@@ -80,7 +80,7 @@ def _env_presence() -> dict[str, Any]:
 
 @mcp.tool(annotations=READ_ONLY)
 def get_steering() -> str:
-    """Return OS steering, business context, permissions, and raw default tool manifest."""
+    """Return OS steering, business context, permissions, and raw core tool manifest."""
     sections = [
         '# Consuelo OS runtime context',
         '',
@@ -98,31 +98,19 @@ def get_steering() -> str:
 
     manifest = _read_file(MANIFEST_FILE)
     if manifest:
-        sections.extend(['', '# raw default tool manifest', '', '```json', manifest, '```'])
+        sections.extend([
+            '',
+            '# tool discovery routing',
+            '',
+            'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
+            '',
+            '# raw core tool manifest',
+            '',
+            '```json',
+            manifest,
+            '```',
+        ])
 
-    return '\n'.join(sections)
-
-
-@mcp.tool(annotations=READ_ONLY)
-def get_dev_steering() -> str:
-    """Return original workspace steering with a short Consuelo OS dev/operator preface."""
-    sections = [
-        '# Consuelo OS dev/operator steering',
-        '',
-        'This surface is for build, design, deployment, debugging, and internal operator agents.',
-        'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-        'Use this context for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.',
-        '',
-    ]
-    dev_steering = _read_file(DEV_STEERING_FILE)
-    if dev_steering:
-        sections.extend(['# original workspace STEERING.md', '', dev_steering])
-    decision = _read_file(DEV_DECISION_FILE)
-    if decision:
-        sections.extend(['', '# original workspace decision.md', '', decision])
-    manifest = _read_file(DEV_MANIFEST_FILE)
-    if manifest:
-        sections.extend(['', '# original workspace tool manifest', '', '```json', manifest, '```'])
     return '\n'.join(sections)
 
 
@@ -194,7 +182,7 @@ def call(
 
 
 async def health(request):
-    return JSONResponse({'status': 'ok', 'tools': 3, 'name': SERVER_NAME, 'toolNames': ['get_steering', 'get_dev_steering', 'call']})
+    return JSONResponse({'status': 'ok', 'tools': 2, 'name': SERVER_NAME, 'toolNames': ['get_steering', 'call']})
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

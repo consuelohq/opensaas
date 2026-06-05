@@ -1,5 +1,27 @@
 [
   {
+    "name": "get_raw_steering",
+    "title": "Raw OS Steering",
+    "description": "Returns dev/operator OS steering with the canonical full tool manifest through the normal OS call path.",
+    "permission": "guidance",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "implementation": {
+      "script": "scripts/os.ts#getRawSteering"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "steering"
+      ]
+    }
+  },
+  {
     "name": "daily-revenue-brief",
     "title": "Daily Revenue Brief",
     "description": "Scaffold skill that proves get_steering -> call -> Bun skill -> optional GraphQL proof query -> structured result.",

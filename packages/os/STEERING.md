@@ -2,10 +2,9 @@
 
 Consuelo OS is a managed AI operating system for revenue teams.
 
-The runtime exposes exactly three OS portal entrypoints:
+The runtime exposes exactly two OS portal entrypoints:
 
 - `get_steering`
-- `get_dev_steering`
 - `call`
 
 All customer-facing work happens through named skills behind `call`. Do not add one-off OS portal entrypoints for CRM queries, people search, task creation, call history, ad reviews, or revenue reports. Those belong in the skill manifest and Bun runtime.
@@ -53,7 +52,7 @@ The agent should avoid development-workspace assumptions:
 - permission rules
 - integration notes
 - available skills
-- raw default tool manifest
+- raw core tool manifest
 - docs pointers
 
 `get_dev_steering` gives build, design, deployment, debugging, and internal operator agents the original proven workspace steering pattern with an OS preface. Use it for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.
