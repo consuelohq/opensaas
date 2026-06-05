@@ -51,7 +51,7 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    for (const dir of ['agents', 'skills', 'scripts', 'artifacts', 'logs', 'runs', 'cache', 'runtime', 'bin', 'tmp']) {
+    for (const dir of ['agents', 'skills', 'tools', 'scripts', 'artifacts', 'logs', 'runs', 'cache', 'runtime', 'bin', 'tmp']) {
       expect(existsSync(join(tempHome, dir))).toBe(true);
     }
     expect(existsSync(join(tempHome, 'config.json'))).toBe(true);
@@ -59,7 +59,13 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'skills.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'tools.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
+    expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'created')).toBe(true);
 
     const installedTaskSkill = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', 'skill.json'), 'utf8'));
@@ -69,6 +75,20 @@ describe('local OS install state', () => {
     const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
 
+    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'tool.manifest.json'), 'utf8'));
+    const coreToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'core.manifest.json'), 'utf8'));
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
+    expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
+    expect(installedToolRegistry.tools.length).toBeGreaterThan(coreToolManifest.tools.length);
+    expect(installedToolNames).toContain('status');
+    expect(installedToolNames).toContain('browser.open');
+    expect(installedToolNames).toContain('railway.logs');
+    expect(installedToolNames).toContain('get_raw_steering');
+    const statusWrapper = readFileSync(join(tempHome, 'bin', 'status'), 'utf8');
+    expect(statusWrapper).toContain('scripts/tool-runner.ts');
+    expect(statusWrapper).toContain('status');
+
     const second = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local' });
@@ -76,7 +96,6 @@ describe('local OS install state', () => {
     `));
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
   });
-
 
   it('preserves local user skills while refreshing the installed registry', () => {
     const localSkillDir = join(tempHome, 'skills', 'local-research');
@@ -105,6 +124,53 @@ describe('local OS install state', () => {
     const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'local-research')).toBe(true);
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
+  });
+
+  it('installs every full-manifest tool even when only one skill is selected', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', selectedSkills: ['task'] });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(false);
+
+    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'tool.manifest.json'), 'utf8'));
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
+
+    expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
+    expect(installedToolNames).toContain('task.start');
+    expect(installedToolNames).toContain('browser.open');
+    expect(installedToolNames).toContain('railway.logs');
+    expect(installedToolNames).toContain('get_raw_steering');
+  });
+
+  it('preserves local user tools while refreshing the installed registry', () => {
+    const localToolDir = join(tempHome, 'tools', 'local-tool');
+    mkdirSync(localToolDir, { recursive: true });
+    writeFileSync(join(localToolDir, 'tool.json'), `${JSON.stringify({
+      name: 'local-tool',
+      kind: 'local-tool',
+      description: 'User-owned local tool.',
+      source: 'local',
+      core: false,
+    }, null, 2)}\n`);
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    expect(readFileSync(join(localToolDir, 'tool.json'), 'utf8')).toContain('User-owned local tool.');
+    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('tools', 'local-tool')) && action.status === 'skipped' && action.message === 'local tool preserved')).toBe(true);
+
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
+    expect(installedToolNames).toContain('local-tool');
+    expect(installedToolNames).toContain('status');
   });
 
   it('materializes only selected bundled skills on fresh install', () => {
@@ -142,7 +208,6 @@ describe('local OS install state', () => {
     expect(config.selectedSkills).toContain('research-ingest');
     expect(config.selectedSkills).not.toContain('consuelo-design-landing-page');
   });
-
 
   it('records detected agent connections without editing unknown config files', () => {
     mkdirSync(join(tempUserHome, '.codex'), { recursive: true });
