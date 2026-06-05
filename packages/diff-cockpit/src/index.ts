@@ -124,15 +124,23 @@ export type FileTreeNode = {
 
 type Fetcher = (input: string | URL, init?: RequestInit) => Promise<Response>;
 
+type EdgeCache = {
+  match(request: Request): Promise<Response | undefined>;
+  put(request: Request, response: Response): Promise<void>;
+  delete(request: Request): Promise<boolean>;
+};
+
 type GithubLoaderOptions = {
   fetcher?: Fetcher;
   token?: string;
+  cache?: EdgeCache;
 };
 
 type DiffCockpitEnv = {
   GITHUB_TOKEN?: string;
   GH_TOKEN?: string;
   DIFF_COCKPIT_DEFAULT_REPO?: string;
+  DIFF_COCKPIT_REFRESH_TOKEN?: string;
 };
 
 const DEFAULT_OWNER = 'consuelohq';
@@ -500,9 +508,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
       const reviewLoader = createGithubPullRequestLoader({ fetcher: options.fetcher, token });
       const indexLoader = createGithubPullRequestIndexLoader({ fetcher: options.fetcher, token });
+      const edgeCache = options.cache ?? getDefaultEdgeCache();
 
       if (url.pathname === '/healthz') {
         return new Response('ok', { headers: { 'content-type': 'text/plain' } });
+      }
+
+      if (url.pathname === '/internal/cache/refresh') {
+        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, edgeCache });
       }
 
       const indexApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pulls$/);
@@ -512,7 +525,8 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             owner: decodeURIComponent(indexApiMatch[1] || ''),
             repo: decodeURIComponent(indexApiMatch[2] || ''),
           };
-          return cachedJson(await indexLoader(repo), request);
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => indexLoader(repo));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -526,7 +540,8 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             repo: decodeURIComponent(apiMatch[2] || ''),
             number: Number(apiMatch[3]),
           };
-          return cachedJson(await reviewLoader(locator), request);
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => reviewLoader(locator));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -1182,6 +1197,147 @@ function normalizeOrderIndex(index: number): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
+
+type CacheRefreshInput = {
+  repo?: string;
+  pulls?: unknown;
+  reason?: string;
+};
+
+type CacheRefreshDeps = {
+  request: Request;
+  env?: DiffCockpitEnv;
+  defaultRepo: string;
+  indexLoader: ReturnType<typeof createGithubPullRequestIndexLoader>;
+  reviewLoader: ReturnType<typeof createGithubPullRequestLoader>;
+  edgeCache: EdgeCache | null;
+};
+
+async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
+  if (deps.request.method !== 'POST') {
+    return internalJson({ error: 'cache refresh requires POST' }, 405);
+  }
+  const expectedToken = deps.env?.DIFF_COCKPIT_REFRESH_TOKEN;
+  if (!expectedToken) {
+    return internalJson({ error: 'DIFF_COCKPIT_REFRESH_TOKEN is not configured' }, 503);
+  }
+  if (!isAuthorizedRefreshRequest(deps.request, expectedToken)) {
+    return internalJson({ error: 'unauthorized' }, 401);
+  }
+
+  let input: CacheRefreshInput;
+  try {
+    input = await deps.request.json() as CacheRefreshInput;
+  } catch (error: unknown) {
+    return internalJson({ error: `invalid JSON body: ${getErrorMessage(error)}` }, 400);
+  }
+
+  const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
+  const pullNumbers = normalizeRefreshPulls(input.pulls);
+  const refreshedPulls: string[] = [];
+  const homepageUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+  const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+  const homepageData = await deps.indexLoader(repo);
+  await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+
+  for (const pullNumber of pullNumbers) {
+    const pullUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
+    const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
+    const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
+    await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
+    refreshedPulls.push(new URL(pullUrl).pathname);
+  }
+
+  return internalJson({
+    ok: true,
+    reason: stringValue(input.reason, 'manual'),
+    cache: deps.edgeCache ? 'edge' : 'none',
+    refreshed: {
+      homepage: new URL(homepageUrl).pathname,
+      pulls: refreshedPulls,
+    },
+  });
+}
+
+function isAuthorizedRefreshRequest(request: Request, expectedToken: string): boolean {
+  const authorization = request.headers.get('authorization') || '';
+  const bearer = authorization.startsWith('Bearer ') ? authorization.slice('Bearer '.length).trim() : '';
+  const headerToken = request.headers.get('x-diff-cockpit-refresh-token') || '';
+  return bearer === expectedToken || headerToken === expectedToken;
+}
+
+function normalizeRefreshPulls(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  const pulls = new Set<number>();
+  for (const item of value) {
+    const pull = typeof item === 'number' ? item : Number(item);
+    if (Number.isInteger(pull) && pull > 0) pulls.add(pull);
+  }
+  return [...pulls];
+}
+
+function makeApiCacheRequest(url: URL): Request {
+  return new Request(url.toString(), { headers: { accept: 'application/json' } });
+}
+
+async function getOrSetCachedJson(
+  edgeCache: EdgeCache | null,
+  cacheRequest: Request,
+  clientRequest: Request,
+  load: () => Promise<unknown>,
+): Promise<Response> {
+  try {
+    const cached = await readCachedJson(edgeCache, cacheRequest, clientRequest);
+    if (cached) return cached;
+    const response = cachedJson(await load(), clientRequest);
+    await replaceCachedJson(edgeCache, cacheRequest, response);
+    return response;
+  } catch (error: unknown) {
+    throw new Error(`failed to build cached JSON response: ${getErrorMessage(error)}`);
+  }
+}
+
+async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
+  try {
+    if (!edgeCache) return null;
+    const cached = await edgeCache.match(cacheRequest);
+    if (!cached) return null;
+    const etag = cached.headers.get('etag') || '';
+    if (etag && clientRequest.headers.get('if-none-match') === etag) {
+      return cachedJsonNotModified(etag);
+    }
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
+  try {
+    if (!edgeCache || response.status !== 200) return;
+    await edgeCache.delete(cacheRequest);
+    await edgeCache.put(cacheRequest, response.clone());
+  } catch {
+    // Cache writes are opportunistic; live GitHub fetches still provide correctness.
+  }
+}
+
+function cachedJsonNotModified(etag: string): Response {
+  return new Response(null, {
+    status: 304,
+    headers: {
+      etag,
+      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      vary: 'Accept',
+    },
+  });
+}
+
+function getDefaultEdgeCache(): EdgeCache | null {
+  const maybeCaches = globalThis.caches as (CacheStorage & { default?: EdgeCache }) | undefined;
+  return maybeCaches?.default ?? null;
+}
+
 function cachedJson(data: unknown, request: Request): Response {
   const body = JSON.stringify(data, null, 2);
   const etag = makeWeakEtag(body);
@@ -1213,6 +1369,17 @@ function makeWeakEtag(input: string): string {
     hash = Math.imul(hash, 16777619);
   }
   return `W/\"${(hash >>> 0).toString(16)}-${input.length}\"`;
+}
+
+
+function internalJson(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+  });
 }
 
 function json(data: unknown, status = 200): Response {
