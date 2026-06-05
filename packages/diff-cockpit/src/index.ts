@@ -122,6 +122,65 @@ export type FileTreeNode = {
   file?: GitHubPullRequestFile;
 };
 
+
+export type CodeBrowserLocator = RepoLocator & {
+  ref: string;
+  path: string;
+};
+
+export type CodeBrowserEntryType = 'dir' | 'file';
+
+export type CodeBrowserCommit = {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  committedAt: string;
+  htmlUrl: string;
+  treeUrl: string;
+};
+
+export type CodeBrowserEntry = {
+  name: string;
+  path: string;
+  type: CodeBrowserEntryType;
+  sha: string;
+  htmlUrl: string;
+  treeUrl: string;
+  latestCommitSha: string;
+  latestCommitMessage: string;
+  latestCommitAuthor: string;
+  latestCommitDate: string;
+};
+
+export type CodeBrowserFile = {
+  name: string;
+  path: string;
+  sha: string;
+  htmlUrl: string;
+  text: string;
+  renderedHtml: string;
+  language: string;
+  isMarkdown: boolean;
+};
+
+export type CodeBrowserData = {
+  locator: CodeBrowserLocator;
+  entries: CodeBrowserEntry[];
+  file: CodeBrowserFile | null;
+  commitCount: number;
+  latestCommit: CodeBrowserCommit | null;
+  historyUrl: string;
+  githubUrl: string;
+  parentUrl: string;
+};
+
+export type CodeHistoryData = {
+  locator: CodeBrowserLocator;
+  commits: CodeBrowserCommit[];
+  codeUrl: string;
+};
+
 type Fetcher = (input: string | URL, init?: RequestInit) => Promise<Response>;
 
 type EdgeCache = {
@@ -209,6 +268,254 @@ export function buildDiffCockpitUrl(locator: PullRequestLocator): string {
 
 export function buildDiffCockpitPath(locator: PullRequestLocator): string {
   return `/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`;
+}
+
+
+
+export function buildCodeBrowserPath(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  return `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/${encodeURIComponent(ref)}/${encodeCodePath(path)}`;
+}
+
+export function buildCodeHistoryPath(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  return `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history/${encodeURIComponent(ref)}/${encodeCodePath(path)}`;
+}
+
+export function createGithubCodeBrowserLoader(options: GithubLoaderOptions = {}) {
+  const fetcher = options.fetcher ?? fetch;
+  return async (locator: CodeBrowserLocator): Promise<CodeBrowserData> => {
+    try {
+      const normalized = normalizeCodeBrowserLocator(locator);
+      const headers = createGithubHeaders(options.token);
+      const apiBase = `https://api.github.com/repos/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}`;
+      const contentUrl = `${apiBase}/contents/${encodeURIComponent(normalized.path)}?ref=${encodeURIComponent(normalized.ref)}`;
+      const contentResponse = await fetcher(contentUrl, { headers });
+      if (!contentResponse.ok) {
+        throw new Error(`GitHub contents fetch failed: ${contentResponse.status}`);
+      }
+      const contentJson = await contentResponse.json();
+      const pathCommitResponse = await fetcher(`${apiBase}/commits?${new URLSearchParams({ sha: normalized.ref, path: normalized.path, per_page: '1' }).toString()}`, { headers });
+      if (!pathCommitResponse.ok) {
+        throw new Error(`GitHub path commits fetch failed: ${pathCommitResponse.status}`);
+      }
+      const pathCommitJson = await pathCommitResponse.json();
+      const pathCommitItems = Array.isArray(pathCommitJson) ? pathCommitJson : [];
+      const latestCommit = pathCommitItems.length > 0 ? normalizeCodeCommit(normalized, pathCommitItems[0]) : null;
+      const commitCount = parseCommitCount(pathCommitResponse.headers.get('link'), pathCommitItems.length);
+      const githubPath = normalized.path ? `/${normalized.path}` : '';
+      const githubUrl = `https://github.com/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}/${Array.isArray(contentJson) ? 'tree' : 'blob'}/${encodeURIComponent(normalized.ref)}${githubPath}`;
+      const parentPath = parentCodePath(normalized.path);
+      const parentUrl = parentPath === normalized.path ? buildCodeBrowserPath(normalized, normalized.ref, normalized.path) : buildCodeBrowserPath(normalized, normalized.ref, parentPath);
+
+      if (Array.isArray(contentJson)) {
+        const entries = await Promise.all(contentJson.map((entryJson) => enrichCodeBrowserEntry(fetcher, apiBase, headers, normalized, entryJson)));
+        return {
+          locator: normalized,
+          entries: entries.sort(compareCodeEntries),
+          file: null,
+          commitCount,
+          latestCommit,
+          historyUrl: buildCodeHistoryPath(normalized, normalized.ref, normalized.path),
+          githubUrl,
+          parentUrl,
+        };
+      }
+
+      const record = requireRecord(contentJson, 'GitHub contents file response was not an object');
+      const filePath = stringValue(record.path, normalized.path);
+      const text = decodeGitHubContent(record);
+      return {
+        locator: { ...normalized, path: filePath },
+        entries: [],
+        file: {
+          name: stringValue(record.name, filePath.split('/').pop() || filePath),
+          path: filePath,
+          sha: stringValue(record.sha, ''),
+          htmlUrl: stringValue(record.html_url, githubUrl),
+          text,
+          renderedHtml: isMarkdownPath(filePath) ? renderMarkdownLite(text) : `<pre><code>${escapeHtml(text)}</code></pre>`,
+          language: detectLanguage(filePath),
+          isMarkdown: isMarkdownPath(filePath),
+        },
+        commitCount,
+        latestCommit,
+        historyUrl: buildCodeHistoryPath(normalized, normalized.ref, filePath),
+        githubUrl,
+        parentUrl,
+      };
+    } catch (error: unknown) {
+      throw new Error(`failed to load code browser data: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+export function createGithubCodeHistoryLoader(options: GithubLoaderOptions = {}) {
+  const fetcher = options.fetcher ?? fetch;
+  return async (locator: CodeBrowserLocator): Promise<CodeHistoryData> => {
+    try {
+      const normalized = normalizeCodeBrowserLocator(locator);
+      const headers = createGithubHeaders(options.token);
+      const apiBase = `https://api.github.com/repos/${encodeURIComponent(normalized.owner)}/${encodeURIComponent(normalized.repo)}`;
+      const commitsJson = await fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/commits?${new URLSearchParams({ sha: normalized.ref, path: normalized.path }).toString()}`,
+        headers,
+        'GitHub code history fetch failed',
+        { maxPages: 2 },
+      );
+      return {
+        locator: normalized,
+        commits: commitsJson.map((item) => normalizeCodeCommit(normalized, item)),
+        codeUrl: buildCodeBrowserPath(normalized, normalized.ref, normalized.path),
+      };
+    } catch (error: unknown) {
+      throw new Error(`failed to load code history: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+async function enrichCodeBrowserEntry(
+  fetcher: Fetcher,
+  apiBase: string,
+  headers: HeadersInit,
+  locator: CodeBrowserLocator,
+  entryJson: unknown,
+): Promise<CodeBrowserEntry> {
+  const entry = requireRecord(entryJson, 'GitHub contents entry was not an object');
+  const path = stringValue(entry.path, '');
+  const type = stringValue(entry.type, 'file') === 'dir' ? 'dir' : 'file';
+  let latestCommit: CodeBrowserCommit | null = null;
+  try {
+    const response = await fetcher(`${apiBase}/commits?${new URLSearchParams({ sha: locator.ref, path, per_page: '1' }).toString()}`, { headers });
+    if (response.ok) {
+      const json = await response.json();
+      const commits = Array.isArray(json) ? json : [];
+      latestCommit = commits.length > 0 ? normalizeCodeCommit(locator, commits[0]) : null;
+    }
+  } catch {
+    latestCommit = null;
+  }
+  return {
+    name: stringValue(entry.name, path.split('/').pop() || path),
+    path,
+    type,
+    sha: stringValue(entry.sha, ''),
+    htmlUrl: stringValue(entry.html_url, ''),
+    treeUrl: buildCodeBrowserPath(locator, locator.ref, path),
+    latestCommitSha: latestCommit?.sha ?? '',
+    latestCommitMessage: latestCommit?.message ?? 'No commit metadata',
+    latestCommitAuthor: latestCommit?.author ?? '',
+    latestCommitDate: latestCommit?.committedAt ?? '',
+  };
+}
+
+function normalizeCodeCommit(locator: CodeBrowserLocator, input: unknown): CodeBrowserCommit {
+  const record = requireRecord(input, 'GitHub commit was not an object');
+  const commit = optionalRecord(record.commit) ?? {};
+  const author = optionalRecord(record.author);
+  const commitAuthor = optionalRecord(commit.author) ?? {};
+  const sha = stringValue(record.sha, '');
+  return {
+    sha,
+    shortSha: sha.slice(0, 7),
+    message: firstLine(stringValue(commit.message, 'Untitled commit')),
+    author: stringValue(author?.login, stringValue(commitAuthor.name, 'unknown')),
+    committedAt: stringValue(commitAuthor.date, ''),
+    htmlUrl: stringValue(record.html_url, `https://github.com/${locator.owner}/${locator.repo}/commit/${sha}`),
+    treeUrl: buildCodeBrowserPath(locator, sha, locator.path),
+  };
+}
+
+function compareCodeEntries(a: CodeBrowserEntry, b: CodeBrowserEntry): number {
+  if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+  return a.name.localeCompare(b.name);
+}
+
+function normalizeCodeBrowserLocator(locator: CodeBrowserLocator): CodeBrowserLocator {
+  return {
+    owner: locator.owner || DEFAULT_OWNER,
+    repo: locator.repo || DEFAULT_REPO,
+    ref: locator.ref || 'main',
+    path: normalizeCodePath(locator.path),
+  };
+}
+
+function normalizeCodePath(path: string): string {
+  const normalized = String(path || '').replace(/^\/+/, '').replace(/\/+$/, '');
+  return normalized || 'packages';
+}
+
+function parentCodePath(path: string): string {
+  const normalized = normalizeCodePath(path);
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts.length <= 1) return 'packages';
+  return parts.slice(0, -1).join('/');
+}
+
+function encodeCodePath(path: string): string {
+  return normalizeCodePath(path).split('/').map((part) => encodeURIComponent(part)).join('/');
+}
+
+function firstLine(message: string): string {
+  return message.split('\n')[0] || message;
+}
+
+function parseCommitCount(linkHeader: string | null, fallback: number): number {
+  if (!linkHeader) return fallback;
+  const match = linkHeader.match(/[?&]page=(\d+)>; rel="last"/);
+  return match ? Number(match[1]) : fallback;
+}
+
+function decodeGitHubContent(record: Record<string, unknown>): string {
+  const encoding = stringValue(record.encoding, '');
+  const content = stringValue(record.content, '');
+  if (encoding !== 'base64') return content;
+  try {
+    const binary = atob(content.replace(/\s/g, ''));
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (error: unknown) {
+    throw new Error(`failed to decode GitHub file content: ${getErrorMessage(error)}`);
+  }
+}
+
+function isMarkdownPath(path: string): boolean {
+  return /(^|\.)(md|mdx|markdown)$/i.test(path);
+}
+
+function detectLanguage(path: string): string {
+  const extension = path.split('.').pop()?.toLowerCase() || '';
+  return extension || 'text';
+}
+
+function renderMarkdownLite(markdown: string): string {
+  const blocks: string[] = [];
+  let paragraph: string[] = [];
+  const flush = () => {
+    if (paragraph.length > 0) {
+      blocks.push(`<p>${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+      paragraph = [];
+    }
+  };
+  for (const line of markdown.split(/\r?\n/)) {
+    if (!line.trim()) {
+      flush();
+      continue;
+    }
+    const heading = line.match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      flush();
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+    paragraph.push(line.trim());
+  }
+  flush();
+  return blocks.join('\n');
+}
+
+function renderInlineMarkdown(value: string): string {
+  return escapeHtml(value).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
 export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions = {}) {
@@ -383,7 +690,7 @@ export function renderIndexPage(repo: RepoLocator): string {
       <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="#pull-requests">Pull Requests</a>
-        <span aria-hidden="true">▣</span>
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages">main</a>
         <button class="search-button" type="button" data-search-toggle aria-controls="diff-cockpit-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
@@ -500,6 +807,91 @@ export function renderReviewPage(locator: PullRequestLocator): string {
 </html>`;
 }
 
+
+
+export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  const normalizedPath = normalizeCodePath(path);
+  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const historyPath = buildCodeHistoryPath(repo, ref, normalizedPath);
+  const repoLabel = `${repo.owner}/${repo.repo}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code · ${escapeHtml(repoLabel)} · ${escapeHtml(normalizedPath)}</title>
+  <style>${renderStyles()}</style>
+</head>
+<body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
+  <div class="shell code-shell">
+    <div class="wiki-topbar" data-pagefind-ignore>
+      <a class="brand" href="/">Consuelo Diffs</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+      </nav>
+    </div>
+    <header class="code-hero" data-pagefind-ignore>
+      <div>
+        <p class="eyebrow">${escapeHtml(repoLabel)}</p>
+        <h1>main</h1>
+        <p class="lead">Browse live code from <code>${escapeHtml(normalizedPath)}</code>.</p>
+      </div>
+      <a class="history-button" data-history-link href="${escapeAttribute(historyPath)}">History</a>
+    </header>
+    <main class="code-browser-card" data-code-browser-root>
+      <div class="code-browser-toolbar">
+        <span class="branch-pill">main</span>
+        <span class="path-pill">${escapeHtml(normalizedPath)}</span>
+        <span class="muted" data-commit-count>Loading commits…</span>
+      </div>
+      <div class="code-browser-list"><div class="code-row muted">Loading live GitHub files…</div></div>
+    </main>
+  </div>
+  <script type="module">${renderCodeBrowserClientScript(apiPath)}</script>
+</body>
+</html>`;
+}
+
+export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+  const normalizedPath = normalizeCodePath(path);
+  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const codePath = buildCodeBrowserPath(repo, ref, normalizedPath);
+  const repoLabel = `${repo.owner}/${repo.repo}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>History · ${escapeHtml(repoLabel)} · ${escapeHtml(normalizedPath)}</title>
+  <style>${renderStyles()}</style>
+</head>
+<body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
+  <div class="shell code-shell">
+    <div class="wiki-topbar" data-pagefind-ignore>
+      <a class="brand" href="/">Consuelo Diffs</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+      </nav>
+    </div>
+    <header class="code-hero" data-pagefind-ignore>
+      <div>
+        <p class="eyebrow">${escapeHtml(repoLabel)}</p>
+        <h1>History</h1>
+        <p class="lead">Commits touching <code>${escapeHtml(normalizedPath)}</code>.</p>
+      </div>
+      <a class="history-button" href="${escapeAttribute(codePath)}">Back to code</a>
+    </header>
+    <main class="code-browser-card" data-code-history-root>
+      <div class="code-browser-list"><div class="code-row muted">Loading commit history…</div></div>
+    </main>
+  </div>
+  <script type="module">${renderCodeHistoryClientScript(apiPath)}</script>
+</body>
+</html>`;
+}
+
 export function createWorker(options: GithubLoaderOptions = {}) {
   return {
     async fetch(request: Request, env?: DiffCockpitEnv) {
@@ -508,6 +900,8 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
       const reviewLoader = createGithubPullRequestLoader({ fetcher: options.fetcher, token });
       const indexLoader = createGithubPullRequestIndexLoader({ fetcher: options.fetcher, token });
+      const codeLoader = createGithubCodeBrowserLoader({ fetcher: options.fetcher, token });
+      const historyLoader = createGithubCodeHistoryLoader({ fetcher: options.fetcher, token });
       const edgeCache = options.cache ?? getDefaultEdgeCache();
 
       if (url.pathname === '/healthz') {
@@ -516,6 +910,40 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       if (url.pathname === '/internal/cache/refresh') {
         return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, edgeCache });
+      }
+
+
+
+      const codeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/code$/);
+      if (codeApiMatch) {
+        try {
+          const locator = {
+            owner: decodeURIComponent(codeApiMatch[1] || ''),
+            repo: decodeURIComponent(codeApiMatch[2] || ''),
+            ref: url.searchParams.get('ref') || 'main',
+            path: url.searchParams.get('path') || 'packages',
+          };
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => codeLoader(locator));
+        } catch (error: unknown) {
+          return json({ error: getErrorMessage(error) }, 502);
+        }
+      }
+
+      const historyApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/history$/);
+      if (historyApiMatch) {
+        try {
+          const locator = {
+            owner: decodeURIComponent(historyApiMatch[1] || ''),
+            repo: decodeURIComponent(historyApiMatch[2] || ''),
+            ref: url.searchParams.get('ref') || 'main',
+            path: url.searchParams.get('path') || 'packages',
+          };
+          const cacheRequest = makeApiCacheRequest(url);
+          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => historyLoader(locator));
+        } catch (error: unknown) {
+          return json({ error: getErrorMessage(error) }, 502);
+        }
       }
 
       const indexApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pulls$/);
@@ -549,6 +977,24 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       if (url.pathname === '/') {
         return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+      }
+
+
+
+      const treeRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/tree\/([^/]+)(?:\/(.*))?$/);
+      if (treeRouteMatch) {
+        return html(renderCodeBrowserPage({
+          owner: decodeURIComponent(treeRouteMatch[1] || ''),
+          repo: decodeURIComponent(treeRouteMatch[2] || ''),
+        }, decodeURIComponent(treeRouteMatch[3] || 'main'), decodeURIComponent(treeRouteMatch[4] || 'packages')));
+      }
+
+      const historyRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/history\/([^/]+)(?:\/(.*))?$/);
+      if (historyRouteMatch) {
+        return html(renderHistoryPage({
+          owner: decodeURIComponent(historyRouteMatch[1] || ''),
+          repo: decodeURIComponent(historyRouteMatch[2] || ''),
+        }, decodeURIComponent(historyRouteMatch[3] || 'main'), decodeURIComponent(historyRouteMatch[4] || 'packages')));
       }
 
       const repoRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/?$/);
@@ -1427,6 +1873,34 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; }
 .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
 .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+
+.code-shell { max-width:min(1180px, calc(100vw - 48px)); }
+.code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
+.code-hero h1 { margin-bottom:10px; }
+.active-nav { font-weight:700; color:var(--accent); }
+.history-button, .branch-pill, .path-pill { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:7px 10px; font-size:13px; }
+.code-browser-card { margin-top:22px; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
+.code-browser-toolbar { min-height:48px; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
+.code-browser-list { display:grid; }
+.code-row { min-height:44px; display:grid; grid-template-columns:28px minmax(160px, 1fr) minmax(160px, 1.6fr) 88px; gap:10px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); color:var(--ink); }
+.code-row:last-child { border-bottom:0; }
+.code-row:hover { background:var(--soft); text-decoration:none; }
+.file-icon { color:var(--quiet); text-align:center; }
+.code-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-message { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.code-date { color:var(--quiet); text-align:right; font-variant-numeric:tabular-nums; }
+.file-view-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+.file-view { padding:18px; overflow:auto; }
+.markdown-body { line-height:1.7; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 { letter-spacing:-.03em; margin:0 0 16px; }
+.markdown-body p { margin:0 0 14px; color:var(--ink); }
+.markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
+.code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
+@media (max-width: 760px) {
+  .code-hero { align-items:flex-start; flex-direction:column; }
+  .code-row { grid-template-columns:24px minmax(0, 1fr); }
+  .code-message, .code-date { grid-column:2; text-align:left; }
+}
 .search-button { display:inline-flex; align-items:center; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
@@ -1575,6 +2049,72 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
 }
+`;
+}
+
+
+
+function renderCodeBrowserClientScript(apiPath: string): string {
+  return `
+const root = document.querySelector('[data-code-browser-root]');
+const apiPath = '${escapeJs(apiPath)}';
+loadCodeBrowser();
+function loadCodeBrowser() {
+  fetch(apiPath, { cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
+    .then(renderCode)
+    .catch((error) => { root.innerHTML = '<div class="code-row error">Failed to load code browser: ' + escapeHtml(String(error && error.message || error)) + '</div>'; });
+}
+function renderCode(data) {
+  const count = root.querySelector('[data-commit-count]');
+  if (count) count.textContent = (data.commitCount || 0).toLocaleString() + ' commits';
+  const list = root.querySelector('.code-browser-list');
+  if (data.file) {
+    list.innerHTML = '<div class="file-view-header"><strong>' + escapeHtml(data.file.path) + '</strong><a href="' + escapeAttribute(data.historyUrl) + '">History</a></div><div class="file-view ' + (data.file.isMarkdown ? 'markdown-body' : 'code-body') + '">' + data.file.renderedHtml + '</div>';
+    return;
+  }
+  list.innerHTML = (data.entries || []).map((entry) => '<a class="code-row" href="' + escapeAttribute(entry.treeUrl) + '"><span class="file-icon">' + (entry.type === 'dir' ? '📁' : '📄') + '</span><span class="code-name">' + escapeHtml(entry.name) + '</span><span class="code-message">' + escapeHtml(entry.latestCommitMessage || '') + '</span><time class="code-date" datetime="' + escapeAttribute(entry.latestCommitDate || '') + '">' + relativeTime(entry.latestCommitDate) + '</time></a>').join('') || '<div class="code-row muted">No files found.</div>';
+}
+function relativeTime(value) {
+  if (!value) return '';
+  const delta = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(delta / 60000));
+  if (minutes < 60) return minutes + 'm';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h';
+  return Math.round(hours / 24) + 'd';
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
+function escapeAttribute(value) { return escapeHtml(value); }
+`;
+}
+
+function renderCodeHistoryClientScript(apiPath: string): string {
+  return `
+const root = document.querySelector('[data-code-history-root]');
+const apiPath = '${escapeJs(apiPath)}';
+loadHistory();
+function loadHistory() {
+  fetch(apiPath, { cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
+    .then(renderHistory)
+    .catch((error) => { root.innerHTML = '<div class="code-row error">Failed to load history: ' + escapeHtml(String(error && error.message || error)) + '</div>'; });
+}
+function renderHistory(data) {
+  const list = root.querySelector('.code-browser-list');
+  list.innerHTML = (data.commits || []).map((commit) => '<a class="code-row history-row" href="' + escapeAttribute(commit.treeUrl) + '"><span class="file-icon">◆</span><span class="code-name">' + escapeHtml(commit.message) + '</span><span class="code-message">' + escapeHtml(commit.author) + ' · ' + escapeHtml(commit.shortSha) + '</span><time class="code-date" datetime="' + escapeAttribute(commit.committedAt || '') + '">' + relativeTime(commit.committedAt) + '</time></a>').join('') || '<div class="code-row muted">No commits found.</div>';
+}
+function relativeTime(value) {
+  if (!value) return '';
+  const delta = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(delta / 60000));
+  if (minutes < 60) return minutes + 'm';
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return hours + 'h';
+  return Math.round(hours / 24) + 'd';
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]); }
+function escapeAttribute(value) { return escapeHtml(value); }
 `;
 }
 

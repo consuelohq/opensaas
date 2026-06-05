@@ -3,12 +3,16 @@ import { describe, expect, test } from 'bun:test';
 import {
   buildDiffCockpitUrl,
   buildFileTree,
+  createGithubCodeBrowserLoader,
+  createGithubCodeHistoryLoader,
   createGithubPullRequestIndexLoader,
   createGithubPullRequestLoader,
   createWorker,
   deriveAssociatedStream,
   groupPullRequestSummaries,
   parsePullRequestLocator,
+  renderCodeBrowserPage,
+  renderHistoryPage,
   renderIndexPage,
   renderReviewPage,
 } from '../src/index';
@@ -42,6 +46,74 @@ describe('buildDiffCockpitUrl', () => {
     expect(buildDiffCockpitUrl({ owner: 'consuelohq', repo: 'opensaas', number: 708 })).toBe(
       'https://diffs.consuelohq.com/consuelohq/opensaas/pull/708',
     );
+  });
+});
+
+
+describe('createGithubCodeBrowserLoader', () => {
+  test('loads the packages tree with latest commit metadata and commit count', async () => {
+    const calls: string[] = [];
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      calls.push(url);
+      if (url.endsWith('/contents/packages?ref=main')) {
+        return Response.json([
+          { name: 'os', path: 'packages/os', type: 'dir', html_url: 'https://github.com/consuelohq/opensaas/tree/main/packages/os', sha: 'ossha' },
+          { name: 'README.md', path: 'packages/README.md', type: 'file', html_url: 'https://github.com/consuelohq/opensaas/blob/main/packages/README.md', sha: 'readmesha', download_url: 'https://raw.githubusercontent.test/readme' },
+        ]);
+      }
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) {
+        return new Response(JSON.stringify([{ sha: 'latestsha', html_url: 'https://github.com/consuelohq/opensaas/commit/latestsha', commit: { message: 'Stream/os (#770)', author: { name: 'Ko', date: '2026-06-05T04:00:00Z' } }, author: { login: 'kokayicobb' } }]), { headers: { 'content-type': 'application/json', link: '<https://api.github.com/repos/consuelohq/opensaas/commits?sha=main&path=packages&per_page=1&page=123>; rel="last"' } });
+      }
+      if (url.endsWith('/commits?sha=main&path=packages%2Fos&per_page=1')) {
+        return Response.json([{ sha: 'oscommit', html_url: 'https://github.com/consuelohq/opensaas/commit/oscommit', commit: { message: 'Stream/os (#770)', author: { name: 'Ko', date: '2026-06-05T04:01:00Z' } }, author: { login: 'kokayicobb' } }]);
+      }
+      if (url.endsWith('/commits?sha=main&path=packages%2FREADME.md&per_page=1')) {
+        return Response.json([{ sha: 'readmecommit', html_url: 'https://github.com/consuelohq/opensaas/commit/readmecommit', commit: { message: 'docs(packages): update readme', author: { name: 'Ko', date: '2026-06-05T04:02:00Z' } }, author: { login: 'kokayicobb' } }]);
+      }
+      throw new Error('unexpected code browser url ' + url);
+    };
+
+    const result = await createGithubCodeBrowserLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas', ref: 'main', path: 'packages' });
+
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/contents/packages?ref=main');
+    expect(result.commitCount).toBe(123);
+    expect(result.entries.map((entry) => entry.name)).toEqual(['os', 'README.md']);
+    expect(result.entries[0]).toMatchObject({ type: 'dir', latestCommitMessage: 'Stream/os (#770)', latestCommitAuthor: 'kokayicobb' });
+    expect(result.entries[1]).toMatchObject({ type: 'file', latestCommitMessage: 'docs(packages): update readme' });
+  });
+
+  test('renders markdown file contents when the selected file is markdown', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/contents/packages%2FREADME.md?ref=main')) {
+        return Response.json({ name: 'README.md', path: 'packages/README.md', type: 'file', html_url: 'https://github.com/consuelohq/opensaas/blob/main/packages/README.md', sha: 'sha', content: btoa('# Packages\n\nHello **workspace**'), encoding: 'base64' });
+      }
+      if (url.includes('/commits?sha=main&path=packages%2FREADME.md&per_page=1')) {
+        return Response.json([{ sha: 'readmecommit', html_url: 'https://github.com/consuelohq/opensaas/commit/readmecommit', commit: { message: 'docs(packages): update readme', author: { name: 'Ko', date: '2026-06-05T04:02:00Z' } }, author: { login: 'kokayicobb' } }]);
+      }
+      throw new Error('unexpected markdown url ' + url);
+    };
+    const result = await createGithubCodeBrowserLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas', ref: 'main', path: 'packages/README.md' });
+    expect(result.file?.renderedHtml).toContain('<h1>Packages</h1>');
+    expect(result.file?.renderedHtml).toContain('<strong>workspace</strong>');
+  });
+});
+
+describe('createGithubCodeHistoryLoader', () => {
+  test('loads path history and builds commit tree links', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) {
+        return Response.json([
+          { sha: 'abc123456789', html_url: 'https://github.com/consuelohq/opensaas/commit/abc123', commit: { message: 'Stream/os (#770)', author: { name: 'Ko', date: '2026-06-05T04:00:00Z' } }, author: { login: 'kokayicobb' } },
+        ]);
+      }
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      throw new Error('unexpected history url ' + url);
+    };
+    const result = await createGithubCodeHistoryLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas', ref: 'main', path: 'packages' });
+    expect(result.commits[0]).toMatchObject({ shortSha: 'abc1234', treeUrl: '/consuelohq/opensaas/tree/abc123456789/packages' });
   });
 });
 
@@ -377,10 +449,30 @@ describe('pull request index grouping', () => {
   });
 });
 
+
+describe('renderCodeBrowserPage', () => {
+  test('renders the main packages browser shell and history shell', () => {
+    const codeHtml = renderCodeBrowserPage({ owner: 'consuelohq', repo: 'opensaas' }, 'main', 'packages');
+    expect(codeHtml).toContain('data-code-browser-root');
+    expect(codeHtml).toContain('/api/consuelohq/opensaas/code?ref=main&amp;path=packages');
+    expect(codeHtml).toContain('data-history-link');
+    expect(codeHtml).toContain('/consuelohq/opensaas/history/main/packages');
+    expect(codeHtml).toContain('main');
+    expect(codeHtml).toContain('packages');
+
+    const historyHtml = renderHistoryPage({ owner: 'consuelohq', repo: 'opensaas' }, 'main', 'packages');
+    expect(historyHtml).toContain('data-code-history-root');
+    expect(historyHtml).toContain('/api/consuelohq/opensaas/history?ref=main&amp;path=packages');
+  });
+});
+
 describe('renderIndexPage', () => {
   test('renders a Pull Requests inbox with stream filters and no pagination', () => {
     const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
     expect(html).toContain('Pull Requests');
+    expect(html).toContain('href="/consuelohq/opensaas/tree/main/packages"');
+    expect(html).toContain('>main</a>');
+    expect(html).not.toContain('<span aria-hidden="true">▣</span>');
     expect(html).not.toContain('Recently Updated');
     expect(html).toContain('data-sections-root');
     expect(html).toContain('data-stream-filter');
@@ -515,6 +607,29 @@ describe('createWorker', () => {
   });
 
 
+
+
+  test('routes code browser pages and APIs for main packages and history', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      throw new Error('unexpected worker code url ' + url);
+    };
+    const worker = createWorker({ fetcher });
+    const treePage = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/tree/main/packages'));
+    const codeApi = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/code?ref=main&path=packages'));
+    const historyPage = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/history/main/packages'));
+    const historyApi = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/history?ref=main&path=packages'));
+
+    expect(treePage.status).toBe(200);
+    expect(await treePage.text()).toContain('data-code-browser-root');
+    expect(codeApi.status).toBe(200);
+    expect(historyPage.status).toBe(200);
+    expect(await historyPage.text()).toContain('data-code-history-root');
+    expect(historyApi.status).toBe(200);
+  });
 
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
     const cacheStore = new Map<string, Response>();
