@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os/package-consuelo-os-as-installed-product-root",
   "base": "origin/stream/os",
-  "headSha": "bb6d4842ae23f60113c76b58dcff8937758db067",
-  "changeHash": "ff7f2417b6bc9aa896ede3ca3cece260a50cf593173d640cc2a664994c6154c2",
+  "headSha": "33ec879195abf9890654232cead77cc0b1888442",
+  "changeHash": "3446c5e72efea809834872927602c625aea8289ee54ea63bbe421fe633ef5a6e",
   "changedFiles": [
     "packages/os/scripts/bootstrap.sh",
     "packages/os/scripts/install.ts",
@@ -13,7 +13,7 @@
     "packages/os/scripts/onboarding-flow.test.ts",
     "packages/os/tests/install-state.test.ts"
   ],
-  "verifiedAt": "2026-06-05T05:55:32.267Z",
+  "verifiedAt": "2026-06-05T06:06:48.114Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -31,6 +31,7 @@
         ".task/os/package-consuelo-os-as-installed-product-root/evidence-log.json",
         ".task/os/package-consuelo-os-as-installed-product-root/read-log.json",
         ".task/os/package-consuelo-os-as-installed-product-root/session.json",
+        ".task/os/package-consuelo-os-as-installed-product-root/verify.json",
         ".task/os/package-consuelo-os-as-installed-product-root/workpad.md",
         ".task/tasks/os/package-consuelo-os-as-installed-product-root.json",
         "packages/os/scripts/bootstrap.sh",

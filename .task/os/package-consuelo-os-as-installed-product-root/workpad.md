@@ -73,7 +73,12 @@ Red result:
 - Diff inspected: `trc_61653ca2502f`.
 - Review passed: `trc_b26e357f722c` with zero issues.
 - Verify passed/publish-valid: `trc_6d7e42a47c86`; verify selected zero suites, but explicit focused test evidence is recorded above.
-- Next: push and promote/report the stream review PR.
+- Rebased onto current `origin/stream/os` after `task.pr` hit non-metadata conflicts: conflict was limited to `packages/os/tests/install-state.test.ts`; resolved by keeping the expanded package-root directory assertions.
+- REBASE GREEN: `trc_222334bc2814` — syntax passed, install-state/tool-manifest/skills-registry/onboarding-skills passed 26 tests, script tests passed 21 tests.
+- REBASE SMOKE: `trc_e7ddc36ad172` — disposable install wrapper help and `get_raw_steering` run passed; bounded `status` behavior unchanged.
+- REBASE REVIEW: `trc_1bb3b7d9f935` passed zero issues.
+- REBASE VERIFY: `trc_34e3cf88e3b9` publish-valid.
+- Next: force/update push and promote/report the stream review PR.
 
 ## key decisions
 
@@ -128,10 +133,12 @@ Red result:
 - FINAL GREEN: `trc_29306f792fb3` — syntax passed, install-state/tool-manifest/skills-registry/onboarding-skills passed 26 tests, script tests passed 21 tests.
 - 2026-06-05 05:55:12 `review.run`: passed — OK
 - 2026-06-05 05:55:32 `verify`: passed — OK
+- 2026-06-05 06:06:34 `review.run`: passed — OK
+- 2026-06-05 06:06:48 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/package-consuelo-os-as-installed-product-root/current.json`, `.task/os/package-consuelo-os-as-installed-product-root/evidence-log.json`, `.task/os/package-consuelo-os-as-installed-product-root/read-log.json`, `.task/os/package-consuelo-os-as-installed-product-root/session.json`, `.task/os/package-consuelo-os-as-installed-product-root/workpad.md`, `.task/tasks/os/package-consuelo-os-as-installed-product-root.json`, `packages/os/scripts/bootstrap.sh`, `packages/os/scripts/install.ts`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/onboarding-flow.test.ts`, `packages/os/tests/install-state.test.ts`
+- changed files: `.task/os/package-consuelo-os-as-installed-product-root/current.json`, `.task/os/package-consuelo-os-as-installed-product-root/evidence-log.json`, `.task/os/package-consuelo-os-as-installed-product-root/read-log.json`, `.task/os/package-consuelo-os-as-installed-product-root/session.json`, `.task/os/package-consuelo-os-as-installed-product-root/verify.json`, `.task/os/package-consuelo-os-as-installed-product-root/workpad.md`, `.task/tasks/os/package-consuelo-os-as-installed-product-root.json`, `packages/os/scripts/bootstrap.sh`, `packages/os/scripts/install.ts`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/onboarding-flow.test.ts`, `packages/os/tests/install-state.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
