@@ -5,9 +5,6 @@ description: "Use this OS operator skill when creating, migrating, editing, vali
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 # Skill Creator
 
 This skill turns a repeatable agent workflow into an OS skill that can be discovered, installed, seeded into the user OS home, and validated by tests.
@@ -42,7 +39,7 @@ Do not invent tools, paths, or registry behavior. Read the current OS skill code
 A bundled OS skill lives here:
 
 ```text
-packages/os/skills/{skill-slug}/
+packages/os/skills/(skill-slug)/
   skill.json
   SKILL.md
 ```
@@ -56,8 +53,8 @@ packages/os/skills/skills.json
 Migration guard fixtures live here:
 
 ```text
-packages/os/tests/fixtures/skills/{skill-slug}-workspace.SKILL.md
-packages/os/tests/fixtures/skills/{skill-slug}-os-replacements.json
+packages/os/tests/fixtures/skills/(skill-slug)-workspace.SKILL.md
+packages/os/tests/fixtures/skills/(skill-slug)-os-replacements.json
 ```
 
 The migration guard is:
@@ -74,19 +71,19 @@ Each `skill.json` must include:
 
 ```json
 {
-  "name": "{skill-slug}",
-  "title": "<Human Title>",
-  "description": "<trigger-aware description>",
-  "trigger": "<same or more explicit trigger>",
+  "name": "(skill-slug)",
+  "title": "(Human Title)",
+  "description": "(trigger-aware description)",
+  "trigger": "(same or more explicit trigger)",
   "entrypoint": "SKILL.md",
   "load": {
     "type": "resource",
-    "path": "packages/os/skills/{skill-slug}/SKILL.md"
+    "path": "packages/os/skills/(skill-slug)/SKILL.md"
   },
   "permission": "guidance",
   "requiresApproval": false,
   "subskills": [],
-  "capabilities": ["{capability}"],
+  "capabilities": ["(capability)"],
   "tools": ["os.get_steering", "os.call"],
   "status": "active"
 }
@@ -155,19 +152,19 @@ When Ko is pasting skills one by one, prefer clipboard-to-fixture intake so mark
 Ask Ko to copy only the skill body, then use:
 
 ```bash
-pbpaste > packages/os/tests/fixtures/skills/{skill-slug}-workspace.SKILL.md
+pbpaste > packages/os/tests/fixtures/skills/(skill-slug)-workspace.SKILL.md
 ```
 
-Guard against clipboard mistakes. If the fixture contains command text such as `cd /private/`, `python3 - <<`, `pbpaste >`, or `bun run generate-skills-registry`, stop and ask Ko to copy only the skill body again.
+Guard against clipboard mistakes. If the fixture contains command text such as `cd /private/`, `python3 - (&lt;`, `pbpaste )`, or `bun run generate-skills-registry`, stop and ask Ko to copy only the skill body again.
 
 ## Generation flow for one skill
 
 For each skill:
 
-1. Create `packages/os/skills/{skill-slug}/`.
+1. Create `packages/os/skills/(skill-slug)/`.
 2. Write or update `skill.json`.
 3. Save source or authored body to the fixture.
-4. Write `{skill-slug}-os-replacements.json`.
+4. Write `(skill-slug)-os-replacements.json`.
 5. Generate `SKILL.md` from fixture plus replacements.
 6. Add the slug to `migrationCases` in `packages/os/tests/skill-migration.test.ts`.
 7. Run the OS registry generator.
@@ -288,4 +285,3 @@ commit pushed
 PR head SHA / stream PR status
 any non-exact rewrites explicitly approved
 ```
-````

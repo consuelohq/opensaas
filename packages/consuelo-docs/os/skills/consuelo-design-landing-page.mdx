@@ -5,27 +5,16 @@ description: "Deprecated compatibility alias for the landing-page subskill under
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-# Consuelo Design Landing Page (compatibility alias)
-
-Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.
-
-## Trigger
-
-Invoke only for legacy calls that still reference the old consuelo-design-landing-page skill name.
-
-## Skill metadata
-
-```json
-{
+\{
   "name": "consuelo-design-landing-page",
   "title": "Consuelo Design Landing Page (compatibility alias)",
   "description": "Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.",
   "trigger": "Invoke only for legacy calls that still reference the old consuelo-design-landing-page skill name.",
   "entrypoint": "skill.json",
-  "load": {
+  "load": \{
     "type": "resource",
     "path": "packages/os/skills/consuelo-design-landing-page/skill.json"
-  },
+  \},
   "script": "scripts/design/consuelo-design-landing-page.ts",
   "permission": "draft",
   "requiresApproval": false,
@@ -39,5 +28,4 @@ Invoke only for legacy calls that still reference the old consuelo-design-landin
   ],
   "deprecated": true,
   "supersededBy": "consuelo-design#landing-page"
-}
-```
+\}

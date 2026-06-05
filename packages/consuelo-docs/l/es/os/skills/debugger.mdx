@@ -5,9 +5,6 @@ description: "Use this OS skill for runtime debugging across browser behavior, d
 
 {/* Generated from packages/os/skills. Do not edit this page directly. */}
 
-## Skill body
-
-````md
 # Debugger
 
 This skill coordinates runtime debugging across browser evidence, deployment providers, error tracking, product analytics, and code inspection.
@@ -251,13 +248,13 @@ Use this compact evidence record in workpads, comments, or replies:
 
 ```text
 Evidence
-- window: <start/end or relative time>
+- window: (start/end or relative time)
 - lane: browser | runtime | sentry | posthog | code
-- provider/service: <provider/service>
-- query/filter: <filter or route>
-- observation: <what happened>
-- hypothesis impact: supports/refutes/inconclusive {hypothesis}
-- next: <next check or fix>
+- provider/service: (provider/service)
+- query/filter: (filter or route)
+- observation: (what happened)
+- hypothesis impact: supports/refutes/inconclusive (hypothesis)
+- next: (next check or fix)
 ```
 
 For incidents, include:
@@ -319,4 +316,3 @@ Use Sentry for exception spikes and release correlation.
 Use PostHog for event/session/funnel/feature-flag behavior.
 Use browser tools for reproduction and network evidence.
 ```
-````

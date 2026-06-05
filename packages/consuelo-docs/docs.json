@@ -413,22 +413,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "os/overview/what-is-consuelo-os",
-                  "os/overview/core-concepts",
-                  "os/overview/quickstart",
-                  "os/overview/architecture"
+                  "os/overview",
+                  "os/how-it-works",
+                  "os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "os/agent-interface/get-steering",
-                  "os/agent-interface/get-dev-steering",
-                  "os/agent-interface/call",
-                  "os/agent-interface/steering-files",
-                  "os/agent-interface/tool-manifest",
-                  "os/agent-interface/permissions"
+                  "os/concepts/portal",
+                  "os/concepts/skills",
+                  "os/concepts/scripts",
+                  "os/concepts/files-and-artifacts",
+                  "os/concepts/approvals",
+                  "os/concepts/data-model-and-graphql",
+                  "os/concepts/context-and-memory",
+                  "os/concepts/integrations-and-capabilities",
+                  "os/concepts/observability",
+                  "os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -460,64 +463,6 @@
                       "os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "os/workspace-filesystem/overview",
-                  "os/workspace-filesystem/local-development-filesystem",
-                  "os/workspace-filesystem/s3-files-production-target",
-                  "os/workspace-filesystem/artifacts",
-                  "os/workspace-filesystem/reports",
-                  "os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "os/data-layer/data-model-as-os-ontology",
-                  "os/data-layer/graphql-facades",
-                  "os/data-layer/structured-queries",
-                  "os/data-layer/vectorized-context",
-                  "os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "os/runtime/bun-runtime",
-                  "os/runtime/sandbox-executor",
-                  "os/runtime/package-scripts-vs-mcp-tools",
-                  "os/runtime/operator-scripts",
-                  "os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "os/integrations/twilio",
-                  "os/integrations/ghl",
-                  "os/integrations/meta-ads",
-                  "os/integrations/google-ads",
-                  "os/integrations/supabase-auth",
-                  "os/integrations/s3-s3-files",
-                  "os/integrations/stripe",
-                  "os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "os/pilot/insurance-revenue-workspace",
-                  "os/pilot/setup-checklist",
-                  "os/pilot/demo-flow",
-                  "os/pilot/success-criteria"
                 ]
               }
             ]
@@ -1080,22 +1025,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/fr/os/overview/what-is-consuelo-os",
-                  "l/fr/os/overview/core-concepts",
-                  "l/fr/os/overview/quickstart",
-                  "l/fr/os/overview/architecture"
+                  "l/fr/os/overview",
+                  "l/fr/os/how-it-works",
+                  "l/fr/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/fr/os/agent-interface/get-steering",
-                  "l/fr/os/agent-interface/get-dev-steering",
-                  "l/fr/os/agent-interface/call",
-                  "l/fr/os/agent-interface/steering-files",
-                  "l/fr/os/agent-interface/tool-manifest",
-                  "l/fr/os/agent-interface/permissions"
+                  "l/fr/os/concepts/portal",
+                  "l/fr/os/concepts/skills",
+                  "l/fr/os/concepts/scripts",
+                  "l/fr/os/concepts/files-and-artifacts",
+                  "l/fr/os/concepts/approvals",
+                  "l/fr/os/concepts/data-model-and-graphql",
+                  "l/fr/os/concepts/context-and-memory",
+                  "l/fr/os/concepts/integrations-and-capabilities",
+                  "l/fr/os/concepts/observability",
+                  "l/fr/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -1127,64 +1075,6 @@
                       "l/fr/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/fr/os/workspace-filesystem/overview",
-                  "l/fr/os/workspace-filesystem/local-development-filesystem",
-                  "l/fr/os/workspace-filesystem/s3-files-production-target",
-                  "l/fr/os/workspace-filesystem/artifacts",
-                  "l/fr/os/workspace-filesystem/reports",
-                  "l/fr/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/fr/os/data-layer/data-model-as-os-ontology",
-                  "l/fr/os/data-layer/graphql-facades",
-                  "l/fr/os/data-layer/structured-queries",
-                  "l/fr/os/data-layer/vectorized-context",
-                  "l/fr/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/fr/os/runtime/bun-runtime",
-                  "l/fr/os/runtime/sandbox-executor",
-                  "l/fr/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/fr/os/runtime/operator-scripts",
-                  "l/fr/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/fr/os/integrations/twilio",
-                  "l/fr/os/integrations/ghl",
-                  "l/fr/os/integrations/meta-ads",
-                  "l/fr/os/integrations/google-ads",
-                  "l/fr/os/integrations/supabase-auth",
-                  "l/fr/os/integrations/s3-s3-files",
-                  "l/fr/os/integrations/stripe",
-                  "l/fr/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/fr/os/pilot/insurance-revenue-workspace",
-                  "l/fr/os/pilot/setup-checklist",
-                  "l/fr/os/pilot/demo-flow",
-                  "l/fr/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -1747,22 +1637,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ar/os/overview/what-is-consuelo-os",
-                  "l/ar/os/overview/core-concepts",
-                  "l/ar/os/overview/quickstart",
-                  "l/ar/os/overview/architecture"
+                  "l/ar/os/overview",
+                  "l/ar/os/how-it-works",
+                  "l/ar/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ar/os/agent-interface/get-steering",
-                  "l/ar/os/agent-interface/get-dev-steering",
-                  "l/ar/os/agent-interface/call",
-                  "l/ar/os/agent-interface/steering-files",
-                  "l/ar/os/agent-interface/tool-manifest",
-                  "l/ar/os/agent-interface/permissions"
+                  "l/ar/os/concepts/portal",
+                  "l/ar/os/concepts/skills",
+                  "l/ar/os/concepts/scripts",
+                  "l/ar/os/concepts/files-and-artifacts",
+                  "l/ar/os/concepts/approvals",
+                  "l/ar/os/concepts/data-model-and-graphql",
+                  "l/ar/os/concepts/context-and-memory",
+                  "l/ar/os/concepts/integrations-and-capabilities",
+                  "l/ar/os/concepts/observability",
+                  "l/ar/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -1794,64 +1687,6 @@
                       "l/ar/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ar/os/workspace-filesystem/overview",
-                  "l/ar/os/workspace-filesystem/local-development-filesystem",
-                  "l/ar/os/workspace-filesystem/s3-files-production-target",
-                  "l/ar/os/workspace-filesystem/artifacts",
-                  "l/ar/os/workspace-filesystem/reports",
-                  "l/ar/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ar/os/data-layer/data-model-as-os-ontology",
-                  "l/ar/os/data-layer/graphql-facades",
-                  "l/ar/os/data-layer/structured-queries",
-                  "l/ar/os/data-layer/vectorized-context",
-                  "l/ar/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ar/os/runtime/bun-runtime",
-                  "l/ar/os/runtime/sandbox-executor",
-                  "l/ar/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ar/os/runtime/operator-scripts",
-                  "l/ar/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ar/os/integrations/twilio",
-                  "l/ar/os/integrations/ghl",
-                  "l/ar/os/integrations/meta-ads",
-                  "l/ar/os/integrations/google-ads",
-                  "l/ar/os/integrations/supabase-auth",
-                  "l/ar/os/integrations/s3-s3-files",
-                  "l/ar/os/integrations/stripe",
-                  "l/ar/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ar/os/pilot/insurance-revenue-workspace",
-                  "l/ar/os/pilot/setup-checklist",
-                  "l/ar/os/pilot/demo-flow",
-                  "l/ar/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -2414,22 +2249,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/cs/os/overview/what-is-consuelo-os",
-                  "l/cs/os/overview/core-concepts",
-                  "l/cs/os/overview/quickstart",
-                  "l/cs/os/overview/architecture"
+                  "l/cs/os/overview",
+                  "l/cs/os/how-it-works",
+                  "l/cs/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/cs/os/agent-interface/get-steering",
-                  "l/cs/os/agent-interface/get-dev-steering",
-                  "l/cs/os/agent-interface/call",
-                  "l/cs/os/agent-interface/steering-files",
-                  "l/cs/os/agent-interface/tool-manifest",
-                  "l/cs/os/agent-interface/permissions"
+                  "l/cs/os/concepts/portal",
+                  "l/cs/os/concepts/skills",
+                  "l/cs/os/concepts/scripts",
+                  "l/cs/os/concepts/files-and-artifacts",
+                  "l/cs/os/concepts/approvals",
+                  "l/cs/os/concepts/data-model-and-graphql",
+                  "l/cs/os/concepts/context-and-memory",
+                  "l/cs/os/concepts/integrations-and-capabilities",
+                  "l/cs/os/concepts/observability",
+                  "l/cs/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -2461,64 +2299,6 @@
                       "l/cs/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/cs/os/workspace-filesystem/overview",
-                  "l/cs/os/workspace-filesystem/local-development-filesystem",
-                  "l/cs/os/workspace-filesystem/s3-files-production-target",
-                  "l/cs/os/workspace-filesystem/artifacts",
-                  "l/cs/os/workspace-filesystem/reports",
-                  "l/cs/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/cs/os/data-layer/data-model-as-os-ontology",
-                  "l/cs/os/data-layer/graphql-facades",
-                  "l/cs/os/data-layer/structured-queries",
-                  "l/cs/os/data-layer/vectorized-context",
-                  "l/cs/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/cs/os/runtime/bun-runtime",
-                  "l/cs/os/runtime/sandbox-executor",
-                  "l/cs/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/cs/os/runtime/operator-scripts",
-                  "l/cs/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/cs/os/integrations/twilio",
-                  "l/cs/os/integrations/ghl",
-                  "l/cs/os/integrations/meta-ads",
-                  "l/cs/os/integrations/google-ads",
-                  "l/cs/os/integrations/supabase-auth",
-                  "l/cs/os/integrations/s3-s3-files",
-                  "l/cs/os/integrations/stripe",
-                  "l/cs/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/cs/os/pilot/insurance-revenue-workspace",
-                  "l/cs/os/pilot/setup-checklist",
-                  "l/cs/os/pilot/demo-flow",
-                  "l/cs/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -3081,22 +2861,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/de/os/overview/what-is-consuelo-os",
-                  "l/de/os/overview/core-concepts",
-                  "l/de/os/overview/quickstart",
-                  "l/de/os/overview/architecture"
+                  "l/de/os/overview",
+                  "l/de/os/how-it-works",
+                  "l/de/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/de/os/agent-interface/get-steering",
-                  "l/de/os/agent-interface/get-dev-steering",
-                  "l/de/os/agent-interface/call",
-                  "l/de/os/agent-interface/steering-files",
-                  "l/de/os/agent-interface/tool-manifest",
-                  "l/de/os/agent-interface/permissions"
+                  "l/de/os/concepts/portal",
+                  "l/de/os/concepts/skills",
+                  "l/de/os/concepts/scripts",
+                  "l/de/os/concepts/files-and-artifacts",
+                  "l/de/os/concepts/approvals",
+                  "l/de/os/concepts/data-model-and-graphql",
+                  "l/de/os/concepts/context-and-memory",
+                  "l/de/os/concepts/integrations-and-capabilities",
+                  "l/de/os/concepts/observability",
+                  "l/de/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -3128,64 +2911,6 @@
                       "l/de/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/de/os/workspace-filesystem/overview",
-                  "l/de/os/workspace-filesystem/local-development-filesystem",
-                  "l/de/os/workspace-filesystem/s3-files-production-target",
-                  "l/de/os/workspace-filesystem/artifacts",
-                  "l/de/os/workspace-filesystem/reports",
-                  "l/de/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/de/os/data-layer/data-model-as-os-ontology",
-                  "l/de/os/data-layer/graphql-facades",
-                  "l/de/os/data-layer/structured-queries",
-                  "l/de/os/data-layer/vectorized-context",
-                  "l/de/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/de/os/runtime/bun-runtime",
-                  "l/de/os/runtime/sandbox-executor",
-                  "l/de/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/de/os/runtime/operator-scripts",
-                  "l/de/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/de/os/integrations/twilio",
-                  "l/de/os/integrations/ghl",
-                  "l/de/os/integrations/meta-ads",
-                  "l/de/os/integrations/google-ads",
-                  "l/de/os/integrations/supabase-auth",
-                  "l/de/os/integrations/s3-s3-files",
-                  "l/de/os/integrations/stripe",
-                  "l/de/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/de/os/pilot/insurance-revenue-workspace",
-                  "l/de/os/pilot/setup-checklist",
-                  "l/de/os/pilot/demo-flow",
-                  "l/de/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -3748,22 +3473,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/es/os/overview/what-is-consuelo-os",
-                  "l/es/os/overview/core-concepts",
-                  "l/es/os/overview/quickstart",
-                  "l/es/os/overview/architecture"
+                  "l/es/os/overview",
+                  "l/es/os/how-it-works",
+                  "l/es/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/es/os/agent-interface/get-steering",
-                  "l/es/os/agent-interface/get-dev-steering",
-                  "l/es/os/agent-interface/call",
-                  "l/es/os/agent-interface/steering-files",
-                  "l/es/os/agent-interface/tool-manifest",
-                  "l/es/os/agent-interface/permissions"
+                  "l/es/os/concepts/portal",
+                  "l/es/os/concepts/skills",
+                  "l/es/os/concepts/scripts",
+                  "l/es/os/concepts/files-and-artifacts",
+                  "l/es/os/concepts/approvals",
+                  "l/es/os/concepts/data-model-and-graphql",
+                  "l/es/os/concepts/context-and-memory",
+                  "l/es/os/concepts/integrations-and-capabilities",
+                  "l/es/os/concepts/observability",
+                  "l/es/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -3795,64 +3523,6 @@
                       "l/es/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/es/os/workspace-filesystem/overview",
-                  "l/es/os/workspace-filesystem/local-development-filesystem",
-                  "l/es/os/workspace-filesystem/s3-files-production-target",
-                  "l/es/os/workspace-filesystem/artifacts",
-                  "l/es/os/workspace-filesystem/reports",
-                  "l/es/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/es/os/data-layer/data-model-as-os-ontology",
-                  "l/es/os/data-layer/graphql-facades",
-                  "l/es/os/data-layer/structured-queries",
-                  "l/es/os/data-layer/vectorized-context",
-                  "l/es/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/es/os/runtime/bun-runtime",
-                  "l/es/os/runtime/sandbox-executor",
-                  "l/es/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/es/os/runtime/operator-scripts",
-                  "l/es/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/es/os/integrations/twilio",
-                  "l/es/os/integrations/ghl",
-                  "l/es/os/integrations/meta-ads",
-                  "l/es/os/integrations/google-ads",
-                  "l/es/os/integrations/supabase-auth",
-                  "l/es/os/integrations/s3-s3-files",
-                  "l/es/os/integrations/stripe",
-                  "l/es/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/es/os/pilot/insurance-revenue-workspace",
-                  "l/es/os/pilot/setup-checklist",
-                  "l/es/os/pilot/demo-flow",
-                  "l/es/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -4415,22 +4085,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/it/os/overview/what-is-consuelo-os",
-                  "l/it/os/overview/core-concepts",
-                  "l/it/os/overview/quickstart",
-                  "l/it/os/overview/architecture"
+                  "l/it/os/overview",
+                  "l/it/os/how-it-works",
+                  "l/it/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/it/os/agent-interface/get-steering",
-                  "l/it/os/agent-interface/get-dev-steering",
-                  "l/it/os/agent-interface/call",
-                  "l/it/os/agent-interface/steering-files",
-                  "l/it/os/agent-interface/tool-manifest",
-                  "l/it/os/agent-interface/permissions"
+                  "l/it/os/concepts/portal",
+                  "l/it/os/concepts/skills",
+                  "l/it/os/concepts/scripts",
+                  "l/it/os/concepts/files-and-artifacts",
+                  "l/it/os/concepts/approvals",
+                  "l/it/os/concepts/data-model-and-graphql",
+                  "l/it/os/concepts/context-and-memory",
+                  "l/it/os/concepts/integrations-and-capabilities",
+                  "l/it/os/concepts/observability",
+                  "l/it/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -4462,64 +4135,6 @@
                       "l/it/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/it/os/workspace-filesystem/overview",
-                  "l/it/os/workspace-filesystem/local-development-filesystem",
-                  "l/it/os/workspace-filesystem/s3-files-production-target",
-                  "l/it/os/workspace-filesystem/artifacts",
-                  "l/it/os/workspace-filesystem/reports",
-                  "l/it/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/it/os/data-layer/data-model-as-os-ontology",
-                  "l/it/os/data-layer/graphql-facades",
-                  "l/it/os/data-layer/structured-queries",
-                  "l/it/os/data-layer/vectorized-context",
-                  "l/it/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/it/os/runtime/bun-runtime",
-                  "l/it/os/runtime/sandbox-executor",
-                  "l/it/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/it/os/runtime/operator-scripts",
-                  "l/it/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/it/os/integrations/twilio",
-                  "l/it/os/integrations/ghl",
-                  "l/it/os/integrations/meta-ads",
-                  "l/it/os/integrations/google-ads",
-                  "l/it/os/integrations/supabase-auth",
-                  "l/it/os/integrations/s3-s3-files",
-                  "l/it/os/integrations/stripe",
-                  "l/it/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/it/os/pilot/insurance-revenue-workspace",
-                  "l/it/os/pilot/setup-checklist",
-                  "l/it/os/pilot/demo-flow",
-                  "l/it/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -5082,22 +4697,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ja/os/overview/what-is-consuelo-os",
-                  "l/ja/os/overview/core-concepts",
-                  "l/ja/os/overview/quickstart",
-                  "l/ja/os/overview/architecture"
+                  "l/ja/os/overview",
+                  "l/ja/os/how-it-works",
+                  "l/ja/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ja/os/agent-interface/get-steering",
-                  "l/ja/os/agent-interface/get-dev-steering",
-                  "l/ja/os/agent-interface/call",
-                  "l/ja/os/agent-interface/steering-files",
-                  "l/ja/os/agent-interface/tool-manifest",
-                  "l/ja/os/agent-interface/permissions"
+                  "l/ja/os/concepts/portal",
+                  "l/ja/os/concepts/skills",
+                  "l/ja/os/concepts/scripts",
+                  "l/ja/os/concepts/files-and-artifacts",
+                  "l/ja/os/concepts/approvals",
+                  "l/ja/os/concepts/data-model-and-graphql",
+                  "l/ja/os/concepts/context-and-memory",
+                  "l/ja/os/concepts/integrations-and-capabilities",
+                  "l/ja/os/concepts/observability",
+                  "l/ja/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -5129,64 +4747,6 @@
                       "l/ja/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ja/os/workspace-filesystem/overview",
-                  "l/ja/os/workspace-filesystem/local-development-filesystem",
-                  "l/ja/os/workspace-filesystem/s3-files-production-target",
-                  "l/ja/os/workspace-filesystem/artifacts",
-                  "l/ja/os/workspace-filesystem/reports",
-                  "l/ja/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ja/os/data-layer/data-model-as-os-ontology",
-                  "l/ja/os/data-layer/graphql-facades",
-                  "l/ja/os/data-layer/structured-queries",
-                  "l/ja/os/data-layer/vectorized-context",
-                  "l/ja/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ja/os/runtime/bun-runtime",
-                  "l/ja/os/runtime/sandbox-executor",
-                  "l/ja/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ja/os/runtime/operator-scripts",
-                  "l/ja/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ja/os/integrations/twilio",
-                  "l/ja/os/integrations/ghl",
-                  "l/ja/os/integrations/meta-ads",
-                  "l/ja/os/integrations/google-ads",
-                  "l/ja/os/integrations/supabase-auth",
-                  "l/ja/os/integrations/s3-s3-files",
-                  "l/ja/os/integrations/stripe",
-                  "l/ja/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ja/os/pilot/insurance-revenue-workspace",
-                  "l/ja/os/pilot/setup-checklist",
-                  "l/ja/os/pilot/demo-flow",
-                  "l/ja/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -5749,22 +5309,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ko/os/overview/what-is-consuelo-os",
-                  "l/ko/os/overview/core-concepts",
-                  "l/ko/os/overview/quickstart",
-                  "l/ko/os/overview/architecture"
+                  "l/ko/os/overview",
+                  "l/ko/os/how-it-works",
+                  "l/ko/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ko/os/agent-interface/get-steering",
-                  "l/ko/os/agent-interface/get-dev-steering",
-                  "l/ko/os/agent-interface/call",
-                  "l/ko/os/agent-interface/steering-files",
-                  "l/ko/os/agent-interface/tool-manifest",
-                  "l/ko/os/agent-interface/permissions"
+                  "l/ko/os/concepts/portal",
+                  "l/ko/os/concepts/skills",
+                  "l/ko/os/concepts/scripts",
+                  "l/ko/os/concepts/files-and-artifacts",
+                  "l/ko/os/concepts/approvals",
+                  "l/ko/os/concepts/data-model-and-graphql",
+                  "l/ko/os/concepts/context-and-memory",
+                  "l/ko/os/concepts/integrations-and-capabilities",
+                  "l/ko/os/concepts/observability",
+                  "l/ko/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -5796,64 +5359,6 @@
                       "l/ko/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ko/os/workspace-filesystem/overview",
-                  "l/ko/os/workspace-filesystem/local-development-filesystem",
-                  "l/ko/os/workspace-filesystem/s3-files-production-target",
-                  "l/ko/os/workspace-filesystem/artifacts",
-                  "l/ko/os/workspace-filesystem/reports",
-                  "l/ko/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ko/os/data-layer/data-model-as-os-ontology",
-                  "l/ko/os/data-layer/graphql-facades",
-                  "l/ko/os/data-layer/structured-queries",
-                  "l/ko/os/data-layer/vectorized-context",
-                  "l/ko/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ko/os/runtime/bun-runtime",
-                  "l/ko/os/runtime/sandbox-executor",
-                  "l/ko/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ko/os/runtime/operator-scripts",
-                  "l/ko/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ko/os/integrations/twilio",
-                  "l/ko/os/integrations/ghl",
-                  "l/ko/os/integrations/meta-ads",
-                  "l/ko/os/integrations/google-ads",
-                  "l/ko/os/integrations/supabase-auth",
-                  "l/ko/os/integrations/s3-s3-files",
-                  "l/ko/os/integrations/stripe",
-                  "l/ko/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ko/os/pilot/insurance-revenue-workspace",
-                  "l/ko/os/pilot/setup-checklist",
-                  "l/ko/os/pilot/demo-flow",
-                  "l/ko/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -6416,22 +5921,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/pt/os/overview/what-is-consuelo-os",
-                  "l/pt/os/overview/core-concepts",
-                  "l/pt/os/overview/quickstart",
-                  "l/pt/os/overview/architecture"
+                  "l/pt/os/overview",
+                  "l/pt/os/how-it-works",
+                  "l/pt/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/pt/os/agent-interface/get-steering",
-                  "l/pt/os/agent-interface/get-dev-steering",
-                  "l/pt/os/agent-interface/call",
-                  "l/pt/os/agent-interface/steering-files",
-                  "l/pt/os/agent-interface/tool-manifest",
-                  "l/pt/os/agent-interface/permissions"
+                  "l/pt/os/concepts/portal",
+                  "l/pt/os/concepts/skills",
+                  "l/pt/os/concepts/scripts",
+                  "l/pt/os/concepts/files-and-artifacts",
+                  "l/pt/os/concepts/approvals",
+                  "l/pt/os/concepts/data-model-and-graphql",
+                  "l/pt/os/concepts/context-and-memory",
+                  "l/pt/os/concepts/integrations-and-capabilities",
+                  "l/pt/os/concepts/observability",
+                  "l/pt/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -6463,64 +5971,6 @@
                       "l/pt/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/pt/os/workspace-filesystem/overview",
-                  "l/pt/os/workspace-filesystem/local-development-filesystem",
-                  "l/pt/os/workspace-filesystem/s3-files-production-target",
-                  "l/pt/os/workspace-filesystem/artifacts",
-                  "l/pt/os/workspace-filesystem/reports",
-                  "l/pt/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/pt/os/data-layer/data-model-as-os-ontology",
-                  "l/pt/os/data-layer/graphql-facades",
-                  "l/pt/os/data-layer/structured-queries",
-                  "l/pt/os/data-layer/vectorized-context",
-                  "l/pt/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/pt/os/runtime/bun-runtime",
-                  "l/pt/os/runtime/sandbox-executor",
-                  "l/pt/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/pt/os/runtime/operator-scripts",
-                  "l/pt/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/pt/os/integrations/twilio",
-                  "l/pt/os/integrations/ghl",
-                  "l/pt/os/integrations/meta-ads",
-                  "l/pt/os/integrations/google-ads",
-                  "l/pt/os/integrations/supabase-auth",
-                  "l/pt/os/integrations/s3-s3-files",
-                  "l/pt/os/integrations/stripe",
-                  "l/pt/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/pt/os/pilot/insurance-revenue-workspace",
-                  "l/pt/os/pilot/setup-checklist",
-                  "l/pt/os/pilot/demo-flow",
-                  "l/pt/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -7083,22 +6533,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ro/os/overview/what-is-consuelo-os",
-                  "l/ro/os/overview/core-concepts",
-                  "l/ro/os/overview/quickstart",
-                  "l/ro/os/overview/architecture"
+                  "l/ro/os/overview",
+                  "l/ro/os/how-it-works",
+                  "l/ro/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ro/os/agent-interface/get-steering",
-                  "l/ro/os/agent-interface/get-dev-steering",
-                  "l/ro/os/agent-interface/call",
-                  "l/ro/os/agent-interface/steering-files",
-                  "l/ro/os/agent-interface/tool-manifest",
-                  "l/ro/os/agent-interface/permissions"
+                  "l/ro/os/concepts/portal",
+                  "l/ro/os/concepts/skills",
+                  "l/ro/os/concepts/scripts",
+                  "l/ro/os/concepts/files-and-artifacts",
+                  "l/ro/os/concepts/approvals",
+                  "l/ro/os/concepts/data-model-and-graphql",
+                  "l/ro/os/concepts/context-and-memory",
+                  "l/ro/os/concepts/integrations-and-capabilities",
+                  "l/ro/os/concepts/observability",
+                  "l/ro/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -7130,64 +6583,6 @@
                       "l/ro/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ro/os/workspace-filesystem/overview",
-                  "l/ro/os/workspace-filesystem/local-development-filesystem",
-                  "l/ro/os/workspace-filesystem/s3-files-production-target",
-                  "l/ro/os/workspace-filesystem/artifacts",
-                  "l/ro/os/workspace-filesystem/reports",
-                  "l/ro/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ro/os/data-layer/data-model-as-os-ontology",
-                  "l/ro/os/data-layer/graphql-facades",
-                  "l/ro/os/data-layer/structured-queries",
-                  "l/ro/os/data-layer/vectorized-context",
-                  "l/ro/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ro/os/runtime/bun-runtime",
-                  "l/ro/os/runtime/sandbox-executor",
-                  "l/ro/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ro/os/runtime/operator-scripts",
-                  "l/ro/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ro/os/integrations/twilio",
-                  "l/ro/os/integrations/ghl",
-                  "l/ro/os/integrations/meta-ads",
-                  "l/ro/os/integrations/google-ads",
-                  "l/ro/os/integrations/supabase-auth",
-                  "l/ro/os/integrations/s3-s3-files",
-                  "l/ro/os/integrations/stripe",
-                  "l/ro/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ro/os/pilot/insurance-revenue-workspace",
-                  "l/ro/os/pilot/setup-checklist",
-                  "l/ro/os/pilot/demo-flow",
-                  "l/ro/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -7750,22 +7145,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/ru/os/overview/what-is-consuelo-os",
-                  "l/ru/os/overview/core-concepts",
-                  "l/ru/os/overview/quickstart",
-                  "l/ru/os/overview/architecture"
+                  "l/ru/os/overview",
+                  "l/ru/os/how-it-works",
+                  "l/ru/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/ru/os/agent-interface/get-steering",
-                  "l/ru/os/agent-interface/get-dev-steering",
-                  "l/ru/os/agent-interface/call",
-                  "l/ru/os/agent-interface/steering-files",
-                  "l/ru/os/agent-interface/tool-manifest",
-                  "l/ru/os/agent-interface/permissions"
+                  "l/ru/os/concepts/portal",
+                  "l/ru/os/concepts/skills",
+                  "l/ru/os/concepts/scripts",
+                  "l/ru/os/concepts/files-and-artifacts",
+                  "l/ru/os/concepts/approvals",
+                  "l/ru/os/concepts/data-model-and-graphql",
+                  "l/ru/os/concepts/context-and-memory",
+                  "l/ru/os/concepts/integrations-and-capabilities",
+                  "l/ru/os/concepts/observability",
+                  "l/ru/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -7797,64 +7195,6 @@
                       "l/ru/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/ru/os/workspace-filesystem/overview",
-                  "l/ru/os/workspace-filesystem/local-development-filesystem",
-                  "l/ru/os/workspace-filesystem/s3-files-production-target",
-                  "l/ru/os/workspace-filesystem/artifacts",
-                  "l/ru/os/workspace-filesystem/reports",
-                  "l/ru/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/ru/os/data-layer/data-model-as-os-ontology",
-                  "l/ru/os/data-layer/graphql-facades",
-                  "l/ru/os/data-layer/structured-queries",
-                  "l/ru/os/data-layer/vectorized-context",
-                  "l/ru/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/ru/os/runtime/bun-runtime",
-                  "l/ru/os/runtime/sandbox-executor",
-                  "l/ru/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/ru/os/runtime/operator-scripts",
-                  "l/ru/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/ru/os/integrations/twilio",
-                  "l/ru/os/integrations/ghl",
-                  "l/ru/os/integrations/meta-ads",
-                  "l/ru/os/integrations/google-ads",
-                  "l/ru/os/integrations/supabase-auth",
-                  "l/ru/os/integrations/s3-s3-files",
-                  "l/ru/os/integrations/stripe",
-                  "l/ru/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/ru/os/pilot/insurance-revenue-workspace",
-                  "l/ru/os/pilot/setup-checklist",
-                  "l/ru/os/pilot/demo-flow",
-                  "l/ru/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -8417,22 +7757,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/tr/os/overview/what-is-consuelo-os",
-                  "l/tr/os/overview/core-concepts",
-                  "l/tr/os/overview/quickstart",
-                  "l/tr/os/overview/architecture"
+                  "l/tr/os/overview",
+                  "l/tr/os/how-it-works",
+                  "l/tr/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/tr/os/agent-interface/get-steering",
-                  "l/tr/os/agent-interface/get-dev-steering",
-                  "l/tr/os/agent-interface/call",
-                  "l/tr/os/agent-interface/steering-files",
-                  "l/tr/os/agent-interface/tool-manifest",
-                  "l/tr/os/agent-interface/permissions"
+                  "l/tr/os/concepts/portal",
+                  "l/tr/os/concepts/skills",
+                  "l/tr/os/concepts/scripts",
+                  "l/tr/os/concepts/files-and-artifacts",
+                  "l/tr/os/concepts/approvals",
+                  "l/tr/os/concepts/data-model-and-graphql",
+                  "l/tr/os/concepts/context-and-memory",
+                  "l/tr/os/concepts/integrations-and-capabilities",
+                  "l/tr/os/concepts/observability",
+                  "l/tr/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -8464,64 +7807,6 @@
                       "l/tr/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/tr/os/workspace-filesystem/overview",
-                  "l/tr/os/workspace-filesystem/local-development-filesystem",
-                  "l/tr/os/workspace-filesystem/s3-files-production-target",
-                  "l/tr/os/workspace-filesystem/artifacts",
-                  "l/tr/os/workspace-filesystem/reports",
-                  "l/tr/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/tr/os/data-layer/data-model-as-os-ontology",
-                  "l/tr/os/data-layer/graphql-facades",
-                  "l/tr/os/data-layer/structured-queries",
-                  "l/tr/os/data-layer/vectorized-context",
-                  "l/tr/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/tr/os/runtime/bun-runtime",
-                  "l/tr/os/runtime/sandbox-executor",
-                  "l/tr/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/tr/os/runtime/operator-scripts",
-                  "l/tr/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/tr/os/integrations/twilio",
-                  "l/tr/os/integrations/ghl",
-                  "l/tr/os/integrations/meta-ads",
-                  "l/tr/os/integrations/google-ads",
-                  "l/tr/os/integrations/supabase-auth",
-                  "l/tr/os/integrations/s3-s3-files",
-                  "l/tr/os/integrations/stripe",
-                  "l/tr/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/tr/os/pilot/insurance-revenue-workspace",
-                  "l/tr/os/pilot/setup-checklist",
-                  "l/tr/os/pilot/demo-flow",
-                  "l/tr/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -9084,22 +8369,25 @@
                 "group": "Overview",
                 "icon": "sparkles",
                 "pages": [
-                  "l/zh/os/overview/what-is-consuelo-os",
-                  "l/zh/os/overview/core-concepts",
-                  "l/zh/os/overview/quickstart",
-                  "l/zh/os/overview/architecture"
+                  "l/zh/os/overview",
+                  "l/zh/os/how-it-works",
+                  "l/zh/os/glossary"
                 ]
               },
               {
-                "group": "Agent Interface",
-                "icon": "terminal",
+                "group": "Concepts",
+                "icon": "book-open",
                 "pages": [
-                  "l/zh/os/agent-interface/get-steering",
-                  "l/zh/os/agent-interface/get-dev-steering",
-                  "l/zh/os/agent-interface/call",
-                  "l/zh/os/agent-interface/steering-files",
-                  "l/zh/os/agent-interface/tool-manifest",
-                  "l/zh/os/agent-interface/permissions"
+                  "l/zh/os/concepts/portal",
+                  "l/zh/os/concepts/skills",
+                  "l/zh/os/concepts/scripts",
+                  "l/zh/os/concepts/files-and-artifacts",
+                  "l/zh/os/concepts/approvals",
+                  "l/zh/os/concepts/data-model-and-graphql",
+                  "l/zh/os/concepts/context-and-memory",
+                  "l/zh/os/concepts/integrations-and-capabilities",
+                  "l/zh/os/concepts/observability",
+                  "l/zh/os/concepts/local-and-cloud"
                 ]
               },
               {
@@ -9131,64 +8419,6 @@
                       "l/zh/os/skills/planned/weekly-manager-report"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Workspace Filesystem",
-                "icon": "folder",
-                "pages": [
-                  "l/zh/os/workspace-filesystem/overview",
-                  "l/zh/os/workspace-filesystem/local-development-filesystem",
-                  "l/zh/os/workspace-filesystem/s3-files-production-target",
-                  "l/zh/os/workspace-filesystem/artifacts",
-                  "l/zh/os/workspace-filesystem/reports",
-                  "l/zh/os/workspace-filesystem/runbook-outputs"
-                ]
-              },
-              {
-                "group": "Data Layer",
-                "icon": "database",
-                "pages": [
-                  "l/zh/os/data-layer/data-model-as-os-ontology",
-                  "l/zh/os/data-layer/graphql-facades",
-                  "l/zh/os/data-layer/structured-queries",
-                  "l/zh/os/data-layer/vectorized-context",
-                  "l/zh/os/data-layer/decision-engine"
-                ]
-              },
-              {
-                "group": "Runtime",
-                "icon": "cpu",
-                "pages": [
-                  "l/zh/os/runtime/bun-runtime",
-                  "l/zh/os/runtime/sandbox-executor",
-                  "l/zh/os/runtime/package-scripts-vs-mcp-tools",
-                  "l/zh/os/runtime/operator-scripts",
-                  "l/zh/os/runtime/scheduled-runbooks"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "icon": "plug",
-                "pages": [
-                  "l/zh/os/integrations/twilio",
-                  "l/zh/os/integrations/ghl",
-                  "l/zh/os/integrations/meta-ads",
-                  "l/zh/os/integrations/google-ads",
-                  "l/zh/os/integrations/supabase-auth",
-                  "l/zh/os/integrations/s3-s3-files",
-                  "l/zh/os/integrations/stripe",
-                  "l/zh/os/integrations/sentry-posthog"
-                ]
-              },
-              {
-                "group": "Pilot",
-                "icon": "flag",
-                "pages": [
-                  "l/zh/os/pilot/insurance-revenue-workspace",
-                  "l/zh/os/pilot/setup-checklist",
-                  "l/zh/os/pilot/demo-flow",
-                  "l/zh/os/pilot/success-criteria"
                 ]
               }
             ]
@@ -9864,6 +9094,202 @@
     {
       "source": "/user-guide/billing/capabilities/billing-and-pricing-faq",
       "destination": "/user-guide/billing/how-tos/billing-faq"
+    },
+    {
+      "source": "/os/overview/what-is-consuelo-os",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/overview/core-concepts",
+      "destination": "/os/how-it-works"
+    },
+    {
+      "source": "/os/overview/quickstart",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/overview/architecture",
+      "destination": "/os/how-it-works"
+    },
+    {
+      "source": "/os/agent-interface/get-steering",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/get-dev-steering",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/call",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/steering-files",
+      "destination": "/os/concepts/context-and-memory"
+    },
+    {
+      "source": "/os/agent-interface/tool-manifest",
+      "destination": "/os/concepts/portal"
+    },
+    {
+      "source": "/os/agent-interface/permissions",
+      "destination": "/os/concepts/approvals"
+    },
+    {
+      "source": "/os/workspace-filesystem/overview",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/local-development-filesystem",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/workspace-filesystem/s3-files-production-target",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/workspace-filesystem/artifacts",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/reports",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/workspace-filesystem/runbook-outputs",
+      "destination": "/os/concepts/files-and-artifacts"
+    },
+    {
+      "source": "/os/data-layer/data-model-as-os-ontology",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/graphql-facades",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/structured-queries",
+      "destination": "/os/concepts/data-model-and-graphql"
+    },
+    {
+      "source": "/os/data-layer/vectorized-context",
+      "destination": "/os/concepts/context-and-memory"
+    },
+    {
+      "source": "/os/data-layer/decision-engine",
+      "destination": "/os/concepts/observability"
+    },
+    {
+      "source": "/os/runtime/bun-runtime",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/runtime/sandbox-executor",
+      "destination": "/os/concepts/local-and-cloud"
+    },
+    {
+      "source": "/os/runtime/package-scripts-vs-mcp-tools",
+      "destination": "/os/concepts/scripts"
+    },
+    {
+      "source": "/os/runtime/operator-scripts",
+      "destination": "/os/concepts/scripts"
+    },
+    {
+      "source": "/os/runtime/scheduled-runbooks",
+      "destination": "/os/concepts/skills"
+    },
+    {
+      "source": "/os/integrations/twilio",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/ghl",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/meta-ads",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/google-ads",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/supabase-auth",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/s3-s3-files",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/stripe",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/integrations/sentry-posthog",
+      "destination": "/os/concepts/integrations-and-capabilities"
+    },
+    {
+      "source": "/os/pilot/insurance-revenue-workspace",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/setup-checklist",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/demo-flow",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/pilot/success-criteria",
+      "destination": "/os/overview"
+    },
+    {
+      "source": "/os/runbooks/overview",
+      "destination": "/os/concepts/skills"
+    },
+    {
+      "source": "/os/runbooks/daily-revenue-brief",
+      "destination": "/os/skills/daily-revenue-brief"
+    },
+    {
+      "source": "/os/runbooks/lead-prioritizer",
+      "destination": "/os/skills/planned/lead-prioritizer"
+    },
+    {
+      "source": "/os/runbooks/post-call-analysis",
+      "destination": "/os/skills/planned/post-call-analysis"
+    },
+    {
+      "source": "/os/runbooks/sales-coaching",
+      "destination": "/os/skills/planned/sales-coaching"
+    },
+    {
+      "source": "/os/runbooks/follow-up-generator",
+      "destination": "/os/skills/planned/follow-up-generator"
+    },
+    {
+      "source": "/os/runbooks/landing-page-builder",
+      "destination": "/os/skills/planned/landing-page-builder"
+    },
+    {
+      "source": "/os/runbooks/meta-ads-review",
+      "destination": "/os/skills/planned/meta-ads-review"
+    },
+    {
+      "source": "/os/runbooks/google-ads-review",
+      "destination": "/os/skills/planned/google-ads-review"
+    },
+    {
+      "source": "/os/runbooks/campaign-brief",
+      "destination": "/os/skills/planned/campaign-brief"
+    },
+    {
+      "source": "/os/runbooks/weekly-manager-report",
+      "destination": "/os/skills/planned/weekly-manager-report"
     }
   ],
   "description": "Documentation for Consuelo — open-source sales infrastructure with power dialer, AI coaching, CRM, and automation. Everything your sales team needs in one platform.",
