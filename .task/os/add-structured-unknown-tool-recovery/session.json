@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a6c8b545ab78",
+  "tmuxSession": "opensaas-os-add-structured-unknown-tool-recovery-a6c8b545",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-structured-unknown-tool-recovery",
+  "branch": "task/os/add-structured-unknown-tool-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-structured-unknown-tool-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-structured-unknown-tool-recovery",
+  "prNumber": 811,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/811",
+  "createdAt": "2026-06-05T20:03:26.052Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-structured-unknown-tool-recovery/.task/os/add-structured-unknown-tool-recovery/session.json"
+}
