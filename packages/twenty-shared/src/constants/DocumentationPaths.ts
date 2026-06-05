@@ -120,7 +120,6 @@ export const DOCUMENTATION_PATHS = {
   OS_AGENT_INTERFACE_GET_STEERING: '/os/agent-interface/get-steering',
   OS_AGENT_INTERFACE_PERMISSIONS: '/os/agent-interface/permissions',
   OS_AGENT_INTERFACE_STEERING_FILES: '/os/agent-interface/steering-files',
-  OS_AGENT_INTERFACE_TOOL_MANIFEST: '/os/agent-interface/tool-manifest',
   OS_DATA_LAYER_DATA_MODEL_AS_OS_ONTOLOGY:
     '/os/data-layer/data-model-as-os-ontology',
   OS_DATA_LAYER_DECISION_ENGINE: '/os/data-layer/decision-engine',
@@ -174,6 +173,7 @@ export const DOCUMENTATION_PATHS = {
   OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
   OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
   OS_SKILLS_TASK: '/os/skills/task',
+  OS_TOOLS_OVERVIEW: '/os/tools/overview',
   OS_WORKSPACE_FILESYSTEM_ARTIFACTS: '/os/workspace-filesystem/artifacts',
   OS_WORKSPACE_FILESYSTEM_LOCAL_DEVELOPMENT_FILESYSTEM:
     '/os/workspace-filesystem/local-development-filesystem',
