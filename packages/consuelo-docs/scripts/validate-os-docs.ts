@@ -77,10 +77,20 @@ if (titles.join('\n') !== sortedTitles.join('\n')) {
   throw new Error('Skill docs are not sorted alphabetically.');
 }
 
-const pages = flattenPages(osTab.groups.flatMap((group) => group.pages ?? []));
-const missing = pages.filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)));
-if (missing.length) {
-  throw new Error(`OS docs nav has missing English pages:\n${missing.join('\n')}`);
+const osMissing = docsConfig.navigation.languages.flatMap((language) => {
+  const localizedOsTab = language.tabs.find((tab) => tab.tab === 'OS');
+  if (!localizedOsTab) {
+    return [`${language.language}: missing OS tab`];
+  }
+
+  return localizedOsTab.groups
+    .flatMap((group) => flattenPages(group.pages ?? []))
+    .filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)))
+    .map((slug) => `${language.language}: ${slug}`);
+});
+
+if (osMissing.length) {
+  throw new Error(`OS docs nav has missing pages:\n${osMissing.join('\n')}`);
 }
 
-process.stdout.write(`validated ${skillPages.length} generated skill pages\n`);
+process.stdout.write(`validated ${skillPages.length} generated skill pages and localized OS routes\n`);

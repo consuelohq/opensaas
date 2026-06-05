@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 
@@ -21,6 +22,7 @@ type ToolCommandArgument = {
   kind?: string;
   required?: boolean;
 };
+type JsonObject = Record<string, unknown>;
 
 type ToolManifestEntry = {
   name: string;
@@ -46,6 +48,24 @@ type ToolManifestEntry = {
   sessionRequired?: boolean;
 };
 
+type CanonicalManifestEntry = {
+  name: string;
+  kind: 'os-skill' | 'facade-tool';
+  source: string;
+  sourcePath: string;
+  category: string;
+  description: string;
+  title?: string;
+  core: boolean;
+  definition: JsonObject;
+};
+
+type CanonicalToolManifest = {
+  version: 1;
+  kind: 'consuelo-os-tool-manifest';
+  tools: CanonicalManifestEntry[];
+};
+
 type SearchOptions = {
   query: string;
   limit: number;
@@ -53,6 +73,7 @@ type SearchOptions = {
   readOnly?: boolean;
   mutating?: boolean;
   includeDocs: boolean;
+  includeEmbeddings?: boolean;
 };
 
 type ToolDoc = {
@@ -130,8 +151,8 @@ type EmbeddingCache = {
   entries: Record<string, number[]>;
 };
 
-const workspaceRoot = path.resolve(import.meta.dir, '..');
-const manifestPath = path.join(workspaceRoot, 'tooling', 'dev-tool-manifest.json');
+const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifestPath = path.join(workspaceRoot, 'manifests', 'tool.manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
 const TOOL_CARD_VERSION = 'tools-search-card-v2';
 
@@ -293,6 +314,7 @@ function parseArgs(argv: string[]): SearchOptions {
   let readOnly: boolean | undefined;
   let mutating: boolean | undefined;
   let includeDocs = true;
+  let includeEmbeddings = true;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -324,6 +346,10 @@ function parseArgs(argv: string[]): SearchOptions {
       includeDocs = false;
       continue;
     }
+    if (arg === '--no-embeddings') {
+      includeEmbeddings = false;
+      continue;
+    }
     if (arg === '--json') continue;
     if (!arg.startsWith('-') && !query) query = arg;
   }
@@ -333,7 +359,7 @@ function parseArgs(argv: string[]): SearchOptions {
     throw new Error('tools.search requires a query. Example: bun run tools:search -- "linear issue" --json');
   }
 
-  return { query, limit, category, readOnly, mutating, includeDocs };
+  return { query, limit, category, readOnly, mutating, includeDocs, includeEmbeddings };
 }
 
 function normalize(value: string): string {
@@ -403,8 +429,78 @@ function compactSnippet(value: string, limit = 600): string {
   return text.length > limit ? `${text.slice(0, limit)}...` : text;
 }
 
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readCanonicalManifest(): CanonicalToolManifest {
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as unknown;
+  if (!isObject(parsed) || !Array.isArray(parsed.tools)) {
+    throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
+  }
+
+  return parsed as CanonicalToolManifest;
+}
+
+function stringField(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function booleanField(value: unknown): boolean {
+  return value === true;
+}
+
+function osSkillCapabilities(definition: JsonObject): ToolCapability {
+  const permission = stringField(definition.permission) ?? 'read';
+  const mutating = booleanField(definition.writesRecords)
+    || booleanField(definition.externalSideEffects)
+    || ['write', 'execute', 'external', 'admin'].includes(permission);
+
+  return {
+    readOnly: !mutating,
+    mutating,
+    deterministic: false,
+    safeToRetry: !mutating,
+  };
+}
+
+function projectOsSkillEntry(entry: CanonicalManifestEntry): ToolManifestEntry {
+  const definition = entry.definition;
+  const implementation = isObject(definition.implementation) ? definition.implementation : {};
+  const implementationScript = stringField(implementation.script);
+
+  return {
+    name: entry.name,
+    methodPath: ['call', entry.name],
+    description: entry.description,
+    category: entry.category,
+    underlying: implementationScript
+      ? `consuelo-os call ${entry.name} (${implementationScript})`
+      : `consuelo-os call ${entry.name}`,
+    capabilities: osSkillCapabilities(definition),
+    defaultTimeout: 120000,
+    command: {
+      internal: 'os-skill',
+      arguments: [],
+    },
+    exampleInput: {
+      name: entry.name,
+      input: {},
+    },
+    sessionRequired: false,
+  };
+}
+
+function projectCanonicalEntry(entry: CanonicalManifestEntry): ToolManifestEntry {
+  if (entry.kind === 'facade-tool') {
+    return entry.definition as ToolManifestEntry;
+  }
+
+  return projectOsSkillEntry(entry);
+}
+
 function readManifest(): ToolManifestEntry[] {
-  return JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as ToolManifestEntry[];
+  return readCanonicalManifest().tools.map(projectCanonicalEntry);
 }
 
 function readToolDocs(): Map<string, ToolDoc> {
@@ -674,6 +770,10 @@ function scoreCard(card: ToolCard, options: SearchOptions, docs: Map<string, Too
 
 function workspaceCallSnippet(entry: ToolManifestEntry): string {
   const example = entry.exampleInput || {};
+  if (entry.command?.internal === 'os-skill') {
+    return `await workspace.call({ tool: "call", input: ${JSON.stringify(example)} })`;
+  }
+
   const fields = [`tool: ${JSON.stringify(entry.name)}`, `input: ${JSON.stringify(example)}`];
   if (entry.sessionRequired === true) fields.push('taskSession: "<taskSession>"');
   return `await workspace.call({ ${fields.join(', ')} })`;
@@ -777,14 +877,21 @@ async function run(options: SearchOptions): Promise<Record<string, unknown>> {
   const idf = computeIdf(cards);
   const averageLength = cards.reduce((sum, card) => sum + card.tokens.length, 0) / Math.max(1, cards.length);
   let embeddings: Awaited<ReturnType<typeof embeddingScores>>;
-  try {
-    embeddings = await embeddingScores(options.query, cards);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+  if (options.includeEmbeddings === false) {
     embeddings = {
       scores: new Map(),
-      diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message },
+      diagnostics: { embeddingConfigId: 'disabled', cardsEmbedded: 0, cardsReused: 0 },
     };
+  } else {
+    try {
+      embeddings = await embeddingScores(options.query, cards);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      embeddings = {
+        scores: new Map(),
+        diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message },
+      };
+    }
   }
 
   let scored = cards
@@ -811,7 +918,7 @@ async function run(options: SearchOptions): Promise<Record<string, unknown>> {
   const displayLimit = Math.max(1, Math.min(options.limit, 30));
   const matches = scored.slice(0, displayLimit).map((item) => toMatch(item, options.includeDocs));
   const catalogHash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, cards: allCards.map((card) => ({ name: card.entry.name, hash: card.hash })) }));
-  const catalogSource = ['dev-tool-manifest.json', ...(options.includeDocs ? ['TOOLS.md'] : [])];
+  const catalogSource = ['tool.manifest.json', ...(options.includeDocs ? ['TOOLS.md'] : [])];
 
   return {
     query: options.query,
@@ -845,11 +952,17 @@ async function run(options: SearchOptions): Promise<Record<string, unknown>> {
   };
 }
 
-try {
-  const result = await run(parseArgs(Bun.argv.slice(2)));
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-} catch (error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`${message}\n`);
-  process.exit(1);
+export async function runToolSearch(options: SearchOptions): Promise<Record<string, unknown>> {
+  return run(options);
+}
+
+if (import.meta.main) {
+  try {
+    const result = await run(parseArgs(Bun.argv.slice(2)));
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`${message}\n`);
+    process.exit(1);
+  }
 }

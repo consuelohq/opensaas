@@ -3,7 +3,7 @@
 The default tool manifest is the agent-facing source of truth:
 
 ```text
-packages/os/tooling/tool-manifest.json
+packages/os/manifests/tool.manifest.json
 ```
 
 Runtime implementations live in `packages/os/scripts/`. The current smoke skill is implemented at `packages/os/scripts/revenue/daily-revenue-brief.ts`.
