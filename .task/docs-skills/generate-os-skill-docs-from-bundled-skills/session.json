@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7a311ed40b7b",
+  "tmuxSession": "opensaas-docs-skills-generate-os-skill-docs-from-bundled-skills-7a311ed4",
+  "area": "docs-skills",
+  "stream": "stream/docs-skills",
+  "taskBranch": "task/docs-skills/generate-os-skill-docs-from-bundled-skills",
+  "branch": "task/docs-skills/generate-os-skill-docs-from-bundled-skills",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-skills-generate-os-skill-docs-from-bundled-skills",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-skills-generate-os-skill-docs-from-bundled-skills",
+  "prNumber": 755,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/755",
+  "createdAt": "2026-06-04T19:30:51.674Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-skills-generate-os-skill-docs-from-bundled-skills/.task/docs-skills/generate-os-skill-docs-from-bundled-skills/session.json"
+}

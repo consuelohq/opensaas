@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_56683a4f0865",
+  "tmuxSession": "opensaas-os-manifest-route-raw-steering-through-os-call-56683a4f",
+  "area": "os-manifest",
+  "stream": "stream/os-manifest",
+  "taskBranch": "task/os-manifest/route-raw-steering-through-os-call",
+  "branch": "task/os-manifest/route-raw-steering-through-os-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-route-raw-steering-through-os-call",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-route-raw-steering-through-os-call",
+  "prNumber": 721,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/721",
+  "createdAt": "2026-06-03T03:37:14.169Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-route-raw-steering-through-os-call/.task/os-manifest/route-raw-steering-through-os-call/session.json"
+}

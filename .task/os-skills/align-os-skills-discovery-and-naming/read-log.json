@@ -1,0 +1,19 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/generate-skills-registry.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/capabilities.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills.md",
+    "packages/os/skills/consuelo-design/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/skills/task/skill.json",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/skill-migration.test.ts"
+  ],
+  "updatedAt": "2026-06-03T17:18:06.637Z"
+}

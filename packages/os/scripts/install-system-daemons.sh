@@ -2,14 +2,17 @@
 set -euo pipefail
 
 dry_run=0
+quiet=0
 debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
+    --quiet) quiet=1 ;;
     --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--debug]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--quiet] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      echo "  --quiet  suppress normal success details for hosted bootstrap output"
       exit 0
       ;;
     *)
@@ -132,7 +135,8 @@ print_repair_hint() {
 }
 
 print_success_summary() {
-  log "LaunchAgent setup complete"
+  [ "$quiet" = "1" ] && return 0
+  log "background service setup complete"
   log "Services: $workspace_label, $portless_label, $watchdog_label"
   log "LaunchAgents: $launch_agent_dir"
   log "Logs: $log_dir"
@@ -147,25 +151,40 @@ print_debug_state() {
   launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
 }
 
+run_generate_daemons() {
+  if [ "$debug" = "1" ]; then
+    bash "$script_dir/generate-system-daemons.sh"
+  else
+    bash "$script_dir/generate-system-daemons.sh" >/dev/null
+  fi
+}
+
+run_plutil_lint() {
+  if [ "$debug" = "1" ]; then
+    plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist"
+  else
+    plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist" >/dev/null
+  fi
+}
+
 if [ "$dry_run" -eq 0 ]; then
   mkdir -p "$launch_agent_dir" "$log_dir"
 fi
 
-bash "$script_dir/generate-system-daemons.sh"
+run_generate_daemons
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
 bash -n "$script_dir/workspace-watchdog.sh"
 bash -n "$script_dir/generate-system-daemons.sh"
 bash -n "$script_dir/install-system-daemons.sh"
-plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist"
-
+run_plutil_lint
 if [ "$dry_run" -eq 1 ]; then
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
   exit 0
 fi
 
-log "running Consuelo OS smoke test on port $stage_port"
+[ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
 WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
 trap 'kill "$stage_pid" 2>/dev/null || true' EXIT

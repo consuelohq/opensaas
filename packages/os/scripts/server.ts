@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { executeCall, getDevSteering, getSteering } from './os';
+import { executeCall, getSteering } from './os';
 import type { CallInput } from './lib/types';
 
 const DEFAULT_PORT = 8850;
@@ -55,8 +55,8 @@ function healthResponse(): Response {
     status: 'ok',
     name: SERVER_NAME,
     runtime: 'bun',
-    toolNames: ['get_steering', 'get_dev_steering', 'call'],
-    tools: 3,
+    toolNames: ['get_steering', 'call'],
+    tools: 2,
     port: PORT,
   });
 }
@@ -69,10 +69,6 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
     return textResponse(getSteering());
-  }
-
-  if (url.pathname === '/get_dev_steering' && (request.method === 'GET' || request.method === 'POST')) {
-    return textResponse(getDevSteering());
   }
 
   if (url.pathname === '/call' && request.method === 'POST') {

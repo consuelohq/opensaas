@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7cd218014f72",
+  "tmuxSession": "opensaas-os-compact-background-service-install-output-7cd21801",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compact-background-service-install-output",
+  "branch": "task/os/compact-background-service-install-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-compact-background-service-install-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-compact-background-service-install-output",
+  "prNumber": 752,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/752",
+  "createdAt": "2026-06-03T20:54:03.049Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-compact-background-service-install-output/.task/os/compact-background-service-install-output/session.json"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "browser",
+  "title": "Browser",
+  "description": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
+  "trigger": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/browser/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "browser",
+    "web",
+    "automation"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}
