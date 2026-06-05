@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "os": "bun ./scripts/os.ts",
+    "office": "bun ./scripts/os.ts office",
     "get-steering": "bun ./scripts/os.ts get-steering",
     "call": "bun ./scripts/os.ts call",
     "install:local": "bun ./scripts/install.ts",
