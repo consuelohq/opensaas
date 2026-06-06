@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_300502a0562b",
+  "tmuxSession": "opensaas-diff-cockpit-rework-home-screen-300502a0",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/rework-home-screen",
+  "branch": "task/diff-cockpit/rework-home-screen",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-rework-home-screen",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-rework-home-screen",
+  "prNumber": 734,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/734",
+  "createdAt": "2026-06-03T07:32:15.314Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-rework-home-screen/.task/diff-cockpit/rework-home-screen/session.json"
+}

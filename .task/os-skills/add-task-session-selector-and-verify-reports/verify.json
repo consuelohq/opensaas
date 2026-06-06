@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-skills/add-task-session-selector-and-verify-reports",
+  "base": "origin/task/os-skills/add-task-session-selector-and-verify-reports",
+  "headSha": "aa1a3b1f8f873b1822cad50c80e490b65d6eada1",
+  "changeHash": "ac5e8752754ebda8a893bf5d75c141be63571ab6021f452ce3fc47c1ba51202d",
+  "changedFiles": [
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/lib/task-meta.js",
+    "packages/os/scripts/lib/task-selection.js",
+    "packages/os/scripts/lib/verification.js",
+    "packages/os/scripts/task-push.js",
+    "packages/os/scripts/verify.js",
+    "packages/os/tests/task-meta.test.js",
+    "packages/os/tests/task-selection.test.js",
+    "packages/os/tests/verification.test.js",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-05T08:49:06.695Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-skills/add-task-session-selector-and-verify-reports/current.json",
+        ".task/os-skills/add-task-session-selector-and-verify-reports/evidence-log.json",
+        ".task/os-skills/add-task-session-selector-and-verify-reports/read-log.json",
+        ".task/os-skills/add-task-session-selector-and-verify-reports/session.json",
+        ".task/os-skills/add-task-session-selector-and-verify-reports/verify.json",
+        ".task/os-skills/add-task-session-selector-and-verify-reports/workpad.md",
+        ".task/tasks/os-skills/add-task-session-selector-and-verify-reports.json",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/scripts/lib/task-meta.js",
+        "packages/os/scripts/lib/task-selection.js",
+        "packages/os/scripts/lib/verification.js",
+        "packages/os/scripts/task-push.js",
+        "packages/os/scripts/verify.js",
+        "packages/os/tests/task-meta.test.js",
+        "packages/os/tests/task-selection.test.js",
+        "packages/os/tests/verification.test.js",
+        "packages/os/tooling/dev-tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

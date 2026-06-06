@@ -115,6 +115,49 @@ export const DOCUMENTATION_PATHS = {
   GRAPHQL_API_OVERVIEW: '/graphql-api/overview',
   GRAPHQL_API_TROUBLESHOOTING_COMMON_OPS_ISSUES:
     '/graphql-api/troubleshooting/common-ops-issues',
+  OS_CONCEPTS_APPROVALS: '/os/concepts/approvals',
+  OS_CONCEPTS_CONTEXT_AND_MEMORY: '/os/concepts/context-and-memory',
+  OS_CONCEPTS_DATA_MODEL_AND_GRAPHQL: '/os/concepts/data-model-and-graphql',
+  OS_CONCEPTS_FILES_AND_ARTIFACTS: '/os/concepts/files-and-artifacts',
+  OS_CONCEPTS_INTEGRATIONS_AND_CAPABILITIES:
+    '/os/concepts/integrations-and-capabilities',
+  OS_CONCEPTS_LOCAL_AND_CLOUD: '/os/concepts/local-and-cloud',
+  OS_CONCEPTS_OBSERVABILITY: '/os/concepts/observability',
+  OS_CONCEPTS_PORTAL: '/os/concepts/portal',
+  OS_CONCEPTS_SCRIPTS: '/os/concepts/scripts',
+  OS_CONCEPTS_SKILLS: '/os/concepts/skills',
+  OS_GLOSSARY: '/os/glossary',
+  OS_HOW_IT_WORKS: '/os/how-it-works',
+  OS_OVERVIEW: '/os/overview',
+  OS_SKILLS_BROWSER: '/os/skills/browser',
+  OS_SKILLS_CONSUELO_DESIGN: '/os/skills/consuelo-design',
+  OS_SKILLS_CONSUELO_DESIGN_LANDING_PAGE:
+    '/os/skills/consuelo-design-landing-page',
+  OS_SKILLS_CONSUELO_WORKSPACE_SNAPSHOT:
+    '/os/skills/consuelo-workspace-snapshot',
+  OS_SKILLS_DAILY_REVENUE_BRIEF: '/os/skills/daily-revenue-brief',
+  OS_SKILLS_DEBUGGER: '/os/skills/debugger',
+  OS_SKILLS_HANDOFF: '/os/skills/handoff',
+  OS_SKILLS_PLANNED_CAMPAIGN_BRIEF: '/os/skills/planned/campaign-brief',
+  OS_SKILLS_PLANNED_FOLLOW_UP_GENERATOR:
+    '/os/skills/planned/follow-up-generator',
+  OS_SKILLS_PLANNED_GOOGLE_ADS_REVIEW: '/os/skills/planned/google-ads-review',
+  OS_SKILLS_PLANNED_LANDING_PAGE_BUILDER:
+    '/os/skills/planned/landing-page-builder',
+  OS_SKILLS_PLANNED_LEAD_PRIORITIZER: '/os/skills/planned/lead-prioritizer',
+  OS_SKILLS_PLANNED_META_ADS_REVIEW: '/os/skills/planned/meta-ads-review',
+  OS_SKILLS_PLANNED_POST_CALL_ANALYSIS: '/os/skills/planned/post-call-analysis',
+  OS_SKILLS_PLANNED_SALES_COACHING: '/os/skills/planned/sales-coaching',
+  OS_SKILLS_PLANNED_WEEKLY_MANAGER_REPORT:
+    '/os/skills/planned/weekly-manager-report',
+  OS_SKILLS_RESEARCH_INGEST: '/os/skills/research-ingest',
+  OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
+  OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
+  OS_SKILLS_TASK: '/os/skills/task',
+  OS_TOOLS_DECISION_ENGINE: '/os/tools/decision-engine',
+  OS_TOOLS_DEFAULT_STEERING: '/os/tools/default-steering',
+  OS_TOOLS_SCRIPTS: '/os/tools/scripts',
+  OS_TOOLS_TOOL_MANIFEST: '/os/tools/tool-manifest',
   USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
   USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
     '/user-guide/ai/capabilities/ai-chatbot',
@@ -187,6 +230,8 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/data-migration/how-tos/prepare-your-csv-files',
   USER_GUIDE_DATA_MIGRATION_HOW_TOS_UPDATE_EXISTING_RECORDS_VIA_IMPORT:
     '/user-guide/data-migration/how-tos/update-existing-records-via-import',
+  USER_GUIDE_DATA_MIGRATION_HOW_TOS_UPLOAD_CSV_PROGRAMMATICALLY:
+    '/user-guide/data-migration/how-tos/upload-csv-programmatically',
   USER_GUIDE_DATA_MIGRATION_OVERVIEW: '/user-guide/data-migration/overview',
   USER_GUIDE_DATA_MODEL_CAPABILITIES_FIELDS:
     '/user-guide/data-model/capabilities/fields',

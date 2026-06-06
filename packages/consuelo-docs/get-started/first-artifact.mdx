@@ -1,0 +1,79 @@
+---
+title: Create Your First Artifact
+description: Create a tracked output with Consuelo OS.
+---
+
+# Create your first artifact
+
+Artifacts are tracked outputs created by Consuelo OS.
+
+A file is just bytes. An artifact is the product record around those bytes: who created it, which skill created it, which records were used, where it is stored, what version it is, and how to audit it later.
+
+## When to create an artifact
+
+Use an artifact when a skill produces something a person or team may need later:
+
+- daily brief
+- sales report
+- follow-up draft
+- campaign brief
+- landing page draft
+- exported dataset
+- generated PDF, DOCX, HTML, Markdown, CSV, or JSON
+
+Do not treat temporary scratch files as artifacts. Scratch files belong in cache or temporary storage.
+
+## Artifact flow
+
+```text
+skill produces durable output
+  -> OS creates artifact record
+  -> OS stores bytes locally or in cloud storage
+  -> execution links to artifact
+  -> user or team can inspect the result later
+```
+
+## Local artifact storage
+
+Local OS stores artifact bytes under the OS home and records metadata in SQLite.
+
+```text
+~/.consuelo/os/artifacts/
+~/.consuelo/os/consuelo.db
+```
+
+Local mode is still observable. A local artifact should still have an execution ID, trace ID, source refs, timestamps, and status.
+
+## Cloud artifact storage
+
+Cloud OS stores artifact bytes in cloud storage and records metadata in the app. That makes artifacts visible to teams and lets Consuelo support shared access, signed URLs, retention, and audit trails.
+
+## Artifact metadata
+
+Field | Purpose
+--- | ---
+`id` | Stable artifact identifier.
+`workspaceId` | Workspace that owns the artifact.
+`createdByUserId` | User who requested or created it.
+`skillExecutionId` | Execution that produced it.
+`skillName` | Skill that produced it.
+`title` | Human-readable name.
+`type` | Report, brief, draft, export, document, page, or other category.
+`format` | Markdown, PDF, DOCX, HTML, JSON, CSV, image, or app-native.
+`status` | Draft, published, archived, or deleted.
+`storageMode` | Local, cloud, or external.
+`storageKey` | Path or object key for stored bytes.
+`sourceObjectRefs` | Structured records used to create the output.
+`traceId` | Trace linking artifact to logs and execution.
+
+## Versioning
+
+The first versioning primitive can be simple: each edit creates a new artifact version or a new artifact linked to a previous one.
+
+Git can be useful in local mode, but the product model should not depend on Git forever. Cloud/team artifact versioning should be app-native.
+
+## Related
+
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Observability](/os/concepts/observability)
+- [Local OS and Cloud OS](/get-started/local-vs-cloud)

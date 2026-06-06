@@ -412,6 +412,97 @@
       ]
     },
     {
+      "key": "os",
+      "label": "OS",
+      "groups": [
+        {
+          "key": "osOverview",
+          "label": "Overview",
+          "icon": "sparkles",
+          "pages": [
+            "os/overview",
+            "os/how-it-works",
+            "os/glossary"
+          ]
+        },
+        {
+          "key": "osConcepts",
+          "label": "Concepts",
+          "icon": "book-open",
+          "pages": [
+            "os/concepts/portal",
+            "os/concepts/skills",
+            "os/concepts/scripts",
+            "os/concepts/files-and-artifacts",
+            "os/concepts/approvals",
+            "os/concepts/data-model-and-graphql",
+            "os/concepts/context-and-memory",
+            "os/concepts/integrations-and-capabilities",
+            "os/concepts/observability",
+            "os/concepts/local-and-cloud"
+          ]
+        },
+        {
+          "key": "osAgentContext",
+          "label": "Agent Context",
+          "icon": "brain",
+          "pages": [
+            "os/agent-context/steering",
+            "os/agent-context/decision",
+            "os/agent-context/tools",
+            "os/agent-context/scripts"
+          ]
+        },
+        {
+          "key": "osTools",
+          "label": "Tools",
+          "icon": "wrench",
+          "pages": [
+            "os/tools/overview",
+            "os/tools/tool-search",
+            "os/tools/filesystem-tools",
+            "os/tools/task-and-stream-tools",
+            "os/tools/github-and-review-tools",
+            "os/tools/exploration-tools",
+            "os/tools/browser-tools"
+          ]
+        },
+        {
+          "key": "osSkills",
+          "label": "Skills",
+          "icon": "bolt",
+          "pages": [
+            "os/skills/browser",
+            "os/skills/consuelo-design",
+            "os/skills/consuelo-design-landing-page",
+            "os/skills/consuelo-workspace-snapshot",
+            "os/skills/daily-revenue-brief",
+            "os/skills/debugger",
+            "os/skills/handoff",
+            "os/skills/research-ingest",
+            "os/skills/senior-engineer",
+            "os/skills/skill-creator",
+            "os/skills/task",
+            {
+              "key": "osPlannedSkills",
+              "label": "Planned Skills",
+              "pages": [
+                "os/skills/planned/campaign-brief",
+                "os/skills/planned/follow-up-generator",
+                "os/skills/planned/google-ads-review",
+                "os/skills/planned/landing-page-builder",
+                "os/skills/planned/lead-prioritizer",
+                "os/skills/planned/meta-ads-review",
+                "os/skills/planned/post-call-analysis",
+                "os/skills/planned/sales-coaching",
+                "os/skills/planned/weekly-manager-report"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "developers",
       "label": "Developers",
       "groups": [

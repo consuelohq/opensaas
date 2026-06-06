@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2ffd49939e7f",
+  "tmuxSession": "opensaas-os-remove-misplaced-worker-providers-2ffd4993",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-misplaced-worker-providers",
+  "branch": "task/os/remove-misplaced-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-worker-providers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-worker-providers",
+  "prNumber": 632,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/632",
+  "createdAt": "2026-05-28T23:19:58.627Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-worker-providers/.task/os/remove-misplaced-worker-providers/session.json"
+}

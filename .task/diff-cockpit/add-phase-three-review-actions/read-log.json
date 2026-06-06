@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/diff-cockpit/add-phase-three-review-actions/workpad.md",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-03T05:01:55.189Z"
+}

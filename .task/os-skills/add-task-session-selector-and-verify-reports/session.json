@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c3ac05f2eb44",
+  "tmuxSession": "opensaas-os-skills-add-task-session-selector-and-verify-reports-c3ac05f2",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/add-task-session-selector-and-verify-reports",
+  "branch": "task/os-skills/add-task-session-selector-and-verify-reports",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-add-task-session-selector-and-verify-reports",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-add-task-session-selector-and-verify-reports",
+  "prNumber": 798,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/798",
+  "createdAt": "2026-06-05T08:07:07.877Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-add-task-session-selector-and-verify-reports/.task/os-skills/add-task-session-selector-and-verify-reports/session.json"
+}

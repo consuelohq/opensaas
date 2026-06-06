@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
-import { parseWorkerOutput } from '../../scripts/lib/worker/runtime';
+import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
@@ -162,7 +162,7 @@ function writeFakePi(tempRoot: string): string {
 }
 
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
 }
 
 describe('typed facade executor', () => {
@@ -172,6 +172,52 @@ describe('typed facade executor', () => {
       .filter((name, index, names) => names.indexOf(name) === index)
       .filter((name) => !getInputSchema(name));
     expect(missing).toEqual([]);
+  });
+
+
+  it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const runSearch = (query: string, limit = 5) => {
+      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(0);
+      return JSON.parse(result.stdout);
+    };
+
+    const linearPayload = runSearch('linear issue');
+    const linearNames = linearPayload.matches.map((match: { name: string }) => match.name);
+    expect(linearNames.slice(0, 3)).toContain('linear.issue');
+    expect(linearNames).toContain('linear.search');
+    const linearIssue = linearPayload.matches.find((match: { name: string }) => match.name === 'linear.issue');
+    expect(linearIssue.inputSignature).toContain('identifier');
+    expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
+
+    const ticketPayload = runSearch('ticket', 4);
+    const ticketNames = ticketPayload.matches.map((match: { name: string }) => match.name);
+    expect(ticketNames).toContain('linear.issue');
+
+    expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
+    expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
+    expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
+    const codexWorker = runSearch('codex worker', 4).matches[0];
+    expect(codexWorker.name).toBe('worker.call');
+
+    const fileSearch = runSearch('file search', 4).matches[0];
+    expect(fileSearch.name).toBe('fs.search');
+    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
+
+    const missingPayload = runSearch('no-such-made-up-tool', 4);
+    expect(missingPayload.totalMatches).toBe(0);
+    expect(missingPayload.matches).toEqual([]);
+    expect(missingPayload.guidance).toContain('No matching tools found');
+  });
+
+  it('rejects contradictory tools.search capability filters', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -950,6 +996,28 @@ describe('typed facade executor', () => {
     expect(parsed.usage?.cachedInputTokens).toBe(2);
     expect(parsed.usage?.outputTokens).toBe(1);
   });
+  it('normalizes cdx worker tool calls into trace events', () => {
+    const stdout = [
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_0', type: 'mcp_tool_call', server: 'workspace', tool: 'get_steering', arguments: {}, result: { content: [{ type: 'text', text: 'steering' }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_1', type: 'mcp_tool_call', server: 'workspace', tool: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' } }, result: { ok: true, code: 'OK' } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_2', type: 'command_execution', command: 'native-search README', exit_code: 0, aggregated_output: 'match' } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_3', type: 'agent_message', text: 'done' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 2, reasoning_output_tokens: 1 } }),
+    ].join('\n');
+
+    const events = parseWorkerTraceEvents('cdx', stdout);
+
+    expect(events.map((event) => event.tool)).toEqual([
+      'cdx.get_steering',
+      'cdx.fs.read',
+      'cdx.command_execution',
+      'cdx.agent_message',
+      'cdx.turn.completed',
+    ]);
+    expect(events[1].facadeTool).toBe('fs.read');
+    expect(events[2].eventType).toBe('command_execution');
+    expect(events[4].totalTokens).toBe(13);
+  });
 
   it('extracts compact final messages from pi jsonl output', () => {
     const huge = 't'.repeat(9000);
@@ -958,9 +1026,7 @@ describe('typed facade executor', () => {
       JSON.stringify({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: huge } }),
       JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'pong' }], api: 'openai-codex-responses', provider: 'openai-codex', model: 'gpt-5.4', usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } }),
     ].join('\n');
-
-    const parsed = parseWorkerOutput('pi', stdout);
-
+    const parsed = parseWorkerOutput("pi", stdout);
     expect(parsed.finalMessage).toBe('pong');
     expect(parsed.summary).toBe('pong');
     expect(parsed.usage?.inputTokens).toBe(11);
@@ -991,7 +1057,7 @@ describe('typed facade executor', () => {
       expect(result.data.stdout).toContain('[truncated');
       expect(result.data.stderr.length).toBeLessThan(8200);
       expect(result.data.audit.workspaceOnly).toBe('preferred');
-      expect(result.data.audit.rawShellUsed).toBe(true);
+      expect(result.data.audit.rawShellUsed).toBe(false);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -1164,3 +1230,6 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+
+

@@ -1,0 +1,15 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-os-manifest-and-script-runtime",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 364,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/364",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime",
+  "taskSession": "tsk_ab903187e907",
+  "tmuxSession": "opensaas-os-align-os-manifest-and-script-runtime-ab903187",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime/.task/session.json",
+  "createdAt": "2026-05-11T09:55:12.083Z"
+}

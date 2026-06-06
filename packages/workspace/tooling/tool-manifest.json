@@ -4073,7 +4073,7 @@
     "methodPath": [
       "wait"
     ],
-    "description": "sleep or wait for a PR/deploy",
+    "description": "sleep, create detached wait checkpoints, or wait for a PR/deploy",
     "category": "utilities",
     "underlying": "workspace wait",
     "capabilities": {
@@ -4094,6 +4094,31 @@
           "kind": "value"
         },
         {
+          "source": "duration",
+          "flag": "--duration",
+          "kind": "value"
+        },
+        {
+          "source": "detached",
+          "flag": "--detach",
+          "kind": "boolean"
+        },
+        {
+          "source": "status",
+          "flag": "--status",
+          "kind": "value"
+        },
+        {
+          "source": "list",
+          "flag": "--list",
+          "kind": "boolean"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
+        },
+        {
           "source": "deploy",
           "flag": "--deploy",
           "kind": "boolean"
@@ -4106,7 +4131,9 @@
       ]
     },
     "exampleInput": {
-      "seconds": 1
+      "duration": "24h",
+      "detached": true,
+      "reason": "wake after long-running external work"
     },
     "sessionRequired": false
   },
@@ -5060,6 +5087,67 @@
       "maxResultChars": 20000
     },
     "sessionRequired": false
+  },
+  {
+    "name": "tools.search",
+    "methodPath": [
+      "tools",
+      "search"
+    ],
+    "description": "search workspace tools by intent and return ranked usage guidance",
+    "category": "tooling",
+    "underlying": "workspace tools.search",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "sessionRequired": false,
+    "inputSchema": "ToolsSearchInput",
+    "outputSchema": "ToolsSearchOutput",
+    "command": {
+      "script": "tools:search",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "query",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "category",
+          "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "readOnly",
+          "flag": "--read-only",
+          "kind": "boolean"
+        },
+        {
+          "source": "mutating",
+          "flag": "--mutating",
+          "kind": "boolean"
+        },
+        {
+          "source": "noDocs",
+          "flag": "--no-docs",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "query": "linear issue",
+      "limit": 5
+    }
   },
   {
     "name": "generate.docs",

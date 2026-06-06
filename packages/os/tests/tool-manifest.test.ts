@@ -1,0 +1,225 @@
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
+import { runToolSearch } from '../scripts/tools-search';
+
+type JsonObject = Record<string, unknown>;
+
+type SearchMatch = {
+  name: string;
+};
+
+type SearchResult = {
+  matches?: SearchMatch[];
+  catalog?: {
+    source?: string[];
+    toolCount?: number;
+  };
+};
+
+const packageRoot = join(import.meta.dirname, '..');
+
+let fixtureRoot: string;
+
+beforeEach(() => {
+  fixtureRoot = mkdtempSync(join(tmpdir(), 'consuelo-os-tool-manifest-'));
+});
+
+afterEach(() => {
+  rmSync(fixtureRoot, { recursive: true, force: true });
+});
+
+function readJsonArray(relativePath: string): JsonObject[] {
+  const parsed = JSON.parse(readFileSync(join(packageRoot, relativePath), 'utf8')) as unknown;
+  if (!Array.isArray(parsed)) throw new Error(`${relativePath}: expected array`);
+  return parsed as JsonObject[];
+}
+
+function writeJson(filePath: string, value: unknown): void {
+  writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function osSkillEntry(name: string): JsonObject {
+  return {
+    name,
+    title: name,
+    description: `${name} description`,
+    permission: 'read',
+    requiresApproval: false,
+    writesRecords: false,
+    externalSideEffects: false,
+    implementation: { script: `scripts/${name}.ts` },
+  };
+}
+
+function facadeToolEntry(name: string): JsonObject {
+  return {
+    name,
+    methodPath: [name],
+    description: `${name} facade description`,
+    category: 'test',
+    underlying: name,
+    capabilities: {
+      readOnly: true,
+      mutating: false,
+      deterministic: true,
+      safeToRetry: true,
+    },
+    defaultTimeout: 30000,
+    inputSchema: 'EmptyInput',
+    outputSchema: 'RawOutput',
+    command: {
+      script: name,
+      branchMode: 'none',
+      arguments: [],
+    },
+    exampleInput: {},
+  };
+}
+
+function writeFixtureConfig(regularManifestPath: string, devToolManifestPath: string): string {
+  const configPath = join(fixtureRoot, 'manifest.config.json');
+  writeJson(configPath, {
+    version: 1,
+    sources: [
+      { label: 'regular', kind: 'os-skill', path: regularManifestPath },
+      { label: 'dev-tooling', kind: 'facade-tool', path: devToolManifestPath },
+    ],
+    outputs: {
+      full: join(fixtureRoot, 'tool.manifest.json'),
+      core: join(fixtureRoot, 'core.manifest.json'),
+    },
+    core: {
+      includeNames: ['fixture-core'],
+      includePrefixes: [],
+      excludeNames: [],
+      excludePrefixes: [],
+      excludeCategories: [],
+    },
+  });
+  return configPath;
+}
+
+describe('tool manifest generator', () => {
+  it('preserves every regular and dev manifest entry in the generated full manifest', () => {
+    const regularEntries = readJsonArray('tooling/tool-manifest.json');
+    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
+
+    const registry = buildToolManifest({ write: false });
+    const generatedNames = registry.full.tools.map((entry) => entry.name).sort();
+    const expectedNames = Array.from(new Set([
+      ...regularEntries.map((entry) => String(entry.name)),
+      ...devEntries.map((entry) => String(entry.name)),
+    ])).sort();
+
+    expect(generatedNames).toEqual(expectedNames);
+    expect(registry.full.tools).toHaveLength(133);
+    expect(registry.report.oldRegularToolCount).toBe(5);
+    expect(registry.report.oldDevToolCount).toBe(128);
+    expect(registry.report.duplicateNames).toEqual([]);
+
+    for (const original of regularEntries) {
+      const generated = registry.full.tools.find((entry) => entry.name === original.name);
+      expect(generated?.kind).toBe('os-skill');
+      expect(generated?.definition).toEqual(original);
+    }
+
+    for (const original of devEntries) {
+      const generated = registry.full.tools.find((entry) => entry.name === original.name);
+      expect(generated?.kind).toBe('facade-tool');
+      expect(generated?.definition).toEqual(original);
+    }
+  });
+
+  it('derives core from config and excludes non-core provider families', () => {
+    const registry = buildToolManifest({ write: false });
+    const coreNames = registry.core.tools.map((entry) => entry.name).sort();
+
+    expect(coreNames).toContain('fs.read');
+    expect(coreNames).toContain('task.start');
+    expect(coreNames).toContain('stream.context');
+    expect(coreNames).toContain('review.run');
+    expect(coreNames).toContain('verify');
+    expect(coreNames).toContain('github');
+    expect(coreNames).toContain('gh');
+    expect(coreNames).toContain('mac.read');
+    expect(coreNames).toContain('tools.search');
+    expect(coreNames).toContain('status');
+    expect(coreNames).toContain('doctor');
+    expect(coreNames).toContain('tmp');
+    expect(coreNames).toContain('code.run');
+    expect(coreNames).toContain('context.search');
+    expect(coreNames).toContain('context.get');
+    expect(coreNames).toContain('context.list');
+    expect(coreNames).toContain('context.trace');
+
+    expect(coreNames).not.toContain('linear.issue');
+    expect(coreNames).not.toContain('sentry.issues');
+    expect(coreNames).not.toContain('railway.logs');
+    expect(coreNames).not.toContain('website.deploy');
+    expect(coreNames).not.toContain('browser.open');
+    expect(coreNames).not.toContain('design.publish');
+    expect(coreNames).not.toContain('consueloDesign.generateWebsite');
+    expect(coreNames).not.toContain('daily-revenue-brief');
+    expect(coreNames).not.toContain('get_raw_steering');
+  });
+
+  it('writes full and core manifests to override output paths', () => {
+    const fullOutputPath = join(fixtureRoot, 'tool.manifest.json');
+    const coreOutputPath = join(fixtureRoot, 'core.manifest.json');
+
+    generateToolManifest({ fullOutputPath, coreOutputPath });
+
+    const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
+    const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
+
+    expect(full.tools).toHaveLength(133);
+    expect(core.tools.length).toBeGreaterThan(0);
+    expect(core.tools.length).toBeLessThan(full.tools.length);
+  });
+
+  it('fails when source manifests contain duplicate names', () => {
+    const regularManifestPath = join(fixtureRoot, 'regular.json');
+    const devToolManifestPath = join(fixtureRoot, 'dev.json');
+    writeJson(regularManifestPath, [osSkillEntry('duplicate')]);
+    writeJson(devToolManifestPath, [facadeToolEntry('duplicate')]);
+    const configPath = writeFixtureConfig(regularManifestPath, devToolManifestPath);
+
+    expect(() => buildToolManifest({ configPath, write: false })).toThrow('duplicate tool name duplicate');
+  });
+
+  it('lets tool search discover a regular non-core OS skill from the full manifest', async () => {
+    const result = await runToolSearch({
+      query: 'daily revenue brief',
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    }) as SearchResult;
+
+    expect(result.catalog?.source).toContain('tool.manifest.json');
+    expect(result.catalog?.toolCount).toBe(133);
+    expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
+  });
+
+  it('keeps get_raw_steering discoverable through the full manifest without adding it to core', async () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+
+    expect(fullNames).toContain('get_raw_steering');
+    expect(coreNames).not.toContain('get_raw_steering');
+
+    const result = await runToolSearch({
+      query: 'raw steering',
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    }) as SearchResult;
+
+    expect(result.matches?.map((match) => match.name)).toContain('get_raw_steering');
+  });
+});

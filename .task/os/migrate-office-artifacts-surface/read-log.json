@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/migrate-office-artifacts-surface/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/design/consuelo-design-landing-page.ts",
+    "packages/os/scripts/design/consuelo-design.ts",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/office-pages.ts",
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/os-call-artifacts.test.ts"
+  ],
+  "updatedAt": "2026-06-05T04:04:12.683Z"
+}

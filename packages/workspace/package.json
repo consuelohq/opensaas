@@ -35,6 +35,7 @@
     "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
+    "tools:search": "bun ./scripts/tools-search.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
@@ -42,9 +43,11 @@
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
     "code-run": "bun ./scripts/code-run.ts",
     "github": "bun ./scripts/github.js",
+    "diff_cockpit": "bun ./scripts/diff_cockpit.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
-    "worker": "bun ./scripts/worker.ts"
+    "worker": "bun ./scripts/worker.ts",
+    "os:release-install": "bun ./scripts/os-release-install.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

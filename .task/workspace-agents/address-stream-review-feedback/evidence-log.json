@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/address-stream-review-feedback",
+  "events": [
+    {
+      "id": "af0ac82e-f9ef-4fae-98f0-6c963feda755",
+      "occurred_at": "2026-05-31T18:01:39.982Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/worker/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/address-stream-review-feedback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/address-stream-review-feedback"
+      }
+    },
+    {
+      "id": "ac5afc64-4c76-4ecc-abb6-4583cda31551",
+      "occurred_at": "2026-05-31T18:06:12.550Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/address-stream-review-feedback/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/address-stream-review-feedback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/address-stream-review-feedback"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-31T18:06:12.602Z"
+}

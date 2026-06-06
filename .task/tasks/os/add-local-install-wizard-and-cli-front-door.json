@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-local-install-wizard-and-cli-front-door",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 443,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/443",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/443",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/443/add-local-install-wizard-and-cli-front-door",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/443",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/443/add-local-install-wizard-and-cli-front-door",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-local-install-wizard-and-cli-front-door",
+  "taskSession": "tsk_f06a2df7c59c",
+  "tmuxSession": "opensaas-os-add-local-install-wizard-and-cli-front-door-f06a2df7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-local-install-wizard-and-cli-front-door/.task/session.json",
+  "createdAt": "2026-05-21T20:38:09.682Z"
+}

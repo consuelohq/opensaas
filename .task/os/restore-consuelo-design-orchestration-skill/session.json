@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_14431871abe5",
+  "tmuxSession": "opensaas-os-restore-consuelo-design-orchestration-skill-14431871",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-consuelo-design-orchestration-skill",
+  "branch": "task/os/restore-consuelo-design-orchestration-skill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-consuelo-design-orchestration-skill",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-consuelo-design-orchestration-skill",
+  "prNumber": 538,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/538",
+  "createdAt": "2026-05-23T19:45:52.561Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-consuelo-design-orchestration-skill/.task/os/restore-consuelo-design-orchestration-skill/session.json"
+}

@@ -237,6 +237,16 @@ when uncertain, say what is uncertain and what you checked.
 
 ## 3. global operating principles
 
+## Test-first workpad discipline
+
+For non-trivial code changes, define the test strategy before implementation. The task workpad is the durable contract between Ko, the agent, and the codebase.
+
+Before editing production code, fill the agent-owned `Test-first contract` section with behavior under test, existing pattern to follow, intended tests, focused red command, expected red failure, and no-test waiver when a test is genuinely inappropriate.
+
+Run the focused test before implementation and let workspace-owned workpad sections capture the red evidence, green evidence, files read, test selection, and post-validation where tooling supports it. Do not weaken or rewrite the pretest after implementation unless the contract itself was wrong; record the reason in the workpad.
+
+Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
+
 ## Code mode first for semantic workspace work
 
 Use direct `workspace.call` for one exact known tool call.
@@ -266,6 +276,32 @@ Default choice:
 | Large/multiline payload | `tmp` / `contentFile` / `--input-file` / `--stdin` |
 | Final push / PR / merge / deploy / publish | direct outer `workspace.call` |
 | No typed tool exists | report a tooling gap and use the smallest safe fallback |
+
+## Workspace tool discovery with tools.search
+
+Use `tools.search` for tool discovery when the needed workspace tool is unknown, absent from the currently loaded context, or ambiguous across tool families. Do not use `tools.search` to rediscover an exact tool that is already visible in steering, the current tool manifest, or the immediate task context. When the exact tool is already known, call it directly through `workspace.call`.
+
+Treat `tools.search` as an orientation tool, not a required preflight for every workspace action. The failure mode to avoid is spending tokens searching for `worker.call`, `fs.read`, `git.diff`, `task.start`, or another tool already present in the active context.
+
+Use `batch` for multiple independent discovery queries. When orienting across several unknown tool areas, group the searches so the agent pays one orchestration cost and receives a compact map of options:
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      { tool: "tools.search", input: { query: "github pull request comments" }, parallel: true },
+      { tool: "tools.search", input: { query: "git diff compare branches" }, parallel: true },
+      { tool: "tools.search", input: { query: "mac local startup service" }, parallel: true },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+Use `tools.search` for intent-level discovery such as `linear issue`, `github pr comments`, `filesystem patch`, `railway logs`, `browser screenshot`, or `codex worker`. After a result identifies the correct tool, use the returned schema and examples to call the tool directly. Do not repeatedly search for the same tool after it has been selected.
+
+Current steering may still include a large tool manifest while `tools.search` burns in. During this transition, prefer direct calls for tools already present in context and use `tools.search` to find tools outside the agent’s immediate memory. Future steering may shrink the injected tool list; this rule protects both modes.
 
 Do not use raw shell because it is familiar. Raw shell means either the facade is missing a tool or the agent failed to use the available tool.
 
@@ -884,6 +920,8 @@ await workspace.call({
 ```
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
+
+Use `tools.search` when you are unsure which workspace tool to call. Search by intent keywords such as `linear issue`, `github pr checks`, `file search`, `trace logs`, or `codex worker`; prefer the highest-ranked read-only result for investigation and use mutating results only when the user asked for a state change. Do not read the full manifest just to discover a tool.
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
@@ -1515,3 +1553,4 @@ When adding or refactoring workspace tools, keep the facade executor thin. The e
 If a tool represents a user-runnable operation, provide a Bun script entrypoint that calls the same runtime as the facade tool. Do not create a separate behavior path for the script. Internal facade tools are acceptable for orchestration, but large internal tools must delegate to a runtime module.
 
 Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
+

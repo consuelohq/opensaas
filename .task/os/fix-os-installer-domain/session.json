@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d660ef6921e0",
+  "tmuxSession": "opensaas-os-fix-os-installer-domain-d660ef69",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-installer-domain",
+  "branch": "task/os/fix-os-installer-domain",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-installer-domain",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-installer-domain",
+  "prNumber": 699,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/699",
+  "createdAt": "2026-06-02T15:05:10.108Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-installer-domain/.task/os/fix-os-installer-domain/session.json"
+}

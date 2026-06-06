@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "label": "regular",
+      "kind": "os-skill",
+      "path": "packages/os/tooling/tool-manifest.json"
+    },
+    {
+      "label": "dev-tooling",
+      "kind": "facade-tool",
+      "path": "packages/os/tooling/dev-tool-manifest.json"
+    }
+  ],
+  "outputs": {
+    "full": "packages/os/manifests/tool.manifest.json",
+    "core": "packages/os/manifests/core.manifest.json"
+  },
+  "core": {
+    "includeNames": [
+      "audit",
+      "checkFiles",
+      "code.run",
+      "confidenceScore",
+      "confirm",
+      "decideNext",
+      "doctor",
+      "exploit",
+      "explore",
+      "gh",
+      "git.diff",
+      "git.status",
+      "github",
+      "review.run",
+      "status",
+      "tmp",
+      "tools.search",
+      "verify"
+    ],
+    "includePrefixes": [
+      "context.",
+      "fs.",
+      "mac.",
+      "stream.",
+      "task."
+    ],
+    "includeCategories": [],
+    "excludeNames": [],
+    "excludePrefixes": [
+      "browser.",
+      "consueloDesign.",
+      "design.",
+      "linear.",
+      "railway.",
+      "sentry.",
+      "website."
+    ],
+    "excludeCategories": [
+      "browser",
+      "consuelo design",
+      "linear",
+      "railway",
+      "sentry"
+    ]
+  }
+}

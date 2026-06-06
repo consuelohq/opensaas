@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fdc86a5ff261",
+  "tmuxSession": "opensaas-workspace-agents-build-trace-home-tui-inspector-fdc86a5f",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/build-trace-home-tui-inspector",
+  "branch": "task/workspace-agents/build-trace-home-tui-inspector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-build-trace-home-tui-inspector",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-build-trace-home-tui-inspector",
+  "prNumber": 682,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/682",
+  "createdAt": "2026-06-02T00:20:34.481Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-build-trace-home-tui-inspector/.task/workspace-agents/build-trace-home-tui-inspector/session.json"
+}

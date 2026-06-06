@@ -31,18 +31,18 @@
             "dataMigrationCapabilities": {
               "label": "Capabilities"
             },
-            "fileSystem": {
-              "label": "File System",
-              "groups": {
-                "fileSystemCapabilities": {
-                  "label": "Capabilities"
-                },
-                "fileSystemHowTos": {
-                  "label": "How-Tos"
-                }
-              }
-            },
             "dataMigrationHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "fileSystem": {
+          "label": "File System",
+          "groups": {
+            "fileSystemCapabilities": {
+              "label": "Capabilities"
+            },
+            "fileSystemHowTos": {
               "label": "How-Tos"
             }
           }
@@ -160,6 +160,31 @@
             },
             "settingsHowTos": {
               "label": "How-Tos"
+            }
+          }
+        }
+      }
+    },
+    "os": {
+      "label": "OS",
+      "groups": {
+        "osOverview": {
+          "label": "Overview"
+        },
+        "osConcepts": {
+          "label": "Concepts"
+        },
+        "osAgentContext": {
+          "label": "Agent Context"
+        },
+        "osTools": {
+          "label": "Tools"
+        },
+        "osSkills": {
+          "label": "Skills",
+          "groups": {
+            "osPlannedSkills": {
+              "label": "Planned Skills"
             }
           }
         }

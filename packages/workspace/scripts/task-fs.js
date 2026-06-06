@@ -5,7 +5,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
 const { markFileRead } = require('./lib/state/evidence-log');
-const { appendActivity, syncFilesChanged } = require('./lib/task-workpad');
+const { appendActivity, syncFilesChanged, syncFilesRead } = require('./lib/task-workpad');
 const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
@@ -105,9 +105,9 @@ function main() {
     stdio: 'inherit',
     env: { ...process.env, TASK_WORKTREE: task.worktreePath },
   });
-
   if (result.status === 0) {
-    for (const filePath of getReadTargets(fsArgs)) {
+    const readTargets = getReadTargets(fsArgs);
+    for (const filePath of readTargets) {
       try {
         markFileRead(task.worktreePath, filePath, {
           source: 'task:fs',
@@ -115,6 +115,14 @@ function main() {
         });
       } catch {
         writeStderr(`warning: read evidence not recorded for ${filePath}`);
+      }
+    }
+
+    if (readTargets.length > 0) {
+      try {
+        syncFilesRead(task.worktreePath, task.meta, readTargets);
+      } catch {
+        writeStderr('warning: workpad files-read evidence not recorded');
       }
     }
 

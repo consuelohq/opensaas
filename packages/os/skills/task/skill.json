@@ -1,0 +1,24 @@
+{
+  "name": "task",
+  "title": "Task Workflow",
+  "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context \u2192 task.start \u2192 task.push \u2192 task.pr \u2192 task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> \u2192 main review PR instead of the intermediate task PR.",
+  "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/task/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "workspace",
+    "repo",
+    "task-lifecycle"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}

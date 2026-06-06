@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh"
+  ],
+  "updatedAt": "2026-06-02T21:50:01.637Z"
+}

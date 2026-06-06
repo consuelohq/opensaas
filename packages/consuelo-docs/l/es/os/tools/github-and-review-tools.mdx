@@ -1,0 +1,61 @@
+---
+title: "GitHub and review tools"
+description: "Use GitHub, review, and verification tools to turn task evidence into trustworthy PR promotion."
+---
+
+# GitHub and review tools
+
+GitHub and review tools connect local task evidence to pull request state. They answer different questions: what does GitHub currently show, what does the workspace review think, and has the task passed the safety gate required before promotion?
+
+Use `github` as the preferred GitHub facade. It supports semantic operations and presets, and the manifest describes it as the typed GitHub surface to prefer over raw `gh`. A common read path is inspecting a PR before or after promotion:
+
+```ts
+await workspace.call({
+  tool: "github",
+  input: {
+    operation: "pr.view",
+    pr: 795,
+    preset: "review",
+  },
+  timeout: 120,
+})
+```
+
+`github` can also work with fields such as `repo`, `branch`, `base`, `head`, `state`, `body`, `bodyFile`, and merge-related flags. Because it is capable of mutating GitHub state, choose the specific operation intentionally and keep the call tied to the workflow evidence.
+
+`gh` is the lower-level helper. It runs the workspace GitHub helper with an explicit action, for example `action: "view"` with positional args. Use it as a compatibility or escape hatch when the typed `github` operation does not cover the case. Prefer `github` when both can express the same intent.
+
+Review starts before GitHub promotion. `review.run` runs the workspace review checks against the right base. For a task started from a stream, the base should be the stream branch:
+
+```ts
+await workspace.call({
+  tool: "review.run",
+  taskSession,
+  input: {
+    base: "origin/stream/os-skills",
+    noTests: true,
+  },
+  timeout: 900,
+})
+```
+
+`noTests: true` is appropriate only when another validation decision already covers the task, such as a docs-only no-test waiver with reread and diff evidence. For behavior changes, focused tests and service-backed validation should happen before review.
+
+`verify` is the full task safety gate. It is mutating because it can stamp verification metadata. Run it after the focused validation and review evidence are credible:
+
+```ts
+await workspace.call({
+  tool: "verify",
+  taskSession,
+  input: {
+    base: "origin/stream/os-skills",
+  },
+  timeout: 900,
+})
+```
+
+The normal sequence is evidence first, PR promotion second. Inspect the diff, run the focused checks, run `review.run`, run `verify`, then publish the task branch with `task.push` and promote it with `task.pr`. GitHub tools can inspect the resulting task PR and stream review PR, but they do not replace the task lifecycle.
+
+The key distinction is scope. `github` and `gh` tell you or change what GitHub knows. `review.run` evaluates the task against workspace review rules. `verify` records that the task passed the safety gate. `task.pr` is still the promotion tool that merges the task into the stream and creates or refreshes the stream review PR.
+
+A clean review trail should make the final PR easy to trust: files changed are narrow, validation matches the risk, review and verification passed, and GitHub state confirms the PR target is the expected stream or main branch.
