@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/build-hardcoded-typed-reader-shell-renderer",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 817,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/817",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/817",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/817/build-hardcoded-typed-reader-shell-renderer",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/817",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/817/build-hardcoded-typed-reader-shell-renderer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-build-hardcoded-typed-reader-shell-renderer",
+  "taskSession": "tsk_d9b8d1e9224a",
+  "tmuxSession": "opensaas-design-build-hardcoded-typed-reader-shell-renderer-d9b8d1e9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-build-hardcoded-typed-reader-shell-renderer/.task/design/build-hardcoded-typed-reader-shell-renderer/session.json",
+  "createdAt": "2026-06-06T15:19:58.776Z"
+}
