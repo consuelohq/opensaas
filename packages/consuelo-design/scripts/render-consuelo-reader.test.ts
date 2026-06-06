@@ -182,3 +182,36 @@ describe('typed reader shell contract', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+describe('direct rich reader component names', () => {
+  test('renders PR 666 component names as first-class typed options', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Direct Components Fixture',
+      eyebrow: 'Spec · Direct Components',
+      thesis: 'The framework keeps the useful PR 666 component vocabulary while the renderer owns the UI.',
+      metadata: { status: 'Fixture', owner: 'Ko', date: '2026-06-06', sourceTruth: 'PR 666 component audit' },
+      sections: [{ id: 'summary', title: 'Typed shell', body: ['Direct components render through code, not custom HTML.'] }],
+      components: [
+        { type: 'callout', title: 'Callout module', callout: { label: 'Signal', title: 'Use this for the big point.', body: 'The component is typed and renderer-owned.' } },
+        { type: 'metrics', title: 'Metric module', metrics: [{ label: 'Coverage', value: '10', body: 'Direct components restored.' }] },
+        { type: 'flow', title: 'Flow module', nodes: [{ title: 'Input' }, { title: 'Renderer' }, { title: 'Output' }] },
+        { type: 'table', title: 'Table module', table: { columns: ['Area', 'Requirement'], rows: [['Reader', 'Mobile-safe cells']] } },
+        { type: 'timeline', title: 'Timeline module', items: [{ title: 'Restore', body: 'Keep useful direction.' }] },
+        { type: 'details', title: 'Details module', details: [{ summary: 'Why typed?', body: 'So agents cannot freehand the shell.' }] },
+        { type: 'ranges', title: 'Ranges module', ranges: [{ label: 'Delight', value: 88, max: 100, note: 'A scoring bar.' }] },
+        { type: 'comparisons', title: 'Comparison module', comparisons: [{ title: 'Bad copy', body: 'Do not import weak styling.', tag: 'avoid' }, { title: 'Typed direction', body: 'Keep only the contract.', tag: 'keep' }] },
+        { type: 'cards', title: 'Cards module', cards: [{ title: 'Card', body: 'Cards remain first-class.' }] },
+        { type: 'ledger', title: 'Ledger module', groups: [{ title: 'Checklist', items: [{ status: 'done', text: 'Render direct ledger.' }] }] },
+      ],
+      ledgerTitle: 'Required checklist',
+      ledger: [{ title: 'Renderer', items: [{ status: 'current', text: 'Validate the shell.' }] }],
+    });
+
+    for (const name of ['callout', 'metrics', 'flow', 'table', 'timeline', 'details', 'ranges', 'comparisons', 'cards', 'ledger']) {
+      expect(html).toContain(`data-reader-component="${name}"`);
+    }
+    expect(html).toContain('data-label="Requirement"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});

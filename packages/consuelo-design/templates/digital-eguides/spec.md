@@ -25,8 +25,7 @@ bun run wiki:validate -- --input <index.html>
 
 The Markdown template owns the section logic. The TypeScript renderer owns the repeatable UI/UX: top pill nav, section rail, resume reading, ScrollSmoother, back-to-top, favicon/theme-color, neutral dark mode, mobile responsiveness, cards, footer, and /design-wiki link.
 
-For roadmap or operating-plan artifacts, use `template: spec`. Do not create a separate roadmap template.
-
+For roadmap or operating-plan artifacts, use `template: plan`. Do not create a separate roadmap template.
 
 optional typed section components
 
