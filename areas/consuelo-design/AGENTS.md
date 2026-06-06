@@ -621,4 +621,18 @@ Every `design.publish` call records the published artifact in the private Consue
 
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.
+The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.## publish concurrency guard
+
+When publishing over an existing `/design-wiki` page, read the latest page/archive state first and pass the current page revision to publish:
+
+```bash
+bun run consuelo-design publish --target <artifact> --path <page-path> --base-version <currentVersionId>
+```
+
+Rules:
+
+- Do not publish over an existing page without `--base-version`.
+- Use `--base-revision` only as an alias for `--base-version`.
+- Use `--force-publish` only when Ko explicitly asks for an intentional overwrite or recovery publish.
+- If publish reports `stale design wiki publish rejected`, re-read the current page and rebase your typed changes before publishing.
+- Prefer section/component-level typed changes so non-overlapping agent work can be recovered or merged from page versions.

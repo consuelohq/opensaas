@@ -69,6 +69,8 @@ type ParsedArgs = {
   path?: string;
   category?: string;
   tailscaleBin?: string;
+  baseVersion?: string;
+  forcePublish: boolean;
   forwarded: string[];
 };
 
@@ -259,6 +261,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let quiet = false;
   let dryRun = false;
   let live = false;
+  let forcePublish = false;
   let name: string | undefined;
   let prompt: string | undefined;
   let template: string | undefined;
@@ -267,6 +270,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let publishPath: string | undefined;
   let category: string | undefined;
   let tailscaleBin: string | undefined;
+  let baseVersion: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -302,6 +306,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     } else if (arg === '--tailscale-bin') {
       tailscaleBin = argv[index + 1];
       index += 1;
+    } else if (arg === '--base-version' || arg === '--base-revision') {
+      baseVersion = argv[index + 1];
+      index += 1;
+    } else if (arg === '--force-publish') {
+      forcePublish = true;
     } else if (arg.startsWith('--')) {
       forwarded.push(arg);
     } else {
@@ -324,6 +333,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     path: publishPath,
     category,
     tailscaleBin,
+    baseVersion,
+    forcePublish,
     forwarded,
   };
 }
@@ -931,6 +942,26 @@ function archiveCategoryFromArgs(args: ParsedArgs, servePath: string): string {
 
 function archiveTemplateFromArgs(args: ParsedArgs): DesignArchiveEntry['template'] {
   return args.template && isDigitalEguideTemplateId(args.template) ? args.template : 'uncategorized';
+}
+
+function currentArchiveVersionForPath(payload: DesignArchivePayload, servePath: string): string | null {
+  const entry = payload.entries.find((item) => item.path === servePath);
+  if (entry?.currentVersionId) return entry.currentVersionId;
+  const pageId = entry?.pageId ?? slugify(servePath);
+  return payload.pages[pageId]?.currentVersionId ?? null;
+}
+
+function assertArchiveRevisionWritable(args: ParsedArgs, payload: DesignArchivePayload, servePath: string): { currentVersionId: string | null; requiredBaseVersion: string | null } {
+  const currentVersionId = currentArchiveVersionForPath(payload, servePath);
+  if (!currentVersionId) return { currentVersionId: null, requiredBaseVersion: null };
+  if (args.forcePublish) return { currentVersionId, requiredBaseVersion: currentVersionId };
+  if (!args.baseVersion) {
+    throw new Error(`stale design wiki publish rejected for ${servePath}: existing page is at ${currentVersionId}. Re-run with --base-version ${currentVersionId} after reading the latest page, or use --force-publish only for an intentional overwrite.`);
+  }
+  if (args.baseVersion !== currentVersionId) {
+    throw new Error(`stale design wiki publish rejected for ${servePath}: base version ${args.baseVersion} does not match current version ${currentVersionId}. Rebase the typed changes onto the latest page before publishing.`);
+  }
+  return { currentVersionId, requiredBaseVersion: currentVersionId };
 }
 
 
@@ -1672,6 +1703,8 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     };
     const publishedAt = new Date();
     const versionId = archiveVersionIdFromDate(publishedAt);
+    const existingPayload = readArchivePayload();
+    const revisionGuard = assertArchiveRevisionWritable(args, existingPayload, servePath);
     const plan = {
       ok: true,
       mode: 'tailscale-serve',
@@ -1686,6 +1719,9 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
       archive: archivePlan,
       sourceTarget: normalizedTarget,
       versionId,
+      currentVersionId: revisionGuard.currentVersionId,
+      requiredBaseVersion: revisionGuard.requiredBaseVersion,
+      forcePublish: args.forcePublish,
       command,
     };
 
@@ -1828,7 +1864,10 @@ Flags:
   --portless-name <name>        Resolve target with portless get <name>
   --path <path>                Unique Tailscale Serve path for publish
   --category <name>            Default publish path category when --path is omitted
-  --tailscale-bin <path>       Override tailscale binary for publish
+  --tailscale-bin <path>       Override tailscale binary
+  --base-version <id>          Required when publishing over an existing wiki page
+  --base-revision <id>         Alias for --base-version
+  --force-publish              Intentional overwrite escape hatch; prefer --base-version for publish
 
 Notes:
   The Consuelo facade is Bun-native and lives in packages/workspace/scripts.

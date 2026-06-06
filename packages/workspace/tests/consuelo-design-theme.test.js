@@ -49,3 +49,20 @@ test('emits valid generated version-history server strings', () => {
 test('restarts generated archive server after rewriting it', () => {
   expect(source).toContain("writeArchiveServer(ip);\n  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;\n  await stopArchiveServer();");
 });
+
+test('guards design wiki publishes against stale page revisions', () => {
+  for (const marker of [
+    'baseVersion?: string;',
+    'forcePublish: boolean;',
+    "--base-version",
+    "--base-revision",
+    "--force-publish",
+    'function currentArchiveVersionForPath',
+    'function assertArchiveRevisionWritable',
+    'stale design wiki publish rejected',
+    'requiredBaseVersion',
+    'currentVersionId',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
