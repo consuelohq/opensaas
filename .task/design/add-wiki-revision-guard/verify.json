@@ -4,14 +4,14 @@
   "mode": "full",
   "branch": "task/design/add-wiki-revision-guard",
   "base": "origin/stream/design",
-  "headSha": "4818a4c5fa6c7f2a574b7940acf75260b67fc82a",
-  "changeHash": "9f4e560e22b338dea842ec1001f9e6107e5326389f900b0f36b24ea3f27a8fb5",
+  "headSha": "c95b14d6d7cba137d1ae74b04535c21c61c3858b",
+  "changeHash": "fa5181f1dc5ea4221cfeb6432713c2202092526570d629d1f80548a60c5c0555",
   "changedFiles": [
     "areas/consuelo-design/AGENTS.md",
     "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/tests/consuelo-design-theme.test.js"
   ],
-  "verifiedAt": "2026-06-06T19:20:31.324Z",
+  "verifiedAt": "2026-06-06T19:22:08.772Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -29,6 +29,7 @@
         ".task/design/add-wiki-revision-guard/evidence-log.json",
         ".task/design/add-wiki-revision-guard/read-log.json",
         ".task/design/add-wiki-revision-guard/session.json",
+        ".task/design/add-wiki-revision-guard/verify.json",
         ".task/design/add-wiki-revision-guard/workpad.md",
         ".task/tasks/design/add-wiki-revision-guard.json",
         "areas/consuelo-design/AGENTS.md",

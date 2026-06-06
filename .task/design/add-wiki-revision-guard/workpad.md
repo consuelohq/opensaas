@@ -76,12 +76,32 @@ Follow-up should add section/component-level patches and leases:
 
 - 2026-06-06 19:20:18 `review.run`: passed — OK
 - 2026-06-06 19:20:31 `verify`: passed — OK
+- 2026-06-06 19:22:08 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/design/add-wiki-revision-guard/current.json`, `.task/design/add-wiki-revision-guard/evidence-log.json`, `.task/design/add-wiki-revision-guard/read-log.json`, `.task/design/add-wiki-revision-guard/session.json`, `.task/design/add-wiki-revision-guard/workpad.md`, `.task/tasks/design/add-wiki-revision-guard.json`, `areas/consuelo-design/AGENTS.md`, `packages/workspace/scripts/consuelo-design.ts`, `packages/workspace/tests/consuelo-design-theme.test.js`
+- changed files: `.task/design/add-wiki-revision-guard/current.json`, `.task/design/add-wiki-revision-guard/evidence-log.json`, `.task/design/add-wiki-revision-guard/read-log.json`, `.task/design/add-wiki-revision-guard/session.json`, `.task/design/add-wiki-revision-guard/verify.json`, `.task/design/add-wiki-revision-guard/workpad.md`, `.task/tasks/design/add-wiki-revision-guard.json`, `areas/consuelo-design/AGENTS.md`, `packages/workspace/scripts/consuelo-design.ts`, `packages/workspace/tests/consuelo-design-theme.test.js`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## final publish note — 2026-06-06
+
+This task intentionally shipped the first safety layer only: optimistic revision checking at publish time. It does not migrate or rewrite `trace-burn-intelligence`; the live page was backed up before work began, and all mutation/test smoke after that used task-local dry-run/fake archive state.
+
+Why this changed:
+
+- Multiple agents were editing/publishing the same artifact and stale whole-page publishes could overwrite newer work.
+- Page versioning lets us recover, but it does not prevent stale writes.
+- `--base-version` makes the agent prove it read the latest page revision before publishing over an existing page.
+
+Behavior now:
+
+- New pages can publish without a base version.
+- Existing pages reject publish without `--base-version` / `--base-revision` unless `--force-publish` is used.
+- Existing pages reject publish if the supplied base version does not match the current archive version.
+- Dry-run exposes the current version fields so agents know what to pass before real publish.
+
+Follow-up remains section-level patching/leases. This guard is the minimum viable overwrite blocker.
