@@ -40,7 +40,7 @@ const DEPLOYED_PACKAGE_MANIFESTS = [
   'packages/sdk/package.json',
 ] as const;
 
-const DIGITAL_EGUIDE_TEMPLATE_IDS = ['research', 'spec', 'plan'] as const;
+const DIGITAL_EGUIDE_TEMPLATE_IDS = ['spec', 'plan', 'guide'] as const;
 type DigitalEguideTemplateId = typeof DIGITAL_EGUIDE_TEMPLATE_IDS[number];
 const DIGITAL_EGUIDE_TEMPLATE_DIR = 'packages/consuelo-design/templates/digital-eguides';
 const DIGITAL_EGUIDE_READER_SHELL_PATH = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/reader-shell.md`;
@@ -1823,7 +1823,7 @@ Flags:
   --live                      Start/open a headed Open Design UI session instead of headless work-order mode
   --name <name>               Override generated Open Design project name
   --prompt <brief>            Attach Ko's brief to the generated work order
-  --template <research|spec|plan>  Select/archive a digital e-guide template for generate/publish
+  --template <spec|plan|guide>  Select/archive a typed reader-shell template for generate/publish
   --target <url|path>          Target URL/file/directory for publish
   --portless-name <name>        Resolve target with portless get <name>
   --path <path>                Unique Tailscale Serve path for publish
