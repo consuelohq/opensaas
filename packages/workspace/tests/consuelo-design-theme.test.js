@@ -39,3 +39,13 @@ test('keeps design wiki page publishes versioned and rollback-safe', () => {
     expect(source).toContain(marker);
   }
 });
+
+test('emits valid generated version-history server strings', () => {
+  expect(source).toContain(`'<li><a href="' + safe(version.path) + '">'`);
+  expect(source).toContain(`data-version-count="' + versions.length + '"><main`);
+  expect(source).toContain('char === ">" ? "&gt;" : "&quot;"');
+});
+
+test('restarts generated archive server after rewriting it', () => {
+  expect(source).toContain("writeArchiveServer(ip);\n  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;\n  await stopArchiveServer();");
+});
