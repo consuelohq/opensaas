@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/design/add-page-versions-to-design-wiki-publish-archive/workpad.md",
+    "areas/consuelo-design/AGENTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "updatedAt": "2026-06-06T06:00:14.761Z"
+}

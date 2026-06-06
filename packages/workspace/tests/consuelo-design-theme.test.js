@@ -16,3 +16,26 @@ test('keeps the generated design wiki theme and search surfaces styled', () => {
     expect(source).toContain(marker);
   }
 });
+
+test('keeps design wiki page publishes versioned and rollback-safe', () => {
+  for (const marker of [
+    'type DesignArchivePageVersion = {',
+    'type DesignArchivePage = {',
+    'version: 2;',
+    'pages: Record<string, DesignArchivePage>;',
+    'function archiveVersionIdFromDate',
+    'function archiveVersionRelativeArtifactPath',
+    'function archiveCurrentRelativeArtifactPath',
+    'function normalizeArchivePayload',
+    'function renderVersionHistoryPage',
+    'currentVersionId',
+    'previousVersionId',
+    'versions: [version, ...previousVersions]',
+    'data-version-count',
+    'function entryForVersionRoute',
+    '/versions/',
+    'Archived versions',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
