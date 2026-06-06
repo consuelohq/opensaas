@@ -15,15 +15,19 @@ Required fields:
 - `ledgerTitle`
 - `ledger`
 
-Optional typed components:
+Preferred first-class typed components:
 
+- `callout`
+- `metrics`
+- `flow`
+- `table`
 - `timeline`
-- `decisionCards`
-- `requirementsMatrix`
-- `architectureFlow`
-- `riskPanels`
-- `metricCards`
-- `taskLedger`
-- `openQuestions`
+- `details`
+- `ranges`
+- `comparisons`
+- `cards`
+- `ledger`
+
+Compatibility aliases still render through the same shell when useful: `decisionCards`, `requirementsMatrix`, `architectureFlow`, `riskPanels`, `metricCards`, `taskLedger`, and `openQuestions`.
 
 Do not hand-author the reader chrome, ScrollSmoother setup, pill nav, checklist UI, or mobile layout. The renderer owns those decisions.

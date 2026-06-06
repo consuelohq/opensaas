@@ -22,4 +22,4 @@ Rules:
 - Roadmaps are `plan` documents.
 - `spec`, `plan`, and `guide` use the TypeScript reader shell.
 - `uncategorized` artifacts do not use the reader shell automatically.
-- Agents fill typed JSON/content input. The renderer owns layout, typography, scroll behavior, navigation, checklist rendering, optional components, and mobile behavior.
+- Agents fill typed JSON/content input. The renderer owns layout, typography, scroll behavior, navigation, checklist rendering, optional components, and mobile behavior. First-class rich components are `callout`, `metrics`, `flow`, `table`, `timeline`, `details`, `ranges`, `comparisons`, `cards`, and `ledger`.

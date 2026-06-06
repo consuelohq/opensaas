@@ -44,7 +44,16 @@ export type ReaderLedgerGroup = {
 };
 
 export type ReaderComponent =
+  | { type: 'callout'; title: string; callout: ReaderCallout }
+  | { type: 'metrics'; title: string; metrics: ReaderMetric[] }
+  | { type: 'flow'; title: string; nodes: ReaderFlowNode[] }
+  | { type: 'table'; title: string; table: ReaderTable }
   | { type: 'timeline'; title: string; items: ReaderTimelineItem[] }
+  | { type: 'details'; title: string; details: ReaderDetail[] }
+  | { type: 'ranges'; title: string; ranges: ReaderRange[] }
+  | { type: 'comparisons'; title: string; comparisons: ReaderComparison[] }
+  | { type: 'cards'; title: string; cards: ReaderCard[] }
+  | { type: 'ledger'; title: string; groups: ReaderLedgerGroup[] }
   | { type: 'decisionCards'; title: string; items: ReaderDetail[] }
   | { type: 'requirementsMatrix'; title: string; columns: string[]; rows: ReaderTable['rows'] }
   | { type: 'architectureFlow'; title: string; nodes: ReaderFlowNode[] }
@@ -207,7 +216,16 @@ function renderLedger(content: ConsueloReaderContent): string {
 }
 
 function renderTypedComponent(component: ReaderComponent): string {
+  if (component.type === 'callout') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="callout"><div class="container"><p class="eyebrow">Callout</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderCallout(component.callout)}</div></div></section>`;
+  if (component.type === 'metrics') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="metrics"><div class="container"><p class="eyebrow">Metrics</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderMetrics(component.metrics)}</div></div></section>`;
+  if (component.type === 'flow') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="flow"><div class="container"><p class="eyebrow">Flow</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderFlow(component.nodes)}</div></div></section>`;
+  if (component.type === 'table') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="table"><div class="container"><p class="eyebrow">Table</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderTable(component.table)}</div></div></section>`;
   if (component.type === 'timeline') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="timeline"><div class="container"><p class="eyebrow">Timeline</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderTimeline(component.items)}</div></div></section>`;
+  if (component.type === 'details') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="details"><div class="container"><p class="eyebrow">Details</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderDetails(component.details)}</div></div></section>`;
+  if (component.type === 'ranges') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="ranges"><div class="container"><p class="eyebrow">Ranges</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderRanges(component.ranges)}</div></div></section>`;
+  if (component.type === 'comparisons') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="comparisons"><div class="container"><p class="eyebrow">Comparisons</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderComparisons(component.comparisons)}</div></div></section>`;
+  if (component.type === 'cards') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="cards"><div class="container"><p class="eyebrow">Cards</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderCards(component.cards)}</div></div></section>`;
+  if (component.type === 'ledger') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="ledger"><div class="container"><p class="eyebrow">Ledger</p><h2>${escapeHtml(component.title)}</h2><div class="ship-checklist">${renderLedgerGroups(component.groups)}</div></div></section>`;
   if (component.type === 'decisionCards') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="decisionCards"><div class="container"><p class="eyebrow">Decisions</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderDetails(component.items)}</div></div></section>`;
   if (component.type === 'requirementsMatrix') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="requirementsMatrix"><div class="container"><p class="eyebrow">Requirements</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderTable({ columns: component.columns, rows: component.rows })}</div></div></section>`;
   if (component.type === 'architectureFlow') return `<section id="${escapeHtml(slug(component.title))}" data-reader-component="architectureFlow"><div class="container"><p class="eyebrow">Architecture</p><h2>${escapeHtml(component.title)}</h2><div class="section-content">${renderFlow(component.nodes)}</div></div></section>`;
