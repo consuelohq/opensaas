@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/add-wiki-revision-guard",
+  "base": "origin/stream/design",
+  "headSha": "4818a4c5fa6c7f2a574b7940acf75260b67fc82a",
+  "changeHash": "9f4e560e22b338dea842ec1001f9e6107e5326389f900b0f36b24ea3f27a8fb5",
+  "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-06T19:20:31.324Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/add-wiki-revision-guard/current.json",
+        ".task/design/add-wiki-revision-guard/evidence-log.json",
+        ".task/design/add-wiki-revision-guard/read-log.json",
+        ".task/design/add-wiki-revision-guard/session.json",
+        ".task/design/add-wiki-revision-guard/workpad.md",
+        ".task/tasks/design/add-wiki-revision-guard.json",
+        "areas/consuelo-design/AGENTS.md",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
