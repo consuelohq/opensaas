@@ -4,14 +4,14 @@
   "mode": "full",
   "branch": "task/design/refine-reader-nav-nesting-tap-zones",
   "base": "origin/stream/design",
-  "headSha": "561555d064112bd730603662af3336f85b50b462",
-  "changeHash": "473a1f673f3fad39eea2dbefacd025e3ab39e2dc537f9b056506ff52554ce5d1",
+  "headSha": "728c3520c3cfb0928879d1400cf8d0247fc1eb32",
+  "changeHash": "b293d206c2510fa410454d36f7fb8d5d8a8f7ca49f20413c10639f4818709a6d",
   "changedFiles": [
     "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
     "packages/consuelo-design/scripts/render-consuelo-reader.ts",
     "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
   ],
-  "verifiedAt": "2026-06-07T16:09:43.222Z",
+  "verifiedAt": "2026-06-07T16:15:16.069Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -29,6 +29,7 @@
         ".task/design/refine-reader-nav-nesting-tap-zones/evidence-log.json",
         ".task/design/refine-reader-nav-nesting-tap-zones/read-log.json",
         ".task/design/refine-reader-nav-nesting-tap-zones/session.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/verify.json",
         ".task/design/refine-reader-nav-nesting-tap-zones/workpad.md",
         ".task/tasks/design/refine-reader-nav-nesting-tap-zones.json",
         "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",

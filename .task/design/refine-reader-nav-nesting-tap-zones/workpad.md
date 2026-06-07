@@ -48,6 +48,7 @@ Pending.
 - 2026-06-07 15:59:45 fs.write: `packages/consuelo-design/scripts/render-consuelo-reader.test.ts`
 - 2026-06-07 16:04:32 fs.write: `packages/consuelo-design/scripts/render-consuelo-reader.test.ts`
 - 2026-06-07 16:11:20 fs.write: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
+- 2026-06-07 16:14:37 fs.write: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
 
 ## workspace-owned: TDD red evidence
 
@@ -77,10 +78,11 @@ Pending.
 - 2026-06-07 16:08:36 `checkFiles`: passed — OK
 - 2026-06-07 16:09:20 `review.run`: passed — OK
 - 2026-06-07 16:09:43 `verify`: passed — OK
+- 2026-06-07 16:15:16 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/design/refine-reader-nav-nesting-tap-zones/current.json`, `.task/design/refine-reader-nav-nesting-tap-zones/evidence-log.json`, `.task/design/refine-reader-nav-nesting-tap-zones/read-log.json`, `.task/design/refine-reader-nav-nesting-tap-zones/session.json`, `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`, `.task/tasks/design/refine-reader-nav-nesting-tap-zones.json`, `packages/consuelo-design/scripts/render-consuelo-reader.test.ts`, `packages/consuelo-design/scripts/render-consuelo-reader.ts`, `packages/consuelo-design/templates/digital-eguides/reader-shell.md`
+- changed files: `.task/design/refine-reader-nav-nesting-tap-zones/current.json`, `.task/design/refine-reader-nav-nesting-tap-zones/evidence-log.json`, `.task/design/refine-reader-nav-nesting-tap-zones/read-log.json`, `.task/design/refine-reader-nav-nesting-tap-zones/session.json`, `.task/design/refine-reader-nav-nesting-tap-zones/verify.json`, `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`, `.task/tasks/design/refine-reader-nav-nesting-tap-zones.json`, `packages/consuelo-design/scripts/render-consuelo-reader.test.ts`, `packages/consuelo-design/scripts/render-consuelo-reader.ts`, `packages/consuelo-design/templates/digital-eguides/reader-shell.md`
 - matched rules: none
 - selected suites: none
 - run results: none
@@ -116,3 +118,11 @@ Pending.
 - Verify passed against `origin/stream/design` and wrote publish-valid stamp, trace `trc_05d43b0fb332`.
 
 - 2026-06-07 16:11:20 append: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
+
+## final publish note — 2026-06-07
+
+After review and verify, I published the updated How To Speak artifact from `/tmp/how-to-speak-guide-v6` and confirmed the archive now points at version `2026-06-07T16-07-52-102Z`. The live artifact includes the short visible nav title, right-grouped menu links, left/right tap-scroll zones, and flattened content stacks for the vocabulary/cards/callout sections.
+
+No follow-up blockers found. One review note remains pre-existing: the workspace has no project typecheck target registered for this affected area.
+
+- 2026-06-07 16:14:37 append: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
