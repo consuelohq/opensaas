@@ -23,3 +23,4 @@ Rules:
 - `spec`, `plan`, and `guide` use the TypeScript reader shell.
 - `uncategorized` artifacts do not use the reader shell automatically.
 - Agents fill typed JSON/content input. The renderer owns layout, typography, scroll behavior, navigation, checklist rendering, optional components, and mobile behavior. First-class rich components are `callout`, `metrics`, `flow`, `table`, `timeline`, `details`, `ranges`, `comparisons`, `cards`, and `ledger`.
+- The reader shell tracks the roadmap mobile baseline: compact serif title scale, orange thesis treatment, right-side `Task` pill, GSAP tap-to-scroll, auto-dismissing resume chip, circular back-to-top progress, and flattened card-only sections.

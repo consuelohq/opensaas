@@ -215,3 +215,50 @@ describe('direct rich reader component names', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+describe('roadmap mobile parity shell polish', () => {
+  test('uses roadmap-style nav, thesis, resume, and progress affordances', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'How To Speak - Communication Field Guide',
+      eyebrow: 'communication guide - 2026-06-07',
+      thesis: 'A good talk is an attention system: promise the listener a useful capability, give them landmarks, and package the idea so they can carry it away.',
+      metadata: { status: 'reworked guide', owner: 'Ko / Consuelo', date: '2026-06-07', sourceTruth: 'TDD fixture' },
+      sections: [
+        { id: 'decision', eyebrow: 'the decision', title: 'Treat every talk as attention design.', body: ['A talk is a path with handles.'], cards: [{ title: 'Promise', body: 'Start with the listener capability.' }] },
+        { id: 'slides', eyebrow: 'slides', title: 'Slides reduce load.', callout: { label: 'thesis', title: 'Make the slide title the takeaway.', body: 'The visual supports one point.' } },
+      ],
+      components: [{ type: 'table', title: 'Talk design checklist', table: { columns: ['Check', 'Question'], rows: [['Promise', 'What can they do?']] } }],
+      ledgerTitle: 'Memory review',
+      ledger: [{ title: 'Learning checklist', items: [{ status: 'current', text: 'Apply this to one talk.' }] }],
+    });
+
+    expect(html).toContain('class="hero-thesis"');
+    expect(html).toContain('class="reader-nav-task"');
+    expect(html).toContain('Task</a>');
+    expect(html).toContain('class="reader-back-to-top-progress"');
+    expect(html).toContain('data-auto-dismiss-ms="10000"');
+    expect(html).not.toContain('class="reader-progress"');
+    expect(html).not.toContain('data-dismiss-resume');
+    expect(html).toContain('smoother.scrollTo(target, true,');
+    expect(html).toContain('window.__readerShell = { shell:');
+    expect(html).toContain('font-size:clamp(48px, 12vw, 88px)');
+    expect(html).toContain('--serif: Georgia, ui-serif');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+
+  test('card-only sections avoid double-framed nesting', () => {
+    const html = renderConsueloReader({
+      template: 'plan',
+      title: 'Roadmap Card Fixture',
+      eyebrow: 'plan fixture',
+      thesis: 'Card sections should feel like roadmap cards instead of frames inside frames.',
+      sections: [{ id: 'scope', eyebrow: 'goals and non-goals', title: 'Scope control', cards: [{ title: 'Goals', body: 'Make decision infrastructure the category spine.' }, { title: 'Non-goals', body: 'Keep the page focused.' }] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'done', text: 'Render card-only section.' }] }],
+    });
+
+    expect(html).toContain('section-content flat-content');
+    expect(html).toContain('grid-2 roadmap-card-grid');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
