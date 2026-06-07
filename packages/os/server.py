@@ -6,6 +6,7 @@ compatibility wrapper until the Bun server fully replaces Python transport needs
 
 import json
 import os
+import sqlite3
 import subprocess
 import time
 import uuid
@@ -78,9 +79,7 @@ def _env_presence() -> dict[str, Any]:
     }
 
 
-@mcp.tool(annotations=READ_ONLY)
-def get_steering() -> str:
-    """Return OS steering, business context, permissions, and raw core tool manifest."""
+def _build_steering() -> str:
     sections = [
         '# Consuelo OS runtime context',
         '',
@@ -112,6 +111,92 @@ def get_steering() -> str:
         ])
 
     return '\n'.join(sections)
+
+
+def _consuelo_home() -> Path:
+    return Path(os.path.expanduser(os.environ.get('CONSUELO_HOME', '~/.consuelo/os'))).resolve()
+
+
+def _open_runtime_db() -> sqlite3.Connection:
+    home = _consuelo_home()
+    home.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(home / 'consuelo.db')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS skill_executions (
+            trace_id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            workspace_id TEXT,
+            user_id TEXT,
+            status TEXT NOT NULL,
+            input_json TEXT,
+            output_json TEXT,
+            error_code TEXT,
+            error_message TEXT,
+            started_at TEXT NOT NULL,
+            finished_at TEXT,
+            duration_ms INTEGER
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS execution_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            trace_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            payload_json TEXT,
+            created_at TEXT NOT NULL
+        )
+    ''')
+    return conn
+
+
+def _record_steering_execution(trace_id: str, started: float, steering: str) -> None:
+    duration_ms = int((time.time() - started) * 1000)
+    now = _now_iso()
+    output = {
+        'ok': True,
+        'name': 'get_steering',
+        'permission': 'read',
+        'traceId': trace_id,
+        'durationMs': duration_ms,
+        'result': {
+            'chars': len(steering),
+            'estimatedOutputTokens': max(1, len(steering) // 4),
+        },
+    }
+    conn = _open_runtime_db()
+    try:
+        conn.execute(
+            'INSERT OR REPLACE INTO skill_executions (trace_id, name, workspace_id, user_id, status, input_json, output_json, started_at, finished_at, duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (
+                trace_id,
+                'get_steering',
+                os.environ.get('CONSUELO_WORKSPACE_ID'),
+                os.environ.get('CONSUELO_USER_ID'),
+                'succeeded',
+                _safe_json({}),
+                _safe_json(output),
+                now,
+                now,
+                duration_ms,
+            ),
+        )
+        conn.execute(
+            'INSERT INTO execution_events (trace_id, event_type, payload_json, created_at) VALUES (?, ?, ?, ?)',
+            (trace_id, 'execution.succeeded', _safe_json({'durationMs': duration_ms}), now),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+@mcp.tool(annotations=READ_ONLY)
+def get_steering() -> str:
+    """Return OS steering, business context, permissions, and raw core tool manifest."""
+    started = time.time()
+    trace_id = _trace_id()
+    steering = _build_steering()
+    _record_steering_execution(trace_id, started, steering)
+    return steering
 
 
 @mcp.tool(annotations=CALL_TOOL)
