@@ -4,14 +4,14 @@
   "mode": "full",
   "branch": "task/design/refine-reader-nav-nesting-tap-zones",
   "base": "origin/stream/design",
-  "headSha": "58e3a7c7cbc0c827ccc1907099a2e0a7e33244fc",
-  "changeHash": "35ab1c5365439b5f44c80dd11cc32520abe27c52e862328103017b77ed168b2e",
+  "headSha": "4a00d89ac8e86736ec04c8a85743e2496412a2db",
+  "changeHash": "fa393f4a2a86f6f9b2290a1e09be03c5103352a32e0153458afa233a18952d77",
   "changedFiles": [
     "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
     "packages/consuelo-design/scripts/render-consuelo-reader.ts",
     "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
   ],
-  "verifiedAt": "2026-06-07T16:18:18.079Z",
+  "verifiedAt": "2026-06-07T16:25:18.150Z",
   "review": {
     "skipped": false,
     "passed": true,

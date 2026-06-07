@@ -29,6 +29,20 @@ Completed; see the validation update and workspace-owned validation evidence bel
 
 - 2026-06-07 15:54:26 write: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
 
+## agent update — implementation and validation
+
+What changed: updated the canonical reader shell to allocate nav space with a flexible title column, show the short `How To Speak` title, keep section links next to the pinned `Task` button, flatten no-body module stacks, flatten typed components, and add left/right tap zones for incremental scroll.
+
+Why it changed: Ko's roadmap comparison showed three remaining template problems: the title was still clipped, vocabulary/mechanism sections still had extra framed nesting, and roadmap-style side tap scrolling was missing.
+
+Validation run: red tests covered nav allocation, short nav title, tap zones, single-module flattening, typed-component flattening, and mixed-module flattening. Green `bun run test:reader` passed with 17 tests and 109 assertions. Renderer syntax, reader validation, mobile browser smoke, design check, review, and verify all passed. The live guide is published as version `2026-06-07T16-07-52-102Z`.
+
+Issues or follow-ups: no blocking issues. The only review note is pre-existing: no project typecheck target is registered for this affected area.
+
+## current status
+
+The reader refinement is implemented and published. The canonical renderer now uses the 1.2.0 shell with right-grouped nav links, a short visible nav title, left/right tap-scroll zones, and flat no-body content stacks for the vocabulary, card, callout, and typed component sections. The How To Speak guide is live at version 2026-06-07T16-07-52-102Z. Focused TDD, renderer validation, mobile browser smoke, review, and verify all passed; no blocking follow-ups remain.
+
 ## files changed
 
 - `packages/consuelo-design/scripts/render-consuelo-reader.test.ts`
@@ -81,6 +95,7 @@ Completed through focused TDD, static checks, browser smoke, publish, review, an
 - 2026-06-07 16:15:16 `verify`: passed — OK
 - 2026-06-07 16:16:40 `verify`: passed — OK
 - 2026-06-07 16:18:18 `verify`: passed — OK
+- 2026-06-07 16:25:18 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
