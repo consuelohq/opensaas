@@ -128,7 +128,7 @@ function parseRefreshArgs(args: string[]): RefreshOptions {
 
     if (arg === '--repo') {
       const value = args[index + 1];
-      if (!value) throw new Error('--repo requires owner/repo');
+      if (!value || value.startsWith('--')) throw new Error('--repo requires owner/repo');
       options.repo = value;
       index += 1;
       continue;
@@ -136,7 +136,7 @@ function parseRefreshArgs(args: string[]): RefreshOptions {
 
     if (arg === '--pr' || arg === '--pull') {
       const value = args[index + 1];
-      if (!value) throw new Error(`${arg} requires a pull request number`);
+      if (!value || value.startsWith('--')) throw new Error(arg + ' requires a pull request number');
       pulls.add(parsePullNumber(value));
       index += 1;
       continue;
@@ -144,7 +144,7 @@ function parseRefreshArgs(args: string[]): RefreshOptions {
 
     if (arg === '--reason') {
       const value = args[index + 1];
-      if (!value) throw new Error('--reason requires a value');
+      if (!value || value.startsWith('--')) throw new Error('--reason requires a value');
       options.reason = value;
       index += 1;
       continue;
@@ -152,7 +152,7 @@ function parseRefreshArgs(args: string[]): RefreshOptions {
 
     if (arg === '--origin') {
       const value = args[index + 1];
-      if (!value) throw new Error('--origin requires a URL');
+      if (!value || value.startsWith('--')) throw new Error('--origin requires a URL');
       options.origin = value;
       index += 1;
       continue;
@@ -160,7 +160,7 @@ function parseRefreshArgs(args: string[]): RefreshOptions {
 
     if (arg === '--token') {
       const value = args[index + 1];
-      if (!value) throw new Error('--token requires a value');
+      if (!value || value.startsWith('--')) throw new Error('--token requires a value');
       options.token = value;
       index += 1;
       continue;
@@ -185,7 +185,7 @@ function parsePullNumber(value: string): number {
 }
 
 function usage(): string {
-  return 'usage: bun run diff_cockpit -- <pr-number|github-pr-url|owner/repo/pull/number> [--repo owner/repo] [--print] [--no-open]\n       bun run diff_cockpit -- refresh [--repo owner/repo] [--pr number] [number...] [--reason task.pr]';
+  return 'usage: bun run diff_cockpit -- <pr-number|github-pr-url|owner/repo/pull/number> [--repo owner/repo] [--print] [--no-open]\n       bun run diff_cockpit -- refresh [--repo owner/repo] [--pr|--pull number] [number...] [--reason task.pr] [--origin url] [--token token]';
 }
 
 function openUrl(url: string): Promise<void> {
