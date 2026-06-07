@@ -262,3 +262,127 @@ describe('roadmap mobile parity shell polish', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+describe('reader nav allocation and tap-scroll refinement', () => {
+  test('gives the title maximum nav space and groups links beside task', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'How To Speak - Communication Field Guide',
+      eyebrow: 'communication guide',
+      thesis: 'A good talk is an attention system.',
+      sections: [{ id: 'deep-idea', eyebrow: 'Deep idea', title: 'Speaking is attention design', body: ['Promise, map, mechanism, evidence, package.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'current', text: 'Review nav spacing.' }] }],
+      map: [{ label: 'Deep idea', href: '#deep-idea' }, { label: 'Source', href: '#source' }, { label: 'ELI5', href: '#eli5' }, { label: 'Task', href: '#ship-checklist' }],
+    });
+
+    expect(html).toContain('grid-template-columns:minmax(0,1fr) auto auto');
+    expect(html).toContain('.reader-links { display:flex; justify-content:flex-end; justify-self:end;');
+    expect(html).not.toContain('grid-template-columns:minmax(120px,auto) minmax(0,1fr) auto');
+    expect(html).toContain('class="reader-nav-task"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+
+  test('renders roadmap-style left and right tap zones for page stepping', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'Tap Zone Fixture',
+      thesis: 'Clicking the right side should step down; clicking the left side should step up.',
+      sections: [{ id: 'one', title: 'One', body: ['First.'] }, { id: 'two', title: 'Two', body: ['Second.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'todo', text: 'Tap through sections.' }] }],
+    });
+
+    expect(html).toContain('class="reader-tap-zone reader-tap-zone-left"');
+    expect(html).toContain('class="reader-tap-zone reader-tap-zone-right"');
+    expect(html).toContain('data-tap-scroll="up"');
+    expect(html).toContain('data-tap-scroll="down"');
+    expect(html).toContain('function pageStep(direction)');
+    expect(html).toContain('innerHeight * 0.62');
+    expect(html).toContain('document.querySelectorAll(\'[data-tap-scroll]\')');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('reader nesting flattening refinement', () => {
+  test('flattens single-component body sections that previously nested table and flow cards', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'Flattening Fixture',
+      thesis: 'Single content modules should not sit inside an extra framed section wrapper.',
+      sections: [
+        { id: 'vocabulary', eyebrow: 'Vocabulary', title: 'Paper vocabulary translated into operator moves', table: { columns: ['Term', 'Meaning', 'How Ko uses it'], rows: [['Empowerment promise', 'A clear statement.', 'Open with capability.']] } },
+        { id: 'mechanism', eyebrow: 'Mechanism', title: 'The talk mechanism', flow: [{ title: 'Promise', body: 'Tell them what they can do.' }, { title: 'Map', body: 'Give landmarks.' }] },
+        { id: 'rule', eyebrow: 'Field rule', title: 'Before a talk, write five sentences.', callout: { label: 'Operator rule', title: 'Before a talk, write five sentences.', body: 'By the end you will be able to __.' } },
+        { id: 'cards', eyebrow: 'Cards', title: 'Scope control', cards: [{ title: 'Goals', body: 'Keep the card direct.' }] },
+      ],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'done', text: 'Flatten all single components.' }] }],
+    });
+
+    expect(html.match(/section-content flat-content/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(html).toContain('<div class="section-content flat-content"><div class="matrix">');
+    expect(html).toContain('<div class="section-content flat-content"><div class="diagram">');
+    expect(html).toContain('<div class="section-content flat-content"><div class="callout">');
+    expect(html).toContain('<div class="section-content flat-content"><div class="grid-2 roadmap-card-grid">');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+
+  test('flattens typed table and flow components too', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'Typed Flattening Fixture',
+      thesis: 'Typed components should inherit the same flattened frame behavior.',
+      sections: [{ id: 'intro', title: 'Intro', body: ['Intro.'] }],
+      components: [
+        { type: 'table', title: 'Talk design checklist', table: { columns: ['Check', 'Question'], rows: [['Promise', 'What can they do?']] } },
+        { type: 'flow', title: 'Practice route', nodes: [{ title: 'Draft' }, { title: 'Practice' }] },
+      ],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'current', text: 'Flatten typed components.' }] }],
+    });
+
+    expect(html).toContain('data-reader-component="table"><div class="container"><p class="eyebrow">Table</p><h2>Talk design checklist</h2><div class="section-content flat-content"><div class="matrix">');
+    expect(html).toContain('data-reader-component="flow"><div class="container"><p class="eyebrow">Flow</p><h2>Practice route</h2><div class="section-content flat-content"><div class="diagram">');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('reader nav display title', () => {
+  test('uses the short artifact title in the nav while preserving the full label', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'How To Speak - Communication Field Guide',
+      thesis: 'The nav should show the readable short title, not clip it to How To Spe.',
+      sections: [{ id: 'summary', title: 'Summary', body: ['Body.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'todo', text: 'Check title.' }] }],
+    });
+
+    expect(html).toContain('class="reader-brand" href="/design-wiki" aria-label="How To Speak - Communication Field Guide" title="How To Speak - Communication Field Guide">How To Speak</a>');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('reader mixed module flattening', () => {
+  test('flattens no-body sections even when they contain multiple modules', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'Mixed Flat Fixture',
+      thesis: 'A callout plus flow should not create a third enclosing frame.',
+      sections: [{
+        id: 'mechanism',
+        eyebrow: 'Mechanism',
+        title: 'The talk mechanism',
+        callout: { label: 'Operator rule', title: 'Before a talk, write five sentences.', body: 'Prep the route first.' },
+        flow: [{ title: 'Promise', body: 'Capability first.' }, { title: 'Map', body: 'Landmarks second.' }],
+      }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'current', text: 'Flatten mixed modules.' }] }],
+    });
+
+    expect(html).toContain('<div class="section-content flat-content"><div class="callout">');
+    expect(html).toContain('</div><div class="diagram"><div class="flow-row">');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
