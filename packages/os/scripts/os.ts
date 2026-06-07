@@ -268,6 +268,7 @@ export function executeGetSteering(
         result: {
           chars: steering.length,
           estimatedOutputTokens: Math.max(1, Math.floor(steering.length / 4)),
+          content: steering,
         },
       },
       durationMs,

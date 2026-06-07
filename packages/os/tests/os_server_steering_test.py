@@ -77,7 +77,7 @@ class OsSteeringServerTest(unittest.TestCase):
         self.assertEqual(json.loads(row[2]), {})
         output = json.loads(row[3])
         self.assertEqual(output['result']['chars'], len(steering_text))
-        self.assertNotIn(steering_text, row[3])
+        self.assertEqual(output['result']['content'], steering_text)
         self.assertGreaterEqual(row[4], 0)
 
 

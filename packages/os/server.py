@@ -161,6 +161,7 @@ def _record_steering_execution(trace_id: str, started: float, steering: str) -> 
         'result': {
             'chars': len(steering),
             'estimatedOutputTokens': max(1, len(steering) // 4),
+            'content': steering,
         },
     }
     conn = _open_runtime_db()

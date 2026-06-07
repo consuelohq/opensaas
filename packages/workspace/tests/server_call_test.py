@@ -249,7 +249,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(json.loads(row[4]), {})
         compact_result = json.loads(row[5])
         self.assertEqual(compact_result['data']['chars'], len(steering_text))
-        self.assertNotIn(steering_text, row[5])
+        self.assertEqual(compact_result['data']['content'], steering_text)
         self.assertGreaterEqual(row[7], len(steering_text) // 4)
         self.assertEqual(row[8], row[6] + row[7])
 

@@ -326,6 +326,7 @@ def _run_get_steering() -> str:
         data={
             'chars': len(content),
             'estimatedOutputTokens': output_tokens,
+            'content': content,
         },
         durationMs=int((time.time() - started) * 1000),
         traceId=trace_id,

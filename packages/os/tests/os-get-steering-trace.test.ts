@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe('OS steering execution recording', () => {
-  it('records get-steering as a compact execution without storing the full steering body', () => {
+  it('records get-steering with metadata and full steering body', () => {
     const home = makeHome();
     const steering = executeGetSteering(() => 'os steering payload '.repeat(40));
 
@@ -45,7 +45,7 @@ describe('OS steering execution recording', () => {
     expect(JSON.parse(String(row.input_json))).toEqual({});
     const output = JSON.parse(String(row.output_json)) as { result: { chars: number } };
     expect(output.result.chars).toBe(40 * 'os steering payload '.length);
-    expect(String(row.output_json)).not.toContain('os steering payload os steering payload os steering payload');
+    expect(output.result).toMatchObject({ content: steering });
     expect(Number(row.duration_ms)).toBeGreaterThanOrEqual(0);
   });
 });
