@@ -22,6 +22,36 @@ Use **Canvas living plan** for fast alignment, copy/paste execution, working che
 
 Use **Open Design plan guide** for a designed artifact that should be read, revisited, shared, archived, or used as a durable project map.
 
+## render protocol
+
+Plan guides use the canonical Consuelo reader renderer. Run commands from the repository root, not from `packages/consuelo-design`.
+
+Do not hand-author a new page shell. Produce structured content for the plan, then render through:
+
+```bash
+bun run wiki:render -- --template spec --input <content.json> --out <index.html>
+bun run wiki:validate -- --file <index.html> --template spec
+```
+
+Use the `spec` renderer mode for plans because plans are operating specs: they need status, owner, source truth, checkpoint, requirements, decisions, validation, rollout, and completion ledger surfaces.
+
+## typed component guidance
+
+Use the shared reader components for visual variety and repeatability:
+
+- **callout** for objective, why-now, decision, blocker, or caution
+- **metrics** for progress, budget, confidence, effort, scope, or review counts
+- **cards** for context, assumptions, known facts, owners, files, and handoff notes
+- **table** for relevant files, command history, decisions, validation matrices, and acceptance criteria
+- **flow** for execution order, system/process sequence, or dependency path
+- **timeline** for phases, milestones, rollout, or review cadence
+- **details** for investigation notes, logs, unresolved questions, caveats, and raw evidence
+- **ranges** for priority, risk, confidence, impact, effort, or readiness scoring
+- **comparisons** for options, tradeoffs, rejected paths, or before/after plans
+- **ledger** for actionable checklists and completion tracking
+
+Do not use custom HTML unless a typed component cannot express the artifact. If custom HTML is unavoidable, keep the canonical reader shell and validation requirements intact.
+
 ## source truth
 
 The source plan is the planning truth.

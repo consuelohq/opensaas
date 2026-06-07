@@ -1,0 +1,51 @@
+---
+title: Local and Cloud
+description: The two runtime modes for Consuelo OS.
+---
+
+# Local and cloud
+
+Consuelo OS can run locally or in the cloud.
+
+The product model is the same in both modes: agents connect to the OS portal, run approved skills, create tracked artifacts, and leave an observable trail.
+
+## Runtime comparison
+
+Area | Local OS | Cloud OS
+--- | --- | ---
+Runtime | User machine | Regular OpenSaaS deployment path
+Storage | Local filesystem and SQLite | App database and cloud storage
+Best for | Solo users, founders, internal builders | Teams and customer workspaces
+Artifacts | Local bytes plus SQLite metadata | App-native metadata plus cloud bytes
+Approvals | Local first, team surfaces later | App or team delivery surfaces
+Observability | Local logs and trace records | Hosted logs and app records
+
+## Local OS
+
+Local OS is the fastest path to useful agents. It should install without Docker, create a local OS home, use SQLite for metadata, and connect local agents to the OS portal.
+
+Local OS should still behave like the real product. It should track executions, artifacts, approvals, capability health, and trace IDs.
+
+## Cloud OS
+
+Cloud OS is the team version. It should use the app for identity, shared artifacts, managed capabilities, hosted observability, and team approval surfaces.
+
+Cloud OS should live inside the regular OpenSaaS deployment path first. A separate service can come later if scaling or isolation requires it.
+
+## Storage adapter rule
+
+Skills should call OS services. They should not hardcode local or cloud storage paths.
+
+```text
+skill creates artifact
+  -> artifact service
+    -> local storage or cloud storage
+```
+
+That keeps local and cloud modes compatible.
+
+## Related
+
+- [Local OS and Cloud OS](/get-started/local-vs-cloud)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Observability](/os/concepts/observability)

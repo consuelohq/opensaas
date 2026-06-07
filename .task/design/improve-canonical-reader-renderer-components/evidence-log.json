@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/design/improve-canonical-reader-renderer-components",
+  "events": [
+    {
+      "id": "663e9a21-ee3f-439b-8101-3f7c52cb6a84",
+      "occurred_at": "2026-05-31T12:15:08.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/spec.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/improve-canonical-reader-renderer-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/improve-canonical-reader-renderer-components"
+      }
+    },
+    {
+      "id": "214f8a98-a286-4e08-b20d-af4f67f2210d",
+      "occurred_at": "2026-05-31T12:15:17.131Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/improve-canonical-reader-renderer-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/improve-canonical-reader-renderer-components"
+      }
+    },
+    {
+      "id": "03caff02-c3d7-40c3-88ef-a90d517878b9",
+      "occurred_at": "2026-05-31T12:17:28.147Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/improve-canonical-reader-renderer-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/improve-canonical-reader-renderer-components"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-31T12:17:28.198Z"
+}

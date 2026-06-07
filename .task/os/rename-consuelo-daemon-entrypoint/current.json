@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-consuelo-daemon-entrypoint",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 711,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/711",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/711",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/711/rename-consuelo-daemon-entrypoint",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/711",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/711/rename-consuelo-daemon-entrypoint",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-consuelo-daemon-entrypoint",
+  "taskSession": "tsk_9200e7c9aeef",
+  "tmuxSession": "opensaas-os-rename-consuelo-daemon-entrypoint-9200e7c9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-consuelo-daemon-entrypoint/.task/os/rename-consuelo-daemon-entrypoint/session.json",
+  "createdAt": "2026-06-02T21:48:35.539Z"
+}

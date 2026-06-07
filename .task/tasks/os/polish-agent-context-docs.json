@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-agent-context-docs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 781,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/781",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/781",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/781/polish-agent-context-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/781",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/781/polish-agent-context-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-agent-context-docs",
+  "taskSession": "tsk_7884974a8fd4",
+  "tmuxSession": "opensaas-os-polish-agent-context-docs-7884974a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-agent-context-docs/.task/os/polish-agent-context-docs/session.json",
+  "createdAt": "2026-06-05T06:13:04.926Z"
+}

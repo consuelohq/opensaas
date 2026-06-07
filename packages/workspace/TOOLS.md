@@ -5304,7 +5304,7 @@ example error envelope:
 
 search workspace tools by intent and return ranked usage guidance
 
-- signature: `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; filters: Record<string, unknown>; totalMatches: number; matches: Array<{ name: string; score: number; description?: string; inputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; why: string[] }>; guidance: string }>>`
+- signature: `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>`
 - wraps: `workspace tools.search`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -5329,7 +5329,75 @@ example success envelope:
   "code": "OK",
   "message": "command completed",
   "data": {
-    "raw": "example"
+    "query": "linear issue",
+    "limit": 5,
+    "searchedCount": 128,
+    "returnedCount": 1,
+    "filters": {},
+    "totalMatches": 1,
+    "confidence": "high",
+    "ambiguous": false,
+    "detectedIntent": "read or search Linear issues",
+    "recommended": "linear.issue",
+    "matches": [
+      {
+        "name": "linear.issue",
+        "methodPath": [
+          "linear",
+          "issue"
+        ],
+        "category": "linear",
+        "score": 142,
+        "scoreParts": {
+          "exact": 0,
+          "name": 22,
+          "lexical": 31,
+          "bm25": 34,
+          "intent": 55,
+          "capability": 0,
+          "embedding": 0
+        },
+        "description": "Read one Linear issue by identifier.",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "safeToRetry": true
+        },
+        "sessionRequired": false,
+        "inputSchema": "LinearIssueInput",
+        "outputSchema": "RawOutput",
+        "inputSignature": "{ identifier: string; requestId?: string; taskSession?: string }",
+        "usage": {
+          "workspaceCall": "await workspace.call({ tool: \"linear.issue\", input: { \"identifier\": \"DEV-123\" } })",
+          "script": "linear",
+          "subcommand": "issue",
+          "arguments": []
+        },
+        "why": [
+          "intent: read or search Linear issues"
+        ]
+      }
+    ],
+    "guidance": {
+      "summary": "Use the recommended tool when its intent matches the user request. Inspect alternatives when ambiguous.",
+      "recommendedUse": "Read-only recommendation is safe for investigation.",
+      "ambiguous": false,
+      "safeDefaults": [],
+      "mutatingGuidance": []
+    },
+    "catalog": {
+      "source": [
+        "tool-manifest.json",
+        "TOOLS.md"
+      ],
+      "catalogHash": "abc123",
+      "toolCount": 128,
+      "searchedCount": 128,
+      "cardVersion": "tools-search-card-v2",
+      "embeddingConfigId": "disabled",
+      "cardsEmbedded": 0,
+      "cardsReused": 0
+    }
   },
   "stderr": "",
   "exitCode": 0,
@@ -7194,9 +7262,9 @@ example error envelope:
 
 ### wait
 
-sleep or wait for a PR/deploy
+sleep, create detached wait checkpoints, or wait for a PR/deploy
 
-- signature: `workspace.wait({ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.wait({ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace wait`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
@@ -7207,7 +7275,9 @@ example call:
 await workspace.call({
   "tool": "wait",
   "input": {
-    "seconds": 1
+    "duration": "24h",
+    "detached": true,
+    "reason": "wake after long-running external work"
   }
 });
 ```

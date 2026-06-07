@@ -27,6 +27,24 @@ The Markdown template owns the section logic. The TypeScript renderer owns the r
 
 For roadmap or operating-plan artifacts, use `template: spec`. Do not create a separate roadmap template.
 
+
+optional typed section components
+
+When producing the structured content JSON, do not hand-write HTML for variety. Use optional typed section components. A section may include any mix of:
+
+- `body: string[]` for normal paragraphs.
+- `cards: { title, body, tag? }[]` for simple card grids.
+- `callout: { label?, title, body? }` for a large editorial emphasis block.
+- `metrics: { label, value, body? }[]` for scoreboard/stat cards.
+- `flow: { title, body?, tag? }[]` for process or system diagrams.
+- `table: { columns: string[], rows: string[][] | Record<string,string>[] }` for requirements, validation matrices, and comparison tables. The renderer adds mobile `data-label` cells so tables collapse instead of clipping on iPhone.
+- `timeline: { title, body?, tag?, items? }[]` for phases, rollout, and sequence sections.
+- `details: { summary, body, open? }[]` for dropdown/accordion decisions, risks, and explanations.
+- `ranges: { label, value, max?, note? }[]` for progress, confidence, readiness, or scoring bars.
+- `comparisons: { title, body, tag? }[]` for side-by-side alternatives.
+
+Prefer typed components over custom HTML. If a section needs a visual pattern not listed here, add it to the renderer as a typed component first so the shell stays deterministic.
+
 job
 
 Turn ambiguous product or engineering work into a durable specification that helps Ko and the team decide what to build, why it matters, how it should work, how it will be validated, and what must be true before it can ship.

@@ -7,6 +7,7 @@
     "@floating-ui/react": "^0.24.3",
     "@linaria/core": "^6.2.0",
     "@linaria/react": "^6.2.1",
+    "@opentui/core": "^0.3.1",
     "@radix-ui/colors": "^3.0.0",
     "@sniptt/guards": "^0.2.0",
     "@tabler/icons-react": "^3.31.0",
@@ -277,17 +278,24 @@
     "consuelo-design": "bun packages/workspace/scripts/consuelo-design.ts",
     "code-run": "bun packages/workspace/scripts/code-run.ts",
     "github": "bun packages/workspace/scripts/github.js",
+    "diff_cockpit": "bun packages/workspace/scripts/diff_cockpit.ts",
     "git:diff": "bun packages/workspace/scripts/git-diff.js",
     "trace:analytics": "bun scripts/operator/trace-analytics.ts",
+    "trace:costs": "bun scripts/operator/trace-costs.ts",
     "trace:errors": "bun scripts/operator/trace-errors.ts",
     "trace:watch": "bun scripts/operator/trace-watch.ts",
+    "trace:home": "bun scripts/operator/trace-home.ts",
     "test-selection:generate": "node packages/workspace/scripts/test-selection.js generate",
     "test-selection:check": "node packages/workspace/scripts/test-selection.js check",
     "test-selection:nightly": "node packages/workspace/scripts/test-selection.js nightly",
     "test-selection": "node packages/workspace/scripts/test-selection.js",
     "wiki:render": "bun run --cwd packages/consuelo-design wiki:render --",
     "wiki:validate": "bun run --cwd packages/consuelo-design wiki:validate --",
-    "test:reader": "bun run --cwd packages/consuelo-design test:reader"
+    "test:reader": "bun run --cwd packages/consuelo-design test:reader",
+    "os:release-install": "bun packages/workspace/scripts/os-release-install.ts",
+    "docs:generate-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts",
+    "docs:check-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts --check",
+    "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts"
   },
   "workspaces": {
     "packages": [

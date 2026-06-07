@@ -1,0 +1,17 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/README.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/office-pages.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/browser/skill.json",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "updatedAt": "2026-06-05T05:31:37.445Z"
+}

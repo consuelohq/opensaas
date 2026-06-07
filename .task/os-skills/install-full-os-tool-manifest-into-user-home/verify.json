@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-skills/install-full-os-tool-manifest-into-user-home",
+  "base": "stream/os-skills",
+  "headSha": "f9639dcfa476ba3fbddb4b467c870cf0871c6692",
+  "changeHash": "8e6e0ee2f63dc86d2e5f759d03723b47248dc9fa3a28bd2b86b376a4f45337f8",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "verifiedAt": "2026-06-05T03:26:41.013Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-skills/install-full-os-tool-manifest-into-user-home/current.json",
+        ".task/os-skills/install-full-os-tool-manifest-into-user-home/evidence-log.json",
+        ".task/os-skills/install-full-os-tool-manifest-into-user-home/read-log.json",
+        ".task/os-skills/install-full-os-tool-manifest-into-user-home/session.json",
+        ".task/os-skills/install-full-os-tool-manifest-into-user-home/workpad.md",
+        ".task/tasks/os-skills/install-full-os-tool-manifest-into-user-home.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

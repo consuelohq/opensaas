@@ -128,4 +128,85 @@ describe('renderConsueloReader', () => {
     expect(result.missing).toContain('#smooth-wrapper');
     expect(result.missing).toContain('window.__readerShell');
   });
+
+  test('renders rich optional section components with mobile-safe tables and shell polish', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Benchmark Entry Fixture',
+      eyebrow: 'Spec · Benchmark',
+      thesis: 'The benchmark page should use the same polished reader shell as the roadmap.',
+      metadata: { status: 'Fixture', owner: 'Ko', date: '2026-05-31', sourceTruth: 'Screenshot regression' },
+      map: [
+        { label: 'Summary', href: '#summary' },
+        { label: 'Requirements', href: '#requirements' },
+        { label: 'Validation', href: '#validation' },
+        { label: 'Task', href: '#ship-checklist' },
+      ],
+      sections: [
+        {
+          id: 'summary',
+          eyebrow: 'Why Now',
+          title: 'Agents are tool-bound',
+          callout: { label: 'Why now', title: 'Agents are tool-bound', body: 'A strong model without workspace state cannot complete valuable tasks.' },
+          metrics: [
+            { label: 'Surface', value: '4', body: 'Repo, browser, logs, approvals.' },
+            { label: 'Mode', value: 'Typed', body: 'Capabilities are explicit.' },
+          ],
+          flow: [
+            { title: 'Task', body: 'User asks for work.' },
+            { title: 'Tool', body: 'Agent opens workspace.' },
+            { title: 'Proof', body: 'Artifact validates.' },
+          ],
+        },
+        {
+          id: 'requirements',
+          eyebrow: 'Requirements',
+          title: 'What must be true',
+          table: {
+            columns: ['Area', 'Requirement', 'Validation'],
+            rows: [
+              ['Positioning', 'Show the capability frontier.', 'Readable on iPhone.'],
+              ['Benchmark', 'Use optional section components.', 'Renderer test passes.'],
+            ],
+          },
+          timeline: [
+            { title: 'Clone shell polish', tag: 'UI', body: 'Use roadmap shell styling.' },
+            { title: 'Add components', tag: 'Typed', body: 'Render charts, tables, timelines, and accordions.' },
+          ],
+        },
+        {
+          id: 'validation',
+          eyebrow: 'Validation Plan',
+          title: 'Proof before scaling',
+          details: [
+            { summary: 'Mobile table behavior', body: 'Tables collapse into labeled row cards instead of clipping.' },
+            { summary: 'Dark mode behavior', body: 'Dark overrides come after base styles.' },
+          ],
+          ranges: [
+            { label: 'Shell parity', value: 90, max: 100, note: 'Roadmap parity target.' },
+            { label: 'Component coverage', value: 75, max: 100, note: 'More sections now typed.' },
+          ],
+        },
+      ],
+      ledgerTitle: 'Ship checklist',
+      ledger: [{ title: 'Renderer', tag: 'TDD', items: [{ status: 'current', text: 'Keep shell polish deterministic.' }] }],
+    });
+
+    expect(html).toContain('fonts.googleapis.com');
+    expect(html).toContain('class="callout"');
+    expect(html).toContain('class="metric-grid"');
+    expect(html).toContain('class="diagram"');
+    expect(html).toContain('class="timeline"');
+    expect(html).toContain('class="decision-grid"');
+    expect(html).toContain('class="range-grid"');
+    expect(html).toContain('data-label="Requirement"');
+    expect(html).toContain('@media (hover:hover)');
+    expect(html).toContain('@media (max-width: 680px)');
+    expect(html.lastIndexOf('@media (prefers-color-scheme: dark)')).toBeGreaterThan(0);
+
+    const darkIndex = html.lastIndexOf('@media (prefers-color-scheme: dark)');
+    const baseNavIndex = html.indexOf('.reader-nav-shell {');
+    expect(darkIndex).toBeGreaterThan(baseNavIndex);
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
 });

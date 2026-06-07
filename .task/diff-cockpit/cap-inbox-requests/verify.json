@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/cap-inbox-requests",
+  "base": "origin/stream/diff-cockpit",
+  "headSha": "05efb4bca3792a2b5e4315bab93902403cdd1eba",
+  "changeHash": "df0fd4413530cbedb4d9e7c87d0c3a801356981dde87dad1e66d23ad91fb131a",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts"
+  ],
+  "verifiedAt": "2026-06-03T09:00:53.473Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/cap-inbox-requests/current.json",
+        ".task/diff-cockpit/cap-inbox-requests/session.json",
+        ".task/diff-cockpit/cap-inbox-requests/workpad.md",
+        ".task/tasks/diff-cockpit/cap-inbox-requests.json",
+        "packages/diff-cockpit/src/index.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -106,6 +106,7 @@ ENV APP_VERSION=$APP_VERSION
 COPY --chown=1000 --from=twenty-server-build /app /app
 COPY --chown=1000 --from=twenty-server-build /app/packages/twenty-server /app/packages/twenty-server
 COPY --chown=1000 --from=twenty-front-build /app/packages/twenty-front/build /app/packages/twenty-server/dist/front
+COPY --chown=1000 ./packages/os /app/packages/os
 
 # Set metadata and labels
 LABEL org.opencontainers.image.source=https://github.com/consuelohq/opensaas
