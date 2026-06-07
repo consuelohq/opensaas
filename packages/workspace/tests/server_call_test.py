@@ -225,6 +225,34 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(second, 'full steering 2')
         self.assertEqual(calls, [1, 2])
 
+    def test_get_steering_writes_compact_local_trace_row(self):
+        steering_text = 'full steering payload ' * 40
+
+        def fake_read_steering():
+            return steering_text
+
+        self.module._read_steering = fake_read_steering
+        result = asyncio.run(self.module.get_steering())
+        self.assertEqual(result, steering_text)
+
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            row = conn.execute('SELECT tool, status, ok, code, input_json, result_json, input_tokens, output_tokens, total_tokens FROM tool_traces').fetchone()
+        finally:
+            conn.close()
+
+        self.assertIsNotNone(row)
+        self.assertEqual(row[0], 'get_steering')
+        self.assertEqual(row[1], 'ok')
+        self.assertEqual(row[2], 1)
+        self.assertEqual(row[3], 'OK')
+        self.assertEqual(json.loads(row[4]), {})
+        compact_result = json.loads(row[5])
+        self.assertEqual(compact_result['data']['chars'], len(steering_text))
+        self.assertNotIn(steering_text, row[5])
+        self.assertGreaterEqual(row[7], len(steering_text) // 4)
+        self.assertEqual(row[8], row[6] + row[7])
+
     def test_call_runs_workspace_execution_off_event_loop(self):
         events = []
 
@@ -777,6 +805,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         })
         self.assertLessEqual(len(summary), self.module._TRACE_SUMMARY_LIMIT)
         self.assertTrue(summary.endswith('…'))
+
 
 
 if __name__ == '__main__':
