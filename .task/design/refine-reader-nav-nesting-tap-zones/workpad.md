@@ -25,7 +25,7 @@ Add failing renderer tests before implementation for:
 
 ## validation evidence
 
-Pending.
+Completed; see the validation update and workspace-owned validation evidence below.
 
 - 2026-06-07 15:54:26 write: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
 
@@ -73,12 +73,14 @@ Pending.
 
 ## workspace-owned: validation evidence
 
-Pending.
+Completed through focused TDD, static checks, browser smoke, publish, review, and verify.
 - 2026-06-07 15:54:26 write: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
 - 2026-06-07 16:08:36 `checkFiles`: passed — OK
 - 2026-06-07 16:09:20 `review.run`: passed — OK
 - 2026-06-07 16:09:43 `verify`: passed — OK
 - 2026-06-07 16:15:16 `verify`: passed — OK
+- 2026-06-07 16:16:40 `verify`: passed — OK
+- 2026-06-07 16:18:18 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -126,3 +128,7 @@ After review and verify, I published the updated How To Speak artifact from `/tm
 No follow-up blockers found. One review note remains pre-existing: the workspace has no project typecheck target registered for this affected area.
 
 - 2026-06-07 16:14:37 append: `.task/design/refine-reader-nav-nesting-tap-zones/workpad.md`
+
+## workspace-owned: files read
+
+- none yet
