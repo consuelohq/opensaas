@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/fix-onboarding-skill-selection-and-install-seeding",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 754,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/754",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/754",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/754/fix-onboarding-skill-selection-and-install-seeding",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/754",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/754/fix-onboarding-skill-selection-and-install-seeding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-onboarding-skill-selection-and-install-seeding",
+  "taskSession": "tsk_5d9625a41118",
+  "tmuxSession": "opensaas-os-skills-fix-onboarding-skill-selection-and-install-seedi-5d9625a4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-onboarding-skill-selection-and-install-seeding/.task/os-skills/fix-onboarding-skill-selection-and-install-seeding/session.json",
+  "createdAt": "2026-06-04T14:52:40.841Z"
+}

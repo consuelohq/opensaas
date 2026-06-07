@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2d07c17acc1f",
+  "tmuxSession": "opensaas-os-skills-polish-installer-menu-2d07c17a",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/polish-installer-menu",
+  "branch": "task/os-skills/polish-installer-menu",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-polish-installer-menu",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-polish-installer-menu",
+  "prNumber": 760,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/760",
+  "createdAt": "2026-06-05T00:55:42.176Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-polish-installer-menu/.task/os-skills/polish-installer-menu/session.json"
+}

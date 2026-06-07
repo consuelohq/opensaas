@@ -1,0 +1,287 @@
+---
+title: "Skill Creator"
+description: "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite."
+---
+
+{/* Generated from packages/os/skills. Do not edit this page directly. */}
+
+# Skill Creator
+
+This skill turns a repeatable agent workflow into an OS skill that can be discovered, installed, seeded into the user OS home, and validated by tests.
+
+Use it for opensaas/Consuelo OS skills, not for generic ChatGPT skill packaging. The goal is to encode how agents should chain OS tools and repo workflows together, not to produce a marketing page or a broad how-to guide.
+
+## Operating stance
+
+Preserve working instructions. A skill is an execution manual, not prose to polish.
+
+Default to exact migration. Rewrite only when Ko explicitly approves a rewrite or says the pasted source is wrong.
+
+Treat every skill as a workflow contract:
+
+```text
+trigger -> required orientation -> exact tool sequence -> validation -> handoff / next action
+```
+
+Do not blur these categories:
+
+```text
+public OS skill
+internal/operator OS skill
+user-installed local skill
+source fixture used for migration tests
+```
+
+Do not invent tools, paths, or registry behavior. Read the current OS skill code before changing structure.
+
+## OS skill shape
+
+A bundled OS skill lives here:
+
+```text
+packages/os/skills/(skill-slug)/
+  skill.json
+  SKILL.md
+```
+
+The generated bundled registry is:
+
+```text
+packages/os/skills/skills.json
+```
+
+Migration guard fixtures live here:
+
+```text
+packages/os/tests/fixtures/skills/(skill-slug)-workspace.SKILL.md
+packages/os/tests/fixtures/skills/(skill-slug)-os-replacements.json
+```
+
+The migration guard is:
+
+```text
+packages/os/tests/skill-migration.test.ts
+```
+
+Install-time skill materialization copies bundled skills into the installed OS home and writes the installed registry. Keep install-state tests green whenever adding a bundled skill.
+
+## Metadata contract
+
+Each `skill.json` must include:
+
+```json
+{
+  "name": "(skill-slug)",
+  "title": "(Human Title)",
+  "description": "(trigger-aware description)",
+  "trigger": "(same or more explicit trigger)",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/(skill-slug)/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": ["(capability)"],
+  "tools": ["os.get_steering", "os.call"],
+  "status": "active"
+}
+```
+
+Use `name` for the slug and `title` for the display label. Do not put paste markers, placeholders, or command text into either field.
+
+The description is the trigger surface. It should say when the skill must be invoked, what workflow it owns, and what outputs it helps produce. Keep it specific enough that an agent can choose the right skill without loading every `SKILL.md` body.
+
+## Exact migration mode
+
+Use exact migration when Ko provides a workspace skill or source skill that should behave the same in OS.
+
+Required behavior:
+
+1. Save the exact source body to the workspace fixture.
+2. Create an allowlist of mechanical replacements.
+3. Generate the OS `SKILL.md` from source plus replacements.
+4. Add the skill slug to `migrationCases`.
+5. Run the migration test.
+
+Allowed replacements are usually only tool-surface renames:
+
+```text
+workspace.get_steering -> os.get_steering
+workspace.call -> os.call
+Workspace Tool Surface -> OS Tool Surface
+workspace tool -> OS tool
+workspace tools -> OS tools
+workspace context -> OS context
+```
+
+Add skill-specific replacements only when they are mechanical namespace updates. Do not silently improve wording in exact mode.
+
+The test must prove:
+
+```text
+OS SKILL.md == source fixture + approved replacements
+```
+
+If the test fails, fix the source, replacements, or generated output. Do not edit around the guard.
+
+## Rewrite mode
+
+Use rewrite mode only when Ko says the source is wrong, incomplete, or only a placeholder.
+
+Rewrite mode is still controlled:
+
+1. Keep the useful behavioral framework from the source.
+2. Replace generic ChatGPT guidance with opensaas/OS workflow instructions.
+3. Emphasize the actual command chain, validation, metadata, and registry effects.
+4. Make the final `SKILL.md` the authored source of truth.
+5. Store that final authored body in the fixture so future edits still have a guardrail.
+6. Use an empty or minimal replacement allowlist.
+
+Record the reason for rewrite in the workpad or PR notes:
+
+```text
+rewrite approved because source was generic ChatGPT skill guidance and did not match OS skill workflow
+```
+
+## Human clipboard intake
+
+When Ko is pasting skills one by one, prefer clipboard-to-fixture intake so markdown content cannot break shell heredocs.
+
+Ask Ko to copy only the skill body, then use:
+
+```bash
+pbpaste > packages/os/tests/fixtures/skills/(skill-slug)-workspace.SKILL.md
+```
+
+Guard against clipboard mistakes. If the fixture contains command text such as `cd /private/`, `python3 - (&lt;`, `pbpaste )`, or `bun run generate-skills-registry`, stop and ask Ko to copy only the skill body again.
+
+## Generation flow for one skill
+
+For each skill:
+
+1. Create `packages/os/skills/(skill-slug)/`.
+2. Write or update `skill.json`.
+3. Save source or authored body to the fixture.
+4. Write `(skill-slug)-os-replacements.json`.
+5. Generate `SKILL.md` from fixture plus replacements.
+6. Add the slug to `migrationCases` in `packages/os/tests/skill-migration.test.ts`.
+7. Run the OS registry generator.
+8. Run focused tests.
+9. Push through the active task or stream workflow.
+
+Canonical validation:
+
+```bash
+cd packages/os
+bun run generate-skills-registry
+bun test tests/skill-migration.test.ts
+bun test tests/skills-registry.test.ts
+bun test tests/install-state.test.ts
+```
+
+Also run from repo root when useful:
+
+```bash
+git diff --check
+```
+
+## Multi-skill batches
+
+For batches, do one skill at a time until the generated registry and migration guard are green. Then continue to the next skill.
+
+Do not wait until the end of a 5-8 skill batch to validate. A bad fixture, bad clipboard, or overbroad replacement can make later failures hard to debug.
+
+Each added skill should leave evidence:
+
+```text
+registry count increased by 1
+migration guard added exactly one case
+skill folder contains skill.json and SKILL.md
+fixture and replacement files exist
+tests pass
+```
+
+## Replacement allowlist rules
+
+Keep replacements narrow.
+
+Good replacements:
+
+```json
+{ "from": "workspace.call", "to": "os.call" }
+{ "from": "workspace.get_steering", "to": "os.get_steering" }
+{ "from": "workspace tools", "to": "OS tools" }
+```
+
+Risky replacements:
+
+```json
+{ "from": "workspace", "to": "OS" }
+{ "from": "task", "to": "workflow" }
+```
+
+Do not use broad replacements that can change product names, file paths, examples, or quoted source text unexpectedly.
+
+## Public vs operator skills
+
+Before finalizing a skill, decide whether it is public, internal/operator, or local/user-owned.
+
+Public skills should not leak opensaas-only assumptions unless the skill is intended for repo agents.
+
+Operator skills may mention:
+
+```text
+stream.context
+task.start
+task.push
+task.pr
+Graphite/GitHub PR review flow
+opensaas repo paths
+Ko-approved streams
+```
+
+If a skill is operator-only but currently lacks metadata fields for visibility/distribution, preserve current schema and note the intended audience in description or workpad. Do not invent unvalidated schema fields unless the registry supports them.
+
+## Quality bar for SKILL.md
+
+A good OS skill should answer:
+
+```text
+What exact kind of user request triggers this skill?
+What workflow does it own?
+What workflow does it not own?
+Which OS tools should be chained together?
+What must be verified before acting?
+What artifacts or files should be updated?
+What tests prove the workflow is still safe?
+What should the agent report back?
+```
+
+Avoid generic statements such as “be helpful,” “ask clarifying questions,” or “follow best practices” unless tied to a specific workflow gate.
+
+Prefer concrete command shapes, file paths, checks, and stop conditions.
+
+## Failure handling
+
+If registry generation fails, fix skill metadata first.
+
+If migration guard fails, do not manually edit the OS skill until you understand whether the source fixture or replacement allowlist is wrong.
+
+If install-state tests fail after adding a skill, inspect whether install seeding rejects the skill metadata or whether the installed `load.path` rewrite needs adjustment.
+
+If the task PR is already merged and the stream PR is still open, avoid pretending `task.pr` will re-promote the same task. Use the repo's approved follow-up path for the existing stream, keep commits scoped, and report that it was a stream follow-up.
+
+## Reporting
+
+When done, report:
+
+```text
+skill added or edited
+registry count
+tests run
+commit pushed
+PR head SHA / stream PR status
+any non-exact rewrites explicitly approved
+```

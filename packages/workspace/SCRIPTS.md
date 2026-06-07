@@ -38,6 +38,49 @@ when answering questions or reporting results, use this format:
 do not answer architecture questions from memory. search memory, read files, then answer with citations and paths.
 
 
+
+
+### diff_cockpit — open the live PR review cockpit
+
+Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first phase supports a single PR route with live GitHub data, a file tree, a diff/code review surface, and a right review drawer that stays closed by default.
+
+```bash
+bun run diff_cockpit -- 708
+bun run diff_cockpit -- 708 --print --no-open
+bun run diff_cockpit -- https://github.com/consuelohq/opensaas/pull/708
+bun run diff_cockpit -- consuelohq/opensaas/pull/708
+```
+
+Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--repo owner/repo`.
+
+Related package commands:
+
+```bash
+cd packages/diff-cockpit && bun run dev
+cd packages/diff-cockpit && bun run deploy
+cd packages/diff-cockpit && bun run test
+```
+
+Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
+
+### os:release-install — release the hosted Consuelo OS curl installer
+
+Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
+
+```bash
+bun run os:release-install -- --dry-run
+bun run os:release-install
+bun run os:release-install -- --verify-only
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-install`
+- Custom domain: `install.consuelohq.com`
+- Installer path: `/os`
+- Bootstrap source: `packages/os/scripts/bootstrap.sh`
+
+
 ---
 
 ## code.run / code mode
@@ -938,12 +981,12 @@ bun run railway:redeploy -- --json
 
 ---
 
-### wait — sleep or wait for deploy
+### wait — sleep, detached checkpoints, or wait for deploy
 
 ```bash
-bun run wait -- 300                   # sleep 300 seconds (5 min)
-bun run wait -- --deploy              # wait for railway deploy to complete
-bun run wait -- --pr 173              # wait for PR checks to pass
+bun run wait -- --detach --duration 24h --reason overnight    # create a non-blocking long wait
+bun run wait -- --status wait_<id>                            # check whether a detached wait is complete
+bun run wait -- --deploy                                      # wait for railway deploy to complete
 ```
 
 ---
@@ -1558,3 +1601,16 @@ bun run trace:home -- --trace-id trc_example --limit 100
 Live mode uses OpenTUI alternate-screen rendering, so it updates in place rather than printing repeated dashboards into scrollback. `--once` keeps deterministic text output for tests and CI. The default JSON/inspect views sanitize wrapper internals; use `--raw-json` only when raw selected-row payloads are explicitly needed.
 
 Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `task.call` and `task.exec` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+
+
+## consuelo-core registry audits
+
+`packages/consuelo-core` owns the shared migration registry for workspace, OS, and future Consuelo packages. Use it before copying or moving scripts/helpers between `packages/workspace` and `packages/os`.
+
+```bash
+bun --cwd packages/consuelo-core audit:registry
+bun --cwd packages/consuelo-core drift:registry
+bun --cwd packages/consuelo-core test tests/registry.test.ts
+```
+
+`audit:registry` checks root/workspace/OS script targets, local script imports, and workspace-owned source guardrails. `drift:registry` prints JSON for duplicate workspace/OS script paths with hashes and ownership hints; it is informational unless a follow-up task promotes a duplicate into shared core.

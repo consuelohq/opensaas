@@ -77,7 +77,7 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-brain-daemon.sh</string>
+    <string>${root_dir}/scripts/start-consuelo-daemon.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>

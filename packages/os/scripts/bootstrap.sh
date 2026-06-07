@@ -14,6 +14,8 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
+REFRESH_SOURCE=0
+DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
 REPO_DIR=""
@@ -21,6 +23,7 @@ ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
 SOURCE_STATUS="pending"
+ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 
 usage() {
@@ -35,6 +38,7 @@ Repo-local testing:
   bash packages/os/scripts/bootstrap.sh --yes
   bash packages/os/scripts/bootstrap.sh --yes --install-daemons
   bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
+  bash packages/os/scripts/bootstrap.sh --yes --refresh-source
 
 Options:
   --dry-run          print what would happen without installing Bun or LaunchAgents
@@ -42,7 +46,9 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
+  --refresh-source  refresh an existing hosted source checkout/archive before onboarding
   --json            print a machine-readable summary at the end
+  --debug           print detailed daemon diagnostics
   --help, -h        show this help
 
 Environment overrides:
@@ -95,7 +101,9 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
+      --refresh-source) REFRESH_SOURCE=1 ;;
       --json) JSON=1 ;;
+      --debug) DEBUG=1 ;;
       --help|-h)
         usage
         exit 0
@@ -117,6 +125,45 @@ has_tty() {
   [ -r /dev/tty ] && [ -w /dev/tty ]
 }
 
+use_loading_dots() {
+  [ "$JSON" -eq 0 ] && [ "$DEBUG" != "1" ] && [ -t 1 ]
+}
+
+run_with_loading_dots() {
+  local loading_message="$1"
+  shift
+
+  if ! use_loading_dots; then
+    log "${loading_message}..."
+    "$@"
+    return $?
+  fi
+
+  local frames=("" "." ".." "...")
+  local frame_index=0
+  local command_pid
+  local status=0
+
+  "$@" &
+  command_pid=$!
+
+  while kill -0 "$command_pid" >/dev/null 2>&1; do
+    printf '\r%s%s   ' "$loading_message" "${frames[$frame_index]}"
+    frame_index=$(( (frame_index + 1) % ${#frames[@]} ))
+    sleep 0.25
+  done
+
+  wait "$command_pid" || status=$?
+
+  if [ "$status" -eq 0 ]; then
+    printf '\r%s... done\n' "$loading_message"
+  else
+    printf '\r%s... failed\n' "$loading_message"
+  fi
+
+  return "$status"
+}
+
 prompt_enter() {
   local message="$1"
   local rerun_hint="$2"
@@ -135,7 +182,6 @@ This shell is non-interactive. Re-run with:
   printf '%s\n' "$message" > /dev/tty
   IFS= read -r _ < /dev/tty
 }
-
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -144,7 +190,6 @@ require_command() {
   fi
   fail "$explanation"
 }
-
 check_mac_prerequisites() {
   local os_name
   os_name="$(uname -s 2>/dev/null || true)"
@@ -225,12 +270,45 @@ current_repo_dir() {
   fi
   return 1
 }
+download_source_archive() {
+  local tmp_dir archive_file parent_dir staged_dir
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
+  archive_file="$tmp_dir/source.tar.gz"
+  staged_dir="$tmp_dir/source"
+  parent_dir="$(dirname "$SOURCE_DIR")"
+
+  mkdir -p "$parent_dir" "$staged_dir"
+
+  if ! curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  if ! tar -xzf "$archive_file" -C "$staged_dir" --strip-components=1; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  if [ ! -f "$staged_dir/packages/os/scripts/install.ts" ]; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  rm -rf "$SOURCE_DIR"
+  mv "$staged_dir" "$SOURCE_DIR"
+  rm -rf "$tmp_dir"
+}
 
 download_source() {
   if [ "$DRY_RUN" -eq 1 ]; then
-    SOURCE_STATUS="would_download"
     REPO_DIR="$SOURCE_DIR"
-    log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
+    if [ "$REFRESH_SOURCE" -eq 1 ] && [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+      SOURCE_STATUS="would_refresh"
+      log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
+    else
+      SOURCE_STATUS="would_download"
+      log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
+    fi
     return 0
   fi
 
@@ -246,21 +324,23 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   fi
 
   if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+    if [ "$REFRESH_SOURCE" -eq 1 ]; then
+      run_with_loading_dots "Refreshing Consuelo OS source" download_source_archive
+      if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+        fail "refreshed source did not contain packages/os/scripts/install.ts"
+      fi
+      REPO_DIR="$SOURCE_DIR"
+      SOURCE_STATUS="refreshed"
+      return 0
+    fi
+
     REPO_DIR="$SOURCE_DIR"
     SOURCE_STATUS="present"
+    log "Using existing Consuelo OS source: $REPO_DIR (pass --refresh-source to refresh it)"
     return 0
   fi
 
-  local tmp_dir archive_file parent_dir
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
-  archive_file="$tmp_dir/source.tar.gz"
-  parent_dir="$(dirname "$SOURCE_DIR")"
-
-  mkdir -p "$parent_dir" "$SOURCE_DIR"
-  log "Downloading Consuelo OS source..."
-  curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"
-  tar -xzf "$archive_file" -C "$SOURCE_DIR" --strip-components=1
-  rm -rf "$tmp_dir"
+  run_with_loading_dots "Downloading Consuelo OS source" download_source_archive
 
   if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
     fail "downloaded source did not contain packages/os/scripts/install.ts"
@@ -275,20 +355,16 @@ resolve_source() {
   if local_repo="$(current_repo_dir 2>/dev/null)"; then
     REPO_DIR="$local_repo"
     SOURCE_STATUS="local"
-    log "Using local Consuelo OS source: $REPO_DIR"
-    return 0
-  fi
-
-  if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="present"
-    log "Using Consuelo OS source: $REPO_DIR"
+    if [ "$REFRESH_SOURCE" -eq 1 ]; then
+      log "Using local Consuelo OS source: $REPO_DIR (--refresh-source applies only to hosted source checkouts)"
+    else
+      log "Using local Consuelo OS source: $REPO_DIR"
+    fi
     return 0
   fi
 
   download_source
 }
-
 ensure_dependencies() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
@@ -311,8 +387,35 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   DEPENDENCY_STATUS="installed"
 }
 
-run_onboarding() {
+
+check_install_tty() {
+  local os_dir="$1"
+  if ! has_tty; then
+    fail "Consuelo OS interactive setup needs a real terminal. Re-run non-interactively with:
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  fi
+  if [ "$DEBUG" = "1" ]; then
+    "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --check-tty < /dev/tty
+  fi
+}
+
+run_install_with_script_pty() {
+  local os_dir="$1"
+  local os_home="$2"
+  require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+}
+
+run_install_with_tty() {
+  local os_dir="$1"
+  local os_home="$2"
+  check_install_tty "$os_dir"
+  run_install_with_script_pty "$os_dir" "$os_home"
+}
+
+run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
+  local os_home="${CONSUELO_HOME:-$HOME/.consuelo/os}"
 
   log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
 
@@ -327,24 +430,49 @@ run_onboarding() {
     return 0
   fi
 
-  "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --yes
+  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home")
+    if [ "$INSTALL_DAEMONS" -eq 1 ]; then
+      install_args+=(--install-daemons)
+    fi
+    if [ "$SKIP_DAEMONS" -eq 1 ]; then
+      install_args+=(--skip-daemons)
+    fi
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
+    if [ "$JSON" -eq 1 ]; then
+      printf '%s\n' "$ONBOARDING_JSON"
+    fi
+  else
+    if ! has_tty; then
+      fail "Consuelo OS onboarding needs an interactive terminal. Re-run with:
+
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
+    fi
+    ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
+    run_install_with_tty "$os_dir" "$os_home"
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    rm -f "$ONBOARDING_RESULT_FILE"
+    if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
+      INSTALL_DAEMONS=1
+    else
+      SKIP_DAEMONS=1
+    fi
+  fi
   ONBOARDING_STATUS="installed"
 }
 
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
-  if [ -n "$BUN_BIN" ]; then
-    "$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run
-    DAEMON_STATUS="dry_run"
-  else
-    log "dry-run: would run: bun --cwd $os_dir run install:system-daemons:dry-run"
-    DAEMON_STATUS="would_dry_run"
-  fi
+  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --dry-run --quiet)
+  DAEMON_STATUS="dry_run"
+}
+
+install_daemons_quiet() {
+  local os_dir="$REPO_DIR/packages/os"
+  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
 maybe_install_daemons() {
-  local os_dir="$REPO_DIR/packages/os"
-
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
     log "Skipping Consuelo OS user LaunchAgent setup."
@@ -373,8 +501,45 @@ Labels:
 Press Enter to install these user LaunchAgents, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
   fi
 
-  "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+  if [ "$DEBUG" = "1" ]; then
+    local os_dir="$REPO_DIR/packages/os"
+    CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+  else
+    run_with_loading_dots "setting up background service" install_daemons_quiet
+    log "background service ready"
+  fi
   DAEMON_STATUS="installed"
+}
+
+print_success_summary() {
+  [ "$JSON" -eq 0 ] || return 0
+
+  local os_home="$HOME/.consuelo/os"
+  local config_file="$os_home/config.json"
+  local db_file="$os_home/consuelo.db"
+  local log_dir="$HOME/Library/Logs/Consuelo"
+  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $REPO_DIR/packages/os run doctor"
+
+  log ""
+  log "Consuelo OS setup complete"
+  log "Home: $os_home"
+  log "Source: $REPO_DIR"
+  log "Config: $config_file"
+  log "Database: $db_file"
+  log "Logs: $log_dir"
+
+  case "$DAEMON_STATUS" in
+    installed)
+      log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
+      ;;
+    skipped)
+      log "Services: skipped"
+      log "Install services later: $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+      ;;
+  esac
+
+  log "Doctor: $doctor_cmd"
+  log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
 main() {
@@ -385,6 +550,7 @@ main() {
   ensure_dependencies
   run_onboarding
   maybe_install_daemons
+  print_success_summary
   emit_json_summary
 }
 

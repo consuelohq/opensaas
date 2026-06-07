@@ -9,6 +9,7 @@ const { resolveGitRoot } = require('./lib/paths');
 const { findTaskMeta } = require('./lib/task-meta');
 const {
   computeVerificationState,
+  getVerifyStampPath,
   writeVerifyStamp,
 } = require('./lib/verification');
 
@@ -27,14 +28,15 @@ function printHelp() {
   writeStdout('  1. detect the correct base ref from task metadata when available');
   writeStdout('  2. run bun run review against that base');
   writeStdout('  3. run db/migration/graphql guardrails on affected files');
-  writeStdout('  4. write .task/verify.json when every gate passes');
+  writeStdout('  4. run docs checks when docs files changed');
+  writeStdout('  5. write task-scoped verify report metadata; publish-valid only when every gate passes');
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
   writeStdout('  --no-review           skip bun run review and only run verify guardrails');
   writeStdout('  --no-db               skip db/migration/graphql guardrails');
   writeStdout('  --db-warn-only        report db guard errors as warnings');
-  writeStdout('  --no-stamp            do not write .task/verify.json');
+  writeStdout('  --no-stamp            do not write task-scoped verify report metadata');
   writeStdout('  --review-arg <value>  pass one extra argument to bun run review; repeatable');
   writeStdout('  --json                output structured json');
   writeStdout('  --quiet               reduce human output');
@@ -285,12 +287,63 @@ function createDbResult(files, args) {
   return {
     skipped: false,
     passed: args.dbWarnOnly || !analysis.hasFailures,
+    warnOnly: args.dbWarnOnly,
     risks: analysis.risks,
     groupedRisks: analysis.groupedRisks,
     findings: analysis.findings,
   };
 }
 
+function isDocsCheckFile(filePath) {
+  return filePath.startsWith('packages/consuelo-docs/') && (
+    filePath.endsWith('.md') ||
+    filePath.endsWith('.mdx') ||
+    filePath.endsWith('.json') ||
+    filePath.endsWith('.ts') ||
+    filePath.endsWith('.js')
+  );
+}
+
+function runDocsCommand(repoRoot, command) {
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  return {
+    command,
+    passed: result.status === 0,
+    status: result.status,
+    stdout: compactText(result.stdout || '', 4000),
+    stderr: compactText(result.stderr || '', 4000),
+  };
+}
+
+function createDocsResult(repoRoot, files) {
+  const docsFiles = files.filter(isDocsCheckFile);
+  if (docsFiles.length === 0) {
+    return {
+      skipped: true,
+      passed: true,
+      files: [],
+      commands: [],
+    };
+  }
+
+  const commands = [
+    runDocsCommand(repoRoot, ['bun', 'run', '--cwd', 'packages/consuelo-docs', 'lint']),
+    runDocsCommand(repoRoot, ['bun', 'packages/consuelo-docs/scripts/validate-os-docs.ts']),
+  ];
+
+  return {
+    skipped: false,
+    passed: commands.every((command) => command.passed),
+    files: docsFiles,
+    commands,
+  };
+}
 function printHumanResult(result) {
   if (result.args.quiet) {
     return;
@@ -301,6 +354,7 @@ function printHumanResult(result) {
   writeStdout(`changed files: ${result.files.length}`);
   writeStdout(`review: ${result.review.skipped ? 'skipped' : result.review.passed ? 'pass' : 'fail'}`);
   writeStdout(`db guard: ${result.db.skipped ? 'skipped' : result.db.passed ? 'pass' : 'fail'}`);
+  writeStdout(`docs check: ${result.docs.skipped ? 'skipped' : result.docs.passed ? 'pass' : 'fail'}`);
 
   for (const risk of result.db.risks) {
     writeStdout(`  ${risk.category}: ${risk.file}`);
@@ -332,19 +386,24 @@ async function main() {
   process.chdir(repoRoot);
 
   const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot);
+  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
   const base = detectBase(repoRoot, args, branch, taskMeta);
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
   const review = runReview(repoRoot, base, args);
   const db = createDbResult(files, args);
-  const passed = review.passed && db.passed;
+  const docs = createDocsResult(repoRoot, files);
+  const passed = review.passed && db.passed && docs.passed;
+  const mode = args.review && args.db ? 'full' : 'partial';
+  const publishValid = passed && mode === 'full' && !review.skipped && !db.skipped && db.warnOnly !== true;
   const verificationState = computeVerificationState(repoRoot, branch);
   let stampPath = null;
 
-  if (passed && args.stamp && taskMeta) {
+  if (args.stamp && taskMeta) {
     const stamp = {
-      result: 'pass',
+      result: passed ? 'pass' : 'fail',
+      publishValid,
+      mode,
       branch,
       base,
       headSha,
@@ -360,12 +419,19 @@ async function main() {
         passed: db.passed,
         risks: db.risks,
         findings: db.findings,
+        warnOnly: db.warnOnly === true,
+      },
+      docs: {
+        skipped: docs.skipped,
+        passed: docs.passed,
+        files: docs.files,
+        commands: docs.commands,
       },
       commandVersion: 1,
     };
 
-    writeVerifyStamp(repoRoot, stamp);
-    stampPath = path.join(repoRoot, '.task', 'verify.json');
+    stampPath = writeVerifyStamp(repoRoot, stamp, taskMeta.data);
+    stampPath = getVerifyStampPath(repoRoot, taskMeta.data);
   }
 
   const result = {
@@ -377,7 +443,10 @@ async function main() {
     files,
     review,
     db,
+    docs,
     passed,
+    publishValid,
+    mode,
     stampPath,
   };
 
@@ -395,7 +464,10 @@ async function main() {
         stderr: result.review.stderr,
       },
       db: result.db,
+      docs: result.docs,
       passed: result.passed,
+      publishValid: result.publishValid,
+      mode: result.mode,
       stampPath: result.stampPath,
     }, null, 2));
   } else {

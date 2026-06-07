@@ -171,26 +171,22 @@
         "osOverview": {
           "label": "Overview"
         },
-        "osAgentInterface": {
-          "label": "Agent Interface"
+        "osConcepts": {
+          "label": "Concepts"
         },
-        "osRunbooks": {
-          "label": "Runbooks"
+        "osAgentContext": {
+          "label": "Agent Context"
         },
-        "osWorkspaceFilesystem": {
-          "label": "Workspace Filesystem"
+        "osTools": {
+          "label": "Tools"
         },
-        "osDataLayer": {
-          "label": "Data Layer"
-        },
-        "osRuntime": {
-          "label": "Runtime"
-        },
-        "osIntegrations": {
-          "label": "Integrations"
-        },
-        "osPilot": {
-          "label": "Pilot"
+        "osSkills": {
+          "label": "Skills",
+          "groups": {
+            "osPlannedSkills": {
+              "label": "Planned Skills"
+            }
+          }
         }
       }
     },

@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "packages": [
+    {
+      "id": "consuelo-core",
+      "ownerPackage": "consuelo-core",
+      "path": "packages/consuelo-core",
+      "packageJsonPath": "packages/consuelo-core/package.json",
+      "exposure": "internal",
+      "migrationStatus": "shared-core",
+      "sourceOfTruth": {
+        "ref": "task/consuelo-core/add-shared-registry-migration-guardrails",
+        "path": "packages/consuelo-core",
+        "reason": "This task establishes the shared registry source of truth for migration guardrails."
+      },
+      "validation": [
+        "packages/consuelo-core/tests/registry.test.ts",
+        "packages/consuelo-core/scripts/audit-registry.ts"
+      ]
+    },
+    {
+      "id": "os",
+      "ownerPackage": "os",
+      "path": "packages/os",
+      "packageJsonPath": "packages/os/package.json",
+      "exposure": "public",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "7d79c8ad31",
+        "path": "packages/os",
+        "reason": "OS public local runtime and installer surfaces are owned by the OS stream."
+      },
+      "validation": [
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ]
+    },
+    {
+      "id": "workspace",
+      "ownerPackage": "workspace",
+      "path": "packages/workspace",
+      "packageJsonPath": "packages/workspace/package.json",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/workspace-repair",
+        "commit": "57bdf02cae",
+        "path": "packages/workspace",
+        "reason": "Workspace repair restored current operator script sources after OS copy drift."
+      },
+      "validation": [
+        "packages/workspace/tests/pr-links.test.js",
+        "packages/workspace/tests/research-ingest.test.js"
+      ]
+    },
+    {
+      "id": "diff-cockpit",
+      "ownerPackage": "diff-cockpit",
+      "path": "packages/diff-cockpit",
+      "packageJsonPath": "packages/diff-cockpit/package.json",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/diff-cockpit",
+        "reason": "Diff cockpit is a workspace/operator review surface hosted separately so PR review can use live data without becoming OS runtime code."
+      },
+      "validation": [
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "wrangler deploy --dry-run"
+      ]
+    }
+  ]
+}

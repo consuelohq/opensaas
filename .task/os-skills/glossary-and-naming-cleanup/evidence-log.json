@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+  "events": [
+    {
+      "id": "1ddcb798-a186-4bab-9fb2-1afd1975f6f0",
+      "occurred_at": "2026-06-05T07:50:09.492Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/concepts/files-and-artifacts.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "aa3eafb9-cb3a-4b37-ba35-c176b7d3679a",
+      "occurred_at": "2026-06-05T07:50:09.542Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/how-it-works.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "bfc45750-683c-4678-a64e-94a3e9c16064",
+      "occurred_at": "2026-06-05T07:51:58.907Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "f84770ef-5ab9-42da-a61e-0724850b4a72",
+      "occurred_at": "2026-06-05T07:52:14.146Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/concepts/integrations-and-capabilities.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "e0218f1e-7b32-4d4a-8b18-d24434507bda",
+      "occurred_at": "2026-06-05T07:53:45.385Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/glossary.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "40a85fe8-a63f-4aef-a2e7-2c01645b205b",
+      "occurred_at": "2026-06-05T07:53:55.199Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/overview.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "b962a954-2dd9-4e35-8853-ae1e2eac82c4",
+      "occurred_at": "2026-06-05T07:53:59.102Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/overview.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "5ba7164d-9962-46a1-88bc-18dec3b78e85",
+      "occurred_at": "2026-06-05T07:54:03.771Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-docs/os/concepts/portal.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    },
+    {
+      "id": "1c76bbfb-6b30-4f5d-8821-54201e43e637",
+      "occurred_at": "2026-06-05T07:57:08.952Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/task/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-skills/glossary-and-naming-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-skills/glossary-and-naming-cleanup"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-05T07:57:09.013Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/add-task-session-selector-and-verify-reports",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "stream/os-skills",
+  "startFrom": "stream",
+  "prNumber": 798,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/798",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/798",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/798/add-task-session-selector-and-verify-reports",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/798",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/798/add-task-session-selector-and-verify-reports",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-add-task-session-selector-and-verify-reports",
+  "taskSession": "tsk_c3ac05f2eb44",
+  "tmuxSession": "opensaas-os-skills-add-task-session-selector-and-verify-reports-c3ac05f2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-add-task-session-selector-and-verify-reports/.task/os-skills/add-task-session-selector-and-verify-reports/session.json",
+  "createdAt": "2026-06-05T08:07:07.878Z"
+}

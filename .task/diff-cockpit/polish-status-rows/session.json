@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8149b052cb27",
+  "tmuxSession": "opensaas-diff-cockpit-polish-status-rows-8149b052",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-status-rows",
+  "branch": "task/diff-cockpit/polish-status-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-status-rows",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-status-rows",
+  "prNumber": 738,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/738",
+  "createdAt": "2026-06-03T08:52:13.105Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-status-rows/.task/diff-cockpit/polish-status-rows/session.json"
+}

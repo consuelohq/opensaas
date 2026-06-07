@@ -7,12 +7,7 @@ const specContent = {
   title: 'Consuelo Test Spec',
   eyebrow: 'Spec · TDD fixture',
   thesis: 'A deterministic spec should render through the canonical Consuelo reader shell.',
-  metadata: {
-    status: 'Draft',
-    owner: 'Ko',
-    date: '2026-05-31',
-    sourceTruth: 'TDD fixture',
-  },
+  metadata: { status: 'Draft', owner: 'Ko', date: '2026-05-31', sourceTruth: 'TDD fixture' },
   map: [
     { label: 'Summary', href: '#summary' },
     { label: 'Requirements', href: '#requirements' },
@@ -20,68 +15,28 @@ const specContent = {
     { label: 'Task', href: '#ship-checklist' },
   ],
   sections: [
-    {
-      id: 'summary',
-      eyebrow: 'Executive Summary',
-      title: 'The decision',
-      body: ['The renderer owns shell behavior; the template owns content logic.'],
-    },
-    {
-      id: 'requirements',
-      eyebrow: 'Requirements',
-      title: 'What must be true',
-      cards: [
-        { title: 'Shared shell', body: 'Every spec uses the same reader shell.' },
-        { title: 'Validation', body: 'Missing shell markers fail validation.' },
-      ],
-    },
-    {
-      id: 'design',
-      eyebrow: 'Design',
-      title: 'One renderer, two content contracts',
-      body: ['Specs and research lessons share chrome but keep different section grammar.'],
-    },
+    { id: 'summary', eyebrow: 'Executive Summary', title: 'The decision', body: ['The renderer owns shell behavior; the template owns content logic.'] },
+    { id: 'requirements', eyebrow: 'Requirements', title: 'What must be true', cards: [{ title: 'Shared shell', body: 'Every spec uses the same reader shell.' }, { title: 'Validation', body: 'Missing shell markers fail validation.' }] },
+    { id: 'design', eyebrow: 'Design', title: 'One renderer, typed content', body: ['Specs, plans, and guides share chrome and deterministic section grammar.'] },
   ],
   ledgerTitle: 'Ship checklist',
-  ledger: [
-    {
-      title: 'Renderer',
-      tag: 'required',
-      items: [
-        { status: 'done' as const, text: 'Render shell markers.' },
-        { status: 'todo' as const, text: 'Run browser validation.' },
-      ],
-    },
-  ],
+  ledger: [{ title: 'Renderer', tag: 'required', items: [{ status: 'done' as const, text: 'Render shell markers.' }, { status: 'todo' as const, text: 'Run browser validation.' }] }],
 };
 
-const researchContent = {
-  template: 'research' as const,
+const guideContent = {
+  template: 'guide' as const,
   title: 'Prediction Before Reveal',
-  eyebrow: 'Lesson · TDD fixture',
-  thesis: 'A lesson should preserve teaching affordances inside the same reader shell.',
-  metadata: {
-    status: 'Lesson draft',
-    owner: 'Ko',
-    date: '2026-05-31',
-    sourceTruth: 'TDD fixture',
-  },
-  sourceCard: {
-    title: 'A Small Teaching Source',
-    authors: 'Consuelo',
-    year: '2026',
-    status: 'fixture',
-  },
-  learningRoute: ['Puzzle', 'Simple model', 'Prediction', 'Evidence', 'Memory'],
+  eyebrow: 'Guide · TDD fixture',
+  thesis: 'A guide should preserve teaching affordances inside the same hardcoded reader shell.',
+  metadata: { status: 'Guide draft', owner: 'Ko', date: '2026-05-31', sourceTruth: 'TDD fixture' },
   sections: [
     { id: 'deep-idea', eyebrow: 'Deep Idea', title: 'The core insight', body: ['Teach the simple model first.'] },
     { id: 'eli5', eyebrow: 'Explain Like I’m 5', title: 'Tiny story', body: ['Use a simple metaphor before the mechanism.'] },
-    { id: 'prediction', eyebrow: 'Prediction Before Reveal', title: 'Make a guess', body: ['Ask Ko what he expects before revealing the answer.'] },
-    { id: 'vocabulary', eyebrow: 'Vocabulary', title: 'Words to know', cards: [{ title: 'Renderer', body: 'The repeatable page builder.' }] },
     { id: 'evidence', eyebrow: 'Evidence Trail', title: 'What the source supports', body: ['Keep evidence separate from interpretation.'] },
-    { id: 'memory', eyebrow: 'Memory Card', title: 'Save this', body: ['Shell is fixed; teaching structure varies.'] },
-    { id: 'question', eyebrow: 'Question for Ko', title: 'Reason with it', body: ['What would you change if the lesson had no source?'] },
   ],
+  components: [{ type: 'openQuestions' as const, title: 'Questions', questions: [{ title: 'Reason with it', body: 'What would you change if the lesson had no source?' }] }],
+  ledgerTitle: 'Learning checklist',
+  ledger: [{ title: 'Guide', tag: 'required', items: [{ status: 'current' as const, text: 'Use the canonical shell.' }] }],
 };
 
 describe('renderConsueloReader', () => {
@@ -95,6 +50,7 @@ describe('renderConsueloReader', () => {
     expect(html).toContain('class="reader-section-rail"');
     expect(html).toContain('class="reader-resume"');
     expect(html).toContain('class="reader-back-to-top"');
+    expect(html).toContain('data-reader-shell-version="');
     expect(html).toContain('https://consuelohq.com/favicon.svg');
     expect(html).toContain('name="theme-color" content="#202020"');
     expect(html).toContain('@media (prefers-color-scheme: dark)');
@@ -105,20 +61,16 @@ describe('renderConsueloReader', () => {
     expect(result.ok).toBe(true);
   });
 
-  test('renders research lessons with teaching-specific sections in the canonical shell', () => {
-    const html = renderConsueloReader(researchContent);
+  test('renders guides through the same hardcoded reader shell', () => {
+    const html = renderConsueloReader(guideContent);
 
-    expect(html).toContain('Source Card');
-    expect(html).toContain('Learning Route');
+    expect(html).toContain('Guide · TDD fixture');
+    expect(html).toContain('Deep Idea');
     expect(html).toContain('Explain Like I’m 5');
-    expect(html).toContain('Prediction Before Reveal');
-    expect(html).toContain('Vocabulary');
     expect(html).toContain('Evidence Trail');
-    expect(html).toContain('Memory Card');
-    expect(html).toContain('Question for Ko');
-
-    const result = validateConsueloReaderHtml(html);
-    expect(result.ok).toBe(true);
+    expect(html).toContain('data-reader-component="openQuestions"');
+    expect(html).toContain('template:"guide"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 
   test('validator rejects shell-less html', () => {
@@ -136,57 +88,11 @@ describe('renderConsueloReader', () => {
       eyebrow: 'Spec · Benchmark',
       thesis: 'The benchmark page should use the same polished reader shell as the roadmap.',
       metadata: { status: 'Fixture', owner: 'Ko', date: '2026-05-31', sourceTruth: 'Screenshot regression' },
-      map: [
-        { label: 'Summary', href: '#summary' },
-        { label: 'Requirements', href: '#requirements' },
-        { label: 'Validation', href: '#validation' },
-        { label: 'Task', href: '#ship-checklist' },
-      ],
+      map: [{ label: 'Summary', href: '#summary' }, { label: 'Requirements', href: '#requirements' }, { label: 'Validation', href: '#validation' }, { label: 'Task', href: '#ship-checklist' }],
       sections: [
-        {
-          id: 'summary',
-          eyebrow: 'Why Now',
-          title: 'Agents are tool-bound',
-          callout: { label: 'Why now', title: 'Agents are tool-bound', body: 'A strong model without workspace state cannot complete valuable tasks.' },
-          metrics: [
-            { label: 'Surface', value: '4', body: 'Repo, browser, logs, approvals.' },
-            { label: 'Mode', value: 'Typed', body: 'Capabilities are explicit.' },
-          ],
-          flow: [
-            { title: 'Task', body: 'User asks for work.' },
-            { title: 'Tool', body: 'Agent opens workspace.' },
-            { title: 'Proof', body: 'Artifact validates.' },
-          ],
-        },
-        {
-          id: 'requirements',
-          eyebrow: 'Requirements',
-          title: 'What must be true',
-          table: {
-            columns: ['Area', 'Requirement', 'Validation'],
-            rows: [
-              ['Positioning', 'Show the capability frontier.', 'Readable on iPhone.'],
-              ['Benchmark', 'Use optional section components.', 'Renderer test passes.'],
-            ],
-          },
-          timeline: [
-            { title: 'Clone shell polish', tag: 'UI', body: 'Use roadmap shell styling.' },
-            { title: 'Add components', tag: 'Typed', body: 'Render charts, tables, timelines, and accordions.' },
-          ],
-        },
-        {
-          id: 'validation',
-          eyebrow: 'Validation Plan',
-          title: 'Proof before scaling',
-          details: [
-            { summary: 'Mobile table behavior', body: 'Tables collapse into labeled row cards instead of clipping.' },
-            { summary: 'Dark mode behavior', body: 'Dark overrides come after base styles.' },
-          ],
-          ranges: [
-            { label: 'Shell parity', value: 90, max: 100, note: 'Roadmap parity target.' },
-            { label: 'Component coverage', value: 75, max: 100, note: 'More sections now typed.' },
-          ],
-        },
+        { id: 'summary', eyebrow: 'Why Now', title: 'Agents are tool-bound', callout: { label: 'Why now', title: 'Agents are tool-bound', body: 'A strong model without workspace state cannot complete valuable tasks.' }, metrics: [{ label: 'Surface', value: '4', body: 'Repo, browser, logs, approvals.' }, { label: 'Mode', value: 'Typed', body: 'Capabilities are explicit.' }], flow: [{ title: 'Task', body: 'User asks for work.' }, { title: 'Tool', body: 'Agent opens workspace.' }, { title: 'Proof', body: 'Artifact validates.' }] },
+        { id: 'requirements', eyebrow: 'Requirements', title: 'What must be true', table: { columns: ['Area', 'Requirement', 'Validation'], rows: [['Positioning', 'Show the capability frontier.', 'Readable on iPhone.'], ['Benchmark', 'Use optional section components.', 'Renderer test passes.']] }, timeline: [{ title: 'Clone shell polish', tag: 'UI', body: 'Use roadmap shell styling.' }, { title: 'Add components', tag: 'Typed', body: 'Render charts, tables, timelines, and accordions.' }] },
+        { id: 'validation', eyebrow: 'Validation Plan', title: 'Proof before scaling', details: [{ summary: 'Mobile table behavior', body: 'Tables collapse into labeled row cards instead of clipping.' }, { summary: 'Dark mode behavior', body: 'Dark overrides come after base styles.' }], ranges: [{ label: 'Shell parity', value: 90, max: 100, note: 'Roadmap parity target.' }, { label: 'Component coverage', value: 75, max: 100, note: 'More sections now typed.' }] },
       ],
       ledgerTitle: 'Ship checklist',
       ledger: [{ title: 'Renderer', tag: 'TDD', items: [{ status: 'current', text: 'Keep shell polish deterministic.' }] }],
@@ -207,6 +113,105 @@ describe('renderConsueloReader', () => {
     const darkIndex = html.lastIndexOf('@media (prefers-color-scheme: dark)');
     const baseNavIndex = html.indexOf('.reader-nav-shell {');
     expect(darkIndex).toBeGreaterThan(baseNavIndex);
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('typed reader shell contract', () => {
+  test('renders plan and guide as canonical reader shell kinds without introducing roadmap kind', () => {
+    const planHtml = renderConsueloReader({
+      template: 'plan',
+      title: 'Consuelo Roadmap Fixture',
+      eyebrow: 'Plan · Roadmap fixture',
+      thesis: 'A roadmap is a plan rendered through the canonical reader shell.',
+      metadata: { status: 'Fixture', owner: 'Ko', date: '2026-06-06', sourceTruth: 'Roadmap golden baseline' },
+      sections: [{ id: 'summary', eyebrow: 'Summary', title: 'Roadmap is plan', body: ['No roadmap template exists.'] }],
+      ledgerTitle: 'Roadmap checklist',
+      ledger: [{ title: 'Shell', tag: 'required', items: [{ status: 'current', text: 'Render as plan.' }] }],
+    });
+    const guideHtml = renderConsueloReader(guideContent);
+
+    expect(planHtml).toContain('data-reader-shell-version="');
+    expect(planHtml).toContain('template:"plan"');
+    expect(guideHtml).toContain('template:"guide"');
+    expect(planHtml).not.toContain('template:"roadmap"');
+    expect(validateConsueloReaderHtml(planHtml).ok).toBe(true);
+    expect(validateConsueloReaderHtml(guideHtml).ok).toBe(true);
+  });
+
+  test('rejects uncategorized and roadmap as reader shell templates', () => {
+    const base = { title: 'Rejected Fixture', thesis: 'This should not render.', sections: [{ id: 'summary', title: 'Summary', body: ['Body'] }], ledger: [{ title: 'Checklist', items: [{ status: 'todo' as const, text: 'No render.' }] }] };
+
+    expect(() => renderConsueloReader({ ...base, template: 'uncategorized' as never })).toThrow('unsupported reader shell template');
+    expect(() => renderConsueloReader({ ...base, template: 'roadmap' as never })).toThrow('unsupported reader shell template');
+  });
+
+  test('requires body sections and a checklist ledger for reader shell documents', () => {
+    expect(() => renderConsueloReader({ template: 'spec', title: 'Missing checklist', thesis: 'Reader shell documents require a checklist.', sections: [{ id: 'summary', title: 'Summary', body: ['Body'] }] })).toThrow('reader shell document requires checklist ledger');
+    expect(() => renderConsueloReader({ template: 'plan', title: 'Missing sections', thesis: 'Reader shell documents require sections.', ledger: [{ title: 'Checklist', items: [{ status: 'todo', text: 'No sections.' }] }] })).toThrow('reader shell document requires at least one body section');
+  });
+
+  test('renders optional typed components deterministically', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Typed Components Fixture',
+      eyebrow: 'Spec · Components',
+      thesis: 'Agents choose optional modules, but the renderer owns their UI.',
+      metadata: { status: 'Fixture', owner: 'Ko', date: '2026-06-06', sourceTruth: 'Component fixture' },
+      sections: [{ id: 'summary', eyebrow: 'Summary', title: 'Typed modules', body: ['The shell renders all optional modules.'] }],
+      components: [
+        { type: 'timeline', title: 'Launch timeline', items: [{ title: 'Alpha', body: 'First pass.', tag: 'phase' }] },
+        { type: 'decisionCards', title: 'Decisions', items: [{ summary: 'Use the TS renderer', body: 'Markdown steering is not deterministic.', open: true }] },
+        { type: 'requirementsMatrix', title: 'Requirements', columns: ['Area', 'Requirement'], rows: [['Shell', 'Use typed input.']] },
+        { type: 'architectureFlow', title: 'Architecture', nodes: [{ title: 'Input' }, { title: 'Renderer' }, { title: 'HTML' }] },
+        { type: 'riskPanels', title: 'Risks', risks: [{ title: 'Freehand UI', body: 'Agents drift without typed rendering.', tag: 'blocked' }] },
+        { type: 'metricCards', title: 'Signals', cards: [{ label: 'Parity', value: '100%', body: 'Roadmap baseline.' }] },
+        { type: 'openQuestions', title: 'Open questions', questions: [{ title: 'Which guides migrate first?', body: 'Pick after shell lands.' }] },
+      ],
+      ledgerTitle: 'Typed checklist',
+      ledger: [{ title: 'Renderer', tag: 'required', items: [{ status: 'current', text: 'Render optional modules through code.' }] }],
+    });
+
+    expect(html).toContain('data-reader-component="timeline"');
+    expect(html).toContain('data-reader-component="decisionCards"');
+    expect(html).toContain('data-reader-component="requirementsMatrix"');
+    expect(html).toContain('data-reader-component="architectureFlow"');
+    expect(html).toContain('data-reader-component="riskPanels"');
+    expect(html).toContain('data-reader-component="metricCards"');
+    expect(html).toContain('data-reader-component="openQuestions"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('direct rich reader component names', () => {
+  test('renders PR 666 component names as first-class typed options', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Direct Components Fixture',
+      eyebrow: 'Spec · Direct Components',
+      thesis: 'The framework keeps the useful PR 666 component vocabulary while the renderer owns the UI.',
+      metadata: { status: 'Fixture', owner: 'Ko', date: '2026-06-06', sourceTruth: 'PR 666 component audit' },
+      sections: [{ id: 'summary', title: 'Typed shell', body: ['Direct components render through code, not custom HTML.'] }],
+      components: [
+        { type: 'callout', title: 'Callout module', callout: { label: 'Signal', title: 'Use this for the big point.', body: 'The component is typed and renderer-owned.' } },
+        { type: 'metrics', title: 'Metric module', metrics: [{ label: 'Coverage', value: '10', body: 'Direct components restored.' }] },
+        { type: 'flow', title: 'Flow module', nodes: [{ title: 'Input' }, { title: 'Renderer' }, { title: 'Output' }] },
+        { type: 'table', title: 'Table module', table: { columns: ['Area', 'Requirement'], rows: [['Reader', 'Mobile-safe cells']] } },
+        { type: 'timeline', title: 'Timeline module', items: [{ title: 'Restore', body: 'Keep useful direction.' }] },
+        { type: 'details', title: 'Details module', details: [{ summary: 'Why typed?', body: 'So agents cannot freehand the shell.' }] },
+        { type: 'ranges', title: 'Ranges module', ranges: [{ label: 'Delight', value: 88, max: 100, note: 'A scoring bar.' }] },
+        { type: 'comparisons', title: 'Comparison module', comparisons: [{ title: 'Bad copy', body: 'Do not import weak styling.', tag: 'avoid' }, { title: 'Typed direction', body: 'Keep only the contract.', tag: 'keep' }] },
+        { type: 'cards', title: 'Cards module', cards: [{ title: 'Card', body: 'Cards remain first-class.' }] },
+        { type: 'ledger', title: 'Ledger module', groups: [{ title: 'Checklist', items: [{ status: 'done', text: 'Render direct ledger.' }] }] },
+      ],
+      ledgerTitle: 'Required checklist',
+      ledger: [{ title: 'Renderer', items: [{ status: 'current', text: 'Validate the shell.' }] }],
+    });
+
+    for (const name of ['callout', 'metrics', 'flow', 'table', 'timeline', 'details', 'ranges', 'comparisons', 'cards', 'ledger']) {
+      expect(html).toContain(`data-reader-component="${name}"`);
+    }
+    expect(html).toContain('data-label="Requirement"');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });

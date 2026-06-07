@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/complete-onboarding-flow",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 751,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/751",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/751",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/751/complete-onboarding-flow",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/751",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/751/complete-onboarding-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-onboarding-flow",
+  "taskSession": "tsk_f32da41433df",
+  "tmuxSession": "opensaas-os-complete-onboarding-flow-f32da414",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-onboarding-flow/.task/os/complete-onboarding-flow/session.json",
+  "createdAt": "2026-06-03T19:50:15.464Z"
+}

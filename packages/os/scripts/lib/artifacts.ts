@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { materializeOfficePages } from './office-pages';
 import { ensureRuntimePaths } from './runtime-state';
 import type { ArtifactDescriptor } from './types';
 
@@ -130,6 +131,8 @@ export function createWorkspaceArtifact(input: CreateArtifactInput): ArtifactDes
   } finally {
     db.close();
   }
+
+  materializeOfficePages({ home: paths.home, dbPath: paths.dbPath, dryRun: false });
 
   return {
     id,

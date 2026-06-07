@@ -26,7 +26,7 @@ function runBunEval(code: string): string {
 }
 
 describe('createWorkspaceArtifact', () => {
-  it('writes artifact bytes and persists metadata linked to the execution trace', () => {
+  it('writes artifact bytes, persists metadata, and refreshes the local Office page', () => {
     const descriptor = JSON.parse(runBunEval(`
       const { createWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
       const descriptor = createWorkspaceArtifact({
@@ -51,6 +51,20 @@ describe('createWorkspaceArtifact', () => {
     expect(descriptor.path).toBe('artifacts/trc_test_artifact/daily-revenue-brief.json');
     expect(existsSync(descriptor.localPath)).toBe(true);
     expect(JSON.parse(readFileSync(descriptor.localPath, 'utf8'))).toEqual({ ok: true });
+
+    const officeIndexPath = join(tempHome, 'pages', 'office', 'index.html');
+    const officeDataPath = join(tempHome, 'pages', 'office', 'data', 'artifacts.json');
+    expect(existsSync(officeIndexPath)).toBe(true);
+    expect(existsSync(officeDataPath)).toBe(true);
+    expect(readFileSync(officeIndexPath, 'utf8')).toContain('Daily Revenue Brief');
+    const officeData = JSON.parse(readFileSync(officeDataPath, 'utf8')) as {
+      artifacts: Array<{ id: string; title: string; traceId: string }>;
+    };
+    expect(officeData.artifacts).toContainEqual(expect.objectContaining({
+      id: descriptor.id,
+      title: 'Daily Revenue Brief',
+      traceId: 'trc_test_artifact',
+    }));
 
     const row = JSON.parse(runBunEval(`
       const { Database } = await import('bun:sqlite');
