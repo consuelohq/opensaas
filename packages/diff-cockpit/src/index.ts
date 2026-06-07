@@ -831,13 +831,13 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
       <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
       <div>
         <p class="eyebrow">${escapeHtml(repoLabel)}</p>
-        <h1>main</h1>
+        <h1>${escapeHtml(ref)}</h1>
         <p class="lead">Browse live code from <code>${escapeHtml(normalizedPath)}</code>.</p>
       </div>
       <a class="history-button" data-history-link href="${escapeAttribute(historyPath)}">History</a>
@@ -849,7 +849,7 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
     </label>
     <main class="code-browser-card" data-code-browser-root>
       <div class="code-browser-toolbar">
-        <span class="branch-pill">main</span>
+        <span class="branch-pill">${escapeHtml(ref)}</span>
         <span class="path-pill">${escapeHtml(normalizedPath)}</span>
         <span class="muted" data-commit-count>Loading commits…</span>
       </div>
@@ -880,7 +880,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
       <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, 'main', 'packages'))}">main</a>
+        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
@@ -1214,7 +1214,7 @@ async function loadGraphqlPullRequestIndex(
       }
     } catch (error: unknown) {
       warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
-      break;
+      throw error;
     }
   }
   return {
@@ -1416,8 +1416,9 @@ function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullReq
   if (lifecycleStatus === 'closed') return 'closed';
   if (lifecycleStatus === 'draft') return 'draft';
   const state = pull.mergeableState.toLowerCase();
-  if (state === 'dirty') return 'conflicts';
-  if (state && state !== 'unknown') return 'mergeable';
+  if (['dirty', 'blocked', 'behind', 'unstable'].includes(state)) return 'conflicts';
+  if (state === 'clean' || state === 'has_hooks') return 'mergeable';
+  if (state && state !== 'unknown') return 'conflicts';
   if (pull.mergeable === true) return 'mergeable';
   if (pull.mergeable === false) return 'conflicts';
   return 'unknown';
@@ -1753,14 +1754,14 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   const refreshedPulls: string[] = [];
   const refreshedCode: string[] = [];
   const refreshedHistory: string[] = [];
-  const homepageUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+  const requestOrigin = new URL(deps.request.url).origin; const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
   const homepageData = await deps.indexLoader(repo);
   await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
 
   for (const path of codePaths) {
-    const codeUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
-    const historyUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
+    const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
+    const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
     const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
     const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
     const codeData = await deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
@@ -1772,7 +1773,7 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   }
 
   for (const pullNumber of pullNumbers) {
-    const pullUrl = `${COCKPIT_ORIGIN}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
+    const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
     const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
@@ -2324,7 +2325,7 @@ const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && (pull.mergeability === 'conflicts' || pull.checkStatus === 'failure')) || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => {
   const query = activeQuery.trim().toLowerCase();
   if (!query) return true;
@@ -2642,10 +2643,10 @@ function setDrawer(open) {
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
 }
 function setFilePaneDrawer(open) {
+  if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
   els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
-
 function loadLiveData() {
   fetch(apiPath, { headers: { accept: 'application/json' } })
     .then((response) => {
