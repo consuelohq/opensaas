@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/document-agent-tdd-workflow",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 841,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/841",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/841",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/841/document-agent-tdd-workflow",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/841",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/841/document-agent-tdd-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-workflow",
+  "taskSession": "tsk_cd11452fd702",
+  "tmuxSession": "opensaas-os-document-agent-tdd-workflow-cd11452f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-workflow/.task/os/document-agent-tdd-workflow/session.json",
+  "createdAt": "2026-06-07T22:17:45.574Z"
+}
