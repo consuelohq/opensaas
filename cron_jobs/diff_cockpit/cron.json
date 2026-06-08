@@ -1,0 +1,1 @@
+{"schema":"consuelo.cron.v1","name":"diff-cockpit","kind":"diff-cockpit","enabled":true,"intervalMs":30000}
