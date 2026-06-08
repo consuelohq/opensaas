@@ -8,6 +8,9 @@ type RawSourceDoc = {
   legacySlugs: string[];
   title: string;
   description: string;
+  runtimeRole: string;
+  controls: string;
+  generatedRoute: string;
 };
 
 type BasePage = string | BaseGroup;
@@ -65,32 +68,44 @@ const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'k
 
 export const rawSourceDocs: RawSourceDoc[] = [
   {
-    sourcePath: 'packages/os/STEERING.md',
+    sourcePath: 'packages/workspace/STEERING.md',
     slug: 'os/agent-context/steering',
     legacySlugs: ['os/tools/default-steering'],
     title: 'steering.md',
-    description: 'Runtime steering loaded into the Consuelo OS agent.',
+    description: 'The operating doctrine loaded into Suelo before repository work begins.',
+    runtimeRole: 'Identity, judgment, safety boundaries, communication style, and workspace operating doctrine.',
+    controls: 'How the agent thinks, what it protects, when it acts, and when it stops.',
+    generatedRoute: '/os/agent-context/steering',
   },
   {
-    sourcePath: 'packages/os/decision.md',
+    sourcePath: 'packages/workspace/decision.md',
     slug: 'os/agent-context/decision',
     legacySlugs: ['os/tools/decision-engine'],
     title: 'decision.md',
-    description: 'Decision-process doctrine used by Consuelo OS agents.',
+    description: 'The evidence loop that turns retrieval, reads, tests, and runtime signals into next actions.',
+    runtimeRole: 'Decision-engine doctrine for explore, evidence, confidence, and confirmation.',
+    controls: 'How agents choose what to inspect next and how they decide whether a path is true.',
+    generatedRoute: '/os/agent-context/decision',
   },
   {
-    sourcePath: 'packages/os/TOOLS.md',
+    sourcePath: 'packages/workspace/TOOLS.md',
     slug: 'os/agent-context/tools',
     legacySlugs: ['os/tools/tool-manifest'],
     title: 'tools.md',
-    description: 'Human-readable catalog of callable Consuelo OS tools.',
+    description: 'The human-readable catalog of workspace facade tools available through `workspace.call`.',
+    runtimeRole: 'Tool contracts, call shapes, examples, envelopes, categories, and operational affordances.',
+    controls: 'Which tool names exist, how they are called, and what each tool returns.',
+    generatedRoute: '/os/agent-context/tools',
   },
   {
-    sourcePath: 'packages/os/SCRIPTS.md',
+    sourcePath: 'packages/workspace/SCRIPTS.md',
     slug: 'os/agent-context/scripts',
     legacySlugs: ['os/tools/scripts'],
     title: 'scripts.md',
-    description: 'Procedural script reference for Consuelo OS runtime work.',
+    description: 'The procedural script reference for operators and task-scoped repository workflows.',
+    runtimeRole: 'Script usage, task commands, validation commands, and workflow-specific procedures.',
+    controls: 'How humans and agents run repository operations without bypassing the workspace workflow.',
+    generatedRoute: '/os/agent-context/scripts',
   },
 ];
 
@@ -114,32 +129,89 @@ const stripFrontmatter = (body: string): string => {
   return body.slice(end + '\n---\n'.length);
 };
 
-const stripFirstHeading = (body: string): string => body.replace(/^# .+\n+/, '');
+const fenceInfoPattern = /^(\s*)(`{3,}|~{3,})(.*)$/;
+const fenceClosePattern = /^(\s*)(`{3,}|~{3,})\s*$/;
 
-const isFenceBoundary = (line: string): boolean => {
-  const trimmed = line.trim();
-  return trimmed.startsWith('```') || trimmed.startsWith('~~~');
+type FenceState = {
+  marker: '`' | '~';
+  length: number;
 };
 
+const openingFence = (line: string): FenceState | null => {
+  const match = line.match(fenceInfoPattern);
+  if (!match) return null;
+  const markerRun = match[2];
+  return {
+    marker: markerRun[0] as '`' | '~',
+    length: markerRun.length,
+  };
+};
+
+const closesFence = (line: string, fence: FenceState): boolean => {
+  const match = line.match(fenceClosePattern);
+  if (!match) return false;
+  const markerRun = match[2];
+  return markerRun[0] === fence.marker && markerRun.length >= fence.length;
+};
+
+const normalizeAnglePlaceholders = (line: string): string =>
+  line.replace(/<([a-zA-Z][a-zA-Z0-9_-]*(?: [a-zA-Z0-9_-]+)*)>/g, '{$1}');
+
 const escapeMdxTextLine = (line: string): string =>
-  line.replace(/\{/g, '\\{').replace(/\}/g, '\\}').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  normalizeAnglePlaceholders(line)
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
 const mdxSafeMarkdown = (body: string): string => {
   const output: string[] = [];
-  let inFence = false;
+  let fence: FenceState | null = null;
 
-  for (const line of stripFirstHeading(stripFrontmatter(body)).trimEnd().split('\n')) {
-    if (isFenceBoundary(line)) {
-      inFence = !inFence;
+  for (const rawLine of stripFrontmatter(body).trimEnd().split('\n')) {
+    const line = rawLine.trimEnd();
+    if (fence) {
+      output.push(normalizeAnglePlaceholders(line));
+      if (closesFence(line, fence)) {
+        fence = null;
+      }
+      continue;
+    }
+
+    const maybeFence = openingFence(line);
+    if (maybeFence) {
+      fence = maybeFence;
       output.push(line);
       continue;
     }
 
-    output.push(inFence ? line : escapeMdxTextLine(line));
+    output.push(escapeMdxTextLine(line));
   }
 
   return output.join('\n');
 };
+
+const tableCell = (value: string): string => value.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+
+const renderSourceIntro = (doc: RawSourceDoc): string[] => [
+  `> ${doc.description}`,
+  '',
+  '<Note>',
+  `This page is generated from \`${doc.sourcePath}\`. Edit the source Markdown, then run \`bun run --cwd packages/consuelo-docs generate-os-source-docs\` to refresh the public docs.`,
+  '</Note>',
+  '',
+  '## What this file controls',
+  '',
+  '| Field | Value |',
+  '| --- | --- |',
+  `| Source file | \`${doc.sourcePath}\` |`,
+  `| Runtime role | ${tableCell(doc.runtimeRole)} |`,
+  `| Controls | ${tableCell(doc.controls)} |`,
+  `| Generated route | \`${doc.generatedRoute}\` |`,
+  '',
+  '## Source document',
+  '',
+];
 
 export const renderRawSourceDoc = (doc: RawSourceDoc): string => {
   const sourceFile = path.join(repoRoot, doc.sourcePath);
@@ -156,6 +228,7 @@ export const renderRawSourceDoc = (doc: RawSourceDoc): string => {
     '',
     generatedNotice(doc.sourcePath),
     '',
+    ...renderSourceIntro(doc),
     mdxSafeMarkdown(body),
     '',
   ].join('\n');
