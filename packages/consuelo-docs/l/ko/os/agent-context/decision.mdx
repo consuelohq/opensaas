@@ -1,28 +1,36 @@
 ---
 title: "decision.md"
-description: "The evidence loop that turns retrieval, reads, tests, and runtime signals into next actions."
+description: "Decision-process doctrine used by Consuelo OS agents."
 ---
 
-{/* Generated from packages/workspace/decision.md. Do not edit this page directly. */}
+{/* Generated from packages/os/decision.md. Do not edit this page directly. */}
 
-> The evidence loop that turns retrieval, reads, tests, and runtime signals into next actions.
+> Decision-process doctrine used by Consuelo OS agents.
 
 <Note>
-This page is generated from `packages/workspace/decision.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
+This page is generated from `packages/os/decision.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
 </Note>
 
 ## What this file controls
 
 | Field | Value |
 | --- | --- |
-| Source file | `packages/workspace/decision.md` |
-| Runtime role | Decision-engine doctrine for explore, evidence, confidence, and confirmation. |
-| Controls | How agents choose what to inspect next and how they decide whether a path is true. |
+| Source file | `packages/os/decision.md` |
+| Runtime role | Decision-engine doctrine for evidence collection, confidence, validation, and next action selection inside Consuelo OS. |
+| Controls | How OS agents inspect facts, resolve conflicts, preserve intent, and choose the next safe action. |
 | Generated route | `/os/agent-context/decision` |
 
 ## Source document
 
 # decision process
+
+## decision log: Consuelo app GraphQL, Files API, and future OS API boundary
+
+2026-05-24: cloud artifacts should use the Consuelo app Files REST API, not the workspace GraphQL capability. Consuelo app GraphQL reads structured app objects for skills such as `consuelo-workspace-snapshot`; Consuelo app Files API publishes app-visible artifacts through upload URL, S3 PUT, file record creation, optional supported attachment, and file lookup/download URL. `CONSUELO_APP_GRAPHQL_URL` / `CONSUELO_APP_GRAPHQL_API_KEY` are the preferred names for app object reads, with fallback to the older `CONSUELO_GRAPHQL_URL` / `CONSUELO_INTERNAL_GRAPHQL_API_KEY` while the stream settles. `CONSUELO_APP_API_URL` / `CONSUELO_APP_API_KEY` are required for file publishing. A future `CONSUELO_OS_API_URL` / `CONSUELO_OS_API_KEY` may represent the hosted OS control plane, but it is separate from both app GraphQL and app Files API.
+
+## decision log: Consuelo app files and cloud artifact alignment
+
+2026-05-24: after task 11, the next OS slice is `consuelo-workspace-snapshot` plus a files/artifacts facade. The source of truth is the Consuelo app and its existing Postgres/S3-backed Files and Attachments surfaces. The OS should first read app-native objects and return stable object refs for People, Companies, Lists, Calls, Files, Attachments, Tasks, Notes, Workflows, Workflow Runs, Dashboards, and artifacts. Cloud artifact work should map OS outputs into app-native File/Attachment/Artifact records backed by existing S3-compatible storage. Mirage remains a future optional VFS evaluation layer after this app-native contract is stable; it is not the first backend or source of truth.
 
 ## mandatory workspace app transport
 
@@ -58,12 +66,6 @@ handoffs belong in memory or tmp/context files.
 
 do not turn this file into a script reference.
 this file should teach agents how to think with the system, what the signals mean, when to trust them, and when to stop.
-
----
-
-## worker delegation naming decision
-
-Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `pi`, and `opc` are provider codes. `mini` is a legacy/profile name normalized to `pi` with `profile: mini`. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
 
 ---
 
@@ -1055,6 +1057,3 @@ the system is working when an agent can say:
 i know what to do next because the current evidence makes that action highest value.
 i know whether it was right because validation and runtime truth updated the belief.
 ```
-
-
-Keep `worker.call` as the neutral facade entrypoint and expose `bun run worker -- call ...` as the human/Codex CLI wrapper. Both paths must call the same worker runtime module; executor-owned provider implementations should be refactored into dedicated runtime modules.

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/package-consuelo-os-as-installed-product-root",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 776,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/776",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/776",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/776/package-consuelo-os-as-installed-product-root",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/776",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/776/package-consuelo-os-as-installed-product-root",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-package-consuelo-os-as-installed-product-root",
+  "taskSession": "tsk_e33ae4a1d7de",
+  "tmuxSession": "opensaas-os-package-consuelo-os-as-installed-product-root-e33ae4a1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-package-consuelo-os-as-installed-product-root/.task/os/package-consuelo-os-as-installed-product-root/session.json",
+  "createdAt": "2026-06-05T05:19:23.513Z"
+}
