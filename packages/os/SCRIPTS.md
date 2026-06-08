@@ -303,6 +303,7 @@ proxies all arguments to `bun run fs` with cwd set to the selected task worktree
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
 bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
 bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
@@ -346,6 +347,7 @@ runs any command with cwd set to the selected task worktree. use for git, pretti
 bun run task:exec -- --area dialer git diff
 bun run task:exec -- --branch task/dialer/fix-thing git status --short
 bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
 bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
 bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
 bun run task:exec -- --branch task/dialer/fix-thing bun run review
@@ -543,12 +545,26 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
+
+### PR reference selectors
+
+Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.consuelohq.com/.../pull/<number>`, and Graphite URLs shaped like `/github/pr/<owner>/<repo>/<number>/...`.
+
+```bash
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
+```
+
+Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
+
 ### task:start — create task branch + worktree + PR
 
 creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
