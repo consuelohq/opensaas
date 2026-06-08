@@ -107,6 +107,26 @@ export const CodeRunInput = z.object({
   maxResultChars: z.number().int().positive().optional(),
 });
 
+export const CodeCallInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  language: z.string().min(1),
+  code: z.string().min(1).optional(),
+  codeFile: optionalString,
+  stdin: z.string().optional(),
+  stdinFile: optionalString,
+  mode: z.enum(['read', 'edit', 'verify']),
+  cwd: optionalString,
+  timeout: z.number().int().positive().optional(),
+  maxResultChars: z.number().int().positive().optional(),
+}).refine((input) => Boolean(input.code) !== Boolean(input.codeFile), {
+  message: 'provide exactly one of code or codeFile',
+  path: ['code'],
+}).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
+  message: 'provide at most one of stdin or stdinFile',
+  path: ['stdin'],
+});
+
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -119,7 +139,6 @@ export const ToolsSearchInput = z.object({
   message: 'readOnly and mutating cannot both be true',
   path: ['mutating'],
 });
-
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -889,6 +908,7 @@ export const schemaRegistry = {
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
   CodeRunInput,
+  CodeCallInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -992,6 +1012,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
@@ -1085,6 +1106,7 @@ export const outputTypeSignatures: Record<string, string> = {
   FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
+  CodeCallOutput: '{ ok: boolean; exitCode: number; language: \"python\" | \"bun\" | \"bash\"; requestedLanguage?: string; runtime: string; mode: \"read\" | \"edit\" | \"verify\"; cwd: string; durationMs: number; stdout: string; stderr: string; filesChanged: string[]; truncated: boolean; traceId: string; message?: string; code?: string; detectedMistakeClass?: string; stdoutLogPath?: string; stderrLogPath?: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
   WorkerCallOutput: '{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
   ToolsSearchOutput: '{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }',

@@ -1,0 +1,26 @@
+{
+  "files": [
+    ".task/workspace-agents/design-code-call-tool/workpad.md",
+    "packages/os/TASK-WORKFLOW.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/code-call.ts",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/generate-types.ts",
+    "packages/workspace/scripts/lib/code-call/runtime.ts",
+    "packages/workspace/scripts/lib/code-call/types.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/tmp.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/code-call.test.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-08T23:58:17.060Z"
+}

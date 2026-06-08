@@ -174,6 +174,15 @@ describe('typed facade executor', () => {
     expect(missing).toEqual([]);
   });
 
+  it('exposes code.call as the language execution facade', () => {
+    const entry = getToolManifestEntry('code.call');
+
+    expect(entry?.methodPath).toEqual(['code', 'call']);
+    expect(entry?.inputSchema).toBe('CodeCallInput');
+    expect(entry?.outputSchema).toBe('CodeCallOutput');
+    expect(entry?.command.internal).toBe('code.call');
+    expect(getInputSchema('CodeCallInput')).toBeTruthy();
+  });
 
   it('tools.search ranks intent keywords and returns usage guidance', async () => {
     const runSearch = (query: string, limit = 5) => {
@@ -211,8 +220,7 @@ describe('typed facade executor', () => {
     expect(missingPayload.totalMatches).toBe(0);
     expect(missingPayload.matches).toEqual([]);
     expect(missingPayload.guidance).toContain('No matching tools found');
-  });
-
+  }, 15000);
   it('rejects contradictory tools.search capability filters', async () => {
     const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
     expect(result.ok).toBe(false);

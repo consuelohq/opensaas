@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4cb68744d4f2",
+  "tmuxSession": "opensaas-workspace-agents-design-code-call-tool-4cb68744",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/design-code-call-tool",
+  "branch": "task/workspace-agents/design-code-call-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-code-call-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-code-call-tool",
+  "prNumber": 846,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/846",
+  "createdAt": "2026-06-08T04:49:29.673Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-code-call-tool/.task/workspace-agents/design-code-call-tool/session.json"
+}

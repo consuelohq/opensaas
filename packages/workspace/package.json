@@ -42,6 +42,7 @@
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
     "consuelo-design": "bun ./scripts/consuelo-design.ts",
     "code-run": "bun ./scripts/code-run.ts",
+    "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
     "diff_cockpit": "bun ./scripts/diff_cockpit.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",

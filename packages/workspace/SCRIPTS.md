@@ -1063,6 +1063,21 @@ printf '{"code":"return 1 + 1"}' | bun run code-run -- --stdin
 
 Use `workspace_call("tool.name", input)` for generic facade calls, sanitized helpers like `fs_read` or `task_current`, and friendly aliases like `readFile`, `grep`, and `readDir`. Always pass `taskSession` when task work is involved. Use direct outer tool calls for final durable transitions such as push, PR, merge, deploy, and publish.
 
+
+---
+
+### code-call - staged language-specific code execution
+
+Runs short Python, Bun, or Bash programs from a staged file instead of shell-escaped `-c` or heredoc transport. Use this for bounded calculations, parsers, and verification snippets that need language runtimes directly.
+
+```bash
+bun run code-call -- '{"language":"python","mode":"read","code":"print(1 + 1)"}'
+bun run code-call -- --input-file /tmp/code-call-input.json
+printf '{"language":"bash","mode":"verify","code":"printf ok"}' | bun run code-call -- --stdin
+```
+
+`mode=read` and `mode=verify` fail if repository files change. `mode=edit` is accepted by the schema but intentionally blocked until task-worktree mutation enforcement is implemented.
+
 ---
 
 ### github — typed GitHub facade
