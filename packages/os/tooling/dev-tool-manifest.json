@@ -414,8 +414,7 @@
         {
           "source": "title",
           "flag": "--title",
-          "kind": "value",
-          "required": true
+          "kind": "value"
         },
         {
           "source": "bodyFile",
@@ -425,6 +424,16 @@
         {
           "source": "startFrom",
           "flag": "--start-from",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -479,6 +488,11 @@
         {
           "source": "worktree",
           "flag": "--worktree",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -549,6 +563,16 @@
           "source": "reason",
           "flag": "--reason",
           "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -608,6 +632,16 @@
           "source": "bodyTemplate",
           "flag": "--body-template",
           "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -645,6 +679,16 @@
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -691,6 +735,11 @@
           "source": "squash",
           "flag": "--squash",
           "kind": "boolean"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -727,6 +776,16 @@
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -868,6 +927,16 @@
           "source": "command",
           "kind": "commandArray",
           "required": true
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ]
     },

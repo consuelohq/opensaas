@@ -5163,7 +5163,7 @@ write task metadata for an existing worktree
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.init({ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.init({ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.init` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -5224,7 +5224,7 @@ merge a pull request through the workspace task merge script
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.merge({ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.merge` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5466,7 +5466,7 @@ create a task branch, worktree, and draft PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -7768,3 +7768,8 @@ Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `du
 
 The tool manifest is executable contract, not prose. If the docs and manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.
 
+
+
+## PR reference selectors
+
+Task tools that accept `--pr` also accept PR text and review URLs. Use `--github` for explicit URL input. Supported URL shapes are GitHub `/pull/<number>`, Consuelo diffs `/pull/<number>`, and Graphite `/github/pr/<owner>/<repo>/<number>/...`. Wrong-repo, issue, commit, compare, actions-run, and ambiguous free-text values are rejected.

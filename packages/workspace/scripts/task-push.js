@@ -28,6 +28,7 @@ const {
   refExists,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const {
   assertCommitMessageFormat,
   assertTaskBranchName,
@@ -58,7 +59,7 @@ function printHelp() {
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
-  writeStdout('  --pr <number>          select task by pr number');
+  writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
   writeStdout('  --verify               require a matching publish-valid verify stamp (default)');
@@ -123,7 +124,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--cwd':
         args.cwd = value;
@@ -160,7 +162,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return args;
