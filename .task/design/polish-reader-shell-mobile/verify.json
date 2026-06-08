@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/polish-reader-shell-mobile",
+  "base": "origin/stream/design",
+  "headSha": "cb1fadb915481a6fd825f12fa96631e2d4e40a52",
+  "changeHash": "4fbd558565cd1d9573892fe41c796098a7266c9f419e967b0c5c51f2a12318f4",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+  ],
+  "verifiedAt": "2026-06-07T15:34:00.899Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/polish-reader-shell-mobile/current.json",
+        ".task/design/polish-reader-shell-mobile/evidence-log.json",
+        ".task/design/polish-reader-shell-mobile/read-log.json",
+        ".task/design/polish-reader-shell-mobile/session.json",
+        ".task/design/polish-reader-shell-mobile/workpad.md",
+        ".task/tasks/design/polish-reader-shell-mobile.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
