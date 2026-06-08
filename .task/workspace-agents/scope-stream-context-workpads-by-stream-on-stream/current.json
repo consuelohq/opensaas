@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 685,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/685",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/685",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/685/scope-stream-context-workpads-by-stream-on-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/685",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/685/scope-stream-context-workpads-by-stream-on-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-scope-stream-context-workpads-by-stream-on-stream",
+  "taskSession": "tsk_021d2e44fd80",
+  "tmuxSession": "opensaas-workspace-agents-scope-stream-context-workpads-by-stream-on-strea-021d2e44",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-scope-stream-context-workpads-by-stream-on-stream/.task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream/session.json",
+  "createdAt": "2026-06-02T01:20:15.291Z"
+}

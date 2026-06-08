@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/build-trace-costs-analytics",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 808,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/808",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/808",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/808/build-trace-costs-analytics",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/808",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/808/build-trace-costs-analytics",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-build-trace-costs-analytics",
+  "taskSession": "tsk_f4c7c98f15d0",
+  "tmuxSession": "opensaas-workspace-build-trace-costs-analytics-f4c7c98f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-build-trace-costs-analytics/.task/workspace/build-trace-costs-analytics/session.json",
+  "createdAt": "2026-06-05T19:06:01.391Z"
+}

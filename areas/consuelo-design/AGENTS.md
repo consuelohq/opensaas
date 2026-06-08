@@ -35,7 +35,7 @@ This file owns Consuelo visual language: Geist typography, black/white precision
 For digital e-guides, also read:
 
 ```text
-packages/consuelo-design/templates/digital-eguides/research.md
+packages/consuelo-design/templates/digital-eguides/guide.md
 packages/consuelo-design/templates/digital-eguides/spec.md
 packages/consuelo-design/templates/digital-eguides/plan.md
 packages/consuelo-design/templates/digital-eguides/reader-shell.md
@@ -171,17 +171,17 @@ For `consueloDesign.generateDigitalEguide`, use:
 
 | Template   | Use for                                                                             |
 | ---------- | ----------------------------------------------------------------------------------- |
-| `research` | research guides, paper explainers, Daily Deep Idea lessons, source-grounded reports |
+| `guide`    | source-grounded guides, paper explainers, Daily Deep Idea lessons, reusable walkthroughs |
 | `spec`     | product specs, engineering specs, RFCs, architecture/design docs                    |
 | `plan`     | implementation plans, operating plans, rollout plans, execution guides              |
 
 Do not create a standalone `decision` template. Decisions belong inside `spec` and `plan`.
 
-All three templates — `research`, `spec`, and `plan` — are reader-shell templates. When building any of them, read and apply:
+All three reader templates — `guide`, `spec`, and `plan` — must be rendered by the canonical TypeScript reader shell.
 
-packages/consuelo-design/templates/digital-eguides/reader-shell.md
+Use typed JSON/content input with `bun run wiki:render -- --template <spec|plan|guide> --input <content.json> --out <index.html>`.
 
-Do not build a research/spec/plan guide as plain HTML, plain Markdown, or a shell-less page.
+Do not build a guide/spec/plan as plain HTML, plain Markdown, or a shell-less page.
 
 Example:
 
@@ -621,4 +621,18 @@ Every `design.publish` call records the published artifact in the private Consue
 
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.
+The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.## publish concurrency guard
+
+When publishing over an existing `/design-wiki` page, read the latest page/archive state first and pass the current page revision to publish:
+
+```bash
+bun run consuelo-design publish --target <artifact> --path <page-path> --base-version <currentVersionId>
+```
+
+Rules:
+
+- Do not publish over an existing page without `--base-version`.
+- Use `--base-revision` only as an alias for `--base-version`.
+- Use `--force-publish` only when Ko explicitly asks for an intentional overwrite or recovery publish.
+- If publish reports `stale design wiki publish rejected`, re-read the current page and rebase your typed changes before publishing.
+- Prefer section/component-level typed changes so non-overlapping agent work can be recovered or merged from page versions.

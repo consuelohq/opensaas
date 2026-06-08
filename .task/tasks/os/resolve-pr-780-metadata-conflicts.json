@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-pr-780-metadata-conflicts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 847,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/847",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/847",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/847/resolve-pr-780-metadata-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/847",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/847/resolve-pr-780-metadata-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-780-metadata-conflicts",
+  "taskSession": "tsk_e5499783e547",
+  "tmuxSession": "opensaas-os-resolve-pr-780-metadata-conflicts-e5499783",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-780-metadata-conflicts/.task/os/resolve-pr-780-metadata-conflicts/session.json",
+  "createdAt": "2026-06-08T04:53:12.901Z"
+}

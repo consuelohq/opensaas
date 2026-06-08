@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+  ],
+  "updatedAt": "2026-06-07T15:30:09.270Z"
+}
