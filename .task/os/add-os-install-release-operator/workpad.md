@@ -59,4 +59,3 @@ Pending.
 - `wrangler deploy` uploaded Worker `consuelo-os-install` and attached custom domain `install.consuelohq.com`.
 - Immediate verification failed because DNS still resolves `install.consuelohq.com` through the wildcard Railway CNAME.
 - Required DNS fix: add a specific Cloudflare DNS record for `install.consuelohq.com` with proxy enabled so it overrides the DNS-only wildcard.
-

@@ -79,10 +79,41 @@ function readTaskMeta(worktreePath) {
 }
 
 function readValidTaskMetaForWorktree(worktreePath, branch) {
-  const taskMeta = readTaskMeta(worktreePath);
+  const scoped = findTaskMeta(worktreePath, { currentBranch: branch });
+  const taskMeta = scoped ? scoped.data : readTaskMeta(worktreePath);
   if (!taskMeta) return null;
   if (!isTaskMetaValidForBranch(taskMeta, branch)) return null;
   return taskMeta;
+}
+
+function findScopedTaskMetaInDirectory(dir, options = {}) {
+  const taskDir = path.join(dir, TASK_DIR);
+  if (!fs.existsSync(taskDir)) return null;
+
+  const candidates = [];
+  for (const areaEntry of fs.readdirSync(taskDir, { withFileTypes: true })) {
+    if (!areaEntry.isDirectory() || areaEntry.name === TASKS_DIR || areaEntry.name === 'reviews') continue;
+    const areaDir = path.join(taskDir, areaEntry.name);
+    for (const taskEntry of fs.readdirSync(areaDir, { withFileTypes: true })) {
+      if (!taskEntry.isDirectory()) continue;
+      const currentPath = path.join(areaDir, taskEntry.name, CURRENT_FILENAME);
+      if (!fs.existsSync(currentPath)) continue;
+      const data = readJsonFile(currentPath);
+      if (!data) continue;
+      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
+      if (mismatch && !options.includeStale) continue;
+      candidates.push({ path: currentPath, dir, data, stale: Boolean(mismatch), mismatch });
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  if (options.currentBranch) {
+    const exact = candidates.find((candidate) => candidate.data && candidate.data.taskBranch === options.currentBranch);
+    if (exact) return exact;
+  }
+
+  candidates.sort((left, right) => getMetaTimestamp(right.data) - getMetaTimestamp(left.data));
+  return candidates[0];
 }
 
 function findTaskMeta(startDirectory, options = {}) {
@@ -107,6 +138,9 @@ function findTaskMeta(startDirectory, options = {}) {
       if (mismatch && !options.includeStale) return null;
       return record;
     }
+
+    const scoped = findScopedTaskMetaInDirectory(dir, options);
+    if (scoped) return scoped;
 
     const parent = path.dirname(dir);
     if (parent === dir) break;
@@ -137,32 +171,38 @@ function collectTaskMetaFiles(worktreePath, area, taskBranch, options = {}) {
   const taskSlug = getTaskSlug(taskBranch);
   const includeVerify = options.includeVerify !== false;
 
+  function addFileIfExists(repoPath) {
+    const fullPath = path.join(worktreePath, repoPath);
+    if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) return;
+    if (!includeVerify && repoPath.endsWith('/verify.json')) return;
+    files.push({
+      path: repoPath,
+      content: fs.readFileSync(fullPath, 'utf8'),
+      deleted: false,
+    });
+  }
+
+  if (area && taskSlug) {
+    const scopedTaskDir = path.join(taskDir, area, taskSlug);
+    if (fs.existsSync(scopedTaskDir)) {
+      for (const entry of fs.readdirSync(scopedTaskDir, { withFileTypes: true })) {
+        if (!entry.isFile()) continue;
+        addFileIfExists(`${TASK_DIR}/${area}/${taskSlug}/${entry.name}`);
+      }
+    }
+    addFileIfExists(`${TASK_DIR}/${TASKS_DIR}/${area}/${taskSlug}.json`);
+    return files;
+  }
+
   function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        // skip other areas' task history when area is specified
-        const rel = path.relative(taskDir, fullPath).split(path.sep).join('/');
-        if (area && rel.startsWith(TASKS_DIR + '/') && !rel.startsWith(TASKS_DIR + '/' + area)) {
-          continue;
-        }
         walk(fullPath);
       } else {
         const repoPath = path.relative(worktreePath, fullPath).split(path.sep).join('/');
-        const taskHistoryPrefix = area ? `${TASK_DIR}/${TASKS_DIR}/${area}/` : null;
-
-        if (taskHistoryPrefix && taskSlug && repoPath.startsWith(taskHistoryPrefix) && repoPath !== `${taskHistoryPrefix}${taskSlug}.json`) {
-          continue;
-        }
-
-        if (!includeVerify && repoPath === `${TASK_DIR}/verify.json`) {
-          continue;
-        }
-
-        if (repoPath.startsWith(`${TASK_DIR}/reviews/`)) {
-          continue;
-        }
-
+        if (!includeVerify && repoPath === `${TASK_DIR}/verify.json`) continue;
+        if (repoPath.startsWith(`${TASK_DIR}/reviews/`)) continue;
         files.push({
           path: repoPath,
           content: fs.readFileSync(fullPath, 'utf8'),
@@ -361,6 +401,7 @@ module.exports = {
   AUTO_RESOLVABLE_TASK_META_CONFLICTS,
   collectTaskMetaFiles,
   findTaskMeta,
+  findScopedTaskMetaInDirectory,
   getTaskMetaBranchMismatch,
   isOnlyTaskMetadataConflict,
   isTaskMetaValidForBranch,

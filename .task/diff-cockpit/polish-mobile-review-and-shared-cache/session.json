@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b6c4e2902c77",
+  "tmuxSession": "opensaas-diff-cockpit-polish-mobile-review-and-shared-cache-b6c4e290",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-mobile-review-and-shared-cache",
+  "branch": "task/diff-cockpit/polish-mobile-review-and-shared-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-mobile-review-and-shared-cache",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-mobile-review-and-shared-cache",
+  "prNumber": 747,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/747",
+  "createdAt": "2026-06-03T17:45:22.045Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-mobile-review-and-shared-cache/.task/diff-cockpit/polish-mobile-review-and-shared-cache/session.json"
+}

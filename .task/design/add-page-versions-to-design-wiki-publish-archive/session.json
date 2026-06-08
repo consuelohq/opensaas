@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e8d040798218",
+  "tmuxSession": "opensaas-design-add-page-versions-to-design-wiki-publish-archive-e8d04079",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-page-versions-to-design-wiki-publish-archive",
+  "branch": "task/design/add-page-versions-to-design-wiki-publish-archive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-page-versions-to-design-wiki-publish-archive",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-page-versions-to-design-wiki-publish-archive",
+  "prNumber": 814,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/814",
+  "createdAt": "2026-06-06T05:50:30.267Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-page-versions-to-design-wiki-publish-archive/.task/design/add-page-versions-to-design-wiki-publish-archive/session.json"
+}

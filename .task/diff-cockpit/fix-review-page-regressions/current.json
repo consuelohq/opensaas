@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-review-page-regressions",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 791,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/791",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/791",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/791/fix-review-page-regressions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/791",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/791/fix-review-page-regressions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions",
+  "taskSession": "tsk_111aae01f6dd",
+  "tmuxSession": "opensaas-diff-cockpit-fix-review-page-regressions-111aae01",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions/.task/diff-cockpit/fix-review-page-regressions/session.json",
+  "createdAt": "2026-06-05T07:13:54.021Z"
+}

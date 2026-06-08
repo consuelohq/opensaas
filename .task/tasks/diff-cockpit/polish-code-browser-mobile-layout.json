@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-code-browser-mobile-layout",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 805,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/805",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/805",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/805/polish-code-browser-mobile-layout",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/805",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/805/polish-code-browser-mobile-layout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-code-browser-mobile-layout",
+  "taskSession": "tsk_5f0148d5dc82",
+  "tmuxSession": "opensaas-diff-cockpit-polish-code-browser-mobile-layout-5f0148d5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-code-browser-mobile-layout/.task/diff-cockpit/polish-code-browser-mobile-layout/session.json",
+  "createdAt": "2026-06-05T16:19:26.496Z"
+}

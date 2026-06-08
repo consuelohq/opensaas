@@ -177,6 +177,9 @@
         "osAgentContext": {
           "label": "Agent Context"
         },
+        "osTools": {
+          "label": "Tools"
+        },
         "osSkills": {
           "label": "Skills",
           "groups": {

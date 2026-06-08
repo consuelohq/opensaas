@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f4c7c98f15d0",
+  "tmuxSession": "opensaas-workspace-build-trace-costs-analytics-f4c7c98f",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/build-trace-costs-analytics",
+  "branch": "task/workspace/build-trace-costs-analytics",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-build-trace-costs-analytics",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-build-trace-costs-analytics",
+  "prNumber": 808,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/808",
+  "createdAt": "2026-06-05T19:06:01.389Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-build-trace-costs-analytics/.task/workspace/build-trace-costs-analytics/session.json"
+}

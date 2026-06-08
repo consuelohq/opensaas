@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/restore-rich-reader-typed-components",
+  "base": "origin/stream/design",
+  "headSha": "1bdc95880b1671e4ab06b464a4781124380ca723",
+  "changeHash": "de3c9804a9dbe78f63b1a727cdb71008d026c83a81c28cced335e3eeaec38384",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/guide.md",
+    "packages/consuelo-design/templates/digital-eguides/plan.md",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/consuelo-design/templates/digital-eguides/spec.md"
+  ],
+  "verifiedAt": "2026-06-06T17:39:06.034Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/restore-rich-reader-typed-components/current.json",
+        ".task/design/restore-rich-reader-typed-components/direct-components-smoke.json",
+        ".task/design/restore-rich-reader-typed-components/direct-components-smoke/index.html",
+        ".task/design/restore-rich-reader-typed-components/evidence-log.json",
+        ".task/design/restore-rich-reader-typed-components/read-log.json",
+        ".task/design/restore-rich-reader-typed-components/session.json",
+        ".task/design/restore-rich-reader-typed-components/workpad.md",
+        ".task/tasks/design/restore-rich-reader-typed-components.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/guide.md",
+        "packages/consuelo-design/templates/digital-eguides/plan.md",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+        "packages/consuelo-design/templates/digital-eguides/spec.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

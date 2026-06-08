@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+  "events": [
+    {
+      "id": "c3353807-d115-4d0d-9329-6e4dd9767251",
+      "occurred_at": "2026-06-05T05:32:04.436Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "b77de87b-777b-4a7f-8b73-18a42e5c1125",
+      "occurred_at": "2026-06-05T05:32:12.995Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "3f83dc87-4e4a-4c42-bde4-093b8a21c8b2",
+      "occurred_at": "2026-06-05T05:32:32.321Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "3f5ca2a1-ed44-4741-b14a-241cc1fc98ea",
+      "occurred_at": "2026-06-05T05:32:50.419Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "b4844bea-9463-420d-bcb7-d5754252f9c9",
+      "occurred_at": "2026-06-05T05:33:11.035Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "9499daa6-c982-48ed-afac-d3fccdf3ea99",
+      "occurred_at": "2026-06-05T05:33:33.363Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "5b43f2a9-0163-4099-af02-22019109a250",
+      "occurred_at": "2026-06-05T05:33:50.750Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "08c2975f-9ef2-4198-903c-a3f0cae241c3",
+      "occurred_at": "2026-06-05T05:36:28.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    },
+    {
+      "id": "c92f7f04-6e3f-4607-ada7-1b486059030f",
+      "occurred_at": "2026-06-05T05:40:47.414Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-05T05:40:47.480Z"
+}

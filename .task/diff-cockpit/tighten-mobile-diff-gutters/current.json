@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/tighten-mobile-diff-gutters",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 749,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/749",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/749",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/749/tighten-mobile-diff-gutters",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/749",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/749/tighten-mobile-diff-gutters",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-tighten-mobile-diff-gutters",
+  "taskSession": "tsk_c1f2e3ebf851",
+  "tmuxSession": "opensaas-diff-cockpit-tighten-mobile-diff-gutters-c1f2e3eb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-tighten-mobile-diff-gutters/.task/diff-cockpit/tighten-mobile-diff-gutters/session.json",
+  "createdAt": "2026-06-03T18:00:13.675Z"
+}
