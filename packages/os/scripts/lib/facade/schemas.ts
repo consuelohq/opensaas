@@ -731,6 +731,11 @@ export const SentryTraceInput = z.object({
 export const WaitInput = z.object({
   ...requestFields,
   seconds: z.number().int().positive().optional(),
+  duration: z.string().min(1).optional(),
+  detached: z.boolean().optional(),
+  status: z.string().min(1).optional(),
+  list: z.boolean().optional(),
+  reason: optionalString,
   deploy: z.boolean().optional(),
   pr: z.number().int().positive().optional(),
 });
@@ -1055,7 +1060,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   SentryIssueEventInput: '{ issueId: string; eventId?: string; full?: boolean; requestId?: string; taskSession?: string }',
   SentryEventInput: '{ eventId: string; project?: string; requestId?: string; taskSession?: string }',
   SentryTraceInput: '{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }',
-  WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
+  WaitInput: '{ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',

@@ -988,12 +988,12 @@ bun run railway:redeploy -- --json
 
 ---
 
-### wait — sleep or wait for deploy
+### wait — sleep, detached checkpoints, or wait for deploy
 
 ```bash
-bun run wait -- 300                   # sleep 300 seconds (5 min)
-bun run wait -- --deploy              # wait for railway deploy to complete
-bun run wait -- --pr 173              # wait for PR checks to pass
+bun run wait -- --detach --duration 24h --reason overnight    # create a non-blocking long wait
+bun run wait -- --status wait_<id>                            # check whether a detached wait is complete
+bun run wait -- --deploy                                      # wait for railway deploy to complete
 ```
 
 ---

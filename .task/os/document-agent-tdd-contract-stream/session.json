@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_78450c4e8cea",
+  "tmuxSession": "opensaas-os-document-agent-tdd-contract-stream-78450c4e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/document-agent-tdd-contract-stream",
+  "branch": "task/os/document-agent-tdd-contract-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-contract-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-contract-stream",
+  "prNumber": 843,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/843",
+  "createdAt": "2026-06-07T22:31:48.348Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-contract-stream/.task/os/document-agent-tdd-contract-stream/session.json"
+}

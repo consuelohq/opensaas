@@ -51,15 +51,39 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    for (const dir of ['agents', 'skills', 'tools', 'scripts', 'artifacts', 'pages', 'logs', 'runs', 'cache', 'runtime', 'bin', 'tmp']) {
+    for (const dir of [
+      'agents',
+      'skills',
+      'tools',
+      'scripts',
+      'src',
+      'tooling',
+      'manifests',
+      'artifacts',
+      'pages',
+      'logs',
+      'runs',
+      'cache',
+      'runtime',
+      'bin',
+      'tmp',
+    ]) {
       expect(existsSync(join(tempHome, dir))).toBe(true);
     }
-    expect(existsSync(join(tempHome, 'config.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'consuelo.db'))).toBe(true);
+    for (const file of ['package.json', 'bun.lock', 'config.json', 'consuelo.db']) {
+      expect(existsSync(join(tempHome, file))).toBe(true);
+    }
+    expect(existsSync(join(tempHome, 'source'))).toBe(false);
+    expect(existsSync(join(tempHome, 'source', 'tools'))).toBe(false);
+    expect(existsSync(join(tempHome, 'source', 'skills'))).toBe(false);
+    expect(existsSync(join(tempHome, 'source', 'package.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'scripts', 'server.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'scripts', 'server.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'skills.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'tools', 'tools.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'status', 'tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
@@ -67,7 +91,6 @@ describe('local OS install state', () => {
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'created')).toBe(true);
-
     const installedTaskSkill = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', 'skill.json'), 'utf8'));
     expect(installedTaskSkill.load.path).toBe('skills/task/SKILL.md');
     const installedTaskMetadata = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'), 'utf8'));
@@ -88,7 +111,20 @@ describe('local OS install state', () => {
     const statusWrapper = readFileSync(join(tempHome, 'bin', 'status'), 'utf8');
     expect(statusWrapper).toContain('scripts/tool-runner.ts');
     expect(statusWrapper).toContain('status');
-
+    expect(statusWrapper).toContain('OS_HOME=');
+    expect(statusWrapper).toContain('cd "$OS_HOME"');
+    expect(statusWrapper).toContain('./scripts/tool-runner.ts');
+    expect(statusWrapper).toContain('if [ "$#" -gt 0 ]; then');
+    expect(statusWrapper).toContain("INPUT='{}'");
+    expect(statusWrapper).not.toContain('INPUT="${1:-{}}"');
+    expect(statusWrapper).not.toContain('CONSUELO_OS_SOURCE_DIR');
+    expect(statusWrapper).not.toContain('$OS_HOME/source');
+    expect(statusWrapper).not.toContain('$OS_HOME/../../source/opensaas');
+    expect(statusWrapper).not.toContain('~/.consuelo/source/opensaas');
+    expect(statusWrapper).not.toContain('/Users/kokayi/Dev/opensaas');
+    expect(statusWrapper).not.toContain('packages/os');
+    const installedStatusMetadata = JSON.parse(readFileSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'), 'utf8'));
+    expect(installedStatusMetadata.sourcePath).toBe('manifests/tool.manifest.json');
     const second = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local' });

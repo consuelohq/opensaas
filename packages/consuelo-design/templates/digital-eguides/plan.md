@@ -29,11 +29,11 @@ Plan guides use the canonical Consuelo reader renderer. Run commands from the re
 Do not hand-author a new page shell. Produce structured content for the plan, then render through:
 
 ```bash
-bun run wiki:render -- --template spec --input <content.json> --out <index.html>
-bun run wiki:validate -- --file <index.html> --template spec
+bun run wiki:render -- --template plan --input <content.json> --out <index.html>
+bun run wiki:validate -- --input <index.html>
 ```
 
-Use the `spec` renderer mode for plans because plans are operating specs: they need status, owner, source truth, checkpoint, requirements, decisions, validation, rollout, and completion ledger surfaces.
+Use the `plan` renderer template for plans. Do not create a separate roadmap template; roadmap content is plan content.
 
 ## typed component guidance
 

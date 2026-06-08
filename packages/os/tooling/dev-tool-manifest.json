@@ -520,6 +520,11 @@
           "kind": "value"
         },
         {
+          "source": "taskSession",
+          "flag": "--task-session",
+          "kind": "value"
+        },
+        {
           "source": "message",
           "flag": "--message",
           "kind": "value",
@@ -4073,7 +4078,7 @@
     "methodPath": [
       "wait"
     ],
-    "description": "sleep or wait for a PR/deploy",
+    "description": "sleep, create detached wait checkpoints, or wait for a PR/deploy",
     "category": "utilities",
     "underlying": "workspace wait",
     "capabilities": {
@@ -4094,6 +4099,31 @@
           "kind": "value"
         },
         {
+          "source": "duration",
+          "flag": "--duration",
+          "kind": "value"
+        },
+        {
+          "source": "detached",
+          "flag": "--detach",
+          "kind": "boolean"
+        },
+        {
+          "source": "status",
+          "flag": "--status",
+          "kind": "value"
+        },
+        {
+          "source": "list",
+          "flag": "--list",
+          "kind": "boolean"
+        },
+        {
+          "source": "reason",
+          "flag": "--reason",
+          "kind": "value"
+        },
+        {
           "source": "deploy",
           "flag": "--deploy",
           "kind": "boolean"
@@ -4106,7 +4136,9 @@
       ]
     },
     "exampleInput": {
-      "seconds": 1
+      "duration": "24h",
+      "detached": true,
+      "reason": "wake after long-running external work"
     },
     "sessionRequired": false
   },
