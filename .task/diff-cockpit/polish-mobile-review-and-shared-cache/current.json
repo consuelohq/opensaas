@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-mobile-review-and-shared-cache",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 747,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/747",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/747",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/747/polish-mobile-review-and-shared-cache",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/747",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/747/polish-mobile-review-and-shared-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-mobile-review-and-shared-cache",
+  "taskSession": "tsk_b6c4e2902c77",
+  "tmuxSession": "opensaas-diff-cockpit-polish-mobile-review-and-shared-cache-b6c4e290",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-mobile-review-and-shared-cache/.task/diff-cockpit/polish-mobile-review-and-shared-cache/session.json",
+  "createdAt": "2026-06-03T17:45:22.047Z"
+}

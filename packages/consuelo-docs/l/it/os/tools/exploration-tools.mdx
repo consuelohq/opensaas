@@ -1,0 +1,56 @@
+---
+title: "Exploration tools"
+description: "Use explore and the decision-engine loop to orient in the repository before choosing files to edit."
+---
+
+# Exploration tools
+
+`explore` is the OS repository investigation tool. It is designed for the moment before exact file work: when the agent knows the feature, failure, or workflow it needs to understand, but does not yet know the right files, symbols, tests, or docs.
+
+Think of `explore` as architectural orientation. It searches the indexed repository, ranks likely files and symbols, and returns candidate paths with reasons. It is useful for questions like “where is task metadata resolved?”, “which scripts own browser validation?”, or “what docs already describe the OS portal?”
+
+A typical first pass is intentionally semantic:
+
+```ts
+await workspace.call({
+  tool: "explore",
+  input: {
+    query: "task metadata taskSession task push stream PR workspace facade",
+    limit: 8,
+  },
+  timeout: 180,
+})
+```
+
+That result is not proof. It is a map. `explore` can point to promising implementation files, nearby tests, docs, or changed files, but the agent still needs to verify current truth with `fs.read`, targeted `fs.search`, tests, logs, or a review tool.
+
+A good exploration loop usually looks like this:
+
+1. Run `explore` with the feature, failure, or behavior in plain language.
+2. Read the most relevant returned files with `fs.read`.
+3. Use `fs.search` only after the direction is narrow enough to search exact names or strings.
+4. Ask the decision engine for the next action when the evidence is still scattered.
+5. Edit only after the path is supported by current file evidence.
+
+For example, if `explore` points at `packages/os/scripts/task-push.js` and `packages/os/scripts/lib/facade/executor.ts`, the next action is not to patch immediately. The next action is to read the relevant sections and check how the current facade resolves `taskSession`:
+
+```ts
+await workspace.call({
+  tool: "fs.read",
+  taskSession,
+  input: {
+    path: "packages/os/scripts/lib/facade/executor.ts",
+    from: 1,
+    to: 180,
+  },
+  timeout: 120,
+})
+```
+
+Use `explore` before broad repository search. A raw “find every mention of task” query usually produces too much noise. A semantic exploration query can surface the small set of files where the concept is implemented, and then `fs.search` can follow up with exact strings such as `TASK_SESSION_REQUIRED`, `taskSession`, or `branchMode`.
+
+`explore` also supports architectural pattern discovery. Before adding a new docs generator, an agent can ask for “generated docs MDX navigation manifest pattern” and then read the returned generator files. Before touching browser validation, it can ask for “browser wrapper screenshot accessibility snapshot network trace” and then inspect `packages/os/scripts/browser.js` plus the manifest entries.
+
+The broader decision-engine family may include tools such as `decideNext`, `confidenceScore`, `exploit`, and `confirm`. Those tools help decide whether the evidence is strong enough, whether the agent should keep investigating, and whether the implementation actually matches reality. This page focuses on `explore`, but the important discipline is the same: retrieval is not proof, and confidence should come from verified files and validation output.
+
+Use `explore` early, especially when the task crosses subsystems. It keeps the agent from guessing paths, overusing broad text search, or editing the first plausible file without understanding the local pattern.

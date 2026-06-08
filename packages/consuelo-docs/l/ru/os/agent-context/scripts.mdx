@@ -5,9 +5,28 @@ description: "Procedural script reference for Consuelo OS runtime work."
 
 {/* Generated from packages/os/SCRIPTS.md. Do not edit this page directly. */}
 
-the following scripts are available via `bun run &lt;name&gt;`. use the script name as the command and pass arguments after `--`.
+> Procedural script reference for Consuelo OS runtime work.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` -- running `bun run &lt;anything&gt;` from inside a worktree fails with `Script not found`.
+<Note>
+This page is generated from `packages/os/SCRIPTS.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
+</Note>
+
+## What this file controls
+
+| Field | Value |
+| --- | --- |
+| Source file | `packages/os/SCRIPTS.md` |
+| Runtime role | OS runtime scripts, install commands, task commands, validation commands, and operator procedures. |
+| Controls | How humans and agents run OS operations without bypassing the server, skill, or task workflow. |
+| Generated route | `/os/agent-context/scripts` |
+
+## Source document
+
+# workspace scripts
+
+the following scripts are available via `bun run \{name\}`. use the script name as the command and pass arguments after `--`.
+
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` -- running `bun run \{anything\}` from inside a worktree fails with `Script not found`.
 
 **why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps -- that's why all scripts must run from repo root.
 
@@ -92,15 +111,15 @@ do not answer architecture questions from memory. search memory, read files, the
 every change — even tiny ones — follows this flow. no exceptions.
 
 ```bash
- 1. bun run stream:context -- --area <area>              # understand the stream state
- 2. bun run stream:sync -- --area <area>                 # sync stream with latest main
- 3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
+ 1. bun run stream:context -- --area {area}              # understand the stream state
+ 2. bun run stream:sync -- --area {area}                 # sync stream with latest main
+ 3. bun run task:start -- --area {area} --title "x"      # create task branch + worktree + PR
  4. (make changes via task:fs and task:exec)
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
  8. bun run task:prs                                     # show both PR links (human review)
- 9. bun run task:merge -- --pr <N> --wait                # merge + wait for deploy
+ 9. bun run task:merge -- --pr {N} --wait                # merge + wait for deploy
 10. bun run railway:logs -- --status                     # check deploy health + logs
 11. bun run browser -- consuelo                          # verify UI in production
 12. bun run task:finish                                  # remove worktree, delete branch
@@ -121,7 +140,7 @@ always use this flow even if the change seems tiny. when in doubt, start from th
 **stale .task/current.json is the #1 cause of script failures.** branch-aware task scripts now ignore metadata when `taskBranch` does not match the actual worktree branch. if `task:pr`, `task:finish`, `task:push`, or `task:prs` still need explicit repair, fix the known worktree only:
 
 ```bash
-bun run task:init -- --area <area> --branch <branch> --pr <N>
+bun run task:init -- --area {area} --branch {branch} --pr {N}
 ```
 
 do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
@@ -132,8 +151,8 @@ do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.
 
 **after any write or patch, verify immediately:**
 ```bash
-bun run fs -- read <file> --from <range> --plain
-node --check <touched-js-file>
+bun run fs -- read {file} --from {range} --plain
+node --check {touched-js-file}
 git status --porcelain -uall -- . ':!node_modules'
 ```
 
@@ -149,12 +168,12 @@ recovery patterns for common failures. don't panic — diagnose first.
 
 | symptom | fix |
 |---------|-----|
-| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area &lt;area&gt; --branch &lt;branch&gt; --pr &lt;N&gt;` |
+| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area \{area\} --branch \{branch\} --pr \{N\}` |
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
 | "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
-| task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area &lt;area&gt; read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
+| task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area \{area\} read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
 
@@ -173,7 +192,7 @@ check for:
 - verbose variable names that don't match the codebase conventions
 
 ```bash
-bun run task:exec -- --branch <task-branch> git diff   # review your changes
+bun run task:exec -- --branch {task-branch} git diff   # review your changes
 ```
 
 if you see slop, fix it before pushing. a clean diff is a fast review.
@@ -322,14 +341,14 @@ bun run task:fs -- --area dialer search "transferCall" packages/dialer/src/
 bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed the thing"
 ```
 
-task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch &lt;task-branch&gt;` or `--pr &lt;number&gt;`.
+task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch \{task-branch\}` or `--pr \{number\}`.
 
-successful `task:fs read &lt;file&gt;` calls also append a `file.read` event to `.task/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
+successful `task:fs read \{file\}` calls also append a `file.read` event to `.task/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
 
 **task:fs failure modes**
 ```bash
 bad: bun run task:fs -- --area workspace-agents read .task/current.json
- → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
+ → error: multiple active tasks found (...). use --branch {task-branch} or --pr {number} to select one.
  (area is not enough when multiple tasks exist in the same stream. use --branch or --pr)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run task:fs -- read src/foo.ts
@@ -360,11 +379,11 @@ bun run task:exec -- --branch task/dialer/fix-thing git diff --check
 **task:exec failure modes**
 ```bash
 bad: bun run task:exec -- --area workspace-agents git status
- → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
+ → error: multiple active tasks found (...). use --branch {task-branch} or --pr {number} to select one.
  (always use --branch or --pr when the same area has multiple active tasks)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
- → works but you left the repo root. now bun run <anything> will fail.
+ → works but you left the repo root. now bun run {anything} will fail.
  (use: bun run task:exec -- --branch task/dialer/fix-thing git diff)
 ```
 
@@ -566,7 +585,7 @@ bad: bun run task:start
  (--area and --title are both required)
 
 bad: bun run task:start -- --area dialer --title "fix thing"
- → error: worktree already exists at <worktree-root>/task-dialer-fix-thing
+ → error: worktree already exists at {worktree-root}/task-dialer-fix-thing
  (check if the old task is still needed: bun run task:fs -- --branch task/dialer/fix-thing read .task/current.json
   if not needed: bun run task:finish or bun run task:cleanup -- --preview first)
 ```
@@ -590,7 +609,7 @@ bun run task:pr -- --json
 ```bash
 bad: bun run task:pr (with stale .task/current.json)
  → error: .task/current.json belongs to branch X, but current branch is main
- (fix the metadata: bun run task:init -- --area <area> --branch <branch> --pr <N>)
+ (fix the metadata: bun run task:init -- --area {area} --branch {branch} --pr {N})
 ```
 
 ---
@@ -628,7 +647,7 @@ bun run task:finish -- --pr 213 --json
 ```bash
 bad: bun run task:finish (with stale .task/current.json)
  → runs against stale metadata. may report "finished" for an old task.
- (fix the metadata first: bun run task:init -- --area <area> --branch <branch> --pr <N>)
+ (fix the metadata first: bun run task:init -- --area {area} --branch {branch} --pr {N})
 ```
 
 ---
@@ -701,7 +720,7 @@ bun run stream:context -- --json
 
 ### pr-review — fetch all review comments from a PR
 
-pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans. writes a structured file to `.task/reviews/&lt;pr&gt;.md` with file attention map, action items, and task loop reminder.
+pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans. writes a structured file to `.task/reviews/\{pr\}.md` with file attention map, action items, and task loop reminder.
 
 ```bash
 bun run pr-review -- 173              # fetch reviews for PR #173
@@ -712,11 +731,11 @@ bun run pr-review -- 173 --json
 
 **pr-review helpers — full review-fix flow**
 ```bash
-bun run pr-review -- <pr>             # 1. fetch reviews
-bun run gh -- diff <pr>               # 2. see what changed
-bun run gh -- files <pr>              # 3. list changed files
-bun run gh -- read <path> --ref <branch>  # 4. read specific file from PR branch
-bun run gh -- checks <pr>             # 5. check CI status
+bun run pr-review -- {pr}             # 1. fetch reviews
+bun run gh -- diff {pr}               # 2. see what changed
+bun run gh -- files {pr}              # 3. list changed files
+bun run gh -- read {path} --ref {branch}  # 4. read specific file from PR branch
+bun run gh -- checks {pr}             # 5. check CI status
 # 6. fix the issues via task:fs
 bun run task:push -- --message "fix(scope): address review" --changed  # 7. push fixes
 ```
@@ -743,13 +762,13 @@ wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. a
 bun run gh -- prs                     # list open PRs
 bun run gh -- prs --mine              # list ko's PRs
 bun run gh -- prs --bot               # list bot PRs
-bun run gh -- checks <pr>             # CI check status
-bun run gh -- diff <pr>               # file list + stats
-bun run gh -- diff <pr> --full        # full diff
-bun run gh -- files <pr>              # list changed files
-bun run gh -- view <pr>               # PR details
-bun run gh -- reviews <pr>            # who approved/requested changes
-bun run gh -- comment <pr> "looks good"  # post a comment
+bun run gh -- checks {pr}             # CI check status
+bun run gh -- diff {pr}               # file list + stats
+bun run gh -- diff {pr} --full        # full diff
+bun run gh -- files {pr}              # list changed files
+bun run gh -- view {pr}               # PR details
+bun run gh -- reviews {pr}            # who approved/requested changes
+bun run gh -- comment {pr} "looks good"  # post a comment
 bun run gh -- read src/foo.ts --ref stream/dialer  # read file from branch (no checkout)
 bun run gh -- blame src/foo.ts        # blame URL
 bun run gh -- branches                # list remote branches
@@ -903,7 +922,7 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ### workspace — typed facade CLI for the workspace MCP app
 
-routes `workspace &lt;tool.name&gt; '&lt;json-input&gt;'` to the typed facade. this is the lower-level CLI used by the MCP `workspace.call` tool.
+routes `workspace &lt;tool.name&gt; '\{json-input\}'` to the typed facade. this is the lower-level CLI used by the MCP `workspace.call` tool.
 
 ```bash
 bun run workspace -- status
@@ -989,7 +1008,7 @@ workspace sentry.event '{"eventId":"0123456789abcdef0123456789abcdef","project":
 workspace sentry.trace '{"traceId":"0123456789abcdef0123456789abcdef","limit":10}'
 ```
 
-The `trace` command is best-effort. It queries organization events for `trace:&lt;traceId&gt;` and falls back to issue search with the same trace query. It returns every attempt in JSON so agents can see partial Sentry API coverage.
+The `trace` command is best-effort. It queries organization events for `trace:\{traceId\}` and falls back to issue search with the same trace query. It returns every attempt in JSON so agents can see partial Sentry API coverage.
 
 ### generate-docs — generate typed tool documentation
 
@@ -1171,7 +1190,7 @@ git status --porcelain -uall -- . ':!node_modules'
 ```text
 bad: python replace script says "expected block not found"
  → the old string has different whitespace than the file. read the exact range with
-   bun run fs -- read <file> --from <N> --to <M> --plain and copy it character-for-character.
+   bun run fs -- read {file} --from {N} --to {M} --plain and copy it character-for-character.
    watch for trailing newlines, tab/space mismatches, and invisible unicode characters.
  (always read the target range with --plain before writing the old string in your script)
 ```
@@ -1296,7 +1315,7 @@ Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typ
 
 Required workflow for issue creation:
 
-1. Search first with `workspace linear.search '\{"search":"&lt;title keywords&gt;"\}'` to avoid duplicates.
+1. Search first with `workspace linear.search '\{"search":"\{title keywords\}"\}'` to avoid duplicates.
 2. Create with `workspace linear.createIssue '\{"title":"[task] description","description":"...","labels":["[task]","opensaas"]\}'`.
 3. Use DEV by default. Pass `team:"growth"` only when Ko explicitly asks for non-engineering work.
 4. Every issue must include one bracket type label and one repository label. The wrapper defaults to the bracket type detected from the title plus `opensaas`; pass labels explicitly when creating non-default repository work.
@@ -1318,7 +1337,7 @@ Examples:
 ```bash
 workspace linear.search '{"search":"workspace facade linear"}'
 workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrapper","labels":["[bug]","opensaas"]}'
-workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
+workspace linear.updateIssue '{"issueId":"DEV-123","parent":"{parent-issue-id}"}'
 workspace linear.projects '{"first":50}'
 ```
 

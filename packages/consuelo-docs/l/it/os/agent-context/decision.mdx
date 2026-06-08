@@ -5,6 +5,25 @@ description: "Decision-process doctrine used by Consuelo OS agents."
 
 {/* Generated from packages/os/decision.md. Do not edit this page directly. */}
 
+> Decision-process doctrine used by Consuelo OS agents.
+
+<Note>
+This page is generated from `packages/os/decision.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
+</Note>
+
+## What this file controls
+
+| Field | Value |
+| --- | --- |
+| Source file | `packages/os/decision.md` |
+| Runtime role | Decision-engine doctrine for evidence collection, confidence, validation, and next action selection inside Consuelo OS. |
+| Controls | How OS agents inspect facts, resolve conflicts, preserve intent, and choose the next safe action. |
+| Generated route | `/os/agent-context/decision` |
+
+## Source document
+
+# decision process
+
 ## decision log: Consuelo app GraphQL, Files API, and future OS API boundary
 
 2026-05-24: cloud artifacts should use the Consuelo app Files REST API, not the workspace GraphQL capability. Consuelo app GraphQL reads structured app objects for skills such as `consuelo-workspace-snapshot`; Consuelo app Files API publishes app-visible artifacts through upload URL, S3 PUT, file record creation, optional supported attachment, and file lookup/download URL. `CONSUELO_APP_GRAPHQL_URL` / `CONSUELO_APP_GRAPHQL_API_KEY` are the preferred names for app object reads, with fallback to the older `CONSUELO_GRAPHQL_URL` / `CONSUELO_INTERNAL_GRAPHQL_API_KEY` while the stream settles. `CONSUELO_APP_API_URL` / `CONSUELO_APP_API_KEY` are required for file publishing. A future `CONSUELO_OS_API_URL` / `CONSUELO_OS_API_KEY` may represent the hosted OS control plane, but it is separate from both app GraphQL and app Files API.
@@ -361,7 +380,7 @@ what to remember:
 use this flow when starting from a question or bug:
 
 ```ts
-await workspace.call({ tool: "explore", input: { query: "<question or goal>" }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "{question or goal}" }, timeout: 120 })
 await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
@@ -370,13 +389,13 @@ then do the recommended action.
 if it says to read a file, read the file through the workspace script so the read can be tracked:
 
 ```ts
-await workspace.call({ tool: "fs.read", taskSession, input: { path: "<path>" }, timeout: 120 })
+await workspace.call({ tool: "fs.read", taskSession, input: { path: "{path}" }, timeout: 120 })
 ```
 
 if the read happened outside normal tracking, mark it:
 
 ```ts
-await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markRead: "{path}" }, timeout: 120 })
 ```
 
 then check confidence:
@@ -593,7 +612,7 @@ primary task file:
 queryable mirror:
 
 ```text
-~/.cache/workspace-index/<repo-hash>/index.db
+~/.cache/workspace-index/{repo-hash}/index.db
 ```
 
 the json file exists so agents and humans can inspect task evidence easily.
@@ -641,7 +660,7 @@ preferred behavior:
 manual fallback:
 
 ```ts
-await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markRead: "{path}" }, timeout: 120 })
 ```
 
 if a file was read and the system does not know it, the next decision will be weaker.
@@ -890,7 +909,7 @@ qwen can bridge synonyms, but it still needs a meaningful task.
 before reading random files:
 
 ```ts
-await workspace.call({ tool: "explore", input: { query: "<goal>" }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "{goal}" }, timeout: 120 })
 await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 

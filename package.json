@@ -281,6 +281,7 @@
     "diff_cockpit": "bun packages/workspace/scripts/diff_cockpit.ts",
     "git:diff": "bun packages/workspace/scripts/git-diff.js",
     "trace:analytics": "bun scripts/operator/trace-analytics.ts",
+    "trace:costs": "bun scripts/operator/trace-costs.ts",
     "trace:errors": "bun scripts/operator/trace-errors.ts",
     "trace:watch": "bun scripts/operator/trace-watch.ts",
     "trace:home": "bun scripts/operator/trace-home.ts",
