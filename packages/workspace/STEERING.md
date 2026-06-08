@@ -247,35 +247,75 @@ Run the focused test before implementation and let workspace-owned workpad secti
 
 Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
 
-## Code mode first for semantic workspace work
+## Code mode first for programmable workspace API work
 
 Use direct `workspace.call` for one exact known tool call.
 
-Use `code.run` for one semantic workflow, even if the user describes it as a single task, when the work likely requires multiple related operations.
+Use `batch` for a fixed list of independent calls where later steps do not depend on earlier results. Batch is fan-out/fan-in; it is not a control-flow surface.
 
-Examples of semantic workflows that should default to `code.run`:
+Use `code.run` when the agent needs to write a small program over the workspace API. Code mode is for control flow and output reduction: loops, branching, filtering, joining, retries, derived summaries, and returning only the compact result instead of streaming every intermediate tool output back through the model.
 
-- investigate a failure
-- inspect several files and summarize
-- search → read → decide
-- read → edit → reread
-- edit → validate
-- check task/PR state and explain what remains
-- run a focused validation and return only the important tail
-- coordinate several typed workspace tools in one pass
+Examples that should default to `code.run`:
 
-Do not think of `code.run` as a replacement for typed workspace tools. Think of it as the typed workspace tool composer. Inside `code.run`, call the same facade tools through `workspace_call("tool.name", input)`, `workspace.*` helpers, or typed helpers. The underlying tools still own schemas, task scoping, branch/worktree routing, lifecycle rules, trace IDs, and durable-action boundaries.
+- search -> read only matching files -> decide
+- inspect many trace rows -> filter locally -> return a compact table
+- read several manifests/configs -> join facts -> summarize the mismatch
+- run validation -> trim noisy output -> return status plus the useful tail
+- edit -> reread -> validate invariants in one semantic pass
+- retry a safe read with narrower inputs when the first result is too broad
+- compute derived stats from tool output without exposing the full intermediate payload
+
+Do not describe `code.run` as merely chaining tools. If the calls are known and independent, use `batch`. If the workflow needs state, decisions, loops, or local computation between workspace calls, use `code.run`.
+
+Inside `code.run`, call the same facade tools through `workspace_call("tool.name", input)`, `workspace.*` helpers, or typed helpers. The underlying typed tools still own schemas, task scoping, branch/worktree routing, lifecycle rules, trace IDs, and durable-action boundaries. Code mode is not a guardrail bypass and is not a raw shell replacement.
 
 Default choice:
 
 | Situation | Use |
 |---|---|
-| One exact tool call | direct `workspace.call` |
-| One semantic workflow with multiple steps | `code.run` |
-| Multiple independent read-only calls | `batch` |
+| One exact typed operation | direct `workspace.call` |
+| Fixed independent read-only calls | `batch` |
+| Programmable workspace API workflow with control flow or output reduction | `code.run` |
 | Large/multiline payload | `tmp` / `contentFile` / `--input-file` / `--stdin` |
+| Focused package/test/build command | `task.call` |
 | Final push / PR / merge / deploy / publish | direct outer `workspace.call` |
 | No typed tool exists | report a tooling gap and use the smallest safe fallback |
+
+Good `code.run` example: keep noisy trace rows inside code mode and return only the useful aggregate.
+
+```ts
+await workspace.call({
+  tool: "code.run",
+  input: {
+    mode: "read",
+    maxOperations: 8,
+    maxResultChars: 12000,
+    code: `
+      const rows = await workspace_call("context.trace", {
+        contains: "python3",
+        limit: 40
+      });
+
+      const counts = new Map();
+      for (const row of rows.data?.rows ?? []) {
+        counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);
+      }
+
+      return {
+        totalMatches: rows.data?.count ?? 0,
+        byTool: [...counts.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+      };
+    `
+  },
+  timeout: 180
+})
+```
+
+Bad: using `batch` or repeated direct calls when the agent must inspect each result before deciding the next read.
+
+Bad: using `context.trace` with `raw: true` and a high limit, then sending every full row back through the model. Use `code.run` to filter/summarize first, or request one specific `traceId`.
 
 ## Workspace tool discovery with tools.search
 
@@ -410,7 +450,7 @@ Prefer typed workspace operations with structured input. Avoid large combined pa
 Use this recovery order:
 
 1. One exact operation: direct typed `workspace.call`.
-2. One semantic workflow: `code.run` over typed workspace tools.
+2. One programmable workspace workflow: `code.run` over typed workspace APIs.
 3. Multiple independent read-only operations: `batch`.
 4. Large or multiline payload: `tmp`, `contentFile`, `--input-file`, or explicit `--stdin`.
 5. Focused package/test/build command: `task.call` with a short argv array. Legacy `task.exec` remains supported.
