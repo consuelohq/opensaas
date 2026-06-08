@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+  "events": [
+    {
+      "id": "3771a3c2-71a3-4b99-a593-82694e6e7e8a",
+      "occurred_at": "2026-06-05T05:03:08.105Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "052afb48-036f-4615-8406-4b362b7ca9e9",
+      "occurred_at": "2026-06-05T05:03:25.021Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "646123b2-ae5e-4882-95e2-a63280479999",
+      "occurred_at": "2026-06-05T05:03:30.822Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "de87253c-4437-4f32-b01c-56d7b4522790",
+      "occurred_at": "2026-06-05T05:03:39.196Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "93cb7c0e-9ffb-4983-8eff-8b00a9f2f1d7",
+      "occurred_at": "2026-06-05T05:04:07.862Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "ddefe758-300f-4f79-8a59-8048c9cd5e64",
+      "occurred_at": "2026-06-05T05:06:07.955Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    },
+    {
+      "id": "d43d9367-d4ae-4cff-957c-24d8fcd99d90",
+      "occurred_at": "2026-06-05T05:06:45.132Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/main-packages-code-browser",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/main-packages-code-browser"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-05T05:06:45.189Z"
+}

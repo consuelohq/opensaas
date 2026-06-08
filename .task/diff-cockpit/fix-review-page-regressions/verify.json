@@ -1,0 +1,141 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-review-page-regressions",
+  "base": "origin/task/diff-cockpit/fix-review-page-regressions",
+  "headSha": "081dd14ebe46f4c11b9da9121e89163db818c49d",
+  "changeHash": "f99c4b8b44ee184d878d9ae20449848d14728142b0ad9528712132772f9930ab",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/workspace/hooks/README.md",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/diff_cockpit.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "verifiedAt": "2026-06-05T07:48:58.393Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/current.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/evidence-log.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/read-log.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/session.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/verify.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/workpad.md",
+        ".task/diff-cockpit/fix-review-page-regressions/evidence-log.json",
+        ".task/diff-cockpit/fix-review-page-regressions/read-log.json",
+        ".task/diff-cockpit/fix-review-page-regressions/verify.json",
+        ".task/diff-cockpit/fix-review-page-regressions/workpad.md",
+        ".task/diff-cockpit/homepage-cache-headers/current.json",
+        ".task/diff-cockpit/homepage-cache-headers/evidence-log.json",
+        ".task/diff-cockpit/homepage-cache-headers/read-log.json",
+        ".task/diff-cockpit/homepage-cache-headers/session.json",
+        ".task/diff-cockpit/homepage-cache-headers/verify.json",
+        ".task/diff-cockpit/homepage-cache-headers/workpad.md",
+        ".task/diff-cockpit/main-packages-code-browser/current.json",
+        ".task/diff-cockpit/main-packages-code-browser/evidence-log.json",
+        ".task/diff-cockpit/main-packages-code-browser/read-log.json",
+        ".task/diff-cockpit/main-packages-code-browser/session.json",
+        ".task/diff-cockpit/main-packages-code-browser/verify.json",
+        ".task/diff-cockpit/main-packages-code-browser/workpad.md",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/current.json",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/evidence-log.json",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/read-log.json",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/session.json",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/verify.json",
+        ".task/diff-cockpit/polish-main-code-browser-search-and-cache/workpad.md",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/current.json",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/evidence-log.json",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/read-log.json",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/session.json",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/verify.json",
+        ".task/diff-cockpit/polish-mobile-review-and-shared-cache/workpad.md",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/current.json",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/session.json",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/verify.json",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/workpad.md",
+        ".task/tasks/diff-cockpit/event-driven-cache-refresh-hooks.json",
+        ".task/tasks/diff-cockpit/homepage-cache-headers.json",
+        ".task/tasks/diff-cockpit/main-packages-code-browser.json",
+        ".task/tasks/diff-cockpit/polish-main-code-browser-search-and-cache.json",
+        ".task/tasks/diff-cockpit/polish-mobile-review-and-shared-cache.json",
+        ".task/tasks/diff-cockpit/tighten-mobile-diff-gutters.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/workspace/hooks/README.md",
+        "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+        "packages/workspace/scripts/diff_cockpit.ts",
+        "packages/workspace/scripts/task-push.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-push.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1100,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-page-regressions\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 562\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:48:57\n\u001b[2m   Duration \u001b[22m 709ms\u001b[2m (transform 17ms, setup 0ms, import 26ms, tests 562ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
