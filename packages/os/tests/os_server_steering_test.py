@@ -80,6 +80,65 @@ class OsSteeringServerTest(unittest.TestCase):
         self.assertEqual(output['result']['content'], steering_text)
         self.assertGreaterEqual(row[4], 0)
 
+    def test_get_steering_guards_repeat_bootstrap_calls(self):
+        now = [1000.0]
+        calls = []
+        steering_text = 'os steering payload'
+
+        def fake_build_steering():
+            calls.append(len(calls) + 1)
+            return steering_text
+
+        self.module._steering_guard_now = lambda: now[0]
+        self.module._build_steering = fake_build_steering
+
+        first = self.module.get_steering()
+        second = self.module.get_steering()
+        third = self.module.get_steering()
+        fourth = self.module.get_steering()
+
+        self.assertEqual(first, steering_text)
+        self.assertIn('GET_STEERING_LOOP_GUARD', second)
+        self.assertIn('packages/os/STEERING.md', second)
+        self.assertIn('tools.search', second)
+        self.assertIn('GET_STEERING_RATE_LIMITED', third)
+        self.assertIn('GET_STEERING_COOLDOWN', fourth)
+        self.assertEqual(calls, [1])
+
+        db_path = Path(os.environ['CONSUELO_HOME']) / 'consuelo.db'
+        conn = sqlite3.connect(db_path)
+        try:
+            rows = conn.execute('SELECT name, output_json FROM skill_executions ORDER BY started_at').fetchall()
+        finally:
+            conn.close()
+
+        self.assertEqual([row[0] for row in rows], ['get_steering', 'get_steering', 'get_steering', 'get_steering'])
+        decisions = [json.loads(row[1])['result']['decision'] for row in rows]
+        self.assertEqual(decisions, ['full', 'soft_guard', 'hard_guard', 'cooldown'])
+
+    def test_refresh_steering_requires_reason_and_rate_limits_break_glass(self):
+        now = [2000.0]
+        calls = []
+
+        def fake_build_steering():
+            calls.append(len(calls) + 1)
+            return f'forced os steering {len(calls)}'
+
+        self.module._steering_guard_now = lambda: now[0]
+        self.module._build_steering = fake_build_steering
+
+        no_reason = self.module.refresh_steering(reason='')
+        first = self.module.refresh_steering(reason='fresh context required')
+        second = self.module.refresh_steering(reason='retry')
+        now[0] += self.module._STEERING_FORCE_WINDOW_SECONDS + 1
+        third = self.module.refresh_steering(reason='later fresh context')
+
+        self.assertIn('REFRESH_STEERING_REASON_REQUIRED', no_reason)
+        self.assertEqual(first, 'forced os steering 1')
+        self.assertIn('REFRESH_STEERING_RATE_LIMITED', second)
+        self.assertEqual(third, 'forced os steering 2')
+        self.assertEqual(calls, [1, 2])
+
 
 if __name__ == '__main__':
     unittest.main()
