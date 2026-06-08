@@ -61,3 +61,11 @@ started: 2026-06-08
 ## workspace-owned: activity log
 
 - 2026-06-08 05:00:53 fs.write: `.task/os/resolve-pr-780-metadata-conflicts/workpad.md`
+- 2026-06-08 05:04:33 fs.write: `.task/os/resolve-pr-780-metadata-conflicts/workpad.md`
+
+## final review update
+
+- `bun run review` reports `YOUR CHANGES: ✓ clean`.
+- It exits non-zero only because of pre-existing stream issues: `packages/os/scripts/wait.js`, `packages/workspace/scripts/consuelo-design.ts`, `packages/workspace/scripts/stream-context.js`, `packages/workspace/scripts/wait.js`, and `twenty-shared:typecheck` in `scripts/generateBarrels.ts`.
+
+- 2026-06-08 05:04:33 append: `.task/os/resolve-pr-780-metadata-conflicts/workpad.md`
