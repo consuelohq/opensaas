@@ -313,11 +313,42 @@ def _read_steering() -> str:
     return content
 
 
+def _run_get_steering() -> str:
+    started = time.time()
+    trace_id = _trace_id()
+    content = _read_steering()
+    input_tokens = _estimate_tokens({})
+    output_tokens = _estimate_tokens(content)
+    result = _envelope(
+        ok=True,
+        code='OK',
+        message='steering loaded',
+        data={
+            'chars': len(content),
+            'estimatedOutputTokens': output_tokens,
+            'content': content,
+        },
+        durationMs=int((time.time() - started) * 1000),
+        traceId=trace_id,
+    )
+    _write_tool_trace(
+        tool='get_steering',
+        tool_input={},
+        resolved_input={},
+        result=result,
+        task_session=None,
+        mcp_trace_id=trace_id,
+        input_tokens_override=input_tokens,
+        output_tokens_override=output_tokens,
+        total_tokens_override=input_tokens + output_tokens,
+    )
+    return content
+
+
 @mcp.tool(annotations=RO)
 async def get_steering() -> str:
     """return current workspace steering and tool manifest."""
-    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _read_steering)
-
+    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _run_get_steering)
 
 def _workspace_root() -> Path:
     return Path(APP_DIR).resolve()
@@ -468,6 +499,9 @@ def _write_tool_trace(
     task_session: str | None,
     mcp_trace_id: str,
     metadata: dict[str, Any] | None = None,
+    input_tokens_override: int | None = None,
+    output_tokens_override: int | None = None,
+    total_tokens_override: int | None = None,
 ) -> None:
     try:
         task_context = result.get('taskContext') if isinstance(result.get('taskContext'), dict) else {}
@@ -476,9 +510,9 @@ def _write_tool_trace(
         worktree = task_context.get('worktree') or (metadata or {}).get('worktree') or (metadata or {}).get('worktreePath')
         session = task_context.get('taskSession') or task_session
         conn, db_path = _open_trace_db()
-        input_tokens = _estimate_tokens(tool_input)
-        output_tokens = _estimate_tokens(result)
-        total_tokens = input_tokens + output_tokens
+        input_tokens = input_tokens_override if input_tokens_override is not None else _estimate_tokens(tool_input)
+        output_tokens = output_tokens_override if output_tokens_override is not None else _estimate_tokens(result)
+        total_tokens = total_tokens_override if total_tokens_override is not None else input_tokens + output_tokens
         try:
             conn.execute('''
                 INSERT OR REPLACE INTO tool_traces(

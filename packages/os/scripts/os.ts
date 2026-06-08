@@ -244,6 +244,48 @@ export function getSteering(): string {
   return sections.join('\n');
 }
 
+
+export function executeGetSteering(
+  buildSteering: () => string = getSteering,
+): string {
+  ensureRuntimePaths();
+  const started = Date.now();
+  const traceId = createTraceId();
+  recordExecutionStarted({ traceId, name: 'get_steering', input: {} });
+
+  try {
+    const steering = buildSteering();
+    const durationMs = Date.now() - started;
+    recordExecutionFinished({
+      traceId,
+      status: 'succeeded',
+      output: {
+        ok: true,
+        name: 'get_steering',
+        permission: 'read',
+        traceId,
+        durationMs,
+        result: {
+          chars: steering.length,
+          estimatedOutputTokens: Math.max(1, Math.floor(steering.length / 4)),
+          content: steering,
+        },
+      },
+      durationMs,
+    });
+    return steering;
+  } catch (error: unknown) {
+    const durationMs = Date.now() - started;
+    recordExecutionFinished({
+      traceId,
+      status: 'failed',
+      errorCode: 'BOOTSTRAP_FAILED',
+      errorMessage: error instanceof Error ? error.message : 'OS bootstrap failed.',
+      durationMs,
+    });
+    throw error;
+  }
+}
 export function getRawSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
@@ -512,7 +554,7 @@ async function main(): Promise<void> {
   const rawInput = args[0];
 
   if (command === 'get-steering') {
-    writeStdout(getSteering());
+    writeStdout(executeGetSteering());
     return;
   }
 
