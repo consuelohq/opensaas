@@ -32,7 +32,6 @@ Operating docs live in `packages/os/docs/`:
 - `docs/skills.md` — current skill contracts and examples.
 - `docs/permissions.md` — permission and approval levels.
 - `docs/env-capability-matrix.md` — runtime capabilities and env shape.
-- `docs/test-driven-agent-work.md` — red/green/yellow agent TDD and workpad contract.
 
 ## Local runtime state
 

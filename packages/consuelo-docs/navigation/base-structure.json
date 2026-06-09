@@ -449,6 +449,7 @@
           "pages": [
             "os/agent-context/steering",
             "os/agent-context/decision",
+            "os/agent-context/test-driven-agent-work",
             "os/agent-context/tools",
             "os/agent-context/scripts"
           ]
