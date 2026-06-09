@@ -18,10 +18,14 @@ import {
   recordExecutionStarted,
 } from './lib/runtime-state';
 import {
+  acquireSitePageLease,
   getSitesPaths,
   materializeSites,
+  prepareSitePagePatch,
   publishSitePage,
   readOfficeSiteData,
+  releaseSitePageLease,
+  sitePageLeaseStatus,
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
@@ -84,6 +88,14 @@ export type SitesCommandResult = {
   pagesRegistryPath?: string;
   pageId?: string;
   pagePath?: string;
+  sectionId?: string;
+  agentId?: string | null;
+  leaseAction?: 'acquire' | 'release' | 'status';
+  leasesPath?: string;
+  leases?: unknown[];
+  rebased?: boolean;
+  stagedTarget?: string;
+  contentPath?: string;
   pageTitle?: string;
   pageKind?: SitePageKind;
   currentVersionId?: string | null;
@@ -147,6 +159,14 @@ function textFromBytes(value: unknown): string {
   if (!value) return '';
   if (typeof value === 'string') return value;
   return Buffer.from(value as Uint8Array).toString('utf8');
+}
+
+function renderReaderContent(template: ReaderSiteTemplate, input: string, output: string): { ok: boolean; stdout: string; error?: string } {
+  const repoRoot = repoRootFromOsPackage();
+  const renderProcess = Bun.spawnSync(['bun', 'run', 'wiki:render', '--', '--template', template, '--input', input, '--out', output], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
+  const stdout = textFromBytes(renderProcess.stdout).trim();
+  const stderr = textFromBytes(renderProcess.stderr).trim();
+  return { ok: renderProcess.exitCode === 0 && fs.existsSync(output), stdout, error: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` };
 }
 
 function firstSitesSubcommand(args: readonly string[]): string {
@@ -269,6 +289,50 @@ export async function runSitesCommand(
       message: ok ? `Sites reader page rendered: ${output}` : 'Sites reader render failed.',
       error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` },
     };
+  }
+
+
+  if (command === 'patch') {
+    const pagePath = readFlagValue(args, '--page') ?? readFlagValue(args, '--path');
+    const sectionId = readFlagValue(args, '--section');
+    const input = readFlagValue(args, '--input');
+    const agentId = readFlagValue(args, '--agent');
+    const status = sitesStatusResult(command, paths.home, paths.dbPath);
+    if (!pagePath || !sectionId || !input) return { ...status, ok: false, error: { code: 'INVALID_SITES_PATCH_ARGS', message: 'sites patch requires --page, --section, and --input' }, message: 'Invalid Sites patch arguments.' };
+    const prepared = prepareSitePagePatch({ home: paths.home, pagePath, sectionId, input, baseVersion: readFlagValue(args, '--base-version') ?? readFlagValue(args, '--base-revision'), forcePublish: hasFlag(args, '--force-publish'), agentId });
+    if (!prepared.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, error: prepared.error, message: prepared.message };
+    const template = readerSiteTemplate(prepared.kind);
+    let renderResult: { ok: boolean; stdout: string; error?: string } | null = null;
+    if (template) {
+      renderResult = renderReaderContent(template, prepared.contentPath, path.join(prepared.stagedTarget, 'index.html'));
+      if (!renderResult.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, pageKind: prepared.kind ?? undefined, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: false, error: { code: 'SITES_PATCH_RENDER_FAILED', message: renderResult.error ?? 'wiki:render failed' }, message: 'Sites patch render failed.' };
+    }
+    const result = publishSitePage({ home: paths.home, dbPath: paths.dbPath, target: prepared.stagedTarget, pagePath, title: prepared.title ?? prepared.pageId, kind: prepared.kind ?? 'uncategorized', baseVersion: prepared.currentVersionId, forcePublish: hasFlag(args, '--force-publish'), agentId, changedSectionIds: [prepared.sectionId] });
+    return { ...status, ok: result.ok, pageId: result.pageId, pagePath: result.path, pageTitle: result.title, pageKind: result.kind, sectionId: prepared.sectionId, currentVersionId: result.currentVersionId, publishedVersionId: result.publishedVersionId, requiredBaseVersion: result.requiredBaseVersion, versionCount: result.versionCount, currentPath: result.currentPath, versionPath: result.versionPath, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: renderResult ? renderResult.ok : undefined, rendererStdout: renderResult?.stdout || undefined, message: result.ok ? `Sites section patched: ${prepared.path}#${prepared.sectionId}` : result.message, error: result.error };
+  }
+
+  if (command === 'lease') {
+    const action = args.find((arg, index) => index > 0 && !arg.startsWith('-')) ?? 'status';
+    const pagePath = readFlagValue(args, '--page') ?? readFlagValue(args, '--path');
+    const sectionId = readFlagValue(args, '--section');
+    const agentId = readFlagValue(args, '--agent');
+    const status = sitesStatusResult(command, paths.home, paths.dbPath);
+    if (action === 'status') {
+      const result = sitePageLeaseStatus({ home: paths.home, pagePath, sectionId });
+      return { ...status, ok: result.ok, pageId: result.pageId, sectionId: result.sectionId ?? undefined, agentId: result.agentId, leaseAction: result.leaseAction, leasesPath: result.leasesPath, leases: result.leases, message: result.message, error: result.error };
+    }
+    if (!pagePath || !sectionId) return { ...status, ok: false, error: { code: 'INVALID_SITES_LEASE_ARGS', message: 'sites lease requires --page and --section for acquire/release' }, message: 'Invalid Sites lease arguments.' };
+    if (action === 'acquire') {
+      if (!agentId) return { ...status, ok: false, pageId: pagePath, sectionId, error: { code: 'INVALID_SITES_LEASE_ARGS', message: 'sites lease acquire requires --agent' }, message: 'Invalid Sites lease arguments.' };
+      const ttl = Number(readFlagValue(args, '--ttl-minutes') ?? '45');
+      const result = acquireSitePageLease({ home: paths.home, pagePath, sectionId, agentId, ttlMinutes: Number.isFinite(ttl) ? ttl : 45 });
+      return { ...status, ok: result.ok, pageId: result.pageId, sectionId: result.sectionId ?? undefined, agentId: result.agentId, leaseAction: result.leaseAction, leasesPath: result.leasesPath, leases: result.leases, message: result.message, error: result.error };
+    }
+    if (action === 'release') {
+      const result = releaseSitePageLease({ home: paths.home, pagePath, sectionId, agentId, force: hasFlag(args, '--force-publish') });
+      return { ...status, ok: result.ok, pageId: result.pageId, sectionId: result.sectionId ?? undefined, agentId: result.agentId, leaseAction: result.leaseAction, leasesPath: result.leasesPath, leases: result.leases, message: result.message, error: result.error };
+    }
+    return { ...status, ok: false, error: { code: 'INVALID_SITES_LEASE_ACTION', message: `Unsupported sites lease action: ${action}` }, message: 'Invalid Sites lease action.' };
   }
 
   if (command === 'publish') {
@@ -734,6 +798,8 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites refresh [--json]',
       '  bun ./scripts/os.ts sites open [--json]',
       '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
+      '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
+      '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),
