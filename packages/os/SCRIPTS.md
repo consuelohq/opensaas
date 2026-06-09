@@ -1362,9 +1362,15 @@ Generate and lint user LaunchAgent plist files plus shell syntax checks without 
 
 ## Sites page publishing
 
-Publish generated local pages into OS Sites with immutable versions:
+Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
 
 ```bash
+bun ./scripts/os.ts sites render \
+  --template guide \
+  --input /tmp/example-page/content.json \
+  --out /tmp/example-page/index.html \
+  --json
+
 bun ./scripts/os.ts sites publish \
   --target /tmp/example-page \
   --path /pages/example-page \
@@ -1373,4 +1379,4 @@ bun ./scripts/os.ts sites publish \
   --json
 ```
 
-For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.
+For `spec`, `plan`, and `guide`, render typed `content.json` through the canonical Consuelo reader shell before publishing. For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.

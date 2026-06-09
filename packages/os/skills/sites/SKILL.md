@@ -39,6 +39,7 @@ bun ./scripts/os.ts sites path
 bun ./scripts/os.ts sites status
 bun ./scripts/os.ts sites refresh
 bun ./scripts/os.ts sites open
+bun ./scripts/os.ts sites render --template <spec|plan|guide> --input <content.json> --out <index.html>
 bun ./scripts/os.ts sites publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
 ```
 
@@ -59,4 +60,4 @@ Each command supports `--json`.
 
 `sites publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
 
-Supported page kinds for this first safety layer are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. Typed reader rendering, section patching, and leases are follow-up layers; do not hand-author those into Sites pages unless the current task explicitly asks for them.
+Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `sites render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages. Section patching and leases are follow-up layers.

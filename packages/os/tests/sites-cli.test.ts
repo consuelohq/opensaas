@@ -36,6 +36,11 @@ type SitesCommandResult = {
   versionCount?: number;
   currentPath?: string;
   versionPath?: string;
+  renderTemplate?: string;
+  inputPath?: string;
+  outputPath?: string;
+  rendered?: boolean;
+  rendererStdout?: string;
   error?: { code: string; message: string };
 };
 
@@ -218,6 +223,42 @@ describe('Sites CLI', () => {
     ]);
     expect(forced.ok).toBe(true);
     expect(forced.versionCount).toBe(3);
+  });
+
+
+  it('renders typed guide pages through the canonical reader shell before publishing to Sites', () => {
+    const contentPath = join(tempHome, 'guide-content.json');
+    const outPath = join(tempHome, 'rendered-guide', 'index.html');
+    writeFileSync(contentPath, JSON.stringify({
+      template: 'guide',
+      title: 'How To Speak - Communication Field Guide',
+      eyebrow: 'communication guide',
+      thesis: 'A good talk is an attention system with a promise, landmarks, and a portable takeaway.',
+      metadata: { status: 'test', owner: 'Ko / Consuelo', date: '2026-06-09' },
+      map: [{ label: 'Deep idea', href: '#deep-idea' }, { label: 'Source', href: '#source' }, { label: 'Task', href: '#ship-checklist' }],
+      sections: [
+        { id: 'deep-idea', eyebrow: 'deep idea', title: 'Speaking is attention design', body: ['Give the audience a capability, not a transcript.'], callout: { label: 'field rule', title: 'Promise the useful thing first.', body: 'The renderer owns the shell; Sites only supplies typed input.' } },
+        { id: 'source', eyebrow: 'source', title: 'Source stack', cards: [{ title: 'Primary source', body: 'Patrick Winston talk transcript.', tag: 'packet' }] }
+      ],
+      components: [
+        { type: 'table', title: 'Speaking checklist', table: { columns: ['Move', 'Purpose'], rows: [['Promise', 'Tell people what they can do after the talk.']] } }
+      ],
+      ledgerTitle: 'Ship checklist',
+      ledger: [{ title: 'Guide render', items: [{ status: 'done', text: 'Render through the canonical reader shell.' }] }]
+    }, null, 2));
+
+    const render = runSitesCommand(['render', '--template', 'guide', '--input', contentPath, '--out', outPath, '--json']);
+
+    expect(render).toMatchObject({ ok: true, command: 'render', renderTemplate: 'guide', inputPath: contentPath, outputPath: outPath, rendered: true });
+    const html = readFileSync(outPath, 'utf8');
+    expect(html).toContain('data-reader-shell-template="guide"');
+    expect(html).toContain('window.__readerShell');
+    expect(html).toContain('data-reader-component="table"');
+    expect(html).toContain('reader-nav-task');
+
+    const publish = runSitesCommand(['publish', '--target', join(tempHome, 'rendered-guide'), '--path', '/pages/how-to-speak', '--title', 'How To Speak', '--kind', 'guide', '--json']);
+    expect(publish).toMatchObject({ ok: true, command: 'publish', pageKind: 'guide', versionCount: 1 });
+    expect(readFileSync(join(tempHome, 'sites', 'pages', 'how-to-speak', 'index.html'), 'utf8')).toContain('data-reader-shell-template="guide"');
   });
 
 });
