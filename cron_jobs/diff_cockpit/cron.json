@@ -8,5 +8,7 @@
   "repo": "consuelohq/opensaas",
   "prLimit": 50,
   "origin": "https://diffs.consuelohq.com",
-  "codePaths": ["packages"]
+  "codePaths": ["packages"],
+  "warmPullLimit": 20,
+  "warmIntervalMs": 300000
 }

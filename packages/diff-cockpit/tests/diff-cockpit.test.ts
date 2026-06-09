@@ -649,6 +649,74 @@ describe('createWorker', () => {
   });
 
 
+  test('hydrates PR pages from shared API cache when available', async () => {
+    const file = { filename: 'packages/cached.ts', status: 'modified', additions: 1, deletions: 1, changes: 2, patch: '@@ -1 +1 @@\n-old\n+new', blobUrl: '' };
+    const cachedReviewData = {
+      locator: { owner: 'consuelohq', repo: 'opensaas', number: 708 },
+      pull: {
+        number: 708,
+        title: 'Cached PR',
+        htmlUrl: 'https://github.com/consuelohq/opensaas/pull/708',
+        state: 'open',
+        draft: false,
+        author: 'ko',
+        headRef: 'task/cache',
+        headSha: 'headsha',
+        baseRef: 'stream/diff-cockpit',
+        baseSha: 'basesha',
+        mergeable: true,
+        mergeableState: 'clean',
+        updatedAt: '2026-06-09T00:00:00Z',
+      },
+      files: [file],
+      tree: { type: 'root', name: '', path: '', children: [{ type: 'file', name: 'cached.ts', path: 'packages/cached.ts', children: [], file }] },
+      comments: [],
+      streamCommits: [],
+      warnings: [],
+      checks: [],
+    };
+    const cacheStore = new Map<string, Response>([
+      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708', Response.json(cachedReviewData)],
+    ]);
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const worker = createWorker({
+      cache,
+      fetcher: async (input) => {
+        throw new Error('unexpected live fetch during cached page render: ' + String(input));
+      },
+    });
+
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/pull/708'));
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('id="diff-cockpit-initial-data"');
+    expect(html).toContain('Cached PR');
+    expect(html).toContain('packages/cached.ts');
+  });
+
+  test('keeps the PR loading shell when shared API cache misses', async () => {
+    const worker = createWorker({ fetcher: async () => Response.json([]) });
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/pull/708'));
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('Loading live GitHub data');
+    expect(html).not.toContain('id="diff-cockpit-initial-data"');
+  });
+
+
   test('merges a pull request through the merge API endpoint', async () => {
     const calls: Array<{ url: string; method?: string; body?: string }> = [];
     const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {

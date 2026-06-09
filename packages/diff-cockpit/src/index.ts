@@ -732,13 +732,16 @@ export function renderIndexPage(repo: RepoLocator): string {
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator): string {
+export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null): string {
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
   const githubUrl = `https://github.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
   const graphiteUrl = `https://app.graphite.com/github/pr/${locator.owner}/${locator.repo}/${locator.number}`;
   const diffsHubUrl = `https://diffshub.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
+  const initialDataScript = initialData
+    ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -805,7 +808,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
 </html>`;
 }
@@ -1035,7 +1038,9 @@ export function createWorker(options: GithubLoaderOptions = {}) {
           headers: { 'content-type': 'text/html; charset=utf-8' },
         });
       }
-      return html(renderReviewPage(locator));
+      const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+      const initialData = await readCachedJsonData<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
+      return html(renderReviewPage(locator, initialData));
     },
   };
 }
@@ -1847,6 +1852,17 @@ async function getOrSetCachedJson(
   }
 }
 
+
+async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
+  try {
+    if (!edgeCache) return null;
+    const cached = await edgeCache.match(cacheRequest);
+    if (!cached || cached.status !== 200) return null;
+    return await cached.clone().json() as T;
+  } catch {
+    return null;
+  }
+}
 async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
   try {
     if (!edgeCache) return null;
@@ -2626,6 +2642,8 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
+const initialData = readInitialReviewData();
+if (initialData) applyReviewData(initialData);
 loadLiveData();
 loadViewerLibraries();
 setupFilePaneResize();
@@ -2650,6 +2668,27 @@ function setFilePaneDrawer(open) {
   els.mobileFilesToggle.setAttribute('aria-label', open ? 'Close files' : 'Open files');
   els.mobileFilesToggle.textContent = open ? '×' : '▣';
 }
+function readInitialReviewData() {
+  const element = document.getElementById('diff-cockpit-initial-data');
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+
+function applyReviewData(data) {
+  state.data = data;
+  const previousFile = state.selected && state.selected.filename;
+  const files = state.data.files || [];
+  state.selected = files.find((file) => file.filename === previousFile) || files[0] || null;
+  state.activeFile = state.selected ? state.selected.filename : null;
+  renderHeader();
+  renderTree();
+  renderSelectedFile();
+  renderLongDiffs();
+  setupActiveFileObserver();
+  renderDrawer();
+}
+
 function loadLiveData() {
   fetch(apiPath, { headers: { accept: 'application/json' } })
     .then((response) => {
@@ -2658,18 +2697,10 @@ function loadLiveData() {
     })
     .then(
       (data) => {
-        state.data = data;
-        state.selected = state.data.files[0] || null;
-        state.activeFile = state.selected ? state.selected.filename : null;
-        renderHeader();
-        renderTree();
-        renderSelectedFile();
-        renderLongDiffs();
-        setupActiveFileObserver();
-        renderDrawer();
+        applyReviewData(data);
       },
       (error) => {
-        els.tree.textContent = error.message || String(error);
+        if (!state.data) els.tree.textContent = error.message || String(error);
       },
     );
 }
@@ -3116,4 +3147,14 @@ function escapeJs(value: string): string {
     };
     return entities[char] || char;
   });
+}
+ 
+
+function escapeScriptJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
