@@ -15,6 +15,7 @@ import {
   renderHistoryPage,
   renderIndexPage,
   renderReviewPage,
+  scorePullRequestSearch,
 } from '../src/index';
 
 describe('parsePullRequestLocator', () => {
@@ -452,6 +453,23 @@ describe('pull request index grouping', () => {
     expect(sections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20]);
     expect(allSections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20, 21]);
   });
+  test('scores dotted fuzzy PR search across PR fields', () => {
+    const pull = {
+      ...basePull,
+      number: 889,
+      title: 'hotfix code call codemode facade',
+      headRef: 'task/diff-cockpit/hotfix-code-call-codemode-facade',
+      associatedStream: 'stream/diff-cockpit',
+    };
+
+    const codeCallScore = scorePullRequestSearch(pull, 'code.call');
+    const numberScore = scorePullRequestSearch(pull, '889');
+    const missingScore = scorePullRequestSearch(pull, 'missing');
+
+    expect(codeCallScore > 0).toBe(true);
+    expect(numberScore > missingScore).toBe(true);
+    expect(missingScore).toBe(0);
+  });
 });
 
 
@@ -488,8 +506,9 @@ describe('renderCodeBrowserPage', () => {
 });
 
 describe('renderIndexPage', () => {
-  test('renders a Pull Requests inbox with stream filters and no pagination', () => {
+  test('renders a Graphite-like PR inbox with command search and load-more sections', () => {
     const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+
     expect(html).toContain('Pull Requests');
     expect(html).toContain('href="/consuelohq/opensaas/tree/main/packages"');
     expect(html).toContain('>main</a>');
@@ -498,18 +517,32 @@ describe('renderIndexPage', () => {
     expect(html).toContain('data-sections-root');
     expect(html).toContain('data-stream-filter');
     expect(html).toContain('data-active-stream');
-    expect(html).toContain('Streams');
-    expect(html).toContain('Merging and recently merged');
+    expect(html).toContain('<details class="section pr-section" open data-section-id="open">');
+    expect(html).toContain('<details class="section pr-section" open data-section-id="closed">');
+    expect(html).toContain('data-command-trigger');
+    expect(html).toContain('data-command-palette');
+    expect(html).toContain('id="diff-command-input"');
+    expect(html).toContain('Search PRs or jump pages, e.g. code.call');
+    expect(html).toContain('data-command-page');
+    expect(html).toContain('Go to: PR inbox');
+    expect(html).toContain('Go to: Main code');
+    expect(html).toContain('Go to: Merges');
+    expect(html).toContain('class="mobile-command-fab"');
+    expect(html).toContain('command-bottom-drawer');
+    expect(html).not.toContain('id="diff-cockpit-search"');
+    expect(html).not.toContain('data-search-toggle');
     expect(html).toContain("pull.mergeability === 'conflicts'");
     expect(html).toContain('relativeTime');
     expect(html).toContain('formatDelta');
     expect(html).toContain('pr-delta');
     expect(html).toContain('mergeability-icon');
-    expect(html).toContain('mergeability-');
-    expect(html).toContain("pull.mergeability === 'conflicts'");
+    expect(html).toContain('review-icon');
+    expect(html).toContain('check-icon');
     expect(html).toContain('post-list .post-item:last-child');
     expect(html).toContain('const sectionPageSize = 10');
-    expect(html).toContain('data-page-next');
+    expect(html).toContain('data-load-more');
+    expect(html).toContain('Load more');
+    expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
     expect(html).toContain("cacheSchemaVersion = 'v2-mergeability'");
@@ -522,6 +555,9 @@ describe('renderIndexPage', () => {
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
     expect(html).toContain('pr-row-meta-line');
+    expect(html).toContain('pr-subtitle');
+    expect(html).toContain("stream + ' • ' + repoLabel + ' #'");
+    expect(html).not.toContain("pull.author + ' · #'");
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
