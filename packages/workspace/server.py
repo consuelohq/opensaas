@@ -286,7 +286,7 @@ _SAFETY_SUMMARY_LIMIT = 500
 _TRACE_DB_MAX_BYTES = int(os.environ.get('OPENWORKSPACE_TRACE_DB_MAX_BYTES', str(500 * 1024 * 1024)))
 _STEERING_GUARD_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_GUARD_WINDOW_SECONDS', '300'))
 _STEERING_FORCE_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_FORCE_WINDOW_SECONDS', '300'))
-_STEERING_REQUEST_CONTEXT: contextvars.ContextVar[dict[str, str]] = contextvars.ContextVar('steering_request_context', default={})
+_STEERING_REQUEST_CONTEXT: contextvars.ContextVar[dict[str, str] | None] = contextvars.ContextVar('steering_request_context', default=None)
 
 
 def _resolve_steering_file() -> str:
@@ -320,7 +320,7 @@ def _steering_guard_now() -> float:
 
 
 def _steering_caller_key() -> str:
-    context = _STEERING_REQUEST_CONTEXT.get({}) or {}
+    context = _STEERING_REQUEST_CONTEXT.get() or {}
     candidates = [
         os.environ.get('OPENWORKSPACE_STEERING_CALLER_KEY'),
         os.environ.get('CONSUELO_AGENT_RUN_ID'),
@@ -522,7 +522,6 @@ def _run_refresh_steering(reason: str) -> str:
     return content
 
 
-@mcp.tool(annotations=RO)
 @mcp.tool(annotations=RO)
 async def refresh_steering(reason: str) -> str:
     """explicitly refresh full steering when get_steering guard blocks a real need."""
