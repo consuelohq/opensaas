@@ -244,6 +244,34 @@ describe('local OS install state', () => {
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
   });
 
+
+  it('migrates existing Office skill selections to Sites', () => {
+    mkdirSync(tempHome, { recursive: true });
+    writeFileSync(join(tempHome, 'config.json'), `${JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home: tempHome,
+      port: 48761,
+      artifactStorage: 'local',
+      selectedSkills: ['office', 'task'],
+      agents: [],
+      createdAt: '2026-06-09T00:00:00.000Z',
+      updatedAt: '2026-06-09T00:00:00.000Z',
+    }, null, 2)}\n`);
+
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
+    expect(config.selectedSkills).toContain('sites');
+    expect(config.selectedSkills).toContain('task');
+    expect(config.selectedSkills).not.toContain('office');
+    expect(existsSync(join(tempHome, 'skills', 'sites', 'SKILL.md'))).toBe(true);
+  });
+
   it('installs every full-manifest tool even when only one skill is selected', () => {
     JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');

@@ -347,13 +347,25 @@ export async function runSitesCommand(
         message: 'Invalid Sites publish arguments.',
       };
     }
+    let kind: SitePageKind;
+    try {
+      kind = sitePageKind(readFlagValue(args, '--kind'));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        ...sitesStatusResult(command, paths.home, paths.dbPath),
+        ok: false,
+        error: { code: 'INVALID_SITES_PUBLISH_KIND', message },
+        message: 'Invalid Sites publish arguments.',
+      };
+    }
     const result = publishSitePage({
       home: paths.home,
       dbPath: paths.dbPath,
       target,
       pagePath,
       title,
-      kind: sitePageKind(readFlagValue(args, '--kind')),
+      kind,
       baseVersion: readFlagValue(args, '--base-version') ?? readFlagValue(args, '--base-revision'),
       forcePublish: hasFlag(args, '--force-publish'),
       dryRun: hasFlag(args, '--dry-run'),

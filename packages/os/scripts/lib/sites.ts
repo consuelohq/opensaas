@@ -356,6 +356,7 @@ function replaceCurrentPage(target: string, currentDir: string): void {
   const stat = fs.statSync(target);
   if (stat.isDirectory()) {
     for (const entry of fs.readdirSync(target)) {
+      if (entry === 'versions') continue;
       fs.cpSync(path.join(target, entry), path.join(currentDir, entry), { recursive: true });
     }
     return;
@@ -372,14 +373,20 @@ export function readSitePageRegistry(registryPath: string): SitePageRegistry {
   if (!fs.existsSync(registryPath)) return emptySitePageRegistry();
   try {
     const parsed = JSON.parse(fs.readFileSync(registryPath, 'utf8')) as Partial<SitePageRegistry>;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return emptySitePageRegistry();
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('expected object root');
+    }
+    if (!parsed.pages || typeof parsed.pages !== 'object' || Array.isArray(parsed.pages)) {
+      throw new Error('expected object pages registry');
+    }
     return {
       version: 1,
       generatedAt: typeof parsed.generatedAt === 'string' ? parsed.generatedAt : nowIso(),
-      pages: parsed.pages && typeof parsed.pages === 'object' && !Array.isArray(parsed.pages) ? parsed.pages as Record<string, SitePage> : {},
+      pages: parsed.pages as Record<string, SitePage>,
     };
-  } catch {
-    return emptySitePageRegistry();
+  } catch (error: unknown) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Malformed Sites page registry at ${registryPath}: ${reason}`);
   }
 }
 
@@ -701,7 +708,28 @@ export function publishSitePage(options: PublishSitePageOptions): PublishSitePag
   const paths = getSitesPaths(options.home);
   const normalized = normalizeSitePagePath(options.pagePath);
   const currentDir = path.join(paths.pagesDir, normalized.slug);
-  const registry = readSitePageRegistry(paths.pagesRegistryPath);
+  let registry: SitePageRegistry;
+  try {
+    registry = readSitePageRegistry(paths.pagesRegistryPath);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      pageId: normalized.pageId,
+      path: normalized.path,
+      title: options.title,
+      kind: options.kind,
+      currentVersionId: null,
+      publishedVersionId: null,
+      requiredBaseVersion: null,
+      versionCount: 0,
+      registryPath: paths.pagesRegistryPath,
+      currentPath: currentDir,
+      versionPath: '',
+      message,
+      error: { code: 'MALFORMED_SITES_PAGE_REGISTRY', message },
+    };
+  }
   const existing = registry.pages[normalized.pageId] ?? null;
   const currentVersionId = existing?.currentVersionId ?? null;
   const requiredBaseVersion = currentVersionId;
@@ -777,7 +805,7 @@ export function publishSitePage(options: PublishSitePageOptions): PublishSitePag
     path: normalized.path,
     title: options.title,
     kind: options.kind,
-    currentVersionId,
+    currentVersionId: page.currentVersionId,
     publishedVersionId: versionId,
     requiredBaseVersion,
     versionCount: page.versionCount,
