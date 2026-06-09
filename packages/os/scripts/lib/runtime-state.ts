@@ -180,10 +180,11 @@ export function recordExecutionFinished(input: ExecutionFinishInput): void {
 export function readSteeringGuardDecisions(input: SteeringGuardLookupInput): string[] {
   const db = openDatabase();
   try {
-    const rows = db.query('SELECT decision FROM steering_guard_events WHERE caller_key = ? AND tool = ? AND created_at_epoch >= ? ORDER BY created_at_epoch ASC, rowid ASC').all(
+    const rows = db.query('SELECT decision FROM steering_guard_events WHERE caller_key = ? AND tool = ? AND created_at_epoch >= ? AND created_at_epoch <= ? ORDER BY created_at_epoch ASC, rowid ASC').all(
       input.callerKey,
       input.tool,
       input.nowMs - input.windowMs,
+      input.nowMs,
     ) as Array<{ decision: string }>;
     return rows.map((row) => row.decision);
   } finally {
