@@ -20,16 +20,16 @@ async function tempRoot(): Promise<string> {
 }
 
 describe('cron_jobs primitive', () => {
-  test('sanitizes agent-provided names', () => {
+  test('should sanitize names when input contains spaces and symbols', () => {
     expect(sanitizeName('Diff Cockpit')).toBe('diff-cockpit');
     expect(() => sanitizeName('///')).toThrow('cron job name is required');
   });
 
-  test('uses namespaced launch labels', () => {
+  test('should namespace launch labels when installing local jobs', () => {
     expect(launchAgentLabel('OpenSaaS Local')).toBe('com.consuelo.cronjobs.opensaas-local');
   });
 
-  test('discovers enabled jobs from named folders', async () => {
+  test('should discover enabled jobs when named folders contain valid manifests', async () => {
     const root = await tempRoot();
     await mkdir(path.join(root, 'test_job'), { recursive: true });
     await Bun.write(path.join(root, 'test_job', 'cron.json'), JSON.stringify({ schema: 'consuelo.cron.v1', name: 'test-job', kind: 'diff-cockpit', enabled: true, intervalMs: 30000 }));
@@ -38,7 +38,7 @@ describe('cron_jobs primitive', () => {
     expect(await readFile(path.join(root, 'test_job', 'cron.json'), 'utf8')).toContain('test-job');
   });
 
-  test('loads a lightweight GitHub PR fingerprint', async () => {
+  test('should load a lightweight GitHub PR fingerprint when GitHub returns pulls', async () => {
     const response = new Response(JSON.stringify([
       {
         number: 748,
@@ -75,7 +75,19 @@ describe('cron_jobs primitive', () => {
     ]);
   });
 
-  test('selects changed PRs from fingerprint changes', () => {
+  test('should throw an HTTP error when GitHub fingerprint loading fails', async () => {
+    const fetcher: typeof fetch = async () => new Response('server error', { status: 500 });
+
+    await expect(loadDiffCockpitFingerprint({ repo: 'consuelohq/opensaas', prLimit: 50, fetcher })).rejects.toThrow('GitHub PR fingerprint fetch failed with HTTP 500');
+  });
+
+  test('should throw a payload error when GitHub fingerprint payload is not an array', async () => {
+    const fetcher: typeof fetch = async () => new Response(JSON.stringify({ ok: true }), { status: 200 });
+
+    await expect(loadDiffCockpitFingerprint({ repo: 'consuelohq/opensaas', prLimit: 50, fetcher })).rejects.toThrow('GitHub PR fingerprint response was not an array');
+  });
+
+  test('should select changed PRs when fingerprint fields differ', () => {
     const previous = [
       { number: 1, title: '', state: 'open', draft: false, updatedAt: 'a', headRef: 'one', baseRef: 'main', headSha: 'a', author: 'ko' },
       { number: 2, title: '', state: 'open', draft: false, updatedAt: 'b', headRef: 'two', baseRef: 'main', headSha: 'b', author: 'ko' },
@@ -88,7 +100,7 @@ describe('cron_jobs primitive', () => {
     expect(changedPullNumbers(previous, current)).toEqual([2, 3]);
   });
 
-  test('runOnce dry-run checks changed jobs without writing state', async () => {
+  test('should avoid writing state when run-once is dry-run', async () => {
     const root = await tempRoot();
     const statePath = path.join(root, 'state.json');
     const logPath = path.join(root, 'cron.log');
