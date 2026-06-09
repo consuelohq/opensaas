@@ -1962,11 +1962,12 @@ async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Requ
 }
 
 function cloneCacheableResponse(response: Response): Response {
-  const headers = new Headers(response.headers);
+  const cloned = response.clone();
+  const headers = new Headers(cloned.headers);
   headers.delete('vary');
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
+  return new Response(cloned.body, {
+    status: cloned.status,
+    statusText: cloned.statusText,
     headers,
   });
 }
