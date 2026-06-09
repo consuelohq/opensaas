@@ -989,6 +989,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 }
 
 export function createWorker(options: GithubLoaderOptions = {}) {
+  memoryJsonCache.clear();
   return {
     async fetch(request: Request, env?: DiffCockpitEnv, ctx?: WorkerExecutionContext) {
       const url = new URL(request.url);
@@ -1647,20 +1648,9 @@ async function loadStreamCommits(
       `${apiBase}/commits?sha=${encodeURIComponent(headRef)}`,
       headers,
       'GitHub stream commits fetch failed',
+      { maxPages: 1 },
     );
-    const commits = normalizeStreamCommits(json);
-    return await Promise.all(commits.map(async (commit) => {
-      if (!commit.sha) return commit;
-      try {
-        const detail = await fetcher(`${apiBase}/commits/${encodeURIComponent(commit.sha)}`, { headers });
-        if (!detail.ok) return commit;
-        const record = optionalRecord(await detail.json());
-        const stats = optionalRecord(record?.stats);
-        return { ...commit, additions: numberValue(stats?.additions, commit.additions), deletions: numberValue(stats?.deletions, commit.deletions) };
-      } catch {
-        return commit;
-      }
-    }));
+    return normalizeStreamCommits(json).slice(0, 50);
   } catch {
     return [];
   }
@@ -1984,6 +1974,15 @@ function normalizeRefreshCodePaths(value: unknown): string[] {
   return [...paths];
 }
 
+type MemoryCachedJson = {
+  body: string;
+  etag: string;
+  expiresAt: number;
+};
+
+const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
+const memoryJsonCache = new Map<string, MemoryCachedJson>();
+
 function makeApiCacheRequest(url: URL): Request {
   return new Request(url.toString(), { headers: { accept: 'application/json' } });
 }
@@ -1997,58 +1996,134 @@ async function getOrSetCachedJson(
   try {
     const cached = await readCachedJson(edgeCache, cacheRequest, clientRequest);
     if (cached) return cached;
+    const memoryCached = readMemoryCachedJson(cacheRequest, clientRequest);
+    if (memoryCached) return memoryCached;
     const response = cachedJson(await load(), clientRequest);
-    await replaceCachedJson(edgeCache, cacheRequest, response);
+    const cacheWriteStatus = await replaceCachedJson(edgeCache, cacheRequest, response);
+    response.headers.set('x-diff-cockpit-cache-write', cacheWriteStatus);
     return response;
   } catch (error: unknown) {
     throw new Error(`failed to build cached JSON response: ${getErrorMessage(error)}`);
   }
 }
 
-
 async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
   try {
-    if (!edgeCache) return null;
-    const cached = await edgeCache.match(cacheRequest);
-    if (!cached || cached.status !== 200) return null;
-    return await cached.clone().json() as T;
+    if (edgeCache) {
+      const cached = await edgeCache.match(cacheRequest);
+      if (cached?.status === 200) {
+        void writeMemoryCachedJson(cacheRequest, cached.clone());
+        return await cached.clone().json() as T;
+      }
+    }
   } catch {
-    return null;
+    // Fall through to the isolate-local cache.
   }
+  return readMemoryCachedJsonData<T>(cacheRequest);
 }
 async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
   try {
-    if (!edgeCache) return null;
-    const cached = await edgeCache.match(cacheRequest);
-    if (!cached) return null;
-    const etag = cached.headers.get('etag') || '';
-    if (etag && clientRequest.headers.get('if-none-match') === etag) {
-      return cachedJsonNotModified(etag);
+    if (edgeCache) {
+      const cached = await edgeCache.match(cacheRequest);
+      if (cached) {
+        if (cached.status === 200) void writeMemoryCachedJson(cacheRequest, cached.clone());
+        const etag = cached.headers.get('etag') || '';
+        if (etag && clientRequest.headers.get('if-none-match') === etag) {
+          return cachedJsonNotModified(etag);
+        }
+        return cached;
+      }
     }
-    return cached;
   } catch {
+    // Fall through to the isolate-local cache.
+  }
+  return readMemoryCachedJson(cacheRequest, clientRequest);
+}
+
+async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<string> {
+  if (response.status !== 200) return 'skip-status';
+  await writeMemoryCachedJson(cacheRequest, response);
+  try {
+    if (!edgeCache) return 'memory';
+    const cacheResponse = await cloneCacheableResponse(response);
+    await edgeCache.put(cacheRequest, cacheResponse);
+    return 'edge';
+  } catch (error: unknown) {
+    return `edge-error:${getErrorMessage(error).slice(0, 160)}`;
+  }
+}
+
+async function cloneCacheableResponse(response: Response): Promise<Response> {
+  const cloned = response.clone();
+  const body = await cloned.text();
+  const headers = new Headers(cloned.headers);
+  headers.delete('vary');
+  return new Response(body, {
+    status: cloned.status,
+    statusText: cloned.statusText,
+    headers,
+  });
+}
+
+function readMemoryCachedJson(cacheRequest: Request, clientRequest: Request): Response | null {
+  const cached = getMemoryCachedJson(cacheRequest);
+  if (!cached) return null;
+  if (cached.etag && clientRequest.headers.get('if-none-match') === cached.etag) {
+    return cachedJsonNotModified(cached.etag);
+  }
+  return cachedJsonBody(cached.body, cached.etag);
+}
+
+function readMemoryCachedJsonData<T>(cacheRequest: Request): T | null {
+  const cached = getMemoryCachedJson(cacheRequest);
+  if (!cached) return null;
+  try {
+    return JSON.parse(cached.body) as T;
+  } catch {
+    memoryJsonCache.delete(memoryCacheKey(cacheRequest));
     return null;
   }
 }
 
-async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
+async function writeMemoryCachedJson(cacheRequest: Request, response: Response): Promise<void> {
   try {
-    if (!edgeCache || response.status !== 200) return;
-    const cacheResponse = cloneCacheableResponse(response);
-    await edgeCache.delete(cacheRequest);
-    await edgeCache.put(cacheRequest, cacheResponse);
+    if (response.status !== 200) return;
+    const body = await response.clone().text();
+    const etag = response.headers.get('etag') || makeWeakEtag(body);
+    memoryJsonCache.set(memoryCacheKey(cacheRequest), {
+      body,
+      etag,
+      expiresAt: Date.now() + MEMORY_JSON_CACHE_TTL_MS,
+    });
   } catch {
-    // Cache writes are opportunistic; live GitHub fetches still provide correctness.
+    memoryJsonCache.delete(memoryCacheKey(cacheRequest));
   }
 }
 
-function cloneCacheableResponse(response: Response): Response {
-  const headers = new Headers(response.headers);
-  headers.delete('vary');
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
+function getMemoryCachedJson(cacheRequest: Request): MemoryCachedJson | null {
+  const key = memoryCacheKey(cacheRequest);
+  const cached = memoryJsonCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt <= Date.now()) {
+    memoryJsonCache.delete(key);
+    return null;
+  }
+  return cached;
+}
+
+function memoryCacheKey(request: Request): string {
+  return request.url;
+}
+
+function cachedJsonBody(body: string, etag: string): Response {
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      etag,
+      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      vary: 'Accept',
+    },
   });
 }
 
