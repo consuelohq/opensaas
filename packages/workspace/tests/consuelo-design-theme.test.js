@@ -100,3 +100,10 @@ test('generates archive server slash aliases without regex escaping drift', () =
   expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
   expect(source).toContain('archivePaths.includes(cleanArchivePath)');
 });
+
+
+test('keeps archive search data parseable as raw JSON for client interactions', () => {
+  expect(source).toContain('const searchDataJson = JSON.stringify(searchEntries)');
+  expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
+  expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
+});

@@ -1315,6 +1315,12 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     currentVersionId: entry.currentVersionId,
     versionCount: entry.versionCount,
   }));
+  const searchDataJson = JSON.stringify(searchEntries)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
   const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published sites yet.</p>' : '';
   return `<!doctype html>
 <html lang="en">
@@ -1324,6 +1330,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
   <title>Consuelo Sites</title>
   <style>
     :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55, 37, 20, .14); }
+    @media (prefers-color-scheme: dark) {
     @media (prefers-color-scheme: dark) {
       :root { color-scheme: dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); }
     }
@@ -1456,7 +1463,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       <div class="palette-foot"><span class="kbd">/</span> open <span class="kbd">Esc</span> close <span class="kbd">G</span> then letter jumps <span class="kbd">Enter</span> run</div>
     </section>
   </div>
-  <script type="application/json" id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>
+  <script type="application/json" id="archive-search-data">${searchDataJson}</script>
   <script>
     const pageSize = 10;
     const archiveEntries = JSON.parse(document.getElementById('archive-search-data').textContent || '[]');
