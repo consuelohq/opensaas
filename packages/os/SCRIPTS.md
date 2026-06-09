@@ -1358,3 +1358,19 @@ bun run install:system-daemons:dry-run
 ```
 
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
+
+
+## Sites page publishing
+
+Publish generated local pages into OS Sites with immutable versions:
+
+```bash
+bun ./scripts/os.ts sites publish \
+  --target /tmp/example-page \
+  --path /pages/example-page \
+  --title "Example Page" \
+  --kind guide \
+  --json
+```
+
+For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.

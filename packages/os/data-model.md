@@ -37,3 +37,10 @@ Files and Attachments are included in the first slice because they are already a
 ## Cloud artifact refs
 
 Artifact descriptors may include app-visible cloud fields in addition to local paths: `appFileId`, `appAttachmentId`, `storageKey`, `downloadUrl`, `appUrl`, and a `cloud` object with provider `consuelo-app-files`. These fields augment local artifact descriptors; they do not remove local artifact persistence.
+
+
+## Sites page registry
+
+OS Sites stores user-facing generated pages separately from raw artifacts. The registry lives at `<OS_HOME>/sites/.data/pages/registry.json` and tracks page ids, slugs, page kinds, the current version, immutable versions, source paths, source hashes, changed section ids, agent ids, trace ids, and timestamps.
+
+The first safety rule is optimistic concurrency: publishing over an existing Sites page requires the current `baseVersion`. If an agent read an older version, the publish is rejected instead of silently overwriting newer work.

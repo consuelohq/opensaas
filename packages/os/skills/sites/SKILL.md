@@ -11,6 +11,11 @@ Artifacts are the internal provenance, storage, and metadata layer. Sites is the
 ```text
 <OS_HOME>/sites/
 <OS_HOME>/sites/index.html
+<OS_HOME>/sites/pages/
+<OS_HOME>/sites/pages/index.html
+<OS_HOME>/sites/pages/<slug>/index.html
+<OS_HOME>/sites/pages/<slug>/versions/<versionId>/index.html
+<OS_HOME>/sites/.data/pages/registry.json
 <OS_HOME>/sites/office/
 <OS_HOME>/sites/office/index.html
 <OS_HOME>/sites/office/data/artifacts.json
@@ -34,6 +39,7 @@ bun ./scripts/os.ts sites path
 bun ./scripts/os.ts sites status
 bun ./scripts/os.ts sites refresh
 bun ./scripts/os.ts sites open
+bun ./scripts/os.ts sites publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
 ```
 
 Each command supports `--json`.
@@ -47,3 +53,10 @@ Each command supports `--json`.
 - Do not treat `pages/office/` as canonical.
 - Do not introduce public or hosted URL security assumptions in this local-only flow.
 - Preserve artifacts as the storage/provenance layer rather than the user-facing product name.
+
+
+## Versioned Sites pages
+
+`sites publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
+
+Supported page kinds for this first safety layer are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. Typed reader rendering, section patching, and leases are follow-up layers; do not hand-author those into Sites pages unless the current task explicitly asks for them.
