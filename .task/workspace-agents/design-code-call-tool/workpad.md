@@ -90,9 +90,7 @@ No-test waiver:
 
 ## files changed
 
-- `packages/workspace/scripts/lib/facade/executor.ts`
-- `packages/workspace/scripts/lib/codemode/tools/index.ts`
-- `packages/workspace/scripts/lib/codemode/types.ts`
+- `packages/workspace/scripts/lib/pr-ref.js`
 
 
 ## workspace-owned: files changed
