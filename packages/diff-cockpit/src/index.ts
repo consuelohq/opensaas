@@ -1567,20 +1567,9 @@ async function loadStreamCommits(
       `${apiBase}/commits?sha=${encodeURIComponent(headRef)}`,
       headers,
       'GitHub stream commits fetch failed',
+      { maxPages: 1 },
     );
-    const commits = normalizeStreamCommits(json);
-    return await Promise.all(commits.map(async (commit) => {
-      if (!commit.sha) return commit;
-      try {
-        const detail = await fetcher(`${apiBase}/commits/${encodeURIComponent(commit.sha)}`, { headers });
-        if (!detail.ok) return commit;
-        const record = optionalRecord(await detail.json());
-        const stats = optionalRecord(record?.stats);
-        return { ...commit, additions: numberValue(stats?.additions, commit.additions), deletions: numberValue(stats?.deletions, commit.deletions) };
-      } catch {
-        return commit;
-      }
-    }));
+    return normalizeStreamCommits(json).slice(0, 50);
   } catch {
     return [];
   }
@@ -1929,7 +1918,8 @@ async function getOrSetCachedJson(
     const memoryCached = readMemoryCachedJson(cacheRequest, clientRequest);
     if (memoryCached) return memoryCached;
     const response = cachedJson(await load(), clientRequest);
-    await replaceCachedJson(edgeCache, cacheRequest, response);
+    const cacheWriteStatus = await replaceCachedJson(edgeCache, cacheRequest, response);
+    response.headers.set('x-diff-cockpit-cache-write', cacheWriteStatus);
     return response;
   } catch (error: unknown) {
     throw new Error(`failed to build cached JSON response: ${getErrorMessage(error)}`);
@@ -1969,24 +1959,25 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
   return readMemoryCachedJson(cacheRequest, clientRequest);
 }
 
-async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
-  if (response.status !== 200) return;
+async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<string> {
+  if (response.status !== 200) return 'skip-status';
   await writeMemoryCachedJson(cacheRequest, response);
   try {
-    if (!edgeCache) return;
-    const cacheResponse = cloneCacheableResponse(response);
-    await edgeCache.delete(cacheRequest);
+    if (!edgeCache) return 'memory';
+    const cacheResponse = await cloneCacheableResponse(response);
     await edgeCache.put(cacheRequest, cacheResponse);
-  } catch {
-    // Edge cache writes are opportunistic; isolate-local cache still protects hot paths.
+    return 'edge';
+  } catch (error: unknown) {
+    return `edge-error:${getErrorMessage(error).slice(0, 160)}`;
   }
 }
 
-function cloneCacheableResponse(response: Response): Response {
+async function cloneCacheableResponse(response: Response): Promise<Response> {
   const cloned = response.clone();
+  const body = await cloned.text();
   const headers = new Headers(cloned.headers);
   headers.delete('vary');
-  return new Response(cloned.body, {
+  return new Response(body, {
     status: cloned.status,
     statusText: cloned.statusText,
     headers,
