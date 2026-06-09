@@ -90,19 +90,10 @@ No-test waiver:
 
 ## files changed
 
-- `packages/workspace/package.json`
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/scripts/code-call.ts`
-- `packages/workspace/scripts/generate-docs.ts`
-- `packages/workspace/scripts/generate-types.ts`
-- `packages/workspace/scripts/lib/code-call/runtime.ts`
-- `packages/workspace/scripts/lib/code-call/types.ts`
 - `packages/workspace/scripts/lib/facade/executor.ts`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/scripts/lib/facade/types.ts`
-- `packages/workspace/tests/code-call.test.ts`
-- `packages/workspace/tests/facade/facade.test.ts`
-- `packages/workspace/tooling/tool-manifest.json`
+- `packages/workspace/scripts/lib/codemode/tools/index.ts`
+- `packages/workspace/scripts/lib/codemode/types.ts`
+
 
 ## workspace-owned: files changed
 
