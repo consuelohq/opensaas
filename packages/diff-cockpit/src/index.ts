@@ -1953,11 +1953,22 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
 async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
   try {
     if (!edgeCache || response.status !== 200) return;
+    const cacheResponse = cloneCacheableResponse(response);
     await edgeCache.delete(cacheRequest);
-    await edgeCache.put(cacheRequest, response.clone());
+    await edgeCache.put(cacheRequest, cacheResponse);
   } catch {
     // Cache writes are opportunistic; live GitHub fetches still provide correctness.
   }
+}
+
+function cloneCacheableResponse(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.delete('vary');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 function cachedJsonNotModified(etag: string): Response {

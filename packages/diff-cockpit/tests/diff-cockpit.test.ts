@@ -684,6 +684,7 @@ describe('createWorker', () => {
         return hit ? hit.clone() : undefined;
       },
       async put(request: Request, response: Response): Promise<void> {
+        if (response.headers.has('vary')) throw new Error('cache.put rejects Vary response headers');
         cacheStore.set(request.url, response.clone());
       },
       async delete(request: Request): Promise<boolean> {
@@ -829,6 +830,7 @@ describe('createWorker', () => {
         return hit ? hit.clone() : undefined;
       },
       async put(request: Request, response: Response): Promise<void> {
+        if (response.headers.has('vary')) throw new Error('cache.put rejects Vary response headers');
         cacheStore.set(request.url, response.clone());
       },
       async delete(request: Request): Promise<boolean> {
