@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+  "events": [
+    {
+      "id": "7879a010-2b45-4714-9cbe-8e251fb5809c",
+      "occurred_at": "2026-06-09T21:25:19.449Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/code-run.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    },
+    {
+      "id": "4c72b6ba-083d-48af-abf9-3dbf5c4addab",
+      "occurred_at": "2026-06-09T21:25:50.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/codemode/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    },
+    {
+      "id": "6a54b02a-8ce6-4068-965a-bcb24eccfaae",
+      "occurred_at": "2026-06-09T21:26:10.933Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/codemode.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    },
+    {
+      "id": "ef178020-9fd7-4113-b4cd-257b5e681fd7",
+      "occurred_at": "2026-06-09T21:26:41.610Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    },
+    {
+      "id": "610f870f-356a-4538-84fc-9e4ca4e742cc",
+      "occurred_at": "2026-06-09T21:27:07.457Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    },
+    {
+      "id": "922a26b6-3daa-4ebe-b41a-5c2d5f6d4401",
+      "occurred_at": "2026-06-09T21:27:39.711Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/hotfix-code-call-codemode-facade",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/hotfix-code-call-codemode-facade"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-09T21:27:39.783Z"
+}

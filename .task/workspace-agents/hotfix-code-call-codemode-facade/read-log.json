@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/workspace/scripts/code-run.ts",
+    "packages/workspace/scripts/lib/codemode/executor.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/tests/codemode.test.ts"
+  ],
+  "updatedAt": "2026-06-09T21:27:39.645Z"
+}

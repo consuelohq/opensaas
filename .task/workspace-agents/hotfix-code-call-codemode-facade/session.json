@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6619db305ea7",
+  "tmuxSession": "opensaas-workspace-agents-hotfix-code-call-codemode-facade-6619db30",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/hotfix-code-call-codemode-facade",
+  "branch": "task/workspace-agents/hotfix-code-call-codemode-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-hotfix-code-call-codemode-facade",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-hotfix-code-call-codemode-facade",
+  "prNumber": 889,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/889",
+  "createdAt": "2026-06-09T21:24:22.583Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-hotfix-code-call-codemode-facade/.task/workspace-agents/hotfix-code-call-codemode-facade/session.json"
+}
