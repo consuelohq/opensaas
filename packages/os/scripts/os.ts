@@ -18,10 +18,10 @@ import {
   recordExecutionStarted,
 } from './lib/runtime-state';
 import {
-  getOfficePagePaths,
-  materializeOfficePages,
-  readOfficePageData,
-} from './lib/office-pages';
+  getSitesPaths,
+  materializeSites,
+  readOfficeSiteData,
+} from './lib/sites';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -58,29 +58,40 @@ function envPresence(): Record<string, unknown> {
   };
 }
 
-export type OfficeCommandResult = {
+export type SitesCommandResult = {
   ok: boolean;
   command: string;
   home: string;
+  sitesDir: string;
   indexPath: string;
-  dataPath: string;
-  assetsDir: string;
+  officeIndexPath: string;
+  officeDataPath: string;
+  officeAssetsDir: string;
+  tracesIndexPath: string;
+  diffsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
   indexExists: boolean;
-  dataExists: boolean;
+  officeIndexExists: boolean;
+  officeDataExists: boolean;
+  tracesIndexExists: boolean;
+  diffsIndexExists: boolean;
   message: string;
   actions?: Array<{ type: string; path: string; status: string; message: string }>;
   error?: { code: string; message: string };
 };
 
-export type RunOfficeCommandOptions = {
+export type OfficeCommandResult = SitesCommandResult;
+
+export type RunSitesCommandOptions = {
   home?: string;
   openUrl?: boolean;
 };
 
-type GeneratedOfficeData = {
+export type RunOfficeCommandOptions = RunSitesCommandOptions;
+
+type GeneratedOfficeSiteData = {
   generatedAt?: string;
   artifacts?: unknown[];
 };
@@ -89,7 +100,7 @@ function hasFlag(args: readonly string[], flag: string): boolean {
   return args.includes(flag);
 }
 
-function firstOfficeSubcommand(args: readonly string[]): string {
+function firstSitesSubcommand(args: readonly string[]): string {
   return args.find((arg) => !arg.startsWith('-')) ?? 'status';
 }
 
@@ -99,66 +110,68 @@ function runtimePathsForHome(home?: string): { home: string; dbPath: string } {
   return { home: paths.home, dbPath: paths.dbPath };
 }
 
-function readGeneratedOfficeData(dataPath: string): GeneratedOfficeData | null {
+function readGeneratedOfficeSiteData(dataPath: string): GeneratedOfficeSiteData | null {
   if (!fs.existsSync(dataPath)) return null;
   const parsed = JSON.parse(fs.readFileSync(dataPath, 'utf8')) as unknown;
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-  return parsed as GeneratedOfficeData;
+  return parsed as GeneratedOfficeSiteData;
 }
 
-function officeStatusResult(command: string, home: string, dbPath: string): OfficeCommandResult {
-  const officePaths = getOfficePagePaths(home);
-  const generated = readGeneratedOfficeData(officePaths.dataPath);
-  const currentData = generated ?? readOfficePageData(dbPath);
+function sitesStatusResult(command: string, home: string, dbPath: string): SitesCommandResult {
+  const sitesPaths = getSitesPaths(home);
+  const generated = readGeneratedOfficeSiteData(sitesPaths.officeDataPath);
+  const currentData = generated ?? readOfficeSiteData(dbPath);
   const artifacts = Array.isArray(currentData.artifacts) ? currentData.artifacts.length : 0;
   return {
     ok: true,
     command,
     home,
-    indexPath: officePaths.indexPath,
-    dataPath: officePaths.dataPath,
-    assetsDir: officePaths.assetsDir,
-    url: pathToFileURL(officePaths.indexPath).href,
+    sitesDir: sitesPaths.sitesDir,
+    indexPath: sitesPaths.indexPath,
+    officeIndexPath: sitesPaths.officeIndexPath,
+    officeDataPath: sitesPaths.officeDataPath,
+    officeAssetsDir: sitesPaths.officeAssetsDir,
+    tracesIndexPath: sitesPaths.tracesIndexPath,
+    diffsIndexPath: sitesPaths.diffsIndexPath,
+    url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
     generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
-    indexExists: fs.existsSync(officePaths.indexPath),
-    dataExists: fs.existsSync(officePaths.dataPath),
-    message: `Office page: ${officePaths.indexPath}`,
+    indexExists: fs.existsSync(sitesPaths.indexPath),
+    officeIndexExists: fs.existsSync(sitesPaths.officeIndexPath),
+    officeDataExists: fs.existsSync(sitesPaths.officeDataPath),
+    tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
+    diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
+    message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }
 
-export async function runOfficeCommand(
+export async function runSitesCommand(
   args: readonly string[],
-  options: RunOfficeCommandOptions = {},
-): Promise<OfficeCommandResult> {
-  const command = firstOfficeSubcommand(args);
+  options: RunSitesCommandOptions = {},
+): Promise<SitesCommandResult> {
+  const command = firstSitesSubcommand(args);
   const paths = runtimePathsForHome(options.home);
 
-  if (command === 'path') {
-    return officeStatusResult(command, paths.home, paths.dbPath);
-  }
-
-  if (command === 'status') {
-    return officeStatusResult(command, paths.home, paths.dbPath);
-  }
+  if (command === 'path') return sitesStatusResult(command, paths.home, paths.dbPath);
+  if (command === 'status') return sitesStatusResult(command, paths.home, paths.dbPath);
 
   if (command === 'refresh') {
-    const result = materializeOfficePages({
+    const result = materializeSites({
       home: paths.home,
       dbPath: paths.dbPath,
       dryRun: hasFlag(args, '--dry-run'),
     });
     return {
-      ...officeStatusResult(command, paths.home, paths.dbPath),
+      ...sitesStatusResult(command, paths.home, paths.dbPath),
       artifacts: result.data.artifacts.length,
       generatedAt: result.data.generatedAt,
       actions: result.actions,
-      message: `Office refreshed: ${result.indexPath}`,
+      message: `Sites refreshed: ${result.indexPath}`,
     };
   }
 
   if (command === 'open') {
-    const result = materializeOfficePages({ home: paths.home, dbPath: paths.dbPath, dryRun: false });
+    const result = materializeSites({ home: paths.home, dbPath: paths.dbPath, dryRun: false });
     if (options.openUrl !== false) {
       const openProcess = Bun.spawn(['open', result.indexPath], {
         stdout: 'ignore',
@@ -168,40 +181,52 @@ export async function runOfficeCommand(
       if (exitCode !== 0) {
         const errorText = await new Response(openProcess.stderr).text();
         return {
-          ...officeStatusResult(command, paths.home, paths.dbPath),
+          ...sitesStatusResult(command, paths.home, paths.dbPath),
           ok: false,
           error: { code: 'OPEN_FAILED', message: errorText.trim() || 'open command failed' },
-          message: `Office open failed: ${result.indexPath}`,
+          message: `Sites open failed: ${result.indexPath}`,
         };
       }
     }
     return {
-      ...officeStatusResult(command, paths.home, paths.dbPath),
+      ...sitesStatusResult(command, paths.home, paths.dbPath),
       artifacts: result.data.artifacts.length,
       generatedAt: result.data.generatedAt,
       actions: result.actions,
-      message: `Office opened: ${result.indexPath}`,
+      message: `Sites opened: ${result.indexPath}`,
     };
   }
 
   return {
-    ...officeStatusResult(command, paths.home, paths.dbPath),
+    ...sitesStatusResult(command, paths.home, paths.dbPath),
     ok: false,
     error: {
-      code: 'UNKNOWN_OFFICE_COMMAND',
-      message: `Unknown office command: ${command}`,
+      code: 'UNKNOWN_SITES_COMMAND',
+      message: `Unknown sites command: ${command}`,
     },
-    message: 'Unknown Office command.',
+    message: 'Unknown Sites command.',
   };
 }
 
-function renderOfficeCommandResult(result: OfficeCommandResult): string {
+export async function runOfficeCommand(
+  args: readonly string[],
+  options: RunOfficeCommandOptions = {},
+): Promise<OfficeCommandResult> {
+  return runSitesCommand(args, options);
+}
+
+function renderSitesCommandResult(result: SitesCommandResult): string {
   return [
     result.message,
     `Path: ${result.indexPath}`,
+    `Office: ${result.officeIndexPath}`,
     `URL: ${result.url}`,
     `Artifacts: ${result.artifacts}`,
   ].join('\n');
+}
+
+function renderOfficeCommandResult(result: OfficeCommandResult): string {
+  return renderSitesCommandResult(result);
 }
 export function getSteering(): string {
   ensureRuntimePaths();
@@ -508,7 +533,11 @@ export function parseCallInput(rawInput: string | undefined): CallInput {
 }
 
 async function main(): Promise<void> {
-  const [command, ...args] = process.argv.slice(2);
+  const rawArgs = process.argv.slice(1);
+  const cliArgs = rawArgs[0]?.endsWith('os.ts') || rawArgs[0]?.endsWith('/os.ts')
+    ? rawArgs.slice(1)
+    : rawArgs;
+  const [command, ...args] = cliArgs;
   const rawInput = args[0];
 
   if (command === 'get-steering') {
@@ -521,10 +550,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'office') {
-    const result = await runOfficeCommand(args);
-    if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
-    else writeStdout(`${renderOfficeCommandResult(result)}\n`);
+  if (command === 'sites' || command === 'office') {
+    const result = command === 'office'
+      ? await runOfficeCommand(args)
+      : await runSitesCommand(args);
+    if (command === 'office') writeStderr('Deprecated: use `sites` instead of `office`.');
+    if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
+`);
+    else writeStdout(`${renderSitesCommandResult(result)}
+`);
     if (!result.ok) process.exitCode = 1;
     return;
   }
@@ -546,10 +580,10 @@ async function main(): Promise<void> {
       'usage:',
       '  bun ./scripts/os.ts get-steering',
       '  bun ./scripts/os.ts get-raw-steering',
-      '  bun ./scripts/os.ts office path [--json]',
-      '  bun ./scripts/os.ts office status [--json]',
-      '  bun ./scripts/os.ts office refresh [--json]',
-      '  bun ./scripts/os.ts office open [--json]',
+      '  bun ./scripts/os.ts sites path [--json]',
+      '  bun ./scripts/os.ts sites status [--json]',
+      '  bun ./scripts/os.ts sites refresh [--json]',
+      '  bun ./scripts/os.ts sites open [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

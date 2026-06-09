@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { materializeOfficePages } from './office-pages';
+import { materializeSites } from './sites';
 import { validateBundledSkills } from './skills';
 
 export type OsMode = 'local' | 'cloud';
@@ -931,7 +931,7 @@ export function provisionLocalOs(
     }
   }
 
-  actions.push(...materializeOfficePages({ home, dbPath, dryRun }).actions);
+  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
   config.selectedSkills =
     options.selectedSkills ??
     config.selectedSkills ??
