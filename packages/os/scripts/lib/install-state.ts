@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { materializeOfficePages } from './office-pages';
+import { materializeSites } from './sites';
 import { validateBundledSkills } from './skills';
 
 export type OsMode = 'local' | 'cloud';
@@ -547,6 +547,11 @@ function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): Prov
   }];
 }
 
+function migrateSelectedSkillNames(selectedSkills: readonly string[]): string[] {
+  const migrated = selectedSkills.map((skillName) => skillName === 'office' ? 'sites' : skillName);
+  return [...new Set(migrated)];
+}
+
 function seedBundledSkills(
   home: string,
   dryRun: boolean,
@@ -931,11 +936,12 @@ export function provisionLocalOs(
     }
   }
 
-  actions.push(...materializeOfficePages({ home, dbPath, dryRun }).actions);
-  config.selectedSkills =
+  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
+  config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
-    getDefaultSelectedSkillNames();
+    getDefaultSelectedSkillNames(),
+  );
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
   actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
   actions.push(...seedBundledTools(home, dryRun));

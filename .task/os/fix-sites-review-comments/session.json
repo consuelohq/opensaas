@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fa26e655e752",
+  "tmuxSession": "opensaas-os-fix-sites-review-comments-fa26e655",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-sites-review-comments",
+  "branch": "task/os/fix-sites-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-review-comments",
+  "prNumber": 869,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/869",
+  "createdAt": "2026-06-09T17:52:35.896Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-review-comments/.task/os/fix-sites-review-comments/session.json"
+}

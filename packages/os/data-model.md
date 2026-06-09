@@ -37,3 +37,27 @@ Files and Attachments are included in the first slice because they are already a
 ## Cloud artifact refs
 
 Artifact descriptors may include app-visible cloud fields in addition to local paths: `appFileId`, `appAttachmentId`, `storageKey`, `downloadUrl`, `appUrl`, and a `cloud` object with provider `consuelo-app-files`. These fields augment local artifact descriptors; they do not remove local artifact persistence.
+
+
+## Sites page registry
+
+OS Sites stores user-facing generated pages separately from raw artifacts. The registry lives at `<OS_HOME>/sites/.data/pages/registry.json` and tracks page ids, slugs, page kinds, the current version, immutable versions, source paths, source hashes, changed section ids, agent ids, trace ids, and timestamps.
+
+The first safety rule is optimistic concurrency: publishing over an existing Sites page requires the current `baseVersion`. If an agent read an older version, the publish is rejected instead of silently overwriting newer work.
+
+## Sites page registry and collaboration state
+
+Sites pages use filesystem JSON state rather than the artifact database as their current user-facing page model:
+
+```text
+<OS_HOME>/sites/.data/pages/registry.json
+<OS_HOME>/sites/.data/pages/leases.json
+<OS_HOME>/sites/.data/pages/<slug>/versions/<versionId>/
+<OS_HOME>/sites/pages/<slug>/index.html
+<OS_HOME>/sites/pages/<slug>/versions/<versionId>/index.html
+```
+
+`registry.json` tracks `SitePage` records, current pointers, immutable `SitePageVersion` entries, source hashes, rendered paths, changed section IDs, agent IDs, and optional trace IDs. It is the merge/recovery source of truth for generated Sites pages.
+
+`leases.json` tracks active `pageId#sectionId` leases. Leases are short-lived collaboration guards for parallel agents; they are not permanent ownership. `sites patch` checks the registry and leases before publishing. Non-overlapping stale patches can rebase onto the latest version; same-section stale patches reject with `SECTION_CONFLICT`; active section leases reject with `LEASE_CONFLICT` unless Ko explicitly authorizes `--force-publish`.
+
