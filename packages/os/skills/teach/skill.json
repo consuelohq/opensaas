@@ -1,0 +1,25 @@
+{
+  "name": "teach",
+  "title": "Teach",
+  "description": "Use this skill when the user asks the OS agent to teach them a daily deep idea, create an AI-seeded learning guide, ingest a research source for teaching, or publish a durable Sites guide that explains one transferable concept. It coordinates research ingest, typed guide rendering, Sites publishing, and optional teach state updates.",
+  "trigger": "Invoke when the user asks to teach, learn one idea, run Daily Deep Idea, create an AI learning guide, explain a paper/source as a durable lesson, or set up/swap an auto-teaching topic queue.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/teach/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "teaching",
+    "research",
+    "sites",
+    "guide-rendering"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}
