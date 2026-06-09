@@ -94,3 +94,9 @@ test('polishes design archive into the sites shell with filtering and command pa
     expect(source).toContain(marker);
   }
 });
+
+
+test('generates archive server slash aliases without regex escaping drift', () => {
+  expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
+  expect(source).toContain('archivePaths.includes(cleanArchivePath)');
+});
