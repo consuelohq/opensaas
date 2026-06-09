@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-sites-archive-interactions-json-data",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 893,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/893",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/893",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/893/fix-sites-archive-interactions-json-data",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/893",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/893/fix-sites-archive-interactions-json-data",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-interactions-json-data",
+  "taskSession": "tsk_4023e3954845",
+  "tmuxSession": "opensaas-os-fix-sites-archive-interactions-json-data-4023e395",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-interactions-json-data/.task/os/fix-sites-archive-interactions-json-data/session.json",
+  "createdAt": "2026-06-09T22:28:12.289Z"
+}
