@@ -15,7 +15,7 @@ bun run cron -- logs
 bun run cron -- uninstall --name opensaas
 ```
 
-Each job lives in `cron_jobs/<name>` and is discovered from `cron.json`. Local secrets belong in each job's `.env` file or the shell environment.
+Each job lives in `cron_jobs/<name>` and is discovered from `cron.json`. Local secrets belong in each job's `.env` file or the shell environment. Diff cockpit jobs can set `warmPullLimit` and `warmIntervalMs` to refresh a bounded set of active or recently updated PR detail cache entries across devices.
 
 Runtime state and logs stay local:
 

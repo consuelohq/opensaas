@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/workpad.md",
+    "cron_jobs/README.md",
+    "cron_jobs/diff_cockpit/cron.json",
+    "cron_jobs/index.ts",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-09T19:23:40.688Z"
+}
