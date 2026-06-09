@@ -71,7 +71,8 @@ export type ProvisionAction = {
     | 'connect_agent'
     | 'skip_agent'
     | 'seed_skill'
-    | 'seed_tool';
+    | 'seed_tool'
+    | 'seed_operator';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'skipped';
   message: string;
@@ -107,6 +108,7 @@ const REQUIRED_DIRS = [
   'manifests',
   'artifacts',
   'pages',
+  'sites',
   'logs',
   'runs',
   'cache',
@@ -118,7 +120,9 @@ const DEFAULT_PORT = 8850;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
+const BUNDLED_OPERATOR_ROOT = path.join(REPO_ROOT, 'operator');
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
 const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
@@ -265,6 +269,29 @@ function materializeProductPackageRoot(home: string, dryRun: boolean): Provision
 
     if (dryRun || installedInPlace) continue;
     fs.copyFileSync(sourcePath, targetPath);
+  }
+
+  return actions;
+}
+
+function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
+  const targetPath = path.join(home, 'operator');
+  const installedInPlace = samePath(BUNDLED_OPERATOR_ROOT, targetPath);
+  if (!fs.existsSync(BUNDLED_OPERATOR_ROOT)) {
+    throw new Error(`${BUNDLED_OPERATOR_ROOT}: required operator directory is missing`);
+  }
+
+  const targetExists = fs.existsSync(targetPath);
+  const actions: ProvisionAction[] = [{
+    type: 'seed_operator',
+    path: targetPath,
+    status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+    message: installedInPlace ? 'operator directory already at OS root' : 'operator prompts materialized',
+  }];
+
+  if (!dryRun && !installedInPlace) {
+    fs.rmSync(targetPath, { recursive: true, force: true });
+    fs.cpSync(BUNDLED_OPERATOR_ROOT, targetPath, { recursive: true, force: true });
   }
 
   return actions;
@@ -892,6 +919,7 @@ export function provisionLocalOs(
   }
 
   actions.push(...materializeProductPackageRoot(home, dryRun));
+  actions.push(...materializeOperator(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {

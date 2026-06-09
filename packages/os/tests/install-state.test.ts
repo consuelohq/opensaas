@@ -60,6 +60,7 @@ describe('local OS install state', () => {
       'tooling',
       'manifests',
       'artifacts',
+      'pages',
       'sites',
       'logs',
       'runs',
@@ -87,9 +88,12 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
+    expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_operator' && action.path.endsWith('operator') && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'created')).toBe(true);
     const installedTaskSkill = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', 'skill.json'), 'utf8'));
     expect(installedTaskSkill.load.path).toBe('skills/task/SKILL.md');
