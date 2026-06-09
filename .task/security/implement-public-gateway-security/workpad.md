@@ -106,15 +106,19 @@ Implement the Consuelo OS public gateway security contract described by the Stre
 
 - 2026-06-09 22:46:01 `review.run`: passed — OK
 - 2026-06-09 22:46:18 `verify`: passed — OK
+- 2026-06-09 22:48:22 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/security/implement-public-gateway-security/current.json`, `.task/security/implement-public-gateway-security/evidence-log.json`, `.task/security/implement-public-gateway-security/read-log.json`, `.task/security/implement-public-gateway-security/session.json`, `.task/security/implement-public-gateway-security/workpad.md`, `.task/tasks/security/implement-public-gateway-security.json`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/server.ts`
+- changed files: `.task/security/implement-public-gateway-security/current.json`, `.task/security/implement-public-gateway-security/evidence-log.json`, `.task/security/implement-public-gateway-security/read-log.json`, `.task/security/implement-public-gateway-security/session.json`, `.task/security/implement-public-gateway-security/verify.json`, `.task/security/implement-public-gateway-security/workpad.md`, `.task/tasks/security/implement-public-gateway-security.json`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/server.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
 
-
-- 2026-06-09 22:46:33 write: `.task/security/implement-public-gateway-security/workpad.md`
+## Publish notes
+- task.push succeeded for commit 207742fc85ca891e07b61187c1407f5abafecee4 on task/security/implement-public-gateway-security.
+- Initial task.pr attempt failed because the publish guard required a fresh meaningful agent-authored workpad update after push.
+- Local worktree was behind the pushed remote commit after task.push; recovered by resetting to origin/task/security/implement-public-gateway-security, then reapplying this workpad note.
+- Ready to rerun task.push/task.pr.
