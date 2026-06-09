@@ -202,6 +202,10 @@ type DiffCockpitEnv = {
   DIFF_COCKPIT_REFRESH_TOKEN?: string;
 };
 
+type WorkerExecutionContext = {
+  waitUntil(promise: Promise<unknown>): void;
+};
+
 const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
@@ -905,7 +909,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 
 export function createWorker(options: GithubLoaderOptions = {}) {
   return {
-    async fetch(request: Request, env?: DiffCockpitEnv) {
+    async fetch(request: Request, env?: DiffCockpitEnv, ctx?: WorkerExecutionContext) {
       const url = new URL(request.url);
       const token = options.token ?? env?.GITHUB_TOKEN ?? env?.GH_TOKEN;
       const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
@@ -920,7 +924,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/internal/cache/refresh') {
-        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
+        return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
       }
 
 
@@ -1726,6 +1730,7 @@ type CacheRefreshInput = {
 type CacheRefreshDeps = {
   request: Request;
   env?: DiffCockpitEnv;
+  ctx?: WorkerExecutionContext;
   defaultRepo: string;
   indexLoader: ReturnType<typeof createGithubPullRequestIndexLoader>;
   reviewLoader: ReturnType<typeof createGithubPullRequestLoader>;
@@ -1756,46 +1761,113 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
   const pullNumbers = normalizeRefreshPulls(input.pulls);
   const codePaths = normalizeRefreshCodePaths(input.codePaths);
-  const refreshedPulls: string[] = [];
-  const refreshedCode: string[] = [];
-  const refreshedHistory: string[] = [];
-  const requestOrigin = new URL(deps.request.url).origin; const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
-  const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
-  const homepageData = await deps.indexLoader(repo);
-  await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+  const requestOrigin = new URL(deps.request.url).origin;
+  const reason = stringValue(input.reason, 'manual');
+  const planned = buildCacheRefreshPlan(requestOrigin, repo, pullNumbers, codePaths);
 
-  for (const path of codePaths) {
+  if (deps.ctx) {
+    deps.ctx.waitUntil(refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin).catch(() => undefined));
+    return internalJson({
+      ok: true,
+      reason,
+      cache: deps.edgeCache ? 'edge' : 'none',
+      queued: true,
+      refreshed: planned,
+    });
+  }
+
+  const refreshed = await refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin);
+  return internalJson({
+    ok: true,
+    reason,
+    cache: deps.edgeCache ? 'edge' : 'none',
+    refreshed,
+  });
+}
+
+async function refreshCacheEntries(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  pullNumbers: number[],
+  codePaths: string[],
+  requestOrigin: string,
+): Promise<{ homepage: string; pulls: string[]; code: string[]; history: string[] }> {
+  try {
+    const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+    const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+    const homepageData = await deps.indexLoader(repo);
+    await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+    const [codeResults, pullResults] = await Promise.all([
+      Promise.all(codePaths.map((path) => refreshCodePathCache(deps, repo, path, requestOrigin))),
+      Promise.all(pullNumbers.map((pullNumber) => refreshPullCache(deps, repo, pullNumber, requestOrigin))),
+    ]);
+
+    return {
+      homepage: new URL(homepageUrl).pathname,
+      pulls: pullResults,
+      code: codeResults.map((result) => result.code),
+      history: codeResults.map((result) => result.history),
+    };
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh diff cockpit cache entries: ${getErrorMessage(error)}`);
+  }
+}
+
+async function refreshCodePathCache(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  path: string,
+  requestOrigin: string,
+): Promise<{ code: string; history: string }> {
+  try {
     const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
     const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
     const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
     const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
-    const codeData = await deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
-    const historyData = await deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
-    await replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest));
-    await replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest));
-    refreshedCode.push(cachePathLabel(codeUrl));
-    refreshedHistory.push(cachePathLabel(historyUrl));
+    const [codeData, historyData] = await Promise.all([
+      deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
+      deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
+    ]);
+    await Promise.all([
+      replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest)),
+      replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest)),
+    ]);
+    return { code: cachePathLabel(codeUrl), history: cachePathLabel(historyUrl) };
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh code cache for ${path}: ${getErrorMessage(error)}`);
   }
+}
 
-  for (const pullNumber of pullNumbers) {
+async function refreshPullCache(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  pullNumber: number,
+  requestOrigin: string,
+): Promise<string> {
+  try {
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
     const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
-    refreshedPulls.push(new URL(pullUrl).pathname);
+    return new URL(pullUrl).pathname;
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh PR cache for ${pullNumber}: ${getErrorMessage(error)}`);
   }
+}
 
-  return internalJson({
-    ok: true,
-    reason: stringValue(input.reason, 'manual'),
-    cache: deps.edgeCache ? 'edge' : 'none',
-    refreshed: {
-      homepage: new URL(homepageUrl).pathname,
-      pulls: refreshedPulls,
-      code: refreshedCode,
-      history: refreshedHistory,
-    },
-  });
+function buildCacheRefreshPlan(
+  requestOrigin: string,
+  repo: RepoLocator,
+  pullNumbers: number[],
+  codePaths: string[],
+): { homepage: string; pulls: string[]; code: string[]; history: string[] } {
+  const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+  return {
+    homepage: new URL(homepageUrl).pathname,
+    pulls: pullNumbers.map((pullNumber) => `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`),
+    code: codePaths.map((path) => cachePathLabel(`${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`)),
+    history: codePaths.map((path) => cachePathLabel(`${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`)),
+  };
 }
 
 function cachePathLabel(url: string): string {

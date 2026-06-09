@@ -764,6 +764,63 @@ describe('createWorker', () => {
     expect(historyApi.status).toBe(200);
   });
 
+  test('refresh endpoint uses waitUntil so cron does not block on slow cache warming', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let calls = 0;
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      await gate;
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([{ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } }]);
+      }
+      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error(`unexpected queued refresh url ${url}`);
+    };
+    const worker = createWorker({ fetcher, cache });
+    const waitUntilPromises: Promise<unknown>[] = [];
+    const responsePromise = worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [757], reason: 'cron.diff-cockpit' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' }, { waitUntil: (promise: Promise<unknown>) => waitUntilPromises.push(promise) });
+
+    const response = await Promise.race([
+      responsePromise,
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 10)),
+    ]);
+
+    expect(response).not.toBe('timeout');
+    expect(waitUntilPromises).toHaveLength(1);
+    expect(calls).toBe(0);
+    release();
+    await Promise.all(waitUntilPromises);
+    expect(calls > 0).toBe(true);
+    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757')).toBe(true);
+  });
+
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
     const cacheStore = new Map<string, Response>();
     const cache = {
