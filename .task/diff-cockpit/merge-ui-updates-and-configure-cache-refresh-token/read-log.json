@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/wrangler.toml",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-06-09T23:51:23.665Z"
+}
