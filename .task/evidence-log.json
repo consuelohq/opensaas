@@ -13720,8 +13720,454 @@
         "source": "task:fs",
         "task_branch": "task/os/add-local-install-wizard-and-cli-front-door"
       }
+    },
+    {
+      "id": "2ee924de-8303-413d-a18c-aee00dca9908",
+      "occurred_at": "2026-06-09T21:24:03.793Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "codemode workspace facade implementation",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "main",
+      "details": {
+        "budget": 8,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 8,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/facade/executor.ts",
+            "score": 0.8995,
+            "reason": "hybrid match: function compactFacadeFinding",
+            "lines": {
+              "start": 342,
+              "end": 357
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/executor.ts:function:compactFacadeFinding:342-357",
+              "path": "packages/workspace/scripts/lib/facade/executor.ts",
+              "kind": "function",
+              "name": "compactFacadeFinding",
+              "symbol_path": "compactFacadeFinding",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 342,
+                "end": 357
+              },
+              "content_hash": "cbc0fba0714de27124fc845a6d526ab9003a82132a90fceef3e857cd3273b782",
+              "preview": "function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord { const finding = isRecord(value) ? value : {}; const fullMessage = finding.message ?? finding.msg ?? '';"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/facade/batch.ts",
+            "score": 0.7497,
+            "reason": "hybrid match: function runBatch",
+            "lines": {
+              "start": 5,
+              "end": 62
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/batch.ts:function:runBatch:5-62",
+              "path": "packages/workspace/scripts/lib/facade/batch.ts",
+              "kind": "function",
+              "name": "runBatch",
+              "symbol_path": "runBatch",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 5,
+                "end": 62
+              },
+              "content_hash": "68b9dadf475a7b4a9c79268658c85cae3131c035e2151f4c2666418dd6b987c3",
+              "preview": "export async function runBatch( steps: BatchStep[], options: ExecuteToolOptions = {},"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/facade/facade.test.ts",
+            "score": 0.7437,
+            "reason": "hybrid match: function stableOptions",
+            "lines": {
+              "start": 17,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/workspace/tests/facade/facade.test.ts:function:stableOptions:17-46",
+              "path": "packages/workspace/tests/facade/facade.test.ts",
+              "kind": "function",
+              "name": "stableOptions",
+              "symbol_path": "stableOptions",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 17,
+                "end": 46
+              },
+              "content_hash": "d45a3d67f7bcfc28a719ece90989b826a6ea0040d9ab603a9ff21dfc10d23743",
+              "preview": "function stableOptions(runner: ToolRunner, plans: CommandPlan[] = []) { return { cwd: '/tmp/not-a-repo',"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/codemode.test.ts",
+            "score": 0.7369,
+            "reason": "hybrid match: function scriptPath",
+            "lines": {
+              "start": 18,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/workspace/tests/codemode.test.ts:function:scriptPath:18-20",
+              "path": "packages/workspace/tests/codemode.test.ts",
+              "kind": "function",
+              "name": "scriptPath",
+              "symbol_path": "scriptPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 20
+              },
+              "content_hash": "bba4a8b7aabf0a00c0f92af0b75d50cd40bffa860e9b0e112982c0af5545af57",
+              "preview": "function scriptPath(): string { return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'code-run.ts'); }"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+            "score": 0.7097,
+            "reason": "hybrid match: function debugLog",
+            "lines": {
+              "start": 8,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/debug.ts:function:debugLog:8-16",
+              "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+              "kind": "function",
+              "name": "debugLog",
+              "symbol_path": "debugLog",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 16
+              },
+              "content_hash": "8d3a0483d5a5d914ffd84e795b72dba281e1b38e240d83057938074a0d10a261",
+              "preview": "export function debugLog(msg: string): void { if (!enabled) return; try {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+            "score": 0.7097,
+            "reason": "hybrid match: function recordMetrics",
+            "lines": {
+              "start": 8,
+              "end": 24
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/metrics.ts:function:recordMetrics:8-24",
+              "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+              "kind": "function",
+              "name": "recordMetrics",
+              "symbol_path": "recordMetrics",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 24
+              },
+              "content_hash": "b7d750f3effc2eca566dbb9d3cbbe410be6018015703fa448240e987a77a968b",
+              "preview": "export function recordMetrics(result: ExecutionResult, codeLength: number): void { try { mkdirSync(join(homedir(), '.kiro'), { recursive: true });"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.6671,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/types.ts",
+            "score": 0.6547,
+            "reason": "hybrid match: type ToolFunction",
+            "lines": {
+              "start": 2,
+              "end": 2
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/types.ts:type:ToolFunction:2-2",
+              "path": "packages/workspace/scripts/lib/codemode/types.ts",
+              "kind": "type",
+              "name": "ToolFunction",
+              "symbol_path": "ToolFunction",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 2,
+                "end": 2
+              },
+              "content_hash": "d18482853b5d426514757e07197e4d7e3ac781546b8e7c2390de86f9b4b11bfc",
+              "preview": "export type ToolFunction = (...args: unknown[]) => Promise<unknown>;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15407,
+          "total_chunks": 74694,
+          "last_indexed": "2026-06-09T21:22:56.149Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "519c0164-5079-437c-8d4c-15738da35f13",
+      "occurred_at": "2026-06-09T21:24:19.000Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "codemode workspace facade implementation",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "main",
+      "details": {
+        "budget": 8,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 8,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/facade/executor.ts",
+            "score": 0.8995,
+            "reason": "hybrid match: function compactFacadeFinding",
+            "lines": {
+              "start": 342,
+              "end": 357
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/executor.ts:function:compactFacadeFinding:342-357",
+              "path": "packages/workspace/scripts/lib/facade/executor.ts",
+              "kind": "function",
+              "name": "compactFacadeFinding",
+              "symbol_path": "compactFacadeFinding",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 342,
+                "end": 357
+              },
+              "content_hash": "cbc0fba0714de27124fc845a6d526ab9003a82132a90fceef3e857cd3273b782",
+              "preview": "function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord { const finding = isRecord(value) ? value : {}; const fullMessage = finding.message ?? finding.msg ?? '';"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/facade/batch.ts",
+            "score": 0.7497,
+            "reason": "hybrid match: function runBatch",
+            "lines": {
+              "start": 5,
+              "end": 62
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/facade/batch.ts:function:runBatch:5-62",
+              "path": "packages/workspace/scripts/lib/facade/batch.ts",
+              "kind": "function",
+              "name": "runBatch",
+              "symbol_path": "runBatch",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 5,
+                "end": 62
+              },
+              "content_hash": "68b9dadf475a7b4a9c79268658c85cae3131c035e2151f4c2666418dd6b987c3",
+              "preview": "export async function runBatch( steps: BatchStep[], options: ExecuteToolOptions = {},"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/facade/facade.test.ts",
+            "score": 0.7437,
+            "reason": "hybrid match: function stableOptions",
+            "lines": {
+              "start": 17,
+              "end": 46
+            },
+            "target": {
+              "key": "packages/workspace/tests/facade/facade.test.ts:function:stableOptions:17-46",
+              "path": "packages/workspace/tests/facade/facade.test.ts",
+              "kind": "function",
+              "name": "stableOptions",
+              "symbol_path": "stableOptions",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 17,
+                "end": 46
+              },
+              "content_hash": "d45a3d67f7bcfc28a719ece90989b826a6ea0040d9ab603a9ff21dfc10d23743",
+              "preview": "function stableOptions(runner: ToolRunner, plans: CommandPlan[] = []) { return { cwd: '/tmp/not-a-repo',"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/codemode.test.ts",
+            "score": 0.7387,
+            "reason": "hybrid match: function scriptPath",
+            "lines": {
+              "start": 18,
+              "end": 20
+            },
+            "target": {
+              "key": "packages/workspace/tests/codemode.test.ts:function:scriptPath:18-20",
+              "path": "packages/workspace/tests/codemode.test.ts",
+              "kind": "function",
+              "name": "scriptPath",
+              "symbol_path": "scriptPath",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 20
+              },
+              "content_hash": "bba4a8b7aabf0a00c0f92af0b75d50cd40bffa860e9b0e112982c0af5545af57",
+              "preview": "function scriptPath(): string { return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'code-run.ts'); }"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+            "score": 0.7097,
+            "reason": "hybrid match: function debugLog",
+            "lines": {
+              "start": 8,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/debug.ts:function:debugLog:8-16",
+              "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+              "kind": "function",
+              "name": "debugLog",
+              "symbol_path": "debugLog",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 16
+              },
+              "content_hash": "8d3a0483d5a5d914ffd84e795b72dba281e1b38e240d83057938074a0d10a261",
+              "preview": "export function debugLog(msg: string): void { if (!enabled) return; try {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+            "score": 0.7097,
+            "reason": "hybrid match: function recordMetrics",
+            "lines": {
+              "start": 8,
+              "end": 24
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/metrics.ts:function:recordMetrics:8-24",
+              "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+              "kind": "function",
+              "name": "recordMetrics",
+              "symbol_path": "recordMetrics",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 24
+              },
+              "content_hash": "b7d750f3effc2eca566dbb9d3cbbe410be6018015703fa448240e987a77a968b",
+              "preview": "export function recordMetrics(result: ExecutionResult, codeLength: number): void { try { mkdirSync(join(homedir(), '.kiro'), { recursive: true });"
+            }
+          },
+          {
+            "path": "packages/workspace/tests/test-selection.test.js",
+            "score": 0.6671,
+            "reason": "hybrid match: test describe: test selection registry",
+            "lines": {
+              "start": 28,
+              "end": 120
+            },
+            "target": {
+              "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+              "path": "packages/workspace/tests/test-selection.test.js",
+              "kind": "test",
+              "name": "describe: test selection registry",
+              "symbol_path": "describe: test selection registry",
+              "node_type": "call_expression",
+              "parent_name": null,
+              "lines": {
+                "start": 28,
+                "end": 120
+              },
+              "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+              "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/codemode/types.ts",
+            "score": 0.6547,
+            "reason": "hybrid match: type ToolFunction",
+            "lines": {
+              "start": 2,
+              "end": 2
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/codemode/types.ts:type:ToolFunction:2-2",
+              "path": "packages/workspace/scripts/lib/codemode/types.ts",
+              "kind": "type",
+              "name": "ToolFunction",
+              "symbol_path": "ToolFunction",
+              "node_type": "type_alias_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 2,
+                "end": 2
+              },
+              "content_hash": "d18482853b5d426514757e07197e4d7e3ac781546b8e7c2390de86f9b4b11bfc",
+              "preview": "export type ToolFunction = (...args: unknown[]) => Promise<unknown>;"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15407,
+          "total_chunks": 74694,
+          "last_indexed": "2026-06-09T21:22:56.149Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 9,
+          "chunks_embedded": 387
+        }
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-21T20:49:19.328Z"
+  "updated_at": "2026-06-09T21:24:19.062Z"
 }
