@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-cache-hydration",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 890,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/890",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/890",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/890/fix-cache-hydration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/890",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/890/fix-cache-hydration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cache-hydration",
+  "taskSession": "tsk_c5084bae7714",
+  "tmuxSession": "opensaas-diff-cockpit-fix-cache-hydration-c5084bae",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cache-hydration/.task/diff-cockpit/fix-cache-hydration/session.json",
+  "createdAt": "2026-06-09T21:51:58.880Z"
+}
