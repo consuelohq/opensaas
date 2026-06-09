@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/diff-cockpit/tsconfig.json",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts"
+  ],
+  "updatedAt": "2026-06-09T19:52:15.958Z"
+}
