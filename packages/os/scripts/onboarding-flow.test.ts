@@ -45,4 +45,15 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(daemonInstall).toContain('background service setup complete');
     expect(daemonInstall).not.toContain('generated user LaunchAgent plists in');
   });
+
+  test('hosted bootstrap resolves final runtime commands from OS package root', () => {
+    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
+    expect(bootstrap).toContain('local os_home="$OS_HOME"');
+    expect(bootstrap).toContain('local os_dir="$OS_HOME"');
+    expect(bootstrap).toContain('local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"');
+    expect(bootstrap).toContain('log "Package: $os_home"');
+    expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
+    expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
+    expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');
+  });
 });

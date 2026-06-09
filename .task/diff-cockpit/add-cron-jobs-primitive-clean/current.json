@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-cron-jobs-primitive-clean",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 849,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/849",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/849",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/849/add-cron-jobs-primitive-clean",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/849",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/849/add-cron-jobs-primitive-clean",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-cron-jobs-primitive-clean",
+  "taskSession": "tsk_0c26b6bc40ac",
+  "tmuxSession": "opensaas-diff-cockpit-add-cron-jobs-primitive-clean-0c26b6bc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-cron-jobs-primitive-clean/.task/diff-cockpit/add-cron-jobs-primitive-clean/session.json",
+  "createdAt": "2026-06-08T05:31:42.714Z"
+}
