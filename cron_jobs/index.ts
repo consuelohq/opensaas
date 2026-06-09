@@ -18,6 +18,8 @@ export type CronJobManifest = {
   prLimit?: number;
   origin?: string;
   codePaths?: string[];
+  warmPullLimit?: number;
+  warmIntervalMs?: number;
 };
 
 export type DiffCockpitPullFingerprint = {
@@ -45,6 +47,7 @@ export type CronJobStateEntry = {
   lastPayload?: DiffCockpitPullFingerprint[];
   lastStatus?: 'changed' | 'unchanged' | 'skipped' | 'error';
   lastError?: string;
+  lastCacheRefreshAt?: string;
 };
 
 type DiscoveredJob = {
@@ -69,6 +72,8 @@ const DEFAULT_ROOT = 'cron_jobs';
 const DEFAULT_INTERVAL_MS = 30_000;
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_ORIGIN = 'https://diffs.consuelohq.com';
+const DEFAULT_WARM_PULL_LIMIT = 20;
+const DEFAULT_WARM_INTERVAL_MS = 5 * 60_000;
 
 export function statePath(): string {
   return path.join(process.env.HOME || process.cwd(), '.consuelo', 'state', 'cron_jobs.json');
@@ -265,11 +270,15 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
       const currentFingerprint = stableFingerprint(current);
       const changed = previousFingerprint !== currentFingerprint;
       const changedPulls = previous.length === 0 ? current.map((pull) => pull.number) : changedPullNumbers(previous, current);
-
-      if (changed && !options.dryRun) {
+      const warmPullLimit = job.manifest.warmPullLimit || positiveNumber(env.DIFF_COCKPIT_WARM_PULL_LIMIT, DEFAULT_WARM_PULL_LIMIT);
+      const warmIntervalMs = job.manifest.warmIntervalMs || positiveNumber(env.DIFF_COCKPIT_WARM_INTERVAL_MS, DEFAULT_WARM_INTERVAL_MS);
+      const warmPulls = selectWarmPullNumbers(previous, current, warmPullLimit);
+      const now = options.now || new Date();
+      const refreshCache = shouldRefreshWarmCache(changed, state.jobs[name], now, warmIntervalMs);
+      if (refreshCache && !options.dryRun) {
         await refreshDiffCockpitCache({
           repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
-          pulls: changedPulls,
+          pulls: warmPulls,
           codePaths: job.manifest.codePaths || ['packages'],
           reason: `cron.${name}`,
           origin: job.manifest.origin || env.DIFF_COCKPIT_ORIGIN || DEFAULT_ORIGIN,
@@ -281,12 +290,13 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
       if (changed) result.changed += 1;
       result.jobs.push({ name, status: changed ? 'changed' : 'unchanged', changedPulls });
       state.jobs[name] = {
-        lastCheckedAt: (options.now || new Date()).toISOString(),
-        lastChangedAt: changed ? (options.now || new Date()).toISOString() : state.jobs[name]?.lastChangedAt,
+        lastCheckedAt: now.toISOString(),
+        lastChangedAt: changed ? now.toISOString() : state.jobs[name]?.lastChangedAt,
         lastFingerprint: currentFingerprint,
         lastPayload: current,
         lastStatus: changed ? 'changed' : 'unchanged',
         lastError: '',
+        lastCacheRefreshAt: refreshCache && !options.dryRun ? now.toISOString() : state.jobs[name]?.lastCacheRefreshAt,
       };
       await appendLog(logFile, `${name}: ${changed ? 'changed' : 'unchanged'}${changedPulls.length ? ` pulls=${changedPulls.join(',')}` : ''}${options.dryRun ? ' dry-run' : ''}`);
     } catch (error: unknown) {
@@ -355,6 +365,38 @@ export function changedPullNumbers(previous: DiffCockpitPullFingerprint[], curre
     if (!currentByNumber.has(number)) changed.add(number);
   }
   return [...changed].sort((a, b) => a - b);
+}
+
+export function selectWarmPullNumbers(
+  previous: DiffCockpitPullFingerprint[],
+  current: DiffCockpitPullFingerprint[],
+  limit = DEFAULT_WARM_PULL_LIMIT,
+): number[] {
+  const cappedLimit = Math.max(1, Math.floor(limit));
+  const selected = new Set<number>();
+  const add = (number: number) => {
+    if (selected.size < cappedLimit && Number.isInteger(number) && number > 0) selected.add(number);
+  };
+  const changed = previous.length === 0 ? current.map((pull) => pull.number) : changedPullNumbers(previous, current);
+  for (const number of changed) add(number);
+  for (const pull of current) {
+    if (pull.state === 'open') add(pull.number);
+  }
+  for (const pull of current) add(pull.number);
+  return [...selected];
+}
+
+function shouldRefreshWarmCache(
+  changed: boolean,
+  entry: CronJobStateEntry | undefined,
+  now: Date,
+  intervalMs: number,
+): boolean {
+  if (changed) return true;
+  if (!entry?.lastCacheRefreshAt) return true;
+  const lastRefreshMs = Date.parse(entry.lastCacheRefreshAt);
+  if (!Number.isFinite(lastRefreshMs)) return true;
+  return now.getTime() - lastRefreshMs >= intervalMs;
 }
 
 export function stableFingerprint(value: unknown): string {

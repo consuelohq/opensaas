@@ -9,6 +9,7 @@ import {
   launchAgentLabel,
   loadDiffCockpitFingerprint,
   runOnce,
+  selectWarmPullNumbers,
   sanitizeName,
   stableFingerprint,
 } from '../index';
@@ -98,6 +99,24 @@ describe('cron_jobs primitive', () => {
       { number: 3, title: '', state: 'open', draft: false, updatedAt: 'd', headRef: 'three', baseRef: 'main', headSha: 'd', author: 'ko' },
     ];
     expect(changedPullNumbers(previous, current)).toEqual([2, 3]);
+  });
+
+
+  test('should select changed, active, and recent PRs for shared cache warming', () => {
+    const previous = [
+      { number: 1, title: 'stream', state: 'open', draft: false, updatedAt: 'a', headRef: 'stream/diff-cockpit', baseRef: 'main', headSha: 'a', author: 'ko' },
+      { number: 2, title: 'changed task', state: 'open', draft: false, updatedAt: 'b', headRef: 'task/diff-cockpit/changed', baseRef: 'stream/diff-cockpit', headSha: 'b', author: 'ko' },
+      { number: 3, title: 'active task', state: 'open', draft: false, updatedAt: 'c', headRef: 'task/diff-cockpit/active', baseRef: 'stream/diff-cockpit', headSha: 'c', author: 'ko' },
+      { number: 4, title: 'recent merged', state: 'closed', draft: false, updatedAt: 'd', headRef: 'task/diff-cockpit/recent', baseRef: 'stream/diff-cockpit', headSha: 'd', author: 'ko' },
+    ];
+    const current = [
+      { number: 4, title: 'recent merged', state: 'closed', draft: false, updatedAt: 'd', headRef: 'task/diff-cockpit/recent', baseRef: 'stream/diff-cockpit', headSha: 'd', author: 'ko' },
+      { number: 3, title: 'active task', state: 'open', draft: false, updatedAt: 'c', headRef: 'task/diff-cockpit/active', baseRef: 'stream/diff-cockpit', headSha: 'c', author: 'ko' },
+      { number: 2, title: 'changed task', state: 'open', draft: false, updatedAt: 'b2', headRef: 'task/diff-cockpit/changed', baseRef: 'stream/diff-cockpit', headSha: 'b2', author: 'ko' },
+      { number: 1, title: 'stream', state: 'open', draft: false, updatedAt: 'a', headRef: 'stream/diff-cockpit', baseRef: 'main', headSha: 'a', author: 'ko' },
+    ];
+
+    expect(selectWarmPullNumbers(previous, current, 3)).toEqual([2, 3, 1]);
   });
 
   test('should avoid writing state when run-once is dry-run', async () => {
