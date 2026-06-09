@@ -135,7 +135,7 @@ if (!agentContextPages.includes(agentTddSlug)) {
 const agentTddPath = path.join(docsRoot, `${agentTddSlug}.mdx`);
 const agentTddContent = fs.readFileSync(agentTddPath, 'utf8');
 for (const phrase of [
-  'title: "Test-driven agent work"',
+  'title: "Test Driven Development"',
   'Intent assertion',
   'Red',
   'Green',
