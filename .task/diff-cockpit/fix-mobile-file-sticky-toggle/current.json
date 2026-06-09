@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-mobile-file-sticky-toggle",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 866,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/866",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/866",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/866/fix-mobile-file-sticky-toggle",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/866",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/866/fix-mobile-file-sticky-toggle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-mobile-file-sticky-toggle",
+  "taskSession": "tsk_13f431125409",
+  "tmuxSession": "opensaas-diff-cockpit-fix-mobile-file-sticky-toggle-13f43112",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-mobile-file-sticky-toggle/.task/diff-cockpit/fix-mobile-file-sticky-toggle/session.json",
+  "createdAt": "2026-06-09T16:34:04.474Z"
+}

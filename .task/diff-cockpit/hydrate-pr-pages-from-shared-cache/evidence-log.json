@@ -1,0 +1,680 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+  "events": [
+    {
+      "id": "c19d9531-2ce8-43e5-bfc2-0cd1e14a1321",
+      "occurred_at": "2026-06-09T18:50:28.853Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "b501b598-4fb6-4095-ad5d-94d0d2562b8e",
+      "occurred_at": "2026-06-09T18:50:42.400Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "fa82eedd-fccd-4fac-9b88-35c4646e2f0c",
+      "occurred_at": "2026-06-09T18:51:08.585Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "0a57e1d9-1965-42e1-a784-9173b0fe593e",
+      "occurred_at": "2026-06-09T18:51:23.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "ba6b23ff-0176-495c-8c9d-2fa88a82f993",
+      "occurred_at": "2026-06-09T18:51:29.329Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "3fd71cf5-9eb6-461b-a8cf-ff5f4e0ec3b6",
+      "occurred_at": "2026-06-09T18:53:22.418Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "ac7defdc-583a-4de7-98c1-0b3d65132610",
+      "occurred_at": "2026-06-09T18:53:38.727Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "02a18de4-8e75-4583-a7fc-aa96ff33289e",
+      "occurred_at": "2026-06-09T18:54:13.476Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "e31314f4-9e8d-4a53-9e49-b0ce69df8a1f",
+      "occurred_at": "2026-06-09T18:55:15.730Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "d803c59a-9337-408b-a33a-8679f2299841",
+      "occurred_at": "2026-06-09T18:55:38.348Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "92bb54cb-2749-4a60-9eb9-90ae414afc19",
+      "occurred_at": "2026-06-09T18:58:50.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "639d651a-c4e3-4aa4-9651-9ec70d43293d",
+      "occurred_at": "2026-06-09T18:59:01.579Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "e86e9a17-70a4-465b-9358-1d2d443890e3",
+      "occurred_at": "2026-06-09T19:01:34.939Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "e3cca93e-255c-46c0-9d1e-0c1338e116a3",
+      "occurred_at": "2026-06-09T19:02:10.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "eda0a444-791d-4445-b2c9-381b664a993a",
+      "occurred_at": "2026-06-09T19:02:36.629Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "532576bb-065f-488c-9628-9cb8ce91c617",
+      "occurred_at": "2026-06-09T19:03:24.052Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "72ec6bc3-b985-4cc2-a14a-a2388993f5a2",
+      "occurred_at": "2026-06-09T19:04:06.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "a03ba5dd-09dd-4a8c-972f-694aebd96de1",
+      "occurred_at": "2026-06-09T19:04:33.332Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "f49b7d5d-bcaa-4cd9-8a49-9af447ca2895",
+      "occurred_at": "2026-06-09T19:05:07.378Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "f4945e2d-6656-4055-9930-c1e851c7ad0a",
+      "occurred_at": "2026-06-09T19:05:32.130Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "2e871909-3a52-4a5e-be26-cdd805993e5c",
+      "occurred_at": "2026-06-09T19:05:58.271Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "7cd84ce6-4fb8-4c01-8eb2-16bae5d165f5",
+      "occurred_at": "2026-06-09T19:06:21.468Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "7dad87d1-a6d4-458a-9e0a-5bed38275935",
+      "occurred_at": "2026-06-09T19:06:46.928Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "476fd2af-a7ad-46e9-9114-58f5d0838094",
+      "occurred_at": "2026-06-09T19:06:55.537Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "8a9dfb0c-03d7-44a3-996f-9f95cefc8b84",
+      "occurred_at": "2026-06-09T19:07:36.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "8539ecb5-6dba-4873-b66f-a465638270df",
+      "occurred_at": "2026-06-09T19:09:15.406Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "3d8bb19d-7d9e-4405-b82c-0e82ba9b0877",
+      "occurred_at": "2026-06-09T19:09:28.146Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "677e4e4a-6eab-4794-8b1d-fe5199578cef",
+      "occurred_at": "2026-06-09T19:10:28.414Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "be0b7a68-c207-4ff8-b1df-cfeab8ec8b61",
+      "occurred_at": "2026-06-09T19:10:35.163Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "0998d3d1-3fdc-447d-acf1-b082adde723a",
+      "occurred_at": "2026-06-09T19:11:15.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "e500ca7c-2765-4578-9470-772c159d3658",
+      "occurred_at": "2026-06-09T19:11:24.922Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "12d18599-5c31-4bc9-80d7-f5894684443f",
+      "occurred_at": "2026-06-09T19:12:15.867Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "561a05bf-3fb0-474a-ba57-30f490867076",
+      "occurred_at": "2026-06-09T19:12:50.962Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "53f9a981-9eaa-48b2-882d-9f62950ef985",
+      "occurred_at": "2026-06-09T19:13:01.007Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "2d647a79-2f7b-4a38-aec3-aec7730302cb",
+      "occurred_at": "2026-06-09T19:13:46.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "cb3fc119-10cf-4a7c-b549-c985abc03694",
+      "occurred_at": "2026-06-09T19:14:44.807Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "3938a573-ab0e-49f3-96d3-bbd69932d32d",
+      "occurred_at": "2026-06-09T19:16:10.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "baf5a596-7e9a-4dae-b49a-5eea969ed28b",
+      "occurred_at": "2026-06-09T19:16:34.692Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "4e8e0d51-81cd-499c-9a4b-73fb4df0c9ca",
+      "occurred_at": "2026-06-09T19:17:14.475Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/diff_cockpit/cron.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "b0693af8-d944-4c97-a97d-ccd1999eee66",
+      "occurred_at": "2026-06-09T19:18:40.407Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "74a6570f-cfd8-4a68-ad42-f54a19ab034c",
+      "occurred_at": "2026-06-09T19:20:18.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "cron_jobs/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    },
+    {
+      "id": "a6e606cd-99d1-49cf-a0ab-34a7a19eb100",
+      "occurred_at": "2026-06-09T19:23:40.766Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-09T19:23:40.845Z"
+}
