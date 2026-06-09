@@ -211,19 +211,122 @@ class WorkspaceCallServerTest(unittest.TestCase):
             self.module._traced_call('workspace.call', 'tool', failing_call, tool='status', tool_input={}, taskSession=None, timeout=7)
         self.assertEqual(len(calls), 1)
 
-    def test_get_steering_reads_full_steering_each_call(self):
+    def test_get_steering_guards_repeat_bootstrap_calls_without_task_session(self):
+        now = [1000.0]
+        calls = []
+        steering_text = 'full steering payload'
+
+        def fake_read_steering():
+            calls.append(len(calls) + 1)
+            return steering_text
+
+        self.module._steering_guard_now = lambda: now[0]
+        self.module._read_steering = fake_read_steering
+
+        first = asyncio.run(self.module.get_steering())
+        second = asyncio.run(self.module.get_steering())
+        third = asyncio.run(self.module.get_steering())
+        fourth = asyncio.run(self.module.get_steering())
+
+        self.assertEqual(first, steering_text)
+        self.assertIn('GET_STEERING_LOOP_GUARD', second)
+        self.assertIn('packages/workspace/STEERING.md', second)
+        self.assertIn('fs.read', second)
+        self.assertIn('GET_STEERING_RATE_LIMITED', third)
+        self.assertIn('GET_STEERING_COOLDOWN', fourth)
+        self.assertEqual(calls, [1])
+
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            rows = conn.execute('SELECT code, result_json FROM tool_traces WHERE tool = ? ORDER BY ts', ('get_steering',)).fetchall()
+        finally:
+            conn.close()
+
+        self.assertEqual([row[0] for row in rows], ['OK', 'STEERING_LOOP_GUARD', 'STEERING_RATE_LIMITED', 'STEERING_COOLDOWN'])
+        decisions = [json.loads(row[1])['data']['decision'] for row in rows]
+        self.assertEqual(decisions, ['full', 'soft_guard', 'hard_guard', 'cooldown'])
+        self.assertEqual(json.loads(rows[0][1])['data']['content'], steering_text)
+
+
+    def test_get_steering_writes_compact_local_trace_row(self):
+        steering_text = 'full steering payload ' * 40
+
+        def fake_read_steering():
+            return steering_text
+
+        self.module._read_steering = fake_read_steering
+        result = asyncio.run(self.module.get_steering())
+        self.assertEqual(result, steering_text)
+
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            row = conn.execute('SELECT tool, status, ok, code, input_json, result_json, input_tokens, output_tokens, total_tokens FROM tool_traces').fetchone()
+        finally:
+            conn.close()
+
+        self.assertIsNotNone(row)
+        self.assertEqual(row[0], 'get_steering')
+        self.assertEqual(row[1], 'ok')
+        self.assertEqual(row[2], 1)
+        self.assertEqual(row[3], 'OK')
+        self.assertEqual(json.loads(row[4]), {})
+        compact_result = json.loads(row[5])
+        self.assertEqual(compact_result['data']['chars'], len(steering_text))
+        self.assertEqual(compact_result['data']['content'], steering_text)
+        self.assertGreaterEqual(row[7], len(steering_text) // 4)
+        self.assertEqual(row[8], row[6] + row[7])
+
+    def test_get_steering_allows_full_body_again_after_guard_window(self):
+        now = [2000.0]
         calls = []
 
         def fake_read_steering():
             calls.append(len(calls) + 1)
             return f'full steering {len(calls)}'
 
+        self.module._steering_guard_now = lambda: now[0]
         self.module._read_steering = fake_read_steering
+
         first = asyncio.run(self.module.get_steering())
+        now[0] += self.module._STEERING_GUARD_WINDOW_SECONDS + 1
         second = asyncio.run(self.module.get_steering())
+
         self.assertEqual(first, 'full steering 1')
         self.assertEqual(second, 'full steering 2')
         self.assertEqual(calls, [1, 2])
+
+    def test_refresh_steering_requires_reason_and_rate_limits_break_glass(self):
+        now = [3000.0]
+        calls = []
+
+        def fake_read_steering():
+            calls.append(len(calls) + 1)
+            return f'forced steering {len(calls)}'
+
+        self.module._steering_guard_now = lambda: now[0]
+        self.module._read_steering = fake_read_steering
+
+        no_reason = asyncio.run(self.module.refresh_steering(reason='  '))
+        first = asyncio.run(self.module.refresh_steering(reason='need a fresh bootstrap after model context reset'))
+        second = asyncio.run(self.module.refresh_steering(reason='still retrying'))
+        now[0] += self.module._STEERING_FORCE_WINDOW_SECONDS + 1
+        third = asyncio.run(self.module.refresh_steering(reason='new run after force window'))
+
+        self.assertIn('REFRESH_STEERING_REASON_REQUIRED', no_reason)
+        self.assertEqual(first, 'forced steering 1')
+        self.assertIn('REFRESH_STEERING_RATE_LIMITED', second)
+        self.assertEqual(third, 'forced steering 2')
+        self.assertEqual(calls, [1, 2])
+
+        conn = self.module.sqlite3.connect(os.environ['OPENWORKSPACE_TRACE_DB'])
+        try:
+            rows = conn.execute('SELECT code, result_json FROM tool_traces WHERE tool = ? ORDER BY ts', ('refresh_steering',)).fetchall()
+        finally:
+            conn.close()
+
+        self.assertEqual([row[0] for row in rows], ['REFRESH_REASON_REQUIRED', 'OK', 'REFRESH_RATE_LIMITED', 'OK'])
+        self.assertEqual(json.loads(rows[1][1])['data']['decision'], 'forced_refresh')
+        self.assertEqual(json.loads(rows[1][1])['data']['reason'], 'need a fresh bootstrap after model context reset')
 
     def test_call_runs_workspace_execution_off_event_loop(self):
         events = []
@@ -777,6 +880,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         })
         self.assertLessEqual(len(summary), self.module._TRACE_SUMMARY_LIMIT)
         self.assertTrue(summary.endswith('…'))
+
 
 
 if __name__ == '__main__':

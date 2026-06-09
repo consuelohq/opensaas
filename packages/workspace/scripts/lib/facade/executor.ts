@@ -11,6 +11,7 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { getInputSchema } from './schemas';
 import { executeWorkerCall } from '../worker/runtime';
+
 import type {
   BranchResolution,
   CommandArgument,
@@ -24,6 +25,7 @@ import type {
 } from './types';
 
 const require = createRequire(import.meta.url);
+const { resolvePrRefNumber } = require('../pr-ref');
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
@@ -773,8 +775,13 @@ function resolveBranchIfNeeded(
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
   const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
+  const prReference = input.github ?? input.pr;
+  const explicitPrNumber = typeof prReference === 'string' || typeof prReference === 'number'
+    ? resolvePrRefNumber(String(prReference))
+    : undefined;
   const resolution = (options.branchResolver || resolveTaskBranch)({
     explicitBranch,
+    explicitPrNumber,
     cwd,
     env,
     currentTask: options.currentTask,

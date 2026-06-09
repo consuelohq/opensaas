@@ -121,6 +121,16 @@ describe('local OS install state', () => {
     expect(installedToolNames).toContain('browser.open');
     expect(installedToolNames).toContain('railway.logs');
     expect(installedToolNames).toContain('get_raw_steering');
+    expect(installedToolNames).toContain('code.call');
+    const fullCodeCall = fullToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
+    const coreCodeCall = coreToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
+    expect(fullCodeCall?.core).toBe(true);
+    expect(coreCodeCall?.core).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'code.call', 'tool.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'code.call', '.consuelo-tool.json'))).toBe(true);
+    const codeCallWrapper = readFileSync(join(tempHome, 'bin', 'code.call'), 'utf8');
+    expect(codeCallWrapper).toContain('scripts/tool-runner.ts');
+    expect(codeCallWrapper).toContain('code.call');
     const statusWrapper = readFileSync(join(tempHome, 'bin', 'status'), 'utf8');
     expect(statusWrapper).toContain('scripts/tool-runner.ts');
     expect(statusWrapper).toContain('status');

@@ -414,8 +414,7 @@
         {
           "source": "title",
           "flag": "--title",
-          "kind": "value",
-          "required": true
+          "kind": "value"
         },
         {
           "source": "bodyFile",
@@ -425,6 +424,16 @@
         {
           "source": "startFrom",
           "flag": "--start-from",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -479,6 +488,11 @@
         {
           "source": "worktree",
           "flag": "--worktree",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -549,6 +563,16 @@
           "source": "reason",
           "flag": "--reason",
           "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -608,6 +632,16 @@
           "source": "bodyTemplate",
           "flag": "--body-template",
           "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -645,6 +679,16 @@
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -691,6 +735,11 @@
           "source": "squash",
           "flag": "--squash",
           "kind": "boolean"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"
@@ -727,6 +776,16 @@
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
           "kind": "value"
         }
       ],
@@ -868,6 +927,16 @@
           "source": "command",
           "kind": "commandArray",
           "required": true
+        },
+        {
+          "source": "pr",
+          "flag": "--pr",
+          "kind": "value"
+        },
+        {
+          "source": "github",
+          "flag": "--github",
+          "kind": "value"
         }
       ]
     },
@@ -5033,7 +5102,7 @@
       "code",
       "run"
     ],
-    "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+    "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
     "category": "codemode",
     "underlying": "workspace code.run",
     "capabilities": {
@@ -5087,8 +5156,41 @@
       ]
     },
     "exampleInput": {
-      "code": "return await workspace_call(\"status\", {})",
+      "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
       "maxOperations": 25,
+      "maxResultChars": 20000
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "code.call",
+    "methodPath": [
+      "code",
+      "call"
+    ],
+    "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+    "category": "codemode",
+    "underlying": "os code.call",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "CodeCallInput",
+    "outputSchema": "CodeCallOutput",
+    "command": {
+      "script": "code-call",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "internal": "code.call",
+      "arguments": []
+    },
+    "exampleInput": {
+      "language": "python",
+      "mode": "read",
+      "code": "print(\"hello\")",
       "maxResultChars": 20000
     },
     "sessionRequired": false

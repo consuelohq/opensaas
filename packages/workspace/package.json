@@ -44,6 +44,7 @@
     "code-run": "bun ./scripts/code-run.ts",
     "github": "bun ./scripts/github.js",
     "diff_cockpit": "bun ./scripts/diff_cockpit.ts",
+    "cron": "bun ../../cron_jobs/index.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
     "worker": "bun ./scripts/worker.ts",

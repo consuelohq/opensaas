@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/resolve-stream-merge-conflicts",
+  "events": [
+    {
+      "id": "f07e76e4-47c8-44b9-a58c-f03495476746",
+      "occurred_at": "2026-06-08T22:50:30.259Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/constants/DocumentationPaths.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/resolve-stream-merge-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/resolve-stream-merge-conflicts"
+      }
+    },
+    {
+      "id": "1d67c7ff-ef44-4441-81d2-1e8ecbf8a557",
+      "occurred_at": "2026-06-08T22:50:46.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/constants/DocumentationPaths.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/resolve-stream-merge-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/resolve-stream-merge-conflicts"
+      }
+    },
+    {
+      "id": "144cfc7c-cd33-4826-8440-e7ae427d5539",
+      "occurred_at": "2026-06-08T22:51:56.821Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/constants/DocumentationPaths.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/resolve-stream-merge-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/resolve-stream-merge-conflicts"
+      }
+    },
+    {
+      "id": "312a5143-6015-4a81-88d3-afac184d3f67",
+      "occurred_at": "2026-06-08T22:52:40.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/constants/DocumentationPaths.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/resolve-stream-merge-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/resolve-stream-merge-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-08T22:52:40.278Z"
+}

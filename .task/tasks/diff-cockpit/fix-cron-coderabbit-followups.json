@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-cron-coderabbit-followups",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 856,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/856",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/856",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/856/fix-cron-coderabbit-followups",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/856",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/856/fix-cron-coderabbit-followups",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cron-coderabbit-followups",
+  "taskSession": "tsk_825915806f94",
+  "tmuxSession": "opensaas-diff-cockpit-fix-cron-coderabbit-followups-82591580",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cron-coderabbit-followups/.task/diff-cockpit/fix-cron-coderabbit-followups/session.json",
+  "createdAt": "2026-06-09T01:18:37.336Z"
+}
