@@ -14,6 +14,7 @@ const branchField = {
 };
 
 const optionalString = z.string().min(1).optional();
+const prRefInput = z.union([z.number().int().positive(), z.string().min(1)]);
 const stringArray = z.array(z.string().min(1)).optional();
 const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
 
@@ -44,6 +45,8 @@ export const BranchInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  pr: prRefInput.optional(),
+  github: optionalString,
 });
 
 
@@ -105,6 +108,27 @@ export const CodeRunInput = z.object({
   memoryLimit: z.number().int().positive().optional(),
   maxOperations: z.number().int().positive().optional(),
   maxResultChars: z.number().int().positive().optional(),
+});
+
+
+export const CodeCallInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  language: z.string().min(1),
+  code: z.string().min(1).optional(),
+  codeFile: optionalString,
+  stdin: z.string().optional(),
+  stdinFile: optionalString,
+  mode: z.enum(['read', 'edit', 'verify']),
+  cwd: optionalString,
+  timeout: z.number().int().positive().optional(),
+  maxResultChars: z.number().int().positive().optional(),
+}).refine((input) => Boolean(input.code) !== Boolean(input.codeFile), {
+  message: 'provide exactly one of code or codeFile',
+  path: ['code'],
+}).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
+  message: 'provide at most one of stdin or stdinFile',
+  path: ['stdin'],
 });
 
 export const ToolsSearchInput = z.object({
@@ -199,12 +223,14 @@ export const TaskStartInput = z.object({
   ...dryRunField,
   area: optionalString,
   stream: optionalString,
-  title: z.string().min(1),
+  title: optionalString,
   description: optionalString,
+  pr: prRefInput.optional(),
+  github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
-}).refine((input) => Boolean(input.area || input.stream), {
-  message: 'provide either area or stream',
+}).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
+  message: 'provide area/stream or a PR reference',
   path: ['area'],
 });
 
@@ -213,7 +239,8 @@ export const TaskInitInput = z.object({
   ...dryRunField,
   area: z.string().min(1),
   branch: z.string().min(1),
-  pr: z.number().int().positive().optional(),
+  pr: prRefInput.optional(),
+  github: optionalString,
   worktree: optionalString,
 });
 
@@ -221,6 +248,8 @@ export const TaskPushInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  pr: prRefInput.optional(),
+  github: optionalString,
   message: z.string().min(1),
   changed: z.boolean().optional(),
   files: stringArray,
@@ -236,12 +265,15 @@ export const TaskPrInput = z.object({
   draft: z.boolean().optional(),
   ready: z.boolean().optional(),
   bodyTemplate: optionalString,
+  pr: prRefInput.optional(),
+  github: optionalString,
 });
 
 export const TaskMergeInput = z.object({
   ...requestFields,
   ...dryRunField,
-  pr: z.number().int().positive().optional(),
+  pr: prRefInput.optional(),
+  github: optionalString,
   wait: z.boolean().optional(),
   squash: z.boolean().optional(),
 });
@@ -633,8 +665,10 @@ export const LinearIssueInput = z.object({
 export const LinearCreateIssueInput = z.object({
   ...requestFields,
   ...dryRunField,
-  title: z.string().min(1),
+  title: optionalString,
   description: optionalString,
+  pr: prRefInput.optional(),
+  github: optionalString,
   team: optionalString,
   state: optionalString,
   labels: stringArray,
@@ -889,6 +923,7 @@ export const schemaRegistry = {
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
   CodeRunInput,
+  CodeCallInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -984,13 +1019,14 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  BranchInput: '{ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
@@ -1001,11 +1037,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskMergeInput: '{ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',

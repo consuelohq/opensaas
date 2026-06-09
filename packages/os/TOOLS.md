@@ -27,7 +27,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 | Category | Tools |
 | --- | ---: |
-| codemode | 1 |
+| codemode | 2 |
 | composed | 2 |
 | consuelo design | 21 |
 | context | 7 |
@@ -51,9 +51,71 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ## codemode
 
+### workspace.code.call
+
+run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime
+
+| Field | Value |
+| --- | --- |
+| Category | codemode |
+| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Runtime | `os code.call` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "code.call",
+  "input": {
+    "language": "python",
+    "mode": "read",
+    "code": "print(\"hello\")",
+    "maxResultChars": 20000
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.code.run
 
-run workspace-native codemode JavaScript against allowed workspace tools
+run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction
 
 | Field | Value |
 | --- | --- |
@@ -69,7 +131,7 @@ run workspace-native codemode JavaScript against allowed workspace tools
 await workspace.call({
   "tool": "code.run",
   "input": {
-    "code": "return await workspace_call(\"status\", {})",
+    "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
     "maxOperations": 25,
     "maxResultChars": 20000
   }
@@ -4979,7 +5041,7 @@ check whether the task stream appears synced
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.ensureSynced({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>` |
+| Signature | `workspace.task.ensureSynced({ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>` |
 | Runtime | `workspace task.ensureSynced` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 60000ms |
@@ -5103,7 +5165,7 @@ finish a task branch after merge
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.finish({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.finish({ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.finish` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5163,7 +5225,7 @@ write task metadata for an existing worktree
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.init({ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.init({ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.init` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -5224,7 +5286,7 @@ merge a pull request through the workspace task merge script
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.merge({ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.merge` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5284,7 +5346,7 @@ merge task to stream and create or refresh the stream review PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.pr({ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.pr({ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.pr` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5345,7 +5407,7 @@ show task and review PR links
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.prs({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.prs({ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.prs` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
@@ -5404,7 +5466,7 @@ push changed task files to the task branch through GitHub API
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.push({ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.push` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5466,7 +5528,7 @@ create a task branch, worktree, and draft PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
 | Runtime | `workspace task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |

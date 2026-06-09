@@ -1,0 +1,215 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/add-forgiving-task-selectors",
+  "base": "origin/task/workspace-agents/add-forgiving-task-selectors",
+  "headSha": "b01d878a5a675638ef81e4d60fdc80baccbefb98",
+  "changeHash": "c9e7e525f958542fe2628e622e46a8bf131026e8f41fa7dc3cc3b3d236a0e3b7",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/pr-ref.js",
+    "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/scripts/task-finish.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-init.js",
+    "packages/workspace/scripts/task-merge.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-prs.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/pr-ref.test.js",
+    "packages/workspace/tests/task-selector-pr-ref.test.js"
+  ],
+  "verifiedAt": "2026-06-08T23:18:06.942Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/add-forgiving-task-selectors.json",
+        ".task/workspace-agents/add-forgiving-task-selectors/current.json",
+        ".task/workspace-agents/add-forgiving-task-selectors/session.json",
+        ".task/workspace-agents/add-forgiving-task-selectors/workpad.md",
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/pr-ref.js",
+        "packages/workspace/scripts/lib/task-selection.js",
+        "packages/workspace/scripts/task-exec.js",
+        "packages/workspace/scripts/task-finish.js",
+        "packages/workspace/scripts/task-fs.js",
+        "packages/workspace/scripts/task-init.js",
+        "packages/workspace/scripts/task-merge.js",
+        "packages/workspace/scripts/task-pr.js",
+        "packages/workspace/scripts/task-prs.js",
+        "packages/workspace/scripts/task-push.js",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/tests/pr-ref.test.js",
+        "packages/workspace/tests/task-selector-pr-ref.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+            "packages/workspace/scripts/lib/facade/executor.ts",
+            "packages/workspace/scripts/lib/facade/schemas.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-push.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/task-selection.js",
+            "packages/workspace/scripts/task-finish.js",
+            "packages/workspace/scripts/task-init.js",
+            "packages/workspace/scripts/task-pr.js",
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 163,
+          "outputTail": "]\n(pass) typed facade executor > validates input for mac.list [0.07ms]\n{\"level\":\"error\",\"tool\":\"mac.process\",\"command\":\"workspace mac.process\",\"implementationCommand\":\"workspace mac.process\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-08T23:18:05.922Z\"}\n(pass) typed facade executor > validates input for mac.process [0.25ms]\n{\"level\":\"error\",\"tool\":\"mac.port\",\"command\":\"workspace mac.port\",\"implementationCommand\":\"workspace mac.port\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-08T23:18:05.922Z\"}\n(pass) typed facade executor > validates input for mac.port [0.21ms]\n{\"level\":\"error\",\"tool\":\"code.run\",\"command\":\"workspace code.run\",\"implementationCommand\":\"workspace code.run\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-08T23:18:05.923Z\"}\n(pass) typed facade executor > validates input for code.run [0.29ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-08T23:18:05.923Z\"}\n(pass) typed facade executor > validates input for tools.search [0.29ms]\n(pass) typed facade executor > validates input for generate.docs\n(pass) typed facade executor > validates input for generate.types\n{\"level\":\"error\",\"tool\":\"design.publish\",\"command\":\"workspace design.publish\",\"implementationCommand\":\"workspace consuelo-design publish\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-08T23:18:05.923Z\"}\n(pass) typed facade executor > validates input for design.publish [0.31ms]\n(pass) typed facade executor > validates input for design.refresh [0.07ms]\n(pass) typed facade executor > validates input for consueloDesign.run [0.07ms]\n(pass) typed facade executor > validates input for consueloDesign.getDesignSystem [0.02ms]\n(pass) typed facade executor > validates input for consueloDesign.listSkills\n(pass) typed facade executor > validates input for consueloDesign.listDesignSystems\n(pass) typed facade executor > validates input for consueloDesign.upstreamStatus\n(pass) typed facade executor > validates input for consueloDesign.railwayCheck\n(pass) typed facade executor > validates input for consueloDesign.check\n(pass) typed facade executor > validates input for consueloDesign.generateWebsite [0.10ms]\n(pass) typed facade executor > validates input for consueloDesign.generateDemo\n(pass) typed facade executor > validates input for consueloDesign.generateImageBrief\n(pass) typed facade executor > validates input for consueloDesign.generateDigitalEguide [0.11ms]\n(pass) typed facade executor > validates input for consueloDesign.generateEmail\n(pass) typed facade executor > validates input for consueloDesign.generateMotionFrame\n(pass) typed facade executor > validates input for consueloDesign.renderHyperframes\n(pass) typed facade executor > validates input for consueloDesign.uiBg\n(pass) typed facade executor > validates input for consueloDesign.uiStop\n(pass) typed facade executor > validates input for consueloDesign.uiStatus\n(pass) typed facade executor > validates input for consueloDesign.uiLogs\n(pass) typed facade executor > validates input for consueloDesign.odBuild\n\n 128 pass\n 430 filtered out\n 0 fail\n 57 expect() calls\nRan 128 tests across 1 file. [156.00ms]\n"
+        },
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 648,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 268\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:18:06\n\u001b[2m   Duration \u001b[22m 366ms\u001b[2m (transform 10ms, setup 0ms, import 20ms, tests 268ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 163,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.36ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.60ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.07ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.19ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.13ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.28ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.07ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [155.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-forgiving-task-selectors",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 854,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/854",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/854",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/854/add-forgiving-task-selectors",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/854",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/854/add-forgiving-task-selectors",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors",
+  "taskSession": "tsk_cb0da2160bc7",
+  "tmuxSession": "opensaas-workspace-agents-add-forgiving-task-selectors-cb0da216",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors/.task/workspace-agents/add-forgiving-task-selectors/session.json",
+  "createdAt": "2026-06-08T23:05:02.977Z"
+}
