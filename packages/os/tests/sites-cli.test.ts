@@ -207,7 +207,7 @@ describe('Sites CLI', () => {
       '--json',
     ]);
 
-    expect(second).toMatchObject({ ok: true, pageId: 'trace-burn-intelligence', versionCount: 2, currentVersionId: first.publishedVersionId });
+    expect(second).toMatchObject({ ok: true, pageId: 'trace-burn-intelligence', versionCount: 2, currentVersionId: second.publishedVersionId, requiredBaseVersion: first.publishedVersionId });
     expect(second.publishedVersionId).not.toBe(first.publishedVersionId);
     expect(readFileSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'index.html'), 'utf8')).toContain('Second version');
     expect(existsSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'versions', first.publishedVersionId!, 'index.html'))).toBe(true);
@@ -233,6 +233,33 @@ describe('Sites CLI', () => {
     expect(forced.versionCount).toBe(3);
   });
 
+
+
+  it('keeps reserved page versions protected and returns structured publish errors', () => {
+    const firstTarget = join(tempHome, 'reserved-first');
+    mkdirSync(firstTarget, { recursive: true });
+    writeFileSync(join(firstTarget, 'index.html'), '<!doctype html><h1>First version</h1>');
+    const first = runSitesCommand(['publish', '--target', firstTarget, '--path', '/pages/review-check', '--title', 'Review Check', '--kind', 'guide', '--json']);
+    expect(first.ok).toBe(true);
+
+    const secondTarget = join(tempHome, 'reserved-second');
+    mkdirSync(join(secondTarget, 'versions', first.publishedVersionId!), { recursive: true });
+    writeFileSync(join(secondTarget, 'index.html'), '<!doctype html><h1>Second version</h1>');
+    writeFileSync(join(secondTarget, 'versions', first.publishedVersionId!, 'index.html'), '<!doctype html><h1>Injected history</h1>');
+    const second = runSitesCommand(['publish', '--target', secondTarget, '--path', '/pages/review-check', '--title', 'Review Check', '--kind', 'guide', '--base-version', first.publishedVersionId!, '--json']);
+    expect(second.ok).toBe(true);
+    expect(readFileSync(join(tempHome, 'sites', 'pages', 'review-check', 'versions', first.publishedVersionId!, 'index.html'), 'utf8')).toContain('First version');
+    expect(readFileSync(join(tempHome, 'sites', 'pages', 'review-check', 'index.html'), 'utf8')).toContain('Second version');
+
+    const invalidKind = runSitesCommand(['publish', '--target', firstTarget, '--path', '/pages/bad-kind', '--title', 'Bad Kind', '--kind', 'bogus', '--json']);
+    expect(invalidKind.ok).toBe(false);
+    expect(invalidKind.error?.code).toBe('INVALID_SITES_PUBLISH_KIND');
+
+    writeFileSync(join(tempHome, 'sites', '.data', 'pages', 'registry.json'), '{ malformed');
+    const malformedRegistry = runSitesCommand(['publish', '--target', firstTarget, '--path', '/pages/review-check', '--title', 'Review Check', '--kind', 'guide', '--force-publish', '--json']);
+    expect(malformedRegistry.ok).toBe(false);
+    expect(malformedRegistry.error?.code).toBe('MALFORMED_SITES_PAGE_REGISTRY');
+  });
 
   it('renders typed guide pages through the canonical reader shell before publishing to Sites', () => {
     const contentPath = join(tempHome, 'guide-content.json');
