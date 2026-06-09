@@ -28,6 +28,14 @@ type SitesCommandResult = {
   message: string;
   pageId?: string;
   pagePath?: string;
+  sectionId?: string;
+  agentId?: string | null;
+  leaseAction?: 'acquire' | 'release' | 'status';
+  leasesPath?: string;
+  leases?: unknown[];
+  rebased?: boolean;
+  stagedTarget?: string;
+  contentPath?: string;
   pageTitle?: string;
   pageKind?: string;
   currentVersionId?: string | null;
@@ -259,6 +267,52 @@ describe('Sites CLI', () => {
     const publish = runSitesCommand(['publish', '--target', join(tempHome, 'rendered-guide'), '--path', '/pages/how-to-speak', '--title', 'How To Speak', '--kind', 'guide', '--json']);
     expect(publish).toMatchObject({ ok: true, command: 'publish', pageKind: 'guide', versionCount: 1 });
     expect(readFileSync(join(tempHome, 'sites', 'pages', 'how-to-speak', 'index.html'), 'utf8')).toContain('data-reader-shell-template="guide"');
+  });
+
+
+  it('patches reader sections with auto-merge, same-section conflict, and leases', () => {
+    const firstTarget = join(tempHome, 'reader-page');
+    mkdirSync(firstTarget, { recursive: true });
+    writeFileSync(join(firstTarget, 'content.json'), JSON.stringify({
+      template: 'guide',
+      title: 'Trace Burn Intelligence',
+      eyebrow: 'trace guide',
+      thesis: 'Trace burn is a sectioned page for concurrent agent work.',
+      metadata: { status: 'test', owner: 'Ko / Consuelo', date: '2026-06-09' },
+      sections: [
+        { id: 'hero', eyebrow: 'hero', title: 'Hero', body: ['First hero.'] },
+        { id: 'scoring', eyebrow: 'scoring', title: 'Scoring', body: ['First scoring.'] },
+        { id: 'ledger', eyebrow: 'ledger', title: 'Ledger', body: ['First ledger.'] }
+      ],
+      ledger: [{ title: 'Checklist', items: [{ status: 'done', text: 'Seed page.' }] }]
+    }, null, 2));
+    writeFileSync(join(firstTarget, 'index.html'), '<!doctype html><h1>Trace Burn Intelligence</h1>');
+
+    const first = runSitesCommand(['publish', '--target', firstTarget, '--path', '/pages/trace-burn-intelligence', '--title', 'Trace Burn Intelligence', '--kind', 'guide', '--sections', 'hero,scoring,ledger', '--json']);
+    expect(first.ok).toBe(true);
+
+    const scoringPatch = join(tempHome, 'scoring-section.json');
+    writeFileSync(scoringPatch, JSON.stringify({ id: 'scoring', eyebrow: 'scoring', title: 'Scoring updated', body: ['Agent A updated scoring.'] }, null, 2));
+    const scoring = runSitesCommand(['patch', '--page', 'trace-burn-intelligence', '--section', 'scoring', '--input', scoringPatch, '--base-version', first.publishedVersionId!, '--agent', 'agent-a', '--json']);
+    expect(scoring).toMatchObject({ ok: true, command: 'patch', pageId: 'trace-burn-intelligence', sectionId: 'scoring', rebased: false });
+    expect(scoring.publishedVersionId).toBeTruthy();
+
+    const ledgerPatch = join(tempHome, 'ledger-section.json');
+    writeFileSync(ledgerPatch, JSON.stringify({ id: 'ledger', eyebrow: 'ledger', title: 'Ledger updated', body: ['Agent B updated ledger.'] }, null, 2));
+    const ledger = runSitesCommand(['patch', '--page', 'trace-burn-intelligence', '--section', 'ledger', '--input', ledgerPatch, '--base-version', first.publishedVersionId!, '--agent', 'agent-b', '--json']);
+    expect(ledger).toMatchObject({ ok: true, command: 'patch', pageId: 'trace-burn-intelligence', sectionId: 'ledger', rebased: true });
+
+    const conflictingScoring = runSitesCommand(['patch', '--page', 'trace-burn-intelligence', '--section', 'scoring', '--input', scoringPatch, '--base-version', first.publishedVersionId!, '--agent', 'agent-c', '--json']);
+    expect(conflictingScoring.ok).toBe(false);
+    expect(conflictingScoring.error?.code).toBe('SECTION_CONFLICT');
+
+    const lease = runSitesCommand(['lease', 'acquire', '--page', 'trace-burn-intelligence', '--section', 'hero', '--agent', 'agent-a', '--ttl-minutes', '30', '--json']);
+    expect(lease).toMatchObject({ ok: true, command: 'lease', leaseAction: 'acquire', pageId: 'trace-burn-intelligence', sectionId: 'hero', agentId: 'agent-a' });
+    const blockedLease = runSitesCommand(['lease', 'acquire', '--page', 'trace-burn-intelligence', '--section', 'hero', '--agent', 'agent-b', '--ttl-minutes', '30', '--json']);
+    expect(blockedLease.ok).toBe(false);
+    expect(blockedLease.error?.code).toBe('LEASE_CONFLICT');
+    const release = runSitesCommand(['lease', 'release', '--page', 'trace-burn-intelligence', '--section', 'hero', '--agent', 'agent-a', '--json']);
+    expect(release).toMatchObject({ ok: true, leaseAction: 'release' });
   });
 
 });

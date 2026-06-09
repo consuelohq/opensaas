@@ -67,12 +67,28 @@ export type SitePageRegistry = {
   pages: Record<string, SitePage>;
 };
 
+export type SitePageLease = {
+  leaseId: string;
+  pageId: string;
+  sectionId: string;
+  agentId: string;
+  acquiredAt: string;
+  expiresAt: string;
+};
+
+export type SitePageLeaseRegistry = {
+  version: 1;
+  generatedAt: string;
+  leases: Record<string, SitePageLease>;
+};
+
 export type SitesPaths = {
   sitesDir: string;
   indexPath: string;
   pagesDir: string;
   pagesDataDir: string;
   pagesRegistryPath: string;
+  pagesLeasesPath: string;
   officeDir: string;
   officeDataDir: string;
   officeAssetsDir: string;
@@ -130,6 +146,46 @@ export type PublishSitePageResult = {
   registryPath: string;
   currentPath: string;
   versionPath: string;
+  message: string;
+  error?: { code: string; message: string };
+};
+
+export type PrepareSitePagePatchOptions = {
+  home: string;
+  pagePath: string;
+  sectionId: string;
+  input: string;
+  baseVersion?: string | null;
+  forcePublish?: boolean;
+  agentId?: string | null;
+};
+
+export type PrepareSitePagePatchResult = {
+  ok: boolean;
+  pageId: string;
+  path: string;
+  sectionId: string;
+  title: string | null;
+  kind: SitePageKind | null;
+  currentVersionId: string | null;
+  baseVersion: string | null;
+  rebased: boolean;
+  stagedTarget: string;
+  contentPath: string;
+  registryPath: string;
+  message: string;
+  error?: { code: string; message: string };
+};
+
+export type SitePageLeaseResult = {
+  ok: boolean;
+  pageId: string;
+  sectionId: string | null;
+  agentId: string | null;
+  leaseAction: 'acquire' | 'release' | 'status';
+  lease: SitePageLease | null;
+  leases: SitePageLease[];
+  leasesPath: string;
   message: string;
   error?: { code: string; message: string };
 };
@@ -332,6 +388,179 @@ function writeSitePageRegistry(registryPath: string, registry: SitePageRegistry)
   fs.writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`, { mode: 0o600 });
 }
 
+function emptySitePageLeaseRegistry(): SitePageLeaseRegistry {
+  return { version: 1, generatedAt: nowIso(), leases: {} };
+}
+
+function leaseKey(pageId: string, sectionId: string): string {
+  return `${pageId}#${sectionId}`;
+}
+
+function isLeaseActive(lease: SitePageLease, now = new Date()): boolean {
+  return new Date(lease.expiresAt).getTime() > now.getTime();
+}
+
+export function readSitePageLeaseRegistry(leasesPath: string): SitePageLeaseRegistry {
+  if (!fs.existsSync(leasesPath)) return emptySitePageLeaseRegistry();
+  try {
+    const parsed = JSON.parse(fs.readFileSync(leasesPath, 'utf8')) as Partial<SitePageLeaseRegistry>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return emptySitePageLeaseRegistry();
+    const leases = parsed.leases && typeof parsed.leases === 'object' && !Array.isArray(parsed.leases)
+      ? parsed.leases as Record<string, SitePageLease>
+      : {};
+    return { version: 1, generatedAt: typeof parsed.generatedAt === 'string' ? parsed.generatedAt : nowIso(), leases };
+  } catch {
+    return emptySitePageLeaseRegistry();
+  }
+}
+
+function writeSitePageLeaseRegistry(leasesPath: string, registry: SitePageLeaseRegistry): void {
+  fs.mkdirSync(path.dirname(leasesPath), { recursive: true });
+  fs.writeFileSync(leasesPath, `${JSON.stringify(registry, null, 2)}\n`, { mode: 0o600 });
+}
+
+function activeLeases(registry: SitePageLeaseRegistry): SitePageLease[] {
+  return Object.values(registry.leases).filter((lease) => isLeaseActive(lease));
+}
+
+function findContentJson(sourcePath: string): string | null {
+  if (!sourcePath || !fs.existsSync(sourcePath)) return null;
+  const stat = fs.statSync(sourcePath);
+  if (stat.isFile()) return path.basename(sourcePath) === 'content.json' ? sourcePath : null;
+  const direct = path.join(sourcePath, 'content.json');
+  return fs.existsSync(direct) ? direct : null;
+}
+
+function readJsonObject(filePath: string): Record<string, unknown> {
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(`Expected JSON object in ${filePath}`);
+  return parsed as Record<string, unknown>;
+}
+
+function sectionFromPatchInput(inputPath: string, sectionId: string): Record<string, unknown> {
+  const parsed = readJsonObject(inputPath);
+  const section = parsed.section && typeof parsed.section === 'object' && !Array.isArray(parsed.section)
+    ? parsed.section as Record<string, unknown>
+    : parsed;
+  return { ...section, id: typeof section.id === 'string' ? section.id : sectionId };
+}
+
+function replaceSection(content: Record<string, unknown>, sectionId: string, section: Record<string, unknown>): Record<string, unknown> {
+  const sections = Array.isArray(content.sections) ? content.sections : [];
+  let replaced = false;
+  const nextSections = sections.map((candidate) => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return candidate;
+    const existing = candidate as Record<string, unknown>;
+    if (existing.id !== sectionId) return candidate;
+    replaced = true;
+    return section;
+  });
+  if (!replaced) nextSections.push(section);
+  return { ...content, sections: nextSections };
+}
+
+function changedSectionsSince(page: SitePage, baseVersion: string): Set<string> | null {
+  const baseIndex = page.versions.findIndex((version) => version.versionId === baseVersion);
+  if (baseIndex === -1) return null;
+  const changed = new Set<string>();
+  for (const version of page.versions.slice(baseIndex + 1)) {
+    for (const sectionId of version.changedSectionIds) changed.add(sectionId);
+  }
+  return changed;
+}
+
+function failPatch(
+  normalized: { pageId: string; path: string },
+  sectionId: string,
+  currentVersionId: string | null,
+  baseVersion: string | null,
+  registryPath: string,
+  code: string,
+  message: string,
+): PrepareSitePagePatchResult {
+  return { ok: false, pageId: normalized.pageId, path: normalized.path, sectionId, title: null, kind: null, currentVersionId, baseVersion, rebased: false, stagedTarget: '', contentPath: '', registryPath, message, error: { code, message } };
+}
+
+function conflictingLease(paths: SitesPaths, pageId: string, sectionId: string, agentId: string | null): SitePageLease | null {
+  const registry = readSitePageLeaseRegistry(paths.pagesLeasesPath);
+  const lease = registry.leases[leaseKey(pageId, sectionId)];
+  if (!lease || !isLeaseActive(lease)) return null;
+  if (agentId && lease.agentId === agentId) return null;
+  return lease;
+}
+
+export function prepareSitePagePatch(options: PrepareSitePagePatchOptions): PrepareSitePagePatchResult {
+  const paths = getSitesPaths(options.home);
+  const normalized = normalizeSitePagePath(options.pagePath);
+  const registry = readSitePageRegistry(paths.pagesRegistryPath);
+  const page = registry.pages[normalized.pageId] ?? null;
+  const sectionId = options.sectionId.trim();
+  const baseVersion = options.baseVersion ?? null;
+  const currentVersionId = page?.currentVersionId ?? null;
+  if (!sectionId) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'INVALID_PATCH_ARGS', 'sites patch requires --section');
+  if (!page) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'PAGE_NOT_FOUND', `Sites page not found: ${normalized.path}`);
+  if (!currentVersionId) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'PAGE_NOT_FOUND', `Sites page has no current version: ${normalized.path}`);
+  if (!fs.existsSync(options.input)) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'PATCH_INPUT_NOT_FOUND', `Sites patch input not found: ${options.input}`);
+  if (!baseVersion && !options.forcePublish) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'STALE_SITES_PATCH', `stale OS Sites patch rejected for ${normalized.path}: existing page is at ${currentVersionId}. Re-run with --base-version ${currentVersionId}.`);
+  let rebased = false;
+  if (baseVersion && baseVersion !== currentVersionId && !options.forcePublish) {
+    const changed = changedSectionsSince(page, baseVersion);
+    if (!changed) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'UNKNOWN_BASE_VERSION', `Sites patch base version ${baseVersion} was not found for ${normalized.path}.`);
+    if (changed.has(sectionId)) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'SECTION_CONFLICT', `Section ${sectionId} changed since base version ${baseVersion}; rebase before patching.`);
+    rebased = true;
+  }
+  const lease = conflictingLease(paths, normalized.pageId, sectionId, options.agentId ?? null);
+  if (lease && !options.forcePublish) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'LEASE_CONFLICT', `Section ${sectionId} is leased by ${lease.agentId} until ${lease.expiresAt}.`);
+  const currentVersion = page.versions.find((version) => version.versionId === currentVersionId);
+  const sourcePath = currentVersion?.sourcePath ?? '';
+  const contentPath = findContentJson(sourcePath);
+  if (!contentPath) return failPatch(normalized, sectionId, currentVersionId, baseVersion, paths.pagesRegistryPath, 'CONTENT_JSON_NOT_FOUND', `Current Sites page source has no content.json: ${sourcePath}`);
+  const stagedTarget = path.join(paths.pagesDataDir, normalized.slug, 'patches', createVersionId());
+  copyTargetToDirectory(sourcePath, stagedTarget);
+  const stagedContentPath = path.join(stagedTarget, path.relative(sourcePath, contentPath));
+  const content = readJsonObject(stagedContentPath);
+  const nextSection = sectionFromPatchInput(options.input, sectionId);
+  fs.writeFileSync(stagedContentPath, `${JSON.stringify(replaceSection(content, sectionId, nextSection), null, 2)}\n`, { mode: 0o600 });
+  return { ok: true, pageId: normalized.pageId, path: normalized.path, sectionId, title: page.title, kind: page.kind, currentVersionId, baseVersion, rebased, stagedTarget, contentPath: stagedContentPath, registryPath: paths.pagesRegistryPath, message: rebased ? `Sites patch rebased onto ${currentVersionId}.` : `Sites patch prepared for ${normalized.path}.` };
+}
+
+export function acquireSitePageLease(options: { home: string; pagePath: string; sectionId: string; agentId: string; ttlMinutes: number }): SitePageLeaseResult {
+  const paths = getSitesPaths(options.home);
+  const normalized = normalizeSitePagePath(options.pagePath);
+  const registry = readSitePageLeaseRegistry(paths.pagesLeasesPath);
+  const key = leaseKey(normalized.pageId, options.sectionId);
+  const active = registry.leases[key] && isLeaseActive(registry.leases[key]) ? registry.leases[key] : null;
+  if (active && active.agentId !== options.agentId) return { ok: false, pageId: normalized.pageId, sectionId: options.sectionId, agentId: options.agentId, leaseAction: 'acquire', lease: active, leases: activeLeases(registry), leasesPath: paths.pagesLeasesPath, message: `Section ${options.sectionId} is leased by ${active.agentId}.`, error: { code: 'LEASE_CONFLICT', message: `Section ${options.sectionId} is leased by ${active.agentId} until ${active.expiresAt}.` } };
+  const acquiredAt = nowIso();
+  const expiresAt = new Date(Date.now() + Math.max(1, options.ttlMinutes) * 60_000).toISOString();
+  const lease: SitePageLease = { leaseId: active?.leaseId ?? `lease_${randomUUID().replaceAll('-', '').slice(0, 12)}`, pageId: normalized.pageId, sectionId: options.sectionId, agentId: options.agentId, acquiredAt, expiresAt };
+  registry.leases[key] = lease;
+  registry.generatedAt = acquiredAt;
+  writeSitePageLeaseRegistry(paths.pagesLeasesPath, registry);
+  return { ok: true, pageId: normalized.pageId, sectionId: options.sectionId, agentId: options.agentId, leaseAction: 'acquire', lease, leases: activeLeases(registry), leasesPath: paths.pagesLeasesPath, message: `Lease acquired for ${normalized.pageId}#${options.sectionId}.` };
+}
+
+export function releaseSitePageLease(options: { home: string; pagePath: string; sectionId: string; agentId?: string | null; force?: boolean }): SitePageLeaseResult {
+  const paths = getSitesPaths(options.home);
+  const normalized = normalizeSitePagePath(options.pagePath);
+  const registry = readSitePageLeaseRegistry(paths.pagesLeasesPath);
+  const key = leaseKey(normalized.pageId, options.sectionId);
+  const existing = registry.leases[key] ?? null;
+  if (existing && options.agentId && existing.agentId !== options.agentId && !options.force) return { ok: false, pageId: normalized.pageId, sectionId: options.sectionId, agentId: options.agentId, leaseAction: 'release', lease: existing, leases: activeLeases(registry), leasesPath: paths.pagesLeasesPath, message: `Lease belongs to ${existing.agentId}.`, error: { code: 'LEASE_CONFLICT', message: `Lease belongs to ${existing.agentId}; use --force-publish to override.` } };
+  delete registry.leases[key];
+  registry.generatedAt = nowIso();
+  writeSitePageLeaseRegistry(paths.pagesLeasesPath, registry);
+  return { ok: true, pageId: normalized.pageId, sectionId: options.sectionId, agentId: options.agentId ?? null, leaseAction: 'release', lease: existing, leases: activeLeases(registry), leasesPath: paths.pagesLeasesPath, message: existing ? `Lease released for ${normalized.pageId}#${options.sectionId}.` : `No lease existed for ${normalized.pageId}#${options.sectionId}.` };
+}
+
+export function sitePageLeaseStatus(options: { home: string; pagePath?: string | null; sectionId?: string | null }): SitePageLeaseResult {
+  const paths = getSitesPaths(options.home);
+  const registry = readSitePageLeaseRegistry(paths.pagesLeasesPath);
+  const normalized = options.pagePath ? normalizeSitePagePath(options.pagePath) : null;
+  const leases = activeLeases(registry).filter((lease) => (!normalized || lease.pageId === normalized.pageId) && (!options.sectionId || lease.sectionId === options.sectionId));
+  return { ok: true, pageId: normalized?.pageId ?? '', sectionId: options.sectionId ?? null, agentId: null, leaseAction: 'status', lease: leases[0] ?? null, leases, leasesPath: paths.pagesLeasesPath, message: `${leases.length} active Sites leases.` };
+}
+
 function baseStyles(): string {
   return `
     :root { color-scheme: light; --background: #f7f8fa; --surface: #ffffff; --border: #d6dae1; --text: #1d2430; --muted: #5a6575; --accent: #0f766e; }
@@ -428,6 +657,7 @@ export function getSitesPaths(home: string): SitesPaths {
     pagesDir,
     pagesDataDir,
     pagesRegistryPath: path.join(pagesDataDir, 'registry.json'),
+    pagesLeasesPath: path.join(pagesDataDir, 'leases.json'),
     officeDir,
     officeDataDir,
     officeAssetsDir,

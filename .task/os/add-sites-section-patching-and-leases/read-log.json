@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/add-sites-section-patching-and-leases/workpad.md",
+    ".task/tasks/os/add-sites-section-patching-and-leases.json",
+    "packages/os/SCRIPTS.md",
+    "packages/os/data-model.md",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/sites/SKILL.md",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "updatedAt": "2026-06-09T07:40:44.788Z"
+}

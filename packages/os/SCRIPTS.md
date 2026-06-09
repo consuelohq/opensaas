@@ -1380,3 +1380,29 @@ bun ./scripts/os.ts sites publish \
 ```
 
 For `spec`, `plan`, and `guide`, render typed `content.json` through the canonical Consuelo reader shell before publishing. For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.
+
+### Sites section patching and leases
+
+Use `sites patch` when an agent is changing one section of an existing typed page instead of republishing the whole page:
+
+```bash
+bun ./scripts/os.ts sites patch   --page trace-burn-intelligence   --section burn-scoring   --input /tmp/burn-scoring-section.json   --base-version <currentVersionId>   --agent <agent-id>   --json
+```
+
+Patch rules:
+
+- `--base-version` is required for existing pages unless `--force-publish` is explicitly used.
+- If another agent changed a different section since the base version, the patch rebases onto the current version and publishes a new immutable version.
+- If another agent changed the same section, the command rejects with `SECTION_CONFLICT`.
+- Patches for `spec`, `plan`, and `guide` pages update `content.json`, re-render through the canonical reader shell, then publish the rendered target.
+
+Use `sites lease` when multiple agents are actively working on the same Sites page:
+
+```bash
+bun ./scripts/os.ts sites lease acquire --page trace-burn-intelligence --section burn-scoring --agent agent-a --ttl-minutes 45 --json
+bun ./scripts/os.ts sites lease status --page trace-burn-intelligence --json
+bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section burn-scoring --agent agent-a --json
+```
+
+Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
+

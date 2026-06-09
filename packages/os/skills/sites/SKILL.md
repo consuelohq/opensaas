@@ -16,6 +16,7 @@ Artifacts are the internal provenance, storage, and metadata layer. Sites is the
 <OS_HOME>/sites/pages/<slug>/index.html
 <OS_HOME>/sites/pages/<slug>/versions/<versionId>/index.html
 <OS_HOME>/sites/.data/pages/registry.json
+<OS_HOME>/sites/.data/pages/leases.json
 <OS_HOME>/sites/office/
 <OS_HOME>/sites/office/index.html
 <OS_HOME>/sites/office/data/artifacts.json
@@ -41,6 +42,8 @@ bun ./scripts/os.ts sites refresh
 bun ./scripts/os.ts sites open
 bun ./scripts/os.ts sites render --template <spec|plan|guide> --input <content.json> --out <index.html>
 bun ./scripts/os.ts sites publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
+bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>]
+bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>]
 ```
 
 Each command supports `--json`.
@@ -60,4 +63,8 @@ Each command supports `--json`.
 
 `sites publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
 
-Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `sites render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages. Section patching and leases are follow-up layers.
+Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `sites render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages.
+
+Use `sites patch` when an agent changes one section of an existing typed page. The patch command edits that section in `content.json`, re-renders reader pages, and publishes a new immutable version. If the page changed since the supplied base version and the changed sections do not overlap, the patch auto-rebases; if the same section changed, it rejects with `SECTION_CONFLICT`.
+
+Use `sites lease` before parallel agent work on the same page. A lease is scoped to `pageId#sectionId`, has a TTL, blocks other agents by default, and can be released or overridden only with explicit `--force-publish` approval.
