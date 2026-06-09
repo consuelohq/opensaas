@@ -25,6 +25,7 @@ const migrationCases = [
   'handoff',
   'skill-creator',
   'debugger',
+  'teach',
 ];
 
 describe('skill migration guardrails', () => {
