@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2a9e314496be",
+  "tmuxSession": "opensaas-os-add-typed-reader-rendering-to-os-sites-clean-2a9e3144",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-typed-reader-rendering-to-os-sites-clean",
+  "branch": "task/os/add-typed-reader-rendering-to-os-sites-clean",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-typed-reader-rendering-to-os-sites-clean",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-typed-reader-rendering-to-os-sites-clean",
+  "prNumber": 864,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/864",
+  "createdAt": "2026-06-09T06:42:26.316Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-typed-reader-rendering-to-os-sites-clean/.task/os/add-typed-reader-rendering-to-os-sites-clean/session.json"
+}

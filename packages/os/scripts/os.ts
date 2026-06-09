@@ -92,6 +92,11 @@ export type SitesCommandResult = {
   versionCount?: number;
   currentPath?: string;
   versionPath?: string;
+  renderTemplate?: ReaderSiteTemplate;
+  inputPath?: string;
+  outputPath?: string;
+  rendered?: boolean;
+  rendererStdout?: string;
   actions?: Array<{ type: string; path: string; status: string; message: string }>;
   error?: { code: string; message: string };
 };
@@ -121,10 +126,27 @@ function readFlagValue(args: readonly string[], flag: string): string | null {
   return value && !value.startsWith('-') ? value : null;
 }
 
+type ReaderSiteTemplate = 'spec' | 'plan' | 'guide';
+
 function sitePageKind(value: string | null): SitePageKind {
   const kind = value ?? 'uncategorized';
   if (['spec', 'plan', 'guide', 'trace', 'diff', 'office', 'uncategorized'].includes(kind)) return kind as SitePageKind;
   throw new Error(`Unsupported Sites page kind: ${kind}`);
+}
+
+function readerSiteTemplate(value: string | null): ReaderSiteTemplate | null {
+  if (value === 'spec' || value === 'plan' || value === 'guide') return value;
+  return null;
+}
+
+function repoRootFromOsPackage(): string {
+  return path.resolve(getPackageRoot(), '..', '..');
+}
+
+function textFromBytes(value: unknown): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return Buffer.from(value as Uint8Array).toString('utf8');
 }
 
 function firstSitesSubcommand(args: readonly string[]): string {
@@ -196,6 +218,56 @@ export async function runSitesCommand(
       generatedAt: result.data.generatedAt,
       actions: result.actions,
       message: `Sites refreshed: ${result.indexPath}`,
+    };
+  }
+
+  if (command === 'render') {
+    const templateValue = readFlagValue(args, '--template');
+    const template = readerSiteTemplate(templateValue);
+    const input = readFlagValue(args, '--input');
+    const output = readFlagValue(args, '--out');
+    const status = sitesStatusResult(command, paths.home, paths.dbPath);
+    if (!template || !input || !output) {
+      return {
+        ...status,
+        ok: false,
+        renderTemplate: template ?? undefined,
+        inputPath: input ?? undefined,
+        outputPath: output ?? undefined,
+        rendered: false,
+        error: { code: 'INVALID_SITES_RENDER_ARGS', message: 'sites render requires --template <spec|plan|guide>, --input, and --out' },
+        message: 'Invalid Sites render arguments.',
+      };
+    }
+
+    const repoRoot = repoRootFromOsPackage();
+    const renderProcess = Bun.spawnSync([
+      'bun',
+      'run',
+      'wiki:render',
+      '--',
+      '--template',
+      template,
+      '--input',
+      input,
+      '--out',
+      output,
+    ], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
+    const stdout = textFromBytes(renderProcess.stdout).trim();
+    const stderr = textFromBytes(renderProcess.stderr).trim();
+    const rendered = fs.existsSync(output);
+    const ok = renderProcess.exitCode === 0 && rendered;
+    return {
+      ...status,
+      ok,
+      pageKind: template,
+      renderTemplate: template,
+      inputPath: input,
+      outputPath: output,
+      rendered,
+      rendererStdout: stdout || undefined,
+      message: ok ? `Sites reader page rendered: ${output}` : 'Sites reader render failed.',
+      error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` },
     };
   }
 
