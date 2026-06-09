@@ -379,39 +379,66 @@ describe('Consuelo OS public gateway security contract', () => {
     });
     expect(replay).toMatchObject({ ok: false, status: 401, error: { code: 'REPLAYED_NONCE' } });
 
+    const expiredSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/api/tools/status',
+      body,
+      timestamp: '2026-06-09T19:49:00.000Z',
+      nonce: 'nonce-status-read-expired',
+    });
     const expired = await gateway.verifyMachineRequest({
       config,
       method: 'POST',
       path: '/api/tools/status',
       body,
-      headers: signed.headers,
+      headers: expiredSigned.headers,
       workspaceId: 'workspace-acme',
       requiredScope: 'tool:status:read',
-      now: '2026-06-09T20:10:01.000Z',
+      now: '2026-06-09T20:00:01.000Z',
     });
     expect(expired).toMatchObject({ ok: false, status: 401, error: { code: 'EXPIRED_TIMESTAMP' } });
 
+    const tamperSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/api/tools/status',
+      body,
+      timestamp: '2026-06-09T20:00:05.000Z',
+      nonce: 'nonce-status-read-tampered',
+    });
     const tampered = await gateway.verifyMachineRequest({
       config,
       method: 'POST',
       path: '/api/tools/status',
       body: JSON.stringify({ name: 'fs.write', input: {} }),
-      headers: signed.headers,
+      headers: tamperSigned.headers,
       workspaceId: 'workspace-acme',
       requiredScope: 'tool:status:read',
-      now: '2026-06-09T20:00:05.000Z',
+      now: '2026-06-09T20:00:06.000Z',
     });
     expect(tampered).toMatchObject({ ok: false, status: 401, error: { code: 'BAD_SIGNATURE' } });
 
+    const wrongWorkspaceSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/api/tools/status',
+      body,
+      timestamp: '2026-06-09T20:00:07.000Z',
+      nonce: 'nonce-status-read-workspace-mismatch',
+    });
     const wrongWorkspace = await gateway.verifyMachineRequest({
       config,
       method: 'POST',
       path: '/api/tools/status',
       body,
-      headers: signed.headers,
+      headers: wrongWorkspaceSigned.headers,
       workspaceId: 'workspace-other',
       requiredScope: 'tool:status:read',
-      now: '2026-06-09T20:00:05.000Z',
+      now: '2026-06-09T20:00:08.000Z',
     });
     expect(wrongWorkspace).toMatchObject({ ok: false, status: 403, error: { code: 'WORKSPACE_MISMATCH' } });
     expect(JSON.stringify([replay, expired, tampered, wrongWorkspace])).not.toContain(token.secret);
@@ -432,6 +459,15 @@ describe('Consuelo OS public gateway security contract', () => {
       scopes: ['route:/api:read'],
       expiresInSeconds: 300,
     });
+    const oldSigned = await gateway.signMachineRequest({
+      config,
+      token: originalToken,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'old-token-nonce',
+    });
     const rotatedToken = await gateway.rotateAgentAppToken({ config, token: originalToken });
 
     expect(rotatedToken.tokenId).not.toBe(originalToken.tokenId);
@@ -443,15 +479,6 @@ describe('Consuelo OS public gateway security contract', () => {
       scopes: ['route:/api:read'],
     });
 
-    const oldSigned = await gateway.signMachineRequest({
-      config,
-      token: originalToken,
-      method: 'GET',
-      path: '/api/status',
-      body: '',
-      timestamp: '2026-06-09T20:00:00.000Z',
-      nonce: 'old-token-nonce',
-    });
     const oldVerify = await gateway.verifyMachineRequest({
       config,
       method: 'GET',
@@ -464,7 +491,6 @@ describe('Consuelo OS public gateway security contract', () => {
     });
     expect(oldVerify).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_ROTATED' } });
 
-    await gateway.revokeAgentAppToken({ config, tokenId: rotatedToken.tokenId });
     const revokedSigned = await gateway.signMachineRequest({
       config,
       token: rotatedToken,
@@ -474,6 +500,7 @@ describe('Consuelo OS public gateway security contract', () => {
       timestamp: '2026-06-09T20:00:02.000Z',
       nonce: 'revoked-token-nonce',
     });
+    await gateway.revokeAgentAppToken({ config, tokenId: rotatedToken.tokenId });
     const revokedVerify = await gateway.verifyMachineRequest({
       config,
       method: 'GET',
