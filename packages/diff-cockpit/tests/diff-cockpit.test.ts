@@ -597,7 +597,7 @@ describe('renderReviewPage', () => {
     expect(script).toContain('renderInlineComments');
     expect(script).toContain('navigateToComment');
     expect(script).toContain('IntersectionObserver');
-    expect(script).toContain('updateActiveFileFromScroll');
+    expect(script).toContain('updateActiveFileFromViewport');
     expect(script).toContain('parseHunkHeader');
     expect(script).toContain('oldLine');
     expect(script).toContain('newLine');

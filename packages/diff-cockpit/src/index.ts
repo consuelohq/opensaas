@@ -2136,7 +2136,7 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
-.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:7; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
 .mobile-file-backdrop { display:none; }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
@@ -2181,6 +2181,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .diff-gutter { padding-right:4px; }
   .inline-comment { margin-left:68px; }
   .mobile-files-toggle { display:flex; }
+  body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
 }
@@ -2646,6 +2647,8 @@ function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
   els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  els.mobileFilesToggle.setAttribute('aria-label', open ? 'Close files' : 'Open files');
+  els.mobileFilesToggle.textContent = open ? '×' : '▣';
 }
 function loadLiveData() {
   fetch(apiPath, { headers: { accept: 'application/json' } })
@@ -2657,6 +2660,7 @@ function loadLiveData() {
       (data) => {
         state.data = data;
         state.selected = state.data.files[0] || null;
+        state.activeFile = state.selected ? state.selected.filename : null;
         renderHeader();
         renderTree();
         renderSelectedFile();
@@ -2710,6 +2714,7 @@ function renderTree() {
   for (const button of els.tree.querySelectorAll('[data-file]')) {
     button.addEventListener('click', () => {
       state.selected = state.data.files.find((file) => file.filename === button.dataset.file);
+      state.activeFile = state.selected ? state.selected.filename : state.activeFile;
       renderTree();
       renderSelectedFile();
       scrollToFile(state.selected);
@@ -2737,11 +2742,13 @@ function fileCommentBadge(filename) {
 }
 
 function renderSelectedFile() {
-  if (!state.selected) {
+  const active = state.data && state.activeFile ? state.data.files.find((file) => file.filename === state.activeFile) : null;
+  const file = active || state.selected;
+  if (!file) {
     els.selected.textContent = 'No changed files';
     return;
   }
-  els.selected.textContent = 'All changed files · ' + state.data.files.length + ' files · selected ' + state.selected.filename + ' · +' + state.selected.additions + ' −' + state.selected.deletions;
+  els.selected.textContent = 'Current file · ' + state.data.files.length + ' files · ' + file.filename + ' · +' + file.additions + ' −' + file.deletions;
 }
 
 function renderLongDiffs() {
@@ -2968,17 +2975,32 @@ function setupCommentJumps() {
 
 function setupActiveFileObserver() {
   if (state.observer) state.observer.disconnect();
-  state.observer = new IntersectionObserver((entries) => updateActiveFileFromScroll(entries), { root: els.diff.closest('.review-pane'), threshold: 0.2 });
+  const reviewPane = els.diff.closest('.review-pane');
+  state.observer = new IntersectionObserver(() => updateActiveFileFromViewport(), { root: reviewPane, threshold: 0.2 });
   document.querySelectorAll('.diff-file').forEach((section) => state.observer.observe(section));
+  if (state.scrollHandler && reviewPane) reviewPane.removeEventListener('scroll', state.scrollHandler);
+  state.scrollHandler = () => window.requestAnimationFrame(updateActiveFileFromViewport);
+  if (reviewPane) reviewPane.addEventListener('scroll', state.scrollHandler, { passive: true });
   setupCommentJumps();
+  updateActiveFileFromViewport();
 }
 
-function updateActiveFileFromScroll(entries) {
-  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-  if (!visible) return;
-  const matched = (state.data.files || []).find((item) => fileDomId(item.filename) === visible.target.id);
-  if (!matched) return;
+function updateActiveFileFromViewport() {
+  const reviewPane = els.diff.closest('.review-pane');
+  const sections = Array.from(document.querySelectorAll('.diff-file'));
+  if (!reviewPane || sections.length === 0) return;
+  const paneTop = reviewPane.getBoundingClientRect().top;
+  const stickyOffset = els.selected ? els.selected.offsetHeight + 8 : 48;
+  let current = sections[0];
+  for (const section of sections) {
+    const top = section.getBoundingClientRect().top - paneTop;
+    if (top <= stickyOffset) current = section;
+    else break;
+  }
+  const matched = (state.data.files || []).find((item) => fileDomId(item.filename) === current.id);
+  if (!matched || state.activeFile === matched.filename) return;
   state.activeFile = matched.filename;
+  renderSelectedFile();
   renderTree();
   const button = els.tree.querySelector('[data-file="' + CSS.escape(matched.filename) + '"]');
   if (button) button.scrollIntoView({ block: 'nearest' });
