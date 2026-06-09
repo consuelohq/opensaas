@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/workspace-agents/add-os-code-call-core-tool/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-09T04:07:44.834Z"
+}

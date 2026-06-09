@@ -23,6 +23,7 @@ const {
   findOpenPullRequest,
   getBranchRef,
   getToken,
+  githubRequest,
 } = require('./lib/github');
 const {
   createOrResetLocalBranch,
@@ -35,6 +36,7 @@ const {
 } = require('./lib/git');
 const { getTaskWorkpadPath, readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
+const { parsePrRef } = require('./lib/pr-ref');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 
 const DEFAULT_START_FROM = 'main';
@@ -51,7 +53,7 @@ function writeStderr(value = '') {
 function printHelp() {
   writeStdout('usage: bun run task:start -- --area <area> --title "task title" [options]');
   writeStdout('');
-  writeStdout('required:');
+  writeStdout('required unless --pr/--github can infer them:');
   writeStdout('  --area <value>         stream area, for example dialer');
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
@@ -59,6 +61,8 @@ function printHelp() {
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
+  writeStdout('  --pr <number-or-url>   adopt/infer from an existing PR reference');
+  writeStdout('  --github <url>         adopt/infer from GitHub, Graphite, or diffs PR URL');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --body <text>          pull request body text');
   writeStdout('  --body-file <path>     pull request body markdown file');
@@ -112,6 +116,10 @@ function parseArgs(argv) {
         break;
       case '--repo':
         args.repo = value;
+        break;
+      case '--pr':
+      case '--github':
+        args.prRef = value;
         break;
       case '--body':
         args.body = value;
@@ -199,6 +207,47 @@ function removeStaleRootTaskState(worktreePath) {
   }
 }
 
+
+async function getPullRequestByNumber({ token, repository, prNumber }) {
+  const [owner, name] = repository.split('/');
+  return githubRequest({ token, endpoint: `/repos/${owner}/${name}/pulls/${prNumber}` });
+}
+
+function inferTaskStartArgsFromPullRequest(args, pullRequest) {
+  const headBranch = pullRequest && pullRequest.head && pullRequest.head.ref;
+  const baseBranch = pullRequest && pullRequest.base && pullRequest.base.ref;
+  const title = args.title || (pullRequest && pullRequest.title) || `work on PR ${pullRequest.number}`;
+
+  const inferred = { ...args, title };
+
+  if (headBranch && headBranch.startsWith('task/')) {
+    const [, area] = headBranch.split('/');
+    if (!inferred.area) inferred.area = area;
+    if (!inferred.stream && baseBranch && baseBranch.startsWith('stream/')) inferred.stream = baseBranch;
+    if (!inferred.branch) inferred.branch = headBranch;
+    if (!args.startFrom || args.startFrom === DEFAULT_START_FROM) inferred.startFrom = 'stream';
+    return inferred;
+  }
+
+  if (headBranch && headBranch.startsWith('stream/')) {
+    const [, area] = headBranch.split('/');
+    if (!inferred.area) inferred.area = area;
+    if (!inferred.stream) inferred.stream = headBranch;
+    if (!args.startFrom || args.startFrom === DEFAULT_START_FROM) inferred.startFrom = 'stream';
+    return inferred;
+  }
+
+  if (baseBranch && baseBranch.startsWith('stream/')) {
+    const [, area] = baseBranch.split('/');
+    if (!inferred.area) inferred.area = area;
+    if (!inferred.stream) inferred.stream = baseBranch;
+    if (!args.startFrom || args.startFrom === DEFAULT_START_FROM) inferred.startFrom = 'stream';
+    return inferred;
+  }
+
+  throw new Error(`cannot infer task area/stream from PR #${pullRequest.number}; pass --area and --title explicitly`);
+}
+
 function resolveSourceBranch(startFrom, stream) {
   if (startFrom === 'stream') {
     return stream;
@@ -275,11 +324,20 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
 
 async function main() {
   try {
-    const args = parseArgs(process.argv.slice(2));
+    let args = parseArgs(process.argv.slice(2));
 
     if (args.help) {
       printHelp();
       return;
+    }
+
+    const repoRoot = resolveGitRoot(process.cwd());
+    const token = getToken();
+
+    if (args.prRef) {
+      const reference = parsePrRef(args.prRef, { repo: args.repo });
+      const pullRequest = await getPullRequestByNumber({ token, repository: reference.repo, prNumber: reference.prNumber });
+      args = inferTaskStartArgsFromPullRequest({ ...args, repo: reference.repo }, pullRequest);
     }
 
     if (!args.area) {
@@ -293,9 +351,7 @@ async function main() {
     const area = normalizeArea(args.area);
     const stream = args.stream || getDefaultStreamBranch(area);
     const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
-    const repoRoot = resolveGitRoot(process.cwd());
     const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
-    const token = getToken();
 
     assertStreamBranchName(stream, area);
     assertTaskBranchName(taskBranch, area);

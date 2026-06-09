@@ -120,4 +120,34 @@ if (osMissing.length) {
   throw new Error(`OS docs nav has missing pages:\n${osMissing.join('\n')}`);
 }
 
+
+const agentTddSlug = 'os/agent-context/test-driven-agent-work';
+const agentContextGroup = osTab.groups.find((group) => group.group === 'Agent Context');
+if (!agentContextGroup) {
+  throw new Error('OS tab is missing the Agent Context group.');
+}
+
+const agentContextPages = flattenPages(agentContextGroup.pages ?? []);
+if (!agentContextPages.includes(agentTddSlug)) {
+  throw new Error('Agent Context navigation is missing test-driven agent work.');
+}
+
+const agentTddPath = path.join(docsRoot, `${agentTddSlug}.mdx`);
+const agentTddContent = fs.readFileSync(agentTddPath, 'utf8');
+for (const phrase of [
+  'title: "Test Driven Development"',
+  'Intent assertion',
+  'Red',
+  'Green',
+  'Yellow / Amber',
+  'Workpad contract',
+  'context compaction',
+  'Mintlify docs validation',
+  'TDD is how agents preserve intent',
+]) {
+  if (!agentTddContent.includes(phrase)) {
+    throw new Error(`test-driven agent work doc is missing required phrase: ${phrase}`);
+  }
+}
+
 process.stdout.write(`validated ${skillPages.length} generated skill pages and localized OS routes\n`);

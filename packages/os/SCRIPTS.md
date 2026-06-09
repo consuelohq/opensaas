@@ -303,6 +303,7 @@ proxies all arguments to `bun run fs` with cwd set to the selected task worktree
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
 bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
 bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
@@ -346,6 +347,7 @@ runs any command with cwd set to the selected task worktree. use for git, pretti
 bun run task:exec -- --area dialer git diff
 bun run task:exec -- --branch task/dialer/fix-thing git status --short
 bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
 bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
 bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
 bun run task:exec -- --branch task/dialer/fix-thing bun run review
@@ -543,12 +545,26 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
+
+### PR reference selectors
+
+Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.consuelohq.com/.../pull/<number>`, and Graphite URLs shaped like `/github/pr/<owner>/<repo>/<number>/...`.
+
+```bash
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
+```
+
+Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
+
 ### task:start — create task branch + worktree + PR
 
 creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
@@ -1358,3 +1374,51 @@ bun run install:system-daemons:dry-run
 ```
 
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
+
+
+## Sites page publishing
+
+Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
+
+```bash
+bun ./scripts/os.ts sites render \
+  --template guide \
+  --input /tmp/example-page/content.json \
+  --out /tmp/example-page/index.html \
+  --json
+
+bun ./scripts/os.ts sites publish \
+  --target /tmp/example-page \
+  --path /pages/example-page \
+  --title "Example Page" \
+  --kind guide \
+  --json
+```
+
+For `spec`, `plan`, and `guide`, render typed `content.json` through the canonical Consuelo reader shell before publishing. For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.
+
+### Sites section patching and leases
+
+Use `sites patch` when an agent is changing one section of an existing typed page instead of republishing the whole page:
+
+```bash
+bun ./scripts/os.ts sites patch   --page trace-burn-intelligence   --section burn-scoring   --input /tmp/burn-scoring-section.json   --base-version <currentVersionId>   --agent <agent-id>   --json
+```
+
+Patch rules:
+
+- `--base-version` is required for existing pages unless `--force-publish` is explicitly used.
+- If another agent changed a different section since the base version, the patch rebases onto the current version and publishes a new immutable version.
+- If another agent changed the same section, the command rejects with `SECTION_CONFLICT`.
+- Patches for `spec`, `plan`, and `guide` pages update `content.json`, re-render through the canonical reader shell, then publish the rendered target.
+
+Use `sites lease` when multiple agents are actively working on the same Sites page:
+
+```bash
+bun ./scripts/os.ts sites lease acquire --page trace-burn-intelligence --section burn-scoring --agent agent-a --ttl-minutes 45 --json
+bun ./scripts/os.ts sites lease status --page trace-burn-intelligence --json
+bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section burn-scoring --agent agent-a --json
+```
+
+Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
+

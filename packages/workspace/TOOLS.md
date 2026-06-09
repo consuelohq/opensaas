@@ -50,7 +50,7 @@ if (!result.ok) throw new Error(result.message);
 
 ### code.run
 
-run workspace-native codemode JavaScript against allowed workspace tools
+run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction
 
 - signature: `workspace.code.run({ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace code.run`
@@ -63,7 +63,7 @@ example call:
 await workspace.call({
   "tool": "code.run",
   "input": {
-    "code": "return await workspace_call(\"status\", {})",
+    "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };"
     "maxOperations": 25,
     "maxResultChars": 20000
   }
