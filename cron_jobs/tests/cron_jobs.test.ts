@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdir, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -100,6 +101,7 @@ describe('cron_jobs primitive', () => {
     expect(result.checked).toBe(1);
     expect(result.changed).toBe(1);
     expect(result.errors).toBe(0);
+    expect(existsSync(statePath)).toBe(false);
     expect(stableFingerprint([{ b: 1, a: 2 }])).toBe('[{"a":2,"b":1}]');
   });
 });

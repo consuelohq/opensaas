@@ -185,8 +185,11 @@ async function uninstallCommand(args: string[]): Promise<void> {
   const plistPath = path.join(process.env.HOME || process.cwd(), 'Library', 'LaunchAgents', `${label}.plist`);
   if (existsSync(plistPath)) {
     spawnSync('launchctl', ['unload', plistPath], { stdio: 'ignore' });
+    await unlink(plistPath);
+    writeLine(`removed ${label}`);
+  } else {
+    writeLine(`not installed ${label}`);
   }
-  writeLine(`uninstalled ${label}`);
   writeLine(plistPath);
 }
 
@@ -216,9 +219,14 @@ export async function discoverJobs(root = DEFAULT_ROOT): Promise<DiscoveredJob[]
     const dir = path.join(root, entry.name);
     const manifestPath = path.join(dir, 'cron.json');
     if (!existsSync(manifestPath)) continue;
-    const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as CronJobManifest;
-    validateManifest(manifest, manifestPath);
-    if (manifest.enabled) jobs.push({ dirName: entry.name, dir, manifestPath, manifest });
+    try {
+      const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as CronJobManifest;
+      validateManifest(manifest, manifestPath);
+      if (manifest.enabled) jobs.push({ dirName: entry.name, dir, manifestPath, manifest });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write(`skipping invalid cron manifest ${manifestPath}: ${message}\n`);
+    }
   }
   return jobs.sort((a, b) => a.manifest.name.localeCompare(b.manifest.name));
 }
@@ -245,12 +253,12 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
     }
 
     try {
-      loadEnvFile(path.join(job.dir, job.manifest.envFile || '.env'));
+      const env = { ...process.env, ...readEnvFile(path.join(job.dir, job.manifest.envFile || '.env')) };
       const previous = state.jobs[name]?.lastPayload || [];
       const current = await loadDiffCockpitFingerprint({
-        repo: job.manifest.repo || process.env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
-        prLimit: job.manifest.prLimit || positiveNumber(process.env.DIFF_COCKPIT_PR_LIMIT, 50),
-        githubToken: process.env.GITHUB_TOKEN,
+        repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
+        prLimit: job.manifest.prLimit || positiveNumber(env.DIFF_COCKPIT_PR_LIMIT, 50),
+        githubToken: env.GITHUB_TOKEN,
         fetcher: options.fetcher || fetch,
       });
       const previousFingerprint = stableFingerprint(previous);
@@ -260,12 +268,12 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
 
       if (changed && !options.dryRun) {
         await refreshDiffCockpitCache({
-          repo: job.manifest.repo || process.env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
+          repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
           pulls: changedPulls,
           codePaths: job.manifest.codePaths || ['packages'],
           reason: `cron.${name}`,
-          origin: job.manifest.origin || process.env.DIFF_COCKPIT_ORIGIN || DEFAULT_ORIGIN,
-          token: process.env.DIFF_COCKPIT_REFRESH_TOKEN,
+          origin: job.manifest.origin || env.DIFF_COCKPIT_ORIGIN || DEFAULT_ORIGIN,
+          token: env.DIFF_COCKPIT_REFRESH_TOKEN,
         });
       }
 
@@ -312,7 +320,24 @@ export async function loadDiffCockpitFingerprint(options: {
     'user-agent': 'consuelo-cron/diff-cockpit',
   };
   if (options.githubToken) headers.authorization = `Bearer ${options.githubToken}`;
-  const response = await (options.fetcher || fetch)(url, { headers });
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), 15_000);
+  let response: Response;
+  try {
+    response = await (options.fetcher || fetch)(url, {
+      headers,
+      signal: controller.signal,
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('GitHub PR fingerprint fetch timed out after 15000ms');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+
   if (!response.ok) throw new Error(`GitHub PR fingerprint fetch failed with HTTP ${response.status}`);
   const payload = await response.json();
   if (!Array.isArray(payload)) throw new Error('GitHub PR fingerprint response was not an array');
@@ -378,14 +403,14 @@ function readState(filePath: string): CronJobState {
     return { schema: 'consuelo.cron.state.v1', updatedAt: new Date(0).toISOString(), jobs: {} };
   }
 }
-
 async function writeState(state: CronJobState, filePath: string): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeJson(filePath, { ...state, updatedAt: new Date().toISOString() });
 }
 
-function loadEnvFile(filePath: string): void {
-  if (!existsSync(filePath)) return;
+function readEnvFile(filePath: string): Record<string, string> {
+  if (!existsSync(filePath)) return {};
+  const env: Record<string, string> = {};
   const text = readFileSync(filePath, 'utf8');
   for (const line of text.split('\n')) {
     const trimmed = line.trim();
@@ -394,8 +419,9 @@ function loadEnvFile(filePath: string): void {
     if (separator <= 0) continue;
     const key = trimmed.slice(0, separator).trim();
     const value = trimmed.slice(separator + 1).trim().replace(/^['"]|['"]$/g, '');
-    if (!process.env[key]) process.env[key] = value;
+    env[key] = value;
   }
+  return env;
 }
 
 async function appendLog(filePath: string, message: string): Promise<void> {
