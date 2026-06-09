@@ -63,14 +63,6 @@ cd packages/diff-cockpit && bun run test
 
 Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
-### cron local background jobs
-
-`bun run cron` manages local background jobs under `cron_jobs/`. Jobs are discovered from `cron_jobs/<job>/cron.json`, keep state in `~/.consuelo/state/cron_jobs.json`, and log to `~/.consuelo/logs/cron_jobs.log`.
-
-Main commands: `list`, `run-once`, `watch`, `install`, `status`, and `logs`.
-
-The `diff-cockpit` job reads a lightweight GitHub PR fingerprint, compares it with local state, and refreshes the shared Cloudflare cache only when PR state changes. Required local secrets are `GITHUB_TOKEN` and `DIFF_COCKPIT_REFRESH_TOKEN`.
-
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
@@ -87,6 +79,7 @@ Defaults:
 - Custom domain: `install.consuelohq.com`
 - Installer path: `/os`
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
+
 
 ---
 
@@ -1069,6 +1062,21 @@ printf '{"code":"return 1 + 1"}' | bun run code-run -- --stdin
 ```
 
 Use `workspace_call("tool.name", input)` for generic facade calls, sanitized helpers like `fs_read` or `task_current`, and friendly aliases like `readFile`, `grep`, and `readDir`. Always pass `taskSession` when task work is involved. Use direct outer tool calls for final durable transitions such as push, PR, merge, deploy, and publish.
+
+
+---
+
+### code-call - staged language-specific code execution
+
+Runs short Python, Bun, or Bash programs from a staged file instead of shell-escaped `-c` or heredoc transport. Use this for bounded calculations, parsers, and verification snippets that need language runtimes directly.
+
+```bash
+bun run code-call -- '{"language":"python","mode":"read","code":"print(1 + 1)"}'
+bun run code-call -- --input-file /tmp/code-call-input.json
+printf '{"language":"bash","mode":"verify","code":"printf ok"}' | bun run code-call -- --stdin
+```
+
+`mode=read` and `mode=verify` fail if repository files change. `mode=edit` is accepted by the schema but intentionally blocked until task-worktree mutation enforcement is implemented.
 
 ---
 

@@ -932,6 +932,39 @@
     "sessionRequired": false
   },
   {
+    "name": "code.call",
+    "methodPath": [
+      "code",
+      "call"
+    ],
+    "description": "run short language-specific code through staged Python, Bun, or Bash backends",
+    "category": "codemode",
+    "underlying": "workspace code.call",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "CodeCallInput",
+    "outputSchema": "CodeCallOutput",
+    "command": {
+      "script": "code-call",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "internal": "code.call",
+      "arguments": []
+    },
+    "exampleInput": {
+      "language": "python",
+      "mode": "read",
+      "code": "print(\"hello\")",
+      "maxResultChars": 20000
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "worker.call",
     "methodPath": [
       "worker",
@@ -5028,7 +5061,7 @@
       "code",
       "run"
     ],
-    "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
+    "description": "run workspace-native codemode JavaScript against allowed workspace tools",
     "category": "codemode",
     "underlying": "workspace code.run",
     "capabilities": {
@@ -5082,73 +5115,7 @@
       ]
     },
     "exampleInput": {
-      "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
-      "maxOperations": 25,
-      "maxResultChars": 20000
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "code.call",
-    "methodPath": [
-      "code",
-      "call"
-    ],
-    "description": "alias for code.run; run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
-    "category": "codemode",
-    "underlying": "workspace code.run",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "CodeRunInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "code-run",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "taskSession",
-          "kind": "value"
-        },
-        {
-          "source": "code",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "mode",
-          "flag": "--mode",
-          "kind": "value"
-        },
-        {
-          "source": "timeout",
-          "flag": "--timeout",
-          "kind": "value"
-        },
-        {
-          "source": "memoryLimit",
-          "flag": "--memory-limit",
-          "kind": "value"
-        },
-        {
-          "source": "maxOperations",
-          "flag": "--max-operations",
-          "kind": "value"
-        },
-        {
-          "source": "maxResultChars",
-          "flag": "--max-result-chars",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
+      "code": "return await workspace_call(\"status\", {})",
       "maxOperations": 25,
       "maxResultChars": 20000
     },
