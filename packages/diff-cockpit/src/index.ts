@@ -202,6 +202,10 @@ type DiffCockpitEnv = {
   DIFF_COCKPIT_REFRESH_TOKEN?: string;
 };
 
+type WorkerExecutionContext = {
+  waitUntil(promise: Promise<unknown>): void;
+};
+
 const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
@@ -732,13 +736,16 @@ export function renderIndexPage(repo: RepoLocator): string {
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator): string {
+export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null): string {
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
   const githubUrl = `https://github.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
   const graphiteUrl = `https://app.graphite.com/github/pr/${locator.owner}/${locator.repo}/${locator.number}`;
   const diffsHubUrl = `https://diffshub.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
+  const initialDataScript = initialData
+    ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -805,7 +812,7 @@ export function renderReviewPage(locator: PullRequestLocator): string {
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
 </html>`;
 }
@@ -902,7 +909,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 
 export function createWorker(options: GithubLoaderOptions = {}) {
   return {
-    async fetch(request: Request, env?: DiffCockpitEnv) {
+    async fetch(request: Request, env?: DiffCockpitEnv, ctx?: WorkerExecutionContext) {
       const url = new URL(request.url);
       const token = options.token ?? env?.GITHUB_TOKEN ?? env?.GH_TOKEN;
       const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
@@ -917,7 +924,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/internal/cache/refresh') {
-        return handleCacheRefresh({ request, env, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
+        return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
       }
 
 
@@ -1035,7 +1042,9 @@ export function createWorker(options: GithubLoaderOptions = {}) {
           headers: { 'content-type': 'text/html; charset=utf-8' },
         });
       }
-      return html(renderReviewPage(locator));
+      const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+      const initialData = await readCachedJsonData<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
+      return html(renderReviewPage(locator, initialData));
     },
   };
 }
@@ -1721,6 +1730,7 @@ type CacheRefreshInput = {
 type CacheRefreshDeps = {
   request: Request;
   env?: DiffCockpitEnv;
+  ctx?: WorkerExecutionContext;
   defaultRepo: string;
   indexLoader: ReturnType<typeof createGithubPullRequestIndexLoader>;
   reviewLoader: ReturnType<typeof createGithubPullRequestLoader>;
@@ -1751,46 +1761,113 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
   const pullNumbers = normalizeRefreshPulls(input.pulls);
   const codePaths = normalizeRefreshCodePaths(input.codePaths);
-  const refreshedPulls: string[] = [];
-  const refreshedCode: string[] = [];
-  const refreshedHistory: string[] = [];
-  const requestOrigin = new URL(deps.request.url).origin; const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
-  const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
-  const homepageData = await deps.indexLoader(repo);
-  await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+  const requestOrigin = new URL(deps.request.url).origin;
+  const reason = stringValue(input.reason, 'manual');
+  const planned = buildCacheRefreshPlan(requestOrigin, repo, pullNumbers, codePaths);
 
-  for (const path of codePaths) {
+  if (deps.ctx) {
+    deps.ctx.waitUntil(refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin).catch(() => undefined));
+    return internalJson({
+      ok: true,
+      reason,
+      cache: deps.edgeCache ? 'edge' : 'none',
+      queued: true,
+      refreshed: planned,
+    });
+  }
+
+  const refreshed = await refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin);
+  return internalJson({
+    ok: true,
+    reason,
+    cache: deps.edgeCache ? 'edge' : 'none',
+    refreshed,
+  });
+}
+
+async function refreshCacheEntries(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  pullNumbers: number[],
+  codePaths: string[],
+  requestOrigin: string,
+): Promise<{ homepage: string; pulls: string[]; code: string[]; history: string[] }> {
+  try {
+    const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+    const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+    const homepageData = await deps.indexLoader(repo);
+    await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+    const [codeResults, pullResults] = await Promise.all([
+      Promise.all(codePaths.map((path) => refreshCodePathCache(deps, repo, path, requestOrigin))),
+      Promise.all(pullNumbers.map((pullNumber) => refreshPullCache(deps, repo, pullNumber, requestOrigin))),
+    ]);
+
+    return {
+      homepage: new URL(homepageUrl).pathname,
+      pulls: pullResults,
+      code: codeResults.map((result) => result.code),
+      history: codeResults.map((result) => result.history),
+    };
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh diff cockpit cache entries: ${getErrorMessage(error)}`);
+  }
+}
+
+async function refreshCodePathCache(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  path: string,
+  requestOrigin: string,
+): Promise<{ code: string; history: string }> {
+  try {
     const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
     const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
     const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
     const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
-    const codeData = await deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
-    const historyData = await deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path });
-    await replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest));
-    await replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest));
-    refreshedCode.push(cachePathLabel(codeUrl));
-    refreshedHistory.push(cachePathLabel(historyUrl));
+    const [codeData, historyData] = await Promise.all([
+      deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
+      deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
+    ]);
+    await Promise.all([
+      replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest)),
+      replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest)),
+    ]);
+    return { code: cachePathLabel(codeUrl), history: cachePathLabel(historyUrl) };
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh code cache for ${path}: ${getErrorMessage(error)}`);
   }
+}
 
-  for (const pullNumber of pullNumbers) {
+async function refreshPullCache(
+  deps: CacheRefreshDeps,
+  repo: RepoLocator,
+  pullNumber: number,
+  requestOrigin: string,
+): Promise<string> {
+  try {
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
     const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
-    refreshedPulls.push(new URL(pullUrl).pathname);
+    return new URL(pullUrl).pathname;
+  } catch (error: unknown) {
+    throw new Error(`failed to refresh PR cache for ${pullNumber}: ${getErrorMessage(error)}`);
   }
+}
 
-  return internalJson({
-    ok: true,
-    reason: stringValue(input.reason, 'manual'),
-    cache: deps.edgeCache ? 'edge' : 'none',
-    refreshed: {
-      homepage: new URL(homepageUrl).pathname,
-      pulls: refreshedPulls,
-      code: refreshedCode,
-      history: refreshedHistory,
-    },
-  });
+function buildCacheRefreshPlan(
+  requestOrigin: string,
+  repo: RepoLocator,
+  pullNumbers: number[],
+  codePaths: string[],
+): { homepage: string; pulls: string[]; code: string[]; history: string[] } {
+  const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+  return {
+    homepage: new URL(homepageUrl).pathname,
+    pulls: pullNumbers.map((pullNumber) => `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`),
+    code: codePaths.map((path) => cachePathLabel(`${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`)),
+    history: codePaths.map((path) => cachePathLabel(`${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`)),
+  };
 }
 
 function cachePathLabel(url: string): string {
@@ -1847,6 +1924,17 @@ async function getOrSetCachedJson(
   }
 }
 
+
+async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
+  try {
+    if (!edgeCache) return null;
+    const cached = await edgeCache.match(cacheRequest);
+    if (!cached || cached.status !== 200) return null;
+    return await cached.clone().json() as T;
+  } catch {
+    return null;
+  }
+}
 async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
   try {
     if (!edgeCache) return null;
@@ -1865,11 +1953,23 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
 async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
   try {
     if (!edgeCache || response.status !== 200) return;
+    const cacheResponse = cloneCacheableResponse(response);
     await edgeCache.delete(cacheRequest);
-    await edgeCache.put(cacheRequest, response.clone());
+    await edgeCache.put(cacheRequest, cacheResponse);
   } catch {
     // Cache writes are opportunistic; live GitHub fetches still provide correctness.
   }
+}
+
+function cloneCacheableResponse(response: Response): Response {
+  const cloned = response.clone();
+  const headers = new Headers(cloned.headers);
+  headers.delete('vary');
+  return new Response(cloned.body, {
+    status: cloned.status,
+    statusText: cloned.statusText,
+    headers,
+  });
 }
 
 function cachedJsonNotModified(etag: string): Response {
@@ -2136,7 +2236,7 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
-.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:7; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
 .mobile-file-backdrop { display:none; }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
@@ -2181,6 +2281,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .diff-gutter { padding-right:4px; }
   .inline-comment { margin-left:68px; }
   .mobile-files-toggle { display:flex; }
+  body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
 }
@@ -2625,6 +2726,8 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
+const initialData = readInitialReviewData();
+if (initialData) applyReviewData(initialData);
 loadLiveData();
 loadViewerLibraries();
 setupFilePaneResize();
@@ -2646,7 +2749,30 @@ function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
   els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  els.mobileFilesToggle.setAttribute('aria-label', open ? 'Close files' : 'Open files');
+  els.mobileFilesToggle.textContent = open ? '×' : '▣';
 }
+function readInitialReviewData() {
+  const element = document.getElementById('diff-cockpit-initial-data');
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+
+function applyReviewData(data) {
+  state.data = data;
+  const previousFile = state.selected && state.selected.filename;
+  const files = state.data.files || [];
+  state.selected = files.find((file) => file.filename === previousFile) || files[0] || null;
+  state.activeFile = state.selected ? state.selected.filename : null;
+  renderHeader();
+  renderTree();
+  renderSelectedFile();
+  renderLongDiffs();
+  setupActiveFileObserver();
+  renderDrawer();
+}
+
 function loadLiveData() {
   fetch(apiPath, { headers: { accept: 'application/json' } })
     .then((response) => {
@@ -2655,17 +2781,10 @@ function loadLiveData() {
     })
     .then(
       (data) => {
-        state.data = data;
-        state.selected = state.data.files[0] || null;
-        renderHeader();
-        renderTree();
-        renderSelectedFile();
-        renderLongDiffs();
-        setupActiveFileObserver();
-        renderDrawer();
+        applyReviewData(data);
       },
       (error) => {
-        els.tree.textContent = error.message || String(error);
+        if (!state.data) els.tree.textContent = error.message || String(error);
       },
     );
 }
@@ -2710,6 +2829,7 @@ function renderTree() {
   for (const button of els.tree.querySelectorAll('[data-file]')) {
     button.addEventListener('click', () => {
       state.selected = state.data.files.find((file) => file.filename === button.dataset.file);
+      state.activeFile = state.selected ? state.selected.filename : state.activeFile;
       renderTree();
       renderSelectedFile();
       scrollToFile(state.selected);
@@ -2737,11 +2857,13 @@ function fileCommentBadge(filename) {
 }
 
 function renderSelectedFile() {
-  if (!state.selected) {
+  const active = state.data && state.activeFile ? state.data.files.find((file) => file.filename === state.activeFile) : null;
+  const file = active || state.selected;
+  if (!file) {
     els.selected.textContent = 'No changed files';
     return;
   }
-  els.selected.textContent = 'All changed files · ' + state.data.files.length + ' files · selected ' + state.selected.filename + ' · +' + state.selected.additions + ' −' + state.selected.deletions;
+  els.selected.textContent = 'Current file · ' + state.data.files.length + ' files · ' + file.filename + ' · +' + file.additions + ' −' + file.deletions;
 }
 
 function renderLongDiffs() {
@@ -2968,17 +3090,32 @@ function setupCommentJumps() {
 
 function setupActiveFileObserver() {
   if (state.observer) state.observer.disconnect();
-  state.observer = new IntersectionObserver((entries) => updateActiveFileFromScroll(entries), { root: els.diff.closest('.review-pane'), threshold: 0.2 });
+  const reviewPane = els.diff.closest('.review-pane');
+  state.observer = new IntersectionObserver(() => updateActiveFileFromViewport(), { root: reviewPane, threshold: 0.2 });
   document.querySelectorAll('.diff-file').forEach((section) => state.observer.observe(section));
+  if (state.scrollHandler && reviewPane) reviewPane.removeEventListener('scroll', state.scrollHandler);
+  state.scrollHandler = () => window.requestAnimationFrame(updateActiveFileFromViewport);
+  if (reviewPane) reviewPane.addEventListener('scroll', state.scrollHandler, { passive: true });
   setupCommentJumps();
+  updateActiveFileFromViewport();
 }
 
-function updateActiveFileFromScroll(entries) {
-  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-  if (!visible) return;
-  const matched = (state.data.files || []).find((item) => fileDomId(item.filename) === visible.target.id);
-  if (!matched) return;
+function updateActiveFileFromViewport() {
+  const reviewPane = els.diff.closest('.review-pane');
+  const sections = Array.from(document.querySelectorAll('.diff-file'));
+  if (!reviewPane || sections.length === 0) return;
+  const paneTop = reviewPane.getBoundingClientRect().top;
+  const stickyOffset = els.selected ? els.selected.offsetHeight + 8 : 48;
+  let current = sections[0];
+  for (const section of sections) {
+    const top = section.getBoundingClientRect().top - paneTop;
+    if (top <= stickyOffset) current = section;
+    else break;
+  }
+  const matched = (state.data.files || []).find((item) => fileDomId(item.filename) === current.id);
+  if (!matched || state.activeFile === matched.filename) return;
   state.activeFile = matched.filename;
+  renderSelectedFile();
   renderTree();
   const button = els.tree.querySelector('[data-file="' + CSS.escape(matched.filename) + '"]');
   if (button) button.scrollIntoView({ block: 'nearest' });
@@ -3094,4 +3231,14 @@ function escapeJs(value: string): string {
     };
     return entities[char] || char;
   });
+}
+ 
+
+function escapeScriptJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
