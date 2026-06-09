@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -10,6 +10,8 @@ type SitesCommandResult = {
   home: string;
   sitesDir: string;
   indexPath: string;
+  pagesDir?: string;
+  pagesRegistryPath?: string;
   officeIndexPath: string;
   officeDataPath: string;
   officeAssetsDir: string;
@@ -24,6 +26,17 @@ type SitesCommandResult = {
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   message: string;
+  pageId?: string;
+  pagePath?: string;
+  pageTitle?: string;
+  pageKind?: string;
+  currentVersionId?: string | null;
+  publishedVersionId?: string | null;
+  requiredBaseVersion?: string | null;
+  versionCount?: number;
+  currentPath?: string;
+  versionPath?: string;
+  error?: { code: string; message: string };
 };
 
 let tempHome: string;
@@ -65,6 +78,8 @@ describe('Sites CLI', () => {
     expect(pathResult.command).toBe('path');
     expect(pathResult.sitesDir).toBe(join(tempHome, 'sites'));
     expect(pathResult.indexPath).toBe(join(tempHome, 'sites', 'index.html'));
+    expect(pathResult.pagesDir).toBe(join(tempHome, 'sites', 'pages'));
+    expect(pathResult.pagesRegistryPath).toBe(join(tempHome, 'sites', '.data', 'pages', 'registry.json'));
     expect(pathResult.officeIndexPath).toBe(join(tempHome, 'sites', 'office', 'index.html'));
     expect(pathResult.officeDataPath).toBe(join(tempHome, 'sites', 'office', 'data', 'artifacts.json'));
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
@@ -77,6 +92,7 @@ describe('Sites CLI', () => {
     expect(refreshResult.ok).toBe(true);
     expect(refreshResult.artifacts).toBe(0);
     expect(existsSync(refreshResult.indexPath)).toBe(true);
+    expect(existsSync(join(tempHome, 'sites', 'pages', 'index.html'))).toBe(true);
     expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
@@ -119,4 +135,89 @@ describe('Sites CLI', () => {
     const openResult = runSitesCommand(['open', '--json']);
     expect(openResult).toMatchObject({ ok: true, command: 'open' });
   });
+
+  it('publishes Sites pages with immutable versions and stale base-version protection', () => {
+    const firstTarget = join(tempHome, 'first-page');
+    mkdirSync(firstTarget, { recursive: true });
+    writeFileSync(join(firstTarget, 'index.html'), '<!doctype html><h1>First version</h1>');
+
+    const first = runSitesCommand([
+      'publish',
+      '--target', firstTarget,
+      '--path', '/pages/trace-burn-intelligence',
+      '--title', 'Trace Burn Intelligence',
+      '--kind', 'trace',
+      '--json',
+    ]);
+
+    expect(first).toMatchObject({ ok: true, command: 'publish', pageId: 'trace-burn-intelligence', pageKind: 'trace', versionCount: 1 });
+    expect(first.publishedVersionId).toBeTruthy();
+    expect(existsSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'index.html'))).toBe(true);
+    expect(existsSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'versions', first.publishedVersionId!, 'index.html'))).toBe(true);
+
+    const missingBase = runSitesCommand([
+      'publish',
+      '--target', firstTarget,
+      '--path', '/pages/trace-burn-intelligence',
+      '--title', 'Trace Burn Intelligence',
+      '--kind', 'trace',
+      '--json',
+    ]);
+    expect(missingBase.ok).toBe(false);
+    expect(missingBase.error?.code).toBe('STALE_SITES_PUBLISH');
+    expect(missingBase.requiredBaseVersion).toBe(first.publishedVersionId);
+
+    const wrongBase = runSitesCommand([
+      'publish',
+      '--target', firstTarget,
+      '--path', '/pages/trace-burn-intelligence',
+      '--title', 'Trace Burn Intelligence',
+      '--kind', 'trace',
+      '--base-version', 'old-version',
+      '--json',
+    ]);
+    expect(wrongBase.ok).toBe(false);
+    expect(wrongBase.error?.code).toBe('STALE_SITES_PUBLISH');
+
+    const secondTarget = join(tempHome, 'second-page');
+    mkdirSync(secondTarget, { recursive: true });
+    writeFileSync(join(secondTarget, 'index.html'), '<!doctype html><h1>Second version</h1>');
+
+    const second = runSitesCommand([
+      'publish',
+      '--target', secondTarget,
+      '--path', '/pages/trace-burn-intelligence',
+      '--title', 'Trace Burn Intelligence',
+      '--kind', 'trace',
+      '--base-version', first.publishedVersionId!,
+      '--sections', 'hero,ledger',
+      '--json',
+    ]);
+
+    expect(second).toMatchObject({ ok: true, pageId: 'trace-burn-intelligence', versionCount: 2, currentVersionId: first.publishedVersionId });
+    expect(second.publishedVersionId).not.toBe(first.publishedVersionId);
+    expect(readFileSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'index.html'), 'utf8')).toContain('Second version');
+    expect(existsSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'versions', first.publishedVersionId!, 'index.html'))).toBe(true);
+    expect(existsSync(join(tempHome, 'sites', 'pages', 'trace-burn-intelligence', 'versions', second.publishedVersionId!, 'index.html'))).toBe(true);
+
+    const registry = JSON.parse(readFileSync(join(tempHome, 'sites', '.data', 'pages', 'registry.json'), 'utf8'));
+    const page = registry.pages['trace-burn-intelligence'];
+    expect(page.currentVersionId).toBe(second.publishedVersionId);
+    expect(page.versions).toHaveLength(2);
+    expect(page.versions[1].parentVersionId).toBe(first.publishedVersionId);
+    expect(page.versions[1].changedSectionIds).toEqual(['hero', 'ledger']);
+
+    const forced = runSitesCommand([
+      'publish',
+      '--target', firstTarget,
+      '--path', '/pages/trace-burn-intelligence',
+      '--title', 'Trace Burn Intelligence',
+      '--kind', 'trace',
+      '--force-publish',
+      '--json',
+    ]);
+    expect(forced.ok).toBe(true);
+    expect(forced.versionCount).toBe(3);
+  });
+
 });

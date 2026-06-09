@@ -20,8 +20,10 @@ import {
 import {
   getSitesPaths,
   materializeSites,
+  publishSitePage,
   readOfficeSiteData,
 } from './lib/sites';
+import type { SitePageKind } from './lib/sites';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -78,6 +80,18 @@ export type SitesCommandResult = {
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   message: string;
+  pagesDir?: string;
+  pagesRegistryPath?: string;
+  pageId?: string;
+  pagePath?: string;
+  pageTitle?: string;
+  pageKind?: SitePageKind;
+  currentVersionId?: string | null;
+  publishedVersionId?: string | null;
+  requiredBaseVersion?: string | null;
+  versionCount?: number;
+  currentPath?: string;
+  versionPath?: string;
   actions?: Array<{ type: string; path: string; status: string; message: string }>;
   error?: { code: string; message: string };
 };
@@ -98,6 +112,19 @@ type GeneratedOfficeSiteData = {
 
 function hasFlag(args: readonly string[], flag: string): boolean {
   return args.includes(flag);
+}
+
+function readFlagValue(args: readonly string[], flag: string): string | null {
+  const index = args.indexOf(flag);
+  if (index === -1) return null;
+  const value = args[index + 1];
+  return value && !value.startsWith('-') ? value : null;
+}
+
+function sitePageKind(value: string | null): SitePageKind {
+  const kind = value ?? 'uncategorized';
+  if (['spec', 'plan', 'guide', 'trace', 'diff', 'office', 'uncategorized'].includes(kind)) return kind as SitePageKind;
+  throw new Error(`Unsupported Sites page kind: ${kind}`);
 }
 
 function firstSitesSubcommand(args: readonly string[]): string {
@@ -128,6 +155,8 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     home,
     sitesDir: sitesPaths.sitesDir,
     indexPath: sitesPaths.indexPath,
+    pagesDir: sitesPaths.pagesDir,
+    pagesRegistryPath: sitesPaths.pagesRegistryPath,
     officeIndexPath: sitesPaths.officeIndexPath,
     officeDataPath: sitesPaths.officeDataPath,
     officeAssetsDir: sitesPaths.officeAssetsDir,
@@ -167,6 +196,54 @@ export async function runSitesCommand(
       generatedAt: result.data.generatedAt,
       actions: result.actions,
       message: `Sites refreshed: ${result.indexPath}`,
+    };
+  }
+
+  if (command === 'publish') {
+    const target = readFlagValue(args, '--target');
+    const pagePath = readFlagValue(args, '--path');
+    const title = readFlagValue(args, '--title') ?? readFlagValue(args, '--name');
+    if (!target || !pagePath || !title) {
+      return {
+        ...sitesStatusResult(command, paths.home, paths.dbPath),
+        ok: false,
+        error: { code: 'INVALID_SITES_PUBLISH_ARGS', message: 'sites publish requires --target, --path, and --title or --name' },
+        message: 'Invalid Sites publish arguments.',
+      };
+    }
+    const result = publishSitePage({
+      home: paths.home,
+      dbPath: paths.dbPath,
+      target,
+      pagePath,
+      title,
+      kind: sitePageKind(readFlagValue(args, '--kind')),
+      baseVersion: readFlagValue(args, '--base-version') ?? readFlagValue(args, '--base-revision'),
+      forcePublish: hasFlag(args, '--force-publish'),
+      dryRun: hasFlag(args, '--dry-run'),
+      agentId: readFlagValue(args, '--agent'),
+      traceId: readFlagValue(args, '--trace'),
+      changedSectionIds: (readFlagValue(args, '--sections') ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    });
+    return {
+      ...sitesStatusResult(command, paths.home, paths.dbPath),
+      ok: result.ok,
+      pageId: result.pageId,
+      pagePath: result.path,
+      pageTitle: result.title,
+      pageKind: result.kind,
+      currentVersionId: result.currentVersionId,
+      publishedVersionId: result.publishedVersionId,
+      requiredBaseVersion: result.requiredBaseVersion,
+      versionCount: result.versionCount,
+      pagesRegistryPath: result.registryPath,
+      currentPath: result.currentPath,
+      versionPath: result.versionPath,
+      message: result.message,
+      error: result.error,
     };
   }
 
@@ -584,6 +661,7 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites status [--json]',
       '  bun ./scripts/os.ts sites refresh [--json]',
       '  bun ./scripts/os.ts sites open [--json]',
+      '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),
