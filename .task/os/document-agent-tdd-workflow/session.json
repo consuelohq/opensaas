@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cd11452fd702",
+  "tmuxSession": "opensaas-os-document-agent-tdd-workflow-cd11452f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/document-agent-tdd-workflow",
+  "branch": "task/os/document-agent-tdd-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-workflow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-workflow",
+  "prNumber": 841,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/841",
+  "createdAt": "2026-06-07T22:17:45.573Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-workflow/.task/os/document-agent-tdd-workflow/session.json"
+}
