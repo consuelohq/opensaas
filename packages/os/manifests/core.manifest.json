@@ -117,6 +117,48 @@
       }
     },
     {
+      "name": "code.call",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "codemode",
+      "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+      "core": true,
+      "definition": {
+        "name": "code.call",
+        "methodPath": [
+          "code",
+          "call"
+        ],
+        "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+        "category": "codemode",
+        "underlying": "os code.call",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "CodeCallInput",
+        "outputSchema": "CodeCallOutput",
+        "command": {
+          "script": "code-call",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "internal": "code.call",
+          "arguments": []
+        },
+        "exampleInput": {
+          "language": "python",
+          "mode": "read",
+          "code": "print(\"hello\")",
+          "maxResultChars": 20000
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "code.run",
       "kind": "facade-tool",
       "source": "dev-tooling",

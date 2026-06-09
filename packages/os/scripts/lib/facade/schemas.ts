@@ -110,6 +110,27 @@ export const CodeRunInput = z.object({
   maxResultChars: z.number().int().positive().optional(),
 });
 
+
+export const CodeCallInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  language: z.string().min(1),
+  code: z.string().min(1).optional(),
+  codeFile: optionalString,
+  stdin: z.string().optional(),
+  stdinFile: optionalString,
+  mode: z.enum(['read', 'edit', 'verify']),
+  cwd: optionalString,
+  timeout: z.number().int().positive().optional(),
+  maxResultChars: z.number().int().positive().optional(),
+}).refine((input) => Boolean(input.code) !== Boolean(input.codeFile), {
+  message: 'provide exactly one of code or codeFile',
+  path: ['code'],
+}).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
+  message: 'provide at most one of stdin or stdinFile',
+  path: ['stdin'],
+});
+
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -902,6 +923,7 @@ export const schemaRegistry = {
   ConsueloDesignSessionInput,
   ConsueloDesignDigitalEguideInput,
   CodeRunInput,
+  CodeCallInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -1004,6 +1026,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
