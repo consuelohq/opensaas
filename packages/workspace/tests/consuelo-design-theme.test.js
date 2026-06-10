@@ -112,19 +112,18 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'function renderSitesLauncher',
     'CONSUELO OS █',
     'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-    'SITES:',
-    'Office</a></li>',
-    'Tracing</a></li>',
-    'Diffs</a></li>',
-    'Documentation</a></li>',
+    'PROJECTS:',
+    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
+    '[Tracing](/tracing)</a></li>',
+    '[Diffs](/diffs)</a></li>',
+    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
     'WRITING:',
-    'On Rendering Diffs',
-    'Software Is Becoming Decision Infrastructure',
+    'Decision Making Under Uncertainty',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
     'if (url.pathname === "/") return new Response(renderSitesLauncher()',
-    'const canonicalPathname = stripArtifactAlias(url.pathname);',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
   ]) {
     expect(source).toContain(marker);
   }
@@ -142,17 +141,36 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     'CONSUELO OS █',
-    'SITES:',
+    'PROJECTS:',
     'WRITING:',
-    'Office</a></li>',
-    'Tracing</a></li>',
-    'Diffs</a></li>',
-    'Documentation</a></li>',
-    'On Rendering Diffs',
-    'Software Is Becoming Decision Infrastructure',
+    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
+    '[Tracing](/tracing)</a></li>',
+    '[Diffs](/diffs)</a></li>',
+    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    'Decision Making Under Uncertainty',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
   }
   expect(source).not.toContain('Legacy wiki</a></div>');
+});
+
+test('keeps launcher routes local and theme-aware', () => {
+  for (const marker of [
+    'color-scheme: light dark',
+    'background: Canvas',
+    'color: CanvasText',
+    'color: LinkText',
+    'function publicRouteAlias',
+    'if (clean === "/tracing") return "/trace-burn-intelligence";',
+    'function proxyDiffsRoute',
+    'https://diffs.consuelohq.com',
+    'const routePathname = publicRouteAlias(url.pathname);',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('/writing/on-rendering-diffs');
+  expect(source).not.toContain(':root { color-scheme: dark; background');
+  expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });

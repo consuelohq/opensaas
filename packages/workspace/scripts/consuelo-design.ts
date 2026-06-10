@@ -1185,6 +1185,8 @@ function writeArchiveServer(ip: string): void {
     'function pagefindSuffix(pathname){ for (const base of archivePaths){ if (pathname.startsWith(base + "/pagefind/")) return pathname.slice((base + "/pagefind/").length); } if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
     'function stripArtifactAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const base of archivePaths){ if (clean === base) return "/"; if (clean.startsWith(base + "/")) return clean.slice(base.length) || "/"; } return clean; }',
     'function officePathFor(pathname){ const raw = String(pathname || "/"); const clean = raw.startsWith("/") ? raw : "/" + raw.replace(/^\\/+/, ""); return officeArchivePath + (clean === "/" ? "" : clean); }',
+    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; if (clean === "/tracing") return "/trace-burn-intelligence"; return pathname; }',
+    'async function proxyDiffsRoute(request){ const url = new URL(request.url); const clean = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (clean !== "/diffs" && !url.pathname.startsWith("/diffs/")) return null; const target = new URL("https://diffs.consuelohq.com"); target.pathname = clean === "/diffs" ? "/" : url.pathname.slice("/diffs".length); target.search = url.search; return fetch(target, { method: request.method, headers: request.headers }); }',
     'function renderSitesLauncher(){ return ' + JSON.stringify(`<!doctype html>
 <html lang="en">
 <head>
@@ -1192,19 +1194,19 @@ function writeArchiveServer(ip: string): void {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: dark; background: #030303; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #030303; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 700; letter-spacing: -0.02em; }
+    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
     main { padding: 28px 30px; max-width: 640px; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 22px; text-transform: uppercase; }
     .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: #f2eee6; }
+    .rule { margin: 18px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 0; }
     li::before { content: "- "; }
-    a { color: #a7b8ff; text-decoration: underline; text-underline-offset: 2px; }
-    a:visited { color: #b6a6ff; }
+    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -1217,25 +1219,24 @@ function writeArchiveServer(ip: string): void {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li>
+        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Sites">
-      <p class="label">SITES:</p>
+    <section class="block" aria-label="Projects">
+      <p class="label">PROJECTS:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">Office</a></li>
-        <li><a href="/traces" target="_blank" rel="noopener noreferrer">Tracing</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">Diffs</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">Documentation</a></li>
+        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
+        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
+        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
+        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="/writing/on-rendering-diffs" target="_blank" rel="noopener noreferrer">On Rendering Diffs</a></li>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">Software Is Becoming Decision Infrastructure</a></li>
+        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
       </ul>
     </section>
   </main>
@@ -1243,7 +1244,7 @@ function writeArchiveServer(ip: string): void {
 </html>`) + '; }',
     `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(officePathFor(version.path)) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? officePathFor(page.path) : officeArchivePath) + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href="' + safe(officeArchivePath) + '">Open Consuelo Sites</a></p></main></body></html>'; }`,
     'function entryForVersionRoute(pages, pathname){ const pageList = Object.values(pages || {}); for (const page of pageList){ if (!page || !page.path) continue; const base = page.path.endsWith("/") ? page.path.slice(0, -1) : page.path; const historyPath = base + "/versions"; if (pathname === historyPath || pathname === historyPath + "/") return { kind: "history", page }; if (pathname.startsWith(historyPath + "/")){ const parts = pathname.slice((historyPath + "/").length).split("/").filter(Boolean); const versionId = parts.shift(); const version = Array.isArray(page.versions) ? page.versions.find((item) => item && item.versionId === versionId) : null; if (version) return { kind: "version", page, version, suffix: parts.join("/") }; } } return null; }',
-    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const pagefind = pagefindSuffix(url.pathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(url.pathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const diffs = await proxyDiffsRoute(request); if (diffs) return diffs; const routePathname = publicRouteAlias(url.pathname); const pagefind = pagefindSuffix(routePathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(routePathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
   ];
   writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
 }
@@ -1803,19 +1804,19 @@ function renderArchiveRootRedirect(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: dark; background: #030303; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #030303; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 700; letter-spacing: -0.02em; }
+    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
     main { padding: 28px 30px; max-width: 640px; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 22px; text-transform: uppercase; }
     .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: #f2eee6; }
+    .rule { margin: 18px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 0; }
     li::before { content: "- "; }
-    a { color: #a7b8ff; text-decoration: underline; text-underline-offset: 2px; }
-    a:visited { color: #b6a6ff; }
+    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -1828,25 +1829,24 @@ function renderArchiveRootRedirect(): string {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li>
+        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Sites">
-      <p class="label">SITES:</p>
+    <section class="block" aria-label="Projects">
+      <p class="label">PROJECTS:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">Office</a></li>
-        <li><a href="/traces" target="_blank" rel="noopener noreferrer">Tracing</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">Diffs</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">Documentation</a></li>
+        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
+        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
+        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
+        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="/writing/on-rendering-diffs" target="_blank" rel="noopener noreferrer">On Rendering Diffs</a></li>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">Software Is Becoming Decision Infrastructure</a></li>
+        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
       </ul>
     </section>
   </main>

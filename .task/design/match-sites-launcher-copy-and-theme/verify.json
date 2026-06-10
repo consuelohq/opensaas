@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/match-sites-launcher-copy-and-theme",
+  "base": "origin/task/design/match-sites-launcher-copy-and-theme",
+  "headSha": "cdffd278d165cf5b462174643f286228924407c2",
+  "changeHash": "2904aa2bd28e651d2b32be27677ce7be3faffb4d125f0743b714557d09d95ab1",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T05:55:49.346Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/match-sites-launcher-copy-and-theme/current.json",
+        ".task/design/match-sites-launcher-copy-and-theme/evidence-log.json",
+        ".task/design/match-sites-launcher-copy-and-theme/read-log.json",
+        ".task/design/match-sites-launcher-copy-and-theme/session.json",
+        ".task/design/match-sites-launcher-copy-and-theme/workpad.md",
+        ".task/tasks/design/match-sites-launcher-copy-and-theme.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
