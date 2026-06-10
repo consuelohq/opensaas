@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/reroute-public-sites-archive-to-office",
+  "base": "origin/task/design/reroute-public-sites-archive-to-office",
+  "headSha": "16a1b90ea69860ab2c0c3bc78e5f3aeca76575d4",
+  "changeHash": "9e3f71fba049153a4ee34641ad9eae582b6ae0a7a6d19a1e31d2664f6ccd419b",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T02:35:35.337Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/reroute-public-sites-archive-to-office/current.json",
+        ".task/design/reroute-public-sites-archive-to-office/evidence-log.json",
+        ".task/design/reroute-public-sites-archive-to-office/read-log.json",
+        ".task/design/reroute-public-sites-archive-to-office/session.json",
+        ".task/design/reroute-public-sites-archive-to-office/workpad.md",
+        ".task/tasks/design/reroute-public-sites-archive-to-office.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
