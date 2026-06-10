@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/mobile-inbox-backlog",
+  "base": "origin/task/diff-cockpit/mobile-inbox-backlog",
+  "headSha": "660390fd5ad78cbcb4b4bbfed3cb4f810ba86f46",
+  "changeHash": "2b4557de59e25eb0c012c56b40ad6db56bac84e6770bda23540ddf238a336f40",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-10T01:47:46.326Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/mobile-inbox-backlog/current.json",
+        ".task/diff-cockpit/mobile-inbox-backlog/session.json",
+        ".task/diff-cockpit/mobile-inbox-backlog/workpad.md",
+        ".task/tasks/diff-cockpit/mobile-inbox-backlog.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
