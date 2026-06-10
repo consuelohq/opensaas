@@ -113,10 +113,10 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'CONSUELO OS █',
     'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
     'PROJECTS:',
-    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
-    '[Tracing](/tracing)</a></li>',
-    '[Diffs](/diffs)</a></li>',
-    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs"',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'WRITING:',
     'Decision Making Under Uncertainty',
     'const officeArchivePath = ',
@@ -143,10 +143,10 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
     'CONSUELO OS █',
     'PROJECTS:',
     'WRITING:',
-    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
-    '[Tracing](/tracing)</a></li>',
-    '[Diffs](/diffs)</a></li>',
-    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs"',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'Decision Making Under Uncertainty',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
@@ -157,10 +157,10 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
 
 test('keeps launcher routes local and theme-aware', () => {
   for (const marker of [
-    'color-scheme: light dark',
-    'background: Canvas',
-    'color: CanvasText',
-    'color: LinkText',
+    'color-scheme: dark',
+    'background: #070708',
+    'color: #f2eee6',
+    'color: #9aa6ff',
     'function publicRouteAlias',
     'if (clean === "/tracing") return "/trace-burn-intelligence";',
     'function proxyDiffsRoute',
@@ -172,6 +172,9 @@ test('keeps launcher routes local and theme-aware', () => {
     expect(source).toContain(marker);
   }
   expect(source).not.toContain('/writing/on-rendering-diffs');
-  expect(source).not.toContain(':root { color-scheme: dark; background');
+  expect(source).toContain('font-weight: 400');
+  expect(source).toContain('white-space: nowrap');
+  expect(source).toContain('.md-label { color: #f2eee6; }');
+  expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
