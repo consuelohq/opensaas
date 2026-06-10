@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/followup",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 941,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/941",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/941",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/941/followup",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/941",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/941/followup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-followup",
+  "taskSession": "tsk_a4de1e5fe9bf",
+  "tmuxSession": "opensaas-design-followup-a4de1e5f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-followup/.task/design/followup/session.json",
+  "createdAt": "2026-06-10T07:45:28.631Z"
+}
