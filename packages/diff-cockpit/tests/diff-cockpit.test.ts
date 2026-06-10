@@ -611,7 +611,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('--paper:#0f0f0d');
     expect(html).toContain('--surface:#191814');
     expect(html).toContain('id="file-pane-resizer"');
-    expect(html).toContain('font-family: \"Geist Mono\"');
+    expect(html).toContain('font-family: Inter');
     expect(html).toContain('font-size:13px');
     expect(html).toContain('font-size:12px');
     expect(html).toContain('grid-template-columns:42px 42px minmax(0, 1fr)');
