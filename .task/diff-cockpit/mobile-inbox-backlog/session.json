@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5c93cb42b2ae",
+  "tmuxSession": "opensaas-diff-cockpit-mobile-inbox-backlog-5c93cb42",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/mobile-inbox-backlog",
+  "branch": "task/diff-cockpit/mobile-inbox-backlog",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-inbox-backlog",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-inbox-backlog",
+  "prNumber": 906,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/906",
+  "createdAt": "2026-06-10T01:39:10.038Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-inbox-backlog/.task/diff-cockpit/mobile-inbox-backlog/session.json"
+}
