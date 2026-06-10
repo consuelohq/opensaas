@@ -165,6 +165,7 @@ test('keeps launcher routes local and theme-aware', () => {
     'if (clean === "/tracing") return "/trace-burn-intelligence";',
     'function proxyDiffsRoute',
     'https://diffs.consuelohq.com',
+    "'/tracing', '/diffs'",
     'const routePathname = publicRouteAlias(url.pathname);',
     'const canonicalPathname = stripArtifactAlias(routePathname);',
   ]) {
