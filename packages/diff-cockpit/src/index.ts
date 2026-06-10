@@ -1919,7 +1919,7 @@ async function refreshCacheEntries(
 ): Promise<{ homepage: string; pulls: string[]; code: string[]; history: string[] }> {
   try {
     const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
-    const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+    const homepageRequest = makeApiCacheRequest(new URL(homepageUrl));
     const homepageData = await deps.indexLoader(repo);
     await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
     const [codeResults, pullResults] = await Promise.all([
@@ -1947,8 +1947,8 @@ async function refreshCodePathCache(
   try {
     const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
     const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
-    const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
-    const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
+    const codeRequest = makeApiCacheRequest(new URL(codeUrl));
+    const historyRequest = makeApiCacheRequest(new URL(historyUrl));
     const [codeData, historyData] = await Promise.all([
       deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
       deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
@@ -1971,7 +1971,7 @@ async function refreshPullCache(
 ): Promise<string> {
   try {
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
-    const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
+    const pullRequest = makeApiCacheRequest(new URL(pullUrl));
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
     return new URL(pullUrl).pathname;
@@ -2035,10 +2035,13 @@ type MemoryCachedJson = {
 };
 
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
+const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
 
 function makeApiCacheRequest(url: URL): Request {
-  return new Request(url.toString(), { headers: { accept: 'application/json' } });
+  const cacheUrl = new URL(url.toString());
+  cacheUrl.searchParams.set('_dcv', API_CACHE_SCHEMA_VERSION);
+  return new Request(cacheUrl.toString(), { headers: { accept: 'application/json' } });
 }
 
 async function getOrSetCachedJson(
@@ -2444,7 +2447,7 @@ footer { display:flex; align-items:center; justify-content:space-between; gap:18
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
 .nav-status-button { color:var(--muted); }
-.nav-status-button[data-status="mergeable"] { color:#22c55e; }
+.nav-status-button[data-status="mergeable"] { color:#2f7d46; }
 .nav-status-button[data-status="unmergeable"] { color:#ef4444; }
   .layout { height:calc(100dvh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; overflow:hidden; border-top:1px solid var(--line); }
 body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
@@ -2500,7 +2503,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
 .summary-chip { margin-right:6px; cursor:pointer; }
-.commit-popover { position:absolute; right:18px; top:88px; z-index:8; width:min(520px, calc(100vw - 36px)); max-height:min(620px, calc(100vh - 120px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
+.commit-popover { position:fixed; right:16px; top:54px; z-index:20; width:min(520px, calc(100vw - 32px)); max-height:min(620px, calc(100vh - 72px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
 .commit-popover[hidden] { display:none; }
 .commit-popover-head { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .commit-popover-list { display:grid; }
@@ -2602,7 +2605,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
   .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
   .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
-  .index-page .mergeability-icon.mergeability-mergeable{border-color:#22c55e;background:#22c55e;color:#07110a;}
+  .index-page .mergeability-icon.mergeability-mergeable{border-color:#2f7d46;background:#2f7d46;color:#07110a;}
   .index-page .mergeability-icon.mergeability-conflicts{border-color:#ef4444;color:#ef4444;background:transparent;}
   .index-page .mergeability-icon:empty{display:inline-flex;}
   .index-page .mergeability-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
@@ -2616,7 +2619,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .review-icon, .index-page .check-icon { display:none !important; }
   .index-page .status-set { gap:0 !important; }
   .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
-  .index-page .mergeability-icon.mergeability-mergeable { border-color:#22c55e !important; background:#22c55e !important; color:#07110a !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
 }
 
 @media (max-width: 760px) {
@@ -2624,7 +2627,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .review-icon, .index-page .check-icon { display:none !important; }
   .index-page .status-set { gap:0 !important; }
   .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
-  .index-page .mergeability-icon.mergeability-mergeable { border-color:#22c55e !important; background:#22c55e !important; color:#07110a !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
 }
 }
 `;
@@ -2955,11 +2958,11 @@ document.addEventListener('click', (event) => {
   const folderButton = event.target.closest('[data-folder-path]');
   if (folderButton) { toggleFolder(folderButton.dataset.folderPath); return; }
   const commitButton = event.target.closest('[data-open-commits]');
-  if (commitButton) { renderCommitPopover(); return; }
+  if (commitButton) { toggleCommitPopover(); return; }
   const closeCommits = event.target.closest('[data-close-commits]');
   if (closeCommits) { closeCommitPopover(); return; }
   const mergeabilityButton = event.target.closest('[data-open-mergeability]');
-  if (mergeabilityButton) { renderMergeabilityPopover(); return; }
+  if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
@@ -2967,14 +2970,14 @@ document.addEventListener('click', (event) => {
 });
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
-els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover());
+
 els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === 'p') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
-  if (event.key === 'm') renderMergeabilityPopover();
+  if (event.key === 'm') toggleMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
@@ -3149,7 +3152,7 @@ function fileDomId(filename) {
 
 function renderDrawer() {
   const comments = state.data.comments || [];
-  const commits = state.data.commits || [];
+  const commits = reviewCommits();
   const checks = state.data.checks || [];
   const pull = state.data.pull;
   const mergeLabel = mergeabilityLabel(pull);
@@ -3175,9 +3178,19 @@ function renderCommit(commit) {
   return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function reviewCommits() {
+  if (Array.isArray(state.data?.commits) && state.data.commits.length) return state.data.commits;
+  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return state.data.streamCommits;
+  return [];
+}
+function toggleCommitPopover() {
+  if (!els.commitPopover.hidden) { closeCommitPopover(); return; }
+  renderCommitPopover();
+}
 function renderCommitPopover() {
-  const commits = state.data?.commits || [];
+  const commits = reviewCommits();
   els.commitPopover.hidden = false;
+  closeMergeabilityPopover();
   els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>' + commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>') + '</div>';
 }
 
@@ -3189,7 +3202,12 @@ function mergeabilityLabel(pull) {
   const unmergeable = ['dirty'].includes(stateLabel) || pull?.mergeable === false;
   return unmergeable ? 'unmergeable' : 'mergeable';
 }
+function toggleMergeabilityPopover() {
+  if (!els.mergeabilityPopover.hidden) { closeMergeabilityPopover(); return; }
+  renderMergeabilityPopover();
+}
 function renderMergeabilityPopover() {
+  closeCommitPopover();
   const pull = state.data?.pull || {};
   const files = state.data?.files || [];
   const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
@@ -3287,7 +3305,6 @@ function renderPatchFallback(patch, filename) {
       const hunk = parseHunkHeader(line);
       oldLine = hunk.oldStart;
       newLine = hunk.newStart;
-      rows.push(renderDiffLine(line, 'hunk', '', ''));
       continue;
     }
     if (line.startsWith('+')) {

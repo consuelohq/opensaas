@@ -727,7 +727,7 @@ describe('createWorker', () => {
       checks: [],
     };
     const cacheStore = new Map<string, Response>([
-      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708', Response.json(cachedReviewData)],
+      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers', Response.json(cachedReviewData)],
     ]);
     const cache = {
       async match(request: Request): Promise<Response | undefined> {
@@ -872,7 +872,7 @@ describe('createWorker', () => {
     release();
     await Promise.all(waitUntilPromises);
     expect(calls > 0).toBe(true);
-    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757')).toBe(true);
+    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757?_dcv=v5-review-commit-popovers')).toBe(true);
   });
 
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
