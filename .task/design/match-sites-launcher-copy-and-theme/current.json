@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/match-sites-launcher-copy-and-theme",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 928,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/928",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/928",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/928/match-sites-launcher-copy-and-theme",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/928",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/928/match-sites-launcher-copy-and-theme",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-match-sites-launcher-copy-and-theme",
+  "taskSession": "tsk_9c6f17a8cf3a",
+  "tmuxSession": "opensaas-design-match-sites-launcher-copy-and-theme-9c6f17a8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-match-sites-launcher-copy-and-theme/.task/design/match-sites-launcher-copy-and-theme/session.json",
+  "createdAt": "2026-06-10T05:42:36.379Z"
+}
