@@ -4,14 +4,14 @@
   "mode": "full",
   "branch": "task/os/terminal-style-sites-launcher",
   "base": "origin/stream/os",
-  "headSha": "9528bbbfe47d7d299b73a0b99f4a0de42035209e",
-  "changeHash": "a8abf9be9ab470fdd1be699af063964c8e9f6db3496992207b84580d58a742f5",
+  "headSha": "53a6e1d775f5fec098a0a9e0f6901a210fd542e1",
+  "changeHash": "95f3741d709fd8a0905d053069420735b6d1728121fc7ca7cd0774c5284dd6e1",
   "changedFiles": [
     "packages/os/scripts/lib/sites.ts",
     "packages/os/scripts/os.ts",
     "packages/os/tests/sites-cli.test.ts"
   ],
-  "verifiedAt": "2026-06-10T02:04:32.875Z",
+  "verifiedAt": "2026-06-10T02:07:51.973Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -29,6 +29,7 @@
         ".task/os/terminal-style-sites-launcher/evidence-log.json",
         ".task/os/terminal-style-sites-launcher/read-log.json",
         ".task/os/terminal-style-sites-launcher/session.json",
+        ".task/os/terminal-style-sites-launcher/verify.json",
         ".task/os/terminal-style-sites-launcher/workpad.md",
         ".task/tasks/os/terminal-style-sites-launcher.json",
         "packages/os/scripts/lib/sites.ts",

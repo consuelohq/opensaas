@@ -67,17 +67,27 @@ Expected red failure observed: generated index still had `<title>Sites</title>`,
 ## workspace-owned: activity log
 
 - 2026-06-10 02:03:11 fs.write: `.task/os/terminal-style-sites-launcher/workpad.md`
+- 2026-06-10 02:07:16 fs.write: `.task/os/terminal-style-sites-launcher/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-06-10 02:03:41 `review.run`: passed — OK
 - 2026-06-10 02:04:32 `verify`: passed — OK
+- 2026-06-10 02:07:51 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/terminal-style-sites-launcher/current.json`, `.task/os/terminal-style-sites-launcher/evidence-log.json`, `.task/os/terminal-style-sites-launcher/read-log.json`, `.task/os/terminal-style-sites-launcher/session.json`, `.task/os/terminal-style-sites-launcher/workpad.md`, `.task/tasks/os/terminal-style-sites-launcher.json`, `packages/os/scripts/lib/sites.ts`, `packages/os/scripts/os.ts`, `packages/os/tests/sites-cli.test.ts`
+- changed files: `.task/os/terminal-style-sites-launcher/current.json`, `.task/os/terminal-style-sites-launcher/evidence-log.json`, `.task/os/terminal-style-sites-launcher/read-log.json`, `.task/os/terminal-style-sites-launcher/session.json`, `.task/os/terminal-style-sites-launcher/verify.json`, `.task/os/terminal-style-sites-launcher/workpad.md`, `.task/tasks/os/terminal-style-sites-launcher.json`, `packages/os/scripts/lib/sites.ts`, `packages/os/scripts/os.ts`, `packages/os/tests/sites-cli.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## publish update
+
+Committed `fix(os): add terminal sites launcher` after the focused Sites CLI suite passed and full verify wrote a publish-valid stamp. `review.run` reported zero issues from this change; it noted one pre-existing `ERROR_HANDLING` finding in `packages/os/scripts/os.ts` outside this task scope.
+
+Follow-up: after the separate jobs page lands, `/jobs` can route to the specific Systems Engineer posting or redirect to it without changing this launcher again.
+
+- 2026-06-10 02:07:16 append: `.task/os/terminal-style-sites-launcher/workpad.md`
