@@ -1451,16 +1451,7 @@ async function enrichPullRequestSummary(
   try {
     const basePull = normalizePullRequest(pullJson);
     const detailJson = await fetchPullRequestDetail(fetcher, apiBase, headers, basePull.number, pullJson, warnings);
-    const detailPull = normalizePullRequest(detailJson);
-    const checkRuns = await fetchCheckRuns(fetcher, apiBase, detailPull.headSha || basePull.headSha, headers, warnings);
-    const reviews = await fetchPartialJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls/${detailPull.number || basePull.number}/reviews`,
-      headers,
-      warnings,
-      `reviews for #${detailPull.number || basePull.number}`,
-    );
-    return normalizePullRequestSummary(repo, detailJson, checkRuns, reviews);
+    return normalizePullRequestSummary(repo, detailJson, [], []);
   } catch (error: unknown) {
     warnings.push(`summary: ${getErrorMessage(error)}`);
     return normalizePullRequestSummary(repo, pullJson, [], []);
@@ -1549,13 +1540,13 @@ function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullReq
   if (lifecycleStatus === 'closed') return 'closed';
   if (lifecycleStatus === 'draft') return 'draft';
   const state = pull.mergeableState.toLowerCase();
-  if (['dirty', 'blocked', 'behind', 'unstable'].includes(state)) return 'conflicts';
-  if (state === 'clean' || state === 'has_hooks') return 'mergeable';
-  if (state && state !== 'unknown') return 'conflicts';
-  if (pull.mergeable === true) return 'mergeable';
+  if (state === 'dirty') return 'conflicts';
+  if (['clean', 'has_hooks', 'unstable', 'blocked', 'behind'].includes(state)) return 'mergeable';
   if (pull.mergeable === false) return 'conflicts';
+  if (pull.mergeable === true) return 'mergeable';
   return 'unknown';
 }
+
 
 export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
   if (pull.headRef.startsWith('stream/')) {
@@ -1615,6 +1606,7 @@ function normalizeLifecycleStatus(
   return 'open';
 }
 
+
 function normalizeCheckStatus(checkRuns: unknown[]): PullRequestCheckStatus {
   if (checkRuns.length === 0) {
     return 'unknown';
@@ -1647,6 +1639,7 @@ function isSuccessfulCheckRun(input: unknown): boolean {
   const conclusion = stringValue(record.conclusion, '').toLowerCase();
   return ['success', 'skipped', 'neutral'].includes(conclusion);
 }
+
 
 function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   const states = reviews
@@ -2396,14 +2389,14 @@ button.section-count { cursor:pointer; }
 .pr-file-chip, .pr-avatar, .mobile-pr-table-head, .pr-author, .pr-author-sep, .pr-mobile-meta, .pr-mobile-files { display:none; }
 .pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
 .pr-subtitle span { white-space:nowrap; }
-.pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:260px; }
+.pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:220px; }
 .status-set { display:inline-flex; align-items:center; gap:6px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
 .pr-updated { min-width:42px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
 .mergeability-icon, .review-icon, .check-icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--line); border-radius:999px; font-size:11px; flex:0 0 auto; }
 .mergeability-icon:empty, .review-icon:empty, .check-icon:empty { display:none; }
-.mergeability-icon.mergeability-mergeable { color:#2f8a44; }
-.mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
+.mergeability-icon.mergeability-mergeable { color:#1f7a3a; border-color:#1f7a3a; }
+.mergeability-icon.mergeability-conflicts { color:#ef4444; border-color:#ef4444; }
 .mergeability-icon.mergeability-merged { color:#6f4bd8; }
 .mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
@@ -2557,9 +2550,9 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .brand{font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.035em;}
   .index-page .nav,.index-page header.hero,.index-page .filter-row,.index-page .stream-filter-row{display:none;}
   .index-page .section{margin:0 0 18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);overflow:hidden;}
-  .index-page .pr-section summary{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:9px 14px;border-bottom:1px solid var(--line);}
-  .index-page .pr-section summary:before{content:"v";color:var(--muted);font-size:18px;}
-  .index-page .pr-section:not([open]) summary:before{content:">";}
+  .index-page .pr-section summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:9px 14px;border-bottom:1px solid var(--line);list-style:none;}
+  
+  
   
   .index-page .pr-section summary h2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-transform:none;letter-spacing:-.01em;font-size:19px;font-weight:400;}
   .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
@@ -2571,7 +2564,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   
   
   
-  .index-page .post-item:after{content:none;}
+  .index-page .post-item:before,.index-page .post-item:after{content:none;}
   .index-page .pr-row-main{grid-column:1;grid-row:1 / span 2;min-width:0;gap:2px;}
   .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
   .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
@@ -2580,13 +2573,13 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
   .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
   .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:104px;color:var(--muted);font-size:13px;}
-  .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:8px;}
-  .index-page .mergeability-icon,.index-page .review-icon,.index-page .check-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;}
-  .index-page .mergeability-icon.mergeability-mergeable,.index-page .review-icon.review-approved,.index-page .check-icon.check-success{border:0;background:#73c97c;color:#07110a;}
-  .index-page .mergeability-icon.mergeability-conflicts,.index-page .review-icon.review-changes_requested,.index-page .check-icon.check-failure{border-color:#f59e0b;color:#f59e0b;}
-  .index-page .mergeability-icon:empty,.index-page .review-icon:empty,.index-page .check-icon:empty{display:inline-flex;}
-  .index-page .mergeability-icon:empty:before,.index-page .review-icon:empty:before,.index-page .check-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
+  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
+  .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
+  .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
+  .index-page .mergeability-icon.mergeability-mergeable{border-color:#22c55e;background:#22c55e;color:#07110a;}
+  .index-page .mergeability-icon.mergeability-conflicts{border-color:#ef4444;color:#ef4444;background:transparent;}
+  .index-page .mergeability-icon:empty{display:inline-flex;}
+  .index-page .mergeability-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
   .index-page .pr-delta{display:none;}
   .index-page .pr-updated{grid-column:1;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
   .index-page .pr-mobile-files{display:inline;grid-column:2;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
@@ -2714,7 +2707,7 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v3-mobile-backlog';
+const cacheSchemaVersion = 'v4-mergeability-live';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
@@ -2738,7 +2731,7 @@ const commandClose = document.querySelector('[data-command-close]');
 const pageCommandItems = Array.from(document.querySelectorAll('[data-command-page]'));
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && (pull.mergeability === 'conflicts' || pull.checkStatus === 'failure')) || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => !activeQuery.trim() || scorePullRequestSearchValue(pull, activeQuery) > 0;
 function visiblePulls() { return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull) && (!activeStream || pull.associatedStream === activeStream)); }
 function groupSections(source) {
@@ -2793,7 +2786,7 @@ function renderCard(pull) {
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
     '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
+    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
 }
 
 function renderSection(section) {
@@ -2834,7 +2827,19 @@ function mergeIndexWithCache(data, cached) { if (!cached || !Array.isArray(cache
 function applyIndexData(data) { pulls = Array.isArray(data.pulls) ? data.pulls : []; resetSectionLimits(); renderSections(); }
 function clearStaleIndexCaches() { try { for (let index = localStorage.length - 1; index >= 0; index -= 1) { const key = localStorage.key(index); if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) localStorage.removeItem(key); } } catch { } }
 function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedIndex(); if (cached) applyIndexData(cached); return cached; }
-function loadIndex() { const cached = loadCachedIndex(); fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' }).then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); }).then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; }); }
+let lastIndexLoadAt = 0;
+let indexLoadInFlight = null;
+function loadIndex(options = {}) {
+  const cached = options.useCache === false ? null : loadCachedIndex();
+  if (indexLoadInFlight) return indexLoadInFlight;
+  lastIndexLoadAt = Date.now();
+  indexLoadInFlight = fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); })
+    .then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); return merged; }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+    .finally(() => { indexLoadInFlight = null; });
+  return indexLoadInFlight;
+}
+function refreshIndexIfStale(minAgeMs = 10000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
 document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => { activeFilter = button.dataset.filter; resetSectionLimits(); updateActiveFilterButtons(activeFilter); renderSections(); }));
 clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLimits(); renderSections(); });
 commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
@@ -2845,6 +2850,10 @@ if (commandResults) commandResults.addEventListener('click', (event) => { const 
 if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
 if (commandInput) commandInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { const firstPr = commandResults && commandResults.querySelector('[data-command-route]'); const firstPage = commandPages && commandPages.querySelector('[data-command-page]:not([hidden])'); if (firstPr) openPull(firstPr.getAttribute('data-command-route')); else if (firstPage) runPageCommand(firstPage); } });
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
+window.addEventListener('focus', () => refreshIndexIfStale(5000));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
+document.addEventListener('pointerdown', () => refreshIndexIfStale(12000), { passive: true });
+window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
 }
