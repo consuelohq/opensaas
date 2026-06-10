@@ -36,7 +36,7 @@ export type WorkspaceGatewayProvisioningPlan = {
   }>;
 };
 
-type WorkspaceGatewayRouteInput = {
+export type WorkspaceGatewayRouteInput = {
   host: string;
   method: 'GET' | 'POST';
   path: string;
@@ -49,7 +49,7 @@ type WorkspaceGatewayRouteInput = {
   }>;
 };
 
-type WorkspaceGatewayRouteResolution =
+export type WorkspaceGatewayRouteResolution =
   | {
       allowed: true;
       workspaceId: string;
@@ -66,7 +66,7 @@ type WorkspaceGatewayRouteResolution =
       auditEvent: 'workspace.gateway.route.denied';
     };
 
-type CloudflareWorkspaceGatewayWebhookInput = {
+export type CloudflareWorkspaceGatewayWebhookInput = {
   allowedZoneIds: string[];
   event: {
     data?: {
@@ -85,7 +85,7 @@ type CloudflareWorkspaceGatewayWebhookInput = {
   }>;
 };
 
-type CloudflareWorkspaceGatewayWebhookResult =
+export type CloudflareWorkspaceGatewayWebhookResult =
   | {
       handled: true;
       workspaceId: string;
@@ -97,6 +97,78 @@ type CloudflareWorkspaceGatewayWebhookResult =
   | {
       handled: false;
       reason: 'unknown-zone' | 'unknown-hostname' | 'missing-hostname';
+    };
+
+export type WorkspaceHostnameSurface =
+  | 'os'
+  | 'dialer'
+  | 'twenty'
+  | 'sites'
+  | 'app';
+
+export type WorkspaceHostnameRouteTarget =
+  | {
+      kind: 'os-connector';
+      connectorId: string;
+      connectorStatus: 'connected' | 'disconnected';
+    }
+  | {
+      kind: 'service-upstream';
+      service: 'dialer' | 'twenty' | 'sites' | 'app';
+      upstreamUrl: string;
+    };
+
+export type WorkspaceHostnameRoute = {
+  surface: WorkspaceHostnameSurface;
+  pathPrefix: string;
+  auth: 'required';
+  status: 'active' | 'disabled';
+  target: WorkspaceHostnameRouteTarget;
+};
+
+export type WorkspaceHostnameRegistryRecord = {
+  workspaceId: string;
+  workspaceSlug: string;
+  hostname: string;
+  baseDomain: string;
+  provider: 'cloudflare';
+  routeMode: 'workspace-subdomain';
+  owner: 'consuelo-os-cloud';
+  routes: WorkspaceHostnameRoute[];
+};
+
+export type WorkspaceHostnameRegistryInput = {
+  workspaceId: string;
+  workspaceSlug: string;
+  baseDomain: string;
+  osConnectorId?: string;
+  osConnectorStatus?: 'connected' | 'disconnected';
+  dialerUpstreamUrl?: string;
+  appUpstreamUrl?: string;
+};
+
+export type WorkspaceHostnameRegistryRouteInput = {
+  host: string;
+  path: string;
+  records: WorkspaceHostnameRegistryRecord[];
+};
+
+export type WorkspaceHostnameRegistryRouteResolution =
+  | {
+      allowed: true;
+      workspaceId: string;
+      hostname: string;
+      route: string;
+      surface: WorkspaceHostnameSurface;
+      target: WorkspaceHostnameRouteTarget;
+      auth: 'required';
+      auditEvent: 'workspace.hostname.route.allowed';
+    }
+  | {
+      allowed: false;
+      status: 404 | 503;
+      errorCode: string;
+      auditEvent: 'workspace.hostname.route.denied';
     };
 
 const PUBLIC_WORKSPACE_ROUTES = [
@@ -263,5 +335,129 @@ export const applyCloudflareWorkspaceGatewayWebhook = (
     status: normalizeWebhookStatus(input.event.data?.data?.status),
     certificateStatus: input.event.data?.data?.ssl?.status ?? 'unknown',
     auditEvent: 'workspace.gateway.cloudflare.updated',
+  };
+};
+
+export const createWorkspaceHostnameRegistryRecord = (
+  input: WorkspaceHostnameRegistryInput,
+): WorkspaceHostnameRegistryRecord => {
+  const hostname = normalizeHostname(input.workspaceSlug, input.baseDomain);
+  const routes: WorkspaceHostnameRoute[] = [];
+
+  if (input.osConnectorId) {
+    routes.push(
+      ...PUBLIC_WORKSPACE_ROUTES.map((pathPrefix) => ({
+        surface: 'os' as const,
+        pathPrefix,
+        auth: 'required' as const,
+        status: 'active' as const,
+        target: {
+          kind: 'os-connector' as const,
+          connectorId: input.osConnectorId,
+          connectorStatus: input.osConnectorStatus ?? 'disconnected',
+        },
+      })),
+    );
+  }
+
+  if (input.dialerUpstreamUrl) {
+    routes.push({
+      surface: 'dialer',
+      pathPrefix: '/dialer',
+      auth: 'required',
+      status: 'active',
+      target: {
+        kind: 'service-upstream',
+        service: 'dialer',
+        upstreamUrl: input.dialerUpstreamUrl,
+      },
+    });
+  }
+
+  if (input.appUpstreamUrl) {
+    routes.push({
+      surface: 'app',
+      pathPrefix: '/app',
+      auth: 'required',
+      status: 'active',
+      target: {
+        kind: 'service-upstream',
+        service: 'app',
+        upstreamUrl: input.appUpstreamUrl,
+      },
+    });
+  }
+
+  return {
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug.trim().toLowerCase(),
+    hostname,
+    baseDomain: input.baseDomain
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/\/$/, ''),
+    provider: 'cloudflare',
+    routeMode: 'workspace-subdomain',
+    owner: 'consuelo-os-cloud',
+    routes,
+  };
+};
+
+export const resolveWorkspaceHostnameRegistryRoute = (
+  input: WorkspaceHostnameRegistryRouteInput,
+): WorkspaceHostnameRegistryRouteResolution => {
+  const record = input.records.find(
+    (candidate) => candidate.hostname === input.host,
+  );
+
+  if (!record) {
+    return {
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+      auditEvent: 'workspace.hostname.route.denied',
+    };
+  }
+
+  const route = [...record.routes]
+    .filter((candidate) => candidate.status === 'active')
+    .sort((left, right) => right.pathPrefix.length - left.pathPrefix.length)
+    .find(
+      (candidate) =>
+        input.path === candidate.pathPrefix ||
+        input.path.startsWith(`${candidate.pathPrefix}/`),
+    );
+
+  if (!route) {
+    return {
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+      auditEvent: 'workspace.hostname.route.denied',
+    };
+  }
+
+  if (
+    route.target.kind === 'os-connector' &&
+    route.target.connectorStatus !== 'connected'
+  ) {
+    return {
+      allowed: false,
+      status: 503,
+      errorCode: 'WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE',
+      auditEvent: 'workspace.hostname.route.denied',
+    };
+  }
+
+  return {
+    allowed: true,
+    workspaceId: record.workspaceId,
+    hostname: record.hostname,
+    route: route.pathPrefix,
+    surface: route.surface,
+    target: route.target,
+    auth: route.auth,
+    auditEvent: 'workspace.hostname.route.allowed',
   };
 };
