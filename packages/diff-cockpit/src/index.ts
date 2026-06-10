@@ -109,6 +109,7 @@ export type PullRequestReviewData = {
   files: GitHubPullRequestFile[];
   tree: FileTreeNode;
   comments: ReviewComment[];
+  commits: StreamCommit[];
   streamCommits: StreamCommit[];
   warnings: string[];
   checks: CheckSummary[];
@@ -720,6 +721,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
       const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
+      const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
       const streamCommits = pull.headRef.startsWith('stream/')
         ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
         : [];
@@ -730,6 +732,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         files,
         tree: buildFileTree(files),
         comments,
+        commits,
         streamCommits,
         warnings,
         checks,
@@ -855,9 +858,6 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
-  const githubUrl = `https://github.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
-  const graphiteUrl = `https://app.graphite.com/github/pr/${locator.owner}/${locator.repo}/${locator.number}`;
-  const diffsHubUrl = `https://diffshub.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -872,7 +872,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -881,11 +881,10 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       }</h1>
       <p id="pr-meta" class="muted">Loading live GitHub data…</p>
     </div>
-    <nav class="links" aria-label="Pull request links">
-      <a href="${escapeAttribute(githubUrl)}">GitHub</a>
-      <a href="${escapeAttribute(graphiteUrl)}">Graphite</a>
-      <a href="${escapeAttribute(diffsHubUrl)}">DiffsHub</a>
-      <button id="drawer-toggle" type="button" aria-expanded="false">Drawer</button>
+    <nav class="links" aria-label="Pull request controls">
+      <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
+      <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
+      <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
   <main class="layout">
@@ -897,15 +896,15 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
-    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">▣</button>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Close files" aria-expanded="true">×</button>
     <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
     </section>
-    <aside id="review-drawer" class="review-drawer" aria-label="Review drawer" aria-hidden="true">
+    <aside id="review-drawer" class="review-drawer" aria-label="Review panel" aria-hidden="true">
       <div class="drawer-head">
-        <strong>drawer</strong>
+        <strong>panel</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -913,18 +912,18 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
           <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
-          <button id="mergeability-button" class="action-button" type="button">Mergeability</button>
+          <button id="mergeability-button" class="action-button" type="button" data-open-mergeability>Mergeability</button>
           <button id="merge-pr-button" class="action-button" type="button">Merge PR</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <p class="muted">Keyboard: <span class="kbd">p</span> panel · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
         <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
         <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
         <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
         <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
-        <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
+        <div id="drawer-commits" class="drawer-section"><h2>Commits</h2><div class="commit-card muted">No commits loaded yet.</div></div>
       </div>
     </aside>
-    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
+    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
 ${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
@@ -1650,6 +1649,26 @@ function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   if (states.includes('APPROVED')) return 'approved';
   if (states.includes('COMMENTED')) return 'commented';
   return states.length > 0 ? 'unknown' : 'none';
+}
+
+async function loadPullCommits(
+  fetcher: Fetcher,
+  apiBase: string,
+  number: number,
+  headers: HeadersInit,
+): Promise<StreamCommit[]> {
+  try {
+    const json = await fetchJsonArrayPages(
+      fetcher,
+      `${apiBase}/pulls/${number}/commits`,
+      headers,
+      'GitHub pull request commits fetch failed',
+      { maxPages: 1 },
+    );
+    return normalizeStreamCommits(json);
+  } catch {
+    return [];
+  }
 }
 
 function normalizeFiles(input: unknown): GitHubPullRequestFile[] {
@@ -2378,6 +2397,7 @@ h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weig
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
 .post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.index-page .post-item[data-card-route] { cursor:pointer; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
@@ -2414,7 +2434,7 @@ mark { background:var(--accent-soft); color:var(--ink); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
 .footer-links { display:flex; gap:10px; }
-.review-page { overflow:hidden; --file-pane-width:330px; }
+.review-page { overflow:hidden; --file-pane-width:460px; }
 
 .review-page .topbar, .review-page .review-topbar, .review-page .links, .review-page .file-pane, .review-page .pane-heading, .review-page .tree-root, .review-page .tree-node, .review-page .directory-toggle, .review-page .tree-label, .review-page .tree-stats, .review-page .selected-file, .review-page .diff-file-header, .review-page .diff-file-path, .review-page .diff-file-stats, .review-page .inline-comment, .review-page .comment-card, .review-page .commit-popover, .review-page .review-drawer { font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .review-page .diff-fallback, .review-page .code-body pre, .review-page .comment-body pre, .review-page .comment-body code { font-family:Menlo, Monaco, Consolas, "Liberation Mono", monospace; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision; }
@@ -2423,6 +2443,9 @@ footer { display:flex; align-items:center; justify-content:space-between; gap:18
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
+.nav-status-button { color:var(--muted); }
+.nav-status-button[data-status="mergeable"] { color:#22c55e; }
+.nav-status-button[data-status="unmergeable"] { color:#ef4444; }
   .layout { height:calc(100dvh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; overflow:hidden; border-top:1px solid var(--line); }
 body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
 body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed="true"] .file-pane-resizer { display:none; }
@@ -2794,7 +2817,7 @@ function renderCard(pull) {
   const fileCount = formatFileCount(pull.changedFiles);
   const mobileMeta = '#' + pull.number + ' ' + stream;
   const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
-  return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+  return '<article class="post-item pr-row" role="link" tabindex="0" data-card-route="' + escapeText(route) + '" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
     '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
@@ -2816,6 +2839,16 @@ function renderSections() {
   streamLabel.textContent = activeStream || '';
   sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, command search, or stream.</p></section>';
   document.querySelectorAll('[data-pr-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); openPull(link.getAttribute('data-pr-route')); }));
+  document.querySelectorAll('[data-card-route]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      openPull(card.getAttribute('data-card-route'));
+    });
+    card.addEventListener('keydown', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPull(card.getAttribute('data-card-route')); }
+    });
+  });
   document.querySelectorAll('[data-stream-filter]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); activeStream = button.getAttribute('data-stream-filter') || ''; resetSectionLimits(); renderSections(); }));
   document.querySelectorAll('[data-toggle-streams]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); showAllStreams = !showAllStreams; sectionLimits.streams = sectionPageSize; renderSections(); }));
   document.querySelectorAll('[data-load-more]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-load-more'); sectionLimits[id] = (sectionLimits[id] || sectionPageSize) + sectionPageSize; renderSections(); }));
@@ -2881,6 +2914,8 @@ const els = {
   selected: document.getElementById('selected-file'),
   diff: document.getElementById('diff-root'),
   drawerToggle: document.getElementById('drawer-toggle'),
+  navMergeability: document.getElementById('mergeability-nav-button'),
+  navCommits: document.getElementById('commit-nav-button'),
   drawerClose: document.getElementById('drawer-close'),
   copyAll: document.getElementById('copy-all-comments'),
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
@@ -2928,7 +2963,7 @@ els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover
 els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'p') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
   if (event.key === 'm') renderMergeabilityPopover();
@@ -3106,14 +3141,18 @@ function fileDomId(filename) {
 
 function renderDrawer() {
   const comments = state.data.comments || [];
-  const commits = state.data.streamCommits || [];
+  const commits = state.data.commits || [];
   const checks = state.data.checks || [];
   const pull = state.data.pull;
-  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <button class="badge summary-chip" type="button" data-open-mergeability>mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</button> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
+  const mergeLabel = mergeabilityLabel(pull);
+  els.navMergeability.textContent = mergeLabel;
+  els.navMergeability.dataset.status = mergeLabel;
+  els.navCommits.textContent = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
+  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><button class="badge summary-chip" type="button" data-open-mergeability>' + escapeHtml(mergeLabel) + '</button> <span class="badge">' + escapeHtml(pull.state) + '</span></div>';
   els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
-  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' stream commits</button></div>';
+  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</button></div>';
   els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
-  els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
+  els.drawerCommits.innerHTML = '<h2>Commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>');
 }
 
 function renderComment(comment) {
@@ -3129,29 +3168,34 @@ function renderCommit(commit) {
 }
 
 function renderCommitPopover() {
-  const commits = state.data?.streamCommits || [];
+  const commits = state.data?.commits || [];
   els.commitPopover.hidden = false;
-  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>stream commits</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found.</div>') + '</div>';
+  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>' + commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>') + '</div>';
 }
 
 function closeCommitPopover() {
   els.commitPopover.hidden = true;
 }
+function mergeabilityLabel(pull) {
+  const stateLabel = String(pull?.mergeableState || 'unknown').toLowerCase();
+  const unmergeable = ['dirty'].includes(stateLabel) || pull?.mergeable === false;
+  return unmergeable ? 'unmergeable' : 'mergeable';
+}
 function renderMergeabilityPopover() {
   const pull = state.data?.pull || {};
   const files = state.data?.files || [];
   const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
-  const clean = stateLabel === 'clean';
-  const dirty = ['dirty', 'blocked'].includes(stateLabel) || pull.mergeable === false;
-  const title = clean ? 'clean' : escapeHtml(stateLabel || 'unknown');
+  const clean = mergeabilityLabel(pull) === 'mergeable';
+  const dirty = !clean;
+  const title = escapeHtml(mergeabilityLabel(pull));
   const fileList = dirty && files.length ? '<ul class="mergeability-files">' + files.map((file) => '<li>' + escapeHtml(file.filename) + '</li>').join('') + '</ul>' : '';
   const body = clean
-    ? '<p class="muted">This PR reports a clean merge state.</p>'
+    ? '<p class="muted">This PR is mergeable.</p>'
     : dirty
       ? '<p class="muted">Files to inspect before merging:</p>' + fileList
       : '<p class="muted">This PR is mergeable but GitHub reports state: ' + escapeHtml(stateLabel || 'unknown') + '.</p>';
   els.mergeabilityPopover.hidden = false;
-  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + body + '</div>';
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>' + title + '</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card">' + body + '</div>';
 }
 
 function closeMergeabilityPopover() {
