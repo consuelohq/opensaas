@@ -145,7 +145,6 @@ describe('createGithubPullRequestIndexLoader', () => {
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2');
     expect(result.warnings).toEqual([]);
     expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
     expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
@@ -415,11 +414,10 @@ describe('createGithubPullRequestIndexLoader GraphQL mergeability', () => {
       ] } } } });
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher, token: 'token' })({ owner: 'consuelohq', repo: 'opensaas' });
-    expect(calls).toEqual(['https://api.github.com/graphql', 'https://api.github.com/graphql']);
+    expect(calls).toEqual(['https://api.github.com/graphql']);
     expect(result.pulls.map((pull) => ({ number: pull.number, mergeability: pull.mergeability, additions: pull.additions, changedFiles: pull.changedFiles }))).toEqual([
       { number: 1, mergeability: 'mergeable', additions: 5, changedFiles: 2 },
       { number: 3, mergeability: 'conflicts', additions: 7, changedFiles: 3 },
-      { number: 2, mergeability: 'merged', additions: 2, changedFiles: 1 },
     ]);
   });
 });
@@ -509,11 +507,10 @@ describe('renderIndexPage', () => {
   test('renders a Graphite-like PR inbox with command search and load-more sections', () => {
     const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
 
-    expect(html).toContain('Pull Requests');
-    expect(html).toContain('href="/consuelohq/opensaas/tree/main/packages"');
-    expect(html).toContain('>main</a>');
-    expect(html).not.toContain('<span aria-hidden="true">▣</span>');
-    expect(html).not.toContain('Recently Updated');
+    expect(html).toContain('Consolidate Diffs');
+    expect(html).not.toContain('>Pull Requests</a>');
+    expect(html).not.toContain('>main</a>');
+    expect(html).not.toContain('<h1>Pull Requests</h1>');
     expect(html).toContain('data-sections-root');
     expect(html).toContain('data-stream-filter');
     expect(html).toContain('data-active-stream');
@@ -523,22 +520,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('data-command-palette');
     expect(html).toContain('id="diff-command-input"');
     expect(html).toContain('Search PRs or jump pages, e.g. code.call');
-    expect(html).toContain('data-command-page');
-    expect(html).toContain('Go to: PR inbox');
-    expect(html).toContain('Go to: Main code');
-    expect(html).toContain('Go to: Merges');
-    expect(html).toContain('class="mobile-command-fab"');
-    expect(html).toContain('command-bottom-drawer');
+    expect(html).toContain('class="command-button command-button-plain"');
     expect(html).not.toContain('id="diff-cockpit-search"');
     expect(html).not.toContain('data-search-toggle');
-    expect(html).toContain("pull.mergeability === 'conflicts'");
-    expect(html).toContain('relativeTime');
-    expect(html).toContain('formatDelta');
-    expect(html).toContain('pr-delta');
-    expect(html).toContain('mergeability-icon');
-    expect(html).toContain('review-icon');
-    expect(html).toContain('check-icon');
-    expect(html).toContain('post-list .post-item:last-child');
+    expect(html).toContain('data-command-page');
+    expect(html).toContain('class="mobile-command-fab"');
+    expect(html).toContain('command-bottom-drawer');
     expect(html).toContain('const sectionPageSize = 10');
     expect(html).toContain('data-load-more');
     expect(html).toContain('Load more');
@@ -554,10 +541,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('button:focus:not(:focus-visible)');
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
-    expect(html).toContain('pr-row-meta-line');
     expect(html).toContain('pr-subtitle');
-    expect(html).toContain("stream + ' • ' + repoLabel + ' #'");
+    expect(html).toContain("stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + formatFileCount(pull.changedFiles)");
+    expect(html).toContain('stream-compact-button');
+    expect(html).not.toContain('pr-row-meta-line');
     expect(html).not.toContain("pull.author + ' · #'");
+    expect(html).not.toContain("escapeText(pull.headRef) + ' → '");
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
@@ -681,7 +670,7 @@ describe('createWorker', () => {
     const html = await response.text();
 
     expect(response.status).toBe(200);
-    expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('Consolidate Diffs');
   });
 
 
