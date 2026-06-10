@@ -210,76 +210,10 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
-const INDEX_FRONT_PAGE_PULL_LIMIT = 30;
+const INDEX_OPEN_PULL_LIMIT = 75;
+const INDEX_RECENT_PULL_LIMIT = 75;
 const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
-type PullRequestSearchTarget = Pick<
-  PullRequestSummary,
-  'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
->;
-
-function normalizeSearchText(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-function splitSearchTokens(value: string): string[] {
-  return value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-}
-
-function isSubsequence(needle: string, haystack: string): boolean {
-  if (!needle) return false;
-  let haystackIndex = 0;
-  for (const char of needle) {
-    haystackIndex = haystack.indexOf(char, haystackIndex);
-    if (haystackIndex === -1) return false;
-    haystackIndex += 1;
-  }
-  return true;
-}
-
-function scoreSearchField(value: string, rawQuery: string, compactQuery: string, tokens: string[], weight: number): number {
-  if (!value) return 0;
-  const lowerValue = value.toLowerCase();
-  const compactValue = normalizeSearchText(value);
-  const fieldTokens = splitSearchTokens(value);
-  let score = 0;
-  if (rawQuery && lowerValue.includes(rawQuery)) score += 20 * weight;
-  if (compactQuery && compactValue.includes(compactQuery)) score += 14 * weight;
-  for (const token of tokens) {
-    if (fieldTokens.some((fieldToken) => fieldToken.startsWith(token))) score += 5 * weight;
-    else if (compactValue.includes(token)) score += 2 * weight;
-    else if (isSubsequence(token, compactValue)) score += weight;
-  }
-  if (compactQuery && isSubsequence(compactQuery, compactValue)) score += weight;
-  return score;
-}
-
-export function scorePullRequestSearch(
-  pull: PullRequestSearchTarget,
-  query: string,
-  repoLabel = `${DEFAULT_OWNER}/${DEFAULT_REPO}`,
-): number {
-  const rawQuery = query.trim().toLowerCase();
-  const compactQuery = normalizeSearchText(rawQuery);
-  const tokens = splitSearchTokens(rawQuery);
-  if (!rawQuery || (!compactQuery && tokens.length === 0)) return 1;
-
-  const fields: Array<{ value: string; weight: number }> = [
-    { value: pull.title, weight: 10 },
-    { value: pull.headRef, weight: 8 },
-    { value: pull.associatedStream, weight: 7 },
-    { value: repoLabel, weight: 6 },
-    { value: String(pull.number), weight: 6 },
-    { value: pull.baseRef, weight: 4 },
-    { value: pull.kind, weight: 3 },
-  ];
-
-  return fields.reduce(
-    (score, field) => score + scoreSearchField(field.value, rawQuery, compactQuery, tokens, field.weight),
-    0,
-  );
-}
-
 type PullRequestSearchTarget = Pick<
   PullRequestSummary,
   'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
@@ -671,13 +605,26 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
 
     const headers = createGithubHeaders(options.token);
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
-    const pullsJson = await fetchJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls?state=all&sort=updated&direction=desc`,
-      headers,
-      'GitHub pull requests fetch failed',
-      { maxPages: INDEX_MAX_PAGES },
-    );
+    const [openPullsJson, recentPullsJson] = await Promise.all([
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=open&sort=updated&direction=desc`,
+        headers,
+        'GitHub open pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=closed&sort=updated&direction=desc`,
+        headers,
+        'GitHub closed pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+    ]);
+    const pullsJson = dedupePullRequestJson([
+      ...openPullsJson.slice(0, INDEX_OPEN_PULL_LIMIT),
+      ...recentPullsJson.slice(0, INDEX_RECENT_PULL_LIMIT),
+    ]);
     const enrichedPulls = await Promise.all(
       pullsJson
         .slice(0, INDEX_ENRICH_LIMIT)
@@ -695,6 +642,30 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
       warnings,
     };
   };
+}
+
+function dedupePullRequestJson(items: unknown[]): unknown[] {
+  const seen = new Set<number>();
+  const deduped: unknown[] = [];
+  for (const item of items) {
+    const record = optionalRecord(item);
+    const number = numberValue(record?.number, 0);
+    if (!number || seen.has(number)) continue;
+    seen.add(number);
+    deduped.push(item);
+  }
+  return deduped;
+}
+
+function dedupePullRequestSummaries(pulls: PullRequestSummary[]): PullRequestSummary[] {
+  const seen = new Set<number>();
+  const deduped: PullRequestSummary[] = [];
+  for (const pull of pulls) {
+    if (!pull.number || seen.has(pull.number)) continue;
+    seen.add(pull.number);
+    deduped.push(pull);
+  }
+  return deduped;
 }
 
 export function createGithubPullRequestLoader(options: GithubLoaderOptions = {}) {
@@ -1331,82 +1302,90 @@ async function loadGraphqlPullRequestIndex(
   token: string,
   warnings: string[],
 ): Promise<PullRequestIndexData> {
-  const pulls: PullRequestSummary[] = [];
-  let after: string | null = null;
-  for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
-    try {
-      const response = await fetcher('https://api.github.com/graphql', {
-        method: 'POST',
-        headers: {
-          ...createGithubHeaders(token),
-          'content-type': 'application/json',
+  try {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        ...createGithubHeaders(token),
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+        variables: {
+          owner: repo.owner,
+          name: repo.repo,
+          openFirst: INDEX_OPEN_PULL_LIMIT,
+          recentFirst: INDEX_RECENT_PULL_LIMIT,
         },
-        body: JSON.stringify({
-          query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
-          variables: { owner: repo.owner, name: repo.repo, after, first: INDEX_FRONT_PAGE_PULL_LIMIT },
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
-      }
-      const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
-      if (Array.isArray(json.errors) && json.errors.length > 0) {
-        throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
-      }
-      const repository = optionalRecord(optionalRecord(json.data)?.repository);
-      const connection = optionalRecord(repository?.pullRequests);
-      const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
-      pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
-      const pageInfo = optionalRecord(connection?.pageInfo);
-      if (!booleanValue(pageInfo?.hasNextPage)) {
-        break;
-      }
-      after = stringValue(pageInfo?.endCursor, '');
-      if (!after) {
-        warnings.push('GitHub GraphQL pagination stopped without an end cursor');
-        break;
-      }
-    } catch (error: unknown) {
-      warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
-      throw error;
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
     }
+    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+    if (Array.isArray(json.errors) && json.errors.length > 0) {
+      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    const repository = optionalRecord(optionalRecord(json.data)?.repository);
+    const openConnection = optionalRecord(repository?.openPullRequests) ?? optionalRecord(repository?.pullRequests);
+    const recentConnection = optionalRecord(repository?.recentPullRequests);
+    const openNodes = Array.isArray(openConnection?.nodes) ? openConnection.nodes : [];
+    const recentNodes = Array.isArray(recentConnection?.nodes) ? recentConnection.nodes : [];
+    const pulls = dedupePullRequestSummaries([
+      ...openNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+      ...recentNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+    ]);
+    if (booleanValue(optionalRecord(openConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Open pull request backlog capped at ${INDEX_OPEN_PULL_LIMIT}`);
+    }
+    if (booleanValue(optionalRecord(recentConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Recent pull request backlog capped at ${INDEX_RECENT_PULL_LIMIT}`);
+    }
+    return {
+      repo,
+      pulls,
+      updatedAt: deriveIndexUpdatedAt(pulls),
+      warnings,
+    };
+  } catch (error: unknown) {
+    warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
+    throw error;
   }
-  return {
-    repo,
-    pulls,
-    updatedAt: deriveIndexUpdatedAt(pulls),
-    warnings,
-  };
 }
 
 const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
-query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String, $first: Int!) {
+query DiffCockpitPullRequests($owner: String!, $name: String!, $openFirst: Int!, $recentFirst: Int!) {
   repository(owner: $owner, name: $name) {
-    pullRequests(first: $first, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+    openPullRequests: pullRequests(first: $openFirst, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        number
-        title
-        url
-        state
-        isDraft
-        merged
-        mergedAt
-        closedAt
-        createdAt
-        updatedAt
-        additions
-        deletions
-        changedFiles
-        mergeStateStatus
-        author { login }
-        headRefName
-        headRefOid
-        baseRefName
-        baseRefOid
-      }
+      nodes { ...PullRequestIndexNode }
+    }
+    recentPullRequests: pullRequests(first: $recentFirst, states: [CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
+      nodes { ...PullRequestIndexNode }
     }
   }
+}
+fragment PullRequestIndexNode on PullRequest {
+  number
+  title
+  url
+  state
+  isDraft
+  merged
+  mergedAt
+  closedAt
+  createdAt
+  updatedAt
+  additions
+  deletions
+  changedFiles
+  mergeStateStatus
+  author { login }
+  headRefName
+  headRefOid
+  baseRefName
+  baseRefOid
 }
 `;
 
@@ -2320,7 +2299,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .command-item small { display:block; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
 .command-empty { padding:14px 10px; color:var(--muted); }
 .command-foot { display:flex; gap:14px; justify-content:flex-end; padding:10px 14px; color:var(--quiet); font-size:12px; }
-.mobile-command-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:35; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:999px; background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.3); font-weight:800; }
+.mobile-command-fab { display:none; position:fixed; left:18px; right:auto; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:35; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:999px; background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.3); font-weight:800; }
 
 .code-shell { max-width:min(1180px, calc(100vw - 48px)); }
 .code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
@@ -2414,6 +2393,7 @@ button.section-count { cursor:pointer; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
+.pr-file-chip { display:none; }
 .pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
 .pr-subtitle span { white-space:nowrap; }
 .pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:260px; }
@@ -2524,6 +2504,33 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .pr-row-side { grid-template-columns:auto auto auto; justify-content:flex-start; flex-wrap:wrap; min-width:0; }
   .command-button { display:none; }
   .mobile-command-fab { display:flex; }
+  .index-shell { max-width:calc(100vw - 36px); padding:0 0 calc(92px + env(safe-area-inset-bottom)); }
+  .index-page .wiki-topbar { min-height:0; align-items:flex-start; flex-direction:row; padding:36px 2px 28px; border-bottom:0; }
+  .index-page .brand { font-size:34px; line-height:1.05; font-weight:800; letter-spacing:-.04em; }
+  .index-page .nav, .index-page header.hero, .index-page .filter-row, .index-page .stream-filter-row { display:none; }
+  .index-page .section { margin:0 0 38px; border:0; background:transparent; overflow:visible; }
+  .index-page .pr-section summary { padding:0 2px 14px; }
+  .index-page .pr-section summary h2 { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:15px; font-weight:800; }
+  .index-page .section-count { font-size:15px; font-weight:700; color:var(--muted); }
+  .index-page .post-list { border-top:0; gap:10px; }
+  .index-page .post-item { position:relative; grid-template-columns:1fr; min-height:112px; gap:8px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .index-page .post-item::before { content:""; position:absolute; left:24px; top:29px; width:10px; height:10px; border-radius:999px; background:#ff6257; box-shadow:0 0 14px rgba(255,98,87,.45); }
+  .index-page .post-item[data-state="merged"]::before { background:#8b5cf6; box-shadow:0 0 14px rgba(139,92,246,.42); }
+  .index-page .post-item[data-state="draft"]::before, .index-page .post-item[data-state="closed"]::before { background:var(--quiet); box-shadow:none; }
+  .index-page .post-item::after { content:"›"; position:absolute; right:24px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:42px; line-height:1; }
+  .index-page .post-item h3 { font-size:19px; font-weight:650; line-height:1.25; }
+  .index-page .pr-title-line { align-items:center; gap:10px; flex-wrap:nowrap; }
+  .index-page .pr-title-line a { flex:0 1 auto; }
+  .index-page .pr-file-chip { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; padding:2px 8px; background:var(--soft); color:var(--muted); font-size:13px; font-weight:650; }
+  .index-page .pr-subtitle { margin-top:2px; gap:8px; font-size:15px; overflow:hidden; white-space:nowrap; }
+  .index-page .post-item[data-kind="stream"] .stream-compact-button, .index-page .post-item[data-kind="stream"] .pr-subtitle-stream-separator { display:none; }
+  .index-page .pr-subtitle-file-separator, .index-page .pr-subtitle-file-count { display:none; }
+  .index-page .stream-compact-button { max-width:168px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid var(--line); border-radius:7px; padding:2px 7px; color:var(--muted); background:rgba(255,255,255,.03); }
+  .index-page .pr-row-side { display:flex; align-items:center; gap:14px; margin-top:8px; color:var(--muted); font-size:15px; }
+  .index-page .status-set { display:none; }
+  .index-page .pr-delta, .index-page .pr-updated { min-width:0; text-align:left; }
+  .index-page .pr-delta::after { content:"•"; margin-left:14px; color:var(--quiet); }
+  .index-page .section-pager { border-top:0; padding:14px 0 0; }
   .command-palette { align-items:end; place-items:end center; padding:0; }
   .command-panel { width:100%; max-height:min(82vh, 720px); border-radius:18px 18px 0 0; border-left:0; border-right:0; border-bottom:0; }
   .command-panel-head { padding:16px; }
@@ -2666,7 +2673,7 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v2-mergeability';
+const cacheSchemaVersion = 'v3-mobile-backlog';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
@@ -2739,10 +2746,11 @@ function relativeTime(value) { const date = new Date(value); if (Number.isNaN(da
 function renderCard(pull) {
   const route = routePrefix + pull.number;
   const stream = pull.associatedStream || pull.baseRef || 'No stream';
-  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + formatFileCount(pull.changedFiles);
+  const fileCount = formatFileCount(pull.changedFiles);
+  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
-    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
-    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span aria-hidden="true">•</span><span>' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span aria-hidden="true">•</span><span>' + escapeText(formatFileCount(pull.changedFiles)) + '</span></p></div>' +
+    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
+    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span></div></article>';
 }
 
