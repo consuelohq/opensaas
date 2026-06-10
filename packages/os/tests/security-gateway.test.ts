@@ -902,4 +902,71 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
   });
+
+  it('discovers generated auth from the installed OS home when explicit auth env is unset', () => {
+    const body = JSON.stringify({ name: 'get_raw_steering' });
+    const result = readJsonFromBun<JsonObject>(`
+      const { readFileSync } = await import('node:fs');
+      const { join } = await import('node:path');
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const { issueAgentAppToken, signMachineRequest } = await import('./scripts/lib/security-gateway.ts');
+      const home = process.env.CONSUELO_OS_HOME;
+      provisionLocalOs({ mode: 'local' });
+      const installedConfig = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8'));
+      const config = installedConfig.security.auth.path;
+      const gatewayConfig = {
+        workspaceId: 'local-consuelo-os',
+        workspaceSlug: 'local',
+        workspaceHost: 'local.consuelohq.com',
+        generatedAuthPath: config,
+        tokenIssuer: 'consuelo-os-gateway',
+        signingKeyId: installedConfig.security.auth.signingKeyId,
+        publicRoutes: installedConfig.security.gateway.publicRoutes,
+      };
+      const token = issueAgentAppToken({
+        config: gatewayConfig,
+        callerId: 'chatgpt-app-1',
+        appId: 'chatgpt',
+        scopes: ['tool:get_raw_steering:read'],
+        expiresInSeconds: 300,
+      });
+      const body = ${JSON.stringify(body)};
+      const signed = signMachineRequest({
+        config: gatewayConfig,
+        token,
+        method: 'POST',
+        path: '/call',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'default-installed-home-auth-nonce',
+      });
+      delete process.env.CONSUELO_OS_AUTH_CONFIG;
+      process.env.CONSUELO_HOME = home;
+      process.env.CONSUELO_OS_HOME = home;
+      const { handleRequest } = await import('./scripts/server.ts');
+      const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
+        method: 'POST',
+        headers: signed.headers,
+        body,
+      }));
+      const text = await response.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch {}
+      process.stdout.write(JSON.stringify({
+        status: response.status,
+        text,
+        json,
+        leakedTokenSecret: text.includes(token.secret),
+        leakedNonce: text.includes('default-installed-home-auth-nonce'),
+      }));
+    `);
+
+    expect(result).toMatchObject({
+      status: 200,
+      json: { ok: true, name: 'get_raw_steering' },
+      leakedTokenSecret: false,
+      leakedNonce: false,
+    });
+  });
 });
+
