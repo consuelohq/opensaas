@@ -2393,7 +2393,7 @@ button.section-count { cursor:pointer; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
-.pr-file-chip, .pr-avatar, .mobile-pr-table-head, .pr-author, .pr-author-sep { display:none; }
+.pr-file-chip, .pr-avatar, .mobile-pr-table-head, .pr-author, .pr-author-sep, .pr-mobile-meta, .pr-mobile-files { display:none; }
 .pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
 .pr-subtitle span { white-space:nowrap; }
 .pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:260px; }
@@ -2557,39 +2557,39 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .brand{font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.035em;}
   .index-page .nav,.index-page header.hero,.index-page .filter-row,.index-page .stream-filter-row{display:none;}
   .index-page .section{margin:0 0 18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);overflow:hidden;}
-  .index-page .pr-section summary{display:grid;grid-template-columns:22px minmax(0,1fr) auto 54px;align-items:center;gap:10px;min-height:54px;padding:10px 14px;border-bottom:1px solid var(--line);}
+  .index-page .pr-section summary{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:9px 14px;border-bottom:1px solid var(--line);}
   .index-page .pr-section summary:before{content:"v";color:var(--muted);font-size:18px;}
   .index-page .pr-section:not([open]) summary:before{content:">";}
-  .index-page .pr-section summary:after{content:"sort gear";color:var(--muted);justify-self:end;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
-  .index-page .pr-section summary h2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-transform:none;letter-spacing:-.02em;font-size:24px;font-weight:500;}
-  .index-page .section-count{font-size:24px;font-weight:500;color:var(--muted);}
+  
+  .index-page .pr-section summary h2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-transform:none;letter-spacing:-.01em;font-size:19px;font-weight:400;}
+  .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
   .index-page .post-list{border-top:0;gap:0;}
-  .index-page .post-list:before{content:"  Title                                   Status";display:grid;align-items:center;min-height:42px;padding:0 14px;border-bottom:1px solid var(--line);color:var(--muted);font-size:15px;white-space:pre;}
-  .index-page .post-item{display:grid;grid-template-columns:10px minmax(0,1fr) 64px 78px;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;min-height:76px;padding:12px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
+  
+  .index-page .post-item{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
   .index-page .post-item:last-child{border-bottom:0;}
   .index-page .post-item:hover{background:rgba(255,255,255,.035);}
-  .index-page .post-item:before{content:"";grid-column:1;grid-row:1 / span 2;justify-self:center;align-self:center;width:6px;height:6px;border-radius:999px;background:#6f9cff;}
-  .index-page .post-item[data-state="merged"]:before{background:#8b5cf6;}
-  .index-page .post-item[data-state="closed"]:before{background:var(--quiet);}
+  
+  
+  
   .index-page .post-item:after{content:none;}
-  .index-page .pr-row-main{grid-column:2;grid-row:1 / span 2;min-width:0;gap:2px;}
-  .index-page .post-item h3{font-size:16px;font-weight:500;line-height:1.22;letter-spacing:-.01em;}
+  .index-page .pr-row-main{grid-column:1;grid-row:1 / span 2;min-width:0;gap:2px;}
+  .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
   .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
   .index-page .pr-title-line a{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;}
   .index-page .pr-file-chip{display:none;}
-  .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:14px;line-height:1.25;white-space:nowrap;}
-  .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator{display:none;}
-  .index-page .pr-subtitle-repo{min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .index-page .pr-row-side{grid-column:3 / span 2;grid-row:1 / span 2;display:grid;grid-template-columns:64px 78px;grid-template-rows:auto auto;gap:4px 8px;align-items:center;min-width:0;color:var(--muted);font-size:14px;}
-  .index-page .status-set{grid-column:2;grid-row:1;display:flex;justify-content:flex-end;gap:10px;}
-  .index-page .mergeability-icon,.index-page .review-icon,.index-page .check-icon{width:24px;height:24px;border-radius:999px;border:1px solid var(--line);font-size:14px;font-weight:800;}
+  .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
+  .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
+  .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:104px;color:var(--muted);font-size:13px;}
+  .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:8px;}
+  .index-page .mergeability-icon,.index-page .review-icon,.index-page .check-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;}
   .index-page .mergeability-icon.mergeability-mergeable,.index-page .review-icon.review-approved,.index-page .check-icon.check-success{border:0;background:#73c97c;color:#07110a;}
   .index-page .mergeability-icon.mergeability-conflicts,.index-page .review-icon.review-changes_requested,.index-page .check-icon.check-failure{border-color:#f59e0b;color:#f59e0b;}
   .index-page .mergeability-icon:empty,.index-page .review-icon:empty,.index-page .check-icon:empty{display:inline-flex;}
   .index-page .mergeability-icon:empty:before,.index-page .review-icon:empty:before,.index-page .check-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
-  .index-page .pr-delta{grid-column:1;grid-row:2;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
-  .index-page .pr-updated{grid-column:2;grid-row:2;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
-  .index-page .pr-delta:after{content:none;}
+  .index-page .pr-delta{display:none;}
+  .index-page .pr-updated{grid-column:1;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .index-page .pr-mobile-files{display:inline;grid-column:2;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
 }
 }
 `;
@@ -2788,11 +2788,12 @@ function renderCard(pull) {
   const route = routePrefix + pull.number;
   const stream = pull.associatedStream || pull.baseRef || 'No stream';
   const fileCount = formatFileCount(pull.changedFiles);
+  const mobileMeta = '#' + pull.number + ' ' + stream;
   const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
-    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span></div></article>';
+    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
+    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
 }
 
 function renderSection(section) {
