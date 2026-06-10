@@ -124,14 +124,21 @@ describe('createGithubPullRequestIndexLoader', () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
       calls.push(url);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } },
           { number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
           { number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/722')) return Response.json({ number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, additions: 3879, deletions: 32, changed_files: 12, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } });
       if (url.endsWith('/pulls/734')) return Response.json({ number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, additions: 250, deletions: 10, changed_files: 2, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.endsWith('/pulls/726')) return Response.json({ number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, additions: 0, deletions: 0, changed_files: 0, merged_at: '2026-06-03T04:30:00Z', closed_at: '2026-06-03T04:30:00Z', updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
@@ -144,7 +151,8 @@ describe('createGithubPullRequestIndexLoader', () => {
       throw new Error('unexpected index url ' + url);
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1');
     expect(result.warnings).toEqual([]);
     expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
     expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
@@ -532,7 +540,7 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
-    expect(html).toContain("cacheSchemaVersion = 'v2-mergeability'");
+    expect(html).toContain("cacheSchemaVersion = 'v3-mobile-backlog'");
     expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
     expect(html).toContain('mergeIndexWithCache');
@@ -542,7 +550,7 @@ describe('renderIndexPage', () => {
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
     expect(html).toContain('pr-subtitle');
-    expect(html).toContain("stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + formatFileCount(pull.changedFiles)");
+    expect(html).toContain("stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount");
     expect(html).toContain('stream-compact-button');
     expect(html).not.toContain('pr-row-meta-line');
     expect(html).not.toContain("pull.author + ' · #'");
@@ -811,10 +819,12 @@ describe('createWorker', () => {
       await gate;
       calls += 1;
       const url = String(input);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([{ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } }]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
       if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
@@ -866,12 +876,14 @@ describe('createWorker', () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       calls += 1;
       const url = String(input);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.endsWith('/contents/packages?ref=main')) return Response.json([{ name: 'diff-cockpit', path: 'packages/diff-cockpit', type: 'dir', html_url: '', sha: 'pkgsha' }]);
       if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([{ sha: 'pkgcommit', html_url: '', commit: { message: 'feat(diff-cockpit): add browser', author: { name: 'Ko', date: '2026-06-05T05:00:00Z' } }, author: { login: 'kokayicobb' } }]);
@@ -914,12 +926,14 @@ describe('createWorker', () => {
   test('returns homepage API shared cache headers and 304 for unchanged ETags', async () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/750')) return Response.json({ number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, additions: 12, deletions: 1, changed_files: 2, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
       if (url.includes('/pulls/750/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'COMMENTED' }] : []);
