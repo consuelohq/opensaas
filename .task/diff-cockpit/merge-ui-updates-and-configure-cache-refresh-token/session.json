@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1b8cd4f22436",
+  "tmuxSession": "opensaas-diff-cockpit-merge-ui-updates-and-configure-cache-refresh-tok-1b8cd4f2",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/merge-ui-updates-and-configure-cache-refresh-token",
+  "branch": "task/diff-cockpit/merge-ui-updates-and-configure-cache-refresh-token",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-merge-ui-updates-and-configure-cache-refresh-token",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-merge-ui-updates-and-configure-cache-refresh-token",
+  "prNumber": 899,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/899",
+  "createdAt": "2026-06-09T23:38:48.875Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-merge-ui-updates-and-configure-cache-refresh-token/.task/diff-cockpit/merge-ui-updates-and-configure-cache-refresh-token/session.json"
+}

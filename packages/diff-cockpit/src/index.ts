@@ -210,8 +210,76 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
-const INDEX_MAX_PAGES = MAX_PAGES;
+const INDEX_OPEN_PULL_LIMIT = 75;
+const INDEX_RECENT_PULL_LIMIT = 75;
+const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
+type PullRequestSearchTarget = Pick<
+  PullRequestSummary,
+  'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
+>;
+
+function normalizeSearchText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function splitSearchTokens(value: string): string[] {
+  return value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+function isSubsequence(needle: string, haystack: string): boolean {
+  if (!needle) return false;
+  let haystackIndex = 0;
+  for (const char of needle) {
+    haystackIndex = haystack.indexOf(char, haystackIndex);
+    if (haystackIndex === -1) return false;
+    haystackIndex += 1;
+  }
+  return true;
+}
+
+function scoreSearchField(value: string, rawQuery: string, compactQuery: string, tokens: string[], weight: number): number {
+  if (!value) return 0;
+  const lowerValue = value.toLowerCase();
+  const compactValue = normalizeSearchText(value);
+  const fieldTokens = splitSearchTokens(value);
+  let score = 0;
+  if (rawQuery && lowerValue.includes(rawQuery)) score += 20 * weight;
+  if (compactQuery && compactValue.includes(compactQuery)) score += 14 * weight;
+  for (const token of tokens) {
+    if (fieldTokens.some((fieldToken) => fieldToken.startsWith(token))) score += 5 * weight;
+    else if (compactValue.includes(token)) score += 2 * weight;
+    else if (isSubsequence(token, compactValue)) score += weight;
+  }
+  if (compactQuery && isSubsequence(compactQuery, compactValue)) score += weight;
+  return score;
+}
+
+export function scorePullRequestSearch(
+  pull: PullRequestSearchTarget,
+  query: string,
+  repoLabel = `${DEFAULT_OWNER}/${DEFAULT_REPO}`,
+): number {
+  const rawQuery = query.trim().toLowerCase();
+  const compactQuery = normalizeSearchText(rawQuery);
+  const tokens = splitSearchTokens(rawQuery);
+  if (!rawQuery || (!compactQuery && tokens.length === 0)) return 1;
+
+  const fields: Array<{ value: string; weight: number }> = [
+    { value: pull.title, weight: 10 },
+    { value: pull.headRef, weight: 8 },
+    { value: pull.associatedStream, weight: 7 },
+    { value: repoLabel, weight: 6 },
+    { value: String(pull.number), weight: 6 },
+    { value: pull.baseRef, weight: 4 },
+    { value: pull.kind, weight: 3 },
+  ];
+
+  return fields.reduce(
+    (score, field) => score + scoreSearchField(field.value, rawQuery, compactQuery, tokens, field.weight),
+    0,
+  );
+}
 
 export function parsePullRequestLocator(
   input: string,
@@ -537,13 +605,26 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
 
     const headers = createGithubHeaders(options.token);
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
-    const pullsJson = await fetchJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls?state=all&sort=updated&direction=desc`,
-      headers,
-      'GitHub pull requests fetch failed',
-      { maxPages: INDEX_MAX_PAGES },
-    );
+    const [openPullsJson, recentPullsJson] = await Promise.all([
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=open&sort=updated&direction=desc`,
+        headers,
+        'GitHub open pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=closed&sort=updated&direction=desc`,
+        headers,
+        'GitHub closed pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+    ]);
+    const pullsJson = dedupePullRequestJson([
+      ...openPullsJson.slice(0, INDEX_OPEN_PULL_LIMIT),
+      ...recentPullsJson.slice(0, INDEX_RECENT_PULL_LIMIT),
+    ]);
     const enrichedPulls = await Promise.all(
       pullsJson
         .slice(0, INDEX_ENRICH_LIMIT)
@@ -561,6 +642,30 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
       warnings,
     };
   };
+}
+
+function dedupePullRequestJson(items: unknown[]): unknown[] {
+  const seen = new Set<number>();
+  const deduped: unknown[] = [];
+  for (const item of items) {
+    const record = optionalRecord(item);
+    const number = numberValue(record?.number, 0);
+    if (!number || seen.has(number)) continue;
+    seen.add(number);
+    deduped.push(item);
+  }
+  return deduped;
+}
+
+function dedupePullRequestSummaries(pulls: PullRequestSummary[]): PullRequestSummary[] {
+  const seen = new Set<number>();
+  const deduped: PullRequestSummary[] = [];
+  for (const pull of pulls) {
+    if (!pull.number || seen.has(pull.number)) continue;
+    seen.add(pull.number);
+    deduped.push(pull);
+  }
+  return deduped;
 }
 
 export function createGithubPullRequestLoader(options: GithubLoaderOptions = {}) {
@@ -680,27 +785,24 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
 export function renderIndexPage(repo: RepoLocator): string {
   const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
+  const mainCodePath = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages`;
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo Diffs · ${escapeHtml(repoLabel)}</title>
+  <title>Consolidate Diffs · ${escapeHtml(repoLabel)}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="">
+<body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="#pull-requests">Pull Requests</a>
-        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages">main</a>
-        <button class="search-button" type="button" data-search-toggle aria-controls="diff-cockpit-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
+        <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
     </div>
     <header class="hero" data-pagefind-ignore>
-      <h1>Pull Requests</h1>
-      <p class="lead">Live pull request review cockpit for ${escapeHtml(repoLabel)}.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
         <button class="active" data-filter="all">All</button>
@@ -715,20 +817,33 @@ export function renderIndexPage(repo: RepoLocator): string {
         <button class="stream-chip active" type="button" data-clear-stream>All streams</button>
         <span data-stream-filter-label></span>
       </div>
-      <label class="search-row" hidden>
-        <span class="filter-label">Search:</span>
-        <input id="diff-cockpit-search" class="search-input" type="search" placeholder="type to filter pull requests" autocomplete="off" spellcheck="false" />
-      </label>
     </header>
     <main id="pull-requests" class="section-stack" data-sections-root data-pagefind-ignore>
       <details class="section pr-section" open data-section-id="streams"><summary><h2>Streams</h2><button class="section-count" type="button" data-toggle-streams aria-pressed="false" title="Show all streams">—</button></summary><div class="post-list"><article class="post-item muted"><h3>Loading live pull requests…</h3><p>${escapeHtml(apiPath)}</p></article></div></details>
-      <details class="section pr-section" data-section-id="recently-merged"><summary><h2>Merging and recently merged</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" open data-section-id="recently-merged"><summary><h2>Merging and recently merged</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
       <details class="section pr-section" open data-section-id="open"><summary><h2>Open</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
-      <details class="section pr-section" data-section-id="closed"><summary><h2>Closed</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
+      <details class="section pr-section" open data-section-id="closed"><summary><h2>Closed</h2><span class="section-count">—</span></summary><div class="post-list"></div></details>
     </main>
+    <div class="command-backdrop" data-command-backdrop hidden></div>
+    <section id="diff-command-palette" class="command-palette command-bottom-drawer" data-command-palette role="dialog" aria-modal="true" aria-labelledby="diff-command-title" hidden>
+      <div class="command-panel">
+        <div class="command-panel-head"><div><p class="command-kicker">COMMAND PALETTE</p><h2 id="diff-command-title">Jump without hunting.</h2><p class="command-caption">Search PRs fuzzily or jump to a cockpit page.</p></div><button class="command-close" type="button" data-command-close>Close</button></div>
+        <label class="command-input-row" for="diff-command-input"><span class="sr-only">Search pull requests and pages</span><input id="diff-command-input" class="command-input" type="search" placeholder="Search PRs or jump pages, e.g. code.call" autocomplete="off" spellcheck="false" /></label>
+        <div class="command-section"><p class="command-section-title">Page</p><div class="command-list" data-command-pages>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: PR inbox" data-command-url="#pull-requests"><span class="command-key">GI</span><span><strong>Go to: PR inbox</strong><small>Show the pull request inbox.</small></span></button>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: Main code" data-command-url="${escapeAttribute(mainCodePath)}"><span class="command-key">GC</span><span><strong>Go to: Main code</strong><small>Open the main packages browser.</small></span></button>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: Merges" data-command-filter="all" data-command-url="#recently-merged"><span class="command-key">GM</span><span><strong>Go to: Merges</strong><small>Jump to merging and recently merged PRs.</small></span></button>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: Streams" data-command-filter="stream" data-command-url="#streams"><span class="command-key">GS</span><span><strong>Go to: Streams</strong><small>Show stream pull requests.</small></span></button>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: Failing PRs" data-command-filter="failing" data-command-url="#pull-requests"><span class="command-key">GF</span><span><strong>Go to: Failing PRs</strong><small>Filter conflicts and failed checks.</small></span></button>
+        </div></div>
+        <div class="command-section"><p class="command-section-title">Recent PRs</p><div class="command-list" data-command-results><div class="command-empty">Loading live pull requests…</div></div></div>
+        <div class="command-foot"><span><span class="kbd">⌘K</span> open</span><span><span class="kbd">Esc</span> close</span><span><span class="kbd">Enter</span> run</span></div>
+      </div>
+    </section>
+    <button class="mobile-command-fab" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false" aria-label="Open command search">⌘K</button>
     <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date().getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Pull Requests</a></div>
+      <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
   <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
@@ -835,7 +950,7 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -884,7 +999,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -1187,82 +1302,90 @@ async function loadGraphqlPullRequestIndex(
   token: string,
   warnings: string[],
 ): Promise<PullRequestIndexData> {
-  const pulls: PullRequestSummary[] = [];
-  let after: string | null = null;
-  for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
-    try {
-      const response = await fetcher('https://api.github.com/graphql', {
-        method: 'POST',
-        headers: {
-          ...createGithubHeaders(token),
-          'content-type': 'application/json',
+  try {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        ...createGithubHeaders(token),
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+        variables: {
+          owner: repo.owner,
+          name: repo.repo,
+          openFirst: INDEX_OPEN_PULL_LIMIT,
+          recentFirst: INDEX_RECENT_PULL_LIMIT,
         },
-        body: JSON.stringify({
-          query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
-          variables: { owner: repo.owner, name: repo.repo, after },
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
-      }
-      const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
-      if (Array.isArray(json.errors) && json.errors.length > 0) {
-        throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
-      }
-      const repository = optionalRecord(optionalRecord(json.data)?.repository);
-      const connection = optionalRecord(repository?.pullRequests);
-      const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
-      pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
-      const pageInfo = optionalRecord(connection?.pageInfo);
-      if (!booleanValue(pageInfo?.hasNextPage)) {
-        break;
-      }
-      after = stringValue(pageInfo?.endCursor, '');
-      if (!after) {
-        warnings.push('GitHub GraphQL pagination stopped without an end cursor');
-        break;
-      }
-    } catch (error: unknown) {
-      warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
-      throw error;
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
     }
+    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+    if (Array.isArray(json.errors) && json.errors.length > 0) {
+      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    const repository = optionalRecord(optionalRecord(json.data)?.repository);
+    const openConnection = optionalRecord(repository?.openPullRequests) ?? optionalRecord(repository?.pullRequests);
+    const recentConnection = optionalRecord(repository?.recentPullRequests);
+    const openNodes = Array.isArray(openConnection?.nodes) ? openConnection.nodes : [];
+    const recentNodes = Array.isArray(recentConnection?.nodes) ? recentConnection.nodes : [];
+    const pulls = dedupePullRequestSummaries([
+      ...openNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+      ...recentNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+    ]);
+    if (booleanValue(optionalRecord(openConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Open pull request backlog capped at ${INDEX_OPEN_PULL_LIMIT}`);
+    }
+    if (booleanValue(optionalRecord(recentConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Recent pull request backlog capped at ${INDEX_RECENT_PULL_LIMIT}`);
+    }
+    return {
+      repo,
+      pulls,
+      updatedAt: deriveIndexUpdatedAt(pulls),
+      warnings,
+    };
+  } catch (error: unknown) {
+    warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
+    throw error;
   }
-  return {
-    repo,
-    pulls,
-    updatedAt: deriveIndexUpdatedAt(pulls),
-    warnings,
-  };
 }
 
 const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
-query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String) {
+query DiffCockpitPullRequests($owner: String!, $name: String!, $openFirst: Int!, $recentFirst: Int!) {
   repository(owner: $owner, name: $name) {
-    pullRequests(first: 100, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+    openPullRequests: pullRequests(first: $openFirst, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        number
-        title
-        url
-        state
-        isDraft
-        merged
-        mergedAt
-        closedAt
-        createdAt
-        updatedAt
-        additions
-        deletions
-        changedFiles
-        mergeStateStatus
-        author { login }
-        headRefName
-        headRefOid
-        baseRefName
-        baseRefOid
-      }
+      nodes { ...PullRequestIndexNode }
+    }
+    recentPullRequests: pullRequests(first: $recentFirst, states: [CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
+      nodes { ...PullRequestIndexNode }
     }
   }
+}
+fragment PullRequestIndexNode on PullRequest {
+  number
+  title
+  url
+  state
+  isDraft
+  merged
+  mergedAt
+  closedAt
+  createdAt
+  updatedAt
+  additions
+  deletions
+  changedFiles
+  mergeStateStatus
+  author { login }
+  headRefName
+  headRefOid
+  baseRefName
+  baseRefOid
 }
 `;
 
@@ -1328,16 +1451,7 @@ async function enrichPullRequestSummary(
   try {
     const basePull = normalizePullRequest(pullJson);
     const detailJson = await fetchPullRequestDetail(fetcher, apiBase, headers, basePull.number, pullJson, warnings);
-    const detailPull = normalizePullRequest(detailJson);
-    const checkRuns = await fetchCheckRuns(fetcher, apiBase, detailPull.headSha || basePull.headSha, headers, warnings);
-    const reviews = await fetchPartialJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls/${detailPull.number || basePull.number}/reviews`,
-      headers,
-      warnings,
-      `reviews for #${detailPull.number || basePull.number}`,
-    );
-    return normalizePullRequestSummary(repo, detailJson, checkRuns, reviews);
+    return normalizePullRequestSummary(repo, detailJson, [], []);
   } catch (error: unknown) {
     warnings.push(`summary: ${getErrorMessage(error)}`);
     return normalizePullRequestSummary(repo, pullJson, [], []);
@@ -1426,13 +1540,13 @@ function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullReq
   if (lifecycleStatus === 'closed') return 'closed';
   if (lifecycleStatus === 'draft') return 'draft';
   const state = pull.mergeableState.toLowerCase();
-  if (['dirty', 'blocked', 'behind', 'unstable'].includes(state)) return 'conflicts';
-  if (state === 'clean' || state === 'has_hooks') return 'mergeable';
-  if (state && state !== 'unknown') return 'conflicts';
-  if (pull.mergeable === true) return 'mergeable';
+  if (state === 'dirty') return 'conflicts';
+  if (['clean', 'has_hooks', 'unstable', 'blocked', 'behind'].includes(state)) return 'mergeable';
   if (pull.mergeable === false) return 'conflicts';
+  if (pull.mergeable === true) return 'mergeable';
   return 'unknown';
 }
+
 
 export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
   if (pull.headRef.startsWith('stream/')) {
@@ -1492,6 +1606,7 @@ function normalizeLifecycleStatus(
   return 'open';
 }
 
+
 function normalizeCheckStatus(checkRuns: unknown[]): PullRequestCheckStatus {
   if (checkRuns.length === 0) {
     return 'unknown';
@@ -1524,6 +1639,7 @@ function isSuccessfulCheckRun(input: unknown): boolean {
   const conclusion = stringValue(record.conclusion, '').toLowerCase();
   return ['success', 'skipped', 'neutral'].includes(conclusion);
 }
+
 
 function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   const states = reviews
@@ -1567,20 +1683,9 @@ async function loadStreamCommits(
       `${apiBase}/commits?sha=${encodeURIComponent(headRef)}`,
       headers,
       'GitHub stream commits fetch failed',
+      { maxPages: 1 },
     );
-    const commits = normalizeStreamCommits(json);
-    return await Promise.all(commits.map(async (commit) => {
-      if (!commit.sha) return commit;
-      try {
-        const detail = await fetcher(`${apiBase}/commits/${encodeURIComponent(commit.sha)}`, { headers });
-        if (!detail.ok) return commit;
-        const record = optionalRecord(await detail.json());
-        const stats = optionalRecord(record?.stats);
-        return { ...commit, additions: numberValue(stats?.additions, commit.additions), deletions: numberValue(stats?.deletions, commit.deletions) };
-      } catch {
-        return commit;
-      }
-    }));
+    return normalizeStreamCommits(json).slice(0, 50);
   } catch {
     return [];
   }
@@ -1929,7 +2034,8 @@ async function getOrSetCachedJson(
     const memoryCached = readMemoryCachedJson(cacheRequest, clientRequest);
     if (memoryCached) return memoryCached;
     const response = cachedJson(await load(), clientRequest);
-    await replaceCachedJson(edgeCache, cacheRequest, response);
+    const cacheWriteStatus = await replaceCachedJson(edgeCache, cacheRequest, response);
+    response.headers.set('x-diff-cockpit-cache-write', cacheWriteStatus);
     return response;
   } catch (error: unknown) {
     throw new Error(`failed to build cached JSON response: ${getErrorMessage(error)}`);
@@ -1969,24 +2075,25 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
   return readMemoryCachedJson(cacheRequest, clientRequest);
 }
 
-async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<void> {
-  if (response.status !== 200) return;
+async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<string> {
+  if (response.status !== 200) return 'skip-status';
   await writeMemoryCachedJson(cacheRequest, response);
   try {
-    if (!edgeCache) return;
-    const cacheResponse = cloneCacheableResponse(response);
-    await edgeCache.delete(cacheRequest);
+    if (!edgeCache) return 'memory';
+    const cacheResponse = await cloneCacheableResponse(response);
     await edgeCache.put(cacheRequest, cacheResponse);
-  } catch {
-    // Edge cache writes are opportunistic; isolate-local cache still protects hot paths.
+    return 'edge';
+  } catch (error: unknown) {
+    return `edge-error:${getErrorMessage(error).slice(0, 160)}`;
   }
 }
 
-function cloneCacheableResponse(response: Response): Response {
+async function cloneCacheableResponse(response: Response): Promise<Response> {
   const cloned = response.clone();
+  const body = await cloned.text();
   const headers = new Headers(cloned.headers);
   headers.delete('vary');
-  return new Response(cloned.body, {
+  return new Response(body, {
     status: cloned.status,
     statusText: cloned.statusText,
     headers,
@@ -2156,10 +2263,36 @@ button { appearance:none; border:0; background:transparent; color:var(--ink); pa
 button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline:none; }
 button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-soft); outline-offset:3px; }
 .shell { max-width:min(1180px, calc(100vw - 48px)); margin:0 auto; padding:0 18px 32px; }
-.wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
+.index-shell { max-width:min(1720px, calc(100vw - 48px)); padding:0 10px 28px; }
+.wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:54px; border-bottom:1px solid var(--line); }
 .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; }
 .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
 .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+.command-button { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:6px 9px; color:var(--muted); }
+.command-button-plain { border:0; background:transparent; padding:0; color:var(--muted); }
+.command-button-plain .command-shortcut { margin-left:2px; }
+.command-shortcut, .command-key { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:6px; padding:3px 6px; background:var(--soft); color:var(--ink); }
+.command-backdrop { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.36); backdrop-filter:blur(7px); }
+.command-backdrop[hidden], .command-palette[hidden] { display:none; }
+.command-palette { position:fixed; inset:0; z-index:41; display:grid; place-items:start center; padding:9vh 18px 18px; }
+.command-panel { width:min(640px, calc(100vw - 32px)); max-height:min(760px, calc(100vh - 80px)); overflow:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:0 24px 80px rgba(0,0,0,.42); }
+.command-panel-head { display:flex; justify-content:space-between; gap:18px; padding:18px; border-bottom:1px solid var(--line); }
+.command-kicker, .command-section-title { margin:0 0 6px; color:var(--accent); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.command-panel h2 { margin:0 0 6px; font-size:30px; }
+.command-caption { margin:0; color:var(--muted); font-size:13px; }
+.command-close { color:var(--muted); }
+.command-input-row { display:block; padding:14px 18px; border-bottom:1px solid var(--line); }
+.command-input { width:100%; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); padding:12px 14px; font:inherit; font-size:15px; outline:none; }
+.command-input:focus { border-color:var(--accent); }
+.command-section { padding:12px; border-bottom:1px solid var(--line); }
+.command-list { display:grid; gap:6px; }
+.command-item { width:100%; min-height:52px; display:grid; grid-template-columns:54px minmax(0,1fr); align-items:center; gap:12px; padding:9px 10px; border:1px solid transparent; border-radius:11px; text-align:left; }
+.command-item:hover, .command-item:focus-visible { border-color:var(--line); background:var(--soft); text-decoration:none; }
+.command-item strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:650; }
+.command-item small { display:block; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+.command-empty { padding:14px 10px; color:var(--muted); }
+.command-foot { display:flex; gap:14px; justify-content:flex-end; padding:10px 14px; color:var(--quiet); font-size:12px; }
+.mobile-command-fab { display:none; position:fixed; left:18px; right:auto; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:35; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:999px; background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.3); font-weight:800; }
 
 .code-shell { max-width:min(1180px, calc(100vw - 48px)); }
 .code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
@@ -2221,7 +2354,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 }
 .search-button { display:inline-flex; align-items:center; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
+header.hero { padding:12px 0 10px; border-bottom:0; }
 h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
 .lead { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.7; }
 .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
@@ -2234,39 +2367,49 @@ h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font
 button.active { color:var(--accent); font-weight:700; }
 button.active::before { content:"["; color:var(--quiet); }
 button.active::after { content:"]"; color:var(--quiet); }
-.section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
+.section { margin:10px 0; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
 .section summary { list-style:none; cursor:pointer; }
 .section summary::-webkit-details-marker { display:none; }
 .section summary h2 { display:inline; }
-h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
-.post-list { display:grid; gap:0; margin-top:18px; border-top:1px solid var(--line); }
+h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weight:650; }
+.post-list { display:grid; gap:0; margin-top:0; border-top:1px solid var(--line); }
 .post-list .post-item:last-child { border-bottom:0; }
-.pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 14px; }
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
-.post-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:22px; padding:11px 0; border-bottom:1px solid var(--line); align-items:center; }
-.post-item h3 { margin:0; font-size:17px; line-height:1.35; letter-spacing:-.02em; font-weight:500; }
+.post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.post-item:hover { background:var(--soft); }
+.post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
-.pr-row-main { min-width:0; display:grid; gap:4px; }
+.pr-row-main { min-width:0; display:grid; gap:2px; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
-.pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:13px; }
-.pr-row-side { display:flex; align-items:center; justify-content:flex-end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:150px; }
+.pr-file-chip, .pr-avatar, .mobile-pr-table-head, .pr-author, .pr-author-sep, .pr-mobile-meta, .pr-mobile-files { display:none; }
+.pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
+.pr-subtitle span { white-space:nowrap; }
+.pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:220px; }
+.status-set { display:inline-flex; align-items:center; gap:6px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
-.mergeability-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border:1px solid var(--line); border-radius:999px; font-size:13px; flex:0 0 auto; }
-.mergeability-icon.mergeability-mergeable { color:#2f8a44; }
-.mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
+.pr-updated { min-width:42px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
+.mergeability-icon, .review-icon, .check-icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--line); border-radius:999px; font-size:11px; flex:0 0 auto; }
+.mergeability-icon:empty, .review-icon:empty, .check-icon:empty { display:none; }
+.mergeability-icon.mergeability-mergeable { color:#1f7a3a; border-color:#1f7a3a; }
+.mergeability-icon.mergeability-conflicts { color:#ef4444; border-color:#ef4444; }
 .mergeability-icon.mergeability-merged { color:#6f4bd8; }
 .mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
+.stream-dot-button { display:inline-flex; align-items:center; gap:4px; }
+.stream-compact-button { display:inline-flex; align-items:center; min-width:0; }
+.stream-dot { color:var(--accent); font-size:16px; line-height:1; }
+.load-more-button { color:var(--muted); }
 .stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
 .stream-filter-row[hidden] { display:none; }
 .post-item[hidden] { display:none; }
 .empty, .muted { color:var(--quiet); }
 mark { background:var(--accent-soft); color:var(--ink); }
-.section-pager { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:10px 0 0; color:var(--quiet); font-size:13px; }
+.section-pager { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 14px; border-top:1px solid var(--line); color:var(--quiet); font-size:13px; }
 .page-status { color:var(--quiet); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
@@ -2351,7 +2494,40 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   h1 { font-size:38px; }
   footer { flex-direction:column; align-items:flex-start; }
   .post-item { grid-template-columns:1fr; gap:8px; }
-  .pr-row-side { justify-content:flex-start; flex-wrap:wrap; }
+  .pr-row-side { grid-template-columns:auto auto auto; justify-content:flex-start; flex-wrap:wrap; min-width:0; }
+  .command-button { display:none; }
+  .mobile-command-fab { display:flex; }
+  .index-shell { max-width:calc(100vw - 36px); padding:0 0 calc(92px + env(safe-area-inset-bottom)); }
+  .index-page .wiki-topbar { min-height:0; align-items:flex-start; flex-direction:row; padding:36px 2px 28px; border-bottom:0; }
+  .index-page .brand { font-size:34px; line-height:1.05; font-weight:800; letter-spacing:-.04em; }
+  .index-page .nav, .index-page header.hero, .index-page .filter-row, .index-page .stream-filter-row { display:none; }
+  .index-page .section { margin:0 0 38px; border:0; background:transparent; overflow:visible; }
+  .index-page .pr-section summary { padding:0 2px 14px; }
+  .index-page .pr-section summary h2 { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:15px; font-weight:800; }
+  .index-page .section-count { font-size:15px; font-weight:700; color:var(--muted); }
+  .index-page .post-list { border-top:0; gap:10px; }
+  .index-page .post-item { position:relative; grid-template-columns:1fr; min-height:112px; gap:8px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .index-page .post-item::before { content:""; position:absolute; left:24px; top:29px; width:10px; height:10px; border-radius:999px; background:#ff6257; box-shadow:0 0 14px rgba(255,98,87,.45); }
+  .index-page .post-item[data-state="merged"]::before { background:#8b5cf6; box-shadow:0 0 14px rgba(139,92,246,.42); }
+  .index-page .post-item[data-state="draft"]::before, .index-page .post-item[data-state="closed"]::before { background:var(--quiet); box-shadow:none; }
+  .index-page .post-item::after { content:"›"; position:absolute; right:24px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:42px; line-height:1; }
+  .index-page .post-item h3 { font-size:19px; font-weight:650; line-height:1.25; }
+  .index-page .pr-title-line { align-items:center; gap:10px; flex-wrap:nowrap; }
+  .index-page .pr-title-line a { flex:0 1 auto; }
+  .index-page .pr-file-chip { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; padding:2px 8px; background:var(--soft); color:var(--muted); font-size:13px; font-weight:650; }
+  .index-page .pr-subtitle { margin-top:2px; gap:8px; font-size:15px; overflow:hidden; white-space:nowrap; }
+  .index-page .post-item[data-kind="stream"] .stream-compact-button, .index-page .post-item[data-kind="stream"] .pr-subtitle-stream-separator { display:none; }
+  .index-page .pr-subtitle-file-separator, .index-page .pr-subtitle-file-count { display:none; }
+  .index-page .stream-compact-button { max-width:168px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid var(--line); border-radius:7px; padding:2px 7px; color:var(--muted); background:rgba(255,255,255,.03); }
+  .index-page .pr-row-side { display:flex; align-items:center; gap:14px; margin-top:8px; color:var(--muted); font-size:15px; }
+  .index-page .status-set { display:none; }
+  .index-page .pr-delta, .index-page .pr-updated { min-width:0; text-align:left; }
+  .index-page .pr-delta::after { content:"•"; margin-left:14px; color:var(--quiet); }
+  .index-page .section-pager { border-top:0; padding:14px 0 0; }
+  .command-palette { align-items:end; place-items:end center; padding:0; }
+  .command-panel { width:100%; max-height:min(82vh, 720px); border-radius:18px 18px 0 0; border-left:0; border-right:0; border-bottom:0; }
+  .command-panel-head { padding:16px; }
+  .command-panel h2 { font-size:24px; }
   .topbar { height:auto; min-height:92px; align-items:flex-start; flex-direction:column; }
   .layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }
   .file-pane-resizer { display:none; }
@@ -2367,6 +2543,55 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+
+@media (max-width: 760px) {
+  .index-shell{max-width:calc(100vw - 28px);padding:0 0 calc(92px + env(safe-area-inset-bottom));}
+  .index-page .wiki-topbar{padding:36px 2px 32px;border-bottom:0;min-height:0;}
+  .index-page .brand{font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.035em;}
+  .index-page .nav,.index-page header.hero,.index-page .filter-row,.index-page .stream-filter-row{display:none;}
+  .index-page .section{margin:0 0 18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);overflow:hidden;}
+  .index-page .pr-section summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:9px 14px;border-bottom:1px solid var(--line);list-style:none;}
+  
+  
+  
+  .index-page .pr-section summary h2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-transform:none;letter-spacing:-.01em;font-size:19px;font-weight:400;}
+  .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
+  .index-page .post-list{border-top:0;gap:0;}
+  
+  .index-page .post-item{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
+  .index-page .post-item:last-child{border-bottom:0;}
+  .index-page .post-item:hover{background:rgba(255,255,255,.035);}
+  
+  
+  
+  .index-page .post-item:before,.index-page .post-item:after{content:none;}
+  .index-page .pr-row-main{grid-column:1;grid-row:1 / span 2;min-width:0;gap:2px;}
+  .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
+  .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
+  .index-page .pr-title-line a{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;}
+  .index-page .pr-file-chip{display:none;}
+  .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
+  .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
+  .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
+  .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
+  .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
+  .index-page .mergeability-icon.mergeability-mergeable{border-color:#22c55e;background:#22c55e;color:#07110a;}
+  .index-page .mergeability-icon.mergeability-conflicts{border-color:#ef4444;color:#ef4444;background:transparent;}
+  .index-page .mergeability-icon:empty{display:inline-flex;}
+  .index-page .mergeability-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
+  .index-page .pr-delta{display:none;}
+  .index-page .pr-updated{grid-column:1;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .index-page .pr-mobile-files{display:inline;grid-column:2;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+}
+
+@media (max-width: 760px) {
+  .index-page .post-item::before, .index-page .post-item::after, .index-page .post-item:before, .index-page .post-item:after { content:none !important; display:none !important; }
+  .index-page .review-icon, .index-page .check-icon { display:none !important; }
+  .index-page .status-set { gap:0 !important; }
+  .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#22c55e !important; background:#22c55e !important; color:#07110a !important; }
+}
 }
 `;
 }
@@ -2490,7 +2715,7 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v2-mergeability';
+const cacheSchemaVersion = 'v4-mergeability-live';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
@@ -2499,243 +2724,144 @@ let activeFilter = 'all';
 let activeQuery = '';
 let activeStream = '';
 let showAllStreams = false;
-const sectionPages = {};
+const sectionLimits = {};
 const sectionsRoot = document.querySelector('[data-sections-root]');
-const searchToggle = document.querySelector('[data-search-toggle]');
-const searchRow = document.querySelector('.search-row');
-const searchInput = document.querySelector('#diff-cockpit-search');
 const streamRow = document.querySelector('[data-stream-filter-row]');
 const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
+const commandPalette = document.querySelector('[data-command-palette]');
+const commandBackdrop = document.querySelector('[data-command-backdrop]');
+const commandInput = document.querySelector('#diff-command-input');
+const commandResults = document.querySelector('[data-command-results]');
+const commandPages = document.querySelector('[data-command-pages]');
+const commandTriggers = Array.from(document.querySelectorAll('[data-command-trigger]'));
+const commandClose = document.querySelector('[data-command-close]');
+const pageCommandItems = Array.from(document.querySelectorAll('[data-command-page]'));
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && (pull.mergeability === 'conflicts' || pull.checkStatus === 'failure')) || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
-const queryMatchesPull = (pull) => {
-  const query = activeQuery.trim().toLowerCase();
-  if (!query) return true;
-  return [pull.title, pull.headRef, pull.baseRef, pull.author, String(pull.number), pull.kind, pull.associatedStream].some((value) => String(value || '').toLowerCase().includes(query));
-};
-function visiblePulls() {
-  return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull) && (!activeStream || pull.associatedStream === activeStream));
-}
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const queryMatchesPull = (pull) => !activeQuery.trim() || scorePullRequestSearchValue(pull, activeQuery) > 0;
+function visiblePulls() { return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull) && (!activeStream || pull.associatedStream === activeStream)); }
 function groupSections(source) {
-  const sections = [
+  return [
     { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream' && (showAllStreams || pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'recently-merged', title: 'Merging and recently merged', pulls: source.filter((pull) => pull.lifecycleStatus === 'merged') },
     { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
     { id: 'closed', title: 'Closed', pulls: source.filter((pull) => pull.lifecycleStatus === 'closed') },
-  ];
-  return sections.filter((section) => section.pulls.length > 0);
+  ].filter((section) => section.pulls.length > 0);
 }
+function normalizeSearchValue(value) { return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+function splitSearchTokens(value) { return String(value || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean); }
+function isSearchSubsequence(needle, haystack) { let index = 0; for (const char of needle) { index = haystack.indexOf(char, index); if (index === -1) return false; index += 1; } return Boolean(needle); }
+function scoreSearchValue(value, rawQuery, compactQuery, tokens, weight) {
+  if (!value) return 0;
+  const lowerValue = String(value).toLowerCase();
+  const compactValue = normalizeSearchValue(value);
+  const fieldTokens = splitSearchTokens(value);
+  let score = 0;
+  if (rawQuery && lowerValue.includes(rawQuery)) score += 20 * weight;
+  if (compactQuery && compactValue.includes(compactQuery)) score += 14 * weight;
+  for (const token of tokens) {
+    if (fieldTokens.some((fieldToken) => fieldToken.startsWith(token))) score += 5 * weight;
+    else if (compactValue.includes(token)) score += 2 * weight;
+    else if (isSearchSubsequence(token, compactValue)) score += weight;
+  }
+  if (compactQuery && isSearchSubsequence(compactQuery, compactValue)) score += weight;
+  return score;
+}
+function scorePullRequestSearchValue(pull, query) {
+  const rawQuery = String(query || '').trim().toLowerCase();
+  const compactQuery = normalizeSearchValue(rawQuery);
+  const tokens = splitSearchTokens(rawQuery);
+  if (!rawQuery || (!compactQuery && !tokens.length)) return 1;
+  return [
+    { value: pull.title, weight: 10 }, { value: pull.headRef, weight: 8 }, { value: pull.associatedStream, weight: 7 },
+    { value: repoLabel, weight: 6 }, { value: String(pull.number || ''), weight: 6 }, { value: pull.baseRef, weight: 4 }, { value: pull.kind, weight: 3 },
+  ].reduce((score, field) => score + scoreSearchValue(field.value, rawQuery, compactQuery, tokens, field.weight), 0);
+}
+function mergeabilityIcon(status) { if (status === 'mergeable') return '✓'; if (status === 'conflicts') return '×'; if (status === 'merged') return '◆'; if (status === 'draft') return '◌'; if (status === 'closed') return '○'; return ''; }
+function reviewIcon(status) { if (status === 'approved') return '✓'; if (status === 'changes_requested') return '×'; if (status === 'commented') return '◌'; if (status === 'none') return '○'; return ''; }
+function checkIcon(status) { if (status === 'success') return '✓'; if (status === 'failure') return '×'; if (status === 'pending') return '◌'; return ''; }
+function formatDelta(pull) { return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString(); }
+function formatFileCount(count) { const value = Number(count || 0); const label = value === 1 ? 'file' : 'files'; return value.toLocaleString() + ' ' + label; }
+function relativeTime(value) { const date = new Date(value); if (Number.isNaN(date.getTime())) return 'live'; const seconds = Math.max(1, Math.round((Date.now() - date.getTime()) / 1000)); if (seconds < 60) return seconds + 's'; const minutes = Math.round(seconds / 60); if (minutes < 60) return minutes + 'm'; const hours = Math.round(minutes / 60); return hours < 48 ? hours + 'h' : Math.round(hours / 24) + 'd'; }
 function renderCard(pull) {
   const route = routePrefix + pull.number;
-  const stream = pull.associatedStream || 'No stream';
+  const stream = pull.associatedStream || pull.baseRef || 'No stream';
+  const fileCount = formatFileCount(pull.changedFiles);
+  const mobileMeta = '#' + pull.number + ' ' + stream;
+  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
-    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta">' + escapeText(pull.author) + ' · #' + escapeText(pull.number) + '</span></h3>' +
-    '<p class="pr-row-meta-line"><button class="stream-chip" type="button" data-stream-filter="' + escapeText(stream) + '">' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + Number(pull.changedFiles || 0).toLocaleString() + ' files</span><span>' + relativeTime(pull.updatedAt) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="pr-delta">' + formatDelta(pull) + '</span></div>' +
-  '</article>';
+    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
+    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
+    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
 }
-function renderSection(section, index) {
-  const pageCount = Math.max(1, Math.ceil(section.pulls.length / sectionPageSize));
-  const current = Math.min(sectionPages[section.id] || 0, pageCount - 1);
-  sectionPages[section.id] = current;
-  const visible = section.pulls.slice(current * sectionPageSize, current * sectionPageSize + sectionPageSize);
-  const counter = section.id === 'streams'
-    ? '<button class="section-count" type="button" data-toggle-streams aria-pressed="' + String(showAllStreams) + '" title="' + (showAllStreams ? 'Show open streams only' : 'Show all streams') + '">' + section.pulls.length + '</button>'
-    : '<span class="section-count">' + section.pulls.length + '</span>';
-  const pager = pageCount > 1 ? '<div class="section-pager"><button class="page-button" type="button" data-page-prev="' + section.id + '" ' + (current === 0 ? 'disabled' : '') + '>←</button><span class="page-status">' + (current + 1) + ' / ' + pageCount + '</span><button class="page-button" type="button" data-page-next="' + section.id + '" ' + (current + 1 >= pageCount ? 'disabled' : '') + '>→</button></div>' : '';
-  return '<details class="section pr-section" data-section-id="' + section.id + '" ' + (index < 2 ? 'open' : '') + '><summary><h2>' + escapeText(section.title) + '</h2>' + counter + '</summary><div class="post-list">' + visible.map(renderCard).join('') + '</div>' + pager + '</details>';
+
+function renderSection(section) {
+  const currentLimit = Math.min(section.pulls.length, sectionLimits[section.id] || sectionPageSize);
+  sectionLimits[section.id] = currentLimit;
+  const visible = section.pulls.slice(0, currentLimit);
+  const counter = section.id === 'streams' ? '<button class="section-count" type="button" data-toggle-streams aria-pressed="' + String(showAllStreams) + '" title="' + (showAllStreams ? 'Show open streams only' : 'Show all streams') + '">' + section.pulls.length + '</button>' : '<span class="section-count">' + section.pulls.length + '</span>';
+  const pager = currentLimit < section.pulls.length ? '<div class="section-pager"><button class="load-more-button" type="button" data-load-more="' + section.id + '">Load more</button><span class="page-status">Showing ' + currentLimit + ' of ' + section.pulls.length + '</span></div>' : '';
+  return '<details class="section pr-section" open data-section-id="' + section.id + '"><summary><h2>' + escapeText(section.title) + '</h2>' + counter + '</summary><div class="post-list">' + visible.map(renderCard).join('') + '</div>' + pager + '</details>';
 }
+function resetSectionLimits() { for (const key of Object.keys(sectionLimits)) delete sectionLimits[key]; }
 function renderSections() {
-  const visible = visiblePulls();
-  const sections = groupSections(visible);
+  const sections = groupSections(visiblePulls());
   document.body.dataset.activeStream = activeStream;
   streamRow.hidden = !activeStream;
   streamLabel.textContent = activeStream || '';
-  sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, search, or stream.</p></section>';
-  document.querySelectorAll('[data-pr-route]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      openPull(link.getAttribute('data-pr-route'));
-    });
-  });
-  document.querySelectorAll('[data-stream-filter]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      activeStream = button.getAttribute('data-stream-filter') || '';
-      resetSectionPages();
-      renderSections();
-    });
-  });
-  document.querySelectorAll('[data-toggle-streams]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      showAllStreams = !showAllStreams;
-      sectionPages.streams = 0;
-      renderSections();
-    });
-  });
-  document.querySelectorAll('[data-page-prev]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-page-prev');
-      sectionPages[id] = Math.max(0, (sectionPages[id] || 0) - 1);
-      renderSections();
-    });
-  });
-  document.querySelectorAll('[data-page-next]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-page-next');
-      sectionPages[id] = (sectionPages[id] || 0) + 1;
-      renderSections();
-    });
-  });
+  sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, command search, or stream.</p></section>';
+  document.querySelectorAll('[data-pr-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); openPull(link.getAttribute('data-pr-route')); }));
+  document.querySelectorAll('[data-stream-filter]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); activeStream = button.getAttribute('data-stream-filter') || ''; resetSectionLimits(); renderSections(); }));
+  document.querySelectorAll('[data-toggle-streams]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); showAllStreams = !showAllStreams; sectionLimits.streams = sectionPageSize; renderSections(); }));
+  document.querySelectorAll('[data-load-more]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-load-more'); sectionLimits[id] = (sectionLimits[id] || sectionPageSize) + sectionPageSize; renderSections(); }));
+  renderCommandResults();
 }
-function resetSectionPages() {
-  for (const key of Object.keys(sectionPages)) delete sectionPages[key];
+function renderCommandResults() {
+  if (!commandResults) return;
+  const query = commandInput ? commandInput.value.trim() : '';
+  const scoredPulls = pulls.map((pull) => ({ pull, score: scorePullRequestSearchValue(pull, query) })).filter((item) => !query || item.score > 0).sort((left, right) => right.score - left.score || new Date(right.pull.updatedAt).getTime() - new Date(left.pull.updatedAt).getTime()).slice(0, 8);
+  commandResults.innerHTML = scoredPulls.length ? scoredPulls.map(({ pull }) => { const route = routePrefix + pull.number; const stream = pull.associatedStream || pull.baseRef || 'No stream'; return '<button class="command-item command-pr-item" type="button" data-command-route="' + escapeText(route) + '"><span class="command-key">#' + escapeText(pull.number) + '</span><span><strong>' + escapeText(pull.title) + '</strong><small>' + escapeText(stream + ' • ' + repoLabel + ' #' + pull.number) + '</small></span></button>'; }).join('') : '<div class="command-empty">No PRs match this command search.</div>';
 }
-function mergeabilityIcon(status) {
-  if (status === 'mergeable') return '✓';
-  if (status === 'conflicts') return '×';
-  if (status === 'merged') return '◆';
-  if (status === 'draft') return '◌';
-  if (status === 'closed') return '○';
-  return '?';
+function filterCommandPages() { const query = commandInput ? commandInput.value.trim() : ''; pageCommandItems.forEach((item) => { const label = item.getAttribute('data-command-label') || item.textContent || ''; item.hidden = Boolean(query) && scoreSearchValue(label, query.toLowerCase(), normalizeSearchValue(query), splitSearchTokens(query), 1) === 0; }); }
+function openCommandPalette() { commandPalette.hidden = false; commandBackdrop.hidden = false; document.body.dataset.commandPaletteState = 'open'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'true')); renderCommandResults(); filterCommandPages(); window.setTimeout(() => commandInput && commandInput.focus(), 0); }
+function closeCommandPalette() { commandPalette.hidden = true; commandBackdrop.hidden = true; document.body.dataset.commandPaletteState = 'closed'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false')); }
+function updateActiveFilterButtons(filter) { document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === filter)); }
+function runPageCommand(button) { const filter = button.getAttribute('data-command-filter'); const url = button.getAttribute('data-command-url') || '#pull-requests'; if (filter) { activeFilter = filter; updateActiveFilterButtons(filter); resetSectionLimits(); renderSections(); } closeCommandPalette(); if (url.startsWith('#')) { const sectionId = url.slice(1); const target = document.querySelector('[data-section-id="' + sectionId + '"]') || document.querySelector(url); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } else window.location.href = url; }
+function readCachedIndex() { try { const cached = localStorage.getItem(cacheKey); return cached ? JSON.parse(cached) : null; } catch { localStorage.removeItem(cacheKey); return null; } }
+function mergePullWithCache(pull, cachedPull) { if (!cachedPull) return pull; return { ...cachedPull, ...pull, additions: Number(pull.additions || 0) || Number(cachedPull.additions || 0), deletions: Number(pull.deletions || 0) || Number(cachedPull.deletions || 0), changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0), checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus, reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus, mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability }; }
+function mergeIndexWithCache(data, cached) { if (!cached || !Array.isArray(cached.pulls) || !Array.isArray(data.pulls)) return data; const cachedByNumber = new Map(cached.pulls.map((pull) => [pull.number, pull])); return { ...data, pulls: data.pulls.map((pull) => mergePullWithCache(pull, cachedByNumber.get(pull.number))) }; }
+function applyIndexData(data) { pulls = Array.isArray(data.pulls) ? data.pulls : []; resetSectionLimits(); renderSections(); }
+function clearStaleIndexCaches() { try { for (let index = localStorage.length - 1; index >= 0; index -= 1) { const key = localStorage.key(index); if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) localStorage.removeItem(key); } } catch { } }
+function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedIndex(); if (cached) applyIndexData(cached); return cached; }
+let lastIndexLoadAt = 0;
+let indexLoadInFlight = null;
+function loadIndex(options = {}) {
+  const cached = options.useCache === false ? null : loadCachedIndex();
+  if (indexLoadInFlight) return indexLoadInFlight;
+  lastIndexLoadAt = Date.now();
+  indexLoadInFlight = fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); })
+    .then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); return merged; }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+    .finally(() => { indexLoadInFlight = null; });
+  return indexLoadInFlight;
 }
-function reviewIcon(status) {
-  if (status === 'approved') return '✓';
-  if (status === 'changes_requested') return '×';
-  if (status === 'commented') return '◌';
-  if (status === 'none') return '○';
-  return '?';
-}
-function checkIcon(status) {
-  if (status === 'success') return '✓';
-  if (status === 'failure') return '×';
-  if (status === 'pending') return '◌';
-  return '?';
-}
-function formatDelta(pull) {
-  return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString();
-}
-function relativeTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'live';
-  const seconds = Math.max(1, Math.round((Date.now() - date.getTime()) / 1000));
-  if (seconds < 60) return seconds + 's';
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return minutes + 'm';
-  const hours = Math.round(minutes / 60);
-  if (hours < 48) return hours + 'h';
-  return Math.round(hours / 24) + 'd';
-}
-function readCachedIndex() {
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    return cached ? JSON.parse(cached) : null;
-  } catch {
-    localStorage.removeItem(cacheKey);
-    return null;
-  }
-}
-function mergePullWithCache(pull, cachedPull) {
-  if (!cachedPull) return pull;
-  return {
-    ...cachedPull,
-    ...pull,
-    additions: Number(pull.additions || 0) || Number(cachedPull.additions || 0),
-    deletions: Number(pull.deletions || 0) || Number(cachedPull.deletions || 0),
-    changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0),
-    checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus,
-    reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus,
-    mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability,
-  };
-}
-function mergeIndexWithCache(data, cached) {
-  if (!cached || !Array.isArray(cached.pulls) || !Array.isArray(data.pulls)) return data;
-  const cachedByNumber = new Map(cached.pulls.map((pull) => [pull.number, pull]));
-  return { ...data, pulls: data.pulls.map((pull) => mergePullWithCache(pull, cachedByNumber.get(pull.number))) };
-}
-function applyIndexData(data) {
-  pulls = Array.isArray(data.pulls) ? data.pulls : [];
-  resetSectionPages();
-  renderSections();
-}
-function clearStaleIndexCaches() {
-  try {
-    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
-      const key = localStorage.key(index);
-      if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) {
-        localStorage.removeItem(key);
-      }
-    }
-  } catch {
-    // best-effort cleanup only
-  }
-}
-function loadCachedIndex() {
-  clearStaleIndexCaches();
-  const cached = readCachedIndex();
-  if (cached) applyIndexData(cached);
-  return cached;
-}
-function loadIndex() {
-  const cached = loadCachedIndex();
-  fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
-    .then((response) => {
-      if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
-      return response.json();
-    })
-    .then((data) => {
-      const merged = mergeIndexWithCache(data, cached);
-      localStorage.setItem(cacheKey, JSON.stringify(merged));
-      applyIndexData(merged);
-    }, (error) => {
-      if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
-    });
-}
-document.querySelectorAll('[data-filter]').forEach((button) => {
-  button.addEventListener('click', () => {
-    activeFilter = button.dataset.filter;
-    resetSectionPages();
-    document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-    renderSections();
-  });
-});
-clearStream.addEventListener('click', () => {
-  activeStream = '';
-  resetSectionPages();
-  renderSections();
-});
-searchToggle.addEventListener('click', () => {
-  const shouldOpen = searchRow.hidden;
-  searchRow.hidden = !shouldOpen;
-  searchToggle.setAttribute('aria-expanded', String(shouldOpen));
-  if (shouldOpen) searchInput.focus();
-  else {
-    searchInput.value = '';
-    activeQuery = '';
-    resetSectionPages();
-    renderSections();
-  }
-});
-searchInput.addEventListener('input', () => {
-  activeQuery = searchInput.value;
-  resetSectionPages();
-  window.clearTimeout(searchInput.dataset.timer);
-  searchInput.dataset.timer = String(window.setTimeout(renderSections, 120));
-});
-searchInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    searchInput.value = '';
-    activeQuery = '';
-    searchRow.hidden = true;
-    searchToggle.setAttribute('aria-expanded', 'false');
-    resetSectionPages();
-    renderSections();
-  }
-});
+function refreshIndexIfStale(minAgeMs = 10000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
+document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => { activeFilter = button.dataset.filter; resetSectionLimits(); updateActiveFilterButtons(activeFilter); renderSections(); }));
+clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLimits(); renderSections(); });
+commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
+if (commandClose) commandClose.addEventListener('click', closeCommandPalette);
+if (commandBackdrop) commandBackdrop.addEventListener('click', closeCommandPalette);
+if (commandInput) commandInput.addEventListener('input', () => { activeQuery = commandInput.value; resetSectionLimits(); filterCommandPages(); window.clearTimeout(commandInput.dataset.timer); commandInput.dataset.timer = String(window.setTimeout(renderSections, 80)); });
+if (commandResults) commandResults.addEventListener('click', (event) => { const button = event.target.closest('[data-command-route]'); if (button) openPull(button.getAttribute('data-command-route')); });
+if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
+if (commandInput) commandInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { const firstPr = commandResults && commandResults.querySelector('[data-command-route]'); const firstPage = commandPages && commandPages.querySelector('[data-command-page]:not([hidden])'); if (firstPr) openPull(firstPr.getAttribute('data-command-route')); else if (firstPage) runPageCommand(firstPage); } });
+document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
+window.addEventListener('focus', () => refreshIndexIfStale(5000));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
+document.addEventListener('pointerdown', () => refreshIndexIfStale(12000), { passive: true });
+window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
 }
