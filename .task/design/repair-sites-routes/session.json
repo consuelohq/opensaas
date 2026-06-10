@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ef441ece2a36",
+  "tmuxSession": "opensaas-design-repair-sites-routes-ef441ece",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/repair-sites-routes",
+  "branch": "task/design/repair-sites-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-repair-sites-routes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-repair-sites-routes",
+  "prNumber": 920,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/920",
+  "createdAt": "2026-06-10T03:04:44.239Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-repair-sites-routes/.task/design/repair-sites-routes/session.json"
+}

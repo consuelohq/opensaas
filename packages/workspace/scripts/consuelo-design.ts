@@ -46,13 +46,18 @@ const DIGITAL_EGUIDE_TEMPLATE_DIR = 'packages/consuelo-design/templates/digital-
 const DIGITAL_EGUIDE_READER_SHELL_PATH = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/reader-shell.md`;
 const DESIGN_ARCHIVE_ROOT = path.join(OPEN_DESIGN_ROOT, '.od/consuelo/archive');
 const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
-const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
+const DESIGN_ARCHIVE_ROOT_REDIRECT_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
+const DESIGN_ARCHIVE_OFFICE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'office', 'index.html');
+const DESIGN_ARCHIVE_INDEX_PATH = DESIGN_ARCHIVE_OFFICE_INDEX_PATH;
 const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
 const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
 const DESIGN_ARCHIVE_PAGEFIND_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'pagefind');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';
 const DESIGN_ARCHIVE_PATH = '/sites';
+const DESIGN_ARCHIVE_OFFICE_PATH = '/office';
+const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';
+const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
 const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://sites.consuelohq.com';
 const DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
@@ -1073,20 +1078,26 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
       writeArchiveIndex(payload);
     }
     const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const tracingTarget = `${archiveTarget}/trace-burn-intelligence`;
+    const diffsTarget = `${archiveTarget}/diffs`;
+    const launcherCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/', archiveTarget];
+    const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
     const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
-    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
-    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', tracingTarget];
+    const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', diffsTarget];
+    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     const legacyDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     if (args.dryRun) {
-      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [command, legacyCommand] });
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, tracingCommand, diffsCommand] });
       else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
     const result = await setArchiveServePaths(tailscaleBin, archiveTarget);
-    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
-    else if (!args.quiet) writeStdout(`design archive refreshed\nsites: ${url}\nsitesDirect: ${directUrl}\nlegacyWiki: ${legacyUrl}\nlegacyWikiDirect: ${legacyDirectUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
+    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
+    else if (!args.quiet) writeStdout(`design archive refreshed\nlauncher: ${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/\noffice: ${url}\nofficeDirect: ${directUrl}\nlegacyWiki: ${legacyUrl}\nlegacyWikiDirect: ${legacyDirectUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`failed to refresh Consuelo Sites archive: ${message}`);
@@ -1095,7 +1106,7 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
 
 async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
   try {
-    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_OFFICE_PATH}`, { cache: 'no-store' });
     if (!response.ok) return false;
     const html = await response.text();
     return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
@@ -1141,8 +1152,16 @@ async function ensureArchiveServer(ip: string): Promise<string> {
 async function setArchiveServePaths(tailscaleBin: string, target: string): Promise<{ stdout: string; stderr: string }> {
   let stdout = '';
   let stderr = '';
-  for (const archivePath of [DESIGN_ARCHIVE_PATH, DESIGN_ARCHIVE_LEGACY_PATH]) {
-    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, target], REPO_ROOT);
+  const routes = [
+    ['/', target],
+    [DESIGN_ARCHIVE_OFFICE_PATH, target],
+    [DESIGN_ARCHIVE_PATH, target],
+    [DESIGN_ARCHIVE_LEGACY_PATH, target],
+    ['/tracing', `${target}/trace-burn-intelligence`],
+    ['/diffs', `${target}/diffs`],
+  ] as const;
+  for (const [archivePath, routeTarget] of routes) {
+    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);
     stdout += result.stdout;
     stderr += result.stderr;
     if (result.exitCode !== 0) {
@@ -1157,24 +1176,87 @@ function writeArchiveServer(ip: string): void {
   const lines = [
     'const archiveRoot = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT) + ';',
     'const indexPath = ' + JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH) + ';',
+    'const rootRedirectPath = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT_REDIRECT_PATH) + ';',
     'const dataPath = ' + JSON.stringify(DESIGN_ARCHIVE_DATA_PATH) + ';',
     'const pagefindRoot = ' + JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT) + ';',
+    'const officeArchivePath = ' + JSON.stringify(DESIGN_ARCHIVE_OFFICE_PATH) + ';',
     'const archivePath = ' + JSON.stringify(DESIGN_ARCHIVE_PATH) + ';',
     'const legacyArchivePath = ' + JSON.stringify(DESIGN_ARCHIVE_LEGACY_PATH) + ';',
-    'const archivePaths = Array.from(new Set([archivePath, legacyArchivePath]));',
+    'const docsUrl = ' + JSON.stringify(DESIGN_DOCS_URL) + ';',
+    'const decisionInfrastructureUrl = ' + JSON.stringify(DESIGN_DECISION_INFRASTRUCTURE_URL) + ';',
+    'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
     'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
     'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
     'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
     'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
     'async function readPayload(){ try { return JSON.parse(await Bun.file(dataPath).text()); } catch { return { entries: [], pages: {} }; } }',
-    'async function readEntries(){ const data = await readPayload(); return Array.isArray(data.entries) ? data.entries : []; }',
-    'async function readPages(){ const data = await readPayload(); return data && data.pages && typeof data.pages === "object" ? data.pages : {}; }',
+    'async function readEntries(){ try { const data = await readPayload(); return Array.isArray(data.entries) ? data.entries : []; } catch { return []; } }',
+    'async function readPages(){ try { const data = await readPayload(); return data && data.pages && typeof data.pages === "object" ? data.pages : {}; } catch { return {}; } }',
     'async function proxyEntry(entry, request, suffix){ if (!entry || !entry.target) return null; if (!entry.target.startsWith("http://") && !entry.target.startsWith("https://")) return null; const target = new URL(entry.target); const requested = new URL(request.url); const base = target.pathname.endsWith("/") ? target.pathname.slice(0, -1) : target.pathname; const extra = suffix ? "/" + suffix.split("/").filter(Boolean).map(encodeURIComponent).join("/") : ""; target.pathname = base + extra; target.search = requested.search; return fetch(target, { method: request.method, headers: request.headers }); }',
     'function pagefindSuffix(pathname){ for (const base of archivePaths){ if (pathname.startsWith(base + "/pagefind/")) return pathname.slice((base + "/pagefind/").length); } if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
-    `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(version.path) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? page.path : archivePath) + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href=archivePath>Open Consuelo Sites</a></p></main></body></html>'; }`,
+    'function stripArtifactAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const base of archivePaths){ if (clean === base) return "/"; if (clean.startsWith(base + "/")) return clean.slice(base.length) || "/"; } return clean; }',
+    'function officePathFor(pathname){ const raw = String(pathname || "/"); const clean = raw.startsWith("/") ? raw : "/" + raw.replace(/^\\/+/, ""); return officeArchivePath + (clean === "/" ? "" : clean); }',
+    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; if (clean === "/tracing") return "/trace-burn-intelligence"; return pathname; }',
+    'async function proxyDiffsRoute(request){ const url = new URL(request.url); const clean = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (clean !== "/diffs" && !url.pathname.startsWith("/diffs/")) return null; const target = new URL("https://diffs.consuelohq.com"); target.pathname = clean === "/diffs" ? "/" : url.pathname.slice("/diffs".length); target.search = url.search; return fetch(target, { method: request.method, headers: request.headers }); }',
+    'function renderSitesLauncher(){ return ' + JSON.stringify(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>
+    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
+    main { padding: 28px 30px; max-width: 640px; }
+    h1, p { margin: 0; font: inherit; }
+    h1 { margin-bottom: 22px; text-transform: uppercase; }
+    .block { margin: 18px 0; }
+    .rule { margin: 18px 0; color: inherit; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 0; }
+    li::before { content: "- "; }
+    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Projects">
+      <p class="label">PROJECTS:</p>
+      <ul>
+        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
+        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
+        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
+        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>`) + '; }',
+    `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(officePathFor(version.path)) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? officePathFor(page.path) : officeArchivePath) + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href="' + safe(officeArchivePath) + '">Open Consuelo Sites</a></p></main></body></html>'; }`,
     'function entryForVersionRoute(pages, pathname){ const pageList = Object.values(pages || {}); for (const page of pageList){ if (!page || !page.path) continue; const base = page.path.endsWith("/") ? page.path.slice(0, -1) : page.path; const historyPath = base + "/versions"; if (pathname === historyPath || pathname === historyPath + "/") return { kind: "history", page }; if (pathname.startsWith(historyPath + "/")){ const parts = pathname.slice((historyPath + "/").length).split("/").filter(Boolean); const versionId = parts.shift(); const version = Array.isArray(page.versions) ? page.versions.find((item) => item && item.versionId === versionId) : null; if (version) return { kind: "version", page, version, suffix: parts.join("/") }; } } return null; }',
-    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/" || archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const pagefind = pagefindSuffix(url.pathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, url.pathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + "/")); if (entry){ const raw = url.pathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + url.pathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const diffs = await proxyDiffsRoute(request); if (diffs) return diffs; const routePathname = publicRouteAlias(url.pathname); const pagefind = pagefindSuffix(routePathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(routePathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
   ];
   writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
 }
@@ -1197,7 +1279,7 @@ function normalizeArchivePayload(parsed: Partial<DesignArchivePayload>): DesignA
         versionId,
         previousVersionId: null,
         title: entry.title,
-        url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${versionPath}`,
+        url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${officePathForServePath(versionPath)}`,
         directUrl: `${entry.directUrl.replace(/\/$/, '')}/versions/${versionId}`,
         path: versionPath,
         target: entry.target,
@@ -1283,8 +1365,21 @@ function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
   return relativePath.endsWith('/index.html') ? `/${relativePath}` : `/${relativePath}/index.html`;
 }
 
-function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+function rootPathForArchiveEntry(entry: DesignArchiveEntry): string {
   return entry.path.startsWith('/') ? entry.path : `/${entry.path}`;
+}
+
+function officePathForServePath(servePath: string): string {
+  const rootPath = servePath.startsWith('/') ? servePath : `/${servePath}`;
+  return `${DESIGN_ARCHIVE_OFFICE_PATH}${rootPath === '/' ? '' : rootPath}`;
+}
+
+function officePathForArchiveEntry(entry: DesignArchiveEntry): string {
+  return officePathForServePath(rootPathForArchiveEntry(entry));
+}
+
+function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+  return officePathForArchiveEntry(entry);
 }
 
 function renderArchiveIndex(payload: DesignArchivePayload): string {
@@ -1412,7 +1507,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 <body>
   <div class="shell">
     <div class="topbar" data-pagefind-ignore>
-      <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_PATH)}">Consuelo Sites</a>
+      <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>
       <nav class="nav" aria-label="Primary">
         <a href="#recently-updated">Recently Updated</a>
         <button class="search-button" type="button" data-palette-open aria-label="Open command palette">⌘K</button>
@@ -1420,7 +1515,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       </nav>
     </div>
     <header class="hero" data-pagefind-ignore>
-      <h1>Sites</h1>
+      <h1>Office</h1>
       <p class="lead">Private tailnet sites, guides, and published artifacts from Consuelo.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
@@ -1448,7 +1543,6 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     ${emptyState}
     <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date(payload.updatedAt).getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#recently-updated">Recently Updated</a><a href="${escapeHtml(DESIGN_ARCHIVE_LEGACY_PATH)}">Legacy wiki</a></div>
     </footer>
   </div>
   <div class="palette-backdrop" data-command-palette hidden data-pagefind-ignore>
@@ -1494,8 +1588,10 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     const normalizeUrl = (value) => {
       let normalized = String(value || '');
       try { normalized = new URL(normalized).pathname; } catch { /* keep relative path */ }
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}'.length);
       if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_PATH)}'.length);
       if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_LEGACY_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_LEGACY_PATH)}'.length);
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}'.length);
       while (normalized.startsWith('/')) normalized = normalized.slice(1);
       if (normalized.endsWith('/index.html')) normalized = normalized.slice(0, -'/index.html'.length);
       if (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
@@ -1572,7 +1668,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       if (pagefind) return Promise.resolve(pagefind);
       if (pagefindLoadStarted) return Promise.resolve(null);
       pagefindLoadStarted = true;
-      return import('${escapeHtml(DESIGN_ARCHIVE_PATH)}/pagefind/pagefind.js').then((module) => {
+      return import('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}/pagefind/pagefind.js').then((module) => {
         pagefind = module;
         return pagefind;
       }, () => null);
@@ -1653,7 +1749,9 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     });
 
     const baseCommands = [
-      { key: 'S', title: 'Sites', description: 'Open the Consuelo Sites archive.', kind: 'link', url: '${escapeHtml(DESIGN_ARCHIVE_PATH)}' },
+      { key: 'O', title: 'Office', description: 'Open the Office archive.', kind: 'link', url: '${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}' },
+      { key: 'D', title: 'Documentation', description: 'Open Consuelo docs.', kind: 'link', url: '${escapeHtml(DESIGN_DOCS_URL)}' },
+      { key: 'I', title: 'Software Is Becoming Decision Infrastructure', description: 'Open the decision-making under uncertainty essay.', kind: 'link', url: '${escapeHtml(DESIGN_DECISION_INFRASTRUCTURE_URL)}' },
       { key: 'R', title: 'Recently Updated', description: 'Jump to the recently updated list.', kind: 'jump', url: '#recently-updated' },
       { key: 'W', title: 'Website', description: 'Show website artifacts.', kind: 'filter', filter: 'website' },
       { key: 'G', title: 'Guides', description: 'Show guide artifacts.', kind: 'filter', filter: 'guide' },
@@ -1710,8 +1808,68 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 </body>
 </html>\n`;
 }
+function renderArchiveRootRedirect(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>
+    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
+    main { padding: 28px 30px; max-width: 640px; }
+    h1, p { margin: 0; font: inherit; }
+    h1 { margin-bottom: 22px; text-transform: uppercase; }
+    .block { margin: 18px 0; }
+    .rule { margin: 18px 0; color: inherit; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 0; }
+    li::before { content: "- "; }
+    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Projects">
+      <p class="label">PROJECTS:</p>
+      <ul>
+        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
+        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
+        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
+        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
 function writeArchiveIndex(payload: DesignArchivePayload): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  mkdirSync(path.dirname(DESIGN_ARCHIVE_INDEX_PATH), { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_ROOT_REDIRECT_PATH, renderArchiveRootRedirect());
   writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
 }
 
@@ -1742,7 +1900,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
       versionId,
       previousVersionId,
       title,
-      url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${versionPath}`,
+      url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${officePathForServePath(versionPath)}`,
       directUrl: archiveDirectUrlForPath(tailscaleSelf, versionPath),
       path: versionPath,
       target: versionTarget ?? archiveTarget,
@@ -1767,7 +1925,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
       pageId,
       title,
       url,
-      directUrl: archiveDirectUrlForPath(tailscaleSelf, servePath),
+      directUrl: archiveDirectUrlForPath(tailscaleSelf, officePathForServePath(servePath)),
       path: servePath,
       target: archiveTarget,
       sourceTarget,
@@ -1785,10 +1943,10 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     writeArchiveIndex(payload);
     await runPagefindIndex();
     const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
-    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}`;
-    const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const archiveResult = await setArchiveServePaths(tailscaleBin, wikiTarget);
-    return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
+    return { path: DESIGN_ARCHIVE_OFFICE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`failed to update Consuelo Sites archive: ${message}`);
@@ -1809,12 +1967,13 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
-    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${servePath}`;
-    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
+    const publicServePath = officePathForServePath(servePath);
+    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${publicServePath}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${publicServePath}`;
     const archivePlan = {
       path: DESIGN_ARCHIVE_PATH,
-      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}` : null,
-      directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}` : null,
+      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}` : null,
+      directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}` : null,
       target: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`,
     };
     const publishedAt = new Date();
@@ -2083,4 +2242,3 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
-

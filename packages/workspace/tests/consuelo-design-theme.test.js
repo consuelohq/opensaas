@@ -41,7 +41,7 @@ test('keeps design wiki page publishes versioned and rollback-safe', () => {
 });
 
 test('emits valid generated version-history server strings', () => {
-  expect(source).toContain(`'<li><a href="' + safe(version.path) + '">'`);
+  expect(source).toContain(`safe(officePathFor(version.path))`);
   expect(source).toContain(`data-version-count="' + versions.length + '"><main`);
   expect(source).toContain('char === ">" ? "&gt;" : "&quot;"');
 });
@@ -75,7 +75,7 @@ test('polishes design archive into the sites shell with filtering and command pa
     "https://sites.consuelohq.com",
     '<title>Consuelo Sites</title>',
     'Consuelo Sites',
-    '<h1>Sites</h1>',
+    '<h1>Office</h1>',
     'Private tailnet sites, guides, and published artifacts from Consuelo.',
     'data-filter="guide"',
     'data-filter="spec"',
@@ -98,7 +98,35 @@ test('polishes design archive into the sites shell with filtering and command pa
 
 test('generates archive server slash aliases without regex escaping drift', () => {
   expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
+  expect(source).toContain('archivePaths.includes(url.pathname)');
   expect(source).toContain('archivePaths.includes(cleanArchivePath)');
+});
+
+
+test('keeps public Sites root launcher and Office archive routes distinct', () => {
+  for (const marker of [
+    "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    'function officePathForArchiveEntry',
+    'function renderSitesLauncher',
+    'CONSUELO OS █',
+    'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
+    'PROJECTS:',
+    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
+    '[Tracing](/tracing)</a></li>',
+    '[Diffs](/diffs)</a></li>',
+    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    'WRITING:',
+    'Decision Making Under Uncertainty',
+    'const officeArchivePath = ',
+    'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
+    'function stripArtifactAlias',
+    'if (url.pathname === "/") return new Response(renderSitesLauncher()',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
 });
 
 
@@ -106,4 +134,44 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
   expect(source).toContain('const searchDataJson = JSON.stringify(searchEntries)');
   expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
   expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
+});
+
+test('keeps root launcher copy and Office archive chrome separated', () => {
+  for (const marker of [
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    'CONSUELO OS █',
+    'PROJECTS:',
+    'WRITING:',
+    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
+    '[Tracing](/tracing)</a></li>',
+    '[Diffs](/diffs)</a></li>',
+    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    'Decision Making Under Uncertainty',
+    '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('Legacy wiki</a></div>');
+});
+
+test('keeps launcher routes local and theme-aware', () => {
+  for (const marker of [
+    'color-scheme: light dark',
+    'background: Canvas',
+    'color: CanvasText',
+    'color: LinkText',
+    'function publicRouteAlias',
+    'if (clean === "/tracing") return "/trace-burn-intelligence";',
+    'function proxyDiffsRoute',
+    'https://diffs.consuelohq.com',
+    "['/diffs', `${target}/diffs`]",
+    'const routePathname = publicRouteAlias(url.pathname);',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('/writing/on-rendering-diffs');
+  expect(source).not.toContain(':root { color-scheme: dark; background');
+  expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });

@@ -161,7 +161,7 @@ describe('createGithubPullRequestIndexLoader', () => {
 });
 
 describe('createGithubPullRequestLoader', () => {
-  test('fetches live GitHub PR metadata, files, review comments, and stream commits', async () => {
+  test('fetches live GitHub PR metadata, files, review comments, and commits', async () => {
     const calls: string[] = [];
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
@@ -196,6 +196,13 @@ describe('createGithubPullRequestLoader', () => {
 
       if (url.endsWith('/pulls/708/files?per_page=100&page=2')) {
         return Response.json([]);
+      }
+
+      if (url.endsWith('/pulls/708/commits?per_page=100&page=1')) {
+        return Response.json([
+          { sha: 'prsha1', html_url: 'https://github.com/consuelohq/opensaas/commit/prsha1', commit: { message: 'feat(os): pr commit', author: { name: 'Ko', date: '2026-06-03T03:58:00Z' } }, author: { login: 'kokayi' } },
+          { sha: 'prsha2', html_url: 'https://github.com/consuelohq/opensaas/commit/prsha2', commit: { message: 'fix(os): second pr commit', author: { name: 'Ko', date: '2026-06-03T03:57:00Z' } }, author: { login: 'kokayi' } },
+        ]);
       }
 
       if (url.endsWith('/pulls/708/reviews?per_page=100&page=1')) {
@@ -275,6 +282,7 @@ describe('createGithubPullRequestLoader', () => {
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/commits?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=2');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/issues/708/comments?per_page=100&page=1');
@@ -292,6 +300,7 @@ describe('createGithubPullRequestLoader', () => {
       'github',
     ]);
     expect(result.comments[2]?.path).toBe('packages/diff-cockpit/src/index.ts');
+    expect(result.commits.map((commit) => commit.shortSha)).toEqual(['prsha1', 'prsha2']);
     expect(result.streamCommits).toEqual([
       {
         sha: 'abc123',
@@ -333,7 +342,7 @@ describe('createGithubPullRequestLoader', () => {
           base: { ref: 'stream/diff-cockpit', sha: 'def456' },
         });
       }
-      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?')) {
+      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?') || url.includes('/pulls/44/commits?')) {
         return Response.json([]);
       }
       throw new Error(`unexpected non-stream url ${url}`);
@@ -342,6 +351,7 @@ describe('createGithubPullRequestLoader', () => {
     const loader = createGithubPullRequestLoader({ fetcher });
     const result = await loader({ owner: 'consuelohq', repo: 'opensaas', number: 44 });
 
+    expect(result.commits).toEqual([]);
     expect(result.streamCommits).toEqual([]);
     expect(calls.some((url) => url.includes('/commits?sha='))).toBe(false);
   });
@@ -361,7 +371,7 @@ describe('createGithubPullRequestLoader', () => {
           base: { ref: 'main', sha: 'def456' },
         });
       }
-      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?')) {
+      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?') || url.includes('/pulls/12/commits?')) {
         return Response.json([]);
       }
       throw new Error(`unexpected empty url ${url}`);
@@ -554,6 +564,7 @@ describe('renderIndexPage', () => {
     expect(html).toContain('pr-subtitle');
     expect(html).toContain("stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount");
     expect(html).toContain('stream-compact-button');
+    expect(html).toContain('data-card-route');
     expect(html).not.toContain('pr-row-meta-line');
     expect(html).not.toContain("pull.author + ' · #'");
     expect(html).not.toContain("escapeText(pull.headRef) + ' → '");
@@ -592,15 +603,20 @@ describe('renderReviewPage', () => {
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
     expect(html).toContain('data-current-view="diff"');
-    expect(html).toContain('>Drawer</button>');
-    expect(html).toContain('<strong>drawer</strong>');
+    expect(html).toContain('>Panel</button>');
+    expect(html).toContain('<strong>panel</strong>');
     expect(html).toContain('id="mergeability-button"');
     expect(html).toContain('id="merge-pr-button"');
     expect(html).toContain('id="mergeability-popover"');
+    expect(html).toContain('id="mergeability-nav-button"');
+    expect(html).toContain('id="commit-nav-button"');
+    expect(html).not.toContain('>GitHub</a>');
+    expect(html).not.toContain('>Graphite</a>');
+    expect(html).not.toContain('>DiffsHub</a>');
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
     expect(html).toContain('id="mobile-files-toggle"');
-    expect(html).toContain('aria-label="Open files"');
+    expect(html).toContain('aria-label="Close files"');
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
     expect(html).toContain('@media (max-width: 760px)');
@@ -622,7 +638,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('height:calc(100dvh - 76px)');
     expect(html).toContain('height:calc(100dvh - 132px)');
     expect(script).toContain('renderLongDiffs();');
-    expect(script).toContain("event.key === 'd'");
+    expect(script).toContain("event.key === 'p'");
     expect(script).not.toContain("event.key === 'r'");
     expect(script).toContain("event.key === 'f'");
     expect(script).toContain("event.key === 'm'");
@@ -662,7 +678,7 @@ describe('renderReviewPage', () => {
     expect(script).toContain('mergePullRequest');
     expect(script).toContain("apiPath + '/merge'");
     expect(script).toContain('event.metaKey || event.ctrlKey');
-    expect(script).toContain("stateLabel === 'clean'");
+    expect(script).toContain("mergeabilityLabel");
     expect(script).toContain('Files to inspect before merging');
     expect(script).toContain('relativeCommitTime');
     expect(script).toContain('formatCommitDelta');
