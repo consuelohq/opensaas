@@ -2584,6 +2584,14 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-updated{grid-column:1;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
   .index-page .pr-mobile-files{display:inline;grid-column:2;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
 }
+
+@media (max-width: 760px) {
+  .index-page .post-item::before, .index-page .post-item::after, .index-page .post-item:before, .index-page .post-item:after { content:none !important; display:none !important; }
+  .index-page .review-icon, .index-page .check-icon { display:none !important; }
+  .index-page .status-set { gap:0 !important; }
+  .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#22c55e !important; background:#22c55e !important; color:#07110a !important; }
+}
 }
 `;
 }
