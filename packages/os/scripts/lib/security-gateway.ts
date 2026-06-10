@@ -4,7 +4,7 @@ import path from 'node:path';
 
 type JsonObject = Record<string, unknown>;
 
-type GatewaySecurityConfig = {
+export type GatewaySecurityConfig = {
   workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
@@ -14,7 +14,7 @@ type GatewaySecurityConfig = {
   publicRoutes: string[];
 };
 
-type AgentAppToken = {
+export type AgentAppToken = {
   tokenId: string;
   workspaceId: string;
   callerId: string;
@@ -31,7 +31,7 @@ type SignedGatewayRequest = {
   timestamp: string;
 };
 
-type VerificationResult =
+export type VerificationResult =
   | { ok: true; caller: { workspaceId: string; callerId: string; scopes: string[] } }
   | { ok: false; status: number; error: { code: string; message: string } };
 
@@ -137,9 +137,13 @@ function writeJsonSecure(filePath: string, value: unknown): void {
   fs.chmodSync(filePath, 0o600);
 }
 
-function readStoredAuth(config: GatewaySecurityConfig): StoredAuthConfig {
-  const raw = fs.readFileSync(config.generatedAuthPath, 'utf8');
+function readStoredAuthFile(filePath: string): StoredAuthConfig {
+  const raw = fs.readFileSync(filePath, 'utf8');
   return JSON.parse(raw) as StoredAuthConfig;
+}
+
+function readStoredAuth(config: GatewaySecurityConfig): StoredAuthConfig {
+  return readStoredAuthFile(config.generatedAuthPath);
 }
 
 function writeStoredAuth(config: GatewaySecurityConfig, stored: StoredAuthConfig): void {
@@ -207,34 +211,61 @@ export function createGatewaySecurityConfig(input: {
   workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
+  upstreamPort?: number;
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
-  const stored: StoredAuthConfig = {
-    version: 1,
-    kind: 'consuelo-generated',
-    workspaceId: input.workspaceId,
-    workspaceSlug: input.workspaceSlug,
-    workspaceHost: input.workspaceHost,
-    tokenIssuer: 'consuelo-os-gateway',
-    signingKeyId: `csg_${randomUUID()}`,
-    publicRoutes: [...PUBLIC_ROUTES],
-    tokens: {},
-    seenNonces: {},
-    createdAt: nowIso(),
-    updatedAt: nowIso(),
-  };
+  const existing = fs.existsSync(generatedAuthPath)
+    ? readStoredAuthFile(generatedAuthPath)
+    : null;
+  if (existing && existing.workspaceId !== input.workspaceId) {
+    throw new Error('existing generated auth belongs to a different workspace');
+  }
+  const stored: StoredAuthConfig = existing
+    ? {
+        ...existing,
+        workspaceSlug: input.workspaceSlug,
+        workspaceHost: input.workspaceHost,
+        tokenIssuer: existing.tokenIssuer || 'consuelo-os-gateway',
+        signingKeyId: existing.signingKeyId || `csg_${randomUUID()}`,
+        publicRoutes: [...PUBLIC_ROUTES],
+        tokens: existing.tokens ?? {},
+        seenNonces: existing.seenNonces ?? {},
+        updatedAt: nowIso(),
+      }
+    : {
+        version: 1,
+        kind: 'consuelo-generated',
+        workspaceId: input.workspaceId,
+        workspaceSlug: input.workspaceSlug,
+        workspaceHost: input.workspaceHost,
+        tokenIssuer: 'consuelo-os-gateway',
+        signingKeyId: `csg_${randomUUID()}`,
+        publicRoutes: [...PUBLIC_ROUTES],
+        tokens: {},
+        seenNonces: {},
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      };
   writeJsonSecure(generatedAuthPath, stored);
   fs.writeFileSync(
     caddyPathForHome(input.home),
     renderCaddyGatewayConfig({
       workspaceHost: input.workspaceHost,
-      upstream: { host: '127.0.0.1', port: 8850 },
+      upstream: { host: '127.0.0.1', port: input.upstreamPort ?? 8850 },
     }),
     { mode: 0o600 },
   );
   fs.chmodSync(caddyPathForHome(input.home), 0o600);
   return toPublicConfig(stored, generatedAuthPath);
+}
+
+export function loadGatewaySecurityConfig(input: { authConfigPath: string }): GatewaySecurityConfig {
+  const stored = readStoredAuthFile(input.authConfigPath);
+  if (stored.kind !== 'consuelo-generated') {
+    throw new Error('auth config is not Consuelo-generated');
+  }
+  return toPublicConfig(stored, input.authConfigPath);
 }
 
 export function issueAgentAppToken(input: {
@@ -338,10 +369,6 @@ export function verifyMachineRequest(input: {
   requiredScope: string;
   now: string;
 }): VerificationResult {
-  if (input.workspaceId !== input.config.workspaceId) {
-    return safeError(403, 'WORKSPACE_MISMATCH', 'Workspace identity does not match this gateway.');
-  }
-
   const stored = readStoredAuth(input.config);
   const tokenId = input.headers['x-consuelo-token-id'] ?? input.headers.authorization?.replace(/^Bearer\s+/i, '');
   const timestamp = input.headers['x-consuelo-timestamp'];
@@ -350,6 +377,10 @@ export function verifyMachineRequest(input: {
 
   if (!tokenId || !timestamp || !nonce || !signature) {
     return safeError(401, 'MISSING_SIGNATURE', 'Signed gateway headers are required.');
+  }
+
+  if (input.workspaceId !== input.config.workspaceId) {
+    return safeError(403, 'WORKSPACE_MISMATCH', 'Workspace identity does not match this gateway.');
   }
 
   const token = stored.tokens[tokenId];
@@ -364,6 +395,11 @@ export function verifyMachineRequest(input: {
   }
   if (Math.abs(nowTime - requestTime) > MAX_TIMESTAMP_SKEW_MS) {
     return safeError(401, 'EXPIRED_TIMESTAMP', 'Gateway timestamp is outside the allowed window.');
+  }
+
+  const expiresAt = Date.parse(token.expiresAt);
+  if (!Number.isFinite(expiresAt) || expiresAt <= nowTime) {
+    return safeError(401, 'TOKEN_EXPIRED', 'Gateway token has expired.');
   }
 
   if (stored.seenNonces[nonce]) {
@@ -496,3 +532,5 @@ export function recordGatewayAuditEvent(input: {
   fs.appendFileSync(logPath, `${JSON.stringify(safeEvent)}\n`, { mode: 0o600 });
   return { path: logPath, event: input.event };
 }
+
+

@@ -951,12 +951,15 @@ export function provisionLocalOs(
     }
   }
 
+  const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
+  config.port = gatewayPort;
   if (!dryRun) {
     const gatewayConfig = createGatewaySecurityConfig({
       home,
       workspaceId: 'local-consuelo-os',
       workspaceSlug: 'local',
       workspaceHost: 'local.consuelohq.com',
+      upstreamPort: gatewayPort,
     });
     config.security = {
       auth: {
@@ -1145,4 +1148,5 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
+
 
