@@ -129,6 +129,11 @@ const REQUIRED_DIRS = [
   'bin',
   'tmp',
 ] as const;
+
+const REQUIRED_GENERATED_SECURITY_FILES = [
+  'security/generated/auth.json',
+  'security/generated/Caddyfile',
+] as const;
 const DEFAULT_PORT = 8850;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -1045,6 +1050,17 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     checks.push({
       name: path.basename(requiredPath) || requiredPath,
       status: fs.existsSync(requiredPath) ? 'connected' : 'not_configured',
+      message: fs.existsSync(requiredPath)
+        ? `${requiredPath} exists`
+        : `${requiredPath} is missing`,
+    });
+  }
+
+  for (const requiredFile of REQUIRED_GENERATED_SECURITY_FILES) {
+    const requiredPath = path.join(resolvedHome, requiredFile);
+    checks.push({
+      name: `gateway:${path.basename(requiredPath)}`,
+      status: fs.existsSync(requiredPath) ? 'connected' : 'unhealthy',
       message: fs.existsSync(requiredPath)
         ? `${requiredPath} exists`
         : `${requiredPath} is missing`,

@@ -81,6 +81,11 @@ type StoredToken = AgentAppToken & {
   status: 'active' | 'rotated' | 'revoked';
 };
 
+type StoredNonce = {
+  tokenId: string;
+  seenAt: string;
+};
+
 type StoredAuthConfig = {
   version: 1;
   kind: 'consuelo-generated';
@@ -91,7 +96,7 @@ type StoredAuthConfig = {
   signingKeyId: string;
   publicRoutes: string[];
   tokens: Record<string, StoredToken>;
-  seenNonces: Record<string, string>;
+  seenNonces: Record<string, StoredNonce>;
   createdAt: string;
   updatedAt: string;
 };
@@ -145,6 +150,32 @@ function readStoredAuthFile(filePath: string): StoredAuthConfig {
 function readStoredAuth(config: GatewaySecurityConfig): StoredAuthConfig {
   return readStoredAuthFile(config.generatedAuthPath);
 }
+
+function normalizeSeenNonces(value: unknown, fallbackSeenAt: string): Record<string, StoredNonce> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const normalized: Record<string, StoredNonce> = {};
+  for (const [nonce, record] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof record === 'string') {
+      normalized[nonce] = { tokenId: record, seenAt: fallbackSeenAt };
+      continue;
+    }
+    if (!record || typeof record !== 'object' || Array.isArray(record)) continue;
+    const candidate = record as Partial<StoredNonce>;
+    if (typeof candidate.tokenId === 'string' && typeof candidate.seenAt === 'string') {
+      normalized[nonce] = { tokenId: candidate.tokenId, seenAt: candidate.seenAt };
+    }
+  }
+  return normalized;
+}
+
+function pruneSeenNonces(stored: StoredAuthConfig, nowTime: number): void {
+  const cutoffTime = nowTime - MAX_TIMESTAMP_SKEW_MS;
+  for (const [nonce, record] of Object.entries(stored.seenNonces)) {
+    const seenTime = Date.parse(record.seenAt);
+    if (!Number.isFinite(seenTime) || seenTime < cutoffTime) delete stored.seenNonces[nonce];
+  }
+}
+
 
 function writeStoredAuth(config: GatewaySecurityConfig, stored: StoredAuthConfig): void {
   writeJsonSecure(config.generatedAuthPath, { ...stored, updatedAt: nowIso() });
@@ -230,7 +261,7 @@ export function createGatewaySecurityConfig(input: {
         signingKeyId: existing.signingKeyId || `csg_${randomUUID()}`,
         publicRoutes: [...PUBLIC_ROUTES],
         tokens: existing.tokens ?? {},
-        seenNonces: existing.seenNonces ?? {},
+        seenNonces: normalizeSeenNonces(existing.seenNonces, existing.updatedAt ?? existing.createdAt ?? nowIso()),
         updatedAt: nowIso(),
       }
     : {
@@ -299,9 +330,12 @@ export function rotateAgentAppToken(input: {
 }): AgentAppToken {
   const stored = readStoredAuth(input.config);
   const existing = stored.tokens[input.token.tokenId];
-  if (existing) existing.status = 'rotated';
+  if (!existing) {
+    throw new Error('gateway token is not recognized');
+  }
+  existing.status = 'rotated';
   const rotated: StoredToken = {
-    ...input.token,
+    ...existing,
     tokenId: `tok_${randomUUID()}`,
     secret: randomSecret(),
     status: 'active',
@@ -402,6 +436,7 @@ export function verifyMachineRequest(input: {
     return safeError(401, 'TOKEN_EXPIRED', 'Gateway token has expired.');
   }
 
+  pruneSeenNonces(stored, nowTime);
   if (stored.seenNonces[nonce]) {
     return safeError(401, 'REPLAYED_NONCE', 'Gateway nonce has already been used.');
   }
@@ -423,7 +458,7 @@ export function verifyMachineRequest(input: {
     return safeError(403, 'MISSING_SCOPE', 'Gateway token does not grant the required scope.');
   }
 
-  stored.seenNonces[nonce] = tokenId;
+  stored.seenNonces[nonce] = { tokenId, seenAt: new Date(nowTime).toISOString() };
   writeStoredAuth(input.config, stored);
   return {
     ok: true,

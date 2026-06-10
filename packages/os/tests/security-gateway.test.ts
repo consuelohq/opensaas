@@ -856,7 +856,7 @@ describe('Consuelo OS public gateway security contract', () => {
 
     expect(reprovisioned.signingKeyId).toBe(before.signingKeyId);
     expect(after.signingKeyId).toBe(before.signingKeyId);
-    expect(after.seenNonces['idempotent-active-nonce']).toBe(activeToken.tokenId);
+    expect(after.seenNonces['idempotent-active-nonce']).toMatchObject({ tokenId: activeToken.tokenId });
     expect(after.tokens[revokedToken.tokenId]?.status).toBe('revoked');
     expect(after.tokens[rotatedToken.tokenId]?.status).toBe('rotated');
     expect(gateway.verifyMachineRequest({
@@ -968,5 +968,141 @@ describe('Consuelo OS public gateway security contract', () => {
       leakedNonce: false,
     });
   });
+
+  it('reports missing generated gateway artifacts in doctor checks', () => {
+    const result = readJsonFromBun<JsonObject>(`
+      const { rmSync } = await import('node:fs');
+      const { join } = await import('node:path');
+      const { provisionLocalOs, runDoctor } = await import('./scripts/lib/install-state.ts');
+      const home = process.env.CONSUELO_OS_HOME;
+      provisionLocalOs({ mode: 'local' });
+      rmSync(join(home, 'security', 'generated', 'auth.json'), { force: true });
+      rmSync(join(home, 'security', 'generated', 'Caddyfile'), { force: true });
+      const result = await runDoctor(home);
+      const checks = result.checks.filter((check) => check.message.includes('security/generated'));
+      process.stdout.write(JSON.stringify({ ok: result.ok, checks }));
+    `);
+
+    expect(result).toMatchObject({ ok: false });
+    expect(JSON.stringify(result)).toContain('security/generated/auth.json');
+    expect(JSON.stringify(result)).toContain('security/generated/Caddyfile');
+    expect(JSON.stringify(result)).toContain('unhealthy');
+  });
+
+  it('timestamps and prunes replay nonces outside the verification window', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace_nonce_prune',
+      workspaceSlug: 'nonce-prune',
+      workspaceHost: 'nonce-prune.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 3600,
+    });
+
+    const oldSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'old-pruned-nonce',
+    });
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      headers: oldSigned.headers,
+      workspaceId: config.workspaceId,
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:00.000Z',
+    })).toMatchObject({ ok: true });
+
+    const freshSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      timestamp: '2026-06-09T20:06:00.000Z',
+      nonce: 'fresh-kept-nonce',
+    });
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      headers: freshSigned.headers,
+      workspaceId: config.workspaceId,
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:06:00.000Z',
+    })).toMatchObject({ ok: true });
+
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
+      seenNonces: Record<string, unknown>;
+    };
+    expect(stored.seenNonces['old-pruned-nonce']).toBeUndefined();
+    expect(stored.seenNonces['fresh-kept-nonce']).toMatchObject({
+      tokenId: token.tokenId,
+      seenAt: '2026-06-09T20:06:00.000Z',
+    });
+  });
+
+  it('rotates tokens from persisted claims and rejects unknown source tokens', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace_rotate_persisted',
+      workspaceSlug: 'rotate-persisted',
+      workspaceHost: 'rotate-persisted.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'trusted-caller',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 3600,
+    });
+
+    const forgedInput = {
+      ...token,
+      callerId: 'attacker-caller',
+      appId: 'attacker-app',
+      scopes: ['tool:task.push:dangerous'],
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    };
+    const rotated = await gateway.rotateAgentAppToken({ config, token: forgedInput });
+    expect(rotated).toMatchObject({
+      workspaceId: token.workspaceId,
+      callerId: token.callerId,
+      appId: token.appId,
+      scopes: token.scopes,
+      expiresAt: token.expiresAt,
+    });
+    expect(rotated.secret).not.toBe(token.secret);
+    expect(() => gateway.rotateAgentAppToken({
+      config,
+      token: { ...token, tokenId: 'tok_missing_source' },
+    })).toThrow(/not recognized/i);
+  });
+
+  it('fails closed on malformed unauthenticated /call bodies before JSON parsing', () => {
+    const response = readJsonFromBun<SubprocessHttpResult>(serverRequestEval('/call', {
+      method: 'POST',
+      body: '{',
+    }));
+
+    expect(response.status).toBe(401);
+    expect(response.text).toMatch(/CONSUELO_AUTH_REQUIRED|MISSING_SIGNATURE|AUTH_CONFIG_REQUIRED/i);
+    expect(response.text).not.toMatch(/INVALID_REQUEST/i);
+  });
 });
+
 
