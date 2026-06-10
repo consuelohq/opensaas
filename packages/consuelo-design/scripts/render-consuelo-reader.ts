@@ -12,7 +12,7 @@ function writeStderr(value: string): void {
   process.stderr.write(`${value}\n`);
 }
 
-export const READER_SHELL_VERSION = '1.2.0';
+export const READER_SHELL_VERSION = '1.3.0';
 export const READER_SHELL_TEMPLATES = ['spec', 'plan', 'guide'] as const;
 export type ReaderTemplate = typeof READER_SHELL_TEMPLATES[number];
 export type LedgerStatus = 'done' | 'current' | 'todo' | 'blocked';
@@ -102,6 +102,15 @@ function escapeHtml(value: unknown): string {
   })[char] ?? char);
 }
 
+function escapeAttribute(value: unknown): string {
+  return String(value ?? '').replace(/[&<"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[char] ?? char);
+}
+
 function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
 }
@@ -132,6 +141,16 @@ function validateConsueloReaderContent(content: ConsueloReaderContent): void {
 function navDisplayTitle(value: string): string {
   const shortTitle = value.split(/\s+[—–-]\s+/)[0]?.trim();
   return shortTitle || value;
+}
+
+function componentAnchor(component: ReaderComponent): string {
+  return slug(component.title);
+}
+
+function sectionNavigationItems(content: ConsueloReaderContent): ReaderLink[] {
+  const sectionLinks = content.sections.map((section) => ({ label: section.title, href: `#${section.id}` }));
+  const componentLinks = content.components?.map((component) => ({ label: component.title, href: `#${componentAnchor(component)}` })) ?? [];
+  return [...sectionLinks, ...componentLinks, { label: content.ledgerTitle ?? 'Task', href: '#ship-checklist' }];
 }
 
 function defaultMap(content: ConsueloReaderContent): ReaderLink[] {
@@ -227,8 +246,27 @@ function renderSection(section: ReaderSection): string {
   return `<section id="${escapeHtml(section.id)}" data-reader-section><div class="container"><p class="eyebrow">${escapeHtml(section.eyebrow ?? section.title)}</p><h2>${escapeHtml(section.title)}</h2><div class="${contentClass}">${content}</div></div></section>`;
 }
 
+function ledgerStatusMark(status: LedgerStatus): string {
+  if (status === 'done') return 'x';
+  if (status === 'current') return '>';
+  if (status === 'blocked') return '!';
+  return ' ';
+}
+
+function ledgerGroupMarkdown(group: ReaderLedgerGroup): string {
+  const lines = [
+    `## ${group.title}`,
+    group.tag ? `_${group.tag}_` : '',
+    ...group.items.map((item) => `- [${ledgerStatusMark(item.status)}] ${item.text}`),
+  ].filter(Boolean);
+  return lines.join('\n');
+}
+
 function renderLedgerGroups(groups: ReaderLedgerGroup[]): string {
-  return groups.map((group) => `<article class="checklist-group"><h3>${escapeHtml(group.title)}${group.tag ? ` <span>${escapeHtml(group.tag)}</span>` : ''}</h3><ul class="checklist-items">${group.items.map((item) => `<li><i class="check-box ${escapeHtml(item.status)}">${item.status === 'done' ? '✓' : item.status === 'current' ? '•' : ''}</i><span>${escapeHtml(item.text)}</span></li>`).join('')}</ul></article>`).join('');
+  return groups.map((group) => {
+    const markdown = ledgerGroupMarkdown(group);
+    return `<article class="checklist-group"><div class="checklist-heading"><h3>${escapeHtml(group.title)}${group.tag ? ` <span>${escapeHtml(group.tag)}</span>` : ''}</h3><button class="task-copy-button" type="button" data-copy-markdown="${escapeAttribute(markdown)}" aria-label="Copy task as Markdown">Copy</button></div><ul class="checklist-items">${group.items.map((item) => `<li><i class="check-box ${escapeHtml(item.status)}">${item.status === 'done' ? '✓' : item.status === 'current' ? '•' : ''}</i><span>${escapeHtml(item.text)}</span></li>`).join('')}</ul></article>`;
+  }).join('');
 }
 
 function renderLedger(content: ConsueloReaderContent): string {
@@ -257,15 +295,19 @@ function renderTypedComponent(component: ReaderComponent): string {
   return _exhaustive;
 }
 
-function sectionRailLinks(map: ReaderLink[]): string {
-  const links = [{ label: 'Hero', href: '#top' }, ...map].slice(0, 9);
-  return links.map((item, index) => `<button type="button" data-target="${escapeHtml(item.href)}" aria-label="Go to ${escapeHtml(item.label)}"><span>${String(index + 1).padStart(2, '0')}</span></button>`).join('');
+function sectionRailLinks(items: ReaderLink[]): string {
+  return items.map((item, index) => `<button type="button" class="reader-section-line" data-target="${escapeHtml(item.href)}" data-reader-section-target="${escapeHtml(item.href)}" data-reader-section-title="${escapeHtml(item.label)}" aria-label="Go to ${escapeHtml(item.label)}"><i aria-hidden="true"></i><span>${escapeHtml(item.label)}</span><b>${String(index + 1).padStart(2, '0')}</b></button>`).join('');
+}
+
+function sectionDrawerLinks(items: ReaderLink[]): string {
+  return items.map((item, index) => `<button type="button" class="reader-section-drawer-row" data-target="${escapeHtml(item.href)}" data-reader-section-target="${escapeHtml(item.href)}" data-reader-section-title="${escapeHtml(item.label)}"><i>${String(index + 1).padStart(2, '0')}</i><span>${escapeHtml(item.label)}</span></button>`).join('');
 }
 
 export function renderConsueloReader(content: ConsueloReaderContent): string {
   validateConsueloReaderContent(content);
   const map = defaultMap(content);
   const navLinks = map.filter((item) => item.label.toLowerCase() !== 'task').slice(0, 4);
+  const sectionLinks = sectionNavigationItems(content);
   const taskHref = map.find((item) => item.label.toLowerCase() === 'task')?.href ?? '#ship-checklist';
   const brandTitle = navDisplayTitle(content.title);
   const shellId = `${content.template}:${slug(content.title)}`;
@@ -293,7 +335,8 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
     * { box-sizing:border-box; } html { min-height:100%; scroll-behavior:smooth; background:var(--paper); } body { min-height:100dvh; margin:0; font-family:var(--sans); color:var(--ink); background:var(--paper); font-size:16px; line-height:1.5; } a { color:inherit; } p, li { color:color-mix(in srgb, var(--ink) 76%, var(--muted)); }
     #smooth-wrapper { overflow:hidden; min-height:100vh; } #smooth-content { min-height:100vh; } .container { width:min(1120px, calc(100vw - 44px)); margin:0 auto; }
     .reader-nav { position:fixed; z-index:50; top:16px; left:0; right:0; display:flex; justify-content:center; pointer-events:none; } .reader-nav-shell { pointer-events:auto; width:min(820px, calc(100vw - 24px)); min-height:44px; display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:18px; align-items:center; padding:6px 8px 6px 16px; border:1px solid var(--line); border-radius:999px; background:rgba(250,247,242,.88); box-shadow:0 10px 30px rgba(28,26,23,.08); backdrop-filter:blur(16px); } .reader-brand { min-width:0; overflow:hidden; text-overflow:ellipsis; font:600 13px/1 var(--serif); text-decoration:none; white-space:nowrap; } .reader-links { display:flex; justify-content:flex-end; justify-self:end; gap:clamp(12px,2vw,22px); overflow:hidden; white-space:nowrap; } .reader-links a { color:var(--muted); font:600 12px/1 var(--sans); text-decoration:none; } .reader-nav-task { display:inline-flex; align-items:center; justify-content:center; min-width:76px; height:34px; padding:0 18px; border-radius:999px; border:1px solid color-mix(in srgb, var(--terracotta) 82%, var(--ink)); background:var(--terracotta); color:#211b17; font:700 13px/1 var(--sans); text-decoration:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); }
-    .reader-section-rail { position:fixed; z-index:45; right:18px; top:50%; transform:translateY(-50%); display:grid; gap:8px; } .reader-section-rail button { width:9px; height:9px; padding:0; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:transparent; cursor:pointer; transition:transform .18s ease, background .18s ease, border-color .18s ease; } .reader-section-rail button.active { transform:scale(1.45); background:var(--terracotta); border-color:var(--terracotta); } .reader-section-rail span { display:none; }
+    .reader-section-rail { position:fixed; z-index:45; right:18px; top:50%; transform:translateY(-50%); display:grid; gap:8px; padding:8px 0; } .reader-section-line { width:34px; min-height:12px; display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center; padding:3px 0; border:0; background:transparent; color:transparent; cursor:pointer; -webkit-tap-highlight-color:transparent; } .reader-section-line i { display:block; height:2px; border-radius:999px; background:var(--line-strong); transition:transform .18s ease, background .18s ease, width .18s ease; } .reader-section-line b { display:none; } .reader-section-line span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; } .reader-section-line.active i { transform:scaleX(1.35); background:var(--terracotta); }
+    .reader-section-drawer-toggle { display:none; } .reader-section-drawer[hidden] { display:none !important; } .reader-section-drawer { position:fixed; inset:0; z-index:70; display:grid; place-items:stretch; background:rgba(0,0,0,.36); backdrop-filter:blur(10px); } .reader-section-drawer-panel { align-self:end; max-height:min(82vh, 760px); overflow-y:auto; padding:22px; border:1px solid var(--line); border-radius:28px 28px 0 0; background:var(--surface); box-shadow:0 -20px 80px rgba(0,0,0,.28); } .reader-section-drawer-head { position:sticky; top:-22px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-22px -22px 12px; padding:18px 22px; border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter:blur(14px); } .reader-section-drawer-head p { margin:0; color:var(--muted); font:700 11px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; } .reader-section-drawer-head button { width:36px; height:36px; border:1px solid var(--line); border-radius:999px; background:var(--soft); color:var(--ink); cursor:pointer; } .reader-section-drawer-list { display:grid; gap:8px; padding-bottom:18px; } .reader-section-drawer-row { display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:center; min-height:56px; padding:13px 15px; border:1px solid var(--line); border-radius:18px; background:var(--soft); color:var(--ink); text-align:left; cursor:pointer; } .reader-section-drawer-row i { color:var(--muted); font:700 11px/1 var(--mono); font-style:normal; } .reader-section-drawer-row span { font:700 17px/1.1 var(--sans); letter-spacing:-.03em; }
     .reader-tap-zone { position:fixed; z-index:8; top:86px; bottom:86px; width:min(18vw,120px); border:0; padding:0; margin:0; background:transparent; opacity:0; cursor:pointer; -webkit-tap-highlight-color:transparent; } .reader-tap-zone-left { left:0; } .reader-tap-zone-right { right:0; }
     .reader-resume { position:fixed; z-index:55; left:50%; bottom:32px; transform:translateX(-50%); display:none; gap:12px; align-items:center; padding:10px 16px; border:1px solid var(--line); border-radius:18px; background:rgba(32,32,32,.84); box-shadow:0 14px 50px rgba(0,0,0,.22); color:var(--terracotta); font:500 13px/1.15 var(--sans); backdrop-filter:blur(16px); } .reader-resume button { padding:7px 12px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.06); color:var(--terracotta); cursor:pointer; font:500 12px/1 var(--sans); } .reader-back-to-top { --reader-scroll:0%; position:fixed; right:22px; bottom:24px; z-index:55; width:52px; height:52px; opacity:0; pointer-events:none; border:0; border-radius:999px; background:conic-gradient(var(--terracotta) var(--reader-scroll), rgba(255,255,255,.14) 0); color:var(--ink); cursor:pointer; transition:.18s ease; display:grid; place-items:center; } .reader-back-to-top-progress { position:absolute; inset:4px; border-radius:inherit; background:var(--surface); border:1px solid var(--line); } .reader-back-to-top b { position:relative; z-index:1; font:500 23px/1 var(--sans); } .reader-back-to-top.visible { opacity:1; pointer-events:auto; }
     .hero { min-height:86vh; display:grid; align-items:end; padding:112px 0 64px; } .eyebrow { margin:0 0 14px; color:var(--forest); font:700 12px/1.5 var(--mono); letter-spacing:.14em; text-transform:uppercase; } h1 { max-width:980px; margin:0; font-family:var(--serif); font-size:clamp(58px, 9vw, 112px); line-height:.9; letter-spacing:-.065em; font-weight:500; text-wrap:balance; } h2 { margin:0 0 24px; font-family:var(--serif); font-size:clamp(38px, 6vw, 76px); line-height:.96; letter-spacing:-.05em; font-weight:500; text-wrap:balance; } h3 { margin:0 0 10px; font-size:22px; line-height:1.08; letter-spacing:-.03em; font-weight:600; } .lead { max-width:820px; color:color-mix(in srgb, var(--ink) 82%, var(--muted)); font-size:clamp(20px, 2vw, 28px); line-height:1.5; letter-spacing:-.02em; } .hero-thesis { max-width:900px; margin:38px 0 0; padding-top:32px; border-top:1px solid var(--line-strong); color:var(--terracotta); font-size:clamp(20px, 2.7vw, 34px); line-height:1.58; letter-spacing:-.035em; } .hero-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:18px; margin-top:54px; align-items:start; }
@@ -306,13 +349,15 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
     .ship-checklist { display:grid; gap:14px; } .checklist-group h3 span { color:var(--muted); font:700 11px/1 var(--mono); text-transform:uppercase; letter-spacing:.08em; } .checklist-items { list-style:none; margin:0; padding:0; display:grid; gap:10px; } .checklist-items li { display:grid; grid-template-columns:18px 1fr; gap:10px; align-items:start; color:var(--muted); } .check-box { width:15px; height:15px; border-radius:4px; border:1px solid rgba(47,91,79,.34); margin-top:4px; display:inline-grid; place-items:center; color:var(--paper); font:700 10px/1 var(--mono); font-style:normal; } .check-box.done { background:var(--forest); border-color:var(--forest); } .check-box.current { background:var(--terracotta); border-color:var(--terracotta); } .check-box.todo { background:transparent; } .footer-meta { padding:42px 0 70px; color:var(--muted); font:500 12px/1.6 var(--mono); border-top:1px solid var(--line); }
     @media (hover:hover) { .reader-links a:hover { color:var(--ink); } .spec-map a:hover,.card:hover,.comparison:hover,.metric:hover,.phase:hover,.decision:hover,.range-card:hover,.reader-nav-task:hover { transform:translateY(-2px); border-color:var(--line-strong); } .reader-back-to-top:hover,.reader-resume button:hover,.reader-nav-task:hover { border-color:var(--line-strong); } }
     @media (max-width: 980px) { .reader-section-rail { display:none; } .hero-grid,.grid-2,.grid-3,.metric-grid,.range-grid,.flow-row,.decision-grid { grid-template-columns:1fr; } .spec-map { grid-template-columns:repeat(2, minmax(0,1fr)); } }
-    @media (max-width: 680px) { .container { width:min(100vw - 26px, 1120px); } .reader-nav { top:14px; } .reader-nav-shell { width:calc(100vw - 24px); grid-template-columns:minmax(92px, .65fr) minmax(0, 1.4fr) auto; gap:10px; padding-left:12px; } .reader-links { justify-content:flex-start; gap:16px; overflow:hidden; } .reader-links a:nth-child(n+4) { display:none; } .reader-progress { width:52px; } .hero { min-height:78vh; padding-top:106px; } h1 { font-size:clamp(48px, 12vw, 88px); letter-spacing:-.055em; } h2 { font-size:clamp(38px, 13vw, 64px); } section { padding:54px 0; } .spec-map { grid-template-columns:1fr; } .meta-grid { grid-template-columns:1fr; } .hero-card,.section-content,.callout,.matrix,.diagram { padding:20px; } .section-content.flat-content { padding:0; } table, thead, tbody, tr, td { display:block; width:100%; } thead { display:none; } tr { padding:14px 0; border-bottom:1px solid var(--line); } tr:last-child { border-bottom:0; } td { display:grid; grid-template-columns:118px minmax(0,1fr); gap:14px; padding:10px 0; border:0; overflow-wrap:anywhere; } td::before { content:attr(data-label); color:var(--muted); font:700 10px/1.2 var(--mono); letter-spacing:.1em; text-transform:uppercase; } .phase { grid-template-columns:1fr; } .phase-index { font-size:20px; } }
+    @media (max-width: 680px) { .reader-section-rail { right:10px; gap:5px; } .reader-section-line { width:26px; min-height:10px; } .reader-section-line i { height:2px; } .reader-section-drawer-toggle { display:block; position:fixed; right:12px; bottom:92px; z-index:56; width:42px; height:42px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); box-shadow:var(--shadow); } .container { width:min(100vw - 26px, 1120px); } .reader-nav { top:14px; } .reader-nav-shell { width:calc(100vw - 24px); grid-template-columns:minmax(92px, .65fr) minmax(0, 1.4fr) auto; gap:10px; padding-left:12px; } .reader-links { justify-content:flex-start; gap:16px; overflow:hidden; } .reader-links a:nth-child(n+4) { display:none; } .reader-progress { width:52px; } .hero { min-height:78vh; padding-top:106px; } h1 { font-size:clamp(48px, 12vw, 88px); letter-spacing:-.055em; } h2 { font-size:clamp(38px, 13vw, 64px); } section { padding:54px 0; } .spec-map { grid-template-columns:1fr; } .meta-grid { grid-template-columns:1fr; } .hero-card,.section-content,.callout,.matrix,.diagram { padding:20px; } .section-content.flat-content { padding:0; } table, thead, tbody, tr, td { display:block; width:100%; } thead { display:none; } tr { padding:14px 0; border-bottom:1px solid var(--line); } tr:last-child { border-bottom:0; } td { display:grid; grid-template-columns:118px minmax(0,1fr); gap:14px; padding:10px 0; border:0; overflow-wrap:anywhere; } td::before { content:attr(data-label); color:var(--muted); font:700 10px/1.2 var(--mono); letter-spacing:.1em; text-transform:uppercase; } .phase { grid-template-columns:1fr; } .phase-index { font-size:20px; } }
     @media (prefers-color-scheme: dark) { :root { color-scheme: dark; --paper:#202020; --ink:#f1f1f1; --surface:#272727; --muted:#b6b6b6; --line:rgba(255,255,255,.14); --line-strong:rgba(255,255,255,.28); --soft:rgba(255,255,255,.06); --terracotta:#ff8a63; --forest:#d5d5d5; --shadow:0 0 0 1px rgba(255,255,255,.04), 0 22px 70px rgba(0,0,0,.18); } html, body { background:var(--paper); color:var(--ink); } p, li, td { color:rgba(241,241,241,.78); } .hero-card,.section-content,.card,.checklist-group,.callout,.metric,.matrix,.diagram,.phase,.decision,.range-card,.comparison { background:rgba(39,39,39,.72); border-color:var(--line); box-shadow:var(--shadow); } .reader-nav-shell,.reader-back-to-top-progress,.reader-resume { background:rgba(32,32,32,.88); border-color:rgba(255,255,255,.16); box-shadow:0 12px 42px rgba(0,0,0,.22); } .reader-brand,.reader-links a,button { color:var(--ink); } .reader-nav-task { color:#202020; } .reader-links a { color:rgba(241,241,241,.72); } .spec-map a,.flow-node,.meta-item { background:rgba(255,255,255,.045); border-color:var(--line); color:var(--ink); } .tag { border-color:var(--line); color:var(--muted); } .check-box { border-color:rgba(255,255,255,.52); background:rgba(255,255,255,.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), 0 0 0 1px rgba(0,0,0,.18); } .check-box.todo { border-color:rgba(255,255,255,.48); background:rgba(255,255,255,.075); } .check-box.current,.check-box.done { border-color:#ff8a63; background:#ff8a63; color:#202020; } }
   </style>
 </head>
 <body data-reader-shell-version="${escapeHtml(READER_SHELL_VERSION)}" data-reader-shell-template="${escapeHtml(content.template)}">
   <nav class="reader-nav" aria-label="Spec navigation" data-no-tap-scroll><div class="reader-nav-shell"><a class="reader-brand" href="/design-wiki" aria-label="${escapeHtml(content.title)}" title="${escapeHtml(content.title)}">${escapeHtml(brandTitle)}</a><div class="reader-links">${navLinks.map((item) => `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`).join('')}</div><a class="reader-nav-task" href="${escapeHtml(taskHref)}">Task</a></div></nav>
-  <nav class="reader-section-rail" aria-label="Section progress" data-no-tap-scroll>${sectionRailLinks(map)}</nav>
+  <nav class="reader-section-rail" aria-label="Section progress" data-no-tap-scroll>${sectionRailLinks(sectionLinks)}</nav>
+  <button class="reader-section-drawer-toggle" type="button" data-section-drawer-toggle data-no-tap-scroll aria-label="Open section drawer">☰</button>
+  <div class="reader-section-drawer" data-section-drawer hidden data-no-tap-scroll><div class="reader-section-drawer-panel" role="dialog" aria-modal="true" aria-label="Section drawer"><div class="reader-section-drawer-head"><p>Sections</p><button type="button" data-section-drawer-close aria-label="Close section drawer">×</button></div><div class="reader-section-drawer-list">${sectionDrawerLinks(sectionLinks)}</div></div></div>
   <div class="reader-resume" id="reader-resume" data-auto-dismiss-ms="10000" data-no-tap-scroll>Resume reading <button type="button" data-resume>Continue</button></div>
   <button class="reader-back-to-top" type="button" data-no-tap-scroll aria-label="Back to top"><span class="reader-back-to-top-progress" aria-hidden="true"></span><b>↑</b></button>
   <button class="reader-tap-zone reader-tap-zone-left" type="button" data-tap-scroll="up" data-no-tap-scroll aria-label="Scroll up"></button>
@@ -330,7 +375,7 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
     const shellId = ${JSON.stringify(shellId)};
     let smoother = null;
     if (window.gsap && window.ScrollSmoother) { gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, ScrollSmoother); smoother = ScrollSmoother.create({ wrapper:'#smooth-wrapper', content:'#smooth-content', smooth:0.55, smoothTouch:0.24 }); }
-    window.__readerShell = { shell:'consuelo-reader', version:${JSON.stringify(READER_SHELL_VERSION)}, template:${JSON.stringify(content.template)}, id:shellId, smoother:!!smoother };
+    window.__readerShell = { shell:'consuelo-reader', version:${JSON.stringify(READER_SHELL_VERSION)}, template:${JSON.stringify(content.template)}, id:shellId, smoother:!!smoother, sectionCount:${sectionLinks.length} };
     const storageKey = 'consuelo-reader:' + shellId + ':scroll';
     const resume = document.getElementById('reader-resume');
     const saved = Number(localStorage.getItem(storageKey) || 0);
@@ -338,10 +383,24 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
     function scrollTop(){ return smoother ? smoother.scrollTop() : window.scrollY; }
     function go(target){ if (smoother) smoother.scrollTo(target, true, 'top 80px'); else document.querySelector(target)?.scrollIntoView({ behavior:'smooth' }); }
     function pageStep(direction){ const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const delta = innerHeight * 0.62 * (direction === 'up' ? -1 : 1); const target = Math.max(0, Math.min(max, scrollTop() + delta)); if (smoother) smoother.scrollTo(target, true); else scrollTo({ top:target, behavior:'smooth' }); }
-    document.querySelectorAll('a[href^="#"], [data-target]').forEach((el) => el.addEventListener('click', (event) => { const target = el.getAttribute('href') || el.dataset.target; if (!target) return; event.preventDefault(); go(target); }));
+    const drawer = document.querySelector('[data-section-drawer]');
+    function openSectionDrawer(){ if (!drawer) return; drawer.hidden = false; document.body.dataset.sectionDrawer = 'open'; }
+    function closeSectionDrawer(){ if (!drawer) return; drawer.hidden = true; delete document.body.dataset.sectionDrawer; }
+    function isSmallScreen(){ return window.matchMedia('(max-width: 680px)').matches; }
+    document.querySelector('[data-section-drawer-toggle]')?.addEventListener('click', openSectionDrawer);
+    document.querySelector('[data-section-drawer-close]')?.addEventListener('click', closeSectionDrawer);
+    document.querySelectorAll('a[href^="#"], [data-target]').forEach((el) => el.addEventListener('click', (event) => { const target = el.getAttribute('href') || el.dataset.target; if (!target) return; if (el.classList.contains('reader-section-line') && isSmallScreen()) { event.preventDefault(); openSectionDrawer(); return; } event.preventDefault(); closeSectionDrawer(); go(target); }));
     document.querySelectorAll('[data-tap-scroll]').forEach((el) => el.addEventListener('click', (event) => { event.preventDefault(); pageStep(el.dataset.tapScroll); }));
     document.querySelector('[data-resume]')?.addEventListener('click', () => { resume.style.display = 'none'; if (smoother) smoother.scrollTo(saved, true); else scrollTo({ top:saved, behavior:'smooth' }); });
     document.querySelector('.reader-back-to-top')?.addEventListener('click', () => go('#top'));
+    function writeClipboard(text){ if (!text || !navigator.clipboard) return Promise.resolve(false); return navigator.clipboard.writeText(text).then(() => true).catch(() => false); }
+    function copySelectedText(){ const selection = window.getSelection(); const text = selection && !selection.isCollapsed ? selection.toString().trim() : ''; if (!text) return; window.__readerLastFindNeedle = text; void writeClipboard(text); }
+    let selectionCopyTimer = 0;
+    document.addEventListener('selectionchange', () => { clearTimeout(selectionCopyTimer); selectionCopyTimer = window.setTimeout(copySelectedText, 180); });
+    document.querySelectorAll('[data-copy-markdown]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); writeClipboard(button.getAttribute('data-copy-markdown') || '').then((ok) => { button.dataset.copied = ok ? 'true' : 'false'; window.setTimeout(() => { delete button.dataset.copied; }, 1400); }); }));
+    function findNextOccurrence(needle){ if (!needle) return false; const root = document.querySelector('#smooth-content') || document.body; const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const ranges = []; let node; while ((node = walker.nextNode())) { const text = node.nodeValue || ''; const lower = text.toLowerCase(); const target = needle.toLowerCase(); let index = lower.indexOf(target); while (index !== -1) { const range = document.createRange(); range.setStart(node, index); range.setEnd(node, index + needle.length); ranges.push(range); index = lower.indexOf(target, index + Math.max(1, needle.length)); } } if (!ranges.length) return false; const y = scrollTop(); const next = ranges.find((range) => range.getBoundingClientRect().top + y > y + 32) || ranges[0]; const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(next); const element = next.startContainer.parentElement?.closest('[id]'); if (element) go('#' + element.id); return true; }
+    function handleReaderFindEnter(event){ if (event.key !== 'Enter' || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return; const active = document.activeElement; if (active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName)) return; const selected = window.getSelection()?.toString().trim(); const needle = selected || window.__readerLastFindNeedle || ''; if (!needle || needle.length > 120) return; if (findNextOccurrence(needle)) event.preventDefault(); }
+    document.addEventListener('keydown', handleReaderFindEnter);
     const topButton = document.querySelector('.reader-back-to-top');
     const railButtons = [...document.querySelectorAll('.reader-section-rail button')];
     function tick(){ const y = scrollTop(); const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const pct = Math.min(100, Math.max(0, y / max * 100)); topButton.style.setProperty('--reader-scroll', pct + '%'); topButton.classList.toggle('visible', y > 700); localStorage.setItem(storageKey, String(Math.round(y))); railButtons.forEach((button) => { const target = document.querySelector(button.dataset.target); if (!target) return; const active = y >= target.offsetTop - 160 && y < target.offsetTop + target.offsetHeight - 160; button.classList.toggle('active', active); }); requestAnimationFrame(tick); }
