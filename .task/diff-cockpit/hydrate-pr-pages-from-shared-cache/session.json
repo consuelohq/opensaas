@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3e08ce9ef991",
+  "tmuxSession": "opensaas-diff-cockpit-hydrate-pr-pages-from-shared-cache-3e08ce9e",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+  "branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hydrate-pr-pages-from-shared-cache",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hydrate-pr-pages-from-shared-cache",
+  "prNumber": 873,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/873",
+  "createdAt": "2026-06-09T18:50:12.784Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hydrate-pr-pages-from-shared-cache/.task/diff-cockpit/hydrate-pr-pages-from-shared-cache/session.json"
+}

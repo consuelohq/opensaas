@@ -4,7 +4,8 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
-DEFAULT_SOURCE_DIR="$HOME/.consuelo/source/opensaas"
+OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
 REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz}"
 
@@ -52,7 +53,7 @@ Options:
   --help, -h        show this help
 
 Environment overrides:
-  CONSUELO_OS_SOURCE_DIR       source checkout/download directory for hosted installs
+  CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
   CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
 USAGE
 }
@@ -320,7 +321,7 @@ Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND
   require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
 
   if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another path."
+    fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
   fi
 
   if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
@@ -415,7 +416,7 @@ run_install_with_tty() {
 
 run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
-  local os_home="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+  local os_home="$OS_HOME"
 
   log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
 
@@ -468,7 +469,7 @@ run_daemon_dry_run() {
 }
 
 install_daemons_quiet() {
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir="$OS_HOME"
   (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
@@ -502,7 +503,7 @@ Press Enter to install these user LaunchAgents, or press Control-C to cancel." "
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$REPO_DIR/packages/os"
+    local os_dir="$OS_HOME"
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
     run_with_loading_dots "setting up background service" install_daemons_quiet
@@ -514,16 +515,16 @@ Press Enter to install these user LaunchAgents, or press Control-C to cancel." "
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
-  local os_home="$HOME/.consuelo/os"
+  local os_home="$OS_HOME"
   local config_file="$os_home/config.json"
   local db_file="$os_home/consuelo.db"
   local log_dir="$HOME/Library/Logs/Consuelo"
-  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $REPO_DIR/packages/os run doctor"
+  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
   log "Consuelo OS setup complete"
   log "Home: $os_home"
-  log "Source: $REPO_DIR"
+  log "Package: $os_home"
   log "Config: $config_file"
   log "Database: $db_file"
   log "Logs: $log_dir"

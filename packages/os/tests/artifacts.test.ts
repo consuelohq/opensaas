@@ -26,7 +26,7 @@ function runBunEval(code: string): string {
 }
 
 describe('createWorkspaceArtifact', () => {
-  it('writes artifact bytes, persists metadata, and refreshes the local Office page', () => {
+  it('writes artifact bytes, persists metadata, and refreshes the local Office site', () => {
     const descriptor = JSON.parse(runBunEval(`
       const { createWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
       const descriptor = createWorkspaceArtifact({
@@ -52,15 +52,17 @@ describe('createWorkspaceArtifact', () => {
     expect(existsSync(descriptor.localPath)).toBe(true);
     expect(JSON.parse(readFileSync(descriptor.localPath, 'utf8'))).toEqual({ ok: true });
 
-    const officeIndexPath = join(tempHome, 'pages', 'office', 'index.html');
-    const officeDataPath = join(tempHome, 'pages', 'office', 'data', 'artifacts.json');
-    expect(existsSync(officeIndexPath)).toBe(true);
-    expect(existsSync(officeDataPath)).toBe(true);
-    expect(readFileSync(officeIndexPath, 'utf8')).toContain('Daily Revenue Brief');
-    const officeData = JSON.parse(readFileSync(officeDataPath, 'utf8')) as {
+    const officeSiteIndexPath = join(tempHome, 'sites', 'office', 'index.html');
+    const officeSiteDataPath = join(tempHome, 'sites', 'office', 'data', 'artifacts.json');
+    expect(existsSync(officeSiteIndexPath)).toBe(true);
+    expect(existsSync(officeSiteDataPath)).toBe(true);
+    expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
+    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
+    expect(readFileSync(officeSiteIndexPath, 'utf8')).toContain('Daily Revenue Brief');
+    const officeSiteData = JSON.parse(readFileSync(officeSiteDataPath, 'utf8')) as {
       artifacts: Array<{ id: string; title: string; traceId: string }>;
     };
-    expect(officeData.artifacts).toContainEqual(expect.objectContaining({
+    expect(officeSiteData.artifacts).toContainEqual(expect.objectContaining({
       id: descriptor.id,
       title: 'Daily Revenue Brief',
       traceId: 'trc_test_artifact',

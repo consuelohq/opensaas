@@ -10,6 +10,7 @@
 
 const { execSync } = require('child_process');
 const { getToken, githubRequest, mergePullRequest } = require('./lib/github.js');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findTaskMeta } = require('./lib/task-meta.js');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
@@ -22,7 +23,8 @@ function parseArgs(argv) {
   const args = { repo: DEFAULT_REPO, service: DEFAULT_SERVICE };
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
-      case '--pr': args.prNumber = parseInt(argv[++i], 10); break;
+      case '--pr': args.prNumber = resolvePrRefNumber(argv[++i], { repo: args.repo }); break;
+      case '--github': args.prNumber = resolvePrRefNumber(argv[++i], { repo: args.repo }); break;
       case '--wait': args.wait = true; break;
       case '--timeout': { const t = argv[++i]; args.timeoutMs = (parseInt(t, 10) || 30) * 60 * 1000; break; }
       case '--squash': args.mergeMethod = 'squash'; break;
@@ -32,13 +34,13 @@ function parseArgs(argv) {
       case '--help':
         writeStdout('usage: bun run task:merge -- [options]');
         writeStdout('');
-        writeStdout('  --pr <number>     PR number to merge (default: from .task/current.json)');
+        writeStdout('  --pr <number-or-url> PR number or supported PR URL to merge (default: from .task/current.json)');
         writeStdout('  --wait            after merge, wait for railway deploy to complete');
         writeStdout('  --squash          squash merge (default: merge commit)');
         writeStdout('  --json            output json');
         process.exit(0);
       default:
-        if (!argv[i].startsWith('-')) args.prNumber = parseInt(argv[i], 10);
+        if (!argv[i].startsWith('-')) args.prNumber = resolvePrRefNumber(argv[i], { repo: args.repo });
         break;
     }
   }

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-sites-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 869,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/869",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/869",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/869/fix-sites-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/869",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/869/fix-sites-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-review-comments",
+  "taskSession": "tsk_fa26e655e752",
+  "tmuxSession": "opensaas-os-fix-sites-review-comments-fa26e655",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-review-comments/.task/os/fix-sites-review-comments/session.json",
+  "createdAt": "2026-06-09T17:52:35.896Z"
+}

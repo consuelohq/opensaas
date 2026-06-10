@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { materializeOfficePages } from './office-pages';
+import { materializeSites } from './sites';
 import { validateBundledSkills } from './skills';
 
 export type OsMode = 'local' | 'cloud';
@@ -102,6 +102,9 @@ const REQUIRED_DIRS = [
   'skills',
   'tools',
   'scripts',
+  'src',
+  'tooling',
+  'manifests',
   'artifacts',
   'pages',
   'logs',
@@ -117,7 +120,8 @@ const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests'] as const;
+const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
@@ -214,6 +218,56 @@ function writeJsonFile(
 function readJsonFile<T>(filePath: string): T | null {
   if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+}
+
+function samePath(left: string, right: string): boolean {
+  return path.resolve(left) === path.resolve(right);
+}
+
+function materializeProductPackageRoot(home: string, dryRun: boolean): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+  const installedInPlace = samePath(PACKAGE_ROOT, home);
+
+  for (const dir of PRODUCT_PACKAGE_DIRS) {
+    const sourcePath = path.join(PACKAGE_ROOT, dir);
+    const targetPath = path.join(home, dir);
+    if (!fs.existsSync(sourcePath)) {
+      throw new Error(`${sourcePath}: required OS package directory is missing`);
+    }
+
+    const targetExists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'create_dir',
+      path: targetPath,
+      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: installedInPlace ? 'package directory already at OS root' : 'package directory materialized',
+    });
+
+    if (dryRun || installedInPlace) continue;
+    fs.rmSync(targetPath, { recursive: true, force: true });
+    fs.cpSync(sourcePath, targetPath, { recursive: true, force: true });
+  }
+
+  for (const file of PRODUCT_PACKAGE_FILES) {
+    const sourcePath = path.join(PACKAGE_ROOT, file);
+    const targetPath = path.join(home, file);
+    if (!fs.existsSync(sourcePath)) {
+      throw new Error(`${sourcePath}: required OS package file is missing`);
+    }
+
+    const targetExists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'create_file',
+      path: targetPath,
+      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: installedInPlace ? 'package file already at OS root' : 'package file materialized',
+    });
+
+    if (dryRun || installedInPlace) continue;
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+
+  return actions;
 }
 
 export function createDefaultConfig(
@@ -381,8 +435,8 @@ function readJsonObject(filePath: string): JsonObject {
   return parsed;
 }
 
-function toRepoRelative(filePath: string): string {
-  return path.relative(path.join(PACKAGE_ROOT, '..', '..'), filePath).split(path.sep).join('/');
+function toPackageRootRelative(filePath: string): string {
+  return path.relative(PACKAGE_ROOT, filePath).split(path.sep).join('/');
 }
 
 function toPortableSkillJson(skillDir: string, skillName: string): JsonObject {
@@ -493,6 +547,11 @@ function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): Prov
   }];
 }
 
+function migrateSelectedSkillNames(selectedSkills: readonly string[]): string[] {
+  const migrated = selectedSkills.map((skillName) => skillName === 'office' ? 'sites' : skillName);
+  return [...new Set(migrated)];
+}
+
 function seedBundledSkills(
   home: string,
   dryRun: boolean,
@@ -571,7 +630,7 @@ function seedBundledSkills(
         version: 1,
         name: skillName,
         source: 'bundled',
-        sourcePath: toRepoRelative(sourceDir),
+        sourcePath: toPackageRootRelative(sourceDir),
         hash: sourceHash,
         installedAt: existingMetadata?.installedAt ?? now,
         updatedAt: now,
@@ -652,7 +711,6 @@ function shellSingleQuote(value: string): string {
 function toolWrapperScript(entry: CanonicalToolEntry): string {
   const toolName = entry.name;
   const description = entry.description ?? 'Consuelo OS tool.';
-  const fallbackSource = shellSingleQuote(REPO_ROOT);
   const quotedName = shellSingleQuote(toolName);
   const jsonName = shellSingleQuote(JSON.stringify(toolName));
   const runner = entry.kind === 'facade-tool'
@@ -664,11 +722,9 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     'set -euo pipefail',
     `TOOL_NAME=${quotedName}`,
     `TOOL_DESCRIPTION=${shellSingleQuote(description)}`,
-    'OS_HOME="${CONSUELO_OS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
-    'SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$OS_HOME/../../source/opensaas}"',
-    `if [ ! -d "$SOURCE_DIR/packages/os" ]; then SOURCE_DIR=${fallbackSource}; fi`,
-    'if [ ! -d "$SOURCE_DIR/packages/os" ]; then',
-    '  printf "%s\\n" "error: Consuelo OS source not found. Set CONSUELO_OS_SOURCE_DIR." >&2',
+    'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
+    'if [ ! -f "$OS_HOME/package.json" ] || [ ! -f "$OS_HOME/scripts/tool-runner.ts" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS package root not found. Set CONSUELO_OS_HOME." >&2',
     '  exit 1',
     'fi',
     'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
@@ -677,8 +733,12 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     '  printf "%s\\n" "$TOOL_DESCRIPTION"',
     '  exit 0',
     'fi',
-    'INPUT="${1:-{}}"',
-    'cd "$SOURCE_DIR/packages/os"',
+    'if [ "$#" -gt 0 ]; then',
+    '  INPUT="$1"',
+    'else',
+    "  INPUT='{}'",
+    'fi',
+    'cd "$OS_HOME"',
     runner,
     '',
   ].join('\n');
@@ -784,7 +844,7 @@ function seedBundledTools(home: string, dryRun: boolean): ProvisionAction[] {
         version: 1,
         name: entry.name,
         source: 'bundled',
-        sourcePath: toRepoRelative(BUNDLED_TOOL_MANIFEST_PATH),
+        sourcePath: toPackageRootRelative(BUNDLED_TOOL_MANIFEST_PATH),
         hash: sourceHash,
         installedAt: existingMetadata?.installedAt ?? now,
         updatedAt: now,
@@ -831,6 +891,8 @@ export function provisionLocalOs(
     if (!dryRun) fs.mkdirSync(dir, { recursive: true });
   }
 
+  actions.push(...materializeProductPackageRoot(home, dryRun));
+
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
     actions.push({
@@ -874,11 +936,12 @@ export function provisionLocalOs(
     }
   }
 
-  actions.push(...materializeOfficePages({ home, dbPath, dryRun }).actions);
-  config.selectedSkills =
+  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
+  config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
-    getDefaultSelectedSkillNames();
+    getDefaultSelectedSkillNames(),
+  );
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
   actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
   actions.push(...seedBundledTools(home, dryRun));

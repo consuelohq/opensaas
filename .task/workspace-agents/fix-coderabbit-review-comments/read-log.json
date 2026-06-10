@@ -1,0 +1,12 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/tests/doctor-redaction.test.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-06-09T17:53:22.446Z"
+}

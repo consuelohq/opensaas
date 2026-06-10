@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e5499783e547",
+  "tmuxSession": "opensaas-os-resolve-pr-780-metadata-conflicts-e5499783",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-pr-780-metadata-conflicts",
+  "branch": "task/os/resolve-pr-780-metadata-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-780-metadata-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-780-metadata-conflicts",
+  "prNumber": 847,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/847",
+  "createdAt": "2026-06-08T04:53:12.900Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-780-metadata-conflicts/.task/os/resolve-pr-780-metadata-conflicts/session.json"
+}

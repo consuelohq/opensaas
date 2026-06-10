@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a8915ba01fcb",
+  "tmuxSession": "opensaas-workspace-agents-investigate-get-steering-trace-capture-a8915ba0",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-get-steering-trace-capture",
+  "branch": "task/workspace-agents/investigate-get-steering-trace-capture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-get-steering-trace-capture",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-get-steering-trace-capture",
+  "prNumber": 829,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/829",
+  "createdAt": "2026-06-07T09:06:54.101Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-get-steering-trace-capture/.task/workspace-agents/investigate-get-steering-trace-capture/session.json"
+}

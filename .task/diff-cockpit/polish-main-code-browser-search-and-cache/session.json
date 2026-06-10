@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6bfd748c86cc",
+  "tmuxSession": "opensaas-diff-cockpit-polish-main-code-browser-search-and-cache-6bfd748c",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+  "branch": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-main-code-browser-search-and-cache",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-main-code-browser-search-and-cache",
+  "prNumber": 777,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/777",
+  "createdAt": "2026-06-05T05:31:11.078Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-main-code-browser-search-and-cache/.task/diff-cockpit/polish-main-code-browser-search-and-cache/session.json"
+}

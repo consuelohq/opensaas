@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-sites-section-patching-and-leases",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 865,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/865",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/865",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/865/add-sites-section-patching-and-leases",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/865",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/865/add-sites-section-patching-and-leases",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-sites-section-patching-and-leases",
+  "taskSession": "tsk_5e67d53ed9df",
+  "tmuxSession": "opensaas-os-add-sites-section-patching-and-leases-5e67d53e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-sites-section-patching-and-leases/.task/os/add-sites-section-patching-and-leases/session.json",
+  "createdAt": "2026-06-09T07:17:36.143Z"
+}

@@ -148,30 +148,6 @@
       "subskills": []
     },
     {
-      "name": "office",
-      "title": "Office",
-      "description": "Use this skill for Consuelo OS Office: the user-facing local workspace suite for generated docs, reports, files, pages, traces, diffs, GitHub/workflow views, and future database-backed documents/tables. Artifacts remain the internal durable provenance/storage records behind Office.",
-      "trigger": "Invoke when the user asks about OS Office, generated work surfaces, local Office pages, artifact-backed Office output, traces, diffs, GitHub/workflow pages, or refreshing/finding the local Office page.",
-      "entrypoint": "SKILL.md",
-      "load": {
-        "type": "resource",
-        "path": "packages/os/skills/office/SKILL.md"
-      },
-      "permission": "guidance",
-      "requiresApproval": false,
-      "status": "active",
-      "capabilities": [
-        "office",
-        "artifacts",
-        "local-pages"
-      ],
-      "tools": [
-        "os.get_steering",
-        "os.call"
-      ],
-      "subskills": []
-    },
-    {
       "name": "research-ingest",
       "title": "Research Ingest",
       "description": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to context, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable context, and follow-up analysis from ingested sources..",
@@ -212,6 +188,31 @@
         "repo",
         "engineering",
         "review"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "sites",
+      "title": "Sites",
+      "description": "Use this skill for Consuelo OS Sites: the user-facing local site system for generated docs, reports, files, pages, traces, diffs, and Office as one site category. Artifacts remain the internal durable provenance and storage records behind Sites.",
+      "trigger": "Invoke when the user asks about OS Sites, generated work surfaces, local Sites pages, the Office site, artifact-backed output, traces, diffs, or refreshing and finding local Sites.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/sites/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "sites",
+        "office",
+        "artifacts",
+        "local-pages"
       ],
       "tools": [
         "os.get_steering",
@@ -261,6 +262,31 @@
         "workspace",
         "repo",
         "task-lifecycle"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "teach",
+      "title": "Teach",
+      "description": "Use this skill when the user asks the OS agent to teach them a daily deep idea, create an AI-seeded learning guide, ingest a research source for teaching, or publish a durable Sites guide that explains one transferable concept. It coordinates research ingest, typed guide rendering, Sites publishing, and optional teach state updates.",
+      "trigger": "Invoke when the user asks to teach, learn one idea, run Daily Deep Idea, create an AI learning guide, explain a paper/source as a durable lesson, or set up/swap an auto-teaching topic queue.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/teach/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "teaching",
+        "research",
+        "sites",
+        "guide-rendering"
       ],
       "tools": [
         "os.get_steering",

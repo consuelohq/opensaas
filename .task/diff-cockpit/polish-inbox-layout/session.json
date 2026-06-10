@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_350855b79074",
+  "tmuxSession": "opensaas-diff-cockpit-polish-inbox-layout-350855b7",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-inbox-layout",
+  "branch": "task/diff-cockpit/polish-inbox-layout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-inbox-layout",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-inbox-layout",
+  "prNumber": 901,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/901",
+  "createdAt": "2026-06-10T00:18:35.113Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-inbox-layout/.task/diff-cockpit/polish-inbox-layout/session.json"
+}

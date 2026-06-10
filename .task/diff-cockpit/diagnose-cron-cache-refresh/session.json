@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1af1c1324f9f",
+  "tmuxSession": "opensaas-diff-cockpit-diagnose-cron-cache-refresh-1af1c132",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/diagnose-cron-cache-refresh",
+  "branch": "task/diff-cockpit/diagnose-cron-cache-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-diagnose-cron-cache-refresh",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-diagnose-cron-cache-refresh",
+  "prNumber": 876,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/876",
+  "createdAt": "2026-06-09T19:33:26.056Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-diagnose-cron-cache-refresh/.task/diff-cockpit/diagnose-cron-cache-refresh/session.json"
+}

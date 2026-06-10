@@ -105,4 +105,28 @@ describe('skills registry generator', () => {
 
     expect(() => buildSkillsRegistry({ skillsRoot: fixtureRoot })).toThrow('load.path does not exist');
   });
+
+  it('bundles Sites as the active top-level local surface skill', () => {
+    const bundledRegistry = JSON.parse(readFileSync(join(process.cwd(), 'skills', 'skills.json'), 'utf8')) as {
+      skills: Array<{
+        name: string;
+        title: string;
+        status: string;
+        load?: { path?: string };
+        capabilities?: string[];
+      }>;
+    };
+    const skillNames = bundledRegistry.skills.map((skill) => skill.name);
+    const sitesSkill = bundledRegistry.skills.find((skill) => skill.name === 'sites');
+
+    expect(skillNames).toContain('sites');
+    expect(skillNames).not.toContain('office');
+    expect(sitesSkill).toMatchObject({
+      name: 'sites',
+      title: 'Sites',
+      status: 'active',
+      load: { path: 'packages/os/skills/sites/SKILL.md' },
+    });
+    expect(sitesSkill?.capabilities).toEqual(expect.arrayContaining(['sites', 'office', 'artifacts', 'local-pages']));
+  });
 });

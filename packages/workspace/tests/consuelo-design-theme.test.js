@@ -3,13 +3,13 @@ import { expect, test } from 'vitest';
 
 const source = readFileSync(new URL('../scripts/consuelo-design.ts', import.meta.url), 'utf8');
 
-test('keeps the generated design wiki theme and search surfaces styled', () => {
+test('keeps the generated sites archive theme and search surfaces styled', () => {
   for (const marker of [
-    '--paper:#f8f1e7',
+    '--paper:#f6efe4',
     '--ink:#251d17',
     '@media (prefers-color-scheme: dark)',
-    '--paper:#111820',
-    '--ink:#e9eef4',
+    '--paper:#0f0f0d',
+    '--ink:#f2eee6',
     '.search-input::placeholder',
     '.pagefind-ui__result-excerpt mark',
   ]) {
@@ -65,4 +65,45 @@ test('guards design wiki publishes against stale page revisions', () => {
   ]) {
     expect(source).toContain(marker);
   }
+});
+
+
+test('polishes design archive into the sites shell with filtering and command palette', () => {
+  for (const marker of [
+    "const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';",
+    "const DESIGN_ARCHIVE_PATH = '/sites';",
+    "https://sites.consuelohq.com",
+    '<title>Consuelo Sites</title>',
+    'Consuelo Sites',
+    '<h1>Sites</h1>',
+    'Private tailnet sites, guides, and published artifacts from Consuelo.',
+    'data-filter="guide"',
+    'data-filter="spec"',
+    'data-filter="plan"',
+    'data-filter="uncategorized"',
+    'data-command-palette',
+    'Keyboard Cockpit',
+    'Slash opens this menu. Press G, then a command letter, to jump directly.',
+    "window.open(href, '_blank', 'noopener,noreferrer')",
+    "target=\"_blank\" rel=\"noopener noreferrer\"",
+    "location.hash = activeFilter === 'all' ? '' : activeFilter;",
+    'font-family: "Geist Mono", "Geist", ui-monospace',
+    'archivePaths',
+    'legacyArchivePath',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+
+test('generates archive server slash aliases without regex escaping drift', () => {
+  expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
+  expect(source).toContain('archivePaths.includes(cleanArchivePath)');
+});
+
+
+test('keeps archive search data parseable as raw JSON for client interactions', () => {
+  expect(source).toContain('const searchDataJson = JSON.stringify(searchEntries)');
+  expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
+  expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
 });

@@ -1,0 +1,322 @@
+---
+title: "Test Driven Development"
+description: "Use red, green, yellow, and workpad assertions to keep user intent intact through long Consuelo OS tasks."
+---
+
+# Test Driven Development
+
+Consuelo OS uses test-driven agent work to keep user intent intact through long tasks, context compaction, handoffs, and future follow-up work.
+
+For software, test-driven development means writing a failing test, writing the implementation that passes, then refactoring while the test suite stays green. For agent work, the same loop becomes broader: capture the user's intent as executable or checkable assertions before changing the system, keep those assertions in the workpad, and run them during validation.
+
+<Note>
+This page is the user-facing operating contract for agent TDD in Consuelo OS. Use it for code changes, docs, specs, Office artifacts, dashboards, generated pages, and long-running implementation tasks.
+</Note>
+
+## Why this matters
+
+Agents can lose details when a task is long. Context gets compacted. A later agent may inherit only a summary. A user may give ten decisions in one message, and only seven make it into the final artifact. A publish can succeed while the important intent was dropped.
+
+Test-driven agent work prevents that failure mode.
+
+```text
+If the user says something important, turn it into a durable assertion before doing the work.
+```
+
+Assertions can be code tests, document checks, schema checks, browser checks, screenshot checks, route checks, or manual acceptance criteria in a workpad. The right form depends on the task. The core requirement is that a future agent can verify the intent without replaying the entire original conversation.
+
+## Vocabulary
+
+Use these terms consistently in OS tasks, docs, and workpads.
+
+| Term | Meaning in Consuelo OS |
+| --- | --- |
+| Intent assertion | A checkable statement derived from user intent. |
+| Red | The assertion exists and fails against the current state. |
+| Green | The assertion passes after the implementation or document change. |
+| Refactor | Clean up implementation, wording, shape, or structure while the assertions stay green. |
+| Yellow / Amber | A known unresolved or partially validated assertion that is explicitly tracked. |
+| Acceptance test | A check from the user's point of view, focused on visible behavior or output. |
+| Specification by example | A concrete example that doubles as specification and validation. |
+| Living documentation | Documentation that stays useful because it is tied to checks, examples, and current behavior. |
+| Workpad contract | The task record that preserves assertions, evidence, blockers, and handoff state. |
+
+## The agent TDD loop
+
+Use this loop for code, docs, specs, plans, guides, Office artifacts, traces, dashboards, tools, and generated documents.
+
+### 1. Capture intent
+
+Extract user intent into short assertions.
+
+Good assertions:
+
+- name the object being changed
+- say what must be true when done
+- include exact phrases when wording matters
+- include rejected paths when the user rules something out
+- distinguish current work from future work
+- preserve user terminology unless the task includes a rename
+
+Example:
+
+```text
+- The page title must be "Consuelo OS Spec".
+- "OS portal" must be replaced with "OS server".
+- The V1 work map may stay as a map.
+- Task execution items must live in the checkbox ledger.
+- The ledger must include fs commands, docs, Office, collaborative artifact editing, traces, diffs, OS Cloud gateway, and database-connected pages.
+```
+
+### 2. Write red checks
+
+Before editing, create checks that fail against the current state.
+
+Red checks can be:
+
+- a unit test
+- an integration test
+- a CLI smoke test
+- a document assertion script
+- a JSON schema assertion
+- a browser or screenshot assertion
+- a required phrase check
+- a forbidden phrase check
+- a workpad checklist item marked red
+
+For docs-only work, a small assertion script is often better than no test.
+
+```js
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const text = readFileSync('packages/consuelo-docs/os/agent-context/test-driven-agent-work.mdx', 'utf8');
+assert(text.includes('Intent assertion'));
+assert(text.includes('Red'));
+assert(text.includes('Green'));
+assert(text.includes('Yellow / Amber'));
+assert(text.includes('Workpad contract'));
+```
+
+### 3. Make it green
+
+Change the code, docs, or artifact until the checks pass.
+
+Do the minimum necessary to satisfy the assertions first. Treat extra scope as a separate assertion or a separate task.
+
+### 4. Refactor safely
+
+Clean up structure after green:
+
+- move helpers to the correct file
+- simplify wording
+- remove duplicate sections
+- convert prose into typed data where appropriate
+- split long assertions into named checks
+- update related docs, manifests, or generated surfaces
+
+Run the same checks again after refactor.
+
+### 5. Record evidence
+
+The workpad must record:
+
+- what red checks were created
+- what command showed failure
+- what changed
+- what command showed green
+- what remains yellow or amber
+- what a future agent should preserve
+
+## Red, green, and yellow
+
+Use this status model in long-running OS work.
+
+### Red
+
+Red means an assertion exists and currently fails.
+
+Red is useful because it proves the task captured intent before implementation.
+
+```text
+RED: <assertion name>
+Expected: <what should be true>
+Observed: <what is currently wrong>
+Command/evidence: <test command, grep, screenshot, or manual check>
+```
+
+### Green
+
+Green means the assertion passes.
+
+```text
+GREEN: <assertion name>
+Command/evidence: <passing command or verified artifact>
+Output/version/path: <result location>
+```
+
+### Yellow / Amber
+
+Yellow means the assertion is important and not fully resolved in this task.
+
+Use yellow instead of silently dropping intent.
+
+Valid yellow cases:
+
+- blocked by missing credentials or local-only access
+- requires a product decision
+- depends on another branch or stream
+- requires a live environment not available to the agent
+- is intentionally deferred to a follow-up task
+- can only be manually verified for now
+
+```text
+YELLOW: <assertion name>
+Why not green: <blocker or deferral reason>
+Next owner/task: <who or what should continue it>
+Risk if ignored: <what breaks if nobody follows up>
+```
+
+A task is not fully green while important yellow assertions are hidden.
+
+## Workpad contract
+
+Every non-trivial OS task should leave a workpad that a future agent can use without the original chat.
+
+Required sections:
+
+```markdown
+# Workpad
+
+## User intent assertions
+- [ ] <assertion>
+- [ ] <assertion>
+
+## Red checks
+- RED: <assertion> — <command/evidence>
+
+## Green checks
+- GREEN: <assertion> — <command/evidence>
+
+## Yellow / Amber checks
+- YELLOW: <assertion> — <why not green, next owner/task>
+
+## Files changed
+- <file> — <why>
+
+## Validation commands
+- <command> — <result>
+
+## Handoff notes
+- <what future agents must preserve>
+```
+
+The workpad is the executable memory of the task.
+
+## Assertion levels
+
+Use the cheapest assertion that can catch the failure.
+
+| Level | Best for | Example |
+| --- | --- | --- |
+| Phrase assertion | Required or forbidden wording | Require `OS server`; forbid the old phrase. |
+| Structure assertion | Required sections or fields | Source JSON has `sections`, `components`, and `ledger`. |
+| Behavior assertion | CLI, API, or server behavior | An OS server call returns the expected JSON. |
+| Browser assertion | UI affordances or rendered output | Navigation exists, button works, mobile table does not overflow. |
+| Screenshot assertion | Visual regressions | A reader shell still matches the mobile baseline. |
+| Manual assertion | Human product judgment | The operator confirms the page feels aligned with the design baseline. |
+
+Prefer automated checks for anything likely to regress. Use manual assertions when taste, product judgment, or live credentials are unavoidable.
+
+## Turning a long message into assertions
+
+When the user gives a long message, first extract the intent into groups.
+
+```text
+Naming:
+- Rename OS portal to OS server.
+
+Task ledger:
+- Move execution items from the V1 map into the checkbox ledger.
+- Keep completed historical work checked off.
+
+Office:
+- Rename wiki/design artifact direction toward Office.
+- Add user/team Office pages.
+- Preserve typed reader components.
+
+Traces:
+- Connect dashboard to live data.
+- Deploy internally on Cloudflare.
+- Add per-user/team traces pages.
+
+Diffs:
+- Treat as additive stream-native PR surface.
+- Do not block V1 on matching Graphite.
+```
+
+Then create at least one check per group.
+
+For a generated spec or Office artifact, save the assertion script next to the source JSON or in task-local temporary state, then record its path in the workpad.
+
+## Specs and Office artifacts
+
+For typed specs, plans, guides, dashboards, and docs:
+
+1. Put the source truth in typed JSON, MDX, or Markdown.
+2. Put user intent into an assertion script or checklist.
+3. Render the artifact.
+4. Validate the renderer markers.
+5. Run intent assertions against the rendered artifact and source.
+6. Publish with a base-version guard when replacing an existing page.
+7. Record current version, artifact path, and assertion evidence.
+
+Office artifacts should not rely on a successful publish alone. A page can publish successfully while still losing user intent. Intent assertions are the guardrail.
+
+## Surviving compaction and handoff
+
+Surviving compaction is an explicit design goal for OS agent work.
+
+Before a long task risks compaction, the agent should write or update:
+
+- workpad assertions
+- source file paths
+- current branch and task session
+- failing and passing command history
+- unresolved yellow items
+- publish or version IDs
+- rollback paths or backups
+
+A future agent should be able to continue by reading the workpad and running the listed checks.
+
+## When not to use TDD
+
+A no-test waiver is acceptable for:
+
+- pure typo fixes
+- mechanical formatting
+- comments that do not affect generated docs
+- emergency repair where test setup is broken
+- truly trivial docs-only edits
+
+Even then, the workpad should say why no red/green check was useful and what validation replaced it.
+
+## Default OS docs workflow
+
+For an OS documentation task, use this minimum bar:
+
+```text
+1. Write intent assertions from the user's request.
+2. Add or update the MDX doc.
+3. Add a small doc assertion test when the doc captures product or process rules.
+4. Run syntax validation for the assertion test.
+5. Run the assertion test.
+6. Run the relevant Mintlify docs validation.
+7. Record green/yellow evidence in the workpad.
+```
+
+## Product rule
+
+TDD is how agents preserve intent.
+
+When the task is long, the assertion list is the memory. When context compacts, the workpad is the handoff. When another agent resumes, green checks prove that the important parts survived.

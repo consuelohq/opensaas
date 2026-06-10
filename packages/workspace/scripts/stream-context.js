@@ -6,6 +6,7 @@ const path = require('path');
 const { getToken, listPullRequests } = require('./lib/github');
 const { fetchOrigin, listWorktrees, refExists, runGit } = require('./lib/git');
 const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
+const { filterRecentWorkpads } = require('./lib/stream-workpads');
 const {
   assertStreamBranchName,
   getDefaultStreamBranch,
@@ -103,51 +104,59 @@ function loadEnv() {
   };
 }
 
-async function getRecentWorkpads(area, limit = 3) {
+async function fetchMemoryRows(env, filters, limit) {
+  const url = new URL(`${env.url}/rest/v1/memories`);
+  url.searchParams.set('select', 'title,content,category,created_at');
+  for (const [key, value] of Object.entries(filters)) {
+    url.searchParams.set(key, value);
+  }
+  url.searchParams.set('order', 'created_at.desc');
+  url.searchParams.set('limit', String(limit));
+
+  try {
+    const resp = await fetch(url.toString(), {
+      headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
+    });
+    if (!resp.ok) {
+      return [];
+    }
+    return await resp.json();
+  } catch {
+    return [];
+  }
+}
+
+async function getRecentWorkpads(area, streamBranch, limit = 3) {
   const env = loadEnv();
   if (!env.url || !env.key) {
     return { skipped: true, reason: 'missing supabase credentials', workpads: [] };
   }
 
-  // try workpad category first, fall back to any category matching the area
+  const normalizedArea = normalizeArea(area);
+  const expectedStream = streamBranch || getDefaultStreamBranch(normalizedArea);
+  const taskBranchPrefix = `task/${normalizedArea}/`;
+  const queryLimit = Math.max(limit * 5, 15);
   const queries = [
-    { category: 'eq.workpad', title: `ilike.*${area}*` },
-    { category: 'not.eq.stream-decision', title: `ilike.*${area}*` },
+    { category: 'eq.workpad', title: `ilike.*${taskBranchPrefix}*` },
+    { category: 'eq.workpad', content: `ilike.*${expectedStream}*` },
+    { category: 'not.eq.stream-decision', title: `ilike.*${taskBranchPrefix}*` },
+    { category: 'not.eq.stream-decision', content: `ilike.*${expectedStream}*` },
   ];
 
+  const rows = [];
   for (const filters of queries) {
-    const url = new URL(`${env.url}/rest/v1/memories`);
-    url.searchParams.set('select', 'title,content,category,created_at');
-    for (const [k, v] of Object.entries(filters)) {
-      url.searchParams.set(k, v);
-    }
-    url.searchParams.set('order', 'created_at.desc');
-    url.searchParams.set('limit', String(limit));
-
     try {
-      const resp = await fetch(url.toString(), {
-        headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
-      });
-      if (!resp.ok) continue;
-      const rows = await resp.json();
-      if (rows.length > 0) {
-        return {
-          skipped: false,
-          reason: null,
-          workpads: rows.map((row) => ({
-            title: row.title,
-            category: row.category,
-            date: row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '',
-            content: row.content || '',
-          })),
-        };
-      }
+      rows.push(...(await fetchMemoryRows(env, filters, queryLimit)));
     } catch {
       continue;
     }
   }
 
-  return { skipped: false, reason: null, workpads: [] };
+  return {
+    skipped: false,
+    reason: null,
+    workpads: filterRecentWorkpads(rows, normalizedArea, expectedStream, limit),
+  };
 }
 
 async function getStreamDecisions(area, limit = 10) {
@@ -393,7 +402,7 @@ async function main() {
     decisions: await getStreamDecisions(area),
     openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
     recentCommits: getRecentCommits(repoRoot, streamBranch),
-    recentWorkpads: await getRecentWorkpads(area),
+    recentWorkpads: await getRecentWorkpads(area, streamBranch),
     aheadBehind: getAheadBehind(repoRoot, streamBranch),
     worktrees: getAreaWorktrees(repoRoot, area),
   };

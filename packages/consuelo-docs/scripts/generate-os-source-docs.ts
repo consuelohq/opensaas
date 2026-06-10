@@ -60,7 +60,9 @@ const templatePath = path.join(docsRoot, 'navigation', 'navigation.template.json
 const docsJsonPath = path.join(docsRoot, 'docs.json');
 
 const agentContextGroupKey = 'osAgentContext';
-const legacyGroupKey = 'osTools';
+// Legacy raw-source slugs still redirect from /os/tools/*, but osTools is now a real
+// user-facing group. Do not remove it when injecting Agent Context.
+const legacyGroupKey = '__legacyOsRawSourceTools';
 const agentContextGroupLabel = 'Agent Context';
 const agentContextGroupIcon = 'brain';
 
@@ -68,43 +70,43 @@ const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'k
 
 export const rawSourceDocs: RawSourceDoc[] = [
   {
-    sourcePath: 'packages/workspace/STEERING.md',
+    sourcePath: 'packages/os/STEERING.md',
     slug: 'os/agent-context/steering',
     legacySlugs: ['os/tools/default-steering'],
     title: 'steering.md',
-    description: 'The operating doctrine loaded into Suelo before repository work begins.',
-    runtimeRole: 'Identity, judgment, safety boundaries, communication style, and workspace operating doctrine.',
-    controls: 'How the agent thinks, what it protects, when it acts, and when it stops.',
+    description: 'Runtime steering loaded into the Consuelo OS agent.',
+    runtimeRole: 'Identity, product boundaries, OS server contract, permissions posture, customer-facing skill doctrine, and runtime operating context.',
+    controls: 'How OS agents think, which server and skill boundaries they protect, when they act, and when they stop.',
     generatedRoute: '/os/agent-context/steering',
   },
   {
-    sourcePath: 'packages/workspace/decision.md',
+    sourcePath: 'packages/os/decision.md',
     slug: 'os/agent-context/decision',
     legacySlugs: ['os/tools/decision-engine'],
     title: 'decision.md',
-    description: 'The evidence loop that turns retrieval, reads, tests, and runtime signals into next actions.',
-    runtimeRole: 'Decision-engine doctrine for explore, evidence, confidence, and confirmation.',
-    controls: 'How agents choose what to inspect next and how they decide whether a path is true.',
+    description: 'Decision-process doctrine used by Consuelo OS agents.',
+    runtimeRole: 'Decision-engine doctrine for evidence collection, confidence, validation, and next action selection inside Consuelo OS.',
+    controls: 'How OS agents inspect facts, resolve conflicts, preserve intent, and choose the next safe action.',
     generatedRoute: '/os/agent-context/decision',
   },
   {
-    sourcePath: 'packages/workspace/TOOLS.md',
+    sourcePath: 'packages/os/TOOLS.md',
     slug: 'os/agent-context/tools',
     legacySlugs: ['os/tools/tool-manifest'],
     title: 'tools.md',
-    description: 'The human-readable catalog of workspace facade tools available through `workspace.call`.',
-    runtimeRole: 'Tool contracts, call shapes, examples, envelopes, categories, and operational affordances.',
-    controls: 'Which tool names exist, how they are called, and what each tool returns.',
+    description: 'Human-readable catalog of callable Consuelo OS tools.',
+    runtimeRole: 'OS tool contracts, call shapes, envelopes, categories, skill-facing examples, and operational affordances.',
+    controls: 'Which OS tool names exist, how they are called through the server, and what each tool returns.',
     generatedRoute: '/os/agent-context/tools',
   },
   {
-    sourcePath: 'packages/workspace/SCRIPTS.md',
+    sourcePath: 'packages/os/SCRIPTS.md',
     slug: 'os/agent-context/scripts',
     legacySlugs: ['os/tools/scripts'],
     title: 'scripts.md',
-    description: 'The procedural script reference for operators and task-scoped repository workflows.',
-    runtimeRole: 'Script usage, task commands, validation commands, and workflow-specific procedures.',
-    controls: 'How humans and agents run repository operations without bypassing the workspace workflow.',
+    description: 'Procedural script reference for Consuelo OS runtime work.',
+    runtimeRole: 'OS runtime scripts, install commands, task commands, validation commands, and operator procedures.',
+    controls: 'How humans and agents run OS operations without bypassing the server, skill, or task workflow.',
     generatedRoute: '/os/agent-context/scripts',
   },
 ];

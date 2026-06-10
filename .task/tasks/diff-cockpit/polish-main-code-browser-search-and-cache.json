@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-main-code-browser-search-and-cache",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 777,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/777",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/777",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/777/polish-main-code-browser-search-and-cache",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/777",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/777/polish-main-code-browser-search-and-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-main-code-browser-search-and-cache",
+  "taskSession": "tsk_6bfd748c86cc",
+  "tmuxSession": "opensaas-diff-cockpit-polish-main-code-browser-search-and-cache-6bfd748c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-main-code-browser-search-and-cache/.task/diff-cockpit/polish-main-code-browser-search-and-cache/session.json",
+  "createdAt": "2026-06-05T05:31:11.079Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ba6902a2bfb3",
+  "tmuxSession": "opensaas-os-ship-sites-archive-shell-to-main-ba6902a2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-sites-archive-shell-to-main",
+  "branch": "task/os/ship-sites-archive-shell-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-sites-archive-shell-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-sites-archive-shell-to-main",
+  "prNumber": 878,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/878",
+  "createdAt": "2026-06-09T20:11:09.521Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-sites-archive-shell-to-main/.task/os/ship-sites-archive-shell-to-main/session.json"
+}

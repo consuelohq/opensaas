@@ -23,6 +23,16 @@ Skills live behind `call` as Bun scripts under `scripts/`. They are exposed thro
 
 Manifests are manifests. Skills are the capabilities that agents can run. Scripts are the executable implementation behind those skills.
 
+
+## Docs
+
+Operating docs live in `packages/os/docs/`:
+
+- `docs/runtime-surfaces.md` — OS server/runtime surfaces.
+- `docs/skills.md` — current skill contracts and examples.
+- `docs/permissions.md` — permission and approval levels.
+- `docs/env-capability-matrix.md` — runtime capabilities and env shape.
+
 ## Local runtime state
 
 Local OS state defaults to:

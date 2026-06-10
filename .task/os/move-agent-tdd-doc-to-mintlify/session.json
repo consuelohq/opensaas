@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_48980d93a7a8",
+  "tmuxSession": "opensaas-os-move-agent-tdd-doc-to-mintlify-48980d93",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/move-agent-tdd-doc-to-mintlify",
+  "branch": "task/os/move-agent-tdd-doc-to-mintlify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-agent-tdd-doc-to-mintlify",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-agent-tdd-doc-to-mintlify",
+  "prNumber": 860,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/860",
+  "createdAt": "2026-06-09T04:30:34.322Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-agent-tdd-doc-to-mintlify/.task/os/move-agent-tdd-doc-to-mintlify/session.json"
+}

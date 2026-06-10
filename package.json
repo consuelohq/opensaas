@@ -279,6 +279,7 @@
     "code-run": "bun packages/workspace/scripts/code-run.ts",
     "github": "bun packages/workspace/scripts/github.js",
     "diff_cockpit": "bun packages/workspace/scripts/diff_cockpit.ts",
+    "cron": "bun cron_jobs/index.ts",
     "git:diff": "bun packages/workspace/scripts/git-diff.js",
     "trace:analytics": "bun scripts/operator/trace-analytics.ts",
     "trace:costs": "bun scripts/operator/trace-costs.ts",

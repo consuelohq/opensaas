@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6c305b06c632",
+  "tmuxSession": "opensaas-diff-cockpit-resolve-stream-merge-conflicts-6c305b06",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/resolve-stream-merge-conflicts",
+  "branch": "task/diff-cockpit/resolve-stream-merge-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-resolve-stream-merge-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-resolve-stream-merge-conflicts",
+  "prNumber": 853,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/853",
+  "createdAt": "2026-06-08T22:49:52.411Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-resolve-stream-merge-conflicts/.task/diff-cockpit/resolve-stream-merge-conflicts/session.json"
+}

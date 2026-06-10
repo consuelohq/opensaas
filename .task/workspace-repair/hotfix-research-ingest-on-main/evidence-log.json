@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-repair/hotfix-research-ingest-on-main",
+  "events": [
+    {
+      "id": "5ab2dfc2-36c8-4d67-a312-38db4c31c0dc",
+      "occurred_at": "2026-06-07T09:09:45.972Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/research-ingest.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-repair/hotfix-research-ingest-on-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-repair/hotfix-research-ingest-on-main"
+      }
+    },
+    {
+      "id": "85d228d5-8b28-46c9-b537-43859e22531d",
+      "occurred_at": "2026-06-07T09:10:22.547Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/research-ingest.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-repair/hotfix-research-ingest-on-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-repair/hotfix-research-ingest-on-main"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-07T09:10:22.608Z"
+}

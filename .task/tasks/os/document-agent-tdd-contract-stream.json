@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/document-agent-tdd-contract-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 843,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/843",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/843",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/843/document-agent-tdd-contract-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/843",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/843/document-agent-tdd-contract-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-contract-stream",
+  "taskSession": "tsk_78450c4e8cea",
+  "tmuxSession": "opensaas-os-document-agent-tdd-contract-stream-78450c4e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-agent-tdd-contract-stream/.task/os/document-agent-tdd-contract-stream/session.json",
+  "createdAt": "2026-06-07T22:31:48.349Z"
+}

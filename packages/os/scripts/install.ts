@@ -328,7 +328,7 @@ async function main(): Promise<void> {
       info(summarizeActions(result));
       if (!suppressFinalSummary) {
         info(
-          `next: CONSUELO_HOME=${result.home} bun --cwd packages/os run doctor`,
+          `next: CONSUELO_HOME=${result.home} bun --cwd ${result.home} run doctor`,
         );
         printEnd('OS ready');
       }

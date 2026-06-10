@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5692ff8c4f3d",
+  "tmuxSession": "opensaas-workspace-agents-fix-coderabbit-review-comments-5692ff8c",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-coderabbit-review-comments",
+  "branch": "task/workspace-agents/fix-coderabbit-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-review-comments",
+  "prNumber": 868,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/868",
+  "createdAt": "2026-06-09T17:47:18.971Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-review-comments/.task/workspace-agents/fix-coderabbit-review-comments/session.json"
+}

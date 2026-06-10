@@ -1,0 +1,600 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+  "events": [
+    {
+      "id": "208b1fb3-6130-4e4b-b4df-3b720f1eb38a",
+      "occurred_at": "2026-06-07T17:34:13.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "05a11a9f-21c9-419d-8a00-1146c461486c",
+      "occurred_at": "2026-06-07T17:34:13.745Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "093f1d0a-211a-4930-bb7a-b01195b08aa0",
+      "occurred_at": "2026-06-07T17:34:24.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "da3e805f-ebdc-40e2-81a2-678a11dfd9ca",
+      "occurred_at": "2026-06-07T17:34:25.083Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "7eee7a8f-812a-4802-bb29-32d6cb978f4d",
+      "occurred_at": "2026-06-07T17:34:25.244Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "8dd9de68-7356-426b-8665-02af3ffac0d9",
+      "occurred_at": "2026-06-07T17:34:38.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "0f793c5c-3376-42d4-81f9-edcafee9c4ad",
+      "occurred_at": "2026-06-07T17:34:38.843Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "311c82eb-6282-4134-aac5-3cc0c17d6171",
+      "occurred_at": "2026-06-07T17:34:52.428Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "d946ce9f-9b55-45da-a7cc-bb13e1b5f096",
+      "occurred_at": "2026-06-07T17:35:12.378Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "cac645e3-825d-498e-8266-0348e492f8a5",
+      "occurred_at": "2026-06-07T17:35:25.605Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "b9daa01b-ee2b-425c-ad89-a9d05e8463ad",
+      "occurred_at": "2026-06-07T17:36:19.691Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "31c85969-7894-4ce2-afad-827b3eb41686",
+      "occurred_at": "2026-06-07T17:38:14.589Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "15c13b32-7b7c-48fc-aa41-587ad9e583c8",
+      "occurred_at": "2026-06-07T17:38:49.069Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "6fa62ec9-004b-489a-9e43-28e5bca37d64",
+      "occurred_at": "2026-06-07T17:39:24.598Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "c8323501-5a65-4be4-bf57-9b913a16087d",
+      "occurred_at": "2026-06-07T17:39:31.819Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "3a59c376-6238-45da-bd3c-c6ee921476dd",
+      "occurred_at": "2026-06-07T17:39:48.190Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "b546354e-2469-40fe-99fc-6ef900f21777",
+      "occurred_at": "2026-06-07T17:40:41.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "4afae793-8443-4cdb-bfd3-028595a5799a",
+      "occurred_at": "2026-06-07T17:40:57.600Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "92f37608-ba14-49bd-a96b-cc00d06dd547",
+      "occurred_at": "2026-06-07T17:41:20.689Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "c7623318-f9ec-41fe-8f49-9c0dd1e7955e",
+      "occurred_at": "2026-06-07T17:43:04.255Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "90555a93-2676-494a-84e0-c32395c52ac2",
+      "occurred_at": "2026-06-07T17:43:13.080Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "6d748b4f-34e0-46f6-b067-ea82a6eee443",
+      "occurred_at": "2026-06-07T17:43:31.190Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "254c30f6-c37d-43af-8628-ad548115c749",
+      "occurred_at": "2026-06-07T17:43:45.418Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "ecb33e48-4bc9-4f9b-9537-ee94d1eb570c",
+      "occurred_at": "2026-06-07T17:43:53.588Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "bf84ac8f-89ba-4822-8a9f-8a8255607439",
+      "occurred_at": "2026-06-07T17:44:03.012Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "d3ff5351-8e66-4450-9ed2-2e6fdb26a2ec",
+      "occurred_at": "2026-06-07T17:44:14.682Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "3103ca80-b1b8-4a0d-af57-808a53fd451e",
+      "occurred_at": "2026-06-07T17:44:25.087Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "a0881e3d-ab97-4165-84a4-976f1702ba11",
+      "occurred_at": "2026-06-07T17:44:59.053Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "7a163447-fae1-4cfb-9389-889d3178f03c",
+      "occurred_at": "2026-06-07T17:45:08.724Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "8e1f877b-2988-46b4-a8c1-0ae1df28369b",
+      "occurred_at": "2026-06-07T17:45:45.187Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "90418170-5346-4f15-a45c-263f0b60ca1c",
+      "occurred_at": "2026-06-07T17:46:14.814Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "bd650059-1d6c-4e93-b9e7-1637c10c7766",
+      "occurred_at": "2026-06-07T17:46:44.626Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "1ddabd23-2644-4052-bd93-d34fe8accda4",
+      "occurred_at": "2026-06-07T17:47:17.515Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "7f1e6b2b-3c1e-4061-b41a-e918d1d958ab",
+      "occurred_at": "2026-06-07T17:48:31.894Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "e5a4edbd-c5c3-4ace-bc74-1b99331ff146",
+      "occurred_at": "2026-06-07T17:49:07.587Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "2c329c5a-a819-4f14-b91e-c2fd1f33fa9e",
+      "occurred_at": "2026-06-07T17:49:41.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    },
+    {
+      "id": "6d7d5c9e-dd72-4344-a9dd-e9656ff74149",
+      "occurred_at": "2026-06-07T17:50:26.718Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/prepare-stream-merge-from-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/prepare-stream-merge-from-stream"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-07T17:50:26.780Z"
+}

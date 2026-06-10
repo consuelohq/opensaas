@@ -1,0 +1,62 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+  "base": "stream/diff-cockpit",
+  "headSha": "884ad2730f8a2c4492c0e8d93c10f07cd1e31144",
+  "changeHash": "ef347bcb21bdb94f967568d7988d8624ae7ea6b6ae08cda1f850a7e7e1e628ea",
+  "changedFiles": [
+    "cron_jobs/README.md",
+    "cron_jobs/diff_cockpit/cron.json",
+    "cron_jobs/index.ts",
+    "cron_jobs/tests/cron_jobs.test.ts",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T19:25:39.939Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/current.json",
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/evidence-log.json",
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/read-log.json",
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/session.json",
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/verify.json",
+        ".task/diff-cockpit/hydrate-pr-pages-from-shared-cache/workpad.md",
+        ".task/tasks/diff-cockpit/hydrate-pr-pages-from-shared-cache.json",
+        "cron_jobs/README.md",
+        "cron_jobs/diff_cockpit/cron.json",
+        "cron_jobs/index.ts",
+        "cron_jobs/tests/cron_jobs.test.ts",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

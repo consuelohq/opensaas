@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/diagnose-cron-cache-refresh",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 876,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/876",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/876",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/876/diagnose-cron-cache-refresh",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/876",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/876/diagnose-cron-cache-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-diagnose-cron-cache-refresh",
+  "taskSession": "tsk_1af1c1324f9f",
+  "tmuxSession": "opensaas-diff-cockpit-diagnose-cron-cache-refresh-1af1c132",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-diagnose-cron-cache-refresh/.task/diff-cockpit/diagnose-cron-cache-refresh/session.json",
+  "createdAt": "2026-06-09T19:33:26.057Z"
+}

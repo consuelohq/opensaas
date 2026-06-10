@@ -1,12 +1,15 @@
 export type ErrorCode =
   | "OK"
   | "VALIDATION_ERROR"
+  | "CODE_CALL_VALIDATION_ERROR"
   | "AMBIGUOUS_TASK_SELECTION"
   | "WORKTREE_NOT_FOUND"
   | "COMMAND_FAILED"
   | "TIMEOUT"
   | "PARSE_ERROR"
   | "NOT_FOUND"
+  | "TASK_SESSION_NOT_FOUND"
+  | "TASK_SESSION_REQUIRED"
   | "DRY_RUN";
 
 export type ToolResult<TData = unknown> = {
@@ -57,6 +60,7 @@ declare const workspace: {
     wait: (input: { target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   code: {
+    call: (input: { language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ ok: boolean; exitCode: number; language: "python" | "bun" | "bash"; requestedLanguage?: string; runtime: string; mode: "read" | "edit" | "verify"; cwd: string; durationMs: number; stdout: string; stderr: string; filesChanged: string[]; truncated: boolean; traceId: string; message?: string; code?: string; detectedMistakeClass?: string; stdoutLogPath?: string; stderrLogPath?: string }>>;
     run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   consueloDesign: {

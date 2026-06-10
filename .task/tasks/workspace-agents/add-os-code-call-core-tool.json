@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-os-code-call-core-tool",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 859,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/859",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/859",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/859/add-os-code-call-core-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/859",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/859/add-os-code-call-core-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-os-code-call-core-tool",
+  "taskSession": "tsk_5cee096eb83b",
+  "tmuxSession": "opensaas-workspace-agents-add-os-code-call-core-tool-5cee096e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-os-code-call-core-tool/.task/workspace-agents/add-os-code-call-core-tool/session.json",
+  "createdAt": "2026-06-09T03:56:38.579Z"
+}

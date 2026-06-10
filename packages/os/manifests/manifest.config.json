@@ -21,6 +21,7 @@
       "audit",
       "checkFiles",
       "code.run",
+      "code.call",
       "confidenceScore",
       "confirm",
       "decideNext",

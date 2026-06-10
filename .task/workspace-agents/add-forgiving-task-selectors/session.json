@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cb0da2160bc7",
+  "tmuxSession": "opensaas-workspace-agents-add-forgiving-task-selectors-cb0da216",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-forgiving-task-selectors",
+  "branch": "task/workspace-agents/add-forgiving-task-selectors",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors",
+  "prNumber": 854,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/854",
+  "createdAt": "2026-06-08T23:05:02.976Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-forgiving-task-selectors/.task/workspace-agents/add-forgiving-task-selectors/session.json"
+}
