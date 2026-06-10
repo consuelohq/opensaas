@@ -515,7 +515,7 @@ describe('renderIndexPage', () => {
   test('renders a Graphite-like PR inbox with command search and load-more sections', () => {
     const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
 
-    expect(html).toContain('Consolidate Diffs');
+    expect(html).toContain('Consuelo Diffs');
     expect(html).not.toContain('>Pull Requests</a>');
     expect(html).not.toContain('>main</a>');
     expect(html).not.toContain('<h1>Pull Requests</h1>');
@@ -608,10 +608,10 @@ describe('renderReviewPage', () => {
     expect(html).toContain('.diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }');
     expect(html).toContain('.diff-gutter { padding-right:4px; }');
     expect(html).toContain('.inline-comment { margin-left:68px; }');
-    expect(html).toContain('--paper:#070a0d');
-    expect(html).toContain('--surface:#0b0f13');
+    expect(html).toContain('--paper:#0f0f0d');
+    expect(html).toContain('--surface:#191814');
     expect(html).toContain('id="file-pane-resizer"');
-    expect(html).toContain('font-family: Inter');
+    expect(html).toContain('font-family: \"Geist Mono\"');
     expect(html).toContain('font-size:13px');
     expect(html).toContain('font-size:12px');
     expect(html).toContain('grid-template-columns:42px 42px minmax(0, 1fr)');
@@ -680,7 +680,7 @@ describe('createWorker', () => {
     const html = await response.text();
 
     expect(response.status).toBe(200);
-    expect(html).toContain('Consolidate Diffs');
+    expect(html).toContain('Consuelo Diffs');
   });
 
 
