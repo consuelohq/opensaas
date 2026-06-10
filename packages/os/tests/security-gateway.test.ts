@@ -642,4 +642,264 @@ describe('Consuelo OS public gateway security contract', () => {
       workspaceId: 'workspace-acme',
     })).toThrow(/route|not found/i);
   });
+
+
+  it('authorizes protected /call requests with generated signed scoped app tokens only', () => {
+    const authPath = join(tempHome, 'security', 'generated', 'auth.json');
+    const body = JSON.stringify({ name: 'get_raw_steering' });
+    const result = readJsonFromBun<JsonObject>(`
+      const { createGatewaySecurityConfig, issueAgentAppToken, signMachineRequest } = await import('./scripts/lib/security-gateway.ts');
+      const home = process.env.CONSUELO_OS_HOME;
+      const config = createGatewaySecurityConfig({
+        home,
+        workspaceId: 'workspace-acme',
+        workspaceSlug: 'acme',
+        workspaceHost: 'acme.consuelohq.com',
+      });
+      const token = issueAgentAppToken({
+        config,
+        callerId: 'chatgpt-app-1',
+        appId: 'chatgpt',
+        scopes: ['tool:get_raw_steering:read'],
+        expiresInSeconds: 300,
+      });
+      const body = ${JSON.stringify(body)};
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/call',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'server-call-signed-nonce',
+      });
+      const { handleRequest } = await import('./scripts/server.ts');
+      async function request(init) {
+        const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
+          method: 'POST',
+          headers: init.headers,
+          body: init.body,
+        }));
+        const text = await response.text();
+        let json = null;
+        try { json = JSON.parse(text); } catch {}
+        return { status: response.status, text, json };
+      }
+      const allowed = await request({ headers: signed.headers, body });
+      const staticOnly = await request({
+        headers: { authorization: 'Bearer static-token' },
+        body,
+      });
+      const missingScopeToken = issueAgentAppToken({
+        config,
+        callerId: 'chatgpt-app-2',
+        appId: 'chatgpt',
+        scopes: ['tool:other:read'],
+        expiresInSeconds: 300,
+      });
+      const missingScopeSigned = signMachineRequest({
+        config,
+        token: missingScopeToken,
+        method: 'POST',
+        path: '/call',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'server-call-missing-scope-nonce',
+      });
+      const missingScope = await request({ headers: missingScopeSigned.headers, body });
+      const tamperSigned = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/call',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'server-call-tampered-nonce',
+      });
+      const tampered = await request({
+        headers: tamperSigned.headers,
+        body: JSON.stringify({ name: 'daily-revenue-brief' }),
+      });
+      process.stdout.write(JSON.stringify({ allowed, staticOnly, missingScope, tampered }));
+    `, {
+      CONSUELO_OS_AUTH_CONFIG: authPath,
+      CONSUELO_OS_BEARER_TOKEN: 'static-token',
+    });
+
+    expect(result.allowed).toMatchObject({ status: 200, json: { ok: true, name: 'get_raw_steering' } });
+    expect(result.staticOnly).toMatchObject({ status: 401, json: { error: { code: 'MISSING_SIGNATURE' } } });
+    expect(result.missingScope).toMatchObject({ status: 403, json: { error: { code: 'MISSING_SCOPE' } } });
+    expect(result.tampered).toMatchObject({ status: 401, json: { error: { code: 'BAD_SIGNATURE' } } });
+    expect(JSON.stringify(result)).not.toContain('static-token');
+  });
+
+  it('rejects expired app tokens without consuming their nonce or leaking secrets', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: -60,
+    });
+    const timestamp = new Date().toISOString();
+    const nonce = 'expired-token-fresh-request-nonce';
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp,
+      nonce,
+    });
+    const expired = await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: signed.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: timestamp,
+    });
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as { seenNonces?: Record<string, string> };
+
+    expect(expired).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_EXPIRED' } });
+    expect(stored.seenNonces?.[nonce]).toBeUndefined();
+    expect(JSON.stringify(expired)).not.toContain(token.secret);
+  });
+
+  it('preserves generated auth state across repeated provisioning', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const activeToken = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'active-agent',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const activeSigned = await gateway.signMachineRequest({
+      config,
+      token: activeToken,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'idempotent-active-nonce',
+    });
+    await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: activeSigned.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:01.000Z',
+    });
+    const revokedToken = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'revoked-agent',
+      appId: 'worker',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const revokedSigned = await gateway.signMachineRequest({
+      config,
+      token: revokedToken,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:02.000Z',
+      nonce: 'idempotent-revoked-nonce',
+    });
+    await gateway.revokeAgentAppToken({ config, tokenId: revokedToken.tokenId });
+    const rotatedToken = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'rotated-agent',
+      appId: 'worker',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const rotatedSigned = await gateway.signMachineRequest({
+      config,
+      token: rotatedToken,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:03.000Z',
+      nonce: 'idempotent-rotated-nonce',
+    });
+    await gateway.rotateAgentAppToken({ config, token: rotatedToken });
+    const before = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as { signingKeyId: string };
+
+    const reprovisioned = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const after = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as { signingKeyId: string; tokens: Record<string, { status: string }>; seenNonces: Record<string, string> };
+
+    expect(reprovisioned.signingKeyId).toBe(before.signingKeyId);
+    expect(after.signingKeyId).toBe(before.signingKeyId);
+    expect(after.seenNonces['idempotent-active-nonce']).toBe(activeToken.tokenId);
+    expect(after.tokens[revokedToken.tokenId]?.status).toBe('revoked');
+    expect(after.tokens[rotatedToken.tokenId]?.status).toBe('rotated');
+    expect(gateway.verifyMachineRequest({
+      config: reprovisioned,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: activeSigned.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:04.000Z',
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'REPLAYED_NONCE' } });
+    expect(gateway.verifyMachineRequest({
+      config: reprovisioned,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: revokedSigned.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:05.000Z',
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_REVOKED' } });
+    expect(gateway.verifyMachineRequest({
+      config: reprovisioned,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: rotatedSigned.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:06.000Z',
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_ROTATED' } });
+  });
+
+  it('uses the resolved OS port in generated Caddy config', () => {
+    readJsonFromBun<JsonObject>(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', port: 8999 });
+      process.stdout.write(JSON.stringify(result));
+    `);
+
+    const caddyfile = readFileSync(join(tempHome, 'security', 'generated', 'Caddyfile'), 'utf8');
+    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
+    expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
+  });
 });

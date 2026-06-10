@@ -1,15 +1,20 @@
 #!/usr/bin/env bun
 
 import { executeCall, getSteering } from './os';
+import {
+  loadGatewaySecurityConfig,
+  verifyMachineRequest,
+  type VerificationResult,
+} from './lib/security-gateway';
 import type { CallInput } from './lib/types';
 
 const DEFAULT_PORT = 8850;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
-const BEARER_TOKEN = process.env.CONSUELO_OS_BEARER_TOKEN ?? '';
 const AUTH_CONFIG_PATH = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
 
 type JsonObject = Record<string, unknown>;
+type ToolCategory = 'read' | 'write' | 'dangerous';
 
 function jsonResponse(body: JsonObject, status = 200): Response {
   return new Response(JSON.stringify(body, null, 2), {
@@ -33,26 +38,85 @@ function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized'): Response
   return jsonResponse({ error: { code, message } }, 401);
 }
 
+function verificationResponse(result: Extract<VerificationResult, { ok: false }>): Response {
+  return jsonResponse({ error: result.error }, result.status);
+}
+
 function hasGeneratedAuthConfig(): boolean {
-  return Boolean(BEARER_TOKEN || AUTH_CONFIG_PATH);
+  return Boolean(AUTH_CONFIG_PATH);
 }
 
-function isAuthorized(request: Request): boolean {
-  if (!hasGeneratedAuthConfig()) return false;
-  if (!BEARER_TOKEN) return false;
-  return request.headers.get('authorization') === `Bearer ${BEARER_TOKEN}`;
+function requestHeaders(request: Request): Record<string, string> {
+  return Object.fromEntries(request.headers.entries());
 }
 
-async function readCallInput(request: Request): Promise<CallInput> {
-  const body = await request.json().catch(() => null) as unknown;
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+function loadAuthConfigForRequest(): ReturnType<typeof loadGatewaySecurityConfig> {
+  return loadGatewaySecurityConfig({ authConfigPath: AUTH_CONFIG_PATH });
+}
+
+function toolCategory(toolName: string): ToolCategory {
+  if (/^(task\.merge|task\.finish|task\.pr|task\.push|delete|trash)/.test(toolName)) return 'dangerous';
+  if (/(write|patch|create|update|start|apply|modify|archive|send|forward|run|call)$/.test(toolName)) return 'write';
+  if (/(^|\.)(write|patch|trash|delete|create|update|send|archive|forward)(\.|$)/.test(toolName)) return 'write';
+  return 'read';
+}
+
+function requiredToolScope(toolName: string): string {
+  return `tool:${toolName}:${toolCategory(toolName)}`;
+}
+
+async function authorizeSignedRequest(input: {
+  request: Request;
+  path: string;
+  body: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  if (!hasGeneratedAuthConfig()) {
+    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
+  }
+
+  let config: ReturnType<typeof loadGatewaySecurityConfig>;
+  try {
+    config = loadAuthConfigForRequest();
+  } catch {
+    return unauthorized('AUTH_CONFIG_REQUIRED', 'Generated Consuelo OS auth config is required.');
+  }
+
+  const headers = requestHeaders(input.request);
+  const result = verifyMachineRequest({
+    config,
+    method: input.request.method,
+    path: input.path,
+    body: input.body,
+    headers,
+    workspaceId: headers['x-consuelo-workspace-id'] ?? '',
+    requiredScope: input.requiredScope,
+    now: new Date().toISOString(),
+  });
+
+  return result.ok ? null : verificationResponse(result);
+}
+
+function parseCallInput(body: string): CallInput {
+  const parsed = JSON.parse(body) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new Error('Request body must be a JSON object.');
   }
-  const input = body as Partial<CallInput>;
+  const input = parsed as Partial<CallInput>;
   if (!input.name || typeof input.name !== 'string') {
     throw new Error('Request body requires a string name.');
   }
   return input as CallInput;
+}
+
+function invalidRequest(error: unknown): Response {
+  return jsonResponse({
+    ok: false,
+    error: {
+      code: 'INVALID_REQUEST',
+      message: error instanceof Error ? error.message.slice(0, 240) : 'Invalid request',
+    },
+  }, 400);
 }
 
 function healthResponse(): Response {
@@ -70,28 +134,46 @@ async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url);
 
   if (url.pathname === '/health') return healthResponse();
-  if (!hasGeneratedAuthConfig()) {
-    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
-  }
-  if (!isAuthorized(request)) return unauthorized();
 
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
+    const body = request.method === 'GET' ? '' : await request.clone().text();
+    const denied = await authorizeSignedRequest({
+      request,
+      path: '/get_steering',
+      body,
+      requiredScope: 'route:/get_steering:read',
+    });
+    if (denied) return denied;
     return textResponse(getSteering());
   }
 
   if (url.pathname === '/call' && request.method === 'POST') {
+    const body = await request.clone().text();
+    let input: CallInput;
     try {
-      const result = await executeCall(await readCallInput(request));
+      input = parseCallInput(body);
+    } catch (error: unknown) {
+      return invalidRequest(error);
+    }
+
+    const denied = await authorizeSignedRequest({
+      request,
+      path: '/call',
+      body,
+      requiredScope: requiredToolScope(input.name),
+    });
+    if (denied) return denied;
+
+    try {
+      const result = await executeCall(input);
       return jsonResponse(result, result.ok ? 200 : 400);
     } catch (error: unknown) {
-      return jsonResponse({
-        ok: false,
-        error: {
-          code: 'INVALID_REQUEST',
-          message: error instanceof Error ? error.message.slice(0, 240) : 'Invalid request',
-        },
-      }, 400);
+      return invalidRequest(error);
     }
+  }
+
+  if (!hasGeneratedAuthConfig()) {
+    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
   }
 
   return jsonResponse({
@@ -113,4 +195,3 @@ if (import.meta.main) {
 }
 
 export { handleRequest };
-
