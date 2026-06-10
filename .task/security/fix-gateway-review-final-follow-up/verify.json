@@ -4,15 +4,15 @@
   "mode": "full",
   "branch": "task/security/fix-gateway-review-final-follow-up",
   "base": "origin/stream/security",
-  "headSha": "df6572f8e084c2d8ad0c1e630424a3c361c2af1a",
-  "changeHash": "f545d08e3ec96f27b09fcbee289fec285ced2287c4504f56f4fdb167cfdc6fe7",
+  "headSha": "09ac0eb057cd9bcbdaac2d7edb30a6477f6573f1",
+  "changeHash": "693d4071bad9083f77a56eb5163a17f5d57111df3281e37bb6b3be4b790204f8",
   "changedFiles": [
     "packages/os/scripts/lib/install-state.ts",
     "packages/os/scripts/lib/security-gateway.ts",
     "packages/os/scripts/server.ts",
     "packages/os/tests/security-gateway.test.ts"
   ],
-  "verifiedAt": "2026-06-10T01:21:30.862Z",
+  "verifiedAt": "2026-06-10T01:25:55.993Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -30,6 +30,8 @@
         ".task/security/fix-gateway-review-final-follow-up/evidence-log.json",
         ".task/security/fix-gateway-review-final-follow-up/read-log.json",
         ".task/security/fix-gateway-review-final-follow-up/session.json",
+        ".task/security/fix-gateway-review-final-follow-up/status.txt",
+        ".task/security/fix-gateway-review-final-follow-up/verify.json",
         ".task/security/fix-gateway-review-final-follow-up/workpad.md",
         ".task/tasks/security/fix-gateway-review-final-follow-up.json",
         "packages/os/scripts/lib/install-state.ts",

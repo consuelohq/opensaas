@@ -50,6 +50,7 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:15:17 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
 - 2026-06-10 01:15:35 fs.write: `packages/os/tests/security-gateway.test.ts`
 - 2026-06-10 01:22:28 fs.write: `.task/security/fix-gateway-review-final-follow-up/status.txt`
+- 2026-06-10 01:24:58 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
 
 ## workspace-owned: files read
 
@@ -76,14 +77,19 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:20:49 `review.run`: passed — OK
 - 2026-06-10 01:21:30 `verify`: passed — OK
 - 2026-06-10 01:21:43 `review.run`: passed — OK
+- 2026-06-10 01:25:55 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/security/fix-gateway-review-final-follow-up/current.json`, `.task/security/fix-gateway-review-final-follow-up/evidence-log.json`, `.task/security/fix-gateway-review-final-follow-up/read-log.json`, `.task/security/fix-gateway-review-final-follow-up/session.json`, `.task/security/fix-gateway-review-final-follow-up/workpad.md`, `.task/tasks/security/fix-gateway-review-final-follow-up.json`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/server.ts`, `packages/os/tests/security-gateway.test.ts`
+- changed files: `.task/security/fix-gateway-review-final-follow-up/current.json`, `.task/security/fix-gateway-review-final-follow-up/evidence-log.json`, `.task/security/fix-gateway-review-final-follow-up/read-log.json`, `.task/security/fix-gateway-review-final-follow-up/session.json`, `.task/security/fix-gateway-review-final-follow-up/status.txt`, `.task/security/fix-gateway-review-final-follow-up/verify.json`, `.task/security/fix-gateway-review-final-follow-up/workpad.md`, `.task/tasks/security/fix-gateway-review-final-follow-up.json`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/server.ts`, `packages/os/tests/security-gateway.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
 
-- 2026-06-10 01:22:28 write: `.task/security/fix-gateway-review-final-follow-up/status.txt`
+## publish update
+
+After syncing the task worktree to the pushed branch, this note records the final state: gateway security code, server request handling, doctor checks, and focused security tests were updated. Validation passed for the security suite, raw steering suite, syntax, stream review, stream verify, and main-base review.
+
+- 2026-06-10 01:24:58 append: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
