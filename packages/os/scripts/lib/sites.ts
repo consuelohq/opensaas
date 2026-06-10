@@ -98,6 +98,8 @@ export type SitesPaths = {
   tracesIndexPath: string;
   diffsDir: string;
   diffsIndexPath: string;
+  docsDir: string;
+  docsIndexPath: string;
 };
 
 export type MaterializeSitesOptions = {
@@ -114,6 +116,7 @@ export type MaterializeSitesResult = {
   officeIndexPath: string;
   officeDataPath: string;
   officeAssetsDir: string;
+  docsIndexPath: string;
   data: OfficeSiteData;
   actions: SitesAction[];
 };
@@ -207,14 +210,15 @@ type ArtifactRow = {
 };
 
 type ReservedSite = {
-  slug: 'traces' | 'diffs';
+  slug: 'traces' | 'diffs' | 'docs';
   title: string;
   description: string;
 };
 
 const RESERVED_SITES: ReservedSite[] = [
-  { slug: 'traces', title: 'Traces', description: 'Execution traces will show how Sites work was produced.' },
-  { slug: 'diffs', title: 'Diffs', description: 'Diff pages will show generated changes and review context.' },
+  { slug: 'diffs', title: 'Diffs', description: 'Review generated changes and decision context.' },
+  { slug: 'traces', title: 'Tracing', description: 'Review execution traces and provenance.' },
+  { slug: 'docs', title: 'Documentation', description: 'Open Consuelo OS operating documentation.' },
 ];
 
 function nowIso(): string {
@@ -570,47 +574,51 @@ export function sitePageLeaseStatus(options: { home: string; pagePath?: string |
 
 function baseStyles(): string {
   return `
-    :root { color-scheme: light; --background: #f7f8fa; --surface: #ffffff; --border: #d6dae1; --text: #1d2430; --muted: #5a6575; --accent: #0f766e; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--background); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
-    main { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; padding: 32px 0; }
-    header { display: grid; gap: 8px; margin-bottom: 24px; }
-    h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: 0; }
-    p { margin: 0; color: var(--muted); }
-    a { color: inherit; text-decoration: none; }
-    section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .section-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
-    h2 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: 0; }
-    .count { color: var(--accent); font-weight: 650; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 760px; }
-    th, td { padding: 12px 18px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; font-size: 14px; }
-    th { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
-    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
-    .empty { color: var(--muted); text-align: center; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 18px 0 24px; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: grid; gap: 6px; }
-    .card h2 { font-size: 16px; }
+    :root{color-scheme:dark;--sites-bg:#050505;--sites-text:#f4f0e8;--sites-muted:#a8a095;--sites-link:#9da7ff;--sites-visited:#c8a4ff;}
+    *{box-sizing:border-box;}
+    html,body{min-height:100%;}
+    body{margin:0;background:var(--sites-bg);color:var(--sites-text);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px;font-weight:700;line-height:1.18;letter-spacing:-0.025em;}
+    main{padding:32px;max-width:760px;}
+    h1,h2,p,ul,li{margin:0;padding:0;}
+    h1{font:inherit;text-transform:uppercase;}
+    h2{font:inherit;text-transform:uppercase;}
+    ul{list-style:none;}
+    a{color:var(--sites-link);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:0.18em;}
+    a:visited{color:var(--sites-visited);}
+    .terminal-launcher{white-space:normal;}
+    .terminal-block{margin-top:18px;}
+    .divider{margin:18px 0;color:var(--sites-text);}
+    .terminal-line{display:block;}
+    .terminal-list{margin-top:0;}
+    .terminal-list li{display:block;}
+    .terminal-muted{color:var(--sites-muted);}
+    .cursor{display:inline-block;animation:blink 1.05s steps(1,end) infinite;}
+    .table-wrap{overflow-x:auto;margin-top:12px;}
+    table{border-collapse:collapse;min-width:760px;}
+    th,td{padding:4px 12px 4px 0;text-align:left;vertical-align:top;font-size:12px;}
+    th{color:var(--sites-muted);text-transform:uppercase;}
+    code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;color:var(--sites-muted);white-space:nowrap;}
+    section{margin-top:18px;}
+    .section-header{margin-bottom:8px;}
+    .empty{color:var(--sites-muted);}
+    @keyframes blink{50%{opacity:0;}}
   `;
 }
 
 function buildSitesIndex(): string {
-  const cards = [
-    { href: 'pages/', title: 'Pages', description: 'Versioned local Sites pages with current pointers and immutable history.' },
-    { href: 'office/', title: 'Office', description: 'Artifact-backed generated docs, reports, files, pages, and future local workspace output.' },
-    { href: 'traces/', title: 'Traces', description: 'Reserved local site for execution traces and provenance review.' },
-    { href: 'diffs/', title: 'Diffs', description: 'Reserved local site for generated changes and review context.' },
+  const siteLinks = [
+    { href: 'office/', title: 'Office' },
+    { href: 'diffs/', title: 'Diffs' },
+    { href: 'traces/', title: 'Tracing' },
+    { href: 'docs/', title: 'Documentation' },
   ].map((site) => `
-      <a class="card" href="${escapeHtml(site.href)}">
-        <h2>${escapeHtml(site.title)}</h2>
-        <p>${escapeHtml(site.description)}</p>
-      </a>`).join('');
+      <li>- <a href="${escapeHtml(site.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.title)}</a></li>`).join('');
 
   return `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sites</title><style>${baseStyles()}</style></head>
-<body><main><header><h1>Sites</h1><p>Sites is the local Consuelo OS site system. Office is one site category under Sites, while artifacts remain the durable provenance records behind generated output.</p></header><div class="grid">${cards}
-    </div></main></body></html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Consuelo OS Sites</title><style>${baseStyles()}</style></head>
+<body><main class="terminal-launcher" aria-labelledby="sites-title"><h1 id="sites-title">CONSUELO OS <span class="cursor" aria-hidden="true">█</span></h1><p class="divider">~~~</p><section class="terminal-block" aria-label="Consuelo OS status"><p class="terminal-line">CONTACT: <a href="mailto:support@consuelohq.com">support@consuelohq.com</a></p><p class="terminal-line">LOCATION: USA</p><p class="terminal-line">STATUS: ONLINE</p><p class="terminal-line">OPEN POSITION:</p><ul class="terminal-list"><li>- <a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li></ul></section><p class="divider">~~~</p><section class="terminal-block" aria-label="Sites"><p>SITES:</p><ul class="terminal-list">${siteLinks}
+    </ul></section></main></body></html>
 `;
 }
 
@@ -658,6 +666,7 @@ export function getSitesPaths(home: string): SitesPaths {
   const officeAssetsDir = path.join(officeDir, 'assets');
   const tracesDir = path.join(sitesDir, 'traces');
   const diffsDir = path.join(sitesDir, 'diffs');
+  const docsDir = path.join(sitesDir, 'docs');
   return {
     sitesDir,
     indexPath: path.join(sitesDir, 'index.html'),
@@ -674,6 +683,8 @@ export function getSitesPaths(home: string): SitesPaths {
     tracesIndexPath: path.join(tracesDir, 'index.html'),
     diffsDir,
     diffsIndexPath: path.join(diffsDir, 'index.html'),
+    docsDir,
+    docsIndexPath: path.join(docsDir, 'index.html'),
   };
 }
 
@@ -684,7 +695,7 @@ export function readOfficeSiteData(dbPath: string): OfficeSiteData {
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.officeDir, paths.officeDataDir, paths.officeAssetsDir, paths.tracesDir, paths.diffsDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.officeDir, paths.officeDataDir, paths.officeAssetsDir, paths.tracesDir, paths.diffsDir, paths.docsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
   const data = readOfficeSiteData(options.dbPath);
@@ -701,7 +712,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
   }
-  return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, data, actions };
+  return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, data, actions };
 }
 
 export function publishSitePage(options: PublishSitePageOptions): PublishSitePageResult {
@@ -826,3 +837,4 @@ export type MaterializeOfficePagesResult = MaterializeSitesResult;
 export const getOfficePagePaths = getSitesPaths;
 export const readOfficePageData = readOfficeSiteData;
 export const materializeOfficePages = materializeSites;
+

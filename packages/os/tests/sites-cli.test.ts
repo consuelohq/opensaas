@@ -17,6 +17,7 @@ type SitesCommandResult = {
   officeAssetsDir: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
+  docsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -25,6 +26,7 @@ type SitesCommandResult = {
   officeDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
+  docsIndexExists: boolean;
   message: string;
   pageId?: string;
   pagePath?: string;
@@ -97,6 +99,7 @@ describe('Sites CLI', () => {
     expect(pathResult.officeDataPath).toBe(join(tempHome, 'sites', 'office', 'data', 'artifacts.json'));
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
     expect(pathResult.diffsIndexPath).toBe(join(tempHome, 'sites', 'diffs', 'index.html'));
+    expect(pathResult.docsIndexPath).toBe(join(tempHome, 'sites', 'docs', 'index.html'));
     expect(pathResult).not.toHaveProperty('githubIndexPath');
     expect(pathResult.url.startsWith('file:')).toBe(true);
 
@@ -110,6 +113,7 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
+    expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
     expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
     expect(JSON.parse(readFileSync(refreshResult.officeDataPath, 'utf8')).artifacts).toEqual([]);
@@ -124,6 +128,7 @@ describe('Sites CLI', () => {
       officeDataExists: true,
       tracesIndexExists: true,
       diffsIndexExists: true,
+      docsIndexExists: true,
       artifacts: 0,
     });
 
@@ -147,6 +152,35 @@ describe('Sites CLI', () => {
 
     const openResult = runSitesCommand(['open', '--json']);
     expect(openResult).toMatchObject({ ok: true, command: 'open' });
+  });
+
+
+  it('renders the Sites launcher as a terminal-style Consuelo OS page with flat destinations', () => {
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+
+    expect(html).toContain('<title>Consuelo OS Sites</title>');
+    expect(html).toContain('CONSUELO OS');
+    expect(html).toContain('CONTACT:');
+    expect(html).toContain('support@consuelohq.com');
+    expect(html).toContain('LOCATION: USA');
+    expect(html).toContain('STATUS: ONLINE');
+    expect(html).toContain('OPEN POSITION:');
+    expect(html).toContain('href="/jobs"');
+    expect(html).toContain('SITES:');
+    for (const label of ['Office', 'Diffs', 'Tracing', 'Documentation']) {
+      expect(html).toContain('>' + label + '</a>');
+    }
+    for (const href of ['office/', 'diffs/', 'traces/', 'docs/']) {
+      expect(html).toContain('href="' + href + '"');
+    }
+    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(5);
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('--sites-bg:#050505');
+    expect(html).toContain('font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace');
+    expect(html).toContain('text-decoration:underline');
+    expect(html).not.toContain('Versioned local Sites pages with current pointers');
+    expect(html).not.toContain('<div class="grid">');
   });
 
   it('publishes Sites pages with immutable versions and stale base-version protection', () => {
@@ -343,3 +377,5 @@ describe('Sites CLI', () => {
   });
 
 });
+
+
