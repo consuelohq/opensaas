@@ -396,8 +396,8 @@ describe('reader navigable shell affordances', () => {
       thesis: 'The shell should expose every section as a navigable line.',
       sections: [
         { id: 'summary', eyebrow: 'Summary', title: 'Summary', body: ['First section.'] },
-        { id: 'product-principles', eyebrow: 'Product Principles', title: 'Product principles', body: ['Second section.'] },
-        { id: 'system-design', eyebrow: 'System Design', title: 'System design', body: ['Third section.'] },
+        { id: 'product-principles', eyebrow: 'product principles', title: 'What should not be re-litigated', body: ['Second section.'] },
+        { id: 'system-design', eyebrow: 'system design', title: 'OS server spine', body: ['Third section.'] },
         { id: 'gateway', eyebrow: 'Gateway', title: 'Gateway', body: ['Fourth section.'] },
         { id: 'sites', eyebrow: 'Sites', title: 'Sites', body: ['Fifth section.'] },
       ],
@@ -406,12 +406,21 @@ describe('reader navigable shell affordances', () => {
       ledger: [{ title: 'OS tooling', items: [{ status: 'current', text: 'Build the line rail.' }] }],
     });
 
-    for (const title of ['Summary', 'Product principles', 'System design', 'Gateway', 'Sites', 'Open questions', 'Task']) {
+    for (const title of ['Summary', 'product principles', 'system design', 'Gateway', 'Sites', 'Open questions', 'Task']) {
       expect(html).toContain(`data-reader-section-title="${title}"`);
       expect(html).toContain(`>${title}</span>`);
     }
     expect(html.match(/data-reader-section-target=/g)?.length).toBeGreaterThanOrEqual(7);
     expect(html).toContain('class="reader-section-line"');
+    expect(html).toContain('class="reader-section-line-mark"');
+    expect(html).toContain('width:24px');
+    expect(html).toContain('min-height:8px');
+    expect(html).toContain('right:7px; width:30px');
+    expect(html).toContain('width:22px; height:2px');
+    expect(html).toContain('max-height:min(84dvh, 760px)');
+    expect(html).toContain('bottom:calc(82px + env(safe-area-inset-bottom,0px))');
+    expect(html).not.toContain('data-reader-section-title="What should not be re-litigated"');
+    expect(html).not.toContain('data-reader-section-title="OS server spine"');
     expect(html).toContain('class="reader-section-drawer"');
     expect(html).toContain('data-section-drawer-toggle');
     expect(html).toContain('aria-label="Open section drawer"');
@@ -438,14 +447,22 @@ describe('reader navigable shell affordances', () => {
     });
 
     expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('class="task-copy-icon"');
+    expect(html).not.toContain('>Copy</button>');
     expect(html).toContain('aria-label="Copy task as Markdown"');
     expect(html).toContain('data-copy-markdown="## 2. Add/update OS tooling');
     expect(html).toContain('- [x] Create/update fs.patch as the primary safe file edit command.');
     expect(html).toContain('- [>] Read mac.read and task.call command behavior.');
     expect(html).toContain('function copySelectedText');
     expect(html).toContain('navigator.clipboard.writeText');
+    expect(html).toContain('class="reader-copy-toast"');
+    expect(html).toContain('function showCopyToast');
+    expect(html).toContain('selection.removeAllRanges(); showCopyToast');
+    expect(html).toContain('suppressSelectionCopyUntil = Date.now() + 600');
     expect(html).toContain('function handleReaderFindEnter');
     expect(html).toContain('function findNextOccurrence');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+
