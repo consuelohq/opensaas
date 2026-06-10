@@ -2255,7 +2255,7 @@ function renderStyles(): string {
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
 html, body, button, a { -webkit-tap-highlight-color: transparent; }
-body { margin:0; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
+body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
 a { color:inherit; text-decoration:none; }
 a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
