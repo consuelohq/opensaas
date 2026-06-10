@@ -4,15 +4,15 @@
   "mode": "full",
   "branch": "task/security/fix-gateway-review-final-follow-up",
   "base": "origin/stream/security",
-  "headSha": "09ac0eb057cd9bcbdaac2d7edb30a6477f6573f1",
-  "changeHash": "693d4071bad9083f77a56eb5163a17f5d57111df3281e37bb6b3be4b790204f8",
+  "headSha": "b5731c637f7698190548bf24a13e04a1a0057294",
+  "changeHash": "bf387bd3ca6b9b99e016677184093920f112e209f4e9324b74dabff6efc49ff1",
   "changedFiles": [
     "packages/os/scripts/lib/install-state.ts",
     "packages/os/scripts/lib/security-gateway.ts",
     "packages/os/scripts/server.ts",
     "packages/os/tests/security-gateway.test.ts"
   ],
-  "verifiedAt": "2026-06-10T01:25:55.993Z",
+  "verifiedAt": "2026-06-10T01:28:09.516Z",
   "review": {
     "skipped": false,
     "passed": true,

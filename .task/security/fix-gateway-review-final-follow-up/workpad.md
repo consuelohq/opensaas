@@ -51,6 +51,7 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:15:35 fs.write: `packages/os/tests/security-gateway.test.ts`
 - 2026-06-10 01:22:28 fs.write: `.task/security/fix-gateway-review-final-follow-up/status.txt`
 - 2026-06-10 01:24:58 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
+- 2026-06-10 01:26:49 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
 
 ## workspace-owned: files read
 
@@ -78,6 +79,7 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:21:30 `verify`: passed — OK
 - 2026-06-10 01:21:43 `review.run`: passed — OK
 - 2026-06-10 01:25:55 `verify`: passed — OK
+- 2026-06-10 01:28:09 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -93,3 +95,12 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 After syncing the task worktree to the pushed branch, this note records the final state: gateway security code, server request handling, doctor checks, and focused security tests were updated. Validation passed for the security suite, raw steering suite, syntax, stream review, stream verify, and main-base review.
 
 - 2026-06-10 01:24:58 append: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
+
+## publish note
+
+What changed: updated four OS files and the focused test file.
+Why: review requested stricter installed gateway behavior.
+Validation run: focused tests, syntax, review, and verify passed.
+Issues or follow-ups: none known.
+
+- 2026-06-10 01:26:49 append: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
