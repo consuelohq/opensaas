@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "updatedAt": "2026-06-10T03:12:37.708Z"
+}

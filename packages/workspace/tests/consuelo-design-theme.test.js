@@ -41,7 +41,7 @@ test('keeps design wiki page publishes versioned and rollback-safe', () => {
 });
 
 test('emits valid generated version-history server strings', () => {
-  expect(source).toContain(`'<li><a href="' + safe(version.path) + '">'`);
+  expect(source).toContain(`safe(officePathFor(version.path))`);
   expect(source).toContain(`data-version-count="' + versions.length + '"><main`);
   expect(source).toContain('char === ">" ? "&gt;" : "&quot;"');
 });
@@ -102,8 +102,29 @@ test('generates archive server slash aliases without regex escaping drift', () =
 });
 
 
+test('keeps public Sites root launcher and Office archive routes distinct', () => {
+  for (const marker of [
+    "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    'function officePathForArchiveEntry',
+    'function renderSitesLauncher',
+    'Open Office',
+    'Decision infrastructure',
+    'const officeArchivePath = ',
+    'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
+    'function stripArtifactAlias',
+    'if (url.pathname === "/") return new Response(renderSitesLauncher()',
+    'const canonicalPathname = stripArtifactAlias(url.pathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+
 test('keeps archive search data parseable as raw JSON for client interactions', () => {
   expect(source).toContain('const searchDataJson = JSON.stringify(searchEntries)');
   expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
   expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
 });
+
