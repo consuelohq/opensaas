@@ -75,7 +75,7 @@ test('polishes design archive into the sites shell with filtering and command pa
     "https://sites.consuelohq.com",
     '<title>Consuelo Sites</title>',
     'Consuelo Sites',
-    '<h1>Sites</h1>',
+    '<h1>Office</h1>',
     'Private tailnet sites, guides, and published artifacts from Consuelo.',
     'data-filter="guide"',
     'data-filter="spec"',
@@ -98,6 +98,7 @@ test('polishes design archive into the sites shell with filtering and command pa
 
 test('generates archive server slash aliases without regex escaping drift', () => {
   expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
+  expect(source).toContain('archivePaths.includes(url.pathname)');
   expect(source).toContain('archivePaths.includes(cleanArchivePath)');
 });
 
@@ -109,8 +110,16 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     'function officePathForArchiveEntry',
     'function renderSitesLauncher',
-    'Open Office',
-    'Decision infrastructure',
+    'CONSUELO OS █',
+    'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
+    'SITES:',
+    'Office</a></li>',
+    'Tracing</a></li>',
+    'Diffs</a></li>',
+    'Documentation</a></li>',
+    'WRITING:',
+    'On Rendering Diffs',
+    'Software Is Becoming Decision Infrastructure',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -128,3 +137,22 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
   expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
 });
 
+test('keeps root launcher copy and Office archive chrome separated', () => {
+  for (const marker of [
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    'CONSUELO OS █',
+    'SITES:',
+    'WRITING:',
+    'Office</a></li>',
+    'Tracing</a></li>',
+    'Diffs</a></li>',
+    'Documentation</a></li>',
+    'On Rendering Diffs',
+    'Software Is Becoming Decision Infrastructure',
+    '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('Legacy wiki</a></div>');
+});
