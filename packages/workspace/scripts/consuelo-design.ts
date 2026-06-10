@@ -1795,6 +1795,65 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
 </body>
 </html>\n`;
 }
+function renderArchiveRootRedirect(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>
+    :root { color-scheme: dark; background: #030303; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #030303; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 700; letter-spacing: -0.02em; }
+    main { padding: 28px 30px; max-width: 640px; }
+    h1, p { margin: 0; font: inherit; }
+    h1 { margin-bottom: 22px; text-transform: uppercase; }
+    .block { margin: 18px 0; }
+    .rule { margin: 18px 0; color: #f2eee6; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li::before { content: "- "; }
+    a { color: #a7b8ff; text-decoration: underline; text-underline-offset: 2px; }
+    a:visited { color: #b6a6ff; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        <li><a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
+      <ul>
+        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">Office</a></li>
+        <li><a href="/traces" target="_blank" rel="noopener noreferrer">Tracing</a></li>
+        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">Diffs</a></li>
+        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">Documentation</a></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        <li><a href="/writing/on-rendering-diffs" target="_blank" rel="noopener noreferrer">On Rendering Diffs</a></li>
+        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">Software Is Becoming Decision Infrastructure</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
 function writeArchiveIndex(payload: DesignArchivePayload): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   mkdirSync(path.dirname(DESIGN_ARCHIVE_INDEX_PATH), { recursive: true });
