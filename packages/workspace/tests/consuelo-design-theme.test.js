@@ -107,7 +107,7 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
   for (const marker of [
     "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
     'function officePathForArchiveEntry',
     'function renderSitesLauncher',
     'CONSUELO OS █',
@@ -121,7 +121,7 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
     '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'WRITING:',
-    'Decision Making Under Uncertainty',
+    'On Decision Loops',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -142,7 +142,7 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
 test('keeps root launcher copy and Office archive chrome separated', () => {
   for (const marker of [
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
     'CONSUELO OS █',
     'SITES:',
     'WRITING:',
@@ -153,7 +153,7 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
     '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
     '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
     '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
-    'Decision Making Under Uncertainty',
+    'On Decision Loops',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
