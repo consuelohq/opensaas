@@ -1078,12 +1078,14 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
       writeArchiveIndex(payload);
     }
     const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const tracingTarget = `${archiveTarget}/trace-burn-intelligence`;
+    const diffsTarget = 'https://diffs.consuelohq.com';
     const launcherCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/', archiveTarget];
     const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
     const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
-    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', archiveTarget];
-    const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', archiveTarget];
+    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', tracingTarget];
+    const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', diffsTarget];
     const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
@@ -1150,8 +1152,16 @@ async function ensureArchiveServer(ip: string): Promise<string> {
 async function setArchiveServePaths(tailscaleBin: string, target: string): Promise<{ stdout: string; stderr: string }> {
   let stdout = '';
   let stderr = '';
-  for (const archivePath of ['/', DESIGN_ARCHIVE_OFFICE_PATH, DESIGN_ARCHIVE_PATH, DESIGN_ARCHIVE_LEGACY_PATH, '/tracing', '/diffs']) {
-    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, target], REPO_ROOT);
+  const routes = [
+    ['/', target],
+    [DESIGN_ARCHIVE_OFFICE_PATH, target],
+    [DESIGN_ARCHIVE_PATH, target],
+    [DESIGN_ARCHIVE_LEGACY_PATH, target],
+    ['/tracing', `${target}/trace-burn-intelligence`],
+    ['/diffs', 'https://diffs.consuelohq.com'],
+  ] as const;
+  for (const [archivePath, routeTarget] of routes) {
+    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);
     stdout += result.stdout;
     stderr += result.stderr;
     if (result.exitCode !== 0) {
