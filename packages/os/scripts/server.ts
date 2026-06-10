@@ -1,5 +1,8 @@
 #!/usr/bin/env bun
 
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { executeCall, getSteering } from './os';
 import {
   loadGatewaySecurityConfig,
@@ -11,7 +14,7 @@ import type { CallInput } from './lib/types';
 const DEFAULT_PORT = 8850;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
-const AUTH_CONFIG_PATH = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
+const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
 
 type JsonObject = Record<string, unknown>;
 type ToolCategory = 'read' | 'write' | 'dangerous';
@@ -42,8 +45,21 @@ function verificationResponse(result: Extract<VerificationResult, { ok: false }>
   return jsonResponse({ error: result.error }, result.status);
 }
 
+function candidateHomeAuthPaths(): string[] {
+  const homes = [process.env.CONSUELO_OS_HOME, process.env.CONSUELO_HOME].filter((home): home is string => Boolean(home));
+  return [...new Set(homes)].map((home) => path.join(home, 'security', 'generated', 'auth.json'));
+}
+
+function resolveAuthConfigPath(): string | null {
+  if (AUTH_CONFIG_ENV) return AUTH_CONFIG_ENV;
+  for (const candidate of candidateHomeAuthPaths()) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 function hasGeneratedAuthConfig(): boolean {
-  return Boolean(AUTH_CONFIG_PATH);
+  return resolveAuthConfigPath() !== null;
 }
 
 function requestHeaders(request: Request): Record<string, string> {
@@ -51,7 +67,11 @@ function requestHeaders(request: Request): Record<string, string> {
 }
 
 function loadAuthConfigForRequest(): ReturnType<typeof loadGatewaySecurityConfig> {
-  return loadGatewaySecurityConfig({ authConfigPath: AUTH_CONFIG_PATH });
+  const authConfigPath = resolveAuthConfigPath();
+  if (!authConfigPath) {
+    throw new Error('Generated Consuelo OS auth config is required.');
+  }
+  return loadGatewaySecurityConfig({ authConfigPath });
 }
 
 function toolCategory(toolName: string): ToolCategory {
@@ -195,3 +215,4 @@ if (import.meta.main) {
 }
 
 export { handleRequest };
+
