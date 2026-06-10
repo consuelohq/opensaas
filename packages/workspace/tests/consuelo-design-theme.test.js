@@ -75,7 +75,7 @@ test('polishes design archive into the sites shell with filtering and command pa
     "https://sites.consuelohq.com",
     '<title>Consuelo Sites</title>',
     'Consuelo Sites',
-    '<h1>Sites</h1>',
+    '<h1>Office</h1>',
     'Private tailnet sites, guides, and published artifacts from Consuelo.',
     'data-filter="guide"',
     'data-filter="spec"',
@@ -98,7 +98,8 @@ test('polishes design archive into the sites shell with filtering and command pa
 
 test('generates archive server slash aliases without regex escaping drift', () => {
   expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
-  expect(source).toContain('archivePaths.includes(cleanArchivePath)');
+  expect(source).toContain('cleanArchivePath === archivePath');
+  expect(source).toContain('cleanArchivePath === legacyArchivePath');
 });
 
 
@@ -107,3 +108,21 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
   expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
   expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
 });
+
+test('routes public Sites root to Office and points Documentation to the public blog', () => {
+  for (const marker of [
+    "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
+    "const DESIGN_ARCHIVE_DOCS_URL = 'https://consuelohq.com/blog/';",
+    'function renderArchiveRootRedirect',
+    'rootRedirectPath',
+    'officePath',
+    'Bun.file(rootRedirectPath)',
+    'Bun.file(indexPath)',
+    '<a href="${escapeHtml(DESIGN_ARCHIVE_DOCS_URL)}" target="_blank" rel="noopener noreferrer">Documentation</a>',
+    "{ key: 'D', title: 'Documentation', description: 'Open the Consuelo blog.', kind: 'link', url: '${escapeHtml(DESIGN_ARCHIVE_DOCS_URL)}' }",
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+

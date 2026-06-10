@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/reroute-public-sites-archive-to-office",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 912,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/912",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/912",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/912/reroute-public-sites-archive-to-office",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/912",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/912/reroute-public-sites-archive-to-office",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-reroute-public-sites-archive-to-office",
+  "taskSession": "tsk_5b1c46080d5c",
+  "tmuxSession": "opensaas-design-reroute-public-sites-archive-to-office-5b1c4608",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-reroute-public-sites-archive-to-office/.task/design/reroute-public-sites-archive-to-office/session.json",
+  "createdAt": "2026-06-10T02:24:25.617Z"
+}
