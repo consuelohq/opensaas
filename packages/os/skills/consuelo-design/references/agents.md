@@ -342,8 +342,9 @@ Required reader shell features:
 * tap-to-read navigation
 * bottom-right back-to-top affordance
 * resume-reading chip when saved progress exists
-* vertical section completion rail for long guides
+* tight ChatGPT-style section rail for long guides: long strokes, compact spacing, category labels from section eyebrows, desktop hover labels, and mobile Diffs-style drawer
 * compact metadata footer
+* copy interactions show a `Copied` toast and selection-copy clears the active text selection after a successful clipboard write
 
 The shell owns reading behavior. The selected template owns structure. `packages/consuelo-website/DESIGN.md` owns visual appearance.
 
@@ -697,3 +698,4 @@ Every `design.publish` call records the published artifact in the private Consue
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 
 The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.
+
