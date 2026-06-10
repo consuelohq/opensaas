@@ -3,14 +3,14 @@
   "publishValid": true,
   "mode": "full",
   "branch": "task/design/repair-sites-routes",
-  "base": "origin/stream/design",
-  "headSha": "3fb85f2791fb7e174cdb3c64fbe8dc2a10b84b4f",
-  "changeHash": "a96cc606fff47630a22f61cc4718771a8dad048732e31906023483fc2094c145",
+  "base": "origin/task/design/repair-sites-routes",
+  "headSha": "a2f99d41f33b2be2b89971b80b95c09d9d71ad9c",
+  "changeHash": "2a31447cb34fe3aabcba5ad737968698af4becdbdfd1dec0932b0b67846bb724",
   "changedFiles": [
     "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/tests/consuelo-design-theme.test.js"
   ],
-  "verifiedAt": "2026-06-10T03:43:32.077Z",
+  "verifiedAt": "2026-06-10T04:41:39.766Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -27,7 +27,7 @@
         ".task/design/repair-sites-routes/current.json",
         ".task/design/repair-sites-routes/evidence-log.json",
         ".task/design/repair-sites-routes/read-log.json",
-        ".task/design/repair-sites-routes/session.json",
+        ".task/design/repair-sites-routes/verify.json",
         ".task/design/repair-sites-routes/workpad.md",
         ".task/tasks/design/repair-sites-routes.json",
         "packages/workspace/scripts/consuelo-design.ts",
