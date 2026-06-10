@@ -45,6 +45,11 @@ function verificationResponse(result: Extract<VerificationResult, { ok: false }>
   return jsonResponse({ error: result.error }, result.status);
 }
 
+function internalError(error: unknown): Response {
+  const message = error instanceof Error ? error.message.slice(0, 240) : 'OS call failed.';
+  return jsonResponse({ ok: false, error: { code: 'INTERNAL_SERVER_ERROR', message } }, 500);
+}
+
 function candidateHomeAuthPaths(): string[] {
   const homes = [process.env.CONSUELO_OS_HOME, process.env.CONSUELO_HOME].filter((home): home is string => Boolean(home));
   return [...new Set(homes)].map((home) => path.join(home, 'security', 'generated', 'auth.json'));
@@ -64,6 +69,25 @@ function hasGeneratedAuthConfig(): boolean {
 
 function requestHeaders(request: Request): Record<string, string> {
   return Object.fromEntries(request.headers.entries());
+}
+
+function hasSignedGatewayHeaders(headers: Record<string, string>): boolean {
+  return Boolean(
+    (headers['x-consuelo-token-id'] || headers.authorization?.replace(/^Bearer\s+/i, '')) &&
+    headers['x-consuelo-timestamp'] &&
+    headers['x-consuelo-nonce'] &&
+    headers['x-consuelo-signature']
+  );
+}
+
+function authPreflight(request: Request): Response | null {
+  if (!hasGeneratedAuthConfig()) {
+    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
+  }
+  if (!hasSignedGatewayHeaders(requestHeaders(request))) {
+    return unauthorized('MISSING_SIGNATURE', 'Signed gateway headers are required.');
+  }
+  return null;
 }
 
 function loadAuthConfigForRequest(): ReturnType<typeof loadGatewaySecurityConfig> {
@@ -169,6 +193,9 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/call' && request.method === 'POST') {
     const body = await request.clone().text();
+    const preflightDenied = authPreflight(request);
+    if (preflightDenied) return preflightDenied;
+
     let input: CallInput;
     try {
       input = parseCallInput(body);
@@ -188,7 +215,7 @@ async function handleRequest(request: Request): Promise<Response> {
       const result = await executeCall(input);
       return jsonResponse(result, result.ok ? 200 : 400);
     } catch (error: unknown) {
-      return invalidRequest(error);
+      return internalError(error);
     }
   }
 
