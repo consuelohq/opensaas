@@ -1082,12 +1082,14 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
     const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
     const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
+    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', archiveTarget];
+    const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', archiveTarget];
     const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     const legacyDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     if (args.dryRun) {
-      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand] });
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, tracingCommand, diffsCommand] });
       else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
@@ -1148,7 +1150,7 @@ async function ensureArchiveServer(ip: string): Promise<string> {
 async function setArchiveServePaths(tailscaleBin: string, target: string): Promise<{ stdout: string; stderr: string }> {
   let stdout = '';
   let stderr = '';
-  for (const archivePath of ['/', DESIGN_ARCHIVE_OFFICE_PATH, DESIGN_ARCHIVE_PATH, DESIGN_ARCHIVE_LEGACY_PATH]) {
+  for (const archivePath of ['/', DESIGN_ARCHIVE_OFFICE_PATH, DESIGN_ARCHIVE_PATH, DESIGN_ARCHIVE_LEGACY_PATH, '/tracing', '/diffs']) {
     const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, target], REPO_ROOT);
     stdout += result.stdout;
     stderr += result.stderr;
