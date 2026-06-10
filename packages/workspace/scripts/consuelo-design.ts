@@ -1206,19 +1206,19 @@ function writeArchiveServer(ip: string): void {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
-    main { padding: 28px 30px; max-width: 640px; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: -0.02em; }
+    main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
-    h1 { margin-bottom: 22px; text-transform: uppercase; }
-    .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
-    li { margin: 0; }
+    li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; }
   </style>
 </head>
 <body>
@@ -1231,24 +1231,24 @@ function writeArchiveServer(ip: string): void {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Projects">
       <p class="label">PROJECTS:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
-        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+        <li><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
@@ -1816,19 +1816,19 @@ function renderArchiveRootRedirect(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
-    main { padding: 28px 30px; max-width: 640px; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: -0.02em; }
+    main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
-    h1 { margin-bottom: 22px; text-transform: uppercase; }
-    .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
-    li { margin: 0; }
+    li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; }
   </style>
 </head>
 <body>
@@ -1841,24 +1841,24 @@ function renderArchiveRootRedirect(): string {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Projects">
       <p class="label">PROJECTS:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
-        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+        <li><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
