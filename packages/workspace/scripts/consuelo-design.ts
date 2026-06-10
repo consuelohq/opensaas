@@ -1079,7 +1079,7 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
     }
     const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
     const tracingTarget = `${archiveTarget}/trace-burn-intelligence`;
-    const diffsTarget = 'https://diffs.consuelohq.com';
+    const diffsTarget = `${archiveTarget}/diffs`;
     const launcherCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/', archiveTarget];
     const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
@@ -1158,7 +1158,7 @@ async function setArchiveServePaths(tailscaleBin: string, target: string): Promi
     [DESIGN_ARCHIVE_PATH, target],
     [DESIGN_ARCHIVE_LEGACY_PATH, target],
     ['/tracing', `${target}/trace-burn-intelligence`],
-    ['/diffs', 'https://diffs.consuelohq.com'],
+    ['/diffs', `${target}/diffs`],
   ] as const;
   for (const [archivePath, routeTarget] of routes) {
     const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);

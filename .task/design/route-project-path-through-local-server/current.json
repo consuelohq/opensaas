@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/route-project-path-through-local-server",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 933,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/933",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/933",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/933/route-project-path-through-local-server",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/933",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/933/route-project-path-through-local-server",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-route-project-path-through-local-server",
+  "taskSession": "tsk_7456362a8e4b",
+  "tmuxSession": "opensaas-design-route-project-path-through-local-server-7456362a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-route-project-path-through-local-server/.task/design/route-project-path-through-local-server/session.json",
+  "createdAt": "2026-06-10T06:17:25.388Z"
+}
