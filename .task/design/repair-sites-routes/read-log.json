@@ -1,8 +1,10 @@
 {
   "files": [
+    ".task/design/repair-sites-routes/workpad.md",
+    "packages/os/scripts/lib/sites.ts",
     "packages/workspace/package.json",
     "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/tests/consuelo-design-theme.test.js"
   ],
-  "updatedAt": "2026-06-10T02:34:02.411Z"
+  "updatedAt": "2026-06-10T04:39:07.570Z"
 }
