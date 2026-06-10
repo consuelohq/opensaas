@@ -4,6 +4,14 @@ import path from 'node:path';
 
 type JsonObject = Record<string, unknown>;
 
+type PublicGatewayMetadata = {
+  provider: 'cloudflare';
+  routeMode: 'workspace-subdomain';
+  connectorMode: 'outbound-os-connector';
+  hostname: string;
+  upstream: { host: string; port: number };
+};
+
 export type GatewaySecurityConfig = {
   workspaceId: string;
   workspaceSlug: string;
@@ -12,6 +20,7 @@ export type GatewaySecurityConfig = {
   tokenIssuer: string;
   signingKeyId: string;
   publicRoutes: string[];
+  publicGateway: PublicGatewayMetadata;
 };
 
 export type AgentAppToken = {
@@ -56,15 +65,21 @@ type AuditEvent = {
 type PublicRouteRegistry = {
   workspaceId: string;
   workspaceHost: string;
+  edgeProvider: 'cloudflare';
+  connectorMode: 'outbound-os-connector';
   routes: Array<{
     path: string;
     upstream: { host: string; port: number };
     auth: 'required';
     workspaceId: string;
+    edgeProvider: 'cloudflare';
+    connectorMode: 'outbound-os-connector';
   }>;
   resolve: (input: { host: string; path: string; workspaceId: string }) => {
     route: string;
     upstream: { host: string; port: number };
+    auth: 'required';
+    connectorMode: 'outbound-os-connector';
   };
 };
 
@@ -75,6 +90,7 @@ type OutboundConnectorConfig = {
   listeners: Array<{ host: string; port: number }>;
   requires: string[];
   audit: { enabled: boolean; eventName: string };
+  cloudflare: { managedHostname: string; publicRoutes: string[] };
 };
 
 type StoredToken = AgentAppToken & {
@@ -95,6 +111,7 @@ type StoredAuthConfig = {
   tokenIssuer: string;
   signingKeyId: string;
   publicRoutes: string[];
+  publicGateway: PublicGatewayMetadata;
   tokens: Record<string, StoredToken>;
   seenNonces: Record<string, StoredNonce>;
   createdAt: string;
@@ -194,6 +211,20 @@ function writeStoredAuth(config: GatewaySecurityConfig, stored: StoredAuthConfig
   writeJsonSecure(config.generatedAuthPath, { ...stored, updatedAt: nowIso() });
 }
 
+function createPublicGatewayMetadata(input: {
+  workspaceHost: string;
+  upstream: { host: string; port: number };
+}): PublicGatewayMetadata {
+  requirePrivateUpstream(input.upstream);
+  return {
+    provider: 'cloudflare',
+    routeMode: 'workspace-subdomain',
+    connectorMode: 'outbound-os-connector',
+    hostname: input.workspaceHost,
+    upstream: { ...input.upstream },
+  };
+}
+
 function toPublicConfig(stored: StoredAuthConfig, generatedAuthPath: string): GatewaySecurityConfig {
   return {
     workspaceId: stored.workspaceId,
@@ -203,6 +234,10 @@ function toPublicConfig(stored: StoredAuthConfig, generatedAuthPath: string): Ga
     tokenIssuer: stored.tokenIssuer,
     signingKeyId: stored.signingKeyId,
     publicRoutes: [...stored.publicRoutes],
+    publicGateway: {
+      ...stored.publicGateway,
+      upstream: { ...stored.publicGateway.upstream },
+    },
   };
 }
 
@@ -259,6 +294,11 @@ export function createGatewaySecurityConfig(input: {
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
+  const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 8850 };
+  const publicGateway = createPublicGatewayMetadata({
+    workspaceHost: input.workspaceHost,
+    upstream,
+  });
   const existing = fs.existsSync(generatedAuthPath)
     ? readStoredAuthFile(generatedAuthPath)
     : null;
@@ -273,6 +313,7 @@ export function createGatewaySecurityConfig(input: {
         tokenIssuer: existing.tokenIssuer || 'consuelo-os-gateway',
         signingKeyId: existing.signingKeyId || `csg_${randomUUID()}`,
         publicRoutes: [...PUBLIC_ROUTES],
+        publicGateway,
         tokens: existing.tokens ?? {},
         seenNonces: normalizeSeenNonces(existing.seenNonces, existing.updatedAt ?? existing.createdAt ?? nowIso()),
         updatedAt: nowIso(),
@@ -286,6 +327,7 @@ export function createGatewaySecurityConfig(input: {
         tokenIssuer: 'consuelo-os-gateway',
         signingKeyId: `csg_${randomUUID()}`,
         publicRoutes: [...PUBLIC_ROUTES],
+        publicGateway,
         tokens: {},
         seenNonces: {},
         createdAt: nowIso(),
@@ -296,7 +338,7 @@ export function createGatewaySecurityConfig(input: {
     caddyPathForHome(input.home),
     renderCaddyGatewayConfig({
       workspaceHost: input.workspaceHost,
-      upstream: { host: '127.0.0.1', port: input.upstreamPort ?? 8850 },
+      upstream,
     }),
     { mode: 0o600 },
   );
@@ -507,10 +549,14 @@ export function createPublicRouteRegistry(input: {
     upstream: { ...input.upstream },
     auth: 'required' as const,
     workspaceId: input.workspaceId,
+    edgeProvider: 'cloudflare' as const,
+    connectorMode: 'outbound-os-connector' as const,
   }));
   return {
     workspaceId: input.workspaceId,
     workspaceHost,
+    edgeProvider: 'cloudflare',
+    connectorMode: 'outbound-os-connector',
     routes,
     resolve: (request) => {
       if (request.workspaceId !== input.workspaceId || request.host !== workspaceHost) {
@@ -520,7 +566,12 @@ export function createPublicRouteRegistry(input: {
         request.path === candidate.path || request.path.startsWith(`${candidate.path}/`)
       ));
       if (!route) throw new Error('route not found');
-      return { route: route.path, upstream: { ...route.upstream } };
+      return {
+        route: route.path,
+        upstream: { ...route.upstream },
+        auth: route.auth,
+        connectorMode: route.connectorMode,
+      };
     },
   };
 }
@@ -541,8 +592,12 @@ export function createOutboundConnectorConfig(input: {
     workspaceId: input.workspaceId,
     strategy: input.strategy,
     listeners: [],
-    requires: ['generated-auth', 'workspace-identity'],
+    requires: ['generated-auth', 'workspace-identity', 'cloudflare-managed-host'],
     audit: { enabled: true, eventName: 'gateway.connector.state' },
+    cloudflare: {
+      managedHostname: input.config.workspaceHost,
+      publicRoutes: [...input.config.publicRoutes],
+    },
   };
 }
 
@@ -580,6 +635,7 @@ export function recordGatewayAuditEvent(input: {
   fs.appendFileSync(logPath, `${JSON.stringify(safeEvent)}\n`, { mode: 0o600 });
   return { path: logPath, event: input.event };
 }
+
 
 
 
