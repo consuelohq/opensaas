@@ -2332,7 +2332,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { letter-spacing:-.03em; margin:0 0 16px; }
 .markdown-body p { margin:0 0 14px; color:var(--ink); }
 .markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
-.code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
+.code-body pre { margin:0; font:13px/1.6 Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
 @media (max-width: 760px) {
   .code-shell { max-width:calc(100vw - 20px); }
   .code-hero { align-items:flex-start; flex-direction:column; gap:14px; padding:34px 0 20px; }
@@ -2415,6 +2415,9 @@ mark { background:var(--accent-soft); color:var(--ink); }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
 .footer-links { display:flex; gap:10px; }
 .review-page { overflow:hidden; --file-pane-width:330px; }
+
+.review-page .topbar, .review-page .review-topbar, .review-page .links, .review-page .file-pane, .review-page .pane-heading, .review-page .tree-root, .review-page .tree-node, .review-page .directory-toggle, .review-page .tree-label, .review-page .tree-stats, .review-page .selected-file, .review-page .diff-file-header, .review-page .diff-file-path, .review-page .diff-file-stats, .review-page .inline-comment, .review-page .comment-card, .review-page .commit-popover, .review-page .review-drawer { font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.review-page .diff-fallback, .review-page .code-body pre, .review-page .comment-body pre, .review-page .comment-body code { font-family:Menlo, Monaco, Consolas, "Liberation Mono", monospace; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision; }
 .topbar { height:76px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper); }
 .eyebrow { margin:0 0 4px; font-size:12px; color:var(--quiet); text-transform:uppercase; letter-spacing:.08em; }
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
@@ -2452,7 +2455,7 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:13px; }
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
-.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 .diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); align-items:start; padding:0 8px 0 0; white-space:normal; max-width:100%; }
 .diff-gutter { color:var(--quiet); text-align:right; padding-right:5px; user-select:none; font-variant-numeric:tabular-nums; }
 .diff-code { min-width:0; overflow:visible; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
@@ -2482,7 +2485,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
 .comment-body { font-size:13px; line-height:1.5; }
-.comment-body pre, .comment-body code { font-family:"SFMono-Regular", Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-body pre, .comment-body code { font-family:Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
 .comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
