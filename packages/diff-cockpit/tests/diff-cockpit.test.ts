@@ -154,8 +154,8 @@ describe('createGithubPullRequestIndexLoader', () => {
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1');
     expect(result.warnings).toEqual([]);
-    expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
-    expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
+    expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open' });
+    expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open' });
     expect(result.pulls[2]).toMatchObject({ number: 726, lifecycleStatus: 'merged', associatedStream: 'stream/diff-cockpit' });
   });
 });
@@ -431,7 +431,7 @@ describe('createGithubPullRequestIndexLoader GraphQL mergeability', () => {
 });
 
 describe('pull request index grouping', () => {
-  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit', mergeability: 'mergeable' } as const;
+  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit', mergeability: 'mergeable' } as const;
   test('derives stream ownership from stream and task branches', () => {
     expect(deriveAssociatedStream({ ...basePull, headRef: 'stream/os', baseRef: 'main' })).toBe('stream/os');
     expect(deriveAssociatedStream({ ...basePull, headRef: 'task/workspace-agents/fix', baseRef: 'main' })).toBe('stream/workspace-agents');
@@ -540,12 +540,14 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
-    expect(html).toContain("cacheSchemaVersion = 'v3-mobile-backlog'");
+    expect(html).toContain("cacheSchemaVersion = 'v4-mergeability-live'");
     expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('refreshIndexIfStale');
+    expect(html).toContain("window.addEventListener('focus'");
     expect(html).toContain('button:focus:not(:focus-visible)');
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
