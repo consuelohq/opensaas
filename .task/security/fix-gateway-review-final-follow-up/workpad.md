@@ -52,6 +52,7 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:22:28 fs.write: `.task/security/fix-gateway-review-final-follow-up/status.txt`
 - 2026-06-10 01:24:58 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
 - 2026-06-10 01:26:49 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
+- 2026-06-10 01:31:09 fs.write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
 
 ## workspace-owned: files read
 
@@ -80,6 +81,7 @@ Fix the latest CodeRabbit review comments on stream PR #896 for the public gatew
 - 2026-06-10 01:21:43 `review.run`: passed — OK
 - 2026-06-10 01:25:55 `verify`: passed — OK
 - 2026-06-10 01:28:09 `verify`: passed — OK
+- 2026-06-10 01:31:53 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -104,3 +106,11 @@ Validation run: focused tests, syntax, review, and verify passed.
 Issues or follow-ups: none known.
 
 - 2026-06-10 01:26:49 append: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
+
+
+## current status
+
+Implemented the latest gateway review fixes across install-state, security-gateway, server, and the security test suite. Added regression coverage for generated artifact health checks, replay nonce pruning, stored-token rotation, and call route auth preflight. Validation passed: security suite, raw steering suite, syntax, stream review, stream verify, and main-base review. No known follow-ups.
+
+
+- 2026-06-10 01:31:09 write: `.task/security/fix-gateway-review-final-follow-up/workpad.md`
