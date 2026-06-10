@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1c611ea7113f",
+  "tmuxSession": "opensaas-diff-cockpit-clone-graphite-pr-inbox-ux-1c611ea7",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/clone-graphite-pr-inbox-ux",
+  "branch": "task/diff-cockpit/clone-graphite-pr-inbox-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clone-graphite-pr-inbox-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clone-graphite-pr-inbox-ux",
+  "prNumber": 891,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/891",
+  "createdAt": "2026-06-09T22:03:18.186Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clone-graphite-pr-inbox-ux/.task/diff-cockpit/clone-graphite-pr-inbox-ux/session.json"
+}
