@@ -1065,3 +1065,17 @@ Before publishing, verify:
 * mobile width does not wrap the nav into two rows
 * window.__readerShell.gsapAnchorScroll === true
 
+
+reader shell v1.3 interaction contract
+
+Do not hand-author these behaviors inside a spec. Provide typed section titles, typed components, and checklist groups; the TypeScript renderer owns the interaction layer.
+
+The renderer now provides:
+
+* line-style section rail generated from every top-level section, typed component, and task ledger
+* mobile section drawer generated from the same section list, using each section title as the row text
+* automatic copy for selected text
+* Enter-to-next-occurrence behavior when the page can infer the selected search term
+* per-task copy buttons that copy the task/checklist group as Markdown
+
+Spec authors should make section titles short and useful because they appear in the mobile drawer. Task/checklist groups should be written as transferable agent work blocks: one clear group title, optional area/status tag, and checklist items with explicit completion state.

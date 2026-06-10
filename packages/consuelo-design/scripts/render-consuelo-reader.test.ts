@@ -386,3 +386,66 @@ describe('reader mixed module flattening', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+describe('reader navigable shell affordances', () => {
+  test('renders line rail and mobile drawer entries for every top-level section', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Consuelo OS Spec',
+      eyebrow: 'Spec · OS',
+      thesis: 'The shell should expose every section as a navigable line.',
+      sections: [
+        { id: 'summary', eyebrow: 'Summary', title: 'Summary', body: ['First section.'] },
+        { id: 'product-principles', eyebrow: 'Product Principles', title: 'Product principles', body: ['Second section.'] },
+        { id: 'system-design', eyebrow: 'System Design', title: 'System design', body: ['Third section.'] },
+        { id: 'gateway', eyebrow: 'Gateway', title: 'Gateway', body: ['Fourth section.'] },
+        { id: 'sites', eyebrow: 'Sites', title: 'Sites', body: ['Fifth section.'] },
+      ],
+      components: [{ type: 'openQuestions', title: 'Open questions', questions: [{ title: 'Follow-up', body: 'What ships next?' }] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'OS tooling', items: [{ status: 'current', text: 'Build the line rail.' }] }],
+    });
+
+    for (const title of ['Summary', 'Product principles', 'System design', 'Gateway', 'Sites', 'Open questions', 'Task']) {
+      expect(html).toContain(`data-reader-section-title="${title}"`);
+      expect(html).toContain(`>${title}</span>`);
+    }
+    expect(html.match(/data-reader-section-target=/g)?.length).toBeGreaterThanOrEqual(7);
+    expect(html).toContain('class="reader-section-line"');
+    expect(html).toContain('class="reader-section-drawer"');
+    expect(html).toContain('data-section-drawer-toggle');
+    expect(html).toContain('aria-label="Open section drawer"');
+    expect(html).toContain('class="reader-section-drawer-list"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+
+  test('adds clipboard helpers for selection copy, find-next, and task block markdown copy', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Task Copy Fixture',
+      thesis: 'Tasks should be transferable to other agents as Markdown.',
+      sections: [{ id: 'summary', title: 'Summary', body: ['Searchable repeated term. Searchable repeated term.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{
+        title: '2. Add/update OS tooling',
+        tag: 'OS',
+        items: [
+          { status: 'done', text: 'Create/update fs.patch as the primary safe file edit command.' },
+          { status: 'current', text: 'Read mac.read and task.call command behavior.' },
+          { status: 'todo', text: 'Document stale read failure modes.' },
+        ],
+      }],
+    });
+
+    expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('aria-label="Copy task as Markdown"');
+    expect(html).toContain('data-copy-markdown="## 2. Add/update OS tooling');
+    expect(html).toContain('- [x] Create/update fs.patch as the primary safe file edit command.');
+    expect(html).toContain('- [>] Read mac.read and task.call command behavior.');
+    expect(html).toContain('function copySelectedText');
+    expect(html).toContain('navigator.clipboard.writeText');
+    expect(html).toContain('function handleReaderFindEnter');
+    expect(html).toContain('function findNextOccurrence');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});

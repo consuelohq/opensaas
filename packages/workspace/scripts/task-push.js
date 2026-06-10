@@ -49,6 +49,35 @@ function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
 }
 
+function parseEnvLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return null;
+  const match = trimmed.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+  if (!match) return null;
+  let value = match[2] || '';
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  return [match[1], value];
+}
+
+function loadDotEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, 'utf8');
+  for (const line of content.split(/\r?\n/)) {
+    const entry = parseEnvLine(line);
+    if (!entry) continue;
+    const [key, value] = entry;
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+function loadLocalEnv(repoRoot) {
+  loadDotEnvFile(path.join(repoRoot, '.env'));
+  loadDotEnvFile(path.join(repoRoot, 'packages', '.env'));
+}
+
+
 function printHelp() {
   writeStdout('usage: bun run task:push -- --message "fix(area): summary" [options]');
   writeStdout('');
@@ -424,6 +453,7 @@ async function main() {
   assertCommitMessageFormat(args.message);
 
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
+  loadLocalEnv(repoRoot);
 
   const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
   if (verifyMismatch) {
