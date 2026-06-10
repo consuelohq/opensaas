@@ -280,6 +280,12 @@ describe('reader nav allocation and tap-scroll refinement', () => {
     expect(html).toContain('.reader-links { display:flex; justify-content:flex-end; justify-self:end;');
     expect(html).not.toContain('grid-template-columns:minmax(120px,auto) minmax(0,1fr) auto');
     expect(html).toContain('class="reader-nav-task"');
+    expect(html).toContain('grid-template-columns:minmax(0,1fr) auto');
+    expect(html).toContain('.reader-links { display:none; }');
+    expect(html).toContain('.reader-brand { position:relative; z-index:2; display:block; min-width:0; }');
+    expect(html).toContain('.reader-nav-task { justify-self:end; }');
+    expect(html).toContain('.reader-links a,.reader-nav-task { color:rgba(241,241,241,.72); }');
+    expect(html).not.toContain('.reader-nav-task { color:#202020; }');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 
@@ -464,5 +470,7 @@ describe('reader navigable shell affordances', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+
 
 
