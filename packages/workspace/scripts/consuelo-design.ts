@@ -1208,7 +1208,7 @@ function writeArchiveServer(ip: string): void {
   <style>
     :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: -0.02em; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
     main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 24px; text-transform: uppercase; }
@@ -1218,7 +1218,7 @@ function writeArchiveServer(ip: string): void {
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
     li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.45; } .blog-item a { overflow-wrap: anywhere; } }
   </style>
 </head>
 <body>
@@ -1235,12 +1235,13 @@ function writeArchiveServer(ip: string): void {
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Projects">
-      <p class="label">PROJECTS:</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
       <ul>
         <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
@@ -1248,7 +1249,7 @@ function writeArchiveServer(ip: string): void {
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+        <li class="blog-item"><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
@@ -1818,7 +1819,7 @@ function renderArchiveRootRedirect(): string {
   <style>
     :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: -0.02em; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
     main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 24px; text-transform: uppercase; }
@@ -1828,7 +1829,7 @@ function renderArchiveRootRedirect(): string {
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
     li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.45; } .blog-item a { overflow-wrap: anywhere; } }
   </style>
 </head>
 <body>
@@ -1845,12 +1846,13 @@ function renderArchiveRootRedirect(): string {
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Projects">
-      <p class="label">PROJECTS:</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
       <ul>
         <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
         <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
@@ -1858,7 +1860,7 @@ function renderArchiveRootRedirect(): string {
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+        <li class="blog-item"><span class="md-label">[Decision Making Under Uncertainty](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>

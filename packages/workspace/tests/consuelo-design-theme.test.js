@@ -112,11 +112,13 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'function renderSitesLauncher',
     'CONSUELO OS █',
     'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-    'PROJECTS:',
+    'SITES:',
     '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
     '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
     '[Diffs](</span><a href="https://diffs.consuelohq.com"',
     '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
     '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'WRITING:',
     'Decision Making Under Uncertainty',
@@ -142,12 +144,14 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     'CONSUELO OS █',
-    'PROJECTS:',
+    'SITES:',
     'WRITING:',
     '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
     '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
     '[Diffs](</span><a href="https://diffs.consuelohq.com"',
     '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
     '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'Decision Making Under Uncertainty',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
@@ -175,7 +179,11 @@ test('keeps launcher routes local and theme-aware', () => {
   }
   expect(source).not.toContain('/writing/on-rendering-diffs');
   expect(source).toContain('font-weight: 400');
+  expect(source).toContain('letter-spacing: 0.02em');
   expect(source).toContain('white-space: nowrap');
+  expect(source).toContain('class="blog-item"');
+  expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+  expect(source).toContain('overflow-wrap: anywhere');
   expect(source).toContain('.md-label { color: #f2eee6; }');
   expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
