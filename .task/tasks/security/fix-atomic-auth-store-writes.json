@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-atomic-auth-store-writes",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 907,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/907",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/907",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/907/fix-atomic-auth-store-writes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/907",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/907/fix-atomic-auth-store-writes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-atomic-auth-store-writes",
+  "taskSession": "tsk_92ebe8b770aa",
+  "tmuxSession": "opensaas-security-fix-atomic-auth-store-writes-92ebe8b7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-atomic-auth-store-writes/.task/security/fix-atomic-auth-store-writes/session.json",
+  "createdAt": "2026-06-10T01:52:19.935Z"
+}
