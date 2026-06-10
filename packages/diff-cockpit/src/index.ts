@@ -210,9 +210,9 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
-const INDEX_MAX_PAGES = MAX_PAGES;
+const INDEX_FRONT_PAGE_PULL_LIMIT = 30;
+const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
-
 type PullRequestSearchTarget = Pick<
   PullRequestSummary,
   'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
@@ -753,22 +753,18 @@ export function renderIndexPage(repo: RepoLocator): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo Diffs · ${escapeHtml(repoLabel)}</title>
+  <title>Consolidate Diffs · ${escapeHtml(repoLabel)}</title>
   <style>${renderStyles()}</style>
 </head>
 <body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="#pull-requests">Pull Requests</a>
-        <a href="${escapeAttribute(mainCodePath)}">main</a>
-        <button class="command-button" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
+        <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
     </div>
     <header class="hero" data-pagefind-ignore>
-      <h1>Pull Requests</h1>
-      <p class="lead">Live pull request review cockpit for ${escapeHtml(repoLabel)}.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
         <button class="active" data-filter="all">All</button>
@@ -809,7 +805,7 @@ export function renderIndexPage(repo: RepoLocator): string {
     <button class="mobile-command-fab" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false" aria-label="Open command search">⌘K</button>
     <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date().getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Pull Requests</a></div>
+      <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
   <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
@@ -916,7 +912,7 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -965,7 +961,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="/">Consolidate Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -1280,7 +1276,7 @@ async function loadGraphqlPullRequestIndex(
         },
         body: JSON.stringify({
           query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
-          variables: { owner: repo.owner, name: repo.repo, after },
+          variables: { owner: repo.owner, name: repo.repo, after, first: INDEX_FRONT_PAGE_PULL_LIMIT },
         }),
       });
       if (!response.ok) {
@@ -1317,9 +1313,9 @@ async function loadGraphqlPullRequestIndex(
 }
 
 const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
-query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String) {
+query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String, $first: Int!) {
   repository(owner: $owner, name: $name) {
-    pullRequests(first: 100, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+    pullRequests(first: $first, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
       nodes {
         number
@@ -2228,11 +2224,14 @@ button { appearance:none; border:0; background:transparent; color:var(--ink); pa
 button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline:none; }
 button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-soft); outline-offset:3px; }
 .shell { max-width:min(1180px, calc(100vw - 48px)); margin:0 auto; padding:0 18px 32px; }
-.wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
+.index-shell { max-width:min(1720px, calc(100vw - 48px)); padding:0 10px 28px; }
+.wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:54px; border-bottom:1px solid var(--line); }
 .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; }
 .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
 .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
 .command-button { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:6px 9px; color:var(--muted); }
+.command-button-plain { border:0; background:transparent; padding:0; color:var(--muted); }
+.command-button-plain .command-shortcut { margin-left:2px; }
 .command-shortcut, .command-key { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:6px; padding:3px 6px; background:var(--soft); color:var(--ink); }
 .command-backdrop { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.36); backdrop-filter:blur(7px); }
 .command-backdrop[hidden], .command-palette[hidden] { display:none; }
@@ -2316,7 +2315,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 }
 .search-button { display:inline-flex; align-items:center; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
+header.hero { padding:12px 0 10px; border-bottom:0; }
 h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
 .lead { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.7; }
 .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
@@ -2329,38 +2328,40 @@ h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font
 button.active { color:var(--accent); font-weight:700; }
 button.active::before { content:"["; color:var(--quiet); }
 button.active::after { content:"]"; color:var(--quiet); }
-.section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
+.section { margin:10px 0; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
 .section summary { list-style:none; cursor:pointer; }
 .section summary::-webkit-details-marker { display:none; }
 .section summary h2 { display:inline; }
-h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
-.post-list { display:grid; gap:0; margin-top:18px; border-top:1px solid var(--line); }
+h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weight:650; }
+.post-list { display:grid; gap:0; margin-top:0; border-top:1px solid var(--line); }
 .post-list .post-item:last-child { border-bottom:0; }
-.pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.pr-section summary { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 14px; }
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
-.post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; padding:12px 10px; border-bottom:1px solid var(--line); align-items:center; }
+.post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
-.pr-row-main { min-width:0; display:grid; gap:4px; }
+.pr-row-main { min-width:0; display:grid; gap:2px; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
-.pr-subtitle { color:var(--muted); font-size:13px; }
-.pr-row-meta-line { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; color:var(--quiet); font-size:12px; }
+.pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
+.pr-subtitle span { white-space:nowrap; }
 .pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:260px; }
 .status-set { display:inline-flex; align-items:center; gap:6px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
 .pr-updated { min-width:42px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
-.mergeability-icon, .review-icon, .check-icon { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border:1px solid var(--line); border-radius:999px; font-size:12px; flex:0 0 auto; }
+.mergeability-icon, .review-icon, .check-icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--line); border-radius:999px; font-size:11px; flex:0 0 auto; }
+.mergeability-icon:empty, .review-icon:empty, .check-icon:empty { display:none; }
 .mergeability-icon.mergeability-mergeable { color:#2f8a44; }
 .mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
 .mergeability-icon.mergeability-merged { color:#6f4bd8; }
 .mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
 .stream-dot-button { display:inline-flex; align-items:center; gap:4px; }
+.stream-compact-button { display:inline-flex; align-items:center; min-width:0; }
 .stream-dot { color:var(--accent); font-size:16px; line-height:1; }
 .load-more-button { color:var(--muted); }
 .stream-filter-row { display:flex; align-items:center; gap:9px; margin-top:14px; flex-wrap:wrap; font-size:14px; }
@@ -2368,7 +2369,7 @@ button.section-count { cursor:pointer; }
 .post-item[hidden] { display:none; }
 .empty, .muted { color:var(--quiet); }
 mark { background:var(--accent-soft); color:var(--ink); }
-.section-pager { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:10px 0 0; color:var(--quiet); font-size:13px; }
+.section-pager { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 14px; border-top:1px solid var(--line); color:var(--quiet); font-size:13px; }
 .page-status { color:var(--quiet); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
@@ -2662,20 +2663,22 @@ function scorePullRequestSearchValue(pull, query) {
     { value: repoLabel, weight: 6 }, { value: String(pull.number || ''), weight: 6 }, { value: pull.baseRef, weight: 4 }, { value: pull.kind, weight: 3 },
   ].reduce((score, field) => score + scoreSearchValue(field.value, rawQuery, compactQuery, tokens, field.weight), 0);
 }
-function mergeabilityIcon(status) { if (status === 'mergeable') return '✓'; if (status === 'conflicts') return '×'; if (status === 'merged') return '◆'; if (status === 'draft') return '◌'; if (status === 'closed') return '○'; return '?'; }
-function reviewIcon(status) { if (status === 'approved') return '✓'; if (status === 'changes_requested') return '×'; if (status === 'commented') return '◌'; if (status === 'none') return '○'; return '?'; }
-function checkIcon(status) { if (status === 'success') return '✓'; if (status === 'failure') return '×'; if (status === 'pending') return '◌'; return '?'; }
+function mergeabilityIcon(status) { if (status === 'mergeable') return '✓'; if (status === 'conflicts') return '×'; if (status === 'merged') return '◆'; if (status === 'draft') return '◌'; if (status === 'closed') return '○'; return ''; }
+function reviewIcon(status) { if (status === 'approved') return '✓'; if (status === 'changes_requested') return '×'; if (status === 'commented') return '◌'; if (status === 'none') return '○'; return ''; }
+function checkIcon(status) { if (status === 'success') return '✓'; if (status === 'failure') return '×'; if (status === 'pending') return '◌'; return ''; }
 function formatDelta(pull) { return '+' + Number(pull.additions || 0).toLocaleString() + ' −' + Number(pull.deletions || 0).toLocaleString(); }
+function formatFileCount(count) { const value = Number(count || 0); const label = value === 1 ? 'file' : 'files'; return value.toLocaleString() + ' ' + label; }
 function relativeTime(value) { const date = new Date(value); if (Number.isNaN(date.getTime())) return 'live'; const seconds = Math.max(1, Math.round((Date.now() - date.getTime()) / 1000)); if (seconds < 60) return seconds + 's'; const minutes = Math.round(seconds / 60); if (minutes < 60) return minutes + 'm'; const hours = Math.round(minutes / 60); return hours < 48 ? hours + 'h' : Math.round(hours / 24) + 'd'; }
 function renderCard(pull) {
   const route = routePrefix + pull.number;
   const stream = pull.associatedStream || pull.baseRef || 'No stream';
-  const subtitle = stream + ' • ' + repoLabel + ' #' + pull.number;
+  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + formatFileCount(pull.changedFiles);
   return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
-    '<p class="pr-subtitle">' + escapeText(subtitle) + '</p><p class="pr-row-meta-line"><button class="stream-chip stream-dot-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions"><span class="stream-dot" aria-hidden="true">•</span>' + escapeText(stream) + '</button><span>' + escapeText(pull.headRef) + ' → ' + escapeText(pull.baseRef) + '</span><span>' + Number(pull.changedFiles || 0).toLocaleString() + ' files</span></p></div>' +
+    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span aria-hidden="true">•</span><span>' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span aria-hidden="true">•</span><span>' + escapeText(formatFileCount(pull.changedFiles)) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span></div></article>';
 }
+
 function renderSection(section) {
   const currentLimit = Math.min(section.pulls.length, sectionLimits[section.id] || sectionPageSize);
   sectionLimits[section.id] = currentLimit;
