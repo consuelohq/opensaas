@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_92ebe8b770aa",
+  "tmuxSession": "opensaas-security-fix-atomic-auth-store-writes-92ebe8b7",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-atomic-auth-store-writes",
+  "branch": "task/security/fix-atomic-auth-store-writes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-atomic-auth-store-writes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-atomic-auth-store-writes",
+  "prNumber": 907,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/907",
+  "createdAt": "2026-06-10T01:52:19.935Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-atomic-auth-store-writes/.task/security/fix-atomic-auth-store-writes/session.json"
+}

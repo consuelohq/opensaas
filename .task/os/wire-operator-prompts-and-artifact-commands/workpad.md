@@ -54,8 +54,28 @@ B. Fixed: artifact render/publish are now first-class OS commands and scripts. T
 
 ## files changed
 
-- `package.json`
+- `packages/diff-cockpit/src/index.ts`
+- `packages/diff-cockpit/tests/diff-cockpit.test.ts`
+- `packages/os/hooks/README.md`
+- `packages/os/hooks/task/guidance.js`
 - `packages/os/package.json`
+- `packages/os/scripts/lib/index/store.js`
+- `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-gateway.ts`
+- `packages/os/scripts/server.ts`
+- `packages/os/scripts/task-hook.js`
+- `packages/os/scripts/task-start.js`
+- `packages/os/tests/os-raw-steering.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/semantic-index-storage.test.ts`
+- `packages/os/tests/task-hook-workflow-contract.test.ts`
+- `packages/os/tests/task-hooks.test.ts`
+- `packages/os/tests/workspace-cloudflare-gateway-contract.test.ts`
+- `packages/os/tests/workspace-gateway-contract.test.ts`
+- `packages/workspace/scripts/consuelo-design.ts`
+- `packages/workspace/tests/consuelo-design-theme.test.js`
+
 
 ## workspace-owned: files changed
 

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_16debe9703e0",
+  "tmuxSession": "opensaas-design-serve-launcher-local-project-routes-16debe97",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/serve-launcher-local-project-routes",
+  "branch": "task/design/serve-launcher-local-project-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-serve-launcher-local-project-routes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-serve-launcher-local-project-routes",
+  "prNumber": 931,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/931",
+  "createdAt": "2026-06-10T06:04:28.195Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-serve-launcher-local-project-routes/.task/design/serve-launcher-local-project-routes/session.json"
+}

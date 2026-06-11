@@ -25,8 +25,94 @@ function getRepoHash(repoRoot, remoteUrl) {
   return sha256(getRepoIdentifier(repoRoot, remoteUrl)).slice(0, 24);
 }
 
+const SEMANTIC_INDEX_DB_NAME = 'semantic-index.db';
+const SEMANTIC_INDEX_REGISTRY_PREFIX = 'semantic_index';
+const SEMANTIC_INDEX_SCHEMA_VERSION = 1;
+
+function expandHome(value) {
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
+  return value;
+}
+
+function getConsueloHome() {
+  return path.resolve(expandHome(process.env.CONSUELO_HOME || '~/.consuelo/os'));
+}
+
+function getSemanticIndexOverride() {
+  const explicitPath = process.env.CONSUELO_SEMANTIC_INDEX_DB;
+  if (!explicitPath) return null;
+  return path.resolve(expandHome(explicitPath));
+}
+
+function getSemanticIndexAssetName(repoRoot, remoteUrl) {
+  return `${SEMANTIC_INDEX_REGISTRY_PREFIX}:${getRepoHash(repoRoot, remoteUrl)}`;
+}
+
 function getCacheRoot(repoRoot, remoteUrl) {
-  return path.join(os.homedir(), '.cache', 'workspace-index', getRepoHash(repoRoot, remoteUrl));
+  const explicitPath = getSemanticIndexOverride();
+  if (explicitPath) return path.dirname(explicitPath);
+  return path.join(getConsueloHome(), 'cache', 'semantic-index', getRepoHash(repoRoot, remoteUrl));
+}
+
+function getSemanticIndexDbPath(repoRoot, remoteUrl) {
+  return getSemanticIndexOverride() || path.join(getCacheRoot(repoRoot, remoteUrl), SEMANTIC_INDEX_DB_NAME);
+}
+
+function registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl) {
+  const consueloHome = getConsueloHome();
+  fs.mkdirSync(consueloHome, { recursive: true });
+
+  const registryDbPath = path.join(consueloHome, 'consuelo.db');
+  const registryDb = new Database(registryDbPath, { create: true });
+  const now = new Date().toISOString();
+
+  try {
+    registryDb.exec(`
+      CREATE TABLE IF NOT EXISTS runtime_assets (
+        name TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        driver TEXT NOT NULL,
+        path TEXT NOT NULL,
+        schema_version INTEGER NOT NULL,
+        rebuildable INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL,
+        metadata_json TEXT NOT NULL DEFAULT '{}'
+      );
+    `);
+
+    registryDb.query([
+      'INSERT INTO runtime_assets(name, kind, driver, path, schema_version, rebuildable, updated_at, metadata_json)',
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'ON CONFLICT(name) DO UPDATE SET',
+      '  kind = excluded.kind,',
+      '  driver = excluded.driver,',
+      '  path = excluded.path,',
+      '  schema_version = excluded.schema_version,',
+      '  rebuildable = excluded.rebuildable,',
+      '  updated_at = excluded.updated_at,',
+      '  metadata_json = excluded.metadata_json',
+    ].join('\n')).run(
+      getSemanticIndexAssetName(repoRoot, remoteUrl),
+      SEMANTIC_INDEX_REGISTRY_PREFIX,
+      'sqlite',
+      dbPath,
+      SEMANTIC_INDEX_SCHEMA_VERSION,
+      1,
+      now,
+      JSON.stringify({
+        cacheRoot,
+        envOverride: Boolean(getSemanticIndexOverride()),
+        registryDbPath,
+        repoHash: getRepoHash(repoRoot, remoteUrl),
+        repoIdentifier: getRepoIdentifier(repoRoot, remoteUrl),
+        repoRoot,
+        remoteUrl: remoteUrl || null,
+      }),
+    );
+  } finally {
+    registryDb.close();
+  }
 }
 
 function vectorToBuffer(vector) {
@@ -41,7 +127,9 @@ function createStore(repoRoot, remoteUrl) {
   const cacheRoot = getCacheRoot(repoRoot, remoteUrl);
   fs.mkdirSync(cacheRoot, { recursive: true });
 
-  const dbPath = path.join(cacheRoot, 'index.db');
+  const dbPath = getSemanticIndexDbPath(repoRoot, remoteUrl);
+  registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl);
+
   const db = new Database(dbPath, { create: true });
 
   try {
@@ -547,7 +635,11 @@ module.exports = {
   VECTOR_DIMENSIONS,
   createStore,
   getCacheRoot,
+  getConsueloHome,
   getRepoHash,
+  getSemanticIndexAssetName,
+  getSemanticIndexDbPath,
+  registerSemanticIndex,
   normalizePath,
   sha256,
 };

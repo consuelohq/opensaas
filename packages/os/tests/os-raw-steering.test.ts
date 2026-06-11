@@ -1,4 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const packageRoot = import.meta.dirname.replace(/\/tests$/, '');
@@ -19,10 +22,14 @@ async function waitForHealth(port: number): Promise<Record<string, unknown>> {
 describe('OS raw steering routing', () => {
   it('keeps only get_steering and call in the server-visible tool surface', async () => {
     const port = 19000 + Math.floor(Math.random() * 1000);
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-os-raw-steering-'));
     const server = spawn('bun', ['scripts/server.ts'], {
       cwd: packageRoot,
       env: {
         ...process.env,
+        CONSUELO_HOME: home,
+        CONSUELO_OS_HOME: home,
+        CONSUELO_OS_AUTH_CONFIG: '',
         CONSUELO_OS_PORT: String(port),
         CONSUELO_OS_BEARER_TOKEN: '',
         MCP_BEARER_TOKEN: '',
@@ -37,9 +44,10 @@ describe('OS raw steering routing', () => {
 
       expect(body.tools).toBe(2);
       expect(body.toolNames).toEqual(['get_steering', 'call']);
-      expect(legacyResponse.status).toBe(404);
+      expect(legacyResponse.status).toBe(401);
     } finally {
       server.kill('SIGTERM');
+      rmSync(home, { recursive: true, force: true });
     }
   });
 

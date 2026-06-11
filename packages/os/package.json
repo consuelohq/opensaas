@@ -81,7 +81,8 @@
     "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'",
     "operator": "bun ./operator/operator.ts",
     "doctor:watch": "bun ./scripts/doctor-watch.ts",
-    "artifact:validate": "bun ./scripts/artifact-validate.ts"
+    "artifact:validate": "bun ./scripts/artifact-validate.ts",
+    "task:hook": "bun ./scripts/task-hook.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

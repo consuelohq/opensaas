@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/test-task-hook-workflow-contract",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 957,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/957",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/957",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/957/test-task-hook-workflow-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/957",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/957/test-task-hook-workflow-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-test-task-hook-workflow-contract",
+  "taskSession": "tsk_90e0bfd1a15e",
+  "tmuxSession": "opensaas-os-test-task-hook-workflow-contract-90e0bfd1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-test-task-hook-workflow-contract/.task/os/test-task-hook-workflow-contract/session.json",
+  "createdAt": "2026-06-11T06:53:35.140Z"
+}

@@ -41,7 +41,7 @@ test('keeps design wiki page publishes versioned and rollback-safe', () => {
 });
 
 test('emits valid generated version-history server strings', () => {
-  expect(source).toContain(`'<li><a href="' + safe(version.path) + '">'`);
+  expect(source).toContain(`safe(officePathFor(version.path))`);
   expect(source).toContain(`data-version-count="' + versions.length + '"><main`);
   expect(source).toContain('char === ">" ? "&gt;" : "&quot;"');
 });
@@ -75,7 +75,7 @@ test('polishes design archive into the sites shell with filtering and command pa
     "https://sites.consuelohq.com",
     '<title>Consuelo Sites</title>',
     'Consuelo Sites',
-    '<h1>Sites</h1>',
+    '<h1>Office</h1>',
     'Private tailnet sites, guides, and published artifacts from Consuelo.',
     'data-filter="guide"',
     'data-filter="spec"',
@@ -98,7 +98,38 @@ test('polishes design archive into the sites shell with filtering and command pa
 
 test('generates archive server slash aliases without regex escaping drift', () => {
   expect(source).toContain('const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname;');
+  expect(source).toContain('archivePaths.includes(url.pathname)');
   expect(source).toContain('archivePaths.includes(cleanArchivePath)');
+});
+
+
+test('keeps public Sites root launcher and Office archive routes distinct', () => {
+  for (const marker of [
+    "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
+    'function officePathForArchiveEntry',
+    'function renderSitesLauncher',
+    'CONSUELO OS █',
+    'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
+    'SITES:',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
+    'WRITING:',
+    'On Decision Loops',
+    'const officeArchivePath = ',
+    'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
+    'function stripArtifactAlias',
+    'if (url.pathname === "/") return new Response(renderSitesLauncher()',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
 });
 
 
@@ -106,4 +137,54 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
   expect(source).toContain('const searchDataJson = JSON.stringify(searchEntries)');
   expect(source).toContain('<script type="application/json" id="archive-search-data">${searchDataJson}</script>');
   expect(source).not.toContain('id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>');
+});
+
+test('keeps root launcher copy and Office archive chrome separated', () => {
+  for (const marker of [
+    "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
+    'CONSUELO OS █',
+    'SITES:',
+    'WRITING:',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
+    'On Decision Loops',
+    '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('Legacy wiki</a></div>');
+});
+
+test('keeps launcher routes local and theme-aware', () => {
+  for (const marker of [
+    'color-scheme: dark',
+    'background: #070708',
+    'color: #f2eee6',
+    'color: #9aa6ff',
+    'function publicRouteAlias',
+    'if (clean === "/tracing") return "/trace-burn-intelligence";',
+    'function proxyDiffsRoute',
+    'https://diffs.consuelohq.com',
+    "['/diffs', `${target}/diffs`]",
+    'const routePathname = publicRouteAlias(url.pathname);',
+    'const canonicalPathname = stripArtifactAlias(routePathname);',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('/writing/on-rendering-diffs');
+  expect(source).toContain('font-weight: 400');
+  expect(source).toContain('letter-spacing: 0.02em');
+  expect(source).toContain('white-space: nowrap');
+  expect(source).toContain('class="blog-item"');
+  expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+  expect(source).toContain('overflow-wrap: anywhere');
+  expect(source).toContain('.md-label { color: #f2eee6; }');
+  expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
+  expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
