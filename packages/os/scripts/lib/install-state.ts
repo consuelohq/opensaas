@@ -140,9 +140,8 @@ const DEFAULT_PORT = 8850;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
-const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
-const BUNDLED_OPERATOR_ROOT = path.join(REPO_ROOT, 'operator');
+const BUNDLED_OPERATOR_ROOT = path.join(PACKAGE_ROOT, 'operator');
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
 const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
