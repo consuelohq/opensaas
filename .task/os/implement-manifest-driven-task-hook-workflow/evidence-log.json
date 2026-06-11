@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+  "events": [
+    {
+      "id": "9f155d75-ea56-4ac1-80ba-0bc1aaa5c787",
+      "occurred_at": "2026-06-11T07:13:50.300Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "2924cac9-0be9-4277-82a1-ca18fbd03f9d",
+      "occurred_at": "2026-06-11T07:13:50.673Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "d02c402f-bb3f-4488-b32e-d663e748ced3",
+      "occurred_at": "2026-06-11T07:13:51.010Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "a3bdaca8-9e88-4120-a6f6-ee68043919ec",
+      "occurred_at": "2026-06-11T07:13:51.414Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-hook.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "b73adf2e-93e4-477f-b289-52ec52200d64",
+      "occurred_at": "2026-06-11T07:13:51.800Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "e854a547-4f5a-4628-87b9-f2d3c8d054ff",
+      "occurred_at": "2026-06-11T07:13:52.157Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "33967e24-c7f7-442a-a12e-9a2681d1ffc8",
+      "occurred_at": "2026-06-11T07:13:56.686Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "35580bfb-a2bf-43a5-8bd5-0e1bfcc2d43d",
+      "occurred_at": "2026-06-11T07:14:00.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    },
+    {
+      "id": "eaaf0af5-b1d5-4626-aa0d-4951398eee6d",
+      "occurred_at": "2026-06-11T07:14:06.745Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-manifest-driven-task-hook-workflow",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-manifest-driven-task-hook-workflow"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T07:14:06.798Z"
+}
