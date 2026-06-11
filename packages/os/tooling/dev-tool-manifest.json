@@ -231,7 +231,8 @@
       "contentFile": "/tmp/example.txt",
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "workpad.write"
   },
   {
     "name": "fs.patch",
@@ -444,7 +445,8 @@
       "title": "example task",
       "dryRun": true
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "task.start"
   },
   {
     "name": "task.init",
@@ -583,7 +585,8 @@
       "changed": true,
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "task.push"
   },
   {
     "name": "task.pr",
@@ -651,7 +654,8 @@
       "taskOnly": true,
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "task.pr"
   },
   {
     "name": "task.prs",
@@ -795,7 +799,8 @@
       "branch": "task/workspace-agents/example",
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "task.finish"
   },
   {
     "name": "task.cleanup",
@@ -949,7 +954,8 @@
       ],
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "test.run"
   },
   {
     "name": "task.current",
@@ -1688,7 +1694,8 @@
     "exampleInput": {
       "area": "workspace-agents"
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "stream.context"
   },
   {
     "name": "stream.list",
@@ -1829,7 +1836,8 @@
       "branch": "task/workspace-agents/example",
       "noTests": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "validation.review"
   },
   {
     "name": "verify",
@@ -1870,7 +1878,8 @@
       "noStamp": true,
       "dryRun": true
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "validation.verify"
   },
   {
     "name": "prReview",
@@ -2206,7 +2215,8 @@
       "hunks": true,
       "maxBytes": 20000
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "workflowRole": "diff.inspect"
   },
   {
     "name": "browser",
@@ -5160,7 +5170,8 @@
       "maxOperations": 25,
       "maxResultChars": 20000
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "decision.research"
   },
   {
     "name": "code.call",
@@ -5253,7 +5264,8 @@
     "exampleInput": {
       "query": "linear issue",
       "limit": 5
-    }
+    },
+    "workflowRole": "tool.search"
   },
   {
     "name": "generate.docs",

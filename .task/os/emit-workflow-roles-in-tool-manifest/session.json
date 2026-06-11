@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_021cc4550730",
+  "tmuxSession": "opensaas-os-emit-workflow-roles-in-tool-manifest-021cc455",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/emit-workflow-roles-in-tool-manifest",
+  "branch": "task/os/emit-workflow-roles-in-tool-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-emit-workflow-roles-in-tool-manifest",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-emit-workflow-roles-in-tool-manifest",
+  "prNumber": 974,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/974",
+  "createdAt": "2026-06-11T18:46:43.973Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-emit-workflow-roles-in-tool-manifest/.task/os/emit-workflow-roles-in-tool-manifest/session.json"
+}
