@@ -54,6 +54,7 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
   WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND: 'Workspace route was not found',
   WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE: 'Workspace route is temporarily unavailable',
   WORKSPACE_EDGE_ROUTER_ERROR: 'Workspace route is temporarily unavailable',
+  WORKSPACE_EDGE_AUTH_REQUIRED: 'Workspace route is temporarily unavailable',
 };
 
 const createSafeErrorResponse = (input: {
@@ -113,7 +114,7 @@ const buildProxyRequest = (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
   upstreamUrl: string;
-  internalSigningSecret?: string;
+  internalSigningSecret: string;
 }): Request => {
   const inboundUrl = new URL(input.request.url);
   const headers = new Headers(input.request.headers);
@@ -126,18 +127,17 @@ const buildProxyRequest = (input: {
     headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
   }
 
-  if (input.internalSigningSecret) {
-    headers.set(
-      'x-consuelo-edge-signature',
-      signEdgeRequest({
-        secret: input.internalSigningSecret,
-        method: input.request.method,
-        pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
-        workspaceId: input.resolution.workspaceId,
-        surface: input.resolution.surface,
-      }),
-    );
-  }
+  headers.delete('x-consuelo-edge-signature');
+  headers.set(
+    'x-consuelo-edge-signature',
+    signEdgeRequest({
+      secret: input.internalSigningSecret,
+      method: input.request.method,
+      pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
+      workspaceId: input.resolution.workspaceId,
+      surface: input.resolution.surface,
+    }),
+  );
 
   const init: RequestInit = {
     headers,
@@ -183,6 +183,15 @@ export const createWorkspaceCloudflareEdgeRouter = (
           });
         }
 
+        const internalSigningSecret = input.internalSigningSecret?.trim();
+
+        if (!internalSigningSecret) {
+          return createSafeErrorResponse({
+            status: 503,
+            code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+          });
+        }
+
         const upstreamBaseUrl =
           resolution.target.kind === 'service-upstream'
             ? resolution.target.upstreamUrl
@@ -192,7 +201,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
           request,
           resolution,
           upstreamUrl,
-          internalSigningSecret: input.internalSigningSecret,
+          internalSigningSecret,
         });
 
         return await fetchUpstream(proxyRequest);

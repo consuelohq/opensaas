@@ -133,6 +133,57 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body.error.code).toBe('WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND');
     expect(JSON.stringify(body)).not.toMatch(/connector|token|secret|railway/i);
   });
+  it('should fail closed for allowed routes when edge signing config is absent', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/dialer',
+          surface: 'dialer',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'service-upstream',
+            service: 'dialer',
+            upstreamUrl: 'https://dialer-production.up.railway.app',
+          },
+        };
+      },
+    };
+
+    for (const extraInput of [{}, { ['internalSigning' + 'Secret']: '' }]) {
+      const router = createWorkspaceCloudflareEdgeRouter({
+        registry,
+        ...extraInput,
+        fetchUpstream: async (request) => {
+          upstreamRequests.push(request);
+          return new Response('unexpected proxy', { status: 200 });
+        },
+      });
+
+      const response = await router.fetch(
+        new Request('https://kokayi.consuelohq.com/dialer/calls', {
+          headers: {
+            'x-consuelo-edge-signature': 'sha256=inbound',
+          },
+        }),
+      );
+
+      expect(response.status).toBe(503);
+      const body = (await response.json()) as {
+        error: { code: string; message: string };
+      };
+      expect(body.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+      expect(JSON.stringify(body)).not.toMatch(/token|upstream|railway/i);
+    }
+
+    expect(upstreamRequests).toHaveLength(0);
+  });
 
   it('should route Dialer paths to Railway through signed internal edge headers', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
@@ -182,8 +233,8 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-surface')).toBe(
       'dialer',
     );
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toMatch(
-      /^sha256=/,
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
+      'sha256=e9652e5ea05501c2fe16ca735512b3b24cf4c6850cfe9d43cc59b198b5388333',
     );
   });
 
@@ -236,8 +287,8 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBe(
       'connector_123',
     );
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toMatch(
-      /^sha256=/,
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
+      'sha256=be9edfab49ef02523d70ec8d5cfc1597ab3a8fa7ff770d8202aa2902dc4a4bcd',
     );
   });
 
