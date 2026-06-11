@@ -191,16 +191,33 @@ test('keeps launcher routes local and theme-aware', () => {
 test('keeps launcher compact but tappable on phone and tablet viewports', () => {
   for (const marker of [
     '@media (max-width: 1024px)',
-    'font-size: clamp(10.5px, 2.68vw, 13px)',
-    'main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); }',
-    '.block { margin: 24px 0; }',
-    '.rule { margin: 24px 0; }',
-    'li { margin: 2.2px 0; }',
+    'font-size: clamp(10.3px, 2.62vw, 12.7px)',
+    'main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); }',
+    '.block { margin: 22px 0; }',
+    '.rule { margin: 22px 0; }',
+    'li { margin: 2.35px 0; }',
     '@media (max-width: 430px)',
-    'font-size: clamp(10.1px, 2.47vw, 11.8px)',
+    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
+    'main { padding: 40px 10px; }',
     'li, .blog-item { white-space: nowrap; }',
   ]) {
     expect(source).toContain(marker);
   }
   expect(source).not.toContain('.blog-item { white-space: normal;');
 });
+
+
+
+test('tunes mobile launcher closer to the Pierre reference', () => {
+  for (const marker of [
+    'main { padding: 40px 10px; }',
+    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
+    '.block { margin: 22px 0; }',
+    '.rule { margin: 22px 0; }',
+    'li { margin: 2.35px 0; }',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+
