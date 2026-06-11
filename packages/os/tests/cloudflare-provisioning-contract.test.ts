@@ -10,6 +10,8 @@ type WorkspaceCloudflareProvisioningInput = {
   cloudflareZoneId: string;
   connectorId: string;
   dialerUpstreamUrl?: string;
+  edgeHostname?: string;
+  localServiceUrl?: string;
 };
 
 type WorkspaceCloudflareProvisioningClient = {
@@ -195,6 +197,8 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         cloudflareZoneId: 'zone_123',
         connectorId: 'connector_123',
         dialerUpstreamUrl: 'https://dialer-production.up.railway.app',
+        edgeHostname: 'workspace-edge.staging.consuelohq.com',
+        localServiceUrl: 'http://127.0.0.1:8787',
       },
     });
 
@@ -204,6 +208,16 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       'createOrReuseDnsRecord',
       'createOrReuseDnsRecord',
     ]);
+    expect(calls.find((call) => call.operation === 'putTunnelConfig')?.body).toMatchObject({
+      localServiceUrl: 'http://127.0.0.1:8787',
+    });
+    expect(calls.find(
+      (call) =>
+        call.operation === 'createOrReuseDnsRecord' &&
+        call.key === 'kokayi.consuelohq.com',
+    )?.body).toMatchObject({
+      content: 'workspace-edge.staging.consuelohq.com',
+    });
     expect(calls.some((call) => /railway/i.test(call.operation))).toBe(false);
     expect(result.workspaceHostname).toBe('kokayi.consuelohq.com');
     expect(result.osTunnelHostname).toBe('connector-123.os-origin.consuelohq.com');
@@ -287,4 +301,30 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       second.cloudflare.osTunnelDnsRecord.name,
     );
   });
+  it('should reject workspace and connector labels that are not DNS-label safe', async () => {
+    const { planWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const baseInput: WorkspaceCloudflareProvisioningInput = {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      baseDomain: 'consuelohq.com',
+      cloudflareZoneId: 'zone_123',
+      connectorId: 'connector_123',
+    };
+    const invalidInputs: WorkspaceCloudflareProvisioningInput[] = [
+      { ...baseInput, workspaceSlug: '-kokayi' },
+      { ...baseInput, workspaceSlug: 'kokayi-' },
+      { ...baseInput, workspaceSlug: 'k'.repeat(64) },
+      { ...baseInput, connectorId: '-connector_123' },
+      { ...baseInput, connectorId: 'connector_123-' },
+      { ...baseInput, connectorId: 'c'.repeat(64) },
+    ];
+
+    for (const input of invalidInputs) {
+      expect(() => planWorkspaceCloudflareProvisioning(input)).toThrow(
+        /must be DNS-label safe: 1-63 chars, no leading\/trailing hyphen, \[a-z0-9-\] only/,
+      );
+    }
+  });
+
 });

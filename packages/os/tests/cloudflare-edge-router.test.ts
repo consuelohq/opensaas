@@ -218,7 +218,16 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     });
 
     const response = await router.fetch(
-      new Request('https://kokayi.consuelohq.com/dialer/calls?limit=5'),
+      new Request('https://kokayi.consuelohq.com/dialer/calls?limit=5', {
+        headers: {
+          'x-consuelo-connector-id': 'caller-controlled-connector',
+          'x-consuelo-edge-signature': 'sha256=inbound',
+          'x-consuelo-hostname': 'caller.example.com',
+          'x-consuelo-route': '/caller',
+          'x-consuelo-surface': 'os',
+          'x-consuelo-workspace-id': 'caller_workspace',
+        },
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -233,6 +242,11 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-surface')).toBe(
       'dialer',
     );
+    expect(upstreamRequests[0].headers.get('x-consuelo-hostname')).toBe(
+      'kokayi.consuelohq.com',
+    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-route')).toBe('/dialer');
+    expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBeNull();
     expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
       'sha256=e9652e5ea05501c2fe16ca735512b3b24cf4c6850cfe9d43cc59b198b5388333',
     );

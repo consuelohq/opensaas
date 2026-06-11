@@ -5,6 +5,8 @@ export type WorkspaceCloudflareProvisioningInput = {
   cloudflareZoneId: string;
   connectorId: string;
   dialerUpstreamUrl?: string;
+  edgeHostname?: string;
+  localServiceUrl?: string;
 };
 
 export type WorkspaceCloudflareProvisioningClient = {
@@ -62,6 +64,8 @@ export type WorkspaceCloudflareProvisioningPlan = {
     tunnelName: string;
     workspaceDnsRecord: { name: string };
     osTunnelDnsRecord: { name: string };
+    edgeHostname: string;
+    localServiceUrl: string;
   };
   routes: WorkspaceCloudflareProvisioningRoute[];
 };
@@ -104,11 +108,19 @@ const normalizeBaseDomain = (baseDomain: string): string => {
   return normalized;
 };
 
+const DNS_LABEL_ERROR =
+  'must be DNS-label safe: 1-63 chars, no leading/trailing hyphen, [a-z0-9-] only';
+
+const isDnsLabelSafe = (label: string): boolean =>
+  label.length >= 1 &&
+  label.length <= 63 &&
+  /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/.test(label);
+
 const normalizeWorkspaceSlug = (workspaceSlug: string): string => {
   const normalized = workspaceSlug.trim().toLowerCase();
 
-  if (!normalized || normalized.includes('.') || /[^a-z0-9-]/.test(normalized)) {
-    throw new Error('workspace slug must be a DNS-safe label');
+  if (!isDnsLabelSafe(normalized)) {
+    throw new Error(`workspace slug ${DNS_LABEL_ERROR}`);
   }
 
   return normalized;
@@ -117,8 +129,8 @@ const normalizeWorkspaceSlug = (workspaceSlug: string): string => {
 const normalizeConnectorLabel = (connectorId: string): string => {
   const normalized = connectorId.trim().toLowerCase().replace(/_/g, '-');
 
-  if (!normalized || normalized.includes('.') || /[^a-z0-9-]/.test(normalized)) {
-    throw new Error('connector id must be DNS-label safe after normalization');
+  if (!isDnsLabelSafe(normalized)) {
+    throw new Error(`connector id ${DNS_LABEL_ERROR}`);
   }
 
   return normalized;
@@ -144,6 +156,10 @@ export const planWorkspaceCloudflareProvisioning = (
   const workspaceSlug = normalizeWorkspaceSlug(input.workspaceSlug);
   const baseDomain = normalizeBaseDomain(input.baseDomain);
   const connectorLabel = normalizeConnectorLabel(input.connectorId);
+  const edgeHostname = normalizeBaseDomain(
+    input.edgeHostname ?? 'workspace-edge.consuelohq.com',
+  );
+  const localServiceUrl = input.localServiceUrl ?? 'http://localhost:3000';
   const workspaceHostname = `${workspaceSlug}.${baseDomain}`;
   const osTunnelHostname = `${connectorLabel}.os-origin.${baseDomain}`;
   const osTarget: WorkspaceCloudflareRouteTarget = {
@@ -186,6 +202,8 @@ export const planWorkspaceCloudflareProvisioning = (
       tunnelName: `workspace-${input.workspaceId}-${connectorLabel}`,
       workspaceDnsRecord: { name: workspaceHostname },
       osTunnelDnsRecord: { name: osTunnelHostname },
+      edgeHostname,
+      localServiceUrl,
     },
     routes,
   };
@@ -206,14 +224,14 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
     await input.cloudflare.putTunnelConfig({
       tunnelId: tunnel.tunnelId,
       hostname: plan.osTunnelHostname,
-      localServiceUrl: 'http://localhost:3000',
+      localServiceUrl: plan.cloudflare.localServiceUrl,
     });
 
     await input.cloudflare.createOrReuseDnsRecord({
       zoneId: plan.cloudflare.zoneId,
       name: plan.cloudflare.workspaceDnsRecord.name,
       type: 'CNAME',
-      content: 'workspace-edge.consuelohq.com',
+      content: plan.cloudflare.edgeHostname,
       proxied: true,
     });
 
