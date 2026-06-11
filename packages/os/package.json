@@ -82,7 +82,8 @@
     "doctor:watch": "bun ./scripts/doctor-watch.ts",
     "artifact:render": "bun ./scripts/artifact-render.ts",
     "artifact:publish": "bun ./scripts/os.ts sites publish",
-    "artifact:validate": "bun ./scripts/artifact-validate.ts"
+    "artifact:validate": "bun ./scripts/artifact-validate.ts",
+    "semantic:embeddings": "bun ./scripts/semantic-embeddings.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
