@@ -10,6 +10,7 @@ import {
   createWorker,
   deriveAssociatedStream,
   groupPullRequestSummaries,
+  normalizeReviewItems,
   parsePullRequestLocator,
   renderCodeBrowserPage,
   renderHistoryPage,
@@ -47,6 +48,77 @@ describe('buildDiffCockpitUrl', () => {
     expect(buildDiffCockpitUrl({ owner: 'consuelohq', repo: 'opensaas', number: 708 })).toBe(
       'https://diffs.consuelohq.com/consuelohq/opensaas/pull/708',
     );
+  });
+});
+
+describe('normalizeReviewItems', () => {
+  test('keeps GitHub review thread resolution as source of truth for AI comments', () => {
+    const items = normalizeReviewItems(
+      [
+        {
+          id: 'issue-1',
+          provider: 'coderabbit',
+          author: 'coderabbitai',
+          body: 'Top-level CodeRabbit summary.',
+          url: 'https://github.com/consuelohq/opensaas/pull/708#issuecomment-1',
+          createdAt: '2026-06-03T04:00:00Z',
+          source: 'issue-comment',
+        },
+        {
+          id: 'review-2',
+          provider: 'codex',
+          author: 'chatgpt-codex-connector',
+          body: 'Inline Codex finding.',
+          url: 'https://github.com/consuelohq/opensaas/pull/708#discussion_r2',
+          createdAt: '2026-06-03T04:01:00Z',
+          source: 'review-comment',
+          path: 'packages/diff-cockpit/src/index.ts',
+          line: 42,
+        },
+      ],
+      [
+        {
+          id: 'PRRT_123',
+          isResolved: true,
+          isOutdated: false,
+          path: 'packages/diff-cockpit/src/index.ts',
+          line: 42,
+          comments: [
+            {
+              id: 'PRRC_2',
+              databaseId: 'review-2',
+              provider: 'codex',
+              author: 'chatgpt-codex-connector',
+              body: 'Inline Codex finding.',
+              url: 'https://github.com/consuelohq/opensaas/pull/708#discussion_r2',
+              createdAt: '2026-06-03T04:01:00Z',
+              path: 'packages/diff-cockpit/src/index.ts',
+              line: 42,
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      provider: 'coderabbit',
+      source: 'issue-comment',
+      canResolve: false,
+      isResolved: false,
+      resolutionSource: 'local',
+    });
+    expect(items[1]).toMatchObject({
+      provider: 'codex',
+      source: 'review-thread',
+      threadId: 'PRRT_123',
+      commentNodeId: 'PRRC_2',
+      canResolve: true,
+      isResolved: true,
+      resolutionSource: 'github',
+      path: 'packages/diff-cockpit/src/index.ts',
+      line: 42,
+    });
   });
 });
 
@@ -582,6 +654,10 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
+    expect(html).toContain('data-ai-sidebar="open"');
+    expect(html).toContain('id="ai-comments-sidebar"');
+    expect(html).toContain('id="ai-comments-toggle"');
+    expect(html).toContain('aria-label="AI review comments"');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -696,11 +772,115 @@ describe('renderReviewPage', () => {
     expect(script).toContain('copyReviewLink');
     expect(script).toContain('copyCurrentCommitLink');
     expect(script).toContain('renderMarkdownBlocks');
+    expect(script).toContain('renderAiCommentsSidebar');
+    expect(script).toContain('data-ai-review-toggle');
+    expect(script).toContain('copyReviewItemField');
+    expect(script).toContain('resolveReviewItem');
+    expect(script).toContain("apiPath + '/review-threads/'");
     expect(() => new Function(script || '')).not.toThrow();
   });
 });
 
+async function githubWebhookSignature(body: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  return 'sha256=' + Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 describe('createWorker', () => {
+  test('updates GitHub review threads through the review thread API endpoint', async () => {
+    const calls: Array<{ url: string; method?: string; body?: string }> = [];
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    cacheStore.set(cacheKey, Response.json({ cached: true }));
+    const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
+      calls.push({ url: String(input), method: init?.method, body: String(init?.body ?? '') });
+      if (String(input) === 'https://api.github.com/graphql') {
+        return Response.json({ data: { resolveReviewThread: { thread: { id: 'PRRT_1', isResolved: true } } } });
+      }
+      throw new Error('unexpected review thread mutation url ' + String(input));
+    };
+    const worker = createWorker({ fetcher, cache });
+
+    const missingToken = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }));
+    const response = await worker.fetch(
+      new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }),
+      { GITHUB_TOKEN: 'token' },
+    );
+    const payload = await response.json() as { ok: boolean; action: string; edgeInvalidated: boolean; invalidated: string[] };
+
+    expect(missingToken.status).toBe(401);
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({ ok: true, action: 'resolve', edgeInvalidated: true });
+    expect(payload.invalidated).toContain('/api/consuelohq/opensaas/pull/708');
+    expect(cacheStore.has(cacheKey)).toBe(false);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ url: 'https://api.github.com/graphql', method: 'POST' });
+    expect(calls[0]?.body || '').toContain('resolveReviewThread');
+    expect(calls[0]?.body || '').toContain('PRRT_1');
+  });
+
+  test('invalidates PR cache for resolved GitHub review-thread webhooks', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    cacheStore.set(cacheKey, Response.json({ cached: true }));
+    const body = JSON.stringify({
+      action: 'resolved',
+      pull_request: { number: 708 },
+      repository: { name: 'opensaas', owner: { login: 'consuelohq' } },
+      thread: { id: 'PRRT_1' },
+    });
+    const signature = await githubWebhookSignature(body, 'secret');
+    const worker = createWorker({ fetcher: async () => Response.json([]), cache });
+
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/api/github/webhook', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-github-event': 'pull_request_review_thread',
+        'x-hub-signature-256': signature,
+      },
+      body,
+    }), { GITHUB_WEBHOOK_SECRET: 'secret' });
+    const payload = await response.json() as { ok: boolean; edgeInvalidated: boolean; invalidated: string[] };
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({ ok: true, edgeInvalidated: true });
+    expect(payload.invalidated).toContain('/api/consuelohq/opensaas/pull/708');
+    expect(cacheStore.has(cacheKey)).toBe(false);
+  });
+
   test('routes the homepage to the live PR index shell', async () => {
     const worker = createWorker({ fetcher: async () => Response.json([]) });
     const response = await worker.fetch(new Request('https://diffs.consuelohq.com/'));
