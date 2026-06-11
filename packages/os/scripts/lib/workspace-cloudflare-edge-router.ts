@@ -118,6 +118,15 @@ const buildProxyRequest = (input: {
 }): Request => {
   const inboundUrl = new URL(input.request.url);
   const headers = new Headers(input.request.headers);
+  headers.delete('x-consuelo-workspace-id');
+  headers.delete('x-consuelo-hostname');
+  headers.delete('x-consuelo-route');
+  headers.delete('x-consuelo-surface');
+  headers.delete('x-consuelo-edge-signature');
+
+  headers.delete('x-consuelo-connector-id');
+
+
   headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
   headers.set('x-consuelo-hostname', input.resolution.hostname);
   headers.set('x-consuelo-route', input.resolution.route);
@@ -127,7 +136,6 @@ const buildProxyRequest = (input: {
     headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
   }
 
-  headers.delete('x-consuelo-edge-signature');
   headers.set(
     'x-consuelo-edge-signature',
     signEdgeRequest({
@@ -173,6 +181,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
           });
         }
 
+        // Fail closed with offline 503 for stale connector status from alternate registries.
         if (
           resolution.target.kind === 'os-connector' &&
           resolution.target.connectorStatus !== 'connected'
