@@ -109,6 +109,26 @@ msgid "Verify Email"
 msgstr "メールを確認"
 
 #. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "パスワードが更新されました"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "アカウント（{email}）のパスワードが{formattedDate}に正常に変更されたことを確認しました。"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "この変更を行っていない場合は、すぐにワークスペースの所有者に連絡してください。"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr "パスワードをリセット"
@@ -134,36 +154,6 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "このリンクは{duration}のみ有効です。リンクが機能しない場合は、ログイン認証リンクを直接ご利用ください："
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "パスワードが更新されました"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "アカウント（{email}）のパスワードが{formattedDate}に正常に変更されたことを確認しました。"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "この変更を行っていない場合は、すぐにワークスペースの所有者に連絡してください。"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "削除されたワークスペース"
@@ -187,6 +177,16 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "新しいワークスペースを作成"
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
