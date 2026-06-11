@@ -910,17 +910,20 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       <div id="drawer-content" class="drawer-content">
         <div class="action-grid" aria-label="Review actions">
           <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
+          <button id="copy-review-link" class="action-button" type="button" title="Copy pull request link">Copy PR</button>
+          <button id="copy-current-commit-link" class="action-button" type="button" title="Copy current commit link">Copy Commit</button>
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
           <button id="mergeability-button" class="action-button" type="button" data-open-mergeability>Mergeability</button>
           <button id="merge-pr-button" class="action-button" type="button">Merge PR</button>
         </div>
         <p class="muted">Keyboard: <span class="kbd">p</span> panel · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
-        <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
-        <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
-        <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
-        <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
-        <div id="drawer-commits" class="drawer-section"><h2>Commits</h2><div class="commit-card muted">No commits loaded yet.</div></div>
+        <div id="drawer-status" class="drawer-section drawer-section-open"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="status" aria-expanded="true"><span>Status</span><span class="drawer-section-caret">⌄</span></button></div><div class="drawer-section-body"><div class="comment-card muted">Loading PR status…</div></div></div>
+        <div id="drawer-summary" class="drawer-section drawer-section-open"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="summary" aria-expanded="true"><span>Review summary</span><span class="drawer-section-caret">⌄</span></button></div><div class="drawer-section-body"><div class="comment-card muted">Loading review context…</div></div></div>
+        <div id="drawer-prompt" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="prompt" aria-expanded="false"><span>Prompt for AI agents</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-checks" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="checks" aria-expanded="false"><span>Checks</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-comments" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="comments" aria-expanded="false"><span>Comments</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
@@ -2496,13 +2499,27 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
-.drawer-content { padding:14px; display:grid; gap:16px; }
+.drawer-content { padding:14px; display:grid; gap:10px; }
 .action-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
 .action-button { display:flex; justify-content:center; align-items:center; min-height:38px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
 .drawer-section { border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:hidden; }
-.drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
+.drawer-section-head { border-bottom:1px solid var(--line); background:var(--surface); }
+.drawer-section-toggle { width:100%; min-height:40px; display:grid; grid-template-columns:minmax(0, 1fr) auto auto; align-items:center; gap:8px; padding:9px 12px; text-align:left; font-size:13px; font-weight:650; }
+.drawer-section-state { color:var(--quiet); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
+.drawer-section-caret { color:var(--quiet); font-size:14px; }
+.drawer-section-body { display:grid; gap:0; }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
-.summary-chip { margin-right:6px; cursor:pointer; }
+.drawer-section-body > .comment-card:first-child, .drawer-section-body > .commit-card:first-child { border-top:0; }
+.review-summary-card { display:flex; flex-wrap:wrap; gap:6px; }
+.summary-chip { margin-right:0; cursor:pointer; }
+.prompt-preview { max-height:360px; overflow:auto; }
+.comment-body h1, .comment-body h2, .comment-body h3 { margin:10px 0 6px; font-size:14px; line-height:1.25; }
+.comment-body p, .comment-body ul, .comment-body ol, .comment-body blockquote { margin:0 0 8px; }
+.comment-body ul, .comment-body ol { padding-left:20px; }
+.comment-body blockquote { border-left:3px solid var(--line); padding-left:10px; color:var(--muted); }
+.comment-body pre { margin:8px 0; padding:10px; overflow:auto; white-space:pre-wrap; }
+.markdown-details { margin:8px 0; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+.markdown-details summary { padding:8px 10px; cursor:pointer; font-weight:650; }
 .commit-popover { position:fixed; right:16px; top:54px; z-index:20; width:min(520px, calc(100vw - 32px)); max-height:min(620px, calc(100vh - 72px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
 .commit-popover[hidden] { display:none; }
 .commit-popover-head { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
@@ -2916,7 +2933,7 @@ loadIndex();
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set() };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -2929,12 +2946,15 @@ const els = {
   navCommits: document.getElementById('commit-nav-button'),
   drawerClose: document.getElementById('drawer-close'),
   copyAll: document.getElementById('copy-all-comments'),
+  copyReviewLink: document.getElementById('copy-review-link'),
+  copyCurrentCommitLink: document.getElementById('copy-current-commit-link'),
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
   copyCodex: document.getElementById('copy-codex-prompt'),
   mergeabilityButton: document.getElementById('mergeability-button'),
   mergePrButton: document.getElementById('merge-pr-button'),
   drawerSummary: document.getElementById('drawer-summary'),
   drawerStatus: document.getElementById('drawer-status'),
+  drawerPrompt: document.getElementById('drawer-prompt'),
   drawerChecks: document.getElementById('drawer-checks'),
   drawerComments: document.getElementById('drawer-comments'),
   drawerCommits: document.getElementById('drawer-commits'),
@@ -2954,7 +2974,11 @@ els.drawerClose.addEventListener('click', () => setDrawer(false));
 els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
 els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
+els.copyReviewLink.addEventListener('click', () => copyReviewLink());
+els.copyCurrentCommitLink.addEventListener('click', () => copyCurrentCommitLink());
 document.addEventListener('click', (event) => {
+  const sectionButton = event.target.closest('[data-drawer-section-toggle]');
+  if (sectionButton) { event.preventDefault(); toggleDrawerSection(sectionButton.dataset.drawerSectionToggle); return; }
   const folderButton = event.target.closest('[data-folder-path]');
   if (folderButton) { toggleFolder(folderButton.dataset.folderPath); return; }
   const commitButton = event.target.closest('[data-open-commits]');
@@ -3156,14 +3180,41 @@ function renderDrawer() {
   const checks = state.data.checks || [];
   const pull = state.data.pull;
   const mergeLabel = mergeabilityLabel(pull);
+  const commentsLabel = comments.length.toLocaleString() + ' ' + (comments.length === 1 ? 'comment' : 'comments');
+  const commitsLabel = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
+  const checksLabel = checks.length.toLocaleString() + ' ' + (checks.length === 1 ? 'check' : 'checks');
   els.navMergeability.textContent = mergeLabel;
   els.navMergeability.dataset.status = mergeLabel;
-  els.navCommits.textContent = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
-  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><button class="badge summary-chip" type="button" data-open-mergeability>' + escapeHtml(mergeLabel) + '</button> <span class="badge">' + escapeHtml(pull.state) + '</span></div>';
-  els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
-  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</button></div>';
-  els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
-  els.drawerCommits.innerHTML = '<h2>Commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>');
+  els.navCommits.textContent = commitsLabel;
+  const statusBody = '<div class="comment-card compact-status"><button class="badge summary-chip" type="button" data-open-mergeability>' + escapeHtml(mergeLabel) + '</button> <span class="badge">' + escapeHtml(pull.state) + '</span> <span class="badge">' + escapeHtml(pull.headRef || '') + ' -> ' + escapeHtml(pull.baseRef || '') + '</span></div>';
+  const summaryBody = '<div class="comment-card review-summary-card"><button class="badge summary-chip" type="button" data-drawer-section-toggle="comments">' + escapeHtml(commentsLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="commits" data-open-commits>' + escapeHtml(commitsLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="checks">' + escapeHtml(checksLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="prompt">agent prompt</button></div>';
+  const promptBody = '<div class="comment-card"><div class="comment-meta">Prompt preview</div><div class="comment-body prompt-preview">' + renderMarkdown(buildChatGptPrompt()) + '</div></div>';
+  els.drawerStatus.innerHTML = renderDrawerSection('status', 'Status', statusBody, true);
+  els.drawerSummary.innerHTML = renderDrawerSection('summary', 'Review summary', summaryBody, true);
+  els.drawerPrompt.innerHTML = renderDrawerSection('prompt', 'Prompt for AI agents', promptBody, false);
+  els.drawerChecks.innerHTML = renderDrawerSection('checks', 'Checks', checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>', false);
+  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
+  els.drawerCommits.innerHTML = renderDrawerSection('commits', 'Commits', commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>', false);
+}
+
+function renderDrawerSection(sectionId, title, bodyHtml, defaultOpen) {
+  const open = drawerSectionIsOpen(sectionId, defaultOpen);
+  const stateLabel = open ? 'Hide' : 'Show';
+  const caret = open ? '⌄' : '›';
+  const body = open ? '<div class="drawer-section-body">' + bodyHtml + '</div>' : '';
+  return '<div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="' + escapeAttribute(sectionId) + '" aria-expanded="' + String(open) + '"><span>' + escapeHtml(title) + '</span><span class="drawer-section-state">' + stateLabel + '</span><span class="drawer-section-caret">' + caret + '</span></button></div>' + body;
+}
+
+function drawerSectionIsOpen(sectionId, defaultOpen) {
+  const value = state.drawerSections ? state.drawerSections[sectionId] : undefined;
+  return typeof value === 'boolean' ? value : defaultOpen;
+}
+
+function toggleDrawerSection(sectionId) {
+  if (!sectionId) return;
+  const defaultOpen = sectionId === 'status' || sectionId === 'summary';
+  state.drawerSections[sectionId] = !drawerSectionIsOpen(sectionId, defaultOpen);
+  renderDrawer();
 }
 
 function renderComment(comment) {
@@ -3349,12 +3400,146 @@ function renderCheck(check) {
 }
 
 function renderMarkdown(markdown) {
-  return escapeHtml(String(markdown || ''))
-    .replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
-    .replace(/\`([^\`]+)\`/g, '<code>$1</code>')
-    .replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>')
-    .replace(/\\[([^\\]]+)\\]\\((https?:[^)]+)\\)/g, '<a href="$2">$1</a>')
-    .replace(/\\n/g, '<br>');
+  return renderMarkdownBlocks(String(markdown || ''));
+}
+
+function renderMarkdownBlocks(markdown) {
+  const newline = String.fromCharCode(10);
+  const lines = String(markdown || '').replaceAll(String.fromCharCode(13) + newline, newline).split(newline);
+  const html = [];
+  let paragraph = [];
+  let listItems = [];
+  let inCode = false;
+  let codeLines = [];
+  const codeFence = String.fromCharCode(96, 96, 96);
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    html.push('<p>' + renderInlineMarkdown(paragraph.join(' ')) + '</p>');
+    paragraph = [];
+  }
+  function flushList() {
+    if (!listItems.length) return;
+    html.push('<ul>' + listItems.map((item) => '<li>' + renderInlineMarkdown(item) + '</li>').join('') + '</ul>');
+    listItems = [];
+  }
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith(codeFence)) {
+      if (inCode) {
+        html.push('<pre><code>' + escapeHtml(codeLines.join(newline)) + '</code></pre>');
+        codeLines = [];
+        inCode = false;
+      } else {
+        flushParagraph();
+        flushList();
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+    if (trimmed === '<details>') {
+      flushParagraph();
+      flushList();
+      html.push('<details class="markdown-details">');
+      continue;
+    }
+    if (trimmed === '</details>') {
+      flushParagraph();
+      flushList();
+      html.push('</details>');
+      continue;
+    }
+    if (trimmed.startsWith('<summary>') && trimmed.endsWith('</summary>')) {
+      flushParagraph();
+      flushList();
+      html.push('<summary>' + renderInlineMarkdown(trimmed.slice(9, -10)) + '</summary>');
+      continue;
+    }
+    const headingLevel = markdownHeadingLevel(trimmed);
+    if (headingLevel > 0) {
+      flushParagraph();
+      flushList();
+      html.push('<h' + headingLevel + '>' + renderInlineMarkdown(trimmed.slice(headingLevel + 1)) + '</h' + headingLevel + '>');
+      continue;
+    }
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      flushParagraph();
+      listItems.push(trimmed.slice(2));
+      continue;
+    }
+    if (trimmed.startsWith('>')) {
+      flushParagraph();
+      flushList();
+      html.push('<blockquote>' + renderInlineMarkdown(trimmed.slice(1).trim()) + '</blockquote>');
+      continue;
+    }
+    paragraph.push(trimmed);
+  }
+  if (inCode) html.push('<pre><code>' + escapeHtml(codeLines.join(newline)) + '</code></pre>');
+  flushParagraph();
+  flushList();
+  return html.join('');
+}
+
+function markdownHeadingLevel(value) {
+  let level = 0;
+  while (value.charAt(level) === '#') level += 1;
+  return level > 0 && level <= 3 && value.charAt(level) === ' ' ? level : 0;
+}
+
+function renderInlineMarkdown(value) {
+  const backtick = String.fromCharCode(96);
+  return renderMarkdownLinks(replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>'));
+}
+
+function replaceDelimited(value, marker, openTag, closeTag) {
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const start = value.indexOf(marker, cursor);
+    if (start === -1) return output + value.slice(cursor);
+    const end = value.indexOf(marker, start + marker.length);
+    if (end === -1) return output + value.slice(cursor);
+    output += value.slice(cursor, start) + openTag + value.slice(start + marker.length, end) + closeTag;
+    cursor = end + marker.length;
+  }
+  return output;
+}
+
+function renderMarkdownLinks(value) {
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const labelStart = value.indexOf('[', cursor);
+    if (labelStart === -1) return output + value.slice(cursor);
+    const labelEnd = value.indexOf(']', labelStart + 1);
+    const urlStart = labelEnd >= 0 ? labelEnd + 1 : -1;
+    if (labelEnd === -1 || value.charAt(urlStart) !== '(') {
+      output += value.slice(cursor, labelStart + 1);
+      cursor = labelStart + 1;
+      continue;
+    }
+    const urlEnd = value.indexOf(')', urlStart + 1);
+    if (urlEnd === -1) return output + value.slice(cursor);
+    const label = value.slice(labelStart + 1, labelEnd);
+    const url = value.slice(urlStart + 1, urlEnd);
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      output += value.slice(cursor, urlEnd + 1);
+      cursor = urlEnd + 1;
+      continue;
+    }
+    output += value.slice(cursor, labelStart) + '<a href="' + escapeAttribute(url) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    cursor = urlEnd + 1;
+  }
+  return output;
 }
 
 function navigateToComment(file, line) {

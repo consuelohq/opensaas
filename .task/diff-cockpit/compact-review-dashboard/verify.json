@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/compact-review-dashboard",
+  "base": "origin/task/diff-cockpit/compact-review-dashboard",
+  "headSha": "691a062a21bb75b71d96790eb39c0ea499987c96",
+  "changeHash": "6f277bc9f9325ef904940b00c19efb28024c828f2d11f92cb5277f850db36d02",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T19:06:31.324Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/compact-review-dashboard/current.json",
+        ".task/diff-cockpit/compact-review-dashboard/evidence-log.json",
+        ".task/diff-cockpit/compact-review-dashboard/read-log.json",
+        ".task/diff-cockpit/compact-review-dashboard/session.json",
+        ".task/diff-cockpit/compact-review-dashboard/workpad.md",
+        ".task/tasks/diff-cockpit/compact-review-dashboard.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

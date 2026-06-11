@@ -685,6 +685,17 @@ describe('renderReviewPage', () => {
     expect(script).toContain('data-comment-jump');
     expect(script).toContain('data-comment-file');
     expect(script).toContain('data-comment-line');
+    expect(html).toContain('id="copy-review-link"');
+    expect(html).toContain('id="copy-current-commit-link"');
+    expect(html).toContain('id="drawer-prompt"');
+    expect(html).toContain('data-drawer-section-toggle="checks"');
+    expect(html).toContain('data-drawer-section-toggle="comments"');
+    expect(html).toContain('data-drawer-section-toggle="commits"');
+    expect(script).toContain('renderDrawerSection');
+    expect(script).toContain('toggleDrawerSection');
+    expect(script).toContain('copyReviewLink');
+    expect(script).toContain('copyCurrentCommitLink');
+    expect(script).toContain('renderMarkdownBlocks');
     expect(() => new Function(script || '')).not.toThrow();
   });
 });
