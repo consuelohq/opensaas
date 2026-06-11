@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7456362a8e4b",
+  "tmuxSession": "opensaas-design-route-project-path-through-local-server-7456362a",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/route-project-path-through-local-server",
+  "branch": "task/design/route-project-path-through-local-server",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-route-project-path-through-local-server",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-route-project-path-through-local-server",
+  "prNumber": 933,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/933",
+  "createdAt": "2026-06-10T06:17:25.386Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-route-project-path-through-local-server/.task/design/route-project-path-through-local-server/session.json"
+}

@@ -109,6 +109,7 @@ export type PullRequestReviewData = {
   files: GitHubPullRequestFile[];
   tree: FileTreeNode;
   comments: ReviewComment[];
+  commits: StreamCommit[];
   streamCommits: StreamCommit[];
   warnings: string[];
   checks: CheckSummary[];
@@ -720,6 +721,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
       const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
+      const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
       const streamCommits = pull.headRef.startsWith('stream/')
         ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
         : [];
@@ -730,6 +732,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         files,
         tree: buildFileTree(files),
         comments,
+        commits,
         streamCommits,
         warnings,
         checks,
@@ -791,13 +794,13 @@ export function renderIndexPage(repo: RepoLocator): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consolidate Diffs · ${escapeHtml(repoLabel)}</title>
+  <title>Consuelo Diffs · ${escapeHtml(repoLabel)}</title>
   <style>${renderStyles()}</style>
 </head>
 <body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
@@ -855,9 +858,6 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
-  const githubUrl = `https://github.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
-  const graphiteUrl = `https://app.graphite.com/github/pr/${locator.owner}/${locator.repo}/${locator.number}`;
-  const diffsHubUrl = `https://diffshub.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -872,7 +872,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -881,11 +881,10 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       }</h1>
       <p id="pr-meta" class="muted">Loading live GitHub data…</p>
     </div>
-    <nav class="links" aria-label="Pull request links">
-      <a href="${escapeAttribute(githubUrl)}">GitHub</a>
-      <a href="${escapeAttribute(graphiteUrl)}">Graphite</a>
-      <a href="${escapeAttribute(diffsHubUrl)}">DiffsHub</a>
-      <button id="drawer-toggle" type="button" aria-expanded="false">Drawer</button>
+    <nav class="links" aria-label="Pull request controls">
+      <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
+      <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
+      <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
   <main class="layout">
@@ -897,15 +896,15 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
-    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">▣</button>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Close files" aria-expanded="true">×</button>
     <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
     </section>
-    <aside id="review-drawer" class="review-drawer" aria-label="Review drawer" aria-hidden="true">
+    <aside id="review-drawer" class="review-drawer" aria-label="Review panel" aria-hidden="true">
       <div class="drawer-head">
-        <strong>drawer</strong>
+        <strong>panel</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -913,18 +912,18 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
           <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
-          <button id="mergeability-button" class="action-button" type="button">Mergeability</button>
+          <button id="mergeability-button" class="action-button" type="button" data-open-mergeability>Mergeability</button>
           <button id="merge-pr-button" class="action-button" type="button">Merge PR</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <p class="muted">Keyboard: <span class="kbd">p</span> panel · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
         <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
         <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
         <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
         <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
-        <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
+        <div id="drawer-commits" class="drawer-section"><h2>Commits</h2><div class="commit-card muted">No commits loaded yet.</div></div>
       </div>
     </aside>
-    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
+    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
 ${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
@@ -950,7 +949,7 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -999,7 +998,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -1582,7 +1581,7 @@ export function groupPullRequestSummaries(
     {
       id: 'open',
       title: 'Open',
-      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
+      pulls: scoped.filter((pull) => pull.kind !== 'stream' && (pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')),
     },
     { id: 'closed', title: 'Closed', pulls: scoped.filter((pull) => pull.lifecycleStatus === 'closed') },
   ];
@@ -1650,6 +1649,26 @@ function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   if (states.includes('APPROVED')) return 'approved';
   if (states.includes('COMMENTED')) return 'commented';
   return states.length > 0 ? 'unknown' : 'none';
+}
+
+async function loadPullCommits(
+  fetcher: Fetcher,
+  apiBase: string,
+  number: number,
+  headers: HeadersInit,
+): Promise<StreamCommit[]> {
+  try {
+    const json = await fetchJsonArrayPages(
+      fetcher,
+      `${apiBase}/pulls/${number}/commits`,
+      headers,
+      'GitHub pull request commits fetch failed',
+      { maxPages: 1 },
+    );
+    return normalizeStreamCommits(json);
+  } catch {
+    return [];
+  }
 }
 
 function normalizeFiles(input: unknown): GitHubPullRequestFile[] {
@@ -1900,7 +1919,7 @@ async function refreshCacheEntries(
 ): Promise<{ homepage: string; pulls: string[]; code: string[]; history: string[] }> {
   try {
     const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
-    const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+    const homepageRequest = makeApiCacheRequest(new URL(homepageUrl));
     const homepageData = await deps.indexLoader(repo);
     await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
     const [codeResults, pullResults] = await Promise.all([
@@ -1928,8 +1947,8 @@ async function refreshCodePathCache(
   try {
     const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
     const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
-    const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
-    const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
+    const codeRequest = makeApiCacheRequest(new URL(codeUrl));
+    const historyRequest = makeApiCacheRequest(new URL(historyUrl));
     const [codeData, historyData] = await Promise.all([
       deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
       deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
@@ -1952,7 +1971,7 @@ async function refreshPullCache(
 ): Promise<string> {
   try {
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
-    const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
+    const pullRequest = makeApiCacheRequest(new URL(pullUrl));
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
     return new URL(pullUrl).pathname;
@@ -2016,10 +2035,13 @@ type MemoryCachedJson = {
 };
 
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
+const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
 
 function makeApiCacheRequest(url: URL): Request {
-  return new Request(url.toString(), { headers: { accept: 'application/json' } });
+  const cacheUrl = new URL(url.toString());
+  cacheUrl.searchParams.set('_dcv', API_CACHE_SCHEMA_VERSION);
+  return new Request(cacheUrl.toString(), { headers: { accept: 'application/json' } });
 }
 
 async function getOrSetCachedJson(
@@ -2248,9 +2270,9 @@ function renderNotFoundPage(): string {
 
 function renderStyles(): string {
   return `
-:root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; --danger:#9b2d2d; }
+:root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --danger:#9b2d2d; --shadow:0 18px 60px rgba(55, 37, 20, .14); }
 @media (prefers-color-scheme: dark) {
-  :root { color-scheme: dark; --paper:#070a0d; --surface:#0b0f13; --ink:#edf1f5; --muted:#a2abb4; --quiet:#737c85; --line:#20262d; --soft:#12181e; --accent:#d4d8dd; --accent-soft:#1b222a; --danger:#ff9d9d; }
+  :root { color-scheme: dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --danger:#ff9d9d; --shadow:0 28px 90px rgba(0,0,0,.42); }
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
@@ -2258,10 +2280,10 @@ html, body, button, a { -webkit-tap-highlight-color: transparent; }
 body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
 a { color:inherit; text-decoration:none; }
-a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
 button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
 button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline:none; }
-button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-soft); outline-offset:3px; }
+button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
 .shell { max-width:min(1180px, calc(100vw - 48px)); margin:0 auto; padding:0 18px 32px; }
 .index-shell { max-width:min(1720px, calc(100vw - 48px)); padding:0 10px 28px; }
 .wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:54px; border-bottom:1px solid var(--line); }
@@ -2275,15 +2297,15 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .command-backdrop { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.36); backdrop-filter:blur(7px); }
 .command-backdrop[hidden], .command-palette[hidden] { display:none; }
 .command-palette { position:fixed; inset:0; z-index:41; display:grid; place-items:start center; padding:9vh 18px 18px; }
-.command-panel { width:min(640px, calc(100vw - 32px)); max-height:min(760px, calc(100vh - 80px)); overflow:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:0 24px 80px rgba(0,0,0,.42); }
+.command-panel { width:min(720px, calc(100vw - 32px)); max-height:min(760px, calc(100vh - 80px)); overflow:auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
 .command-panel-head { display:flex; justify-content:space-between; gap:18px; padding:18px; border-bottom:1px solid var(--line); }
 .command-kicker, .command-section-title { margin:0 0 6px; color:var(--accent); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .command-panel h2 { margin:0 0 6px; font-size:30px; }
 .command-caption { margin:0; color:var(--muted); font-size:13px; }
 .command-close { color:var(--muted); }
 .command-input-row { display:block; padding:14px 18px; border-bottom:1px solid var(--line); }
-.command-input { width:100%; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); padding:12px 14px; font:inherit; font-size:15px; outline:none; }
-.command-input:focus { border-color:var(--accent); }
+.command-input { width:100%; border:0; border-bottom:1px solid var(--line); border-radius:0; background:var(--soft); color:var(--ink); padding:14px 22px; font:inherit; font-size:15px; outline:none; }
+.command-input:focus { border-bottom-color:var(--accent-strong); }
 .command-section { padding:12px; border-bottom:1px solid var(--line); }
 .command-list { display:grid; gap:6px; }
 .command-item { width:100%; min-height:52px; display:grid; grid-template-columns:54px minmax(0,1fr); align-items:center; gap:12px; padding:9px 10px; border:1px solid transparent; border-radius:11px; text-align:left; }
@@ -2332,7 +2354,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { letter-spacing:-.03em; margin:0 0 16px; }
 .markdown-body p { margin:0 0 14px; color:var(--ink); }
 .markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
-.code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
+.code-body pre { margin:0; font:13px/1.6 Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
 @media (max-width: 760px) {
   .code-shell { max-width:calc(100vw - 20px); }
   .code-hero { align-items:flex-start; flex-direction:column; gap:14px; padding:34px 0 20px; }
@@ -2378,6 +2400,7 @@ h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weig
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
 .post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.index-page .post-item[data-card-route] { cursor:pointer; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
@@ -2414,12 +2437,18 @@ mark { background:var(--accent-soft); color:var(--ink); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
 .footer-links { display:flex; gap:10px; }
-.review-page { overflow:hidden; --file-pane-width:330px; }
+.review-page { overflow:hidden; --file-pane-width:460px; }
+
+.review-page .topbar, .review-page .review-topbar, .review-page .links, .review-page .file-pane, .review-page .pane-heading, .review-page .tree-root, .review-page .tree-node, .review-page .directory-toggle, .review-page .tree-label, .review-page .tree-stats, .review-page .selected-file, .review-page .diff-file-header, .review-page .diff-file-path, .review-page .diff-file-stats, .review-page .inline-comment, .review-page .comment-card, .review-page .commit-popover, .review-page .review-drawer { font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.review-page .diff-fallback, .review-page .code-body pre, .review-page .comment-body pre, .review-page .comment-body code { font-family:Menlo, Monaco, Consolas, "Liberation Mono", monospace; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision; }
 .topbar { height:76px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper); }
 .eyebrow { margin:0 0 4px; font-size:12px; color:var(--quiet); text-transform:uppercase; letter-spacing:.08em; }
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
+.nav-status-button { color:var(--muted); }
+.nav-status-button[data-status="mergeable"] { color:#2f7d46; }
+.nav-status-button[data-status="unmergeable"] { color:#ef4444; }
   .layout { height:calc(100dvh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; overflow:hidden; border-top:1px solid var(--line); }
 body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
 body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed="true"] .file-pane-resizer { display:none; }
@@ -2452,7 +2481,7 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:13px; }
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
-.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 .diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); align-items:start; padding:0 8px 0 0; white-space:normal; max-width:100%; }
 .diff-gutter { color:var(--quiet); text-align:right; padding-right:5px; user-select:none; font-variant-numeric:tabular-nums; }
 .diff-code { min-width:0; overflow:visible; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
@@ -2474,7 +2503,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
 .summary-chip { margin-right:6px; cursor:pointer; }
-.commit-popover { position:absolute; right:18px; top:88px; z-index:8; width:min(520px, calc(100vw - 36px)); max-height:min(620px, calc(100vh - 120px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
+.commit-popover { position:fixed; right:16px; top:54px; z-index:20; width:min(520px, calc(100vw - 32px)); max-height:min(620px, calc(100vh - 72px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
 .commit-popover[hidden] { display:none; }
 .commit-popover-head { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .commit-popover-list { display:grid; }
@@ -2482,7 +2511,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
 .comment-body { font-size:13px; line-height:1.5; }
-.comment-body pre, .comment-body code { font-family:"SFMono-Regular", Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-body pre, .comment-body code { font-family:Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
 .comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
@@ -2576,13 +2605,13 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
   .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
   .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
-  .index-page .mergeability-icon.mergeability-mergeable{border-color:#22c55e;background:#22c55e;color:#07110a;}
+  .index-page .mergeability-icon.mergeability-mergeable{border-color:#2f7d46;background:#2f7d46;color:#07110a;}
   .index-page .mergeability-icon.mergeability-conflicts{border-color:#ef4444;color:#ef4444;background:transparent;}
   .index-page .mergeability-icon:empty{display:inline-flex;}
   .index-page .mergeability-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
   .index-page .pr-delta{display:none;}
-  .index-page .pr-updated{grid-column:1;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
-  .index-page .pr-mobile-files{display:inline;grid-column:2;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .index-page .pr-updated{grid-column:2;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .index-page .pr-mobile-files{display:inline;grid-column:1;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
 }
 
 @media (max-width: 760px) {
@@ -2590,7 +2619,15 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .review-icon, .index-page .check-icon { display:none !important; }
   .index-page .status-set { gap:0 !important; }
   .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
-  .index-page .mergeability-icon.mergeability-mergeable { border-color:#22c55e !important; background:#22c55e !important; color:#07110a !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
+}
+
+@media (max-width: 760px) {
+  .index-page .post-item::before, .index-page .post-item::after, .index-page .post-item:before, .index-page .post-item:after { content:none !important; display:none !important; }
+  .index-page .review-icon, .index-page .check-icon { display:none !important; }
+  .index-page .status-set { gap:0 !important; }
+  .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
 }
 }
 `;
@@ -2746,7 +2783,7 @@ function groupSections(source) {
   return [
     { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream' && (showAllStreams || pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'recently-merged', title: 'Merging and recently merged', pulls: source.filter((pull) => pull.lifecycleStatus === 'merged') },
-    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
+    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.kind !== 'stream' && (pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'closed', title: 'Closed', pulls: source.filter((pull) => pull.lifecycleStatus === 'closed') },
   ].filter((section) => section.pulls.length > 0);
 }
@@ -2791,7 +2828,7 @@ function renderCard(pull) {
   const fileCount = formatFileCount(pull.changedFiles);
   const mobileMeta = '#' + pull.number + ' ' + stream;
   const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
-  return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+  return '<article class="post-item pr-row" role="link" tabindex="0" data-card-route="' + escapeText(route) + '" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
     '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
@@ -2813,6 +2850,16 @@ function renderSections() {
   streamLabel.textContent = activeStream || '';
   sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, command search, or stream.</p></section>';
   document.querySelectorAll('[data-pr-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); openPull(link.getAttribute('data-pr-route')); }));
+  document.querySelectorAll('[data-card-route]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      openPull(card.getAttribute('data-card-route'));
+    });
+    card.addEventListener('keydown', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPull(card.getAttribute('data-card-route')); }
+    });
+  });
   document.querySelectorAll('[data-stream-filter]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); activeStream = button.getAttribute('data-stream-filter') || ''; resetSectionLimits(); renderSections(); }));
   document.querySelectorAll('[data-toggle-streams]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); showAllStreams = !showAllStreams; sectionLimits.streams = sectionPageSize; renderSections(); }));
   document.querySelectorAll('[data-load-more]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-load-more'); sectionLimits[id] = (sectionLimits[id] || sectionPageSize) + sectionPageSize; renderSections(); }));
@@ -2824,7 +2871,7 @@ function renderCommandResults() {
   const scoredPulls = pulls.map((pull) => ({ pull, score: scorePullRequestSearchValue(pull, query) })).filter((item) => !query || item.score > 0).sort((left, right) => right.score - left.score || new Date(right.pull.updatedAt).getTime() - new Date(left.pull.updatedAt).getTime()).slice(0, 8);
   commandResults.innerHTML = scoredPulls.length ? scoredPulls.map(({ pull }) => { const route = routePrefix + pull.number; const stream = pull.associatedStream || pull.baseRef || 'No stream'; return '<button class="command-item command-pr-item" type="button" data-command-route="' + escapeText(route) + '"><span class="command-key">#' + escapeText(pull.number) + '</span><span><strong>' + escapeText(pull.title) + '</strong><small>' + escapeText(stream + ' • ' + repoLabel + ' #' + pull.number) + '</small></span></button>'; }).join('') : '<div class="command-empty">No PRs match this command search.</div>';
 }
-function filterCommandPages() { const query = commandInput ? commandInput.value.trim() : ''; pageCommandItems.forEach((item) => { const label = item.getAttribute('data-command-label') || item.textContent || ''; item.hidden = Boolean(query) && scoreSearchValue(label, query.toLowerCase(), normalizeSearchValue(query), splitSearchTokens(query), 1) === 0; }); }
+function filterCommandPages() { const query = commandInput ? commandInput.value.trim() : ''; if (commandPages && commandPages.parentElement) commandPages.parentElement.hidden = Boolean(query); pageCommandItems.forEach((item) => { item.hidden = Boolean(query); }); }
 function openCommandPalette() { commandPalette.hidden = false; commandBackdrop.hidden = false; document.body.dataset.commandPaletteState = 'open'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'true')); renderCommandResults(); filterCommandPages(); window.setTimeout(() => commandInput && commandInput.focus(), 0); }
 function closeCommandPalette() { commandPalette.hidden = true; commandBackdrop.hidden = true; document.body.dataset.commandPaletteState = 'closed'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false')); }
 function updateActiveFilterButtons(filter) { document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === filter)); }
@@ -2853,6 +2900,7 @@ clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLim
 commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
 if (commandClose) commandClose.addEventListener('click', closeCommandPalette);
 if (commandBackdrop) commandBackdrop.addEventListener('click', closeCommandPalette);
+if (commandPalette) commandPalette.addEventListener('click', (event) => { if (event.target === commandPalette) closeCommandPalette(); });
 if (commandInput) commandInput.addEventListener('input', () => { activeQuery = commandInput.value; resetSectionLimits(); filterCommandPages(); window.clearTimeout(commandInput.dataset.timer); commandInput.dataset.timer = String(window.setTimeout(renderSections, 80)); });
 if (commandResults) commandResults.addEventListener('click', (event) => { const button = event.target.closest('[data-command-route]'); if (button) openPull(button.getAttribute('data-command-route')); });
 if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
@@ -2877,6 +2925,8 @@ const els = {
   selected: document.getElementById('selected-file'),
   diff: document.getElementById('diff-root'),
   drawerToggle: document.getElementById('drawer-toggle'),
+  navMergeability: document.getElementById('mergeability-nav-button'),
+  navCommits: document.getElementById('commit-nav-button'),
   drawerClose: document.getElementById('drawer-close'),
   copyAll: document.getElementById('copy-all-comments'),
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
@@ -2908,11 +2958,11 @@ document.addEventListener('click', (event) => {
   const folderButton = event.target.closest('[data-folder-path]');
   if (folderButton) { toggleFolder(folderButton.dataset.folderPath); return; }
   const commitButton = event.target.closest('[data-open-commits]');
-  if (commitButton) { renderCommitPopover(); return; }
+  if (commitButton) { toggleCommitPopover(); return; }
   const closeCommits = event.target.closest('[data-close-commits]');
   if (closeCommits) { closeCommitPopover(); return; }
   const mergeabilityButton = event.target.closest('[data-open-mergeability]');
-  if (mergeabilityButton) { renderMergeabilityPopover(); return; }
+  if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
@@ -2920,14 +2970,14 @@ document.addEventListener('click', (event) => {
 });
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
-els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover());
+
 els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'p') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
-  if (event.key === 'm') renderMergeabilityPopover();
+  if (event.key === 'm') toggleMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
@@ -3102,14 +3152,18 @@ function fileDomId(filename) {
 
 function renderDrawer() {
   const comments = state.data.comments || [];
-  const commits = state.data.streamCommits || [];
+  const commits = reviewCommits();
   const checks = state.data.checks || [];
   const pull = state.data.pull;
-  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <button class="badge summary-chip" type="button" data-open-mergeability>mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</button> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
+  const mergeLabel = mergeabilityLabel(pull);
+  els.navMergeability.textContent = mergeLabel;
+  els.navMergeability.dataset.status = mergeLabel;
+  els.navCommits.textContent = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
+  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><button class="badge summary-chip" type="button" data-open-mergeability>' + escapeHtml(mergeLabel) + '</button> <span class="badge">' + escapeHtml(pull.state) + '</span></div>';
   els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
-  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' stream commits</button></div>';
+  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</button></div>';
   els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
-  els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
+  els.drawerCommits.innerHTML = '<h2>Commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>');
 }
 
 function renderComment(comment) {
@@ -3124,30 +3178,50 @@ function renderCommit(commit) {
   return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function reviewCommits() {
+  if (Array.isArray(state.data?.commits) && state.data.commits.length) return state.data.commits;
+  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return state.data.streamCommits;
+  return [];
+}
+function toggleCommitPopover() {
+  if (!els.commitPopover.hidden) { closeCommitPopover(); return; }
+  renderCommitPopover();
+}
 function renderCommitPopover() {
-  const commits = state.data?.streamCommits || [];
+  const commits = reviewCommits();
   els.commitPopover.hidden = false;
-  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>stream commits</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found.</div>') + '</div>';
+  closeMergeabilityPopover();
+  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>' + commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>') + '</div>';
 }
 
 function closeCommitPopover() {
   els.commitPopover.hidden = true;
 }
+function mergeabilityLabel(pull) {
+  const stateLabel = String(pull?.mergeableState || 'unknown').toLowerCase();
+  const unmergeable = ['dirty'].includes(stateLabel) || pull?.mergeable === false;
+  return unmergeable ? 'unmergeable' : 'mergeable';
+}
+function toggleMergeabilityPopover() {
+  if (!els.mergeabilityPopover.hidden) { closeMergeabilityPopover(); return; }
+  renderMergeabilityPopover();
+}
 function renderMergeabilityPopover() {
+  closeCommitPopover();
   const pull = state.data?.pull || {};
   const files = state.data?.files || [];
   const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
-  const clean = stateLabel === 'clean';
-  const dirty = ['dirty', 'blocked'].includes(stateLabel) || pull.mergeable === false;
-  const title = clean ? 'clean' : escapeHtml(stateLabel || 'unknown');
+  const clean = mergeabilityLabel(pull) === 'mergeable';
+  const dirty = !clean;
+  const title = escapeHtml(mergeabilityLabel(pull));
   const fileList = dirty && files.length ? '<ul class="mergeability-files">' + files.map((file) => '<li>' + escapeHtml(file.filename) + '</li>').join('') + '</ul>' : '';
   const body = clean
-    ? '<p class="muted">This PR reports a clean merge state.</p>'
+    ? '<p class="muted">This PR is mergeable.</p>'
     : dirty
       ? '<p class="muted">Files to inspect before merging:</p>' + fileList
       : '<p class="muted">This PR is mergeable but GitHub reports state: ' + escapeHtml(stateLabel || 'unknown') + '.</p>';
   els.mergeabilityPopover.hidden = false;
-  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + body + '</div>';
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>' + title + '</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card">' + body + '</div>';
 }
 
 function closeMergeabilityPopover() {
@@ -3231,7 +3305,6 @@ function renderPatchFallback(patch, filename) {
       const hunk = parseHunkHeader(line);
       oldLine = hunk.oldStart;
       newLine = hunk.newStart;
-      rows.push(renderDiffLine(line, 'hunk', '', ''));
       continue;
     }
     if (line.startsWith('+')) {

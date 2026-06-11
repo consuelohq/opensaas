@@ -1,0 +1,12 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/repair-sites-routes",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 920,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/920",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-repair-sites-routes",
+  "createdAt": "2026-06-10T04:25:57.242Z"
+}
