@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/audit-reader-updates-wired-into-os",
+  "base": "origin/task/os/audit-reader-updates-wired-into-os",
+  "headSha": "ce72569b9acf14866d78e6b3bcffd7bba1cd75c6",
+  "changeHash": "6149add7980bbabc21c036e3f57e0011be053a8d2036a9f4adeeaf940c280384",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T03:50:24.058Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/audit-reader-updates-wired-into-os/current.json",
+        ".task/os/audit-reader-updates-wired-into-os/evidence-log.json",
+        ".task/os/audit-reader-updates-wired-into-os/read-log.json",
+        ".task/os/audit-reader-updates-wired-into-os/session.json",
+        ".task/os/audit-reader-updates-wired-into-os/workpad.md",
+        ".task/tasks/os/audit-reader-updates-wired-into-os.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

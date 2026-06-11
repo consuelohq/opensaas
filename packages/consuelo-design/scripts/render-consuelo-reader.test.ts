@@ -56,6 +56,10 @@ describe('renderConsueloReader', () => {
     expect(html).toContain('@media (prefers-color-scheme: dark)');
     expect(html).toContain('/design-wiki');
     expect(html).toContain('Ship checklist');
+    expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('data-copy-markdown="## Renderer');
+    expect(html).toContain('Render shell markers.');
+    expect(html).toContain('copyTaskMarkdown');
 
     const result = validateConsueloReaderHtml(html);
     expect(result.ok).toBe(true);
@@ -68,6 +72,10 @@ describe('renderConsueloReader', () => {
     expect(html).toContain('Deep Idea');
     expect(html).toContain('Explain Like I’m 5');
     expect(html).toContain('Evidence Trail');
+    expect(html).toContain('Learning checklist');
+    expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('data-copy-markdown="## Guide');
+    expect(html).toContain('copyTaskMarkdown');
     expect(html).toContain('data-reader-component="openQuestions"');
     expect(html).toContain('template:"guide"');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);

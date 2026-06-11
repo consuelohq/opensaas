@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/audit-reader-updates-wired-into-os",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 947,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/947",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/947",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/947/audit-reader-updates-wired-into-os",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/947",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/947/audit-reader-updates-wired-into-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-audit-reader-updates-wired-into-os",
+  "taskSession": "tsk_b1bb92208d8e",
+  "tmuxSession": "opensaas-os-audit-reader-updates-wired-into-os-b1bb9220",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-audit-reader-updates-wired-into-os/.task/os/audit-reader-updates-wired-into-os/session.json",
+  "createdAt": "2026-06-11T03:26:11.122Z"
+}

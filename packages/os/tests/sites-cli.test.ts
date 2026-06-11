@@ -324,6 +324,8 @@ describe('Sites CLI', () => {
     expect(html).toContain('window.__readerShell');
     expect(html).toContain('data-reader-component="table"');
     expect(html).toContain('reader-nav-task');
+    expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('data-copy-markdown="## Guide render');
 
     const publish = runSitesCommand(['publish', '--target', join(tempHome, 'rendered-guide'), '--path', '/pages/how-to-speak', '--title', 'How To Speak', '--kind', 'guide', '--json']);
     expect(publish).toMatchObject({ ok: true, command: 'publish', pageKind: 'guide', versionCount: 1 });
