@@ -84,6 +84,50 @@ export type ReviewComment = {
   source: 'review' | 'issue-comment' | 'review-comment';
   path?: string;
   line?: number;
+  nodeId?: string;
+  databaseId?: string;
+};
+
+export type ReviewItemSource = ReviewComment['source'] | 'review-thread';
+export type ReviewResolutionSource = 'github' | 'local';
+
+export type ReviewThreadComment = {
+  id: string;
+  databaseId: string;
+  provider: ReviewProvider;
+  author: string;
+  body: string;
+  url: string;
+  createdAt: string;
+  path?: string;
+  line?: number;
+};
+
+export type ReviewThread = {
+  id: string;
+  isResolved: boolean;
+  isOutdated: boolean;
+  path?: string;
+  line?: number;
+  comments: ReviewThreadComment[];
+};
+
+export type ReviewItem = {
+  id: string;
+  provider: ReviewProvider;
+  source: ReviewItemSource;
+  author: string;
+  body: string;
+  htmlUrl: string;
+  createdAt: string;
+  threadId?: string;
+  commentNodeId?: string;
+  path?: string;
+  line?: number;
+  isResolved: boolean;
+  isOutdated: boolean;
+  canResolve: boolean;
+  resolutionSource: ReviewResolutionSource;
 };
 
 export type StreamCommit = {
@@ -109,6 +153,7 @@ export type PullRequestReviewData = {
   files: GitHubPullRequestFile[];
   tree: FileTreeNode;
   comments: ReviewComment[];
+  reviewItems: ReviewItem[];
   commits: StreamCommit[];
   streamCommits: StreamCommit[];
   warnings: string[];
@@ -201,6 +246,7 @@ type DiffCockpitEnv = {
   GH_TOKEN?: string;
   DIFF_COCKPIT_DEFAULT_REPO?: string;
   DIFF_COCKPIT_REFRESH_TOKEN?: string;
+  GITHUB_WEBHOOK_SECRET?: string;
 };
 
 type WorkerExecutionContext = {
@@ -720,6 +766,10 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         ...normalizeReviewComments(issueCommentsJson, 'issue-comment'),
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
+      const reviewThreads = options.token
+        ? await loadReviewThreads(fetcher, locator, headers, warnings)
+        : [];
+      const reviewItems = normalizeReviewItems(comments, reviewThreads);
       const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
       const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
       const streamCommits = pull.headRef.startsWith('stream/')
@@ -732,6 +782,7 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         files,
         tree: buildFileTree(files),
         comments,
+        reviewItems,
         commits,
         streamCommits,
         warnings,
@@ -872,7 +923,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -884,6 +935,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <nav class="links" aria-label="Pull request controls">
       <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
       <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
+      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="true">AI comments</button>
       <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
@@ -925,6 +977,13 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
         <div id="drawer-comments" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="comments" aria-expanded="false"><span>Comments</span><span class="drawer-section-caret">›</span></button></div></div>
         <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
+    </aside>
+    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="AI review comments" aria-hidden="false">
+      <div class="ai-comments-head">
+        <div><strong>AI comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
+        <button id="ai-comments-close" type="button">Close</button>
+      </div>
+      <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
     </aside>
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
@@ -1045,6 +1104,10 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
       }
 
+      if (url.pathname === '/api/github/webhook') {
+        return handleGithubWebhook({ request, env, edgeCache });
+      }
+
 
 
       const codeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/code$/);
@@ -1091,6 +1154,16 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
+      }
+
+      const reviewThreadApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/review-threads\/([^/]+)\/(resolve|unresolve)$/);
+      if (reviewThreadApiMatch) {
+        if (request.method !== 'POST') {
+          return json({ ok: false, error: 'Use POST to update a review thread.' }, 405);
+        }
+        const threadId = decodeURIComponent(reviewThreadApiMatch[4] || '');
+        const action = reviewThreadApiMatch[5] === 'unresolve' ? 'unresolve' : 'resolve';
+        return mutateGithubReviewThread(options.fetcher ?? fetch, token, threadId, action);
       }
 
       const mergeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/merge$/);
@@ -1713,6 +1786,90 @@ async function loadStreamCommits(
   }
 }
 
+async function loadReviewThreads(
+  fetcher: Fetcher,
+  locator: PullRequestLocator,
+  headers: HeadersInit,
+  warnings: string[],
+): Promise<ReviewThread[]> {
+  const query = [
+    'query DiffCockpitReviewThreads($owner: String!, $repo: String!, $number: Int!) {' ,
+    'repository(owner: $owner, name: $repo) {' ,
+    'pullRequest(number: $number) {' ,
+    'reviewThreads(first: 100) {' ,
+    'nodes { id isResolved isOutdated path line comments(first: 30) {' ,
+    'nodes { id databaseId url body createdAt path line author { login } }' ,
+    '} } } } } }' ,
+  ].join(' ');
+
+  try {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        variables: { owner: locator.owner, repo: locator.repo, number: locator.number },
+      }),
+    });
+    if (!response.ok) {
+      warnings.push('review threads unavailable: GitHub GraphQL returned ' + response.status);
+      return [];
+    }
+    return normalizeReviewThreadsResponse(await response.json());
+  } catch (error: unknown) {
+    warnings.push('review threads unavailable: ' + getErrorMessage(error));
+    return [];
+  }
+}
+
+function normalizeReviewThreadsResponse(input: unknown): ReviewThread[] {
+  const root = optionalRecord(input);
+  const data = optionalRecord(root?.data);
+  const repository = optionalRecord(data?.repository);
+  const pullRequest = optionalRecord(repository?.pullRequest);
+  const reviewThreads = optionalRecord(pullRequest?.reviewThreads);
+  const nodes = Array.isArray(reviewThreads?.nodes) ? reviewThreads.nodes : [];
+  return nodes
+    .map((thread) => {
+      const record = optionalRecord(thread);
+      if (!record) return null;
+      const commentsConnection = optionalRecord(record.comments);
+      const comments = Array.isArray(commentsConnection?.nodes) ? commentsConnection.nodes : [];
+      const line = numberValue(record.line, 0);
+      const item: ReviewThread = {
+        id: stringValue(record.id, ''),
+        isResolved: booleanValue(record.isResolved),
+        isOutdated: booleanValue(record.isOutdated),
+        ...(record.path ? { path: stringValue(record.path, '') } : {}),
+        ...(line > 0 ? { line } : {}),
+        comments: comments.map(normalizeReviewThreadComment).filter((comment): comment is ReviewThreadComment => Boolean(comment)),
+      };
+      return item.id ? item : null;
+    })
+    .filter((thread): thread is ReviewThread => Boolean(thread));
+}
+
+function normalizeReviewThreadComment(input: unknown): ReviewThreadComment | null {
+  const record = optionalRecord(input);
+  if (!record) return null;
+  const authorRecord = optionalRecord(record.author);
+  const author = stringValue(authorRecord?.login, 'unknown');
+  const body = stringValue(record.body, '').trim();
+  if (!body) return null;
+  const line = numberValue(record.line, 0);
+  const databaseId = stringValue(record.databaseId, '');
+  return {
+    id: stringValue(record.id, databaseId || body),
+    databaseId,
+    provider: detectReviewProvider(author),
+    author,
+    body,
+    url: stringValue(record.url, ''),
+    createdAt: stringValue(record.createdAt, ''),
+    ...(record.path ? { path: stringValue(record.path, '') } : {}),
+    ...(line > 0 ? { line } : {}),
+  };
+}
 async function loadChecks(
   fetcher: Fetcher,
   apiBase: string,
@@ -1765,6 +1922,8 @@ function normalizeReviewComments(
         url: stringValue(record.html_url, ''),
         createdAt: stringValue(record.submitted_at ?? record.created_at, ''),
         source,
+        ...(record.node_id ? { nodeId: stringValue(record.node_id, '') } : {}),
+        ...(record.id ? { databaseId: stringValue(record.id, '') } : {}),
         ...(record.path ? { path: stringValue(record.path, '') } : {}),
         ...(line > 0 ? { line } : {}),
       };
@@ -1772,6 +1931,71 @@ function normalizeReviewComments(
     .filter((comment): comment is ReviewComment => Boolean(comment));
 }
 
+export function normalizeReviewItems(comments: ReviewComment[], threads: ReviewThread[] = []): ReviewItem[] {
+  const itemsByKey = new Map<string, ReviewItem>();
+
+  for (const comment of comments) {
+    if (!isAiReviewProvider(comment.provider)) continue;
+    const item: ReviewItem = {
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      ...(comment.path ? { path: comment.path } : {}),
+      ...(comment.line ? { line: comment.line } : {}),
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    };
+    itemsByKey.set(reviewItemKey(comment.nodeId, comment.id, comment.url), item);
+  }
+
+  for (const thread of threads) {
+    for (const comment of thread.comments) {
+      if (!isAiReviewProvider(comment.provider)) continue;
+      const item: ReviewItem = {
+        id: comment.id,
+        provider: comment.provider,
+        source: 'review-thread',
+        author: comment.author,
+        body: comment.body,
+        htmlUrl: comment.url,
+        createdAt: comment.createdAt,
+        threadId: thread.id,
+        commentNodeId: comment.id,
+        ...(comment.path || thread.path ? { path: comment.path || thread.path } : {}),
+        ...(comment.line || thread.line ? { line: comment.line || thread.line } : {}),
+        isResolved: thread.isResolved,
+        isOutdated: thread.isOutdated,
+        canResolve: true,
+        resolutionSource: 'github',
+      };
+      itemsByKey.set(reviewItemKey(comment.id, comment.databaseId, comment.url), item);
+    }
+  }
+
+  return Array.from(itemsByKey.values()).sort(compareReviewItems);
+}
+
+function isAiReviewProvider(provider: ReviewProvider): boolean {
+  return provider === 'coderabbit' || provider === 'codex' || provider === 'claude';
+}
+
+function reviewItemKey(commentNodeId: string | undefined, id: string, htmlUrl: string): string {
+  return htmlUrl || commentNodeId || id;
+}
+
+function compareReviewItems(a: ReviewItem, b: ReviewItem): number {
+  const pathCompare = (a.path || '').localeCompare(b.path || '');
+  if (pathCompare !== 0) return pathCompare;
+  const lineCompare = (a.line || 0) - (b.line || 0);
+  if (lineCompare !== 0) return lineCompare;
+  return a.createdAt.localeCompare(b.createdAt);
+}
 function normalizeStreamCommits(input: unknown): StreamCommit[] {
   if (!Array.isArray(input)) {
     return [];
@@ -1848,6 +2072,88 @@ function normalizeOrderIndex(index: number): number {
 }
 
 
+type ReviewThreadMutationAction = 'resolve' | 'unresolve';
+
+async function mutateGithubReviewThread(
+  fetcher: Fetcher,
+  token: string | undefined,
+  threadId: string,
+  action: ReviewThreadMutationAction,
+): Promise<Response> {
+  if (!token) return json({ ok: false, error: 'GitHub token is required to update review threads.' }, 401);
+  if (!threadId) return json({ ok: false, error: 'review thread id is required.' }, 400);
+  const mutationName = action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
+  const query = 'mutation DiffCockpitReviewThread($threadId: ID!) { ' + mutationName + '(input: { threadId: $threadId }) { thread { id isResolved } } }';
+  const response = await fetcher('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: { ...createGithubHeaders(token), 'content-type': 'application/json' },
+    body: JSON.stringify({ query, variables: { threadId } }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return json({ ok: false, error: 'GitHub GraphQL review thread mutation failed.', details: payload }, response.status);
+  }
+  return json({ ok: true, action, payload });
+}
+
+type GithubWebhookDeps = {
+  request: Request;
+  env?: DiffCockpitEnv;
+  edgeCache: EdgeCache | null;
+};
+
+async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
+  if (deps.request.method !== 'POST') return internalJson({ error: 'GitHub webhook requires POST' }, 405);
+  const secret = deps.env?.GITHUB_WEBHOOK_SECRET;
+  if (!secret) return internalJson({ error: 'GITHUB_WEBHOOK_SECRET is not configured' }, 503);
+  const body = await deps.request.text();
+  const valid = await verifyGithubWebhookSignature(body, deps.request.headers.get('x-hub-signature-256') || '', secret);
+  if (!valid) return internalJson({ error: 'invalid GitHub webhook signature' }, 401);
+  const event = deps.request.headers.get('x-github-event') || '';
+  let payload: unknown;
+  try { payload = JSON.parse(body); } catch (error: unknown) { return internalJson({ error: 'invalid JSON body: ' + getErrorMessage(error) }, 400); }
+  const record = optionalRecord(payload);
+  const action = stringValue(record?.action, '');
+  if (event !== 'pull_request_review_thread' || !['resolved', 'unresolved'].includes(action)) {
+    return internalJson({ ok: true, event, action, invalidated: [] });
+  }
+  const pull = optionalRecord(record?.pull_request);
+  const repo = optionalRecord(record?.repository);
+  const ownerRecord = optionalRecord(repo?.owner);
+  const owner = stringValue(ownerRecord?.login, '');
+  const repoName = stringValue(repo?.name, '');
+  const pullNumber = numberValue(pull?.number, 0);
+  if (!owner || !repoName || pullNumber <= 0) {
+    return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
+  }
+  const apiUrl = new URL(COCKPIT_ORIGIN + '/api/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repoName) + '/pull/' + pullNumber);
+  const cacheRequest = makeApiCacheRequest(apiUrl);
+  memoryJsonCache.delete(memoryCacheKey(cacheRequest));
+  const edgeInvalidated = deps.edgeCache ? await deps.edgeCache.delete(cacheRequest) : false;
+  return internalJson({ ok: true, event, action, invalidated: [new URL(apiUrl).pathname], edgeInvalidated });
+}
+
+async function verifyGithubWebhookSignature(body: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    if (!signature.startsWith('sha256=')) return false;
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+    const expected = 'sha256=' + Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+    return timingSafeEqual(expected, signature);
+  } catch {
+    return false;
+  }
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    result |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  }
+  return result === 0;
+}
 type CacheRefreshInput = {
   repo?: string;
   pulls?: unknown;
@@ -2496,6 +2802,22 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
 .mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
 .mobile-file-backdrop { display:none; }
+.ai-comments-sidebar { position:absolute; top:0; right:0; width:min(380px, 36vw); height:100%; transform:translateX(0); transition:transform .16s ease; border-left:1px solid var(--line); background:var(--paper); z-index:4; overflow:auto; }
+body[data-ai-sidebar="closed"] .ai-comments-sidebar { transform:translateX(100%); }
+body[data-ai-sidebar="open"] .review-pane { margin-right:min(380px, 36vw); }
+.ai-comments-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:14px; border-bottom:1px solid var(--line); background:var(--paper); }
+.ai-comments-head p { margin:4px 0 0; font-size:12px; }
+.ai-comments-content { display:grid; gap:8px; padding:10px; }
+.ai-review-card { border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden; }
+.ai-review-card.is-resolved { opacity:.68; }
+.ai-review-summary { width:100%; display:grid; grid-template-columns:auto minmax(0, 1fr) auto auto; gap:8px; align-items:start; padding:10px; text-align:left; }
+.ai-review-main { min-width:0; display:grid; gap:3px; }
+.ai-review-main strong, .ai-review-main span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ai-review-main span { color:var(--muted); font-size:12px; }
+.ai-review-expanded { border-top:1px solid var(--line); padding:10px; display:grid; gap:10px; }
+.ai-review-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.ai-review-action { display:inline-flex; align-items:center; min-height:28px; border:1px solid var(--line); border-radius:999px; padding:4px 9px; color:var(--muted); background:var(--paper); font-size:12px; }
+@media (max-width: 1120px) { body[data-ai-sidebar="open"] .review-pane { margin-right:0; } .ai-comments-sidebar { width:min(420px, 92vw); z-index:6; box-shadow:-18px 0 45px rgba(0,0,0,.22); } }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
@@ -2933,7 +3255,7 @@ loadIndex();
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -2944,6 +3266,11 @@ const els = {
   drawerToggle: document.getElementById('drawer-toggle'),
   navMergeability: document.getElementById('mergeability-nav-button'),
   navCommits: document.getElementById('commit-nav-button'),
+  aiCommentsToggle: document.getElementById('ai-comments-toggle'),
+  aiCommentsSidebar: document.getElementById('ai-comments-sidebar'),
+  aiCommentsClose: document.getElementById('ai-comments-close'),
+  aiCommentsSummary: document.getElementById('ai-comments-summary'),
+  aiCommentsContent: document.getElementById('ai-comments-content'),
   drawerClose: document.getElementById('drawer-close'),
   copyAll: document.getElementById('copy-all-comments'),
   copyReviewLink: document.getElementById('copy-review-link'),
@@ -2971,6 +3298,8 @@ els.drawerToggle.addEventListener('click', () => {
   setDrawer(document.body.dataset.reviewDrawer !== 'open');
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
+els.aiCommentsToggle.addEventListener('click', () => setAiSidebar(document.body.dataset.aiSidebar !== 'open'));
+els.aiCommentsClose.addEventListener('click', () => setAiSidebar(false));
 els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
 els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
@@ -2989,6 +3318,16 @@ document.addEventListener('click', (event) => {
   if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
+  const aiToggle = event.target.closest('[data-ai-review-toggle]');
+  if (aiToggle) { toggleReviewItem(aiToggle.dataset.reviewItemId); return; }
+  const aiCopyLink = event.target.closest('[data-ai-review-copy-link]');
+  if (aiCopyLink) { copyReviewItemField(aiCopyLink.dataset.reviewItemId, 'link'); return; }
+  const aiCopyBody = event.target.closest('[data-ai-review-copy-body]');
+  if (aiCopyBody) { copyReviewItemField(aiCopyBody.dataset.reviewItemId, 'body'); return; }
+  const aiCopyPrompt = event.target.closest('[data-ai-review-copy-prompt]');
+  if (aiCopyPrompt) { copyReviewItemField(aiCopyPrompt.dataset.reviewItemId, 'prompt'); return; }
+  const aiResolve = event.target.closest('[data-ai-review-resolve]');
+  if (aiResolve) { resolveReviewItem(aiResolve.dataset.reviewItemId); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
   if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
 });
@@ -3028,6 +3367,11 @@ function setDrawer(open) {
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
 }
+function setAiSidebar(open) {
+  document.body.dataset.aiSidebar = open ? 'open' : 'closed';
+  els.aiCommentsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  els.aiCommentsSidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
 function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
@@ -3054,6 +3398,7 @@ function applyReviewData(data) {
   renderLongDiffs();
   setupActiveFileObserver();
   renderDrawer();
+  renderAiCommentsSidebar();
 }
 
 function loadLiveData() {
@@ -3102,6 +3447,8 @@ function renderMergeResult(message) {
 function renderHeader() {
   const pull = state.data.pull;
   const commentCount = state.data.comments ? state.data.comments.length : 0;
+  const aiCommentCount = aiReviewItems().length;
+  els.aiCommentsToggle.textContent = aiCommentCount.toLocaleString() + ' AI';
   els.title.textContent = pull.title;
   els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author + ' · ' + commentCount + ' review comments';
   els.count.textContent = String(state.data.files.length);
@@ -3174,6 +3521,96 @@ function fileDomId(filename) {
   return 'file-' + String(filename || '').replace(/[^a-zA-Z0-9_-]+/g, '-');
 }
 
+function aiReviewItems() {
+  if (Array.isArray(state.data?.reviewItems)) return state.data.reviewItems;
+  return (state.data?.comments || [])
+    .filter((comment) => ['coderabbit', 'codex', 'claude'].includes(comment.provider))
+    .map((comment) => ({
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      path: comment.path,
+      line: comment.line,
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    }));
+}
+
+function renderAiCommentsSidebar() {
+  const items = aiReviewItems();
+  const unresolved = items.filter((item) => !item.isResolved).length;
+  els.aiCommentsSummary.textContent = items.length.toLocaleString() + ' AI item' + (items.length === 1 ? '' : 's') + ' · ' + unresolved.toLocaleString() + ' unresolved';
+  els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
+}
+
+function renderAiReviewItem(item) {
+  const expanded = state.expandedReviewItems.has(item.id);
+  const stateClass = item.isResolved ? 'is-resolved' : 'is-unresolved';
+  const stateLabel = item.isResolved ? 'resolved' : 'unresolved';
+  const sourceLabel = item.canResolve ? 'GitHub thread' : 'local only';
+  const location = item.path ? item.path + (item.line ? ':' + item.line : '') : 'conversation';
+  const jump = item.path ? '<button class="ai-review-action" type="button" data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '">jump</button>' : '';
+  const body = expanded ? '<div class="ai-review-expanded"><div class="comment-body">' + renderMarkdown(item.body) + '</div><div class="ai-review-actions"><button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button><button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + jump + renderReviewResolveButton(item) + '</div></div>' : '';
+  return '<article class="ai-review-card ' + stateClass + '"><button class="ai-review-summary" type="button" data-ai-review-toggle data-review-item-id="' + escapeAttribute(item.id) + '" aria-expanded="' + String(expanded) + '"><span class="badge">' + escapeHtml(item.provider) + '</span><span class="ai-review-main"><strong>' + escapeHtml(location) + '</strong><span>' + escapeHtml(previewText(item.body, 126)) + '</span></span><span class="badge">' + escapeHtml(stateLabel) + '</span><span class="badge">' + escapeHtml(sourceLabel) + '</span></button>' + body + '</article>';
+}
+
+function renderReviewResolveButton(item) {
+  if (!item.canResolve || !item.threadId) return '<span class="badge">' + escapeHtml(item.resolutionSource || 'local') + '</span>';
+  return '<button class="ai-review-action" type="button" data-ai-review-resolve data-review-item-id="' + escapeAttribute(item.id) + '">' + (item.isResolved ? 'mark unresolved' : 'mark resolved') + '</button>';
+}
+
+function toggleReviewItem(itemId) {
+  if (!itemId) return;
+  if (state.expandedReviewItems.has(itemId)) state.expandedReviewItems.delete(itemId);
+  else state.expandedReviewItems.add(itemId);
+  renderAiCommentsSidebar();
+}
+
+function findReviewItem(itemId) {
+  return aiReviewItems().find((item) => item.id === itemId) || null;
+}
+
+function copyReviewItemField(itemId, field) {
+  const item = findReviewItem(itemId);
+  if (!item) return;
+  if (field === 'link') { copyText(item.htmlUrl || ''); return; }
+  if (field === 'body') { copyText(item.body || ''); return; }
+  copyText('@agent please handle this review item.\\n\\n' + reviewItemMarkdown(item));
+}
+
+function reviewItemMarkdown(item) {
+  const lines = ['Provider: ' + item.provider, 'State: ' + (item.isResolved ? 'resolved' : 'unresolved'), 'Source: ' + item.resolutionSource];
+  if (item.path) lines.push('Location: ' + item.path + (item.line ? ':' + item.line : ''));
+  if (item.htmlUrl) lines.push('URL: ' + item.htmlUrl);
+  lines.push('', item.body || '');
+  return lines.join('\\n');
+}
+
+async function resolveReviewItem(itemId) {
+  const item = findReviewItem(itemId);
+  if (!item || !item.canResolve || !item.threadId) return;
+  const action = item.isResolved ? 'unresolve' : 'resolve';
+  try {
+    const response = await fetch(apiPath + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
+    if (!response.ok) return;
+    item.isResolved = !item.isResolved;
+    renderAiCommentsSidebar();
+    loadLiveData();
+  } catch {
+    renderAiCommentsSidebar();
+  }
+}
+
+function previewText(value, maxLength) {
+  const compact = String(value || '').replace(/\s+/g, ' ').trim();
+  return compact.length > maxLength ? compact.slice(0, maxLength - 1) + '…' : compact;
+}
 function renderDrawer() {
   const comments = state.data.comments || [];
   const commits = reviewCommits();
