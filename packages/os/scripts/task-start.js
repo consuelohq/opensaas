@@ -35,7 +35,7 @@ const {
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
-const { getTaskHookGuidance, renderTaskHookGuidance } = require('../hooks/task/guidance.js');
+const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
 
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
@@ -548,16 +548,26 @@ async function main() {
       args.json,
     );
 
-    // guard 4: emit reusable task hook guidance for non-JSON callers
+    // guard 4: emit manifest-driven task hook guidance for non-JSON callers
     if (!args.json) {
-      const guidance = getTaskHookGuidance('after-task-start', {
-        area,
-        taskSession: taskSessionMeta.taskSession,
-        worktreePath,
+      const guidance = dispatchHookEvent({
+        event: {
+          event: 'tool.postInvoke',
+          tool: 'task.start',
+          workflow: 'task',
+          result: {
+            area,
+            branch: taskBranch,
+            taskSession: taskSessionMeta.taskSession,
+            worktreePath,
+          },
+        },
       });
-      writeStderr('');
-      writeStderr('task hook guidance:');
-      writeStderr(renderTaskHookGuidance(guidance).trimEnd());
+      if (guidance) {
+        writeStderr('');
+        writeStderr('task hook guidance:');
+        writeStderr(renderHookResult(guidance).trimEnd());
+      }
     }
 }
 

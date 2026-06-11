@@ -1,9 +1,12 @@
 #!/usr/bin/env bun
 
+const fs = require('fs');
+
 const {
   getTaskHookGuidance,
   renderTaskHookGuidance,
 } = require('../hooks/task/guidance.js');
+const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -15,8 +18,10 @@ function writeStderr(value = '') {
 
 function printHelp() {
   writeStdout('usage: bun run task:hook -- <stage> [options]');
+  writeStdout('       bun run task:hook -- --event-json <path> [--json]');
   writeStdout('');
-  writeStdout('stages: before-task-start | after-task-start | before-production-edit | before-publish | unknown-task-tool');
+  writeStdout('legacy stages: before-task-start | after-task-start | before-production-edit | before-publish | unknown-task-tool');
+  writeStdout('event mode: dispatch a workflow hook event JSON object through the manifest-driven dispatcher');
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --area <value>');
@@ -26,6 +31,8 @@ function printHelp() {
   writeStdout('  --requested-tool <name>');
   writeStdout('  --base <branch>');
   writeStdout('  --message <commit message>');
+  writeStdout('  --event-json <path>');
+  writeStdout('  --manifest <path>');
   writeStdout('  --no-tests');
   writeStdout('  --json');
   writeStdout('  --help');
@@ -33,24 +40,27 @@ function printHelp() {
 
 function parseArgs(argv) {
   const args = { json: false };
-  const [stage, ...rest] = argv;
+  let index = 0;
 
-  if (!stage || stage === '--help') {
+  if (argv.length === 0 || argv[0] === '--help') {
     args.help = true;
     return args;
   }
 
-  args.stage = stage;
+  if (!argv[0].startsWith('--')) {
+    args.stage = argv[0];
+    index = 1;
+  }
 
-  for (let index = 0; index < rest.length; index += 1) {
-    const rawArgument = rest[index];
+  for (; index < argv.length; index += 1) {
+    const rawArgument = argv[index];
     if (!rawArgument.startsWith('--')) {
       throw new Error(`unexpected argument: ${rawArgument}`);
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
     const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--no-tests';
-    const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : rest[index + 1];
+    const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
       throw new Error(`missing value for ${flag}`);
@@ -82,6 +92,12 @@ function parseArgs(argv) {
       case '--message':
         args.message = value;
         break;
+      case '--event-json':
+        args.eventJson = value;
+        break;
+      case '--manifest':
+        args.manifestPath = value;
+        break;
       case '--no-tests':
         args.noTests = true;
         break;
@@ -96,13 +112,36 @@ function parseArgs(argv) {
     }
   }
 
+  if (!args.stage && !args.eventJson && !args.help) {
+    throw new Error('missing stage or --event-json');
+  }
+
   return args;
+}
+
+function readEventJson(eventJsonPath) {
+  return JSON.parse(fs.readFileSync(eventJsonPath, 'utf8'));
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
     printHelp();
+    return;
+  }
+
+  if (args.eventJson) {
+    const guidance = dispatchHookEvent({
+      manifestPath: args.manifestPath,
+      event: readEventJson(args.eventJson),
+    });
+
+    if (args.json) {
+      writeStdout(JSON.stringify(guidance, null, 2));
+      return;
+    }
+
+    writeStdout(renderHookResult(guidance));
     return;
   }
 
