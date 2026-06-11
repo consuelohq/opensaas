@@ -26,7 +26,7 @@ function getRepoHash(repoRoot, remoteUrl) {
 }
 
 const SEMANTIC_INDEX_DB_NAME = 'semantic-index.db';
-const SEMANTIC_INDEX_REGISTRY_NAME = 'semantic_index';
+const SEMANTIC_INDEX_REGISTRY_PREFIX = 'semantic_index';
 const SEMANTIC_INDEX_SCHEMA_VERSION = 1;
 
 function expandHome(value) {
@@ -45,17 +45,21 @@ function getSemanticIndexOverride() {
   return path.resolve(expandHome(explicitPath));
 }
 
+function getSemanticIndexAssetName(repoRoot, remoteUrl) {
+  return `${SEMANTIC_INDEX_REGISTRY_PREFIX}:${getRepoHash(repoRoot, remoteUrl)}`;
+}
+
 function getCacheRoot(repoRoot, remoteUrl) {
   const explicitPath = getSemanticIndexOverride();
   if (explicitPath) return path.dirname(explicitPath);
-  return path.join(getConsueloHome(), 'cache');
+  return path.join(getConsueloHome(), 'cache', 'semantic-index', getRepoHash(repoRoot, remoteUrl));
 }
 
 function getSemanticIndexDbPath(repoRoot, remoteUrl) {
   return getSemanticIndexOverride() || path.join(getCacheRoot(repoRoot, remoteUrl), SEMANTIC_INDEX_DB_NAME);
 }
 
-function registerSemanticIndex(dbPath, cacheRoot) {
+function registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl) {
   const consueloHome = getConsueloHome();
   fs.mkdirSync(consueloHome, { recursive: true });
 
@@ -89,8 +93,8 @@ function registerSemanticIndex(dbPath, cacheRoot) {
       '  updated_at = excluded.updated_at,',
       '  metadata_json = excluded.metadata_json',
     ].join('\n')).run(
-      SEMANTIC_INDEX_REGISTRY_NAME,
-      'semantic_index',
+      getSemanticIndexAssetName(repoRoot, remoteUrl),
+      SEMANTIC_INDEX_REGISTRY_PREFIX,
       'sqlite',
       dbPath,
       SEMANTIC_INDEX_SCHEMA_VERSION,
@@ -100,6 +104,10 @@ function registerSemanticIndex(dbPath, cacheRoot) {
         cacheRoot,
         envOverride: Boolean(getSemanticIndexOverride()),
         registryDbPath,
+        repoHash: getRepoHash(repoRoot, remoteUrl),
+        repoIdentifier: getRepoIdentifier(repoRoot, remoteUrl),
+        repoRoot,
+        remoteUrl: remoteUrl || null,
       }),
     );
   } finally {
@@ -120,7 +128,7 @@ function createStore(repoRoot, remoteUrl) {
   fs.mkdirSync(cacheRoot, { recursive: true });
 
   const dbPath = getSemanticIndexDbPath(repoRoot, remoteUrl);
-  registerSemanticIndex(dbPath, cacheRoot);
+  registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl);
 
   const db = new Database(dbPath, { create: true });
 
@@ -629,6 +637,7 @@ module.exports = {
   getCacheRoot,
   getConsueloHome,
   getRepoHash,
+  getSemanticIndexAssetName,
   getSemanticIndexDbPath,
   registerSemanticIndex,
   normalizePath,
