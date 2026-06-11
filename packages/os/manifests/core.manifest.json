@@ -1628,6 +1628,77 @@
       }
     },
     {
+      "name": "intent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "workflow",
+      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "core": true,
+      "definition": {
+        "name": "intent",
+        "methodPath": [
+          "intent"
+        ],
+        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "category": "workflow",
+        "underlying": "workspace intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "WorkflowIntentOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "os",
+          "title": "example task intent"
+        }
+      }
+    },
+    {
       "name": "mac.call",
       "kind": "facade-tool",
       "source": "dev-tooling",

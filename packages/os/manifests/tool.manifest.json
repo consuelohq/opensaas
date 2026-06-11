@@ -12,7 +12,7 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 129
+      "entryCount": 130
     }
   ],
   "tools": [
@@ -1957,7 +1957,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.check",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2013,7 +2018,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.demo",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2074,7 +2084,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.digitalEguide",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2130,7 +2145,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.email",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2186,7 +2206,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.imageBrief",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2242,7 +2267,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.motionFrame",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2298,7 +2328,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.website",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2336,7 +2371,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.designSystem.get",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2374,7 +2414,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.designSystems.list",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2412,7 +2457,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.skills.list",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2452,7 +2502,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.openDesign.build",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2490,7 +2545,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.railwayCheck",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2546,7 +2606,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.render.hyperframes",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2586,7 +2651,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.run",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2626,7 +2696,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.background",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2664,7 +2739,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.logs",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2702,7 +2782,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.status",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2742,7 +2827,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.stop",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2780,7 +2870,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.upstreamStatus",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -3352,7 +3447,12 @@
           "portlessName": "design.localhost",
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.publish",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -3398,7 +3498,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.refresh",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -4498,6 +4603,77 @@
           "url": "https://example.com"
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "intent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "workflow",
+      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "core": true,
+      "definition": {
+        "name": "intent",
+        "methodPath": [
+          "intent"
+        ],
+        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "category": "workflow",
+        "underlying": "workspace intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "WorkflowIntentOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "os",
+          "title": "example task intent"
+        }
       }
     },
     {
