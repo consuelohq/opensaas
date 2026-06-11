@@ -94,7 +94,7 @@ Current renderer command help wins over stale prompt text.
 8. Verify the bundle includes `packet.md`, `extracted.md`, and `manifest.json` or equivalent saved files.
 9. Write the final Markdown lesson from the bundle.
 10. Convert the lesson into typed `content.json` for `template: guide`.
-11. Render with `sites render` or the current canonical `wiki:render` command if steering still exposes that as the renderer entrypoint.
+11. Render with `artifact render` or the current canonical `artifact:render` command if steering still exposes that as the renderer entrypoint.
 12. Validate with the current validator.
 13. Publish through Sites with immutable versioning.
 14. Verify the Sites URL and `/sites` index.
@@ -180,11 +180,11 @@ Do not hand-author the reader shell. The renderer owns UI, typography, nav, scro
 Preferred command surface:
 
 ```bash
-bun ./scripts/os.ts sites render --template guide --input <content.json> --out <index.html>
-bun ./scripts/os.ts sites publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide [--base-version <id>]
+bun ./scripts/os.ts artifact render --template guide --input <content.json> --out <index.html>
+bun ./scripts/os.ts artifact publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide [--base-version <id>]
 ```
 
-If steering says the current renderer entrypoint is still `bun run wiki:render`, use it, but keep `template: guide`.
+If steering says the current renderer entrypoint is `bun run artifact:render`, use it, but keep `template: guide`.
 
 ## Typed components
 
@@ -255,13 +255,13 @@ Use Sites for durable output when available.
 New page:
 
 ```bash
-bun ./scripts/os.ts sites publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide
+bun ./scripts/os.ts artifact publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide
 ```
 
 Existing page:
 
 ```bash
-bun ./scripts/os.ts sites publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide --base-version <currentVersionId>
+bun ./scripts/os.ts artifact publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide --base-version <currentVersionId>
 ```
 
 Existing pages require `--base-version`. `--force-publish` requires explicit user approval. If publish reports a stale version, re-read current, rebase, then publish.

@@ -4,6 +4,8 @@
   "scripts": {
     "os": "bun ./scripts/os.ts",
     "office": "bun ./scripts/os.ts office",
+    "artifact:render": "bun ./scripts/artifact-render.ts",
+    "artifact:publish": "bun ./scripts/os.ts artifact publish",
     "get-steering": "bun ./scripts/os.ts get-steering",
     "call": "bun ./scripts/os.ts call",
     "install:local": "bun ./scripts/install.ts",
@@ -78,7 +80,8 @@
     "get-raw-steering": "bun ./scripts/os.ts get-raw-steering",
     "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'",
     "operator": "bun scripts/operator.ts",
-    "doctor:watch": "bun ./scripts/doctor-watch.ts"
+    "doctor:watch": "bun ./scripts/doctor-watch.ts",
+    "artifact:validate": "bun ./scripts/artifact-validate.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

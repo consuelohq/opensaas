@@ -1,0 +1,584 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+  "events": [
+    {
+      "id": "60508374-7232-4e6f-a0f7-21768e7c923a",
+      "occurred_at": "2026-06-11T04:41:02.637Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "operator/operator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "28deb580-e4b6-4ad5-a156-1842f8c16b05",
+      "occurred_at": "2026-06-11T04:41:40.454Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "65bd203f-8d0d-439d-9984-f1816287fbc3",
+      "occurred_at": "2026-06-11T04:42:10.097Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "5989cf13-ce00-4982-96ac-93e97c06f741",
+      "occurred_at": "2026-06-11T04:42:38.368Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "5c34c5af-c7bd-4108-887b-c9c6caa4f9c5",
+      "occurred_at": "2026-06-11T04:43:08.593Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "f4a539a9-db23-4bca-9283-c26bafde884d",
+      "occurred_at": "2026-06-11T04:43:21.942Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "57b3a215-400b-4514-8346-d73192379cb8",
+      "occurred_at": "2026-06-11T04:43:46.125Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "03ca3b6e-a28f-4dfa-b1c1-f5b19736fed5",
+      "occurred_at": "2026-06-11T04:43:58.204Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-state.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "79f8b2e6-0401-4fff-a94a-3b0aff343d19",
+      "occurred_at": "2026-06-11T04:44:09.350Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "operator/prompts/review.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "b3c69d9f-bed9-4b90-8f50-67ec183608ce",
+      "occurred_at": "2026-06-11T04:44:58.380Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "82eacdee-cfa6-4aa2-9296-abef67665f2e",
+      "occurred_at": "2026-06-11T04:45:37.605Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "4666dc83-07f0-45f1-ad29-ffb974c68efe",
+      "occurred_at": "2026-06-11T04:46:11.393Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "b27e2732-f8e2-414b-81fa-1d40afcf6820",
+      "occurred_at": "2026-06-11T04:46:49.549Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "5ec2b88f-a717-4bd3-8a1b-b84d55841b33",
+      "occurred_at": "2026-06-11T04:49:20.682Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/operator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "87da511b-775d-48fb-8394-b7f6a2a1efc6",
+      "occurred_at": "2026-06-11T04:50:54.549Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "dfc41291-6704-4c3a-8c39-970ed5ac3721",
+      "occurred_at": "2026-06-11T04:53:59.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "4545d071-2586-47da-a8ad-b8cbdb22e411",
+      "occurred_at": "2026-06-11T04:54:43.016Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "b6c864dc-3c23-4c6b-83d9-f93275a24f0e",
+      "occurred_at": "2026-06-11T04:55:16.771Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "58f15d72-1fe7-4836-8458-3fef9227a66a",
+      "occurred_at": "2026-06-11T04:55:47.237Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "49c7f03b-026d-4932-b4e2-8a47fbe409ca",
+      "occurred_at": "2026-06-11T04:56:27.372Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "12d11345-9db4-4901-9f29-df1ddc12edba",
+      "occurred_at": "2026-06-11T04:57:07.736Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "bf2806da-0258-4743-ad65-f4761ad181ee",
+      "occurred_at": "2026-06-11T04:57:38.605Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "def20b63-aa9d-4bc4-a489-30ed21c6c7d5",
+      "occurred_at": "2026-06-11T04:58:07.446Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "8232cb05-1e61-44e5-b664-c696747e45fd",
+      "occurred_at": "2026-06-11T04:59:11.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "d0f26adf-9f87-417c-9a97-aa00356f2d86",
+      "occurred_at": "2026-06-11T04:59:52.025Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "35566d81-263b-48d4-9b66-dd088e815878",
+      "occurred_at": "2026-06-11T05:01:00.771Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "f3425082-cf9a-4811-bc4d-e84f4992eda7",
+      "occurred_at": "2026-06-11T05:01:33.188Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "b62b5a31-5ef1-4b73-9831-90e80294d661",
+      "occurred_at": "2026-06-11T05:01:45.817Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "0942a6bc-28e9-4c30-81f5-a9c7e86dd826",
+      "occurred_at": "2026-06-11T05:02:24.084Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "3626e1c2-824f-4e3b-9892-55ca222db2d9",
+      "occurred_at": "2026-06-11T05:02:59.019Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "c67c9112-b3e4-4964-9bbf-188bee7591f7",
+      "occurred_at": "2026-06-11T05:04:26.257Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "15b91102-0fa4-4a42-8e31-bccc690ab9b5",
+      "occurred_at": "2026-06-11T05:10:06.954Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/operator/operator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "0a107b06-6ff4-4d16-a0cb-170216c21436",
+      "occurred_at": "2026-06-11T05:12:25.636Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "86c6093b-5cf9-421c-be41-2a793d8a47b3",
+      "occurred_at": "2026-06-11T05:14:20.681Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "e9b0efb3-2413-4053-a838-8f90bd7f5474",
+      "occurred_at": "2026-06-11T05:17:49.231Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    },
+    {
+      "id": "3b5d9da9-2ec2-4434-80ed-383c586cf9ec",
+      "occurred_at": "2026-06-11T05:18:24.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-operator-prompts-and-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-operator-prompts-and-artifact-commands"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T05:18:24.421Z"
+}

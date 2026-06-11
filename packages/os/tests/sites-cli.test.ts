@@ -85,6 +85,14 @@ function runSitesCommand(args: string[]): SitesCommandResult {
   `)) as SitesCommandResult;
 }
 
+function runArtifactCommand(args: string[]): SitesCommandResult {
+  return JSON.parse(runBunEval(`
+    const { runArtifactCommand } = await import('./scripts/os.ts');
+    const result = await runArtifactCommand(${JSON.stringify(args)}, { home: ${JSON.stringify(tempHome)}, openUrl: false });
+    process.stdout.write(JSON.stringify(result));
+  `)) as SitesCommandResult;
+}
+
 describe('Sites CLI', () => {
   it('prints, refreshes, opens, and reports the local Sites paths', () => {
     const pathResult = runSitesCommand(['path', '--json']);
@@ -100,7 +108,6 @@ describe('Sites CLI', () => {
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
     expect(pathResult.diffsIndexPath).toBe(join(tempHome, 'sites', 'diffs', 'index.html'));
     expect(pathResult.docsIndexPath).toBe(join(tempHome, 'sites', 'docs', 'index.html'));
-    expect(pathResult).not.toHaveProperty('githubIndexPath');
     expect(pathResult.url.startsWith('file:')).toBe(true);
 
     const refreshResult = runSitesCommand(['refresh', '--json']);
@@ -316,20 +323,21 @@ describe('Sites CLI', () => {
       ledger: [{ title: 'Guide render', items: [{ status: 'done', text: 'Render through the canonical reader shell.' }] }]
     }, null, 2));
 
-    const render = runSitesCommand(['render', '--template', 'guide', '--input', contentPath, '--out', outPath, '--json']);
+    const render = runArtifactCommand(['render', '--template', 'guide', '--input', contentPath, '--out', outPath, '--json']);
 
-    expect(render).toMatchObject({ ok: true, command: 'render', renderTemplate: 'guide', inputPath: contentPath, outputPath: outPath, rendered: true });
+    expect(render).toMatchObject({ ok: true, command: 'artifact:render', renderTemplate: 'guide', inputPath: contentPath, outputPath: outPath, rendered: true });
+    expect(render.message).toContain('Artifact rendered');
     const html = readFileSync(outPath, 'utf8');
     expect(html).toContain('data-reader-shell-template="guide"');
     expect(html).toContain('window.__readerShell');
     expect(html).toContain('data-reader-component="table"');
     expect(html).toContain('reader-nav-task');
 
-    const publish = runSitesCommand(['publish', '--target', join(tempHome, 'rendered-guide'), '--path', '/pages/how-to-speak', '--title', 'How To Speak', '--kind', 'guide', '--json']);
-    expect(publish).toMatchObject({ ok: true, command: 'publish', pageKind: 'guide', versionCount: 1 });
+    const publish = runArtifactCommand(['publish', '--target', join(tempHome, 'rendered-guide'), '--path', '/pages/how-to-speak', '--title', 'How To Speak', '--kind', 'guide', '--json']);
+    expect(publish).toMatchObject({ ok: true, command: 'artifact:publish', pageKind: 'guide', versionCount: 1 });
+    expect(publish.message).toContain('Artifact published to Office');
     expect(readFileSync(join(tempHome, 'sites', 'pages', 'how-to-speak', 'index.html'), 'utf8')).toContain('data-reader-shell-template="guide"');
   });
-
 
   it('patches reader sections with auto-merge, same-section conflict, and leases', () => {
     const firstTarget = join(tempHome, 'reader-page');

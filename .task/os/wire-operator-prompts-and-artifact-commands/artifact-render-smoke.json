@@ -1,0 +1,13 @@
+{
+  "template": "guide",
+  "title": "Artifact Render Smoke",
+  "eyebrow": "smoke",
+  "thesis": "Artifact render should call the canonical Office artifact renderer.",
+  "sections": [
+    { "id": "summary", "title": "Summary", "body": ["Render through artifact:render."] }
+  ],
+  "ledgerTitle": "Ship checklist",
+  "ledger": [
+    { "title": "Render", "items": [{ "status": "done", "text": "Rendered through artifact:render." }] }
+  ]
+}

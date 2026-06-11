@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_41edd720229d",
+  "tmuxSession": "opensaas-os-wire-operator-prompts-and-artifact-commands-41edd720",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-operator-prompts-and-artifact-commands",
+  "branch": "task/os/wire-operator-prompts-and-artifact-commands",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-operator-prompts-and-artifact-commands",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-operator-prompts-and-artifact-commands",
+  "prNumber": 949,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/949",
+  "createdAt": "2026-06-11T04:38:30.728Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-operator-prompts-and-artifact-commands/.task/os/wire-operator-prompts-and-artifact-commands/session.json"
+}
