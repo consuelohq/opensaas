@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "base": "origin/stream/security",
+  "headSha": "56972115393330d38b5eaca2c93e44321cfabed2",
+  "changeHash": "464aa3b2440dd58a76aca74001124c5dc3ef20599b061d9b06ef531ff4fa64c0",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T07:36:34.219Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/current.json",
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/evidence-log.json",
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/read-log.json",
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/session.json",
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/verify.json",
+        ".task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/workpad.md",
+        ".task/tasks/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies.json",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+        "packages/os/tests/cloudflare-edge-router.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

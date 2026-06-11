@@ -45,8 +45,16 @@ type WorkspaceRouteD1RevocationInput = {
   reason: string;
 };
 
+type WorkspaceRouteD1PreparedStatement = {
+  bind: (...values: unknown[]) => WorkspaceRouteD1PreparedStatement;
+  first: <T = unknown>() => Promise<T | null>;
+  run: () => Promise<unknown>;
+};
+
 type WorkspaceRouteD1Database = {
-  dumpHostnameRow: (hostname: string) => Promise<unknown>;
+  dumpHostnameRow?: (hostname: string) => Promise<unknown>;
+  prepare?: (sql: string) => WorkspaceRouteD1PreparedStatement;
+  exec?: (sql: string) => Promise<unknown>;
 };
 
 type WorkspaceRouteD1RegistryContract = {
@@ -69,6 +77,59 @@ type WorkspaceRouteD1RegistryContract = {
 const runContract =
   process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
 const contractDescribe = runContract ? describe : describe.skip;
+
+
+const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
+  const rows = new Map<string, Record<string, unknown>>();
+
+  return {
+    async exec() {},
+    prepare(sql: string): WorkspaceRouteD1PreparedStatement {
+      let values: unknown[] = [];
+
+      return {
+        bind(...nextValues: unknown[]): WorkspaceRouteD1PreparedStatement {
+          values = nextValues;
+          return this;
+        },
+        async first<T = unknown>(): Promise<T | null> {
+          if (/select/i.test(sql)) {
+            return (rows.get(String(values[0])) as T | undefined) ?? null;
+          }
+
+          return null;
+        },
+        async run(): Promise<unknown> {
+          if (/insert/i.test(sql)) {
+            rows.set(String(values[0]), {
+              hostname: values[0],
+              record_json: values[1],
+              status: values[2],
+              updated_at: values[3],
+              revoked_at: values[4] ?? null,
+              revocation_reason: values[5] ?? null,
+            });
+          } else if (/update/i.test(sql)) {
+            const existing = rows.get(String(values[0]));
+
+            if (existing) {
+              rows.set(String(values[0]), {
+                ...existing,
+                record_json: values[1],
+                status: values[2],
+                updated_at: values[3],
+                revoked_at: values[4] ?? null,
+                revocation_reason: values[5] ?? null,
+              });
+            }
+          }
+
+          return { success: true };
+        },
+      };
+    },
+  };
+};
 
 async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1RegistryContract> {
   const modulePath = pathToFileURL(
@@ -103,6 +164,69 @@ async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1R
 }
 
 contractDescribe('workspace Cloudflare D1 route registry contract', () => {
+
+  it('should read and write route rows through a Cloudflare D1 binding', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = createFixtureCloudflareD1();
+    await registry.migrateWorkspaceRouteD1(db);
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      hostname: 'kokayi.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        },
+      ],
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'kokayi.consuelohq.com',
+        path: '/mcp/tools/list',
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      workspaceId: 'workspace_123',
+      route: '/mcp',
+      surface: 'os',
+      target: {
+        kind: 'os-connector',
+        connectorId: 'connector_123',
+      },
+    });
+
+    await registry.revokeWorkspaceHostnameInD1(db, {
+      hostname: 'kokayi.consuelohq.com',
+      reason: 'user-disabled',
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'kokayi.consuelohq.com',
+        path: '/mcp/tools/list',
+      }),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+    });
+  });
+
   it('should migrate the edge registry schema and resolve longest-prefix routes', async () => {
     const registry = await loadWorkspaceRouteD1RegistryContract();
     const db = registry.createInMemoryWorkspaceRouteD1();

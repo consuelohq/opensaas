@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 959,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/959",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/959",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/959/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/959",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/959/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "taskSession": "tsk_41d22632fba7",
+  "tmuxSession": "opensaas-security-back-cloudflare-registry-with-d1-and-preserve-po-41d22632",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-back-cloudflare-registry-with-d1-and-preserve-post-bodies/.task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/session.json",
+  "createdAt": "2026-06-11T07:14:32.385Z"
+}

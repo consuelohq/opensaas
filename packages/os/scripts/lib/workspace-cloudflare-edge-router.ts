@@ -147,13 +147,14 @@ const buildProxyRequest = (input: {
     }),
   );
 
-  const init: RequestInit = {
+  const init: RequestInit & { duplex?: 'half' } = {
     headers,
     method: input.request.method,
   };
 
   if (input.request.method !== 'GET' && input.request.method !== 'HEAD') {
     init.body = input.request.body;
+    init.duplex = 'half';
   }
 
   return new Request(input.upstreamUrl, init);

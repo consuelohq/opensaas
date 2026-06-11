@@ -306,6 +306,55 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     );
   });
 
+
+  it('should proxy POST request bodies without failing under Node-compatible fetch', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('post ok', { status: 200 });
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/mcp/tools/call', {
+        body: JSON.stringify({ tool: 'list' }),
+        headers: { 'content-type': 'application/json' },
+        method: 'POST',
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('post ok');
+    expect(upstreamRequests).toHaveLength(1);
+    expect(upstreamRequests[0].method).toBe('POST');
+    expect(await upstreamRequests[0].text()).toBe('{"tool":"list"}');
+  });
+
   it('should fail closed when an OS connector route is offline', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
