@@ -1,19 +1,47 @@
-import { createWorkspaceCloudflareD1RouteRegistry } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import {
+  createWorkspaceCloudflareD1RouteRegistry,
+  type WorkspaceRouteD1Database,
+} from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { createWorkspaceCloudflareEdgeRouter } from '../../../scripts/lib/workspace-cloudflare-edge-router';
 
-type D1PreparedStatement = {
-  bind: (...values: unknown[]) => D1PreparedStatement;
-  first: <T = unknown>(columnName?: string) => Promise<T | null>;
-  run: () => Promise<unknown>;
+type WorkspaceEdgeLogContext = {
+  component: 'workspace-edge';
+  hostname: string;
+  path: string;
+  error: string;
+  stack?: string;
 };
 
-type D1Database = {
-  prepare: (sql: string) => D1PreparedStatement;
+type WorkspaceEdgeLogger = {
+  error: (message: string, context: WorkspaceEdgeLogContext) => void;
 };
 
 type WorkspaceEdgeEnvironment = {
-  WORKSPACE_ROUTE_REGISTRY: D1Database;
+  WORKSPACE_ROUTE_REGISTRY: WorkspaceRouteD1Database;
   CONSUELO_EDGE_SIGNING_SECRET: string;
+  WORKSPACE_EDGE_LOGGER?: WorkspaceEdgeLogger;
+};
+
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const errorStack = (error: unknown): string | undefined =>
+  error instanceof Error ? error.stack : undefined;
+
+const reportWorkspaceEdgeError = (input: {
+  logger?: WorkspaceEdgeLogger;
+  request: Request;
+  error: unknown;
+}): void => {
+  const url = new URL(input.request.url);
+
+  input.logger?.error('[WorkspaceEdge] routing failed closed', {
+    component: 'workspace-edge',
+    hostname: url.hostname,
+    path: url.pathname,
+    error: errorMessage(input.error),
+    stack: errorStack(input.error),
+  });
 };
 
 export async function fetch(
@@ -31,8 +59,15 @@ export async function fetch(
 
     return await router.fetch(request);
   } catch (error: unknown) {
+    reportWorkspaceEdgeError({
+      logger: env.WORKSPACE_EDGE_LOGGER,
+      request,
+      error,
+    });
     return new Response('workspace edge routing failed closed', { status: 500 });
   }
 }
 
+// NOTE: Cloudflare's module Worker runtime requires a default export object;
+// the named fetch export above is the repository-facing handler contract.
 export default { fetch };
