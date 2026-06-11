@@ -134,12 +134,30 @@ function navDisplayTitle(value: string): string {
   return shortTitle || value;
 }
 
-function defaultMap(content: ConsueloReaderContent): ReaderLink[] {
-  if (content.map?.length) return content.map;
-  const sectionLinks = content.sections.slice(0, 3).map((section) => ({ label: section.eyebrow ?? section.title, href: `#${section.id}` }));
-  return [...sectionLinks, { label: 'Task', href: '#ship-checklist' }].slice(0, 6);
+function normalizeMapHref(value: string | undefined, fallbackId: string): string {
+  const raw = String(value ?? '').trim();
+  const rawTarget = raw.startsWith('#') ? raw.slice(1) : raw;
+  const normalized = rawTarget.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+  const fallback = `section-${slug(fallbackId)}`;
+  return `#${normalized || fallback}`;
 }
 
+function normalizeMapLink(item: ReaderLink, index: number): ReaderLink {
+  return {
+    label: item.label,
+    href: normalizeMapHref(item.href, item.label || `item-${index + 1}`),
+  };
+}
+
+function normalizeMapLinks(map: ReaderLink[]): ReaderLink[] {
+  return map.map(normalizeMapLink);
+}
+
+function defaultMap(content: ConsueloReaderContent): ReaderLink[] {
+  if (content.map?.length) return normalizeMapLinks(content.map).slice(0, 6);
+  const sectionLinks = content.sections.slice(0, 3).map((section) => ({ label: section.eyebrow ?? section.title, href: normalizeMapHref(section.id, section.id) }));
+  return normalizeMapLinks([...sectionLinks, { label: 'Task', href: '#ship-checklist' }]).slice(0, 6);
+}
 function renderMetadata(metadata: ReaderMetadata | undefined): string {
   const items = [
     ['Status', metadata?.status ?? 'Draft'],
@@ -336,15 +354,21 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
     const saved = Number(localStorage.getItem(storageKey) || 0);
     if (saved > 420) { resume.style.display = 'flex'; setTimeout(() => { resume.style.display = 'none'; }, Number(resume.dataset.autoDismissMs || 10000)); }
     function scrollTop(){ return smoother ? smoother.scrollTop() : window.scrollY; }
-    function go(target){ if (smoother) smoother.scrollTo(target, true, 'top 80px'); else document.querySelector(target)?.scrollIntoView({ behavior:'smooth' }); }
+    function safeTarget(target){ return typeof target === 'string' && /^#[A-Za-z0-9_-]+$/.test(target) ? target : null; }
+    function go(target){ const safe = safeTarget(target); if (!safe) return; if (smoother) smoother.scrollTo(safe, true, 'top 80px'); else document.querySelector(safe)?.scrollIntoView({ behavior:'smooth' }); }
     function pageStep(direction){ const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const delta = innerHeight * 0.62 * (direction === 'up' ? -1 : 1); const target = Math.max(0, Math.min(max, scrollTop() + delta)); if (smoother) smoother.scrollTo(target, true); else scrollTo({ top:target, behavior:'smooth' }); }
-    document.querySelectorAll('a[href^="#"], [data-target]').forEach((el) => el.addEventListener('click', (event) => { const target = el.getAttribute('href') || el.dataset.target; if (!target) return; event.preventDefault(); go(target); }));
+    document.querySelectorAll('a[href^="#"], [data-target]').forEach((el) => el.addEventListener('click', (event) => { const target = safeTarget(el.getAttribute('href') || el.dataset.target); if (!target) return; event.preventDefault(); go(target); }));
     document.querySelectorAll('[data-tap-scroll]').forEach((el) => el.addEventListener('click', (event) => { event.preventDefault(); pageStep(el.dataset.tapScroll); }));
     document.querySelector('[data-resume]')?.addEventListener('click', () => { resume.style.display = 'none'; if (smoother) smoother.scrollTo(saved, true); else scrollTo({ top:saved, behavior:'smooth' }); });
-    document.querySelector('.reader-back-to-top')?.addEventListener('click', () => go('#top'));
     const topButton = document.querySelector('.reader-back-to-top');
+    topButton?.addEventListener('click', () => go('#top'));
     const railButtons = [...document.querySelectorAll('.reader-section-rail button')];
-    function tick(){ const y = scrollTop(); const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const pct = Math.min(100, Math.max(0, y / max * 100)); topButton.style.setProperty('--reader-scroll', pct + '%'); topButton.classList.toggle('visible', y > 700); localStorage.setItem(storageKey, String(Math.round(y))); railButtons.forEach((button) => { const target = document.querySelector(button.dataset.target); if (!target) return; const active = y >= target.offsetTop - 160 && y < target.offsetTop + target.offsetHeight - 160; button.classList.toggle('active', active); }); requestAnimationFrame(tick); }
+    const railEntries = railButtons.map((button) => { const targetSelector = safeTarget(button.dataset.target); return { button, target: targetSelector ? document.querySelector(targetSelector) : null }; });
+    let pendingStoredY = Math.round(saved);
+    let lastStoredY = pendingStoredY;
+    let scrollStoreScheduled = false;
+    function scheduleScrollStore(y){ const rounded = Math.round(y); if (rounded === pendingStoredY) return; pendingStoredY = rounded; if (scrollStoreScheduled) return; scrollStoreScheduled = true; const write = () => { scrollStoreScheduled = false; if (pendingStoredY !== lastStoredY) { lastStoredY = pendingStoredY; localStorage.setItem(storageKey, String(lastStoredY)); } }; if ('requestIdleCallback' in window) window.requestIdleCallback(write, { timeout: 1000 }); else setTimeout(write, 250); }
+    function tick(){ const y = scrollTop(); const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); const pct = Math.min(100, Math.max(0, y / max * 100)); topButton?.style.setProperty('--reader-scroll', pct + '%'); topButton?.classList.toggle('visible', y > 700); scheduleScrollStore(y); railEntries.forEach(({ button, target }) => { if (!target) return; const active = y >= target.offsetTop - 160 && y < target.offsetTop + target.offsetHeight - 160; button.classList.toggle('active', active); }); requestAnimationFrame(tick); }
     tick();
   </script>
 </body>
@@ -357,27 +381,50 @@ function readArg(name: string): string | null {
   return Bun.argv[index + 1] ?? null;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') return message;
+  }
+  return String(error);
+}
+function getErrorStack(error: unknown): string | null {
+  if (typeof error === 'object' && error !== null && 'stack' in error) {
+    const stack = (error as { stack?: unknown }).stack;
+    if (typeof stack === 'string') return stack;
+  }
+  return null;
+}
+
 if (import.meta.main) {
   const input = readArg('input');
   const out = readArg('out');
   const template = readArg('template') as ReaderTemplate | null;
   if (!input || !out) {
-    writeStderr('usage: bun run packages/consuelo-design/scripts/render-consuelo-reader.ts --template <spec|plan|guide> --input <content.json> --out <index.html>');
+    writeStderr('usage: bun run packages/os/scripts/artifact-render.ts --template <spec|plan|guide> --input <content.json> --out <index.html>');
     process.exit(2);
   }
   if (!existsSync(input)) {
     writeStderr(`missing input: ${input}`);
     process.exit(2);
   }
-  const content = JSON.parse(readFileSync(input, 'utf8')) as ConsueloReaderContent;
-  if (template) content.template = template;
-  const html = renderConsueloReader(content);
-  const validation = validateConsueloReaderHtml(html);
-  if (!validation.ok) {
-    writeStderr(`rendered HTML failed validation: ${validation.missing.join(', ')}`);
+
+  try {
+    const content = JSON.parse(readFileSync(input, 'utf8')) as ConsueloReaderContent;
+    if (template) content.template = template;
+    const html = renderConsueloReader(content);
+    const validation = validateConsueloReaderHtml(html);
+    if (!validation.ok) {
+      writeStderr(`rendered HTML failed validation: ${validation.missing.join(', ')}`);
+      process.exit(1);
+    }
+    mkdirSync(path.dirname(out), { recursive: true });
+    writeFileSync(out, html);
+    writeStdout(JSON.stringify({ ok: true, out, template: content.template, readerShellVersion: READER_SHELL_VERSION }, null, 2));
+  } catch (error: unknown) {
+    writeStderr(`artifact render failed: ${getErrorMessage(error)}`);
+    const stack = getErrorStack(error);
+    if (stack) writeStderr(stack);
     process.exit(1);
   }
-  mkdirSync(path.dirname(out), { recursive: true });
-  writeFileSync(out, html);
-  writeStdout(JSON.stringify({ ok: true, out, template: content.template, readerShellVersion: READER_SHELL_VERSION }, null, 2));
 }

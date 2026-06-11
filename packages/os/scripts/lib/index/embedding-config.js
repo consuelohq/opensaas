@@ -70,9 +70,11 @@ function getEmbeddingConfig(overrides = {}) {
     process.env.CONSUELO_EMBEDDING_TRUNCATE,
     process.env.WORKSPACE_EMBEDDING_TRUNCATE,
   );
-  const allowTruncate = truncate === undefined
-    ? dimensions === LEGACY_DIMENSIONS
-    : truncate !== '0' && truncate !== 'false';
+  const allowTruncate = typeof truncate === 'boolean'
+    ? truncate
+    : truncate === undefined
+      ? dimensions === LEGACY_DIMENSIONS
+      : truncate !== '0' && truncate !== 'false';
 
   return {
     allowTruncate,

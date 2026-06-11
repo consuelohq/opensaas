@@ -6,9 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 const require = createRequire(import.meta.url);
 
 type EmbeddingConfig = {
+  allowTruncate: boolean;
   apiModel: string;
   dimensions: number;
   gatewayUrl: string;
+  instructionVersion: string;
   provider: string;
 };
 
@@ -87,6 +89,13 @@ describe('OS semantic embedding gateway default', () => {
     });
   });
 
+  it('honors boolean false truncation overrides', () => {
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 1024, truncate: false });
+
+    expect(config.allowTruncate).toBe(false);
+  });
+
   it('builds a fixed-model gateway payload and redacted audit metadata', () => {
     const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
     const payload = gateway.createGatewayEmbeddingPayload(
@@ -103,6 +112,31 @@ describe('OS semantic embedding gateway default', () => {
     expect(payload.items[0]?.kind).toBe('document');
     expect(JSON.stringify(audit)).not.toContain('function run');
     expect(audit).toMatchObject({ itemCount: 1, totalChars: 31 });
+  });
+
+  it('uses the resolved apiModel for gateway payloads and request headers', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ apiModel: 'consuelo/test-embedding', dimensions: 4 });
+    const payload = gateway.createGatewayEmbeddingPayload(['code chunk'], { kind: 'document' }, { config });
+    let requestBody = '';
+    let requestHeaders: HeadersInit | undefined;
+    const fetchImpl = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      requestBody = String(init?.body ?? '');
+      requestHeaders = init?.headers;
+      return new Response(JSON.stringify({ data: [{ embedding: makeVector(4) }] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    });
+
+    await gateway.requestGatewayEmbeddings(['code chunk'], { kind: 'document' }, { config, fetchImpl });
+    const body = JSON.parse(requestBody) as GatewayPayload;
+    const headers = requestHeaders as Record<string, string>;
+
+    expect(payload.model).toBe('consuelo/test-embedding');
+    expect(body.model).toBe('consuelo/test-embedding');
+    expect(headers['x-consuelo-embedding-model']).toBe('consuelo/test-embedding');
   });
 
   it('requests embeddings from the Consuelo gateway without an OpenRouter key', async () => {
@@ -142,6 +176,13 @@ describe('OS semantic embedding gateway default', () => {
     const source = readFileSync(join(process.cwd(), 'scripts/lib/index/embedder.js'), 'utf8');
     expect(source).toContain('requestGatewayEmbeddings');
     expect(source).not.toContain('pi-proxy-openrouter-api-key');
+  });
+
+  it('fails closed on unknown embedding providers', () => {
+    const source = readFileSync(join(process.cwd(), 'scripts/lib/index/embedder.js'), 'utf8');
+
+    expect(source).toContain('CONSUELO_GATEWAY_PROVIDER');
+    expect(source).toContain('Unsupported embedding provider');
   });
 
   it('uses embedding config dimensions for the SQLite vector table', () => {

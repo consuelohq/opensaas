@@ -983,6 +983,16 @@ export function provisionLocalOs(
     }
   }
 
+  const generatedSecurityDir = path.join(home, 'security', 'generated');
+  const securityOverridesDir = path.join(home, 'security', 'overrides');
+  const generatedAuthPath = path.join(home, 'security', 'generated', 'auth.json');
+  const generatedCaddyfilePath = path.join(home, 'security', 'generated', 'Caddyfile');
+  const generatedSecurityDirExists = fs.existsSync(generatedSecurityDir);
+  const securityOverridesDirExists = fs.existsSync(securityOverridesDir);
+  const generatedAuthPathExists = fs.existsSync(generatedAuthPath);
+  const generatedCaddyfilePathExists = fs.existsSync(generatedCaddyfilePath);
+  const securityStatus = (exists: boolean) => dryRun ? 'planned' : exists ? 'exists' : 'created';
+
   const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
   config.port = gatewayPort;
   if (!dryRun) {
@@ -1009,26 +1019,26 @@ export function provisionLocalOs(
   }
   actions.push({
     type: 'create_dir',
-    path: path.join(home, 'security', 'generated'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedSecurityDir,
+    status: securityStatus(generatedSecurityDirExists),
     message: 'generated security directory configured',
   });
   actions.push({
     type: 'create_dir',
-    path: path.join(home, 'security', 'overrides'),
-    status: dryRun ? 'planned' : 'created',
+    path: securityOverridesDir,
+    status: securityStatus(securityOverridesDirExists),
     message: 'security overrides directory configured',
   });
   actions.push({
     type: 'create_file',
-    path: path.join(home, 'security', 'generated', 'auth.json'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedAuthPath,
+    status: securityStatus(generatedAuthPathExists),
     message: 'generated Consuelo auth config written',
   });
   actions.push({
     type: 'create_file',
-    path: path.join(home, 'security', 'generated', 'Caddyfile'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedCaddyfilePath,
+    status: securityStatus(generatedCaddyfilePathExists),
     message: 'generated Caddy gateway config written',
   });
 

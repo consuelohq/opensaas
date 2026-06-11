@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-current-os-review-findings",
+  "base": "origin/task/os/fix-current-os-review-findings",
+  "headSha": "3acd21096cfaa7b5481c24b8241947c16db30187",
+  "changeHash": "da21c3028a95d6a32153a2d3d9fb2b474d5f1b2d634cc1a29452d308121aed05",
+  "changedFiles": [
+    "packages/os/hooks/task/workflow.js",
+    "packages/os/scripts/artifact-render.ts",
+    "packages/os/scripts/lib/index/embedder.js",
+    "packages/os/scripts/lib/index/embedding-config.js",
+    "packages/os/scripts/lib/index/embedding-gateway.js",
+    "packages/os/scripts/lib/index/store.js",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/artifact-render.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/semantic-embedding-gateway.test.ts",
+    "packages/os/tests/semantic-index-storage.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T18:43:18.040Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-current-os-review-findings/current.json",
+        ".task/os/fix-current-os-review-findings/evidence-log.json",
+        ".task/os/fix-current-os-review-findings/read-log.json",
+        ".task/os/fix-current-os-review-findings/session.json",
+        ".task/os/fix-current-os-review-findings/verify.json",
+        ".task/os/fix-current-os-review-findings/workpad.md",
+        ".task/tasks/os/fix-current-os-review-findings.json",
+        "packages/os/hooks/task/workflow.js",
+        "packages/os/scripts/artifact-render.ts",
+        "packages/os/scripts/lib/index/embedder.js",
+        "packages/os/scripts/lib/index/embedding-config.js",
+        "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/store.js",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/tests/artifact-render.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/semantic-embedding-gateway.test.ts",
+        "packages/os/tests/semantic-index-storage.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
