@@ -1,16 +1,13 @@
-import { Database } from 'bun:sqlite';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { executeCall, getSteering } from '../os';
-import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { materializeSites } from './sites';
 import { createGatewaySecurityConfig } from './security-gateway';
 import { validateBundledSkills } from './skills';
+import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
 export type AgentName = 'codex' | 'claude' | 'opencode' | 'factory';
@@ -36,6 +33,16 @@ export type AgentDetection = {
   status: HealthStatus;
 };
 
+export type WorkspaceBootstrap = {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  connectorId: string;
+  connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
+  connectorBootstrapToken?: string;
+  cloudflareTunnelToken?: string;
+};
+
 export type OsConfig = {
   version: 1;
   mode: OsMode;
@@ -43,6 +50,16 @@ export type OsConfig = {
   port: number;
   artifactStorage: 'local';
   selectedSkills?: string[];
+  workspace?: {
+    id: string;
+    slug: string;
+    host: string;
+  };
+  connector?: {
+    id: string;
+    transport: WorkspaceBootstrap['connectorTransport'];
+    status: 'configured';
+  };
   security?: {
     auth: {
       kind: 'consuelo-generated';
@@ -75,8 +92,8 @@ export type ProvisionOptions = {
   selectedSkills?: string[];
   artifactStorage?: 'local';
   connectAgents?: AgentName[];
+  workspaceBootstrap?: WorkspaceBootstrap;
 };
-
 export type ProvisionAction = {
   type:
     | 'create_dir'
@@ -305,6 +322,164 @@ export function createDefaultConfig(
     createdAt: nowIso(),
     updatedAt: nowIso(),
   };
+}
+
+
+function materializeSites(input: {
+  home: string;
+  dbPath: string;
+  dryRun: boolean;
+}): { actions: ProvisionAction[] } {
+  void input.dbPath;
+  const sitesDir = path.join(input.home, 'sites');
+  const exists = fs.existsSync(sitesDir);
+  if (!input.dryRun && !exists) {
+    fs.mkdirSync(sitesDir, { recursive: true });
+  }
+  return {
+    actions: [
+      {
+        type: 'create_dir',
+        path: sitesDir,
+        status: exists ? 'preserved' : input.dryRun ? 'planned' : 'created',
+        message: 'sites directory configured',
+      },
+    ],
+  };
+}
+
+function renderCloudflaredLaunchdPlist(input: {
+  label: string;
+  programArguments: string[];
+  keepAlive: boolean;
+  runAtLoad: boolean;
+  standardOutPath: string;
+  standardErrorPath: string;
+}): string {
+  const argumentXml = input.programArguments
+    .map((argument) => `    <string>${argument}</string>`)
+    .join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    '<dict>',
+    '  <key>Label</key>',
+    `  <string>${input.label}</string>`,
+    '  <key>ProgramArguments</key>',
+    '  <array>',
+    argumentXml,
+    '  </array>',
+    '  <key>KeepAlive</key>',
+    `  <${input.keepAlive ? 'true' : 'false'}/>`,
+    '  <key>RunAtLoad</key>',
+    `  <${input.runAtLoad ? 'true' : 'false'}/>`,
+    '  <key>StandardOutPath</key>',
+    `  <string>${input.standardOutPath}</string>`,
+    '  <key>StandardErrorPath</key>',
+    `  <string>${input.standardErrorPath}</string>`,
+    '</dict>',
+    '</plist>',
+    '',
+  ].join('\n');
+}
+
+function renderGatewayAuthSmokeScript(input: {
+  home: string;
+  workspaceHost: string;
+}): string {
+  return [
+    '#!/usr/bin/env bash',
+    'set -euo pipefail',
+    `CONSUELO_HOME=${shellSingleQuote(input.home)}`,
+    `WORKSPACE_HOST=${shellSingleQuote(input.workspaceHost)}`,
+    'printf "%s\\n" "gateway auth smoke: $WORKSPACE_HOST"',
+    'bun ./scripts/os.ts get-steering >/dev/null',
+    '',
+  ].join('\n');
+}
+
+function materializeWorkspaceConnectorBootstrap(input: {
+  home: string;
+  port: number;
+  dryRun: boolean;
+  workspaceBootstrap: WorkspaceBootstrap;
+}): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+
+  if (input.workspaceBootstrap.connectorTransport !== 'cloudflare-tunnel') {
+    return actions;
+  }
+
+  const plan = planWorkspaceConnectorTransport({
+    home: input.home,
+    connectorId: input.workspaceBootstrap.connectorId,
+    workspaceHost: input.workspaceBootstrap.workspaceHost,
+    localPort: input.port,
+    transport: 'cloudflare-tunnel',
+    cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
+  });
+
+  if (plan.tokenPath) {
+    actions.push({
+      type: 'create_file',
+      path: plan.tokenPath,
+      status: input.dryRun ? 'planned' : 'created',
+      message: 'cloudflared tunnel token file configured',
+    });
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(plan.tokenPath), { recursive: true });
+      fs.writeFileSync(
+        plan.tokenPath,
+        `${input.workspaceBootstrap.cloudflareTunnelToken ?? ''}\n`,
+        { mode: 0o600 },
+      );
+    }
+  }
+
+  if (plan.launchd) {
+    const plistPath = path.join(
+      input.home,
+      'security',
+      'generated',
+      'com.consuelo.os.cloudflared.plist',
+    );
+    actions.push({
+      type: 'create_file',
+      path: plistPath,
+      status: input.dryRun ? 'planned' : 'created',
+      message: 'cloudflared launchd service configured',
+    });
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+      fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
+        mode: 0o600,
+      });
+    }
+  }
+
+  const smokePath = path.join(input.home, 'bin', 'smoke-gateway-auth');
+  actions.push({
+    type: 'create_file',
+    path: smokePath,
+    status: input.dryRun ? 'planned' : 'created',
+    message: 'gateway auth smoke command configured',
+  });
+  if (!input.dryRun) {
+    fs.mkdirSync(path.dirname(smokePath), { recursive: true });
+    fs.writeFileSync(
+      smokePath,
+      renderGatewayAuthSmokeScript({
+        home: input.home,
+        workspaceHost: input.workspaceBootstrap.workspaceHost,
+      }),
+      { mode: 0o755 },
+    );
+    fs.chmodSync(smokePath, 0o755);
+  }
+
+  return actions;
 }
 
 export function loadOsConfig(home?: string): OsConfig | null {
@@ -951,19 +1126,45 @@ export function provisionLocalOs(
       message: 'database initialized',
     });
     if (!dryRun) {
-      const db = new Database(dbPath);
-      db.close();
+      fs.closeSync(fs.openSync(dbPath, 'a'));
     }
   }
 
+
   const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
+  const workspaceBootstrap = options.workspaceBootstrap;
+  const workspaceIdentity = workspaceBootstrap
+    ? {
+        workspaceId: workspaceBootstrap.workspaceId,
+        workspaceSlug: workspaceBootstrap.workspaceSlug,
+        workspaceHost: workspaceBootstrap.workspaceHost,
+      }
+    : {
+        workspaceId: 'local-consuelo-os',
+        workspaceSlug: 'local',
+        workspaceHost: 'local.consuelohq.com',
+      };
+
   config.port = gatewayPort;
+  config.workspace = {
+    id: workspaceIdentity.workspaceId,
+    slug: workspaceIdentity.workspaceSlug,
+    host: workspaceIdentity.workspaceHost,
+  };
+  if (workspaceBootstrap) {
+    config.connector = {
+      id: workspaceBootstrap.connectorId,
+      transport: workspaceBootstrap.connectorTransport,
+      status: 'configured',
+    };
+  }
+
   if (!dryRun) {
     const gatewayConfig = createGatewaySecurityConfig({
       home,
-      workspaceId: 'local-consuelo-os',
-      workspaceSlug: 'local',
-      workspaceHost: 'local.consuelohq.com',
+      workspaceId: workspaceIdentity.workspaceId,
+      workspaceSlug: workspaceIdentity.workspaceSlug,
+      workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
     });
     config.security = {
@@ -1004,7 +1205,16 @@ export function provisionLocalOs(
     status: dryRun ? 'planned' : 'created',
     message: 'generated Caddy gateway config written',
   });
-
+  if (workspaceBootstrap?.cloudflareTunnelToken) {
+    actions.push(
+      ...materializeWorkspaceConnectorBootstrap({
+        home,
+        port: gatewayPort,
+        dryRun,
+        workspaceBootstrap,
+      }),
+    );
+  }
   actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
   config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
@@ -1066,8 +1276,8 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         : `${requiredPath} is missing`,
     });
   }
-
   try {
+    const { Database } = await import('bun:sqlite');
     const db = new Database(path.join(resolvedHome, 'consuelo.db'));
     db.close();
     checks.push({
@@ -1075,6 +1285,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
       status: 'connected',
       message: 'SQLite database opens',
     });
+
   } catch (error: unknown) {
     checks.push({
       name: 'sqlite',
@@ -1083,8 +1294,8 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         error instanceof Error ? error.message : 'SQLite database failed',
     });
   }
-
   try {
+    const { getSteering } = await import('../os');
     const steering = getSteering();
     checks.push({
       name: 'portal',
@@ -1093,6 +1304,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     });
   } catch (error: unknown) {
     checks.push({
+
       name: 'portal',
       status: 'unhealthy',
       message: error instanceof Error ? error.message : 'OS portal failed',
@@ -1110,6 +1322,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
   });
 
   try {
+    const { executeCall } = await import('../os');
     const result = await executeCall({
       name: 'daily-revenue-brief',
       traceId: `trc_doctor_${Date.now().toString(36)}`,
@@ -1141,6 +1354,9 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     });
   }
 
+  const { getCapabilityHealth, isCapabilitySetHealthy } = await import(
+    './capabilities'
+  );
   const capabilities = getCapabilityHealth(resolvedHome);
   for (const capability of capabilities) {
     checks.push({
