@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "테스트 이메일"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "중단된 워크스페이스"
@@ -61,6 +56,11 @@ msgstr ""
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Update your subscription"
 msgstr "구독을 업데이트하세요"
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "테스트 이메일"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -154,16 +154,6 @@ msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "삭제된 워크스페이스"
@@ -187,6 +177,16 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "새 워크스페이스 만들기"
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
