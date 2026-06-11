@@ -1,0 +1,1319 @@
+{
+  "query": "OS task hooks manifest resolver task skill workflow task-start tests hooks guidance",
+  "budget": 10,
+  "results": [
+    {
+      "path": "packages/os/scripts/task-start.js",
+      "score": 0.9936,
+      "belief_prior": 0.7468,
+      "symbol": "writeStdout",
+      "chunk_type": "function",
+      "file_outline": "writeStdout writeStderr printHelp parseArgs readPullRequestBody printResult resolveSourceBranch ensureRemoteStreamBranch ensureRemoteTaskBranch createBootstrapCommit main part 1 main part 1 main part 2 main part 2",
+      "typed_edges": [
+        {
+          "path": "packages/os/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/artifacts.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 16632,
+      "chunk_count": 16,
+      "last_modified": 1781155389,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 0.6583,
+      "reason": "hybrid match: function writeStdout",
+      "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }",
+      "graph_connections": [
+        "packages/os/scripts/agent.js",
+        "packages/os/scripts/ai-review.js",
+        "packages/os/scripts/artifacts.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 43,
+        "end": 45
+      },
+      "target": {
+        "key": "packages/os/scripts/task-start.js:function:writeStdout:43-45",
+        "path": "packages/os/scripts/task-start.js",
+        "kind": "function",
+        "name": "writeStdout",
+        "symbol_path": "writeStdout",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 43,
+          "end": 45
+        },
+        "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+        "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09444444444444443,
+        "nameMatch": 1,
+        "rawScore": 0.9935833333333336,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2222222222222222,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/task-start.js",
+      "score": 0.9136,
+      "belief_prior": 0.7068,
+      "symbol": "writeStdout",
+      "chunk_type": "function",
+      "file_outline": "writeStdout writeStderr printHelp parseArgs readPullRequestBody printResult removeStaleRootTaskState resolveSourceBranch ensureRemoteStreamBranch ensureRemoteTaskBranch createBootstrapCommit main part 1 main part 1 main part 2 main part 2 main part 3",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 17661,
+      "chunk_count": 18,
+      "last_modified": 1781030560,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7623,
+      "reason": "hybrid match: function writeStdout",
+      "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 43,
+        "end": 45
+      },
+      "target": {
+        "key": "packages/workspace/scripts/task-start.js:function:writeStdout:43-45",
+        "path": "packages/workspace/scripts/task-start.js",
+        "kind": "function",
+        "name": "writeStdout",
+        "symbol_path": "writeStdout",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 43,
+          "end": 45
+        },
+        "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+        "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09444444444444443,
+        "nameMatch": 1,
+        "rawScore": 0.9135833333333336,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2222222222222222,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/os/hooks/task/guidance.js",
+      "score": 0.8638,
+      "belief_prior": 0.6819,
+      "symbol": "getTaskHookGuidance",
+      "chunk_type": "function",
+      "file_outline": "getTaskHookGuidance buildBeforeTaskStart buildAfterTaskStart buildBeforeProductionEdit buildBeforePublish buildUnknownTaskTool osCall defaultTimeoutForTool renderTaskHookGuidance",
+      "typed_edges": [
+        {
+          "path": "packages/os/tests/task-hooks.test.ts",
+          "type": "imported_by",
+          "symbol": "../hooks/task/guidance.js"
+        },
+        {
+          "path": "packages/os/tests/task-hooks.test.ts",
+          "type": "imports",
+          "symbol": "../hooks/task/guidance.js"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 7766,
+      "chunk_count": 11,
+      "last_modified": 1781155389,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 0.6998,
+      "reason": "hybrid match: function getTaskHookGuidance",
+      "preview": "function getTaskHookGuidance(stage, options = {}) { if (!VALID_STAGES.has(stage)) { throw new Error(`unknown task hook stage: ${stage}`);",
+      "graph_connections": [
+        "packages/os/tests/task-hooks.test.ts"
+      ],
+      "graph_connection_count": 1,
+      "lines": {
+        "start": 18,
+        "end": 37
+      },
+      "target": {
+        "key": "packages/os/hooks/task/guidance.js:function:getTaskHookGuidance:18-37",
+        "path": "packages/os/hooks/task/guidance.js",
+        "kind": "function",
+        "name": "getTaskHookGuidance",
+        "symbol_path": "getTaskHookGuidance",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 18,
+          "end": 37
+        },
+        "content_hash": "87ca9c3612acaf060a1706e3dfd3bad2624c769e8e7a9f217c38f3009080e41a",
+        "preview": "function getTaskHookGuidance(stage, options = {}) { if (!VALID_STAGES.has(stage)) { throw new Error(`unknown task hook stage: ${stage}`);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.06666666666666667,
+        "graphRelevance": 0.06666666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.2777777777777778,
+        "nameMatch": 1,
+        "rawScore": 0.8638388888888889,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.4444444444444444,
+        "weightedEdges": 2
+      }
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+      "score": 0.7348,
+      "belief_prior": 0.6174,
+      "symbol": "AuthResolver",
+      "chunk_type": "class",
+      "file_outline": "AuthResolver AuthResolver.constructor AuthResolver.checkUserExists AuthResolver.getAuthorizationUrlForSSO AuthResolver.checkWorkspaceInviteHashIsValid AuthResolver.findWorkspaceFromInviteHash AuthResolver.getLoginTokenFromCredentials AuthResolver.signIn AuthResolver.verifyEmailAndGetLoginToken AuthResolver.verifyEmailAndGetWorkspaceAgnosticToken AuthResolver.getAuthTokensFromOTP AuthResolver.signUp AuthResolver.signUpInWorkspace AuthResolver.signUpInNewWorkspace AuthResolver.generateTransientToken AuthResolver.getAuthTokensFromLoginToken AuthResolver.validateAndDecodeLoginToken AuthResolver.validateWorkspaceAccess AuthResolver.validateUserAccess AuthResolver.validateRegularAuthentication AuthResolver.validateAndLogImpersonation AuthResolver.validateAndLogImpersonation AuthResolver.authorizeApp AuthResolver.renewToken AuthResolver.generateApiKeyToken AuthResolver.emailPasswordResetLink AuthResolver.updatePasswordViaResetToken AuthResolver.validatePasswordResetToken",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.exception.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.module.ts",
+          "type": "imports",
+          "symbol": "./auth.resolver"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.module.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "imports",
+          "symbol": "./auth.resolver"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.exception.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.module.ts",
+          "type": "imported_by",
+          "symbol": "./auth.resolver"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.module.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "imported_by",
+          "symbol": "./auth.resolver"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/api-key-token.dto.ts",
+          "type": "imports",
+          "symbol": "./dto/api-key-token.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/auth-tokens.dto.ts",
+          "type": "imports",
+          "symbol": "./dto/auth-tokens.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/get-auth-tokens-from-login-token.input.ts",
+          "type": "imports",
+          "symbol": "./dto/get-auth-tokens-from-login-token.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/login-token.dto.ts",
+          "type": "imports",
+          "symbol": "./dto/login-token.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/sign-up.input.ts",
+          "type": "imports",
+          "symbol": "./dto/sign-up.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-credentials.input.ts",
+          "type": "imports",
+          "symbol": "./dto/user-credentials.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-exists.dto.ts",
+          "type": "imports",
+          "symbol": "./dto/user-exists.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-exists.input.ts",
+          "type": "imports",
+          "symbol": "./dto/user-exists.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/workspace-invite-hash-valid.dto.ts",
+          "type": "imports",
+          "symbol": "./dto/workspace-invite-hash-valid.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/workspace-invite-hash.input.ts",
+          "type": "imports",
+          "symbol": "./dto/workspace-invite-hash.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts",
+          "type": "imports",
+          "symbol": "./services/auth.service"
+        },
+        {
+          "path": "packages/twenty-shared/src/constants/CalendarStartDay.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/constants"
+        },
+        {
+          "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/translations"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/api-key-token.dto.ts",
+          "type": "imported_by",
+          "symbol": "./dto/api-key-token.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/auth-tokens.dto.ts",
+          "type": "imported_by",
+          "symbol": "./dto/auth-tokens.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/get-auth-tokens-from-login-token.input.ts",
+          "type": "imported_by",
+          "symbol": "./dto/get-auth-tokens-from-login-token.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/login-token.dto.ts",
+          "type": "imported_by",
+          "symbol": "./dto/login-token.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/sign-up.input.ts",
+          "type": "imported_by",
+          "symbol": "./dto/sign-up.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-credentials.input.ts",
+          "type": "imported_by",
+          "symbol": "./dto/user-credentials.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-exists.dto.ts",
+          "type": "imported_by",
+          "symbol": "./dto/user-exists.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/user-exists.input.ts",
+          "type": "imported_by",
+          "symbol": "./dto/user-exists.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/workspace-invite-hash-valid.dto.ts",
+          "type": "imported_by",
+          "symbol": "./dto/workspace-invite-hash-valid.dto"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/dto/workspace-invite-hash.input.ts",
+          "type": "imported_by",
+          "symbol": "./dto/workspace-invite-hash.input"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts",
+          "type": "imported_by",
+          "symbol": "./services/auth.service"
+        },
+        {
+          "path": "packages/twenty-shared/src/constants/CalendarStartDay.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/constants"
+        },
+        {
+          "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/translations"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 32358,
+      "chunk_count": 30,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.3774,
+      "reason": "hybrid match: class AuthResolver",
+      "preview": "export class AuthResolver {",
+      "graph_connections": [
+        "packages/twenty-server/src/engine/core-modules/auth/auth.exception.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/auth.module.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/dto/api-key-token.dto.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/dto/auth-tokens.dto.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/dto/get-auth-tokens-from-login-token.input.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/dto/login-token.dto.ts",
+        "packages/twenty-server/src/engine/core-modules/auth/dto/sign-up.input.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 104,
+        "end": 104
+      },
+      "target": {
+        "key": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts:class:AuthResolver:104-104",
+        "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+        "kind": "class",
+        "name": "AuthResolver",
+        "symbol_path": "AuthResolver",
+        "node_type": "class_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 104,
+          "end": 104
+        },
+        "content_hash": "4da645ec644142d048ec41877ed1e2375a0c31a6ffc82348c763db1647453593",
+        "preview": "export class AuthResolver {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 1,
+        "graphRelevance": 1,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.11111111111111109,
+        "nameMatch": 1,
+        "rawScore": 0.734838888888889,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.1111111111111111,
+        "weightedEdges": 38.8
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+      "score": 0.7293,
+      "belief_prior": 0.6146,
+      "symbol": "useStartNodeCreation",
+      "chunk_type": "function",
+      "file_outline": "useStartNodeCreation",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useCloseRightClickMenu.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useResetWorkflowInsertStepIds.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useRightDrawerState.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 3205,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0791,
+      "reason": "hybrid match: function useStartNodeCreation",
+      "preview": "export const useStartNodeCreation = () => { const { isInRightDrawer } = useContext(ActionMenuContext); const [workflowInsertStepIds, setWorkflowInsertStepIds] =",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useCloseRightClickMenu.ts",
+        "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useResetWorkflowInsertStepIds.ts",
+        "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useRightDrawerState.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 15,
+        "end": 92
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts:function:useStartNodeCreation:15-92",
+        "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+        "kind": "function",
+        "name": "useStartNodeCreation",
+        "symbol_path": "useStartNodeCreation",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 15,
+          "end": 92
+        },
+        "content_hash": "e97b7e14bd34786665c7dbc94000da5525ffbfc20ec6991aa0ca85e6b36e8a4b",
+        "preview": "export const useStartNodeCreation = () => { const { isInRightDrawer } = useContext(ActionMenuContext); const [workflowInsertStepIds, setWorkflowInsertStepIds] ="
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.09666666666666666,
+        "graphRelevance": 0.09666666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.21666666666666665,
+        "nameMatch": 1,
+        "rawScore": 0.7292500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 2.9
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+      "score": 0.7283,
+      "belief_prior": 0.6142,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 8574,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.7361,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 60,
+        "end": 133
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx:function:renderHooks:60-133",
+        "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 60,
+          "end": 133
+        },
+        "content_hash": "1f56202b692708c546f1e23a40f4aa75334530f1dc5b7aab4bca412cf64d6eb3",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19666666666666668,
+        "graphRelevance": 0.19666666666666668,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.18888888888888888,
+        "nameMatch": 1,
+        "rawScore": 0.7283055555555557,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 5.9
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+      "score": 0.7261,
+      "belief_prior": 0.6131,
+      "symbol": "renderUseStartDialerCall",
+      "chunk_type": "function",
+      "file_outline": "renderUseStartDialerCall",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useCallTransfer.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useDialerHotkeys.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useCallTransfer.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useDialerHotkeys.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+          "type": "tested_by",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 3164,
+      "chunk_count": 4,
+      "last_modified": 1780427027,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.625,
+      "reason": "hybrid match: function renderUseStartDialerCall",
+      "preview": "const renderUseStartDialerCall = () => renderHook(() => useStartDialerCall(), { wrapper: ({ children }: { children: ReactNode }) => (",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useCallTransfer.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useDialerHotkeys.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 58,
+        "end": 90
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx:function:renderUseStartDialerCall:58-90",
+        "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+        "kind": "function",
+        "name": "renderUseStartDialerCall",
+        "symbol_path": "renderUseStartDialerCall",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 58,
+          "end": 90
+        },
+        "content_hash": "a3a8412bf3b3c4b1e621254daecc46a77846dd167568d99cd29231cbfdedba44",
+        "preview": "const renderUseStartDialerCall = () => renderHook(() => useStartDialerCall(), { wrapper: ({ children }: { children: ReactNode }) => ("
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.16,
+        "graphRelevance": 0.16,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.18888888888888888,
+        "nameMatch": 1,
+        "rawScore": 0.7261055555555557,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 4.8
+      }
+    },
+    {
+      "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+      "score": 0.7253,
+      "belief_prior": 0.6127,
+      "symbol": "defineManifestTests",
+      "chunk_type": "function",
+      "file_outline": "defineManifestTests",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/app-dev.integration.spec.ts",
+          "type": "imports",
+          "symbol": "./tests/manifest.tests"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/console-output.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/front-components.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/logic-functions.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/app-dev.integration.spec.ts",
+          "type": "imported_by",
+          "symbol": "./tests/manifest.tests"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/console-output.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/front-components.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/logic-functions.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/application/constants/AssetDirectory.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/application"
+        },
+        {
+          "path": "packages/twenty-shared/src/application/constants/AssetDirectory.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/application"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2180,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-sdk",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.7428,
+      "reason": "hybrid match: function defineManifestTests",
+      "preview": "export const defineManifestTests = (appPath: string): void => { describe('manifest', () => { it('should have generated manifest.json', async () => {",
+      "graph_connections": [
+        "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/app-dev.integration.spec.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/console-output.tests.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/front-components.tests.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/logic-functions.tests.ts",
+        "packages/twenty-shared/src/application/constants/AssetDirectory.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 8,
+        "end": 58
+      },
+      "target": {
+        "key": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:8-58",
+        "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+        "kind": "function",
+        "name": "defineManifestTests",
+        "symbol_path": "defineManifestTests",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 8,
+          "end": 58
+        },
+        "content_hash": "5d8b363ed286054495e4d20708d2351f058a0c93f214854a0f618e6a079d5c1f",
+        "preview": "export const defineManifestTests = (appPath: string): void => { describe('manifest', () => { it('should have generated manifest.json', async () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19333333333333333,
+        "graphRelevance": 0.19333333333333333,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.22222222222222218,
+        "nameMatch": 1,
+        "rawScore": 0.725327777777778,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2222222222222222,
+        "weightedEdges": 5.8
+      }
+    },
+    {
+      "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+      "score": 0.7241,
+      "belief_prior": 0.6121,
+      "symbol": "defineManifestTests",
+      "chunk_type": "function",
+      "file_outline": "defineManifestTests",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/app-dev.integration.spec.ts",
+          "type": "imports",
+          "symbol": "./tests/manifest.tests"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts",
+          "type": "imported_by",
+          "symbol": "../expected-manifest"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/console-output.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/entities.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/app-dev.integration.spec.ts",
+          "type": "imported_by",
+          "symbol": "./tests/manifest.tests"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts",
+          "type": "imports",
+          "symbol": "../expected-manifest"
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/console-output.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/entities.tests.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 1960,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-sdk",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.6292,
+      "reason": "hybrid match: function defineManifestTests",
+      "preview": "export const defineManifestTests = (appPath: string): void => { const manifestOutputPath = join(appPath, '.twenty/output/manifest.json'); describe('manifest', () => {",
+      "graph_connections": [
+        "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/app-dev.integration.spec.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/console-output.tests.ts",
+        "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/entities.tests.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 7,
+        "end": 52
+      },
+      "target": {
+        "key": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:7-52",
+        "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+        "kind": "function",
+        "name": "defineManifestTests",
+        "symbol_path": "defineManifestTests",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 7,
+          "end": 52
+        },
+        "content_hash": "154c118cda1a0246a418943012743c2493af1ab900acc5778e1740694c43a99d",
+        "preview": "export const defineManifestTests = (appPath: string): void => { const manifestOutputPath = join(appPath, '.twenty/output/manifest.json'); describe('manifest', () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.1733333333333333,
+        "graphRelevance": 0.1733333333333333,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.22222222222222218,
+        "nameMatch": 1,
+        "rawScore": 0.7241277777777779,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2222222222222222,
+        "weightedEdges": 5.199999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+      "score": 0.7225,
+      "belief_prior": 0.6113,
+      "symbol": "TaskPostQueryHookService",
+      "chunk_type": "class",
+      "file_outline": "TaskPostQueryHookService TaskPostQueryHookService.constructor TaskPostQueryHookService.handleTaskTargetsDelete TaskPostQueryHookService.handleTaskTargetsRestore",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-delete-many.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-delete-one.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-delete-many.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-delete-one.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-query-hook.module.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-query-hook.module.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-restore-many.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/modules/task/query-hooks/task-restore-one.post-query.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2366,
+      "chunk_count": 5,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.2438,
+      "reason": "hybrid match: class TaskPostQueryHookService",
+      "preview": "export class TaskPostQueryHookService {",
+      "graph_connections": [
+        "packages/twenty-server/src/modules/task/query-hooks/task-delete-many.post-query.hook.ts",
+        "packages/twenty-server/src/modules/task/query-hooks/task-delete-one.post-query.hook.ts",
+        "packages/twenty-server/src/modules/task/query-hooks/task-query-hook.module.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts",
+        "packages/twenty-server/src/modules/task/query-hooks/task-restore-many.post-query.hook.ts",
+        "packages/twenty-server/src/modules/task/query-hooks/task-restore-one.post-query.hook.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 14,
+        "end": 14
+      },
+      "target": {
+        "key": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts:class:TaskPostQueryHookService:14-14",
+        "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+        "kind": "class",
+        "name": "TaskPostQueryHookService",
+        "symbol_path": "TaskPostQueryHookService",
+        "node_type": "class_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 14,
+          "end": 14
+        },
+        "content_hash": "695a948941a05f76b24cbddb851f14c8890fb6d30ff14ac4e636e310501cc225",
+        "preview": "export class TaskPostQueryHookService {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.14666666666666664,
+        "graphRelevance": 0.14666666666666664,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.22222222222222218,
+        "nameMatch": 1,
+        "rawScore": 0.722527777777778,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2222222222222222,
+        "weightedEdges": 4.3999999999999995
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15440,
+    "total_chunks": 75344,
+    "last_indexed": "2026-06-11T06:53:46.916Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 16,
+    "chunks_embedded": 319
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/os/scripts/task-start.js": {
+      "prior": 0.7468,
+      "posterior": 0.7468,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-start.js": {
+      "prior": 0.7068,
+      "posterior": 0.7068,
+      "observations": []
+    },
+    "packages/os/hooks/task/guidance.js": {
+      "prior": 0.6819,
+      "posterior": 0.6799,
+      "observations": []
+    },
+    "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts": {
+      "prior": 0.6174,
+      "posterior": 0.6174,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts": {
+      "prior": 0.6146,
+      "posterior": 0.6146,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx": {
+      "prior": 0.6142,
+      "posterior": 0.6142,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx": {
+      "prior": 0.6131,
+      "posterior": 0.6131,
+      "observations": []
+    },
+    "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts": {
+      "prior": 0.6127,
+      "posterior": 0.6127,
+      "observations": []
+    },
+    "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts": {
+      "prior": 0.6121,
+      "posterior": 0.6121,
+      "observations": []
+    },
+    "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts": {
+      "prior": 0.6113,
+      "posterior": 0.6113,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/test-task-hook-workflow-contract",
+  "mode": "exploring",
+  "worktree_id": "task/os/test-task-hook-workflow-contract",
+  "updated_at": "2026-06-11T06:55:23.494Z"
+}
