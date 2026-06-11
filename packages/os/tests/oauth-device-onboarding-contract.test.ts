@@ -184,6 +184,20 @@ contractDescribe('workspace OAuth device authorization contract', () => {
         now: '2026-06-11T00:00:10.000Z',
       }),
     ).toMatchObject({ status: 'denied', errorCode: 'DEVICE_CODE_NOT_FOUND' });
+    const deniedSession = startWorkspaceDeviceAuthorization({
+      clientId: 'consuelo-os-installer',
+      scope: ['workspace:read', 'os:connector:register'],
+      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
+      now: '2026-06-11T00:00:00.000Z',
+    });
+
+    expect(
+      pollWorkspaceDeviceAuthorization({
+        deviceCode: deniedSession.deviceCode,
+        now: '2026-06-11T00:00:10.000Z',
+        deny: true,
+      }),
+    ).toMatchObject({ status: 'denied', errorCode: 'DEVICE_CODE_DENIED' });
     expect(
       pollWorkspaceDeviceAuthorization({
         deviceCode: session.deviceCode,
