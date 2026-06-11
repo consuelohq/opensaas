@@ -107,18 +107,21 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
   for (const marker of [
     "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
     'function officePathForArchiveEntry',
     'function renderSitesLauncher',
     'CONSUELO OS █',
     'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-    'PROJECTS:',
-    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
-    '[Tracing](/tracing)</a></li>',
-    '[Diffs](/diffs)</a></li>',
-    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
+    'SITES:',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'WRITING:',
-    'Decision Making Under Uncertainty',
+    'On Decision Loops',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -139,15 +142,18 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
 test('keeps root launcher copy and Office archive chrome separated', () => {
   for (const marker of [
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
     'CONSUELO OS █',
-    'PROJECTS:',
+    'SITES:',
     'WRITING:',
-    '[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>',
-    '[Tracing](/tracing)</a></li>',
-    '[Diffs](/diffs)</a></li>',
-    '[Documentation](${DESIGN_DOCS_URL})</a></li>',
-    'Decision Making Under Uncertainty',
+    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
+    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
+    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
+    'On Decision Loops',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
@@ -157,10 +163,10 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
 
 test('keeps launcher routes local and theme-aware', () => {
   for (const marker of [
-    'color-scheme: light dark',
-    'background: Canvas',
-    'color: CanvasText',
-    'color: LinkText',
+    'color-scheme: dark',
+    'background: #070708',
+    'color: #f2eee6',
+    'color: #9aa6ff',
     'function publicRouteAlias',
     'if (clean === "/tracing") return "/trace-burn-intelligence";',
     'function proxyDiffsRoute',
@@ -172,6 +178,46 @@ test('keeps launcher routes local and theme-aware', () => {
     expect(source).toContain(marker);
   }
   expect(source).not.toContain('/writing/on-rendering-diffs');
-  expect(source).not.toContain(':root { color-scheme: dark; background');
+  expect(source).toContain('font-weight: 400');
+  expect(source).toContain('letter-spacing: 0.02em');
+  expect(source).toContain('white-space: nowrap');
+  expect(source).toContain('class="blog-item"');
+  expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+  expect(source).toContain('.md-label { color: #f2eee6; }');
+  expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
+
+test('keeps launcher compact but tappable on phone and tablet viewports', () => {
+  for (const marker of [
+    '@media (max-width: 1024px)',
+    'font-size: clamp(10.3px, 2.62vw, 12.7px)',
+    'main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); }',
+    '.block { margin: 22px 0; }',
+    '.rule { margin: 22px 0; }',
+    'li { margin: 2.35px 0; }',
+    '@media (max-width: 430px)',
+    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
+    'main { padding: 40px 10px; }',
+    'li, .blog-item { white-space: nowrap; }',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('.blog-item { white-space: normal;');
+});
+
+
+
+test('tunes mobile launcher closer to the Pierre reference', () => {
+  for (const marker of [
+    'main { padding: 40px 10px; }',
+    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
+    '.block { margin: 22px 0; }',
+    '.rule { margin: 22px 0; }',
+    'li { margin: 2.35px 0; }',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_41d22632fba7",
+  "tmuxSession": "opensaas-security-back-cloudflare-registry-with-d1-and-preserve-po-41d22632",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "branch": "task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-back-cloudflare-registry-with-d1-and-preserve-post-bodies",
+  "prNumber": 959,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/959",
+  "createdAt": "2026-06-11T07:14:32.384Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-back-cloudflare-registry-with-d1-and-preserve-post-bodies/.task/security/back-cloudflare-registry-with-d1-and-preserve-post-bodies/session.json"
+}

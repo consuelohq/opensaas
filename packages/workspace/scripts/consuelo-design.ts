@@ -57,7 +57,7 @@ const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';
 const DESIGN_ARCHIVE_PATH = '/sites';
 const DESIGN_ARCHIVE_OFFICE_PATH = '/office';
 const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';
-const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
+const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';
 const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://sites.consuelohq.com';
 const DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
@@ -1206,19 +1206,19 @@ function writeArchiveServer(ip: string): void {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
-    main { padding: 28px 30px; max-width: 640px; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10.3px, 2.62vw, 12.7px); line-height: 1.34; } main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); } .block { margin: 22px 0; } .rule { margin: 22px 0; } li { margin: 2.35px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.9px, 2.42vw, 11.5px); line-height: 1.32; } main { padding: 40px 10px; } li, .blog-item { white-space: nowrap; } }
+    main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
-    h1 { margin-bottom: 22px; text-transform: uppercase; }
-    .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
-    li { margin: 0; }
+    li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
   </style>
 </head>
 <body>
@@ -1231,24 +1231,25 @@ function writeArchiveServer(ip: string): void {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Projects">
-      <p class="label">PROJECTS:</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
-        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
@@ -1816,19 +1817,19 @@ function renderArchiveRootRedirect(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo OS Sites</title>
   <style>
-    :root { color-scheme: light dark; background: Canvas; color: CanvasText; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; }
-    main { padding: 28px 30px; max-width: 640px; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10px, 2.55vw, 12.4px); line-height: 1.36; } main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); } .block { margin: 23px 0; } .rule { margin: 23px 0; } li { margin: 2.1px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.6px, 2.35vw, 11.2px); line-height: 1.34; } main { padding: 22px 10px; } li, .blog-item { white-space: nowrap; } }
+    main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
-    h1 { margin-bottom: 22px; text-transform: uppercase; }
-    .block { margin: 18px 0; }
-    .rule { margin: 18px 0; color: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
     .label { text-transform: uppercase; }
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
-    li { margin: 0; }
+    li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: LinkText; text-decoration: underline; text-underline-offset: 2px; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
   </style>
 </head>
 <body>
@@ -1841,24 +1842,25 @@ function renderArchiveRootRedirect(): string {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">[Systems Engineer](/careers/systems-engineer)</a></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
-    <section class="block" aria-label="Projects">
-      <p class="label">PROJECTS:</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
       <ul>
-        <li><a href="${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">[Office](${DESIGN_ARCHIVE_OFFICE_PATH})</a></li>
-        <li><a href="/tracing" target="_blank" rel="noopener noreferrer">[Tracing](/tracing)</a></li>
-        <li><a href="/diffs" target="_blank" rel="noopener noreferrer">[Diffs](/diffs)</a></li>
-        <li><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">[Documentation](${DESIGN_DOCS_URL})</a></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">[Decision Making Under Uncertainty](${DESIGN_DECISION_INFRASTRUCTURE_URL})</a></li>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
@@ -2242,3 +2244,4 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
+

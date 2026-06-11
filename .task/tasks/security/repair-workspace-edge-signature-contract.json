@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/repair-workspace-edge-signature-contract",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 954,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/954",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/954",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/954/repair-workspace-edge-signature-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/954",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/954/repair-workspace-edge-signature-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-workspace-edge-signature-contract",
+  "taskSession": "tsk_a17776e08f72",
+  "tmuxSession": "opensaas-security-repair-workspace-edge-signature-contract-a17776e0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-workspace-edge-signature-contract/.task/security/repair-workspace-edge-signature-contract/session.json",
+  "createdAt": "2026-06-11T06:07:53.020Z"
+}
