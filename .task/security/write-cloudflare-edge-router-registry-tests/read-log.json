@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/workspace-cloudflare-gateway.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/workspace-cloudflare-gateway-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-11T04:30:13.862Z"
+}
