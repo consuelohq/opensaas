@@ -797,6 +797,21 @@ async function githubWebhookSignature(body: string, secret: string): Promise<str
 describe('createWorker', () => {
   test('updates GitHub review threads through the review thread API endpoint', async () => {
     const calls: Array<{ url: string; method?: string; body?: string }> = [];
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    cacheStore.set(cacheKey, Response.json({ cached: true }));
     const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
       calls.push({ url: String(input), method: init?.method, body: String(init?.body ?? '') });
       if (String(input) === 'https://api.github.com/graphql') {
@@ -804,18 +819,20 @@ describe('createWorker', () => {
       }
       throw new Error('unexpected review thread mutation url ' + String(input));
     };
-    const worker = createWorker({ fetcher });
+    const worker = createWorker({ fetcher, cache });
 
     const missingToken = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }));
     const response = await worker.fetch(
       new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }),
       { GITHUB_TOKEN: 'token' },
     );
-    const payload = await response.json() as { ok: boolean; action: string };
+    const payload = await response.json() as { ok: boolean; action: string; edgeInvalidated: boolean; invalidated: string[] };
 
     expect(missingToken.status).toBe(401);
     expect(response.status).toBe(200);
-    expect(payload).toMatchObject({ ok: true, action: 'resolve' });
+    expect(payload).toMatchObject({ ok: true, action: 'resolve', edgeInvalidated: true });
+    expect(payload.invalidated).toContain('/api/consuelohq/opensaas/pull/708');
+    expect(cacheStore.has(cacheKey)).toBe(false);
     expect(calls).toHaveLength(1);
     expect(calls[0]).toMatchObject({ url: 'https://api.github.com/graphql', method: 'POST' });
     expect(calls[0]?.body || '').toContain('resolveReviewThread');

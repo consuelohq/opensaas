@@ -1161,9 +1161,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         if (request.method !== 'POST') {
           return json({ ok: false, error: 'Use POST to update a review thread.' }, 405);
         }
+        const locator = {
+          owner: decodeURIComponent(reviewThreadApiMatch[1] || ''),
+          repo: decodeURIComponent(reviewThreadApiMatch[2] || ''),
+          number: Number(reviewThreadApiMatch[3]),
+        };
         const threadId = decodeURIComponent(reviewThreadApiMatch[4] || '');
         const action = reviewThreadApiMatch[5] === 'unresolve' ? 'unresolve' : 'resolve';
-        return mutateGithubReviewThread(options.fetcher ?? fetch, token, threadId, action);
+        return mutateGithubReviewThread(options.fetcher ?? fetch, token, threadId, action, edgeCache, url.origin, locator);
       }
 
       const mergeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/merge$/);
@@ -2079,21 +2084,45 @@ async function mutateGithubReviewThread(
   token: string | undefined,
   threadId: string,
   action: ReviewThreadMutationAction,
+  edgeCache: EdgeCache | null,
+  requestOrigin: string,
+  locator: PullRequestLocator,
 ): Promise<Response> {
   if (!token) return json({ ok: false, error: 'GitHub token is required to update review threads.' }, 401);
   if (!threadId) return json({ ok: false, error: 'review thread id is required.' }, 400);
-  const mutationName = action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
-  const query = 'mutation DiffCockpitReviewThread($threadId: ID!) { ' + mutationName + '(input: { threadId: $threadId }) { thread { id isResolved } } }';
-  const response = await fetcher('https://api.github.com/graphql', {
-    method: 'POST',
-    headers: { ...createGithubHeaders(token), 'content-type': 'application/json' },
-    body: JSON.stringify({ query, variables: { threadId } }),
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    return json({ ok: false, error: 'GitHub GraphQL review thread mutation failed.', details: payload }, response.status);
+  try {
+    const mutationName = action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
+    const query = 'mutation DiffCockpitReviewThread($threadId: ID!) { ' + mutationName + '(input: { threadId: $threadId }) { thread { id isResolved } } }';
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...createGithubHeaders(token), 'content-type': 'application/json' },
+      body: JSON.stringify({ query, variables: { threadId } }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return json({ ok: false, error: 'GitHub GraphQL review thread mutation failed.', details: payload }, response.status);
+    }
+    const invalidated = await invalidatePullRequestReviewCache(edgeCache, requestOrigin, locator);
+    return json({ ok: true, action, payload, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
+  } catch (error: unknown) {
+    return json({ ok: false, error: getErrorMessage(error) }, 502);
   }
-  return json({ ok: true, action, payload });
+}
+
+async function invalidatePullRequestReviewCache(
+  edgeCache: EdgeCache | null,
+  requestOrigin: string,
+  locator: PullRequestLocator,
+): Promise<{ path: string; edgeInvalidated: boolean }> {
+  try {
+    const apiUrl = new URL(`${requestOrigin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+    const cacheRequest = makeApiCacheRequest(apiUrl);
+    memoryJsonCache.delete(memoryCacheKey(cacheRequest));
+    const edgeInvalidated = edgeCache ? await edgeCache.delete(cacheRequest) : false;
+    return { path: apiUrl.pathname, edgeInvalidated };
+  } catch (error: unknown) {
+    throw new Error(`failed to invalidate PR cache: ${getErrorMessage(error)}`);
+  }
 }
 
 type GithubWebhookDeps = {
@@ -2126,11 +2155,12 @@ async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
   if (!owner || !repoName || pullNumber <= 0) {
     return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
   }
-  const apiUrl = new URL(COCKPIT_ORIGIN + '/api/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repoName) + '/pull/' + pullNumber);
-  const cacheRequest = makeApiCacheRequest(apiUrl);
-  memoryJsonCache.delete(memoryCacheKey(cacheRequest));
-  const edgeInvalidated = deps.edgeCache ? await deps.edgeCache.delete(cacheRequest) : false;
-  return internalJson({ ok: true, event, action, invalidated: [new URL(apiUrl).pathname], edgeInvalidated });
+  try {
+    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, COCKPIT_ORIGIN, { owner, repo: repoName, number: pullNumber });
+    return internalJson({ ok: true, event, action, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
+  } catch (error: unknown) {
+    return internalJson({ ok: false, error: getErrorMessage(error) }, 502);
+  }
 }
 
 async function verifyGithubWebhookSignature(body: string, signature: string, secret: string): Promise<boolean> {
