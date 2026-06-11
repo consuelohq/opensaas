@@ -1666,7 +1666,8 @@
           "maxOperations": 25,
           "maxResultChars": 20000
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "decision.research"
       }
     },
     {
@@ -4009,7 +4010,8 @@
           "contentFile": "/tmp/example.txt",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "workpad.write"
       }
     },
     {
@@ -4264,7 +4266,8 @@
           "hunks": true,
           "maxBytes": 20000
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "diff.inspect"
       }
     },
     {
@@ -5759,7 +5762,8 @@
           "branch": "task/workspace-agents/example",
           "noTests": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.review"
       }
     },
     {
@@ -6312,7 +6316,8 @@
         "exampleInput": {
           "area": "workspace-agents"
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "stream.context"
       }
     },
     {
@@ -6663,7 +6668,8 @@
           ],
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "test.run"
       }
     },
     {
@@ -6719,7 +6725,8 @@
           "branch": "task/workspace-agents/example",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.finish"
       }
     },
     {
@@ -6924,7 +6931,8 @@
           "taskOnly": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.pr"
       }
     },
     {
@@ -7068,7 +7076,8 @@
           "changed": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.push"
       }
     },
     {
@@ -7139,7 +7148,8 @@
           "title": "example task",
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "task.start"
       }
     },
     {
@@ -7301,7 +7311,8 @@
         "exampleInput": {
           "query": "linear issue",
           "limit": 5
-        }
+        },
+        "workflowRole": "tool.search"
       }
     },
     {
@@ -7351,7 +7362,8 @@
           "noStamp": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.verify"
       }
     },
     {

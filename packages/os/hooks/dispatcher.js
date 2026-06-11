@@ -7,7 +7,7 @@ const { createTaskWorkflowHookRegistry } = require('./task/workflow.js');
 
 const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'tooling', 'dev-tool-manifest.json');
 
-const WORKFLOW_ROLE_BY_TOOL = new Map([
+const LEGACY_WORKFLOW_ROLE_BY_TOOL = new Map([
   ['stream.context', 'stream.context'],
   ['task.start', 'task.start'],
   ['fs.write', 'workpad.write'],
@@ -23,7 +23,9 @@ const WORKFLOW_ROLE_BY_TOOL = new Map([
 ]);
 
 function createOsHookDispatcher(options = {}) {
-  const manifest = normalizeManifest(loadManifest(options));
+  const manifest = normalizeManifest(loadManifest(options), {
+    legacyWorkflowRoleFallback: Boolean(options.legacyWorkflowRoleFallback),
+  });
   const taskRegistry = createTaskWorkflowHookRegistry({
     manifest,
     skillText: options.skillText || '',
@@ -69,7 +71,8 @@ function loadManifest(options = {}) {
   return manifest;
 }
 
-function normalizeManifest(manifest) {
+function normalizeManifest(manifest, options = {}) {
+  const legacyWorkflowRoleFallback = Boolean(options.legacyWorkflowRoleFallback);
   return manifest.map((entry) => {
     if (!entry || typeof entry !== 'object') {
       return entry;
@@ -79,7 +82,11 @@ function normalizeManifest(manifest) {
       return entry;
     }
 
-    const workflowRole = WORKFLOW_ROLE_BY_TOOL.get(entry.name);
+    if (!legacyWorkflowRoleFallback) {
+      return entry;
+    }
+
+    const workflowRole = LEGACY_WORKFLOW_ROLE_BY_TOOL.get(entry.name);
     if (!workflowRole) {
       return entry;
     }
