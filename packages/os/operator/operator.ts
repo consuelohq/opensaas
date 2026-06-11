@@ -94,7 +94,7 @@ function main(argv: string[]): void {
 
 try {
   main(Bun.argv.slice(2));
-} catch (error) {
+} catch (error: unknown) {
   process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
   process.stderr.write(`${usage()}\n`);
   process.exit(1);
