@@ -40,8 +40,8 @@ bun ./scripts/os.ts sites path
 bun ./scripts/os.ts sites status
 bun ./scripts/os.ts sites refresh
 bun ./scripts/os.ts sites open
-bun ./scripts/os.ts sites render --template <spec|plan|guide> --input <content.json> --out <index.html>
-bun ./scripts/os.ts sites publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
+bun ./scripts/os.ts artifact render --template <spec|plan|guide> --input <content.json> --out <index.html>
+bun ./scripts/os.ts artifact publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
 bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>]
 bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>]
 ```
@@ -61,9 +61,9 @@ Each command supports `--json`.
 
 ## Versioned Sites pages
 
-`sites publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
+`artifact publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
 
-Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `sites render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages.
+Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `artifact render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages.
 
 Use `sites patch` when an agent changes one section of an existing typed page. The patch command edits that section in `content.json`, re-renders reader pages, and publishes a new immutable version. If the page changed since the supplied base version and the changed sections do not overlap, the patch auto-rebases; if the same section changed, it rejects with `SECTION_CONFLICT`.
 

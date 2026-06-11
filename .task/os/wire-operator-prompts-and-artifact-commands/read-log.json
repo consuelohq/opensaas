@@ -1,0 +1,17 @@
+{
+  "files": [
+    "operator/operator.ts",
+    "operator/prompts/review.md",
+    "package.json",
+    "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+    "packages/os/operator/operator.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/operator.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "updatedAt": "2026-06-11T05:18:24.315Z"
+}

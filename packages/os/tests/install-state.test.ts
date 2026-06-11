@@ -88,8 +88,16 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
+    const bundledOperatorPath = join(process.cwd(), 'operator', 'operator.ts');
+    const bundledReviewPromptPath = join(process.cwd(), 'operator', 'prompts', 'review.md');
+    expect(existsSync(bundledOperatorPath)).toBe(true);
+    expect(existsSync(bundledReviewPromptPath)).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
+    expect(readFileSync(join(tempHome, 'operator', 'operator.ts'), 'utf8')).toBe(readFileSync(bundledOperatorPath, 'utf8'));
+    expect(readFileSync(join(tempHome, 'operator', 'prompts', 'review.md'), 'utf8')).toBe(readFileSync(bundledReviewPromptPath, 'utf8'));
+    expect(existsSync(join(tempHome, 'scripts', 'artifact-render.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'scripts', 'artifact-validate.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
@@ -199,7 +207,7 @@ describe('local OS install state', () => {
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
     expect(sitesIndex).toContain('Sites');
     expect(sitesIndex).toContain('Office');
-    expect(sitesIndex).toContain('Traces');
+    expect(sitesIndex).toContain('Tracing');
     expect(sitesIndex).toContain('Diffs');
     expect(sitesIndex).not.toContain('GitHub Workflows');
 

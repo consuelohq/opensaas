@@ -1381,13 +1381,13 @@ Generate and lint user LaunchAgent plist files plus shell syntax checks without 
 Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
 
 ```bash
-bun ./scripts/os.ts sites render \
+bun ./scripts/os.ts artifact render \
   --template guide \
   --input /tmp/example-page/content.json \
   --out /tmp/example-page/index.html \
   --json
 
-bun ./scripts/os.ts sites publish \
+bun ./scripts/os.ts artifact publish \
   --target /tmp/example-page \
   --path /pages/example-page \
   --title "Example Page" \

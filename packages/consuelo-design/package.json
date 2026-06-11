@@ -32,7 +32,9 @@
     "generate:email": "bun ./scripts/consuelo-design.ts generate email",
     "generate:motion-frame": "bun ./scripts/consuelo-design.ts generate motion-frame",
     "render:hyperframes": "bun ./scripts/consuelo-design.ts render hyperframes",
+    "artifact:render": "bun ./scripts/render-consuelo-reader.ts",
     "wiki:render": "bun ./scripts/render-consuelo-reader.ts",
+    "artifact:validate": "bun ./scripts/validate-consuelo-reader.ts",
     "wiki:validate": "bun ./scripts/validate-consuelo-reader.ts",
     "test:reader": "bun test ./scripts/render-consuelo-reader.test.ts"
   },

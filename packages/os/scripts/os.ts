@@ -118,6 +118,7 @@ export type SitesCommandResult = {
 };
 
 export type OfficeCommandResult = SitesCommandResult;
+export type ArtifactCommandResult = SitesCommandResult;
 
 export type RunSitesCommandOptions = {
   home?: string;
@@ -125,6 +126,7 @@ export type RunSitesCommandOptions = {
 };
 
 export type RunOfficeCommandOptions = RunSitesCommandOptions;
+export type RunArtifactCommandOptions = RunSitesCommandOptions;
 
 type GeneratedOfficeSiteData = {
   generatedAt?: string;
@@ -155,8 +157,8 @@ function readerSiteTemplate(value: string | null): ReaderSiteTemplate | null {
   return null;
 }
 
-function repoRootFromOsPackage(): string {
-  return path.resolve(getPackageRoot(), '..', '..');
+function artifactRenderScriptPath(): string {
+  return path.join(getPackageRoot(), 'scripts', 'artifact-render.ts');
 }
 
 function textFromBytes(value: unknown): string {
@@ -166,11 +168,12 @@ function textFromBytes(value: unknown): string {
 }
 
 function renderReaderContent(template: ReaderSiteTemplate, input: string, output: string): { ok: boolean; stdout: string; error?: string } {
-  const repoRoot = repoRootFromOsPackage();
-  const renderProcess = Bun.spawnSync(['bun', 'run', 'wiki:render', '--', '--template', template, '--input', input, '--out', output], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
+  const inputPath = path.resolve(input);
+  const outputPath = path.resolve(output);
+  const renderProcess = Bun.spawnSync(['bun', artifactRenderScriptPath(), '--template', template, '--input', inputPath, '--out', outputPath], { cwd: getPackageRoot(), stdout: 'pipe', stderr: 'pipe' });
   const stdout = textFromBytes(renderProcess.stdout).trim();
   const stderr = textFromBytes(renderProcess.stderr).trim();
-  return { ok: renderProcess.exitCode === 0 && fs.existsSync(output), stdout, error: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` };
+  return { ok: renderProcess.exitCode === 0 && fs.existsSync(outputPath), stdout, error: stderr || stdout || `artifact:render exited with ${renderProcess.exitCode}` };
 }
 
 function firstSitesSubcommand(args: readonly string[]): string {
@@ -266,34 +269,33 @@ export async function runSitesCommand(
       };
     }
 
-    const repoRoot = repoRootFromOsPackage();
+    const inputPath = path.resolve(input);
+    const outputPath = path.resolve(output);
     const renderProcess = Bun.spawnSync([
       'bun',
-      'run',
-      'wiki:render',
-      '--',
+      artifactRenderScriptPath(),
       '--template',
       template,
       '--input',
-      input,
+      inputPath,
       '--out',
-      output,
-    ], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
+      outputPath,
+    ], { cwd: getPackageRoot(), stdout: 'pipe', stderr: 'pipe' });
     const stdout = textFromBytes(renderProcess.stdout).trim();
     const stderr = textFromBytes(renderProcess.stderr).trim();
-    const rendered = fs.existsSync(output);
+    const rendered = fs.existsSync(outputPath);
     const ok = renderProcess.exitCode === 0 && rendered;
     return {
       ...status,
       ok,
       pageKind: template,
       renderTemplate: template,
-      inputPath: input,
-      outputPath: output,
+      inputPath,
+      outputPath,
       rendered,
       rendererStdout: stdout || undefined,
-      message: ok ? `Sites reader page rendered: ${output}` : 'Sites reader render failed.',
-      error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` },
+      message: ok ? `Sites reader page rendered: ${outputPath}` : 'Sites reader render failed.',
+      error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `artifact:render exited with ${renderProcess.exitCode}` },
     };
   }
 
@@ -311,7 +313,7 @@ export async function runSitesCommand(
     let renderResult: { ok: boolean; stdout: string; error?: string } | null = null;
     if (template) {
       renderResult = renderReaderContent(template, prepared.contentPath, path.join(prepared.stagedTarget, 'index.html'));
-      if (!renderResult.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, pageKind: prepared.kind ?? undefined, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: false, error: { code: 'SITES_PATCH_RENDER_FAILED', message: renderResult.error ?? 'wiki:render failed' }, message: 'Sites patch render failed.' };
+      if (!renderResult.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, pageKind: prepared.kind ?? undefined, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: false, error: { code: 'SITES_PATCH_RENDER_FAILED', message: renderResult.error ?? 'artifact:render failed' }, message: 'Sites patch render failed.' };
     }
     const result = publishSitePage({ home: paths.home, dbPath: paths.dbPath, target: prepared.stagedTarget, pagePath, title: prepared.title ?? prepared.pageId, kind: prepared.kind ?? 'uncategorized', baseVersion: prepared.currentVersionId, forcePublish: hasFlag(args, '--force-publish'), agentId, changedSectionIds: [prepared.sectionId] });
     return { ...status, ok: result.ok, pageId: result.pageId, pagePath: result.path, pageTitle: result.title, pageKind: result.kind, sectionId: prepared.sectionId, currentVersionId: result.currentVersionId, publishedVersionId: result.publishedVersionId, requiredBaseVersion: result.requiredBaseVersion, versionCount: result.versionCount, currentPath: result.currentPath, versionPath: result.versionPath, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: renderResult ? renderResult.ok : undefined, rendererStdout: renderResult?.stdout || undefined, message: result.ok ? `Sites section patched: ${prepared.path}#${prepared.sectionId}` : result.message, error: result.error };
@@ -446,6 +448,29 @@ export async function runOfficeCommand(
   return runSitesCommand(args, options);
 }
 
+function artifactMessage(value: string): string {
+  return value
+    .replaceAll('Sites reader page rendered', 'Artifact rendered')
+    .replaceAll('Sites page published', 'Artifact published to Office')
+    .replaceAll('Sites section patched', 'Artifact section patched')
+    .replaceAll('Invalid Sites', 'Invalid artifact')
+    .replaceAll('Unknown Sites', 'Unknown artifact')
+    .replaceAll('Sites ', 'Artifact ')
+    .replaceAll('sites ', 'artifact ');
+}
+
+export function runArtifactCommand(
+  args: readonly string[],
+  options: RunArtifactCommandOptions = {},
+): Promise<ArtifactCommandResult> {
+  return runSitesCommand(args, options).then((result) => ({
+    ...result,
+    command: 'artifact:' + result.command,
+    message: artifactMessage(result.message),
+    error: result.error ? { ...result.error, message: artifactMessage(result.error.message) } : undefined,
+  }));
+}
+
 function renderSitesCommandResult(result: SitesCommandResult): string {
   return [
     result.message,
@@ -459,6 +484,7 @@ function renderSitesCommandResult(result: SitesCommandResult): string {
 function renderOfficeCommandResult(result: OfficeCommandResult): string {
   return renderSitesCommandResult(result);
 }
+
 export function getSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
@@ -1086,15 +1112,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'sites' || command === 'office') {
-    const result = command === 'office'
-      ? await runOfficeCommand(args)
-      : await runSitesCommand(args);
-    if (command === 'office') writeStderr('Deprecated: use `sites` instead of `office`.');
-    if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
-`);
-    else writeStdout(`${renderSitesCommandResult(result)}
-`);
+  if (command === 'sites' || command === 'office' || command === 'artifact') {
+    const result = command === 'artifact'
+      ? await runArtifactCommand(args)
+      : command === 'office'
+        ? await runOfficeCommand(args)
+        : await runSitesCommand(args);
+    if (hasFlag(args, '--json')) writeStdout(safeJson(result) + '\n');
+    else writeStdout(renderSitesCommandResult(result) + '\n');
     if (!result.ok) process.exitCode = 1;
     return;
   }
@@ -1120,6 +1145,8 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites status [--json]',
       '  bun ./scripts/os.ts sites refresh [--json]',
       '  bun ./scripts/os.ts sites open [--json]',
+      '  bun ./scripts/os.ts artifact render --template <spec|plan|guide> --input <content.json> --out <index.html> [--json]',
+      '  bun ./scripts/os.ts artifact publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
       '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
