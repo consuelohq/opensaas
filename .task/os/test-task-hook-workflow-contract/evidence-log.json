@@ -1,0 +1,758 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/test-task-hook-workflow-contract",
+  "events": [
+    {
+      "id": "a9463d35-f8c2-47fa-9c62-a12251a58f58",
+      "occurred_at": "2026-06-11T06:54:59.029Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "OS task hooks manifest resolver task skill workflow task-start tests hooks guidance",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/os/scripts/task-start.js",
+            "score": 0.9936,
+            "reason": "hybrid match: function writeStdout",
+            "lines": {
+              "start": 43,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/os/scripts/task-start.js:function:writeStdout:43-45",
+              "path": "packages/os/scripts/task-start.js",
+              "kind": "function",
+              "name": "writeStdout",
+              "symbol_path": "writeStdout",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 43,
+                "end": 45
+              },
+              "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+              "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-start.js",
+            "score": 0.9136,
+            "reason": "hybrid match: function writeStdout",
+            "lines": {
+              "start": 43,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/task-start.js:function:writeStdout:43-45",
+              "path": "packages/workspace/scripts/task-start.js",
+              "kind": "function",
+              "name": "writeStdout",
+              "symbol_path": "writeStdout",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 43,
+                "end": 45
+              },
+              "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+              "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+            }
+          },
+          {
+            "path": "packages/os/hooks/task/guidance.js",
+            "score": 0.8598,
+            "reason": "hybrid match: function getTaskHookGuidance",
+            "lines": {
+              "start": 18,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/os/hooks/task/guidance.js:function:getTaskHookGuidance:18-37",
+              "path": "packages/os/hooks/task/guidance.js",
+              "kind": "function",
+              "name": "getTaskHookGuidance",
+              "symbol_path": "getTaskHookGuidance",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 37
+              },
+              "content_hash": "87ca9c3612acaf060a1706e3dfd3bad2624c769e8e7a9f217c38f3009080e41a",
+              "preview": "function getTaskHookGuidance(stage, options = {}) { if (!VALID_STAGES.has(stage)) { throw new Error(`unknown task hook stage: ${stage}`);"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 0.7348,
+            "reason": "hybrid match: class AuthResolver",
+            "lines": {
+              "start": 104,
+              "end": 104
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts:class:AuthResolver:104-104",
+              "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+              "kind": "class",
+              "name": "AuthResolver",
+              "symbol_path": "AuthResolver",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 104,
+                "end": 104
+              },
+              "content_hash": "4da645ec644142d048ec41877ed1e2375a0c31a6ffc82348c763db1647453593",
+              "preview": "export class AuthResolver {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+            "score": 0.7293,
+            "reason": "hybrid match: function useStartNodeCreation",
+            "lines": {
+              "start": 15,
+              "end": 92
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts:function:useStartNodeCreation:15-92",
+              "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+              "kind": "function",
+              "name": "useStartNodeCreation",
+              "symbol_path": "useStartNodeCreation",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 15,
+                "end": 92
+              },
+              "content_hash": "e97b7e14bd34786665c7dbc94000da5525ffbfc20ec6991aa0ca85e6b36e8a4b",
+              "preview": "export const useStartNodeCreation = () => { const { isInRightDrawer } = useContext(ActionMenuContext); const [workflowInsertStepIds, setWorkflowInsertStepIds] ="
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+            "score": 0.7283,
+            "reason": "hybrid match: function renderHooks",
+            "lines": {
+              "start": 60,
+              "end": 133
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx:function:renderHooks:60-133",
+              "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+              "kind": "function",
+              "name": "renderHooks",
+              "symbol_path": "renderHooks",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 60,
+                "end": 133
+              },
+              "content_hash": "1f56202b692708c546f1e23a40f4aa75334530f1dc5b7aab4bca412cf64d6eb3",
+              "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+            "score": 0.7261,
+            "reason": "hybrid match: function renderUseStartDialerCall",
+            "lines": {
+              "start": 58,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx:function:renderUseStartDialerCall:58-90",
+              "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+              "kind": "function",
+              "name": "renderUseStartDialerCall",
+              "symbol_path": "renderUseStartDialerCall",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 58,
+                "end": 90
+              },
+              "content_hash": "a3a8412bf3b3c4b1e621254daecc46a77846dd167568d99cd29231cbfdedba44",
+              "preview": "const renderUseStartDialerCall = () => renderHook(() => useStartDialerCall(), { wrapper: ({ children }: { children: ReactNode }) => ("
+            }
+          },
+          {
+            "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+            "score": 0.7253,
+            "reason": "hybrid match: function defineManifestTests",
+            "lines": {
+              "start": 8,
+              "end": 58
+            },
+            "target": {
+              "key": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:8-58",
+              "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+              "kind": "function",
+              "name": "defineManifestTests",
+              "symbol_path": "defineManifestTests",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 58
+              },
+              "content_hash": "5d8b363ed286054495e4d20708d2351f058a0c93f214854a0f618e6a079d5c1f",
+              "preview": "export const defineManifestTests = (appPath: string): void => { describe('manifest', () => { it('should have generated manifest.json', async () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+            "score": 0.7241,
+            "reason": "hybrid match: function defineManifestTests",
+            "lines": {
+              "start": 7,
+              "end": 52
+            },
+            "target": {
+              "key": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:7-52",
+              "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+              "kind": "function",
+              "name": "defineManifestTests",
+              "symbol_path": "defineManifestTests",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 52
+              },
+              "content_hash": "154c118cda1a0246a418943012743c2493af1ab900acc5778e1740694c43a99d",
+              "preview": "export const defineManifestTests = (appPath: string): void => { const manifestOutputPath = join(appPath, '.twenty/output/manifest.json'); describe('manifest', () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+            "score": 0.7225,
+            "reason": "hybrid match: class TaskPostQueryHookService",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts:class:TaskPostQueryHookService:14-14",
+              "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+              "kind": "class",
+              "name": "TaskPostQueryHookService",
+              "symbol_path": "TaskPostQueryHookService",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "695a948941a05f76b24cbddb851f14c8890fb6d30ff14ac4e636e310501cc225",
+              "preview": "export class TaskPostQueryHookService {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15440,
+          "total_chunks": 75344,
+          "last_indexed": "2026-06-11T06:53:46.916Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "9340582e-7f2c-4993-9cdb-fe830f77ca8a",
+      "occurred_at": "2026-06-11T06:55:16.798Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/test-task-hook-workflow-contract/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "fe390dd7-22c6-43a6-8847-33d3c2c1ecce",
+      "occurred_at": "2026-06-11T06:55:23.549Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "OS task hooks manifest resolver task skill workflow task-start tests hooks guidance",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/os/scripts/task-start.js",
+            "score": 0.9936,
+            "reason": "hybrid match: function writeStdout",
+            "lines": {
+              "start": 43,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/os/scripts/task-start.js:function:writeStdout:43-45",
+              "path": "packages/os/scripts/task-start.js",
+              "kind": "function",
+              "name": "writeStdout",
+              "symbol_path": "writeStdout",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 43,
+                "end": 45
+              },
+              "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+              "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-start.js",
+            "score": 0.9136,
+            "reason": "hybrid match: function writeStdout",
+            "lines": {
+              "start": 43,
+              "end": 45
+            },
+            "target": {
+              "key": "packages/workspace/scripts/task-start.js:function:writeStdout:43-45",
+              "path": "packages/workspace/scripts/task-start.js",
+              "kind": "function",
+              "name": "writeStdout",
+              "symbol_path": "writeStdout",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 43,
+                "end": 45
+              },
+              "content_hash": "de1b5378f50a7f20aa5f39053662516ba0cfb06ccd06b23348e69cbc1c426f7e",
+              "preview": "function writeStdout(value = '') { process.stdout.write(`${value}\\n`); }"
+            }
+          },
+          {
+            "path": "packages/os/hooks/task/guidance.js",
+            "score": 0.8638,
+            "reason": "hybrid match: function getTaskHookGuidance",
+            "lines": {
+              "start": 18,
+              "end": 37
+            },
+            "target": {
+              "key": "packages/os/hooks/task/guidance.js:function:getTaskHookGuidance:18-37",
+              "path": "packages/os/hooks/task/guidance.js",
+              "kind": "function",
+              "name": "getTaskHookGuidance",
+              "symbol_path": "getTaskHookGuidance",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 18,
+                "end": 37
+              },
+              "content_hash": "87ca9c3612acaf060a1706e3dfd3bad2624c769e8e7a9f217c38f3009080e41a",
+              "preview": "function getTaskHookGuidance(stage, options = {}) { if (!VALID_STAGES.has(stage)) { throw new Error(`unknown task hook stage: ${stage}`);"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 0.7348,
+            "reason": "hybrid match: class AuthResolver",
+            "lines": {
+              "start": 104,
+              "end": 104
+            },
+            "target": {
+              "key": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts:class:AuthResolver:104-104",
+              "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+              "kind": "class",
+              "name": "AuthResolver",
+              "symbol_path": "AuthResolver",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 104,
+                "end": 104
+              },
+              "content_hash": "4da645ec644142d048ec41877ed1e2375a0c31a6ffc82348c763db1647453593",
+              "preview": "export class AuthResolver {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+            "score": 0.7293,
+            "reason": "hybrid match: function useStartNodeCreation",
+            "lines": {
+              "start": 15,
+              "end": 92
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts:function:useStartNodeCreation:15-92",
+              "path": "packages/twenty-front/src/modules/workflow/workflow-diagram/hooks/useStartNodeCreation.ts",
+              "kind": "function",
+              "name": "useStartNodeCreation",
+              "symbol_path": "useStartNodeCreation",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 15,
+                "end": 92
+              },
+              "content_hash": "e97b7e14bd34786665c7dbc94000da5525ffbfc20ec6991aa0ca85e6b36e8a4b",
+              "preview": "export const useStartNodeCreation = () => { const { isInRightDrawer } = useContext(ActionMenuContext); const [workflowInsertStepIds, setWorkflowInsertStepIds] ="
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+            "score": 0.7283,
+            "reason": "hybrid match: function renderHooks",
+            "lines": {
+              "start": 60,
+              "end": 133
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx:function:renderHooks:60-133",
+              "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+              "kind": "function",
+              "name": "renderHooks",
+              "symbol_path": "renderHooks",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 60,
+                "end": 133
+              },
+              "content_hash": "1f56202b692708c546f1e23a40f4aa75334530f1dc5b7aab4bca412cf64d6eb3",
+              "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+            "score": 0.7261,
+            "reason": "hybrid match: function renderUseStartDialerCall",
+            "lines": {
+              "start": 58,
+              "end": 90
+            },
+            "target": {
+              "key": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx:function:renderUseStartDialerCall:58-90",
+              "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useStartDialerCall.test.tsx",
+              "kind": "function",
+              "name": "renderUseStartDialerCall",
+              "symbol_path": "renderUseStartDialerCall",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 58,
+                "end": 90
+              },
+              "content_hash": "a3a8412bf3b3c4b1e621254daecc46a77846dd167568d99cd29231cbfdedba44",
+              "preview": "const renderUseStartDialerCall = () => renderHook(() => useStartDialerCall(), { wrapper: ({ children }: { children: ReactNode }) => ("
+            }
+          },
+          {
+            "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+            "score": 0.7253,
+            "reason": "hybrid match: function defineManifestTests",
+            "lines": {
+              "start": 8,
+              "end": 58
+            },
+            "target": {
+              "key": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:8-58",
+              "path": "packages/twenty-sdk/src/cli/__tests__/apps/root-app/__integration__/app-dev/tests/manifest.tests.ts",
+              "kind": "function",
+              "name": "defineManifestTests",
+              "symbol_path": "defineManifestTests",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 8,
+                "end": 58
+              },
+              "content_hash": "5d8b363ed286054495e4d20708d2351f058a0c93f214854a0f618e6a079d5c1f",
+              "preview": "export const defineManifestTests = (appPath: string): void => { describe('manifest', () => { it('should have generated manifest.json', async () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+            "score": 0.7241,
+            "reason": "hybrid match: function defineManifestTests",
+            "lines": {
+              "start": 7,
+              "end": 52
+            },
+            "target": {
+              "key": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts:function:defineManifestTests:7-52",
+              "path": "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+              "kind": "function",
+              "name": "defineManifestTests",
+              "symbol_path": "defineManifestTests",
+              "node_type": "arrow_function",
+              "parent_name": null,
+              "lines": {
+                "start": 7,
+                "end": 52
+              },
+              "content_hash": "154c118cda1a0246a418943012743c2493af1ab900acc5778e1740694c43a99d",
+              "preview": "export const defineManifestTests = (appPath: string): void => { const manifestOutputPath = join(appPath, '.twenty/output/manifest.json'); describe('manifest', () => {"
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+            "score": 0.7225,
+            "reason": "hybrid match: class TaskPostQueryHookService",
+            "lines": {
+              "start": 14,
+              "end": 14
+            },
+            "target": {
+              "key": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts:class:TaskPostQueryHookService:14-14",
+              "path": "packages/twenty-server/src/modules/task/query-hooks/task-post-query-hook.service.ts",
+              "kind": "class",
+              "name": "TaskPostQueryHookService",
+              "symbol_path": "TaskPostQueryHookService",
+              "node_type": "class_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 14,
+                "end": 14
+              },
+              "content_hash": "695a948941a05f76b24cbddb851f14c8890fb6d30ff14ac4e636e310501cc225",
+              "preview": "export class TaskPostQueryHookService {"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 15440,
+          "total_chunks": 75344,
+          "last_indexed": "2026-06-11T06:53:46.916Z",
+          "last_full_index": "2026-05-28T22:34:26.578Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+          "embedding_dimensions": 2560,
+          "files_indexed": 16,
+          "chunks_embedded": 319
+        }
+      }
+    },
+    {
+      "id": "a501889c-fd12-4be6-a2a0-30c498023176",
+      "occurred_at": "2026-06-11T06:56:04.535Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "6f6c294f-7816-4ceb-9ac5-1bf1fdf48aaa",
+      "occurred_at": "2026-06-11T06:56:04.875Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-hook.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "fd26975a-3464-415a-b89a-1113d5b19b76",
+      "occurred_at": "2026-06-11T06:56:05.197Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "75144fb7-f916-499c-833a-610c5219164a",
+      "occurred_at": "2026-06-11T06:56:05.530Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "74a1f8b1-ed0d-43a1-9659-6625be26a429",
+      "occurred_at": "2026-06-11T06:56:05.879Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "5b1ae156-339c-431e-967a-79712c405147",
+      "occurred_at": "2026-06-11T06:56:06.225Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "899e707f-4747-45bb-8429-023649aa7a93",
+      "occurred_at": "2026-06-11T06:56:39.139Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "aced156c-75d0-4ef0-8415-847665fc49c0",
+      "occurred_at": "2026-06-11T06:56:54.058Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "ba834ba5-a091-4074-83da-ea5f91d6ea38",
+      "occurred_at": "2026-06-11T06:57:03.249Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "d8453b52-b194-44af-bc79-c4ed8e7872b0",
+      "occurred_at": "2026-06-11T06:58:52.354Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "21426315-4e77-49e4-a535-7bd94799fb9d",
+      "occurred_at": "2026-06-11T06:59:04.197Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    },
+    {
+      "id": "e2783659-ac7c-4378-b424-e37527905a55",
+      "occurred_at": "2026-06-11T06:59:04.786Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/test-task-hook-workflow-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/test-task-hook-workflow-contract"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T06:59:04.846Z"
+}
