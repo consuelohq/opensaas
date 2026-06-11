@@ -35,6 +35,7 @@ const {
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
+const { getTaskHookGuidance, renderTaskHookGuidance } = require('../hooks/task/guidance.js');
 
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
@@ -547,14 +548,16 @@ async function main() {
       args.json,
     );
 
-    // guard 4: print next steps
+    // guard 4: emit reusable task hook guidance for non-JSON callers
     if (!args.json) {
+      const guidance = getTaskHookGuidance('after-task-start', {
+        area,
+        taskSession: taskSessionMeta.taskSession,
+        worktreePath,
+      });
       writeStderr('');
-      writeStderr('next steps:');
-      writeStderr(`  cd ${worktreePath}`);
-      writeStderr('  # make your changes');
-      writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
-      writeStderr('  bun run task:pr');
+      writeStderr('task hook guidance:');
+      writeStderr(renderTaskHookGuidance(guidance).trimEnd());
     }
 }
 
@@ -562,3 +565,4 @@ main().catch((error) => {
   writeStderr(error instanceof Error ? error.message : 'unknown error');
   process.exit(1);
 });
+

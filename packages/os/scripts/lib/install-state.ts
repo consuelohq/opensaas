@@ -9,6 +9,7 @@ import { executeCall, getSteering } from '../os';
 import { getCapabilityHealth, isCapabilitySetHealthy } from './capabilities';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { materializeSites } from './sites';
+import { createGatewaySecurityConfig } from './security-gateway';
 import { validateBundledSkills } from './skills';
 
 export type OsMode = 'local' | 'cloud';
@@ -42,6 +43,19 @@ export type OsConfig = {
   port: number;
   artifactStorage: 'local';
   selectedSkills?: string[];
+  security?: {
+    auth: {
+      kind: 'consuelo-generated';
+      status: 'configured';
+      path: string;
+      tokenIssuer: string;
+      signingKeyId: string;
+    };
+    gateway: {
+      workspaceHost: string;
+      publicRoutes: string[];
+    };
+  };
   agents: Array<{
     name: AgentName;
     homePath: string;
@@ -113,8 +127,14 @@ const REQUIRED_DIRS = [
   'runs',
   'cache',
   'runtime',
+  'security',
   'bin',
   'tmp',
+] as const;
+
+const REQUIRED_GENERATED_SECURITY_FILES = [
+  'security/generated/auth.json',
+  'security/generated/Caddyfile',
 ] as const;
 const DEFAULT_PORT = 8850;
 
@@ -964,6 +984,55 @@ export function provisionLocalOs(
     }
   }
 
+  const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
+  config.port = gatewayPort;
+  if (!dryRun) {
+    const gatewayConfig = createGatewaySecurityConfig({
+      home,
+      workspaceId: 'local-consuelo-os',
+      workspaceSlug: 'local',
+      workspaceHost: 'local.consuelohq.com',
+      upstreamPort: gatewayPort,
+    });
+    config.security = {
+      auth: {
+        kind: 'consuelo-generated',
+        status: 'configured',
+        path: gatewayConfig.generatedAuthPath,
+        tokenIssuer: gatewayConfig.tokenIssuer,
+        signingKeyId: gatewayConfig.signingKeyId,
+      },
+      gateway: {
+        workspaceHost: gatewayConfig.workspaceHost,
+        publicRoutes: [...gatewayConfig.publicRoutes],
+      },
+    };
+  }
+  actions.push({
+    type: 'create_dir',
+    path: path.join(home, 'security', 'generated'),
+    status: dryRun ? 'planned' : 'created',
+    message: 'generated security directory configured',
+  });
+  actions.push({
+    type: 'create_dir',
+    path: path.join(home, 'security', 'overrides'),
+    status: dryRun ? 'planned' : 'created',
+    message: 'security overrides directory configured',
+  });
+  actions.push({
+    type: 'create_file',
+    path: path.join(home, 'security', 'generated', 'auth.json'),
+    status: dryRun ? 'planned' : 'created',
+    message: 'generated Consuelo auth config written',
+  });
+  actions.push({
+    type: 'create_file',
+    path: path.join(home, 'security', 'generated', 'Caddyfile'),
+    status: dryRun ? 'planned' : 'created',
+    message: 'generated Caddy gateway config written',
+  });
+
   actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
   config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
@@ -1009,6 +1078,17 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     checks.push({
       name: path.basename(requiredPath) || requiredPath,
       status: fs.existsSync(requiredPath) ? 'connected' : 'not_configured',
+      message: fs.existsSync(requiredPath)
+        ? `${requiredPath} exists`
+        : `${requiredPath} is missing`,
+    });
+  }
+
+  for (const requiredFile of REQUIRED_GENERATED_SECURITY_FILES) {
+    const requiredPath = path.join(resolvedHome, requiredFile);
+    checks.push({
+      name: `gateway:${path.basename(requiredPath)}`,
+      status: fs.existsSync(requiredPath) ? 'connected' : 'unhealthy',
       message: fs.existsSync(requiredPath)
         ? `${requiredPath} exists`
         : `${requiredPath} is missing`,
@@ -1112,3 +1192,5 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
+
+

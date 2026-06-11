@@ -77,6 +77,7 @@
     "uninstall:system-daemons:dry-run": "bash ./scripts/uninstall-system-daemons.sh --dry-run",
     "get-raw-steering": "bun ./scripts/os.ts get-raw-steering",
     "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'",
+    "task:hook": "bun ./scripts/task-hook.js",
     "operator": "bun scripts/operator.ts",
     "doctor:watch": "bun ./scripts/doctor-watch.ts"
   },

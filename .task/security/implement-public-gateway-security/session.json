@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_47b776f7f1c4",
+  "tmuxSession": "opensaas-security-implement-public-gateway-security-47b776f7",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/implement-public-gateway-security",
+  "branch": "task/security/implement-public-gateway-security",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-public-gateway-security",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-public-gateway-security",
+  "prNumber": 894,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/894",
+  "createdAt": "2026-06-09T22:37:32.147Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-public-gateway-security/.task/security/implement-public-gateway-security/session.json"
+}

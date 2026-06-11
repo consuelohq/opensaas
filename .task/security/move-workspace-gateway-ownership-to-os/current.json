@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/move-workspace-gateway-ownership-to-os",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 936,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/936",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/936",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/936/move-workspace-gateway-ownership-to-os",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/936",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/936/move-workspace-gateway-ownership-to-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-move-workspace-gateway-ownership-to-os",
+  "taskSession": "tsk_4675db8f864a",
+  "tmuxSession": "opensaas-security-move-workspace-gateway-ownership-to-os-4675db8f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-move-workspace-gateway-ownership-to-os/.task/security/move-workspace-gateway-ownership-to-os/session.json",
+  "createdAt": "2026-06-10T06:37:12.637Z"
+}

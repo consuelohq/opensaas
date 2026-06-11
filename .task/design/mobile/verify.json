@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/mobile",
+  "base": "origin/task/design/mobile",
+  "headSha": "0b18b79cb920755a0d3753413d6485403528e36b",
+  "changeHash": "3305f4a59e0cd6b939eaa24a013391bdee4e149fcc2bfa5c4593722b8bde0454",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T08:35:53.128Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/mobile/current.json",
+        ".task/design/mobile/evidence-log.json",
+        ".task/design/mobile/read-log.json",
+        ".task/design/mobile/session.json",
+        ".task/design/mobile/workpad.md",
+        ".task/tasks/design/mobile.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
