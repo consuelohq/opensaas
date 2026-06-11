@@ -54,25 +54,37 @@ B. Fixed: artifact render/publish are now first-class OS commands and scripts. T
 
 ## files changed
 
-- none yet
+- `package.json`
+- `packages/os/package.json`
 
 ## workspace-owned: files changed
 
-- none yet
+- `package.json`
+- `packages/os/package.json`
 
 ## workspace-owned: activity log
 
 - 2026-06-11 05:21:36 fs.write: `.task/os/wire-operator-prompts-and-artifact-commands/workpad.md`
+- 2026-06-11 05:52:34 fs.patch: `package.json`
+- 2026-06-11 05:52:59 fs.patch: `packages/os/package.json`
+- 2026-06-11 05:56:13 fs.trash: `.task/os/wire-operator-prompts-and-artifact-commands/rendered`
 
 ## workspace-owned: validation evidence
 
 - 2026-06-11 05:21:54 `verify`: passed — OK
+- 2026-06-11 05:57:53 `review.run`: passed — OK
+- 2026-06-11 05:58:08 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/wire-operator-prompts-and-artifact-commands/artifact-render-smoke.json`, `.task/os/wire-operator-prompts-and-artifact-commands/current.json`, `.task/os/wire-operator-prompts-and-artifact-commands/evidence-log.json`, `.task/os/wire-operator-prompts-and-artifact-commands/read-log.json`, `.task/os/wire-operator-prompts-and-artifact-commands/session.json`, `.task/os/wire-operator-prompts-and-artifact-commands/workpad.md`, `.task/tasks/os/wire-operator-prompts-and-artifact-commands.json`, `package.json`, `packages/consuelo-design/package.json`, `packages/os/SCRIPTS.md`, `packages/os/operator/README.md`, `packages/os/operator/operator.ts`, `packages/os/operator/prompts/review.md`, `packages/os/package.json`, `packages/os/scripts/artifact-render.ts`, `packages/os/scripts/artifact-validate.ts`, `packages/os/scripts/lib/install-state.ts`, `packages/os/scripts/operator.ts`, `packages/os/scripts/os.ts`, `packages/os/skills/sites/SKILL.md`, `packages/os/skills/teach/SKILL.md`, `packages/os/tests/fixtures/skills/teach-workspace.SKILL.md`, `packages/os/tests/install-state.test.ts`, `packages/os/tests/sites-cli.test.ts`
+- changed files: `.task/os/wire-operator-prompts-and-artifact-commands/evidence-log.json`, `.task/os/wire-operator-prompts-and-artifact-commands/read-log.json`, `.task/os/wire-operator-prompts-and-artifact-commands/workpad.md`, `operator/README.md`, `operator/operator.ts`, `operator/prompts/review.md`, `package.json`, `packages/os/package.json`, `packages/os/scripts/operator.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## workspace-owned: files read
+
+- `package.json`
+- `packages/os/package.json`

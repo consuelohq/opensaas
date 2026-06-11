@@ -299,7 +299,7 @@
     "docs:generate-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts",
     "docs:check-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts --check",
     "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts",
-    "operator": "bun packages/os/scripts/operator.ts",
+    "operator": "bun packages/os/operator/operator.ts",
     "artifact:validate": "bun run --cwd packages/os artifact:validate --"
   },
   "workspaces": {
