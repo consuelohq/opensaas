@@ -191,13 +191,13 @@ test('keeps launcher routes local and theme-aware', () => {
 test('keeps launcher compact but tappable on phone and tablet viewports', () => {
   for (const marker of [
     '@media (max-width: 1024px)',
-    'font-size: clamp(10px, 2.55vw, 12.4px)',
+    'font-size: clamp(10.5px, 2.68vw, 13px)',
     'main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); }',
-    '.block { margin: 23px 0; }',
-    '.rule { margin: 23px 0; }',
-    'li { margin: 2.1px 0; }',
+    '.block { margin: 24px 0; }',
+    '.rule { margin: 24px 0; }',
+    'li { margin: 2.2px 0; }',
     '@media (max-width: 430px)',
-    'font-size: clamp(9.6px, 2.35vw, 11.2px)',
+    'font-size: clamp(10.1px, 2.47vw, 11.8px)',
     'li, .blog-item { white-space: nowrap; }',
   ]) {
     expect(source).toContain(marker);
