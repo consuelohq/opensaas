@@ -1,5 +1,6 @@
 {
   "files": [
+    ".task/os/wire-operator-prompts-and-artifact-commands/workpad.md",
     "operator/operator.ts",
     "operator/prompts/review.md",
     "package.json",
@@ -13,5 +14,5 @@
     "packages/os/tests/install-state.test.ts",
     "packages/os/tests/sites-cli.test.ts"
   ],
-  "updatedAt": "2026-06-11T05:55:51.674Z"
+  "updatedAt": "2026-06-11T06:50:08.980Z"
 }
