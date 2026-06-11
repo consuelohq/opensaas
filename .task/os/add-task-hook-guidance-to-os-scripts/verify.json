@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-task-hook-guidance-to-os-scripts",
+  "base": "origin/main",
+  "headSha": "830d52a932bdfa7aea3e8c4370899b92980fc0ac",
+  "changeHash": "19a7090fdd3c0ece1ddb959916205ee23681a7a0115eb03942466ad3d87eb394",
+  "changedFiles": [
+    "packages/os/hooks/README.md",
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/package.json",
+    "packages/os/scripts/task-hook.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hooks.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T05:21:43.650Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-task-hook-guidance-to-os-scripts/current.json",
+        ".task/os/add-task-hook-guidance-to-os-scripts/evidence-log.json",
+        ".task/os/add-task-hook-guidance-to-os-scripts/read-log.json",
+        ".task/os/add-task-hook-guidance-to-os-scripts/session.json",
+        ".task/os/add-task-hook-guidance-to-os-scripts/workpad.md",
+        ".task/tasks/os/add-task-hook-guidance-to-os-scripts.json",
+        "packages/os/hooks/README.md",
+        "packages/os/hooks/task/guidance.js",
+        "packages/os/package.json",
+        "packages/os/scripts/task-hook.js",
+        "packages/os/scripts/task-start.js",
+        "packages/os/tests/task-hooks.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+  "events": [
+    {
+      "id": "e4a4dd40-d3f7-4059-89ec-8bc8aecd718f",
+      "occurred_at": "2026-06-11T05:15:16.756Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/add-task-hook-guidance-to-os-scripts/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "ed5429e8-18d8-4977-9c14-90ae0e900c40",
+      "occurred_at": "2026-06-11T05:15:56.830Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "b084bb74-3dd6-4dac-a27b-28b7a694e6d0",
+      "occurred_at": "2026-06-11T05:15:57.145Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "ccd81335-f21b-4b66-9fca-4056887223f9",
+      "occurred_at": "2026-06-11T05:16:02.460Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "809b9c3b-0e60-4707-8283-186209d0b2d3",
+      "occurred_at": "2026-06-11T05:16:12.810Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "c7e8211f-eb9e-45a6-a441-3abad6394aca",
+      "occurred_at": "2026-06-11T05:16:17.457Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "6b3a7cb1-347b-48c0-8686-8b734873d42c",
+      "occurred_at": "2026-06-11T05:16:38.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "0c35ba73-d73a-469d-8c42-dbbb38f8e606",
+      "occurred_at": "2026-06-11T05:16:45.699Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "a6b0c849-bfcf-47f3-ae2a-9cae55fb3b4b",
+      "occurred_at": "2026-06-11T05:16:49.792Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "5accc34b-ab8a-4197-91c5-31b37e4ce8a9",
+      "occurred_at": "2026-06-11T05:16:54.699Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/task/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "b6bcbd60-3172-4dd3-9f8a-691bfc53e12c",
+      "occurred_at": "2026-06-11T05:17:03.399Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "18437337-4d20-4e7a-be0b-4e13dcb1ee4b",
+      "occurred_at": "2026-06-11T05:19:22.346Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "62d3ea01-9f7b-4ec6-aab5-1a267a66145b",
+      "occurred_at": "2026-06-11T05:19:50.948Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    },
+    {
+      "id": "40061537-0156-412b-b60e-d7d92bc69161",
+      "occurred_at": "2026-06-11T05:20:06.403Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-task-hook-guidance-to-os-scripts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-task-hook-guidance-to-os-scripts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T05:20:06.456Z"
+}

@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/os/add-task-hook-guidance-to-os-scripts/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/task-start.js",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/task-hooks.test.ts",
+    "packages/os/tests/task-selection.test.js",
+    "packages/workspace/hooks/README.md",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/package.json"
+  ],
+  "updatedAt": "2026-06-11T05:20:06.350Z"
+}
