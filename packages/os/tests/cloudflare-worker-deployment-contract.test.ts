@@ -67,11 +67,13 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
   it('should ship a D1 migration for the edge route registry tables and indexes', () => {
     const migration = readRequiredFile(d1MigrationPath);
 
-    expect(migration).toMatch(/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+workspace_hostname_routes/i);
+    expect(migration).toMatch(/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+workspace_route_registry/i);
     expect(migration).toMatch(/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+workspace_connectors/i);
-    expect(migration).toMatch(/hostname\s+TEXT\s+NOT\s+NULL/i);
+    expect(migration).toMatch(/hostname\s+TEXT\s+PRIMARY\s+KEY/i);
     expect(migration).toMatch(/workspace_id\s+TEXT\s+NOT\s+NULL/i);
-    expect(migration).toMatch(/connector_status\s+TEXT\s+NOT\s+NULL/i);
+    expect(migration).toMatch(/record_json\s+TEXT\s+NOT\s+NULL/i);
+    expect(migration).toMatch(/FOREIGN\s+KEY\s*\(connector_id\)\s+REFERENCES\s+workspace_connectors\s*\(connector_id\)/i);
+    expect(migration).not.toMatch(/connector_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+['"]connected['"]/i);
     expect(migration).toMatch(/revoked_at\s+TEXT/i);
     expect(migration).toMatch(/CREATE\s+UNIQUE\s+INDEX/i);
     expect(migration).not.toMatch(/tunnel_credential|api_token|signing_secret/i);
@@ -87,6 +89,6 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy:dry-run')).toMatch(/wrangler\s+deploy.*--dry-run/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy')).toMatch(/wrangler\s+deploy/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:migrate')).toMatch(/wrangler\s+d1\s+migrations\s+apply/);
-    expect(requireScript(scripts, 'smoke:workspace-edge')).toMatch(/workspace-edge/);
+    expect(requireScript(scripts, 'smoke:workspace-edge')).toMatch(/scripts\/smoke-workspace-edge\.ts/);
   });
 });

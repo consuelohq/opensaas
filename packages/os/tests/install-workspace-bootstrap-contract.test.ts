@@ -58,6 +58,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         workspaceHost: 'kokayi.consuelohq.com',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
+        cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
       },
     });
 
@@ -87,6 +88,11 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     });
     expect(JSON.stringify(config)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
     expect(JSON.stringify(auth)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
+    expect(fs.existsSync(join(home, 'sites', 'index.html'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'pages', 'index.html'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'office', 'data', 'artifacts.json'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'traces', 'index.html'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'diffs', 'index.html'))).toBe(true);
   });
 
   it('should keep connector bootstrap secrets out of config, auth, and Caddy files', async () => {
@@ -119,7 +125,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
   it('should plan a cloudflared launchd service and gateway auth smoke command when connector bootstrap is present', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-'));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'));
 
     const result = provisionLocalOs({
       home,
@@ -134,6 +140,16 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       },
     });
 
+    const plistPath = join(
+      home,
+      'security',
+      'generated',
+      'com.consuelo.os.cloudflared.plist',
+    );
+    const plist = fs.readFileSync(plistPath, 'utf8');
+
+    expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
+    expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

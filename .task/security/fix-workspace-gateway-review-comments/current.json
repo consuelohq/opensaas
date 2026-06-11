@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-workspace-gateway-review-comments",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 979,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/979",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/979",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/979/fix-workspace-gateway-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/979",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/979/fix-workspace-gateway-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-gateway-review-comments",
+  "taskSession": "tsk_69d852787d38",
+  "tmuxSession": "opensaas-security-fix-workspace-gateway-review-comments-69d85278",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-gateway-review-comments/.task/security/fix-workspace-gateway-review-comments/session.json",
+  "createdAt": "2026-06-11T23:21:02.319Z"
+}

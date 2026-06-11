@@ -68,6 +68,9 @@ export type WorkspaceRouteD1Resolution =
       status: 404 | 503;
       errorCode: string;
       auditEvent: 'workspace.hostname.route.denied';
+      diagnostic?: {
+        message: string;
+      };
     };
 
 type StoredWorkspaceRouteD1Record = WorkspaceRouteD1RecordInput & {
@@ -189,11 +192,13 @@ const matchesRoutePrefix = (path: string, pathPrefix: string): boolean =>
 const denied = (input: {
   status: 404 | 503;
   errorCode: string;
+  diagnostic?: { message: string };
 }): WorkspaceRouteD1Resolution => ({
   allowed: false,
   status: input.status,
   errorCode: input.errorCode,
   auditEvent: 'workspace.hostname.route.denied',
+  ...(input.diagnostic ? { diagnostic: input.diagnostic } : {}),
 });
 
 export const createInMemoryWorkspaceRouteD1 = (): WorkspaceRouteD1Database => {
@@ -299,10 +304,11 @@ export const resolveWorkspaceRouteFromD1 = async (
       auditEvent: 'workspace.hostname.route.allowed',
       target: cloneTarget(route.target),
     };
-  } catch {
+  } catch (error: unknown) {
     return denied({
       status: 503,
       errorCode: 'WORKSPACE_ROUTE_REGISTRY_UNAVAILABLE',
+      diagnostic: { message: getD1ErrorMessage(error) },
     });
   }
 };
@@ -363,7 +369,7 @@ export const createWorkspaceCloudflareD1RouteRegistry = (
     path: string;
     method: string;
   }): Promise<WorkspaceRouteD1Resolution> {
-    void input.method;
+    // NOTE: method is reserved for future method-scoped route policies.
     try {
       return await resolveWorkspaceRouteFromD1(db, {
         host: input.host,

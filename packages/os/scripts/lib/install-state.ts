@@ -325,28 +325,206 @@ export function createDefaultConfig(
 }
 
 
+type InstalledSitesPaths = {
+  sitesDir: string;
+  indexPath: string;
+  pagesDir: string;
+  pagesDataDir: string;
+  pagesRegistryPath: string;
+  pagesLeasesPath: string;
+  officeDir: string;
+  officeDataDir: string;
+  officeAssetsDir: string;
+  officeIndexPath: string;
+  officeDataPath: string;
+  tracesDir: string;
+  tracesIndexPath: string;
+  diffsDir: string;
+  diffsIndexPath: string;
+};
+
+type InstalledOfficeSiteData = {
+  version: 1;
+  generatedAt: string;
+  artifacts: unknown[];
+};
+
+function getInstalledSitesPaths(home: string): InstalledSitesPaths {
+  const sitesDir = path.join(home, 'sites');
+  const pagesDir = path.join(sitesDir, 'pages');
+  const pagesDataDir = path.join(sitesDir, '.data', 'pages');
+  const officeDir = path.join(sitesDir, 'office');
+  const officeDataDir = path.join(officeDir, 'data');
+  const officeAssetsDir = path.join(officeDir, 'assets');
+  const tracesDir = path.join(sitesDir, 'traces');
+  const diffsDir = path.join(sitesDir, 'diffs');
+
+  return {
+    sitesDir,
+    indexPath: path.join(sitesDir, 'index.html'),
+    pagesDir,
+    pagesDataDir,
+    pagesRegistryPath: path.join(pagesDataDir, 'registry.json'),
+    pagesLeasesPath: path.join(pagesDataDir, 'leases.json'),
+    officeDir,
+    officeDataDir,
+    officeAssetsDir,
+    officeIndexPath: path.join(officeDir, 'index.html'),
+    officeDataPath: path.join(officeDataDir, 'artifacts.json'),
+    tracesDir,
+    tracesIndexPath: path.join(tracesDir, 'index.html'),
+    diffsDir,
+    diffsIndexPath: path.join(diffsDir, 'index.html'),
+  };
+}
+
+function addProvisionDirectoryAction(
+  actions: ProvisionAction[],
+  dirPath: string,
+  dryRun: boolean,
+): void {
+  const exists = fs.existsSync(dirPath);
+  actions.push({
+    type: 'create_dir',
+    path: dirPath,
+    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
+    message: exists ? 'sites directory exists' : 'sites directory configured',
+  });
+  if (!dryRun) fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function addProvisionFileAction(
+  actions: ProvisionAction[],
+  filePath: string,
+  dryRun: boolean,
+  message: string,
+): void {
+  const exists = fs.existsSync(filePath);
+  actions.push({
+    type: 'create_file',
+    path: filePath,
+    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
+    message,
+  });
+}
+
+function buildInstalledSitesIndex(): string {
+  return [
+    '<!doctype html>',
+    '<html lang="en"><head><meta charset="utf-8"><title>Consuelo OS Sites</title></head>',
+    '<body><main><h1>Consuelo OS Sites</h1><nav>',
+    '<a href="/pages/">Pages</a><a href="/office/">Office</a>',
+    '<a href="/traces/">Traces</a><a href="/diffs/">Diffs</a>',
+    '</nav></main></body></html>',
+    '',
+  ].join('\n');
+}
+
+function buildInstalledPagesIndex(): string {
+  return [
+    '<!doctype html>',
+    '<html lang="en"><head><meta charset="utf-8"><title>Pages - Sites</title></head>',
+    '<body><main><h1>Pages</h1><p>No local Sites pages have been published yet.</p></main></body></html>',
+    '',
+  ].join('\n');
+}
+
+function buildInstalledOfficeIndex(data: InstalledOfficeSiteData): string {
+  return [
+    '<!doctype html>',
+    '<html lang="en"><head><meta charset="utf-8"><title>Office - Sites</title></head>',
+    `<body><main><h1>Office</h1><p>${data.artifacts.length} artifacts indexed.</p></main></body></html>`,
+    '',
+  ].join('\n');
+}
+
+function buildInstalledReservedSiteIndex(input: {
+  title: string;
+  description: string;
+}): string {
+  return [
+    '<!doctype html>',
+    `<html lang="en"><head><meta charset="utf-8"><title>${input.title} - Sites</title></head>`,
+    `<body><main><h1>${input.title}</h1><p>${input.description}</p></main></body></html>`,
+    '',
+  ].join('\n');
+}
+
 function materializeSites(input: {
   home: string;
   dbPath: string;
   dryRun: boolean;
 }): { actions: ProvisionAction[] } {
   void input.dbPath;
-  const sitesDir = path.join(input.home, 'sites');
-  const exists = fs.existsSync(sitesDir);
-  if (!input.dryRun && !exists) {
-    fs.mkdirSync(sitesDir, { recursive: true });
+  const paths = getInstalledSitesPaths(input.home);
+  const actions: ProvisionAction[] = [];
+
+  for (const dirPath of [
+    paths.sitesDir,
+    paths.pagesDir,
+    paths.pagesDataDir,
+    paths.officeDir,
+    paths.officeDataDir,
+    paths.officeAssetsDir,
+    paths.tracesDir,
+    paths.diffsDir,
+  ]) {
+    addProvisionDirectoryAction(actions, dirPath, input.dryRun);
   }
-  return {
-    actions: [
-      {
-        type: 'create_dir',
-        path: sitesDir,
-        status: exists ? 'preserved' : input.dryRun ? 'planned' : 'created',
-        message: 'sites directory configured',
-      },
-    ],
+
+  const officeData: InstalledOfficeSiteData = {
+    version: 1,
+    generatedAt: nowIso(),
+    artifacts: [],
   };
+  const registry = { version: 1, generatedAt: nowIso(), pages: {} };
+  const leases = { version: 1, generatedAt: nowIso(), leases: {} };
+  const files = [
+    { path: paths.indexPath, content: buildInstalledSitesIndex(), message: 'Sites index generated' },
+    { path: path.join(paths.pagesDir, 'index.html'), content: buildInstalledPagesIndex(), message: 'Pages site generated' },
+    { path: paths.pagesRegistryPath, content: `${JSON.stringify(registry, null, 2)}
+`, message: 'Pages registry generated' },
+    { path: paths.pagesLeasesPath, content: `${JSON.stringify(leases, null, 2)}
+`, message: 'Pages leases registry generated' },
+    { path: paths.officeDataPath, content: `${JSON.stringify(officeData, null, 2)}
+`, message: 'Office site artifact data generated' },
+    { path: paths.officeIndexPath, content: buildInstalledOfficeIndex(officeData), message: 'Office site generated' },
+    {
+      path: paths.tracesIndexPath,
+      content: buildInstalledReservedSiteIndex({
+        title: 'Traces',
+        description: 'Execution traces will show how Sites work was produced.',
+      }),
+      message: 'Traces site generated',
+    },
+    {
+      path: paths.diffsIndexPath,
+      content: buildInstalledReservedSiteIndex({
+        title: 'Diffs',
+        description: 'Diff pages will show generated changes and review context.',
+      }),
+      message: 'Diffs site generated',
+    },
+  ];
+
+  for (const file of files) {
+    addProvisionFileAction(actions, file.path, input.dryRun, file.message);
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(file.path), { recursive: true });
+      fs.writeFileSync(file.path, file.content, { mode: 0o600 });
+    }
+  }
+
+  return { actions };
 }
+
+const escapeXml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
 
 function renderCloudflaredLaunchdPlist(input: {
   label: string;
@@ -357,7 +535,7 @@ function renderCloudflaredLaunchdPlist(input: {
   standardErrorPath: string;
 }): string {
   const argumentXml = input.programArguments
-    .map((argument) => `    <string>${argument}</string>`)
+    .map((argument) => `    <string>${escapeXml(argument)}</string>`)
     .join('\n');
 
   return [
@@ -366,7 +544,7 @@ function renderCloudflaredLaunchdPlist(input: {
     '<plist version="1.0">',
     '<dict>',
     '  <key>Label</key>',
-    `  <string>${input.label}</string>`,
+    `  <string>${escapeXml(input.label)}</string>`,
     '  <key>ProgramArguments</key>',
     '  <array>',
     argumentXml,
@@ -376,9 +554,9 @@ function renderCloudflaredLaunchdPlist(input: {
     '  <key>RunAtLoad</key>',
     `  <${input.runAtLoad ? 'true' : 'false'}/>`,
     '  <key>StandardOutPath</key>',
-    `  <string>${input.standardOutPath}</string>`,
+    `  <string>${escapeXml(input.standardOutPath)}</string>`,
     '  <key>StandardErrorPath</key>',
-    `  <string>${input.standardErrorPath}</string>`,
+    `  <string>${escapeXml(input.standardErrorPath)}</string>`,
     '</dict>',
     '</plist>',
     '',
