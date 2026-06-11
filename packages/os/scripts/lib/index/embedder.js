@@ -1,35 +1,45 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execSync } = require('child_process');
 
-const { getEmbeddingConfig } = require('./embedding-config');
+const {
+  DEFAULT_API_MODEL,
+  PROVIDER_LOCAL,
+  PROVIDER_OPENROUTER,
+  getEmbeddingConfig,
+} = require('./embedding-config');
+const { requestGatewayEmbeddings } = require('./embedding-gateway');
 
 const EMBEDDING_CONFIG = getEmbeddingConfig();
 const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
 
-const DEFAULT_MODEL_PATH = path.join(os.homedir(), '.cache', 'qmd', 'models', 'Qwen3-Embedding-4B-Q8_0.gguf');
 const DOCUMENT_INSTRUCTION = 'Instruct: Represent this code for retrieval\nQuery: ';
 const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: ';
-
-// openrouter embedding API — same qwen3-embedding-4b model as local, zero CPU
-const EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
-const EMBEDDING_API_MODEL = EMBEDDING_CONFIG.apiModel;
-
-let _apiKey = null;
-function getApiKey() {
-  if (_apiKey) return _apiKey;
-  try {
-    _apiKey = execSync('security find-generic-password -a "$USER" -s "pi-proxy-openrouter-api-key" -w', { encoding: 'utf8' }).trim();
-    return _apiKey;
-  } catch { return null; }
-}
-
-const USE_API = process.env.WORKSPACE_EMBEDDING_API !== '0' && process.env.WORKSPACE_EMBEDDING_API !== 'false';
+const OPENROUTER_EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
+const EMBEDDING_API_MODEL = DEFAULT_API_MODEL;
+const MODEL_FILE_NAME = 'Qwen3-Embedding-4B-Q8_0.gguf';
 
 const embeddingContextsByPath = new Map();
 const embeddingContextsPromiseByPath = new Map();
 const embeddingContextCursorByPath = new Map();
+
+function expandHome(value) {
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
+  return value;
+}
+
+function getConsueloHome() {
+  return path.resolve(expandHome(process.env.CONSUELO_HOME || '~/.consuelo/os'));
+}
+
+function getDefaultModelPath() {
+  const configured = process.env.CONSUELO_EMBEDDING_MODEL_PATH || process.env.WORKSPACE_EMBEDDING_MODEL_PATH;
+  if (configured) return path.resolve(expandHome(configured));
+  return path.join(getConsueloHome(), 'models', MODEL_FILE_NAME);
+}
+
+const DEFAULT_MODEL_PATH = getDefaultModelPath();
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -61,12 +71,12 @@ function prepareVector(vector) {
   }
   throw new Error([
     `embedding dimension mismatch: expected ${VECTOR_DIMENSIONS}, got ${vector.length}`,
-    'Set WORKSPACE_EMBEDDING_DIMENSIONS to match the provider output, or explicitly enable truncation with WORKSPACE_EMBEDDING_TRUNCATE=1 for a benchmark.',
+    'Set CONSUELO_EMBEDDING_DIMENSIONS to match the provider output, or explicitly enable truncation with CONSUELO_EMBEDDING_TRUNCATE=1 for a benchmark.',
   ].join(' '));
 }
 
 function getEmbeddingContextCount() {
-  const parsed = Number.parseInt(process.env.WORKSPACE_EMBEDDING_CONTEXTS || '2', 10);
+  const parsed = Number.parseInt(process.env.CONSUELO_EMBEDDING_CONTEXTS || process.env.WORKSPACE_EMBEDDING_CONTEXTS || '2', 10);
   if (!Number.isFinite(parsed) || parsed < 1) return 1;
 
   return Math.min(parsed, 2);
@@ -79,13 +89,14 @@ async function createEmbeddingContexts(modelPath) {
 
   const { getLlama } = await import('node-llama-cpp');
   const llama = await getLlama();
+  const gpuLayers = process.env.CONSUELO_EMBEDDING_GPU_LAYERS || process.env.WORKSPACE_EMBEDDING_GPU_LAYERS;
   let model;
   model = await llama.loadModel({
     modelPath,
-    gpuLayers: process.env.WORKSPACE_EMBEDDING_GPU_LAYERS || 'max',
+    gpuLayers: gpuLayers || 'max',
     defaultContextFlashAttention: true,
   }).catch((error) => {
-    if (process.env.WORKSPACE_EMBEDDING_GPU_LAYERS) {
+    if (gpuLayers) {
       throw error;
     }
 
@@ -141,68 +152,67 @@ async function getEmbeddingContext(modelPath = DEFAULT_MODEL_PATH) {
   return context;
 }
 
+function getDirectOpenRouterApiKey() {
+  return process.env.CONSUELO_OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || null;
+}
+
 async function embedTexts(texts, options = {}) {
   try {
-    const apiKey = USE_API ? getApiKey() : null;
-    if (apiKey) {
-      return embedTextsApi(texts, apiKey, options);
+    const provider = options.provider || EMBEDDING_CONFIG.provider;
+    if (provider === PROVIDER_LOCAL) {
+      return Promise.all(texts.map((text) => embedTextLocal(text, options)));
     }
-    return Promise.all(texts.map((text) => embedTextLocal(text, options)));
+    if (provider === PROVIDER_OPENROUTER) {
+      const apiKey = getDirectOpenRouterApiKey();
+      if (!apiKey) {
+        throw new Error('direct OpenRouter embeddings require CONSUELO_OPENROUTER_API_KEY');
+      }
+      return embedTextsOpenRouter(texts, apiKey);
+    }
+
+    const vectors = await requestGatewayEmbeddings(texts, options, {
+      config: EMBEDDING_CONFIG,
+      installId: options.installId,
+      repoHash: options.repoHash,
+    });
+    return vectors.map(prepareVector);
   } catch (error /* unknown */) {
     throw new Error(`batch embedding failed: ${getErrorMessage(error)}`);
   }
 }
 
-async function embedTextsApi(texts, apiKey, options = {}) {
+async function embedTextsOpenRouter(texts, apiKey) {
   try {
     if (!Array.isArray(texts) || texts.length === 0) return [];
-    const response = await fetch(EMBEDDING_API_URL, {
+    const response = await fetch(OPENROUTER_EMBEDDING_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: texts }),
       signal: AbortSignal.timeout(60000),
     });
     if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`embedding API failed (${response.status}): ${err}`);
+      const details = await response.text();
+      throw new Error(`direct embedding provider failed (${response.status}): ${details}`);
     }
     const data = await response.json();
     const embeddings = data.data || [];
     if (embeddings.length !== texts.length) {
-      throw new Error(`embedding API returned ${embeddings.length} embeddings for ${texts.length} inputs`);
+      throw new Error(`direct embedding provider returned ${embeddings.length} embeddings for ${texts.length} inputs`);
     }
     return embeddings.map((item, index) => {
-      if (!item?.embedding) throw new Error(`embedding API returned no embedding for input ${index}`);
+      if (!item?.embedding) throw new Error(`direct embedding provider returned no embedding for input ${index}`);
       return prepareVector(new Float32Array(item.embedding));
     });
   } catch (error /* unknown */) {
-    throw new Error(`embedding API batch failed: ${getErrorMessage(error)}`);
+    throw new Error(`direct embedding batch failed: ${getErrorMessage(error)}`);
   }
 }
 
 async function embedText(text, options = {}) {
-  const apiKey = USE_API ? getApiKey() : null;
-  if (apiKey) {
-    return embedTextApi(text, apiKey, options);
-  }
-  return embedTextLocal(text, options);
-}
-
-async function embedTextApi(text, apiKey, options = {}) {
-  const response = await fetch(EMBEDDING_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: [text] }),
-    signal: AbortSignal.timeout(30000),
-  });
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`embedding API failed (${response.status}): ${err}`);
-  }
-  const data = await response.json();
-  const vector = data.data?.[0]?.embedding;
-  if (!vector) throw new Error('embedding API returned no embedding');
-  return prepareVector(new Float32Array(vector));
+  const vectors = await embedTexts([text], options);
+  const vector = vectors[0];
+  if (!vector) throw new Error('embedding provider returned no embedding');
+  return vector;
 }
 
 async function embedTextLocal(text, options = {}) {
@@ -212,7 +222,7 @@ async function embedTextLocal(text, options = {}) {
     const embedding = await context.getEmbeddingFor(`${prefix}${text}`);
     return prepareVector(embedding.vector);
   } catch (error /* unknown */) {
-    throw new Error(`embedding failed: ${getErrorMessage(error)}`);
+    throw new Error(`local embedding failed: ${getErrorMessage(error)}`);
   }
 }
 

@@ -6,8 +6,11 @@ const path = require('path');
 const { Database } = require('bun:sqlite');
 const sqliteVec = require('sqlite-vec');
 
-const VECTOR_DIMENSIONS = 1024;
-const EMBEDDING_MODEL = 'Qwen3-Embedding-4B';
+const { getEmbeddingConfig, getEmbeddingConfigId } = require('./embedding-config');
+
+const EMBEDDING_CONFIG = getEmbeddingConfig();
+const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
+const EMBEDDING_MODEL = getEmbeddingConfigId(EMBEDDING_CONFIG);
 
 function normalizePath(filePath) {
   return filePath.split(path.sep).join('/');
