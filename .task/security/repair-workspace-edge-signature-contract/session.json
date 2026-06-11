@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a17776e08f72",
+  "tmuxSession": "opensaas-security-repair-workspace-edge-signature-contract-a17776e0",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/repair-workspace-edge-signature-contract",
+  "branch": "task/security/repair-workspace-edge-signature-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-workspace-edge-signature-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-workspace-edge-signature-contract",
+  "prNumber": 954,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/954",
+  "createdAt": "2026-06-11T06:07:53.019Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-workspace-edge-signature-contract/.task/security/repair-workspace-edge-signature-contract/session.json"
+}
