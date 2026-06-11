@@ -348,3 +348,29 @@ export const revokeWorkspaceHostnameInD1 = async (
     throw createD1RegistryError('revocation', error);
   }
 };
+
+export const createWorkspaceCloudflareD1RouteRegistry = (
+  db: WorkspaceRouteD1Database,
+): {
+  resolve: (input: {
+    host: string;
+    path: string;
+    method: string;
+  }) => Promise<WorkspaceRouteD1Resolution>;
+} => ({
+  async resolve(input: {
+    host: string;
+    path: string;
+    method: string;
+  }): Promise<WorkspaceRouteD1Resolution> {
+    void input.method;
+    try {
+      return await resolveWorkspaceRouteFromD1(db, {
+        host: input.host,
+        path: input.path,
+      });
+    } catch (error: unknown) {
+      throw createD1RegistryError('route_resolution', error);
+    }
+  },
+});

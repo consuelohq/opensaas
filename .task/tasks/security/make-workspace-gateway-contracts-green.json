@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/make-workspace-gateway-contracts-green",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 976,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/976",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/976",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/976/make-workspace-gateway-contracts-green",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/976",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/976/make-workspace-gateway-contracts-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-workspace-gateway-contracts-green",
+  "taskSession": "tsk_4a7bc8a7c37b",
+  "tmuxSession": "opensaas-security-make-workspace-gateway-contracts-green-4a7bc8a7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-workspace-gateway-contracts-green/.task/security/make-workspace-gateway-contracts-green/session.json",
+  "createdAt": "2026-06-11T19:26:09.715Z"
+}
