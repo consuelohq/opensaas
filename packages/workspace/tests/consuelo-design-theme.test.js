@@ -183,8 +183,24 @@ test('keeps launcher routes local and theme-aware', () => {
   expect(source).toContain('white-space: nowrap');
   expect(source).toContain('class="blog-item"');
   expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-  expect(source).toContain('overflow-wrap: anywhere');
   expect(source).toContain('.md-label { color: #f2eee6; }');
   expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
+});
+
+test('keeps launcher compact but tappable on phone and tablet viewports', () => {
+  for (const marker of [
+    '@media (max-width: 1024px)',
+    'font-size: clamp(10px, 2.55vw, 12.4px)',
+    'main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); }',
+    '.block { margin: 23px 0; }',
+    '.rule { margin: 23px 0; }',
+    'li { margin: 2.1px 0; }',
+    '@media (max-width: 430px)',
+    'font-size: clamp(9.6px, 2.35vw, 11.2px)',
+    'li, .blog-item { white-space: nowrap; }',
+  ]) {
+    expect(source).toContain(marker);
+  }
+  expect(source).not.toContain('.blog-item { white-space: normal;');
 });
