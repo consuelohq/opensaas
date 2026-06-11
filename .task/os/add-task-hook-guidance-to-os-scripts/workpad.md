@@ -155,6 +155,7 @@ Green result:
 - 2026-06-11 05:21 review.run: passed with 0 issues in this change.
 - 2026-06-11 05:21 verify: passed publish-valid.
 - 2026-06-11 05:22:48 fs.write: `.task/os/add-task-hook-guidance-to-os-scripts/workpad.md`
+- 2026-06-11 05:24:52 fs.write: `packages/os/package.json`
 
 ---
 
@@ -166,3 +167,9 @@ bun run task:pr
 ```
 
 - 2026-06-11 05:22:48 write: `.task/os/add-task-hook-guidance-to-os-scripts/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/package.json`
+
+- 2026-06-11 05:24:52 write: `packages/os/package.json`

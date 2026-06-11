@@ -296,7 +296,8 @@
     "os:release-install": "bun packages/workspace/scripts/os-release-install.ts",
     "docs:generate-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts",
     "docs:check-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts --check",
-    "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts"
+    "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts",
+    "operator": "bun operator/operator.ts"
   },
   "workspaces": {
     "packages": [

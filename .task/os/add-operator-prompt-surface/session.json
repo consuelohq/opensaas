@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_778dc6b3fac7",
+  "tmuxSession": "opensaas-os-add-operator-prompt-surface-778dc6b3",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-operator-prompt-surface",
+  "branch": "task/os/add-operator-prompt-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-operator-prompt-surface",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-operator-prompt-surface",
+  "prNumber": 897,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/897",
+  "createdAt": "2026-06-09T23:21:16.127Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-operator-prompt-surface/.task/os/add-operator-prompt-surface/session.json"
+}
