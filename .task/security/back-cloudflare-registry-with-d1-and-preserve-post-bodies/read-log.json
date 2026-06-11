@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts"
+  ],
+  "updatedAt": "2026-06-11T07:31:29.330Z"
+}

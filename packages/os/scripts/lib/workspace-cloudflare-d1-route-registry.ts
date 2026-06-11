@@ -40,8 +40,16 @@ export type WorkspaceRouteD1RevocationInput = {
   reason: string;
 };
 
+export type WorkspaceRouteD1PreparedStatement = {
+  bind: (...values: unknown[]) => WorkspaceRouteD1PreparedStatement;
+  first: <T = unknown>(columnName?: string) => Promise<T | null>;
+  run: () => Promise<unknown>;
+};
+
 export type WorkspaceRouteD1Database = {
-  dumpHostnameRow: (hostname: string) => Promise<unknown>;
+  dumpHostnameRow?: (hostname: string) => Promise<unknown>;
+  exec?: (sql: string) => Promise<unknown>;
+  prepare?: (sql: string) => WorkspaceRouteD1PreparedStatement;
 };
 
 export type WorkspaceRouteD1Resolution =
@@ -95,6 +103,56 @@ const cloneRecord = (
   ...record,
   routes: record.routes.map(cloneRoute),
 });
+
+type WorkspaceRouteD1RecordRow = { record_json?: unknown };
+
+const createStoredRecord = (
+  input: WorkspaceRouteD1RecordInput,
+): StoredWorkspaceRouteD1Record => ({
+  ...input,
+  hostname: normalizeHostname(input.hostname),
+  workspaceSlug: input.workspaceSlug.trim().toLowerCase(),
+  baseDomain: normalizeBaseDomain(input.baseDomain),
+  routes: input.routes.map(cloneRoute),
+  updatedAt: new Date().toISOString(),
+});
+
+const getPreparedD1 = (db: WorkspaceRouteD1Database): WorkspaceRouteD1Database & {
+  prepare: (sql: string) => WorkspaceRouteD1PreparedStatement;
+} => {
+  if (typeof db.prepare !== 'function') {
+    throw new Error('workspace route D1 database must expose prepare');
+  }
+
+  return db as WorkspaceRouteD1Database & {
+    prepare: (sql: string) => WorkspaceRouteD1PreparedStatement;
+  };
+};
+
+const readCloudflareD1Record = (input: {
+  db: WorkspaceRouteD1Database;
+  hostname: string;
+}): Promise<StoredWorkspaceRouteD1Record | null> =>
+  getPreparedD1(input.db)
+    .prepare('SELECT record_json FROM workspace_route_registry WHERE hostname = ? LIMIT 1')
+    .bind(normalizeHostname(input.hostname))
+    .first<WorkspaceRouteD1RecordRow>()
+    .then((row) => {
+      if (!row || typeof row.record_json !== 'string') {
+        return null;
+      }
+
+      return cloneRecord(JSON.parse(row.record_json) as StoredWorkspaceRouteD1Record);
+    });
+
+const writeCloudflareD1Record = (input: {
+  db: WorkspaceRouteD1Database;
+  record: StoredWorkspaceRouteD1Record;
+}): Promise<unknown> =>
+  getPreparedD1(input.db)
+    .prepare('INSERT OR REPLACE INTO workspace_route_registry (hostname, record_json) VALUES (?, ?)')
+    .bind(input.record.hostname, JSON.stringify(input.record))
+    .run();
 
 const getState = (db: WorkspaceRouteD1Database): WorkspaceRouteD1State => {
   const state = states.get(db);
@@ -151,32 +209,43 @@ export const createInMemoryWorkspaceRouteD1 = (): WorkspaceRouteD1Database => {
 export const migrateWorkspaceRouteD1 = async (
   db: WorkspaceRouteD1Database,
 ): Promise<void> => {
-  const state = getState(db);
-  state.migrated = true;
+  const state = states.get(db);
+
+  if (state) {
+    state.migrated = true;
+    return;
+  }
+
+  const schema = [
+    'CREATE TABLE IF NOT EXISTS workspace_route_registry',
+    '(hostname TEXT PRIMARY KEY, record_json TEXT NOT NULL)',
+  ].join(' ');
+  await getPreparedD1(db).prepare(schema).run();
 };
 
 export const upsertWorkspaceHostnameInD1 = async (
   db: WorkspaceRouteD1Database,
   input: WorkspaceRouteD1RecordInput,
 ): Promise<void> => {
-  const state = ensureMigrated(db);
-  const hostname = normalizeHostname(input.hostname);
-  state.hostnameRows.set(hostname, {
-    ...input,
-    hostname,
-    workspaceSlug: input.workspaceSlug.trim().toLowerCase(),
-    baseDomain: normalizeBaseDomain(input.baseDomain),
-    routes: input.routes.map(cloneRoute),
-    updatedAt: new Date().toISOString(),
-  });
+  const state = states.get(db);
+  const record = createStoredRecord(input);
+
+  if (state) {
+    ensureMigrated(db).hostnameRows.set(record.hostname, record);
+    return;
+  }
+
+  await writeCloudflareD1Record({ db, record });
 };
 
 export const resolveWorkspaceRouteFromD1 = async (
   db: WorkspaceRouteD1Database,
   input: WorkspaceRouteD1ResolutionInput,
 ): Promise<WorkspaceRouteD1Resolution> => {
-  const state = ensureMigrated(db);
-  const record = state.hostnameRows.get(normalizeHostname(input.host));
+  const state = states.get(db);
+  const record = state
+    ? ensureMigrated(db).hostnameRows.get(normalizeHostname(input.host)) ?? null
+    : await readCloudflareD1Record({ db, hostname: input.host });
 
   if (!record || record.status === 'revoked') {
     return denied({ status: 404, errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND' });
@@ -220,16 +289,35 @@ export const revokeWorkspaceHostnameInD1 = async (
   db: WorkspaceRouteD1Database,
   input: WorkspaceRouteD1RevocationInput,
 ): Promise<void> => {
-  const state = ensureMigrated(db);
   const hostname = normalizeHostname(input.hostname);
-  const record = state.hostnameRows.get(hostname);
+  const state = states.get(db);
+
+  if (state) {
+    const record = ensureMigrated(db).hostnameRows.get(hostname);
+
+    if (!record) return;
+
+    state.hostnameRows.set(hostname, {
+      ...record,
+      status: 'revoked',
+      revokedAt: new Date().toISOString(),
+      revocationReason: input.reason,
+    });
+    return;
+  }
+
+  const record = await readCloudflareD1Record({ db, hostname });
 
   if (!record) return;
 
-  state.hostnameRows.set(hostname, {
-    ...record,
-    status: 'revoked',
-    revokedAt: new Date().toISOString(),
-    revocationReason: input.reason,
+  await writeCloudflareD1Record({
+    db,
+    record: {
+      ...record,
+      status: 'revoked',
+      updatedAt: new Date().toISOString(),
+      revokedAt: new Date().toISOString(),
+      revocationReason: input.reason,
+    },
   });
 };
