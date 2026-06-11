@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -7,11 +8,10 @@ const runContract =
   process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
 const contractDescribe = runContract ? describe : describe.skip;
 
-const workspaceEdgeRoot = path.join(
-  process.cwd(),
-  'cloudflare',
-  'workspace-edge',
-);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const osPackageRoot = path.join(__dirname, '..');
+const workspaceEdgeRoot = path.join(osPackageRoot, 'cloudflare', 'workspace-edge');
 const wranglerPath = path.join(workspaceEdgeRoot, 'wrangler.toml');
 const workerEntrypointPath = path.join(workspaceEdgeRoot, 'src', 'index.ts');
 const d1MigrationPath = path.join(
@@ -19,13 +19,19 @@ const d1MigrationPath = path.join(
   'migrations',
   '0001_workspace_route_registry.sql',
 );
-const packageJsonPath = path.join(process.cwd(), 'package.json');
+const packageJsonPath = path.join(osPackageRoot, 'package.json');
 
 function readRequiredFile(filePath: string): string {
   if (!fs.existsSync(filePath)) {
-    throw new Error(`missing required workspace edge deployment file: ${path.relative(process.cwd(), filePath)}`);
+    throw new Error(`missing required workspace edge deployment file: ${path.relative(osPackageRoot, filePath)}`);
   }
   return fs.readFileSync(filePath, 'utf8');
+}
+
+function requireScript(scripts: Record<string, string>, key: string): string {
+  expect(scripts).toHaveProperty(key);
+  expect(typeof scripts[key]).toBe('string');
+  return scripts[key];
 }
 
 contractDescribe('workspace Cloudflare Worker deployment contract', () => {
@@ -51,7 +57,9 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(worker).toMatch(/createWorkspaceCloudflareD1RouteRegistry/);
     expect(worker).toMatch(/WORKSPACE_ROUTE_REGISTRY/);
     expect(worker).toMatch(/CONSUELO_EDGE_SIGNING_SECRET/);
-    expect(worker).toMatch(/export\s+default\s+\{/);
+    expect(worker).toMatch(
+      /export\s+(?:(?:async\s+)?function|const)\s+fetch|export\s*\{[^}]*\bfetch\b[^}]*\}/,
+    );
     expect(worker).toMatch(/fetch\s*\(/);
     expect(worker).not.toMatch(/process\.env/);
   });
@@ -75,10 +83,10 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     };
     const scripts = packageJson.scripts ?? {};
 
-    expect(scripts['cloudflare:workspace-edge:dev']).toMatch(/wrangler\s+dev/);
-    expect(scripts['cloudflare:workspace-edge:deploy:dry-run']).toMatch(/wrangler\s+deploy.*--dry-run/);
-    expect(scripts['cloudflare:workspace-edge:deploy']).toMatch(/wrangler\s+deploy/);
-    expect(scripts['cloudflare:workspace-edge:migrate']).toMatch(/wrangler\s+d1\s+migrations\s+apply/);
-    expect(scripts['smoke:workspace-edge']).toMatch(/workspace-edge/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:dev')).toMatch(/wrangler\s+dev/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy:dry-run')).toMatch(/wrangler\s+deploy.*--dry-run/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy')).toMatch(/wrangler\s+deploy/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:migrate')).toMatch(/wrangler\s+d1\s+migrations\s+apply/);
+    expect(requireScript(scripts, 'smoke:workspace-edge')).toMatch(/workspace-edge/);
   });
 });

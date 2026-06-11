@@ -1,6 +1,3 @@
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
-
 import { describe, expect, it } from 'vitest';
 
 type SmokeStep = {
@@ -35,10 +32,9 @@ const runContract =
 const contractDescribe = runContract ? describe : describe.skip;
 
 async function loadSmokeContract(): Promise<SmokeContract> {
-  const modulePath = pathToFileURL(
-    join(process.cwd(), 'scripts', 'lib', 'workspace-edge-beta-smoke.ts'),
-  ).href;
-  const module = (await import(modulePath)) as Partial<SmokeContract>;
+  const module = (await import(
+    new URL('../scripts/lib/workspace-edge-beta-smoke.ts', import.meta.url).href
+  )) as Partial<SmokeContract>;
 
   if (typeof module.createWorkspaceEdgeBetaSmokePlan !== 'function') {
     throw new Error(
@@ -50,7 +46,7 @@ async function loadSmokeContract(): Promise<SmokeContract> {
 }
 
 contractDescribe('workspace edge beta smoke contract', () => {
-  it('should define the complete clean install to public workspace edge smoke path', async () => {
+  it('should define the complete clean install to public workspace edge smoke path when workspace is public', async () => {
     const { createWorkspaceEdgeBetaSmokePlan } = await loadSmokeContract();
 
     const plan = createWorkspaceEdgeBetaSmokePlan({
@@ -117,7 +113,7 @@ contractDescribe('workspace edge beta smoke contract', () => {
     );
   });
 
-  it('should check unknown and revoked workspace hosts before positive public route checks', async () => {
+  it('should check unknown and revoked workspace hosts before positive public route checks when planning beta smoke', async () => {
     const { createWorkspaceEdgeBetaSmokePlan } = await loadSmokeContract();
     const plan = createWorkspaceEdgeBetaSmokePlan({
       workspaceHost: 'kokayi.consuelohq.com',

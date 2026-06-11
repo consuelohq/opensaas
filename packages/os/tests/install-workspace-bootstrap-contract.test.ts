@@ -5,9 +5,16 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+type ProvisionAgent = {
+  name: string;
+  path: string;
+};
+
 type ProvisionResult = {
   home: string;
   configPath: string;
+  dbPath: string;
+  agents: ProvisionAgent[];
   actions: Array<{ type: string; path: string; status: string; message: string }>;
 };
 
@@ -123,6 +130,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         workspaceHost: 'kokayi.consuelohq.com',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
+        cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
       },
     });
 

@@ -58,7 +58,7 @@ async function loadWorkspaceConnectorTransportContract(): Promise<WorkspaceConne
 }
 
 contractDescribe('workspace connector transport contract', () => {
-  it('should plan a Cloudflare Tunnel connector that needs no user Cloudflare login', async () => {
+  it('should plan a Cloudflare Tunnel connector when no user Cloudflare login is required', async () => {
     const { planWorkspaceConnectorTransport } =
       await loadWorkspaceConnectorTransportContract();
 
@@ -105,7 +105,7 @@ contractDescribe('workspace connector transport contract', () => {
     ).toThrow(/Cloudflare Tunnel token is required/i);
   });
 
-  it('should preserve a future websocket relay transport boundary without making it the default OS ingress', async () => {
+  it('should preserve a future websocket relay transport boundary when relay transport is explicitly selected', async () => {
     const { planWorkspaceConnectorTransport } =
       await loadWorkspaceConnectorTransportContract();
 
