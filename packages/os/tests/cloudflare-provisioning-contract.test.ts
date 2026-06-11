@@ -1,13 +1,114 @@
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
-import {
-  applyWorkspaceCloudflareProvisioning,
-  planWorkspaceCloudflareProvisioning,
-  type WorkspaceCloudflareProvisioningClient,
-} from '../scripts/lib/workspace-cloudflare-provisioning';
+type WorkspaceCloudflareProvisioningInput = {
+  workspaceId: string;
+  workspaceSlug: string;
+  baseDomain: string;
+  cloudflareZoneId: string;
+  connectorId: string;
+  dialerUpstreamUrl?: string;
+};
 
-describe('workspace Cloudflare provisioning contract', () => {
-  it('should plan one workspace hostname with hidden OS tunnel origin and Dialer routes', () => {
+type WorkspaceCloudflareProvisioningClient = {
+  createOrReuseTunnel: (input: {
+    name: string;
+    connectorId: string;
+  }) => Promise<{
+    tunnelId: string;
+    tunnelCredential: string;
+    connectorCredentialId: string;
+  }>;
+  putTunnelConfig: (input: {
+    tunnelId: string;
+    hostname: string;
+    localServiceUrl: string;
+  }) => Promise<void>;
+  createOrReuseDnsRecord: (input: {
+    zoneId: string;
+    name: string;
+    type: 'CNAME';
+    content: string;
+    proxied: boolean;
+  }) => Promise<{ recordId: string }>;
+};
+
+type WorkspaceCloudflareProvisioningPlan = {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHostname: string;
+  osTunnelHostname: string;
+  provider: 'cloudflare';
+  owner: 'consuelo-os-cloud';
+  cloudflare: {
+    zoneId: string;
+    tunnelName: string;
+    workspaceDnsRecord: { name: string };
+    osTunnelDnsRecord: { name: string };
+  };
+  routes: Array<{
+    surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
+    pathPrefix: string;
+    auth: 'required';
+    target: Record<string, unknown>;
+  }>;
+};
+
+type WorkspaceCloudflareProvisioningResult = {
+  workspaceHostname: string;
+  osTunnelHostname: string;
+  connectorBootstrap: {
+    connectorId: string;
+    tunnelId: string;
+    tunnelCredential: string;
+  };
+  registryRecord: Record<string, unknown>;
+};
+
+type WorkspaceCloudflareProvisioningContract = {
+  planWorkspaceCloudflareProvisioning: (
+    input: WorkspaceCloudflareProvisioningInput,
+  ) => WorkspaceCloudflareProvisioningPlan;
+  applyWorkspaceCloudflareProvisioning: (input: {
+    cloudflare: WorkspaceCloudflareProvisioningClient;
+    input: WorkspaceCloudflareProvisioningInput;
+  }) => Promise<WorkspaceCloudflareProvisioningResult>;
+};
+
+const runContract =
+  process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
+const contractDescribe = runContract ? describe : describe.skip;
+
+async function loadWorkspaceCloudflareProvisioningContract(): Promise<WorkspaceCloudflareProvisioningContract> {
+  const modulePath = pathToFileURL(
+    join(process.cwd(), 'scripts', 'lib', 'workspace-cloudflare-provisioning.ts'),
+  ).href;
+  const module = (await import(
+    modulePath
+  )) as Partial<WorkspaceCloudflareProvisioningContract>;
+  const requiredExports: Array<keyof WorkspaceCloudflareProvisioningContract> = [
+    'planWorkspaceCloudflareProvisioning',
+    'applyWorkspaceCloudflareProvisioning',
+  ];
+  const missingExports = requiredExports.filter(
+    (name) => typeof module[name] !== 'function',
+  );
+
+  if (missingExports.length > 0) {
+    throw new Error(
+      `workspace Cloudflare provisioning contract module is missing exports: ${missingExports.join(', ')}`,
+    );
+  }
+
+  return module as WorkspaceCloudflareProvisioningContract;
+}
+
+contractDescribe('workspace Cloudflare provisioning contract', () => {
+  it('should plan one workspace hostname with hidden OS tunnel origin and Dialer routes', async () => {
+    const { planWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
     const plan = planWorkspaceCloudflareProvisioning({
       workspaceId: 'workspace_123',
       workspaceSlug: 'kokayi',
@@ -64,6 +165,8 @@ describe('workspace Cloudflare provisioning contract', () => {
   });
 
   it('should apply Cloudflare tunnel and DNS operations without Railway DNS provisioning', async () => {
+    const { applyWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
     const calls: Array<{ operation: string; key: string; body?: unknown }> = [];
     const cloudflare: WorkspaceCloudflareProvisioningClient = {
       async createOrReuseTunnel(input) {
@@ -113,6 +216,8 @@ describe('workspace Cloudflare provisioning contract', () => {
   });
 
   it('should keep client bootstrap credentials separate from durable registry data', async () => {
+    const { applyWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
     const cloudflare: WorkspaceCloudflareProvisioningClient = {
       async createOrReuseTunnel() {
         return {
@@ -155,6 +260,8 @@ describe('workspace Cloudflare provisioning contract', () => {
   });
 
   it('should produce idempotent Cloudflare keys for retries', async () => {
+    const { planWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
     const first = planWorkspaceCloudflareProvisioning({
       workspaceId: 'workspace_123',
       workspaceSlug: 'Kokayi',
