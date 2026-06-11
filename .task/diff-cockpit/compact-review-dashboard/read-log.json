@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/diff-cockpit/compact-review-dashboard/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-11T19:05:43.476Z"
+}
