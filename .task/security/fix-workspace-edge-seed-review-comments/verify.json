@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-workspace-edge-seed-review-comments",
+  "base": "origin/stream/security",
+  "headSha": "d29e0a5701ee237521283afb566074dc46c2bf33",
+  "changeHash": "201ada7ddb722cfe2ea1f6eeb09e70bde1a3c593da8a498bbe21af856d01a615",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/seed-workspace-edge-route.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-12T18:06:46.002Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-workspace-edge-seed-review-comments/current.json",
+        ".task/security/fix-workspace-edge-seed-review-comments/evidence-log.json",
+        ".task/security/fix-workspace-edge-seed-review-comments/read-log.json",
+        ".task/security/fix-workspace-edge-seed-review-comments/session.json",
+        ".task/security/fix-workspace-edge-seed-review-comments/verify.json",
+        ".task/security/fix-workspace-edge-seed-review-comments/workpad.md",
+        ".task/tasks/security/fix-workspace-edge-seed-review-comments.json",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/scripts/seed-workspace-edge-route.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}
