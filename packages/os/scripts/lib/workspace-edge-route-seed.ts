@@ -33,18 +33,19 @@ const normalizeBaseDomain = (baseDomain: string): string =>
 
 const normalizeWorkspaceSlug = (workspaceSlug: string): string =>
   workspaceSlug.trim().toLowerCase();
+const trimmedValue = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+};
+
+const trimmedOrDefault = (value: string | undefined, defaultValue: string): string =>
+  trimmedValue(value) ?? defaultValue;
 
 const hasOsConnectorInput = (
   input: WorkspaceEdgeRouteSeedInput,
-): input is WorkspaceEdgeRouteSeedInput & {
-  connectorId: string;
-  tunnelOriginUrl: string;
-} =>
-  typeof input.connectorId === 'string' &&
-  input.connectorId.trim().length > 0 &&
-  typeof input.tunnelOriginUrl === 'string' &&
-  input.tunnelOriginUrl.trim().length > 0;
-
+): boolean =>
+  trimmedValue(input.connectorId) !== undefined &&
+  trimmedValue(input.tunnelOriginUrl) !== undefined;
 const escapeSqlText = (value: string): string => value.replace(/'/g, "''");
 
 const sqlText = (value: string): string => `'${escapeSqlText(value)}'`;
@@ -111,23 +112,38 @@ const getConnectorTarget = (
 export const createWorkspaceEdgeRouteSeedRecord = (
   input: WorkspaceEdgeRouteSeedInput = {},
 ): WorkspaceEdgeSeedRecord => {
-  const appUpstreamUrl = input.appUpstreamUrl ?? DEFAULT_APP_UPSTREAM_URL;
+  const workspaceId = trimmedOrDefault(input.workspaceId, DEFAULT_WORKSPACE_ID);
+  const workspaceSlug = trimmedOrDefault(
+    input.workspaceSlug,
+    DEFAULT_WORKSPACE_SLUG,
+  );
+  const hostname = trimmedOrDefault(input.hostname, DEFAULT_HOSTNAME);
+  const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
+  const appUpstreamUrl = trimmedOrDefault(
+    input.appUpstreamUrl,
+    DEFAULT_APP_UPSTREAM_URL,
+  );
   const routes: WorkspaceRouteD1Route[] = [buildAppRoute({ appUpstreamUrl })];
 
   if (hasOsConnectorInput(input)) {
-    routes.push(
-      ...buildOsRoutes({
-        connectorId: input.connectorId.trim(),
-        tunnelOriginUrl: input.tunnelOriginUrl.trim(),
-      }),
-    );
+    const connectorId = trimmedValue(input.connectorId);
+    const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
+
+    if (connectorId !== undefined && tunnelOriginUrl !== undefined) {
+      routes.push(
+        ...buildOsRoutes({
+          connectorId,
+          tunnelOriginUrl,
+        }),
+      );
+    }
   }
 
   return {
-    workspaceId: input.workspaceId?.trim() || DEFAULT_WORKSPACE_ID,
-    workspaceSlug: normalizeWorkspaceSlug(input.workspaceSlug ?? DEFAULT_WORKSPACE_SLUG),
-    hostname: normalizeHostname(input.hostname ?? DEFAULT_HOSTNAME),
-    baseDomain: normalizeBaseDomain(input.baseDomain ?? DEFAULT_BASE_DOMAIN),
+    workspaceId,
+    workspaceSlug: normalizeWorkspaceSlug(workspaceSlug),
+    hostname: normalizeHostname(hostname),
+    baseDomain: normalizeBaseDomain(baseDomain),
     provider: 'cloudflare',
     owner: 'consuelo-os-cloud',
     status: 'active',
@@ -135,7 +151,6 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     updatedAt: new Date().toISOString(),
   };
 };
-
 const createConnectorSql = (input: {
   record: WorkspaceEdgeSeedRecord;
   connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }>;
@@ -217,7 +232,7 @@ export const createWorkspaceEdgeRouteSeedSql = (
       createConnectorSql({
         record,
         connectorTarget,
-        localServiceUrl: input.localServiceUrl ?? DEFAULT_LOCAL_SERVICE_URL,
+        localServiceUrl: trimmedOrDefault(input.localServiceUrl, DEFAULT_LOCAL_SERVICE_URL),
       }),
     );
   }

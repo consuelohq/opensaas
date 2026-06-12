@@ -3,10 +3,15 @@ import {
   type WorkspaceEdgeRouteSeedInput,
 } from './lib/workspace-edge-route-seed';
 
-const readArg = (name: string): string | undefined => {
+export const readArg = (name: string): string | undefined => {
   const index = process.argv.indexOf(name);
-  if (index === -1) return undefined;
-  return process.argv[index + 1];
+  const value = index === -1 ? undefined : process.argv[index + 1];
+
+  if (value === undefined || value.startsWith('-')) {
+    return undefined;
+  }
+
+  return value;
 };
 
 const readInput = (): WorkspaceEdgeRouteSeedInput => ({
@@ -75,9 +80,10 @@ const run = async (): Promise<void> => {
 
   await executeSql(sql);
 };
-
-run().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`${message}\n`);
-  process.exit(1);
-});
+if (import.meta.main) {
+  run().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`${message}\n`);
+    process.exit(1);
+  });
+}
