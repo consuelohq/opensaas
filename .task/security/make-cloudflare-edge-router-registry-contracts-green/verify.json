@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/make-cloudflare-edge-router-registry-contracts-green",
+  "base": "origin/stream/security",
+  "headSha": "eefaef15c99b476c2fcfdfe0cec5f7a85e43081d",
+  "changeHash": "c16773c5b2540da63d6116e3305a3139e466684f4e15f3f51595448b61729472",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts"
+  ],
+  "verifiedAt": "2026-06-11T05:36:25.007Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/make-cloudflare-edge-router-registry-contracts-green/current.json",
+        ".task/security/make-cloudflare-edge-router-registry-contracts-green/evidence-log.json",
+        ".task/security/make-cloudflare-edge-router-registry-contracts-green/read-log.json",
+        ".task/security/make-cloudflare-edge-router-registry-contracts-green/session.json",
+        ".task/security/make-cloudflare-edge-router-registry-contracts-green/workpad.md",
+        ".task/tasks/security/make-cloudflare-edge-router-registry-contracts-green.json",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

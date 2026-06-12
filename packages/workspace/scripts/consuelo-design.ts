@@ -1208,7 +1208,7 @@ function writeArchiveServer(ip: string): void {
   <style>
     :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10.3px, 2.62vw, 12.7px); line-height: 1.34; } main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); } .block { margin: 22px 0; } .rule { margin: 22px 0; } li { margin: 2.35px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.9px, 2.42vw, 11.5px); line-height: 1.32; } main { padding: 40px 10px; } li, .blog-item { white-space: nowrap; } }
     main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 24px; text-transform: uppercase; }
@@ -1218,7 +1218,7 @@ function writeArchiveServer(ip: string): void {
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
     li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.45; } .blog-item a { overflow-wrap: anywhere; } }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
   </style>
 </head>
 <body>
@@ -1819,7 +1819,7 @@ function renderArchiveRootRedirect(): string {
   <style>
     :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10px, 2.55vw, 12.4px); line-height: 1.36; } main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); } .block { margin: 23px 0; } .rule { margin: 23px 0; } li { margin: 2.1px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.6px, 2.35vw, 11.2px); line-height: 1.34; } main { padding: 22px 10px; } li, .blog-item { white-space: nowrap; } }
     main { padding: 32px 30px; max-width: none; }
     h1, p { margin: 0; font: inherit; }
     h1 { margin-bottom: 24px; text-transform: uppercase; }
@@ -1829,7 +1829,7 @@ function renderArchiveRootRedirect(): string {
     ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
     li { margin: 2px 0; white-space: nowrap; }
     li::before { content: "- "; }
-    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.45; } .blog-item a { overflow-wrap: anywhere; } }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
   </style>
 </head>
 <body>
@@ -2244,3 +2244,4 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
+

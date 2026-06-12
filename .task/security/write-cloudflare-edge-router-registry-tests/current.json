@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/write-cloudflare-edge-router-registry-tests",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 948,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/948",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/948",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/948/write-cloudflare-edge-router-registry-tests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/948",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/948/write-cloudflare-edge-router-registry-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-write-cloudflare-edge-router-registry-tests",
+  "taskSession": "tsk_6cae42083c43",
+  "tmuxSession": "opensaas-security-write-cloudflare-edge-router-registry-tests-6cae4208",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-write-cloudflare-edge-router-registry-tests/.task/security/write-cloudflare-edge-router-registry-tests/session.json",
+  "createdAt": "2026-06-11T04:27:16.417Z"
+}

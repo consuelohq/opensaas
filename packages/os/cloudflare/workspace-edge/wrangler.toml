@@ -1,0 +1,14 @@
+name = "consuelo-workspace-edge"
+main = "src/index.ts"
+compatibility_date = "2026-06-11"
+compatibility_flags = ["nodejs_compat"]
+
+[[routes]]
+pattern = "*.consuelohq.com/*"
+zone_name = "consuelohq.com"
+
+[[d1_databases]]
+binding = "WORKSPACE_ROUTE_REGISTRY"
+database_name = "consuelo-workspace-route-registry"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
