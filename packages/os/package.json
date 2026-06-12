@@ -83,7 +83,13 @@
     "artifact:render": "bun ./scripts/artifact-render.ts",
     "artifact:publish": "bun ./scripts/os.ts sites publish",
     "artifact:validate": "bun ./scripts/artifact-validate.ts",
-    "semantic:embeddings": "bun ./scripts/semantic-embeddings.js"
+    "semantic:embeddings": "bun ./scripts/semantic-embeddings.js",
+    "intent": "bun ./scripts/intent.js",
+    "cloudflare:workspace-edge:dev": "wrangler dev --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:deploy:dry-run": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run",
+    "cloudflare:workspace-edge:deploy": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:migrate": "wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml",
+    "smoke:workspace-edge": "bun ./scripts/smoke-workspace-edge.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

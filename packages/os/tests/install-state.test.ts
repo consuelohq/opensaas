@@ -63,7 +63,7 @@ describe('local OS install state', () => {
       join('security', 'generated', 'auth.json'),
       join('security', 'generated', 'Caddyfile'),
     ]) {
-      expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(expectedPath) && action.status === 'exists')).toBe(true);
+      expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(expectedPath) && action.status === 'preserved')).toBe(true);
     }
   });
 
@@ -222,7 +222,7 @@ describe('local OS install state', () => {
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
     expect(sitesIndex).toContain('Sites');
     expect(sitesIndex).toContain('Office');
-    expect(sitesIndex).toContain('Traces');
+    expect(sitesIndex).toContain('Tracing');
     expect(sitesIndex).toContain('Diffs');
     expect(sitesIndex).not.toContain('GitHub Workflows');
 

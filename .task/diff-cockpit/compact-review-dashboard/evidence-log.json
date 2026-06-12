@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+  "events": [
+    {
+      "id": "7c674c23-b9df-47bf-8564-b37a431c56c5",
+      "occurred_at": "2026-06-11T18:42:19.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "1452c902-2632-4c67-b84c-8a6c7cd1bc58",
+      "occurred_at": "2026-06-11T18:42:25.619Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "f227f42f-7a8b-416e-b049-da49bb83ea52",
+      "occurred_at": "2026-06-11T18:43:45.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "e80ad311-4510-4a00-b708-3575e489a1f5",
+      "occurred_at": "2026-06-11T18:44:29.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "1d9bdeab-2a87-436d-9dfc-31e326809020",
+      "occurred_at": "2026-06-11T18:44:41.776Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "94918d87-b96d-4142-9839-57f38d93ed3b",
+      "occurred_at": "2026-06-11T18:46:05.871Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "b03a0bf9-61ad-46da-8c43-17031f380816",
+      "occurred_at": "2026-06-11T18:46:25.909Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "ecb97258-3f3d-4b9a-b768-88386ebc0d99",
+      "occurred_at": "2026-06-11T18:46:34.468Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "a85008d1-a868-4c6e-ae85-edb60761df7e",
+      "occurred_at": "2026-06-11T18:46:42.267Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "6c01fefe-b82c-46de-bf03-69666e180b41",
+      "occurred_at": "2026-06-11T18:46:56.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "f5ccc17e-8338-4727-bf7b-6449ec9a5f2d",
+      "occurred_at": "2026-06-11T18:47:06.897Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "662407d3-254a-4863-8d85-913e75e6d484",
+      "occurred_at": "2026-06-11T18:47:13.707Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "b34e53fd-1d82-4017-ab6a-61271e7cf8a8",
+      "occurred_at": "2026-06-11T18:47:26.229Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "ba6e9dfe-8321-4e42-952b-2e044cd9bdf6",
+      "occurred_at": "2026-06-11T18:47:40.534Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/diff-cockpit/compact-review-dashboard/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "9c5e566a-f660-448e-bd60-4137a810996a",
+      "occurred_at": "2026-06-11T18:49:25.613Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "7b8c95e5-1800-411b-b510-81c0bec1e65f",
+      "occurred_at": "2026-06-11T18:55:11.528Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "a6c8c1ca-01e1-4cb7-92b8-7c3a79c8683d",
+      "occurred_at": "2026-06-11T18:57:28.700Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "17187e04-4589-466f-bb64-2cc61924e8d6",
+      "occurred_at": "2026-06-11T18:58:26.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "3891524e-fde0-4ada-9f27-658cc701f110",
+      "occurred_at": "2026-06-11T18:59:34.017Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "b2fb7990-0b9f-44aa-ab6f-d4e536cefddc",
+      "occurred_at": "2026-06-11T19:01:29.525Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "ae121753-89fc-4264-acc1-4b83837ed003",
+      "occurred_at": "2026-06-11T19:01:44.296Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "f275bcb8-e2b6-41f8-975c-69e0c641b208",
+      "occurred_at": "2026-06-11T19:02:29.459Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "98d2c65d-0360-46f1-bc94-d6f92f763f60",
+      "occurred_at": "2026-06-11T19:04:53.118Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    },
+    {
+      "id": "dd55275f-49a4-4874-a3a8-bea8bb9f46e2",
+      "occurred_at": "2026-06-11T19:05:43.533Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/compact-review-dashboard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/compact-review-dashboard"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T19:05:43.588Z"
+}

@@ -162,6 +162,43 @@ function byteLength(bytes: string | Buffer): number {
   return typeof bytes === 'string' ? Buffer.byteLength(bytes) : bytes.byteLength;
 }
 
+function writeArtifactBytesAtomically(
+  localPath: string,
+  bytes: string | Buffer,
+  commit: () => void,
+): void {
+  fs.mkdirSync(path.dirname(localPath), { recursive: true });
+  const tmpPath = `${localPath}.tmp-${process.pid}-${randomUUID()}`;
+  let committed = false;
+  fs.writeFileSync(tmpPath, bytes);
+  try {
+    commit();
+    fs.renameSync(tmpPath, localPath);
+    committed = true;
+  } finally {
+    if (!committed && fs.existsSync(tmpPath)) fs.rmSync(tmpPath, { force: true });
+  }
+}
+
+function countArtifactVersionSelectors(selector: ArtifactVersionSelector): number {
+  return [
+    Boolean(selector.versionId),
+    selector.versionNumber != null,
+    Boolean(selector.before),
+  ].filter(Boolean).length;
+}
+
+function assertSingleArtifactVersionSelector(
+  selector: ArtifactVersionSelector,
+  options: { required?: boolean } = {},
+): void {
+  const count = countArtifactVersionSelectors(selector);
+  if (count > 1) throw new Error('Provide only one artifact version selector');
+  if (options.required && count === 0) {
+    throw new Error('Rollback requires versionId, versionNumber, or before');
+  }
+}
+
 function artifactColumnExists(db: Database, column: string): boolean {
   const rows = db.query('PRAGMA table_info(artifacts)').all() as Array<{ name: string }>;
   return rows.some((row) => row.name === column);
@@ -328,12 +365,10 @@ export function createWorkspaceArtifact(input: CreateArtifactInput): ArtifactDes
   const bytes = serializeContent(input.content, input.format);
   const createdAt = nowIso();
 
-  fs.mkdirSync(path.dirname(localPath), { recursive: true });
-  fs.writeFileSync(localPath, bytes);
-
   const db = openArtifactDatabase();
   try {
-    db.transaction(() => {
+    writeArtifactBytesAtomically(localPath, bytes, () => {
+      db.transaction(() => {
       db.query([
         'INSERT INTO artifacts (',
         'id, workspace_id, created_by_user_id, skill_execution_trace_id, skill_name, title, type, format,',
@@ -382,7 +417,8 @@ export function createWorkspaceArtifact(input: CreateArtifactInput): ArtifactDes
         byteSize: byteLength(bytes),
         metadataJson: safeJson({ sourceObjectRefs: input.sourceObjectRefs, inputSummary: input.inputSummary }),
       });
-    })();
+      })();
+    });
   } finally {
     db.close();
   }
@@ -425,10 +461,8 @@ export function updateWorkspaceArtifact(input: UpdateArtifactInput): ArtifactDes
     const bytes = serializeContent(input.content, format);
     const updatedAt = nowIso();
 
-    fs.mkdirSync(path.dirname(localPath), { recursive: true });
-    fs.writeFileSync(localPath, bytes);
-
-    db.transaction(() => {
+    writeArtifactBytesAtomically(localPath, bytes, () => {
+      db.transaction(() => {
       insertVersion(db, {
         id: versionId,
         artifactId: artifact.id,
@@ -466,7 +500,8 @@ export function updateWorkspaceArtifact(input: UpdateArtifactInput): ArtifactDes
         nextVersionNumber,
         artifact.id,
       );
-    })();
+      })();
+    });
     updated = descriptorFromArtifact({
       ...artifact,
       title,
@@ -504,6 +539,7 @@ export function listWorkspaceArtifactVersions(artifactId: string): ArtifactVersi
 }
 
 export function getWorkspaceArtifactVersion(artifactId: string, selector: ArtifactVersionSelector): ArtifactVersionRecord {
+  assertSingleArtifactVersionSelector(selector);
   const db = openArtifactDatabase();
   try {
     getArtifactRow(db, artifactId);
@@ -542,6 +578,7 @@ export function getWorkspaceArtifactVersion(artifactId: string, selector: Artifa
 }
 
 export function rollbackWorkspaceArtifact(input: RollbackArtifactInput): ArtifactDescriptor & { restoredFromVersionId: string } {
+  assertSingleArtifactVersionSelector(input, { required: true });
   const paths = ensureRuntimePaths();
   const db = openArtifactDatabase();
   let rolledBack: ArtifactDescriptor & { restoredFromVersionId: string };
@@ -559,10 +596,8 @@ export function rollbackWorkspaceArtifact(input: RollbackArtifactInput): Artifac
     const localPath = path.join(paths.home, storageKey);
     const createdAt = nowIso();
 
-    fs.mkdirSync(path.dirname(localPath), { recursive: true });
-    fs.writeFileSync(localPath, bytes);
-
-    db.transaction(() => {
+    writeArtifactBytesAtomically(localPath, bytes, () => {
+      db.transaction(() => {
       insertVersion(db, {
         id: versionId,
         artifactId: artifact.id,
@@ -600,7 +635,8 @@ export function rollbackWorkspaceArtifact(input: RollbackArtifactInput): Artifac
         nextVersionNumber,
         artifact.id,
       );
-    })();
+      })();
+    });
     rolledBack = {
       id: artifact.id,
       name: path.basename(storageKey),
