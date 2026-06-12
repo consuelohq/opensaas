@@ -1,7 +1,31 @@
-import { Database } from 'bun:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+
+type BunDb = {
+  query: (sql: string) => {
+    get: () => unknown;
+    all: () => unknown[];
+  };
+  close: () => void;
+};
+
+type BunDbConstructor = new (
+  path: string,
+  options: { readonly: boolean },
+) => BunDb;
+
+function loadBunDb(): BunDbConstructor | null {
+  if (!('bun' in process.versions)) return null;
+
+  const load = Function(
+    'return typeof require === "function" ? require : undefined',
+  )() as ((specifier: string) => unknown) | undefined;
+  if (!load) return null;
+
+  const module = load('bun:sqlite') as { Database?: BunDbConstructor };
+  return module.Database ?? null;
+}
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -268,13 +292,16 @@ function addFileAction(actions: SitesAction[], filePath: string, dryRun: boolean
   actions.push({ type: 'create_file', path: filePath, status: dryRun ? 'planned' : 'created', message });
 }
 
-function hasArtifactsTable(db: Database): boolean {
+function hasArtifactsTable(db: BunDb): boolean {
   const row = db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'artifacts'").get() as { name?: string } | null;
   return row?.name === 'artifacts';
 }
 
 function readArtifactRows(dbPath: string): ArtifactRow[] {
   if (!fs.existsSync(dbPath)) return [];
+  const Database = loadBunDb();
+  if (!Database) return [];
+
   const db = new Database(dbPath, { readonly: true });
   try {
     if (!hasArtifactsTable(db)) return [];

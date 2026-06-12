@@ -534,7 +534,7 @@ print_success_summary() {
   local os_home="$OS_HOME"
   local config_file="$os_home/config.json"
   local db_file="$os_home/consuelo.db"
-  local log_dir="$HOME/Library/Logs/Consuelo"
+  local log_dir="$os_home/logs"
   local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
