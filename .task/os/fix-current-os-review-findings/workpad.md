@@ -145,6 +145,7 @@ Expected red failures before implementation:
 - 2026-06-11 18:38:46 `review.run`: passed — OK
 - 2026-06-11 18:40:01 `verify`: passed — OK
 - 2026-06-11 18:43:18 `verify`: passed — OK
+- 2026-06-12 18:26:15 `review.run`: passed — OK
 
 ## workspace-owned: test selection
 

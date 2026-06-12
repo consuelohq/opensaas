@@ -190,7 +190,7 @@ describe('createWorkspaceArtifact', () => {
         try {
           getWorkspaceArtifactVersion(created.id, { versionId: created.currentVersionId, versionNumber: 1 });
           return null;
-        } catch (error) {
+        } catch (error: unknown) {
           return error instanceof Error ? error.message : String(error);
         }
       })();
@@ -199,7 +199,7 @@ describe('createWorkspaceArtifact', () => {
         try {
           rollbackWorkspaceArtifact({ artifactId: created.id, reason: 'noop' });
           return null;
-        } catch (error) {
+        } catch (error: unknown) {
           return error instanceof Error ? error.message : String(error);
         }
       })();

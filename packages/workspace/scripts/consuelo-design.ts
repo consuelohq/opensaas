@@ -1129,46 +1129,56 @@ async function stopArchiveServer(): Promise<void> {
 }
 
 async function ensureArchiveServer(ip: string): Promise<string> {
-  writeArchiveServer(ip);
-  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
-  await stopArchiveServer();
+  try {
+    writeArchiveServer(ip);
+    const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+    await stopArchiveServer();
 
-  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
-    cwd: REPO_ROOT,
-    detached: true,
-    stdio: ['ignore', 'ignore', 'ignore'],
-  });
-  child.unref();
+    const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
+      cwd: REPO_ROOT,
+      detached: true,
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    child.unref();
 
-  const deadline = Date.now() + 4000;
-  while (Date.now() < deadline) {
-    if (await archiveServerShowsCurrentWiki(target)) return target;
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    const deadline = Date.now() + 4000;
+    while (Date.now() < deadline) {
+      if (await archiveServerShowsCurrentWiki(target)) return target;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return target;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to ensure Consuelo Sites archive server: ${message}`);
   }
-  return target;
 }
 
 
 async function setArchiveServePaths(tailscaleBin: string, target: string): Promise<{ stdout: string; stderr: string }> {
-  let stdout = '';
-  let stderr = '';
-  const routes = [
-    ['/', target],
-    [DESIGN_ARCHIVE_OFFICE_PATH, target],
-    [DESIGN_ARCHIVE_PATH, target],
-    [DESIGN_ARCHIVE_LEGACY_PATH, target],
-    ['/tracing', `${target}/trace-burn-intelligence`],
-    ['/diffs', `${target}/diffs`],
-  ] as const;
-  for (const [archivePath, routeTarget] of routes) {
-    const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);
-    stdout += result.stdout;
-    stderr += result.stderr;
-    if (result.exitCode !== 0) {
-      throw new Error(`tailscale serve failed for Consuelo Sites at ${archivePath}: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+  try {
+    let stdout = '';
+    let stderr = '';
+    const routes = [
+      ['/', target],
+      [DESIGN_ARCHIVE_OFFICE_PATH, target],
+      [DESIGN_ARCHIVE_PATH, target],
+      [DESIGN_ARCHIVE_LEGACY_PATH, target],
+      ['/tracing', `${target}/trace-burn-intelligence`],
+      ['/diffs', `${target}/diffs`],
+    ] as const;
+    for (const [archivePath, routeTarget] of routes) {
+      const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);
+      stdout += result.stdout;
+      stderr += result.stderr;
+      if (result.exitCode !== 0) {
+        throw new Error(`tailscale serve failed for Consuelo Sites at ${archivePath}: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+      }
     }
+    return { stdout, stderr };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to set Consuelo Sites archive serve paths: ${message}`);
   }
-  return { stdout, stderr };
 }
 
 function writeArchiveServer(ip: string): void {
