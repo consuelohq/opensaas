@@ -60,11 +60,12 @@ function createGatewayEmbeddingPayload(texts, options = {}, metadata = {}) {
   assertGatewayBatch(texts);
   const config = metadata.config || getEmbeddingConfig();
   const kind = normalizeKind(options.kind);
+  const model = config.apiModel || APPROVED_EMBEDDING_MODEL;
 
   return {
     version: 1,
     provider: CONSUELO_GATEWAY_PROVIDER,
-    model: APPROVED_EMBEDDING_MODEL,
+    model,
     embeddingConfigId: getEmbeddingConfigId(config),
     dimensions: config.dimensions,
     instructionVersion: config.instructionVersion,
@@ -125,7 +126,7 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      'x-consuelo-embedding-model': APPROVED_EMBEDDING_MODEL,
+      'x-consuelo-embedding-model': payload.model,
       ...(payload.installId ? { 'x-consuelo-install-id': payload.installId } : {}),
       ...(payload.repoHash ? { 'x-consuelo-repo-hash': payload.repoHash } : {}),
     },

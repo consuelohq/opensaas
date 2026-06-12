@@ -8,7 +8,7 @@ const {
   PROVIDER_OPENROUTER,
   getEmbeddingConfig,
 } = require('./embedding-config');
-const { requestGatewayEmbeddings } = require('./embedding-gateway');
+const { CONSUELO_GATEWAY_PROVIDER, requestGatewayEmbeddings } = require('./embedding-gateway');
 
 const EMBEDDING_CONFIG = getEmbeddingConfig();
 const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
@@ -16,7 +16,7 @@ const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
 const DOCUMENT_INSTRUCTION = 'Instruct: Represent this code for retrieval\nQuery: ';
 const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: ';
 const OPENROUTER_EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
-const EMBEDDING_API_MODEL = DEFAULT_API_MODEL;
+const EMBEDDING_API_MODEL = EMBEDDING_CONFIG.apiModel || DEFAULT_API_MODEL;
 const MODEL_FILE_NAME = 'Qwen3-Embedding-4B-Q8_0.gguf';
 
 const embeddingContextsByPath = new Map();
@@ -28,7 +28,6 @@ function expandHome(value) {
   if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
   return value;
 }
-
 function getConsueloHome() {
   return path.resolve(expandHome(process.env.CONSUELO_HOME || '~/.consuelo/os'));
 }
@@ -40,7 +39,6 @@ function getDefaultModelPath() {
 }
 
 const DEFAULT_MODEL_PATH = getDefaultModelPath();
-
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -169,18 +167,20 @@ async function embedTexts(texts, options = {}) {
       }
       return embedTextsOpenRouter(texts, apiKey);
     }
+    if (provider === CONSUELO_GATEWAY_PROVIDER) {
+      const vectors = await requestGatewayEmbeddings(texts, options, {
+        config: EMBEDDING_CONFIG,
+        installId: options.installId,
+        repoHash: options.repoHash,
+      });
+      return vectors.map(prepareVector);
+    }
 
-    const vectors = await requestGatewayEmbeddings(texts, options, {
-      config: EMBEDDING_CONFIG,
-      installId: options.installId,
-      repoHash: options.repoHash,
-    });
-    return vectors.map(prepareVector);
+    throw new Error(`Unsupported embedding provider: ${provider}`);
   } catch (error /* unknown */) {
     throw new Error(`batch embedding failed: ${getErrorMessage(error)}`);
   }
 }
-
 async function embedTextsOpenRouter(texts, apiKey) {
   try {
     if (!Array.isArray(texts) || texts.length === 0) return [];

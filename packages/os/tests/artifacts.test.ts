@@ -94,7 +94,7 @@ describe('createWorkspaceArtifact', () => {
     });
   });
 
-  it('keeps immutable versions and rolls back by version number or timestamp', () => {
+  it('should keep immutable versions when rolling back by version number or timestamp', () => {
     const result = JSON.parse(runBunEval(`
       const {
         createWorkspaceArtifact,
@@ -170,5 +170,44 @@ describe('createWorkspaceArtifact', () => {
     expect(result.rollbackByTime.versionCount).toBe(4);
     expect(result.historyAfterTimeRollback.map((version) => version.versionNumber)).toEqual([1, 2, 3, 4]);
     expect(result.historyAfterTimeRollback.at(-1)?.isCurrent).toBe(true);
+  });
+
+  it('should reject ambiguous or missing artifact version selectors when reading or rolling back', () => {
+    const result = JSON.parse(runBunEval(`
+      const { createWorkspaceArtifact, getWorkspaceArtifactVersion, rollbackWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
+
+      const created = createWorkspaceArtifact({
+        traceId: 'trc_selector_guards',
+        skillName: 'spec-editor',
+        title: 'Selector Guard Spec',
+        fileName: 'selector-guard.json',
+        type: 'document',
+        format: 'json',
+        content: { body: 'v1' },
+      });
+
+      const ambiguous = (() => {
+        try {
+          getWorkspaceArtifactVersion(created.id, { versionId: created.currentVersionId, versionNumber: 1 });
+          return null;
+        } catch (error: unknown) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      })();
+
+      const missingRollbackSelector = (() => {
+        try {
+          rollbackWorkspaceArtifact({ artifactId: created.id, reason: 'noop' });
+          return null;
+        } catch (error: unknown) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      })();
+
+      process.stdout.write(JSON.stringify({ ambiguous, missingRollbackSelector }));
+    `)) as { ambiguous: string | null; missingRollbackSelector: string | null };
+
+    expect(result.ambiguous).toContain('Provide only one artifact version selector');
+    expect(result.missingRollbackSelector).toContain('Rollback requires versionId');
   });
 });

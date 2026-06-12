@@ -20,8 +20,20 @@ function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+function stripRemoteCredentials(remoteUrl) {
+  if (!remoteUrl) return remoteUrl;
+  try {
+    const parsed = new URL(remoteUrl);
+    parsed.username = '';
+    parsed.password = '';
+    return parsed.toString();
+  } catch {
+    return remoteUrl.replace(/^(https?:\/\/)[^/@]+@/i, '$1');
+  }
+}
+
 function getRepoIdentifier(repoRoot, remoteUrl) {
-  return remoteUrl || repoRoot;
+  return stripRemoteCredentials(remoteUrl) || repoRoot;
 }
 
 function getRepoHash(repoRoot, remoteUrl) {
@@ -110,7 +122,6 @@ function registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl) {
         repoHash: getRepoHash(repoRoot, remoteUrl),
         repoIdentifier: getRepoIdentifier(repoRoot, remoteUrl),
         repoRoot,
-        remoteUrl: remoteUrl || null,
       }),
     );
   } finally {
@@ -640,6 +651,7 @@ module.exports = {
   getCacheRoot,
   getConsueloHome,
   getRepoHash,
+  getRepoIdentifier,
   getSemanticIndexAssetName,
   getSemanticIndexDbPath,
   registerSemanticIndex,

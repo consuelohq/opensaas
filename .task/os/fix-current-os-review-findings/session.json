@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_51ed2bf15f23",
+  "tmuxSession": "opensaas-os-fix-current-os-review-findings-51ed2bf1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-current-os-review-findings",
+  "branch": "task/os/fix-current-os-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-os-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-os-review-findings",
+  "prNumber": 967,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/967",
+  "createdAt": "2026-06-11T17:35:04.633Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-os-review-findings/.task/os/fix-current-os-review-findings/session.json"
+}

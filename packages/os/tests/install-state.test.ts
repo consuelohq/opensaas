@@ -44,6 +44,29 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'config.json'))).toBe(false);
   });
 
+  it('reports existing generated security assets as existing on reprovision', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    for (const expectedPath of [
+      join('security', 'generated'),
+      join('security', 'overrides'),
+      join('security', 'generated', 'auth.json'),
+      join('security', 'generated', 'Caddyfile'),
+    ]) {
+      expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(expectedPath) && action.status === 'preserved')).toBe(true);
+    }
+  });
+
   it('creates the approved local home shape and preserves existing config', () => {
     const first = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -199,7 +222,7 @@ describe('local OS install state', () => {
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
     expect(sitesIndex).toContain('Sites');
     expect(sitesIndex).toContain('Office');
-    expect(sitesIndex).toContain('Traces');
+    expect(sitesIndex).toContain('Tracing');
     expect(sitesIndex).toContain('Diffs');
     expect(sitesIndex).not.toContain('GitHub Workflows');
 

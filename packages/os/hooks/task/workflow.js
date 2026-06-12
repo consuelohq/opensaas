@@ -172,6 +172,7 @@ function handleValidationReady(event, resolver) {
   const state = event.state || {};
   const taskSession = state.taskSession || '<taskSession>';
   const base = state.base || `origin/stream/${state.area || '<area>'}`;
+  const noTests = Boolean(state.noTests);
 
   return {
     workflow: TASK_WORKFLOW_ID,
@@ -184,7 +185,7 @@ function handleValidationReady(event, resolver) {
       }),
       resolver.action('validation.review', {
         taskSession,
-        input: { base, noTests: true },
+        input: { base, noTests },
       }),
       resolver.action('validation.verify', {
         taskSession,
