@@ -183,6 +183,26 @@ This shell is non-interactive. Re-run with:
   printf '%s\n' "$message" > /dev/tty
   IFS= read -r _ < /dev/tty
 }
+
+render_dependency_progress() {
+  [ "$JSON" -eq 0 ] || return 0
+
+  log "C O N S U E L O   O S"
+  log "│"
+  log "● dependencies"
+  log "○ home"
+  log "○ skills"
+  log "○ artifacts"
+  log "○ agents"
+  log "○ health"
+  log ""
+}
+
+prompt_dependency_setup() {
+  prompt_enter "Consuelo OS needs its dependencies to continue.
+
+Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
+}
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -226,6 +246,10 @@ Install Bun manually, then re-run this bootstrap:
 TEXT
 }
 
+install_bun_runtime() {
+  curl -fsSL https://bun.sh/install | bash
+}
+
 ensure_bun() {
   if find_bun; then
     BUN_STATUS="present"
@@ -244,11 +268,7 @@ ensure_bun() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS uses Bun to run its local background runtime.
-Press Enter to install Bun, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
-  log "Installing Bun..."
-  curl -fsSL https://bun.sh/install | bash
+  run_with_loading_dots "Installing Bun" install_bun_runtime
   export PATH="$HOME/.bun/bin:$PATH"
 
   if ! find_bun; then
@@ -313,10 +333,6 @@ download_source() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS needs the local runtime source to continue.
-We can download/setup this now.
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
   require_command tar "Consuelo OS needs tar to unpack the source archive. tar is expected on supported macOS installs."
   require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
 
@@ -366,6 +382,11 @@ resolve_source() {
 
   download_source
 }
+install_runtime_dependencies() {
+  local os_dir="$1"
+  (cd "$os_dir" && "$BUN_BIN" install)
+}
+
 ensure_dependencies() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
@@ -379,12 +400,7 @@ ensure_dependencies() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS needs its local runtime dependencies to continue.
-We can install/setup this now.
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
-  log "Installing Consuelo OS runtime dependencies..."
-  (cd "$os_dir" && "$BUN_BIN" install)
+  run_with_loading_dots "Installing Consuelo OS runtime dependencies" install_runtime_dependencies "$os_dir"
   DEPENDENCY_STATUS="installed"
 }
 
@@ -518,7 +534,7 @@ print_success_summary() {
   local os_home="$OS_HOME"
   local config_file="$os_home/config.json"
   local db_file="$os_home/consuelo.db"
-  local log_dir="$HOME/Library/Logs/Consuelo"
+  local log_dir="$os_home/logs"
   local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
@@ -546,6 +562,8 @@ print_success_summary() {
 main() {
   parse_args "$@"
   check_mac_prerequisites
+  render_dependency_progress
+  prompt_dependency_setup
   ensure_bun
   resolve_source
   ensure_dependencies
@@ -556,3 +574,4 @@ main() {
 }
 
 main "$@"
+

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_88a9d1ad5033",
+  "tmuxSession": "opensaas-os-repair-os-first-user-installer-security-onboardi-88a9d1ad",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-os-first-user-installer-security-onboarding",
+  "branch": "task/os/repair-os-first-user-installer-security-onboarding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-first-user-installer-security-onboarding",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-first-user-installer-security-onboarding",
+  "prNumber": 983,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/983",
+  "createdAt": "2026-06-12T19:38:51.107Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-first-user-installer-security-onboarding/.task/os/repair-os-first-user-installer-security-onboarding/session.json"
+}

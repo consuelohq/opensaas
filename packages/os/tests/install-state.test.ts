@@ -113,6 +113,10 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'hooks', 'intent.js'))).toBe(true);
+    expect(existsSync(join(tempHome, 'hooks', 'dispatcher.js'))).toBe(true);
+    expect(existsSync(join(tempHome, 'hooks', 'task', 'workflow.js'))).toBe(true);
+    expect(existsSync(join(tempHome, 'hooks', 'task', 'guidance.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
@@ -405,6 +409,22 @@ describe('local OS install state', () => {
     expect(existsSync(sidecarPath)).toBe(true);
     expect(JSON.parse(readFileSync(sidecarPath, 'utf8'))).toMatchObject({ name: 'codex', osHome: tempHome });
     expect(result.agents.some((agent: { name: string; connected: boolean }) => agent.name === 'codex' && agent.connected)).toBe(true);
+  });
+
+  it('reports intent and task hook runtime modules in doctor checks', () => {
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs, runDoctor } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local' });
+      const result = await runDoctor();
+      process.stdout.write(JSON.stringify(result));
+    `)) as { checks: Array<{ name: string; status: string; message: string }> };
+
+    const intentCheck = result.checks.find((check) => check.name === 'runtime:intent');
+    const taskHookCheck = result.checks.find((check) => check.name === 'runtime:task-hook');
+    expect(intentCheck).toMatchObject({ status: 'connected' });
+    expect(intentCheck?.message).toContain('hooks/intent.js');
+    expect(taskHookCheck).toMatchObject({ status: 'connected' });
+    expect(taskHookCheck?.message).toContain('hooks/task/guidance.js');
   });
 
   it('validates bundled skill metadata against the manifest', () => {

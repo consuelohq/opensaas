@@ -1,10 +1,14 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const install = readFileSync(new URL('./install.ts', import.meta.url), 'utf8');
 const bootstrap = readFileSync(new URL('./bootstrap.sh', import.meta.url), 'utf8');
 const daemonInstall = readFileSync(
   new URL('./install-system-daemons.sh', import.meta.url),
+  'utf8',
+);
+const daemonGenerator = readFileSync(
+  new URL('./generate-system-daemons.sh', import.meta.url),
   'utf8',
 );
 
@@ -15,6 +19,24 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain('artifactMode');
     expect(install).toContain("message: 'choose artifact storage'");
     expect(install).toContain('skills, artifacts, agents, and health');
+  });
+
+  test('workspace identity is a real first-user prompt before local compute setup', () => {
+    expect(install).toContain('workspaceHost');
+    expect(install).toContain('workspaceSlug');
+    expect(install).toContain('workspaceActivation');
+    expect(install).toContain("message: 'Consuelo workspace URL'");
+    expect(install).toContain("message: 'workspace short name'");
+    expect(install).toContain("message: 'connect workspace identity'");
+    expect(install).toContain('startWorkspaceDeviceAuthorization');
+    expect(install).toContain('createManualWorkspaceBootstrap');
+  });
+
+  test('local and cloud modes are compute placement choices behind the same URL layer', () => {
+    expect(install).toContain("label: 'local compute'");
+    expect(install).toContain("label: 'cloud compute'");
+    expect(install).toContain('workspace URL stays the stable access path');
+    expect(install).not.toContain('connect to cloud OS');
   });
 
   test('agent multiselect explains Space selection', () => {
@@ -44,6 +66,13 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(daemonInstall).toContain('print_debug_state');
     expect(daemonInstall).toContain('background service setup complete');
     expect(daemonInstall).not.toContain('generated user LaunchAgent plists in');
+  });
+
+  test('daemon installer defaults logs to the writable OS home log directory', () => {
+    expect(daemonInstall).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
+    expect(daemonGenerator).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
+    expect(daemonInstall).not.toContain('$daemon_home/Library/Logs/Consuelo');
+    expect(bootstrap).toContain('local log_dir="$os_home/logs"');
   });
 
   test('hosted bootstrap resolves final runtime commands from OS package root', () => {
