@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/tests/cloudflare-d1-route-registry.test.ts"
+  ],
+  "updatedAt": "2026-06-11T18:51:44.561Z"
+}

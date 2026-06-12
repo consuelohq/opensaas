@@ -1,0 +1,75 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/make-workspace-gateway-contracts-green",
+  "base": "origin/stream/security",
+  "headSha": "6d85f9264599d4fed42ee6cc9ca8bf27b721d727",
+  "changeHash": "3d992fdadd30ef3b043395505c363c2789bc0525df76fd7d3a2591eeceea5cd2",
+  "changedFiles": [
+    "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-connector-transport.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/lib/workspace-edge-beta-smoke.ts"
+  ],
+  "verifiedAt": "2026-06-11T20:29:18.325Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/make-workspace-gateway-contracts-green/current.json",
+        ".task/security/make-workspace-gateway-contracts-green/evidence-log.json",
+        ".task/security/make-workspace-gateway-contracts-green/read-log.json",
+        ".task/security/make-workspace-gateway-contracts-green/session.json",
+        ".task/security/make-workspace-gateway-contracts-green/verify.json",
+        ".task/security/make-workspace-gateway-contracts-green/workpad.md",
+        ".task/tasks/security/make-workspace-gateway-contracts-green.json",
+        "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-connector-transport.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-edge-beta-smoke.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "migration",
+        "file": "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+        "severity": "warning",
+        "message": "migration file changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -76,7 +76,12 @@
     "uninstall:system-daemons": "bash ./scripts/uninstall-system-daemons.sh",
     "uninstall:system-daemons:dry-run": "bash ./scripts/uninstall-system-daemons.sh --dry-run",
     "get-raw-steering": "bun ./scripts/os.ts get-raw-steering",
-    "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'"
+    "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'",
+    "cloudflare:workspace-edge:dev": "wrangler dev --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:deploy:dry-run": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run",
+    "cloudflare:workspace-edge:deploy": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:migrate": "wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml",
+    "smoke:workspace-edge": "bun ./scripts/smoke-workspace-edge.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
