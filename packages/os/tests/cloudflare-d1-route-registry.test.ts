@@ -497,4 +497,67 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
 
     expect(JSON.stringify(row)).not.toMatch(/tunnelCredential|credential_fixture|client_secret/i);
   });
+
+  it('should use root routes as host-level fallbacks after more-specific routes', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'app',
+          pathPrefix: '/',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'service-upstream',
+            service: 'app',
+            upstreamUrl: 'https://app.consuelohq.com',
+          },
+        },
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_internal',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+          },
+        },
+      ],
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/health',
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/',
+      surface: 'app',
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/mcp/status',
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/mcp',
+      surface: 'os',
+    });
+  });
 });
