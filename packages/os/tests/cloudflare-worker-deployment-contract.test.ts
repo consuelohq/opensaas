@@ -35,7 +35,7 @@ function requireScript(scripts: Record<string, string>, key: string): string {
 }
 
 contractDescribe('workspace Cloudflare Worker deployment contract', () => {
-  it('should ship a Wrangler-deployable workspace edge Worker with D1 bindings and wildcard workspace routes', () => {
+  it('should ship a Wrangler-deployable workspace edge Worker with D1 bindings and the explicit internal route', () => {
     const wrangler = readRequiredFile(wranglerPath);
 
     expect(wrangler).toMatch(/name\s*=\s*["']consuelo-workspace-edge["']/);
@@ -44,12 +44,14 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/\[\[d1_databases\]\]/);
     expect(wrangler).toMatch(/binding\s*=\s*["']WORKSPACE_ROUTE_REGISTRY["']/);
     expect(wrangler).toMatch(/database_name\s*=\s*["']consuelo-workspace-route-registry["']/);
-    expect(wrangler).toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
+    expect(wrangler).toMatch(/database_id\s*=\s*["'][0-9a-f-]{36}["']/i);
+    expect(wrangler).not.toMatch(/database_id\s*=\s*["']00000000-0000-0000-0000-000000000000["']/);
+    expect(wrangler).toMatch(/pattern\s*=\s*["']internal\.consuelohq\.com\/\*["']/);
+    expect(wrangler).not.toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
     expect(wrangler).toMatch(/zone_name\s*=\s*["']consuelohq\.com["']/);
     expect(wrangler).not.toMatch(/CONSUELO_EDGE_SIGNING_SECRET\s*=\s*["'][^"']+["']/);
     expect(wrangler).not.toMatch(/api[_-]?token\s*=\s*["'][^"']+["']/i);
   });
-
   it('should expose a Worker entrypoint that composes the router with the D1 registry and edge signing secret', () => {
     const worker = readRequiredFile(workerEntrypointPath);
 
@@ -63,7 +65,6 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(worker).toMatch(/fetch\s*\(/);
     expect(worker).not.toMatch(/process\.env/);
   });
-
   it('should ship a D1 migration for the edge route registry tables and indexes', () => {
     const migration = readRequiredFile(d1MigrationPath);
 
@@ -89,6 +90,7 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy:dry-run')).toMatch(/wrangler\s+deploy.*--dry-run/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy')).toMatch(/wrangler\s+deploy/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:migrate')).toMatch(/wrangler\s+d1\s+migrations\s+apply/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:seed')).toMatch(/scripts\/seed-workspace-edge-route\.ts/);
     expect(requireScript(scripts, 'smoke:workspace-edge')).toMatch(/scripts\/smoke-workspace-edge\.ts/);
   });
 });

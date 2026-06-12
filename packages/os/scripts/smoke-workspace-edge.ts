@@ -20,7 +20,7 @@ const parseArgs = (): SmokeArgs => {
   const workspaceHost =
     readArg('--workspace-host') ??
     process.env.CONSUELO_WORKSPACE_EDGE_SMOKE_HOST ??
-    'kokayi.consuelohq.com';
+    'internal.consuelohq.com';
   const connectorId =
     readArg('--connector-id') ??
     process.env.CONSUELO_WORKSPACE_EDGE_SMOKE_CONNECTOR_ID ??
