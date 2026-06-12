@@ -187,7 +187,7 @@ const ensureMigrated = (db: WorkspaceRouteD1Database): WorkspaceRouteD1State => 
 };
 
 const matchesRoutePrefix = (path: string, pathPrefix: string): boolean =>
-  path === pathPrefix || path.startsWith(`${pathPrefix}/`);
+  pathPrefix === '/' || path === pathPrefix || path.startsWith(`${pathPrefix}/`);
 
 const denied = (input: {
   status: 404 | 503;
@@ -217,7 +217,6 @@ export const createInMemoryWorkspaceRouteD1 = (): WorkspaceRouteD1Database => {
 
   return db;
 };
-
 export const migrateWorkspaceRouteD1 = async (
   db: WorkspaceRouteD1Database,
 ): Promise<void> => {

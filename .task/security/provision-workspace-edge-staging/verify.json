@@ -1,0 +1,74 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/provision-workspace-edge-staging",
+  "base": "origin/stream/security",
+  "headSha": "6edcefc4fe464d0d1bb9d71a9c7593c1a54d974e",
+  "changeHash": "9cc29348410c31119f53d56204e953e9987dc8b6b6226b092790af5034a700e6",
+  "changedFiles": [
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/seed-workspace-edge-route.ts",
+    "packages/os/scripts/smoke-workspace-edge.ts",
+    "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+    "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-12T17:30:45.529Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/provision-workspace-edge-staging/current.json",
+        ".task/security/provision-workspace-edge-staging/evidence-log.json",
+        ".task/security/provision-workspace-edge-staging/read-log.json",
+        ".task/security/provision-workspace-edge-staging/session.json",
+        ".task/security/provision-workspace-edge-staging/workpad.md",
+        ".task/tasks/security/provision-workspace-edge-staging.json",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/scripts/seed-workspace-edge-route.ts",
+        "packages/os/scripts/smoke-workspace-edge.ts",
+        "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+        "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}
