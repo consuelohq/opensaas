@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/hooks/task/workflow.js",
+    "packages/os/package.json",
+    "packages/os/scripts/task-hook.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hook-dispatcher.test.ts",
+    "packages/os/tests/task-hook-workflow-contract.test.ts",
+    "packages/os/tests/task-hooks.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-11T18:38:09.985Z"
+}

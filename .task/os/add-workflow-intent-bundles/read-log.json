@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/os/hooks/README.md",
+    "packages/os/hooks/dispatcher.js",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/task-hook-dispatcher.test.ts",
+    "packages/os/tests/task-manifest-workflow-roles.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-11T21:23:16.113Z"
+}

@@ -290,13 +290,17 @@
     "test-selection:check": "node packages/workspace/scripts/test-selection.js check",
     "test-selection:nightly": "node packages/workspace/scripts/test-selection.js nightly",
     "test-selection": "node packages/workspace/scripts/test-selection.js",
-    "wiki:render": "bun run --cwd packages/consuelo-design wiki:render --",
-    "wiki:validate": "bun run --cwd packages/consuelo-design wiki:validate --",
+    "wiki:render": "bun run artifact:render --",
+    "wiki:validate": "bun run artifact:validate --",
     "test:reader": "bun run --cwd packages/consuelo-design test:reader",
     "os:release-install": "bun packages/workspace/scripts/os-release-install.ts",
     "docs:generate-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts",
     "docs:check-os-skill-docs": "tsx packages/consuelo-docs/scripts/generate-os-skill-docs.ts --check",
-    "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts"
+    "docs:validate-os-docs": "tsx packages/consuelo-docs/scripts/validate-os-docs.ts",
+    "operator": "bun packages/os/operator/operator.ts",
+    "artifact:render": "bun run --cwd packages/os artifact:render --",
+    "artifact:publish": "bun run --cwd packages/os artifact:publish --",
+    "artifact:validate": "bun run --cwd packages/os artifact:validate --"
   },
   "workspaces": {
     "packages": [

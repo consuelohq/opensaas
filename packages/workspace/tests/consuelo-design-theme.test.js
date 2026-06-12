@@ -47,7 +47,8 @@ test('emits valid generated version-history server strings', () => {
 });
 
 test('restarts generated archive server after rewriting it', () => {
-  expect(source).toContain("writeArchiveServer(ip);\n  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;\n  await stopArchiveServer();");
+  expect(source).toContain("async function ensureArchiveServer(ip: string): Promise<string> {\n  try {\n    writeArchiveServer(ip);\n    const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;\n    await stopArchiveServer();");
+  expect(source).toContain('failed to ensure Consuelo Sites archive server');
 });
 
 test('guards design wiki publishes against stale page revisions', () => {
@@ -219,5 +220,3 @@ test('tunes mobile launcher closer to the Pierre reference', () => {
     expect(source).toContain(marker);
   }
 });
-
-

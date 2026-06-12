@@ -1,0 +1,73 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-workflow-intent-bundles",
+  "base": "origin/stream/os",
+  "headSha": "c3b017a609a1e14477a0766e4763908f55f0f7bc",
+  "changeHash": "b5de4088826f5039dedf8bcbd572bcc34a65163ba1ca17aa765a2e01cb15acf5",
+  "changedFiles": [
+    "packages/os/hooks/README.md",
+    "packages/os/hooks/intent.js",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/intent.js",
+    "packages/os/tests/workflow-intent.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/workflows.json"
+  ],
+  "verifiedAt": "2026-06-11T21:25:20.723Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-workflow-intent-bundles/current.json",
+        ".task/os/add-workflow-intent-bundles/evidence-log.json",
+        ".task/os/add-workflow-intent-bundles/read-log.json",
+        ".task/os/add-workflow-intent-bundles/session.json",
+        ".task/os/add-workflow-intent-bundles/workpad.md",
+        ".task/tasks/os/add-workflow-intent-bundles.json",
+        "packages/os/hooks/README.md",
+        "packages/os/hooks/intent.js",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/package.json",
+        "packages/os/scripts/generate-tool-manifest.ts",
+        "packages/os/scripts/intent.js",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/os/tooling/workflows.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
