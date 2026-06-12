@@ -21,21 +21,26 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain('skills, artifacts, agents, and health');
   });
 
-  test('workspace identity is a real first-user prompt before local compute setup', () => {
+  test('workspace identity is a real first-user prompt before local setup', () => {
     expect(install).toContain('workspaceHost');
     expect(install).toContain('workspaceSlug');
-    expect(install).toContain('workspaceActivation');
     expect(install).toContain("message: 'Consuelo workspace URL'");
     expect(install).toContain("message: 'workspace short name'");
-    expect(install).toContain("message: 'connect workspace identity'");
-    expect(install).toContain('startWorkspaceDeviceAuthorization');
     expect(install).toContain('createManualWorkspaceBootstrap');
+    expect(install).toContain('workspace URL is required');
+    expect(install).not.toContain('workspaceActivation');
+    expect(install).not.toContain('startWorkspaceDeviceAuthorization');
+    expect(install).not.toContain('device-authorization');
+    expect(install).not.toContain('app.consuelohq.com/os/activate');
+    expect(install).not.toContain('internal.consuelohq.com');
   });
 
-  test('local and cloud modes are compute placement choices behind the same URL layer', () => {
-    expect(install).toContain("label: 'local compute'");
-    expect(install).toContain("label: 'cloud compute'");
-    expect(install).toContain('workspace URL stays the stable access path');
+  test('local and cloud mode labels are plain choices', () => {
+    expect(install).toContain("label: 'local'");
+    expect(install).toContain("label: 'cloud'");
+    expect(install).not.toContain("label: 'local compute'");
+    expect(install).not.toContain("label: 'cloud compute'");
+    expect(install).not.toContain('workspace URL stays the stable access path');
     expect(install).not.toContain('connect to cloud OS');
   });
 
