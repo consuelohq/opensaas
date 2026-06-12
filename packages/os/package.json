@@ -89,6 +89,7 @@
     "cloudflare:workspace-edge:deploy:dry-run": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run",
     "cloudflare:workspace-edge:deploy": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml",
     "cloudflare:workspace-edge:migrate": "wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:seed": "bun ./scripts/seed-workspace-edge-route.ts",
     "smoke:workspace-edge": "bun ./scripts/smoke-workspace-edge.ts"
   },
   "dependencies": {
