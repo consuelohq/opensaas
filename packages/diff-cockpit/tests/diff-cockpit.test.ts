@@ -618,6 +618,8 @@ describe('renderIndexPage', () => {
     expect(html).toContain('command-bottom-drawer');
     expect(html).toContain('const sectionPageSize = 10');
     expect(html).toContain('data-load-more');
+    expect(html).toContain('pr-author-avatar');
+    expect(html).toContain('renderAuthorAvatar');
     expect(html).toContain('Load more');
     expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');

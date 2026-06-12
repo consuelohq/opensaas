@@ -16,6 +16,7 @@ export type GitHubPullRequest = {
   state: string;
   draft: boolean;
   author: string;
+  authorAvatarUrl?: string;
   headRef: string;
   headSha: string;
   baseRef: string;
@@ -1366,6 +1367,7 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
     state: stringValue(source.state, 'unknown'),
     draft: booleanValue(source.draft),
     author: stringValue(user?.login, 'unknown'),
+    authorAvatarUrl: stringValue(user?.avatar_url, ''),
     headRef: stringValue(head?.ref, ''),
     headSha: stringValue(head?.sha, ''),
     baseRef: stringValue(base?.ref, ''),
@@ -1461,7 +1463,7 @@ fragment PullRequestIndexNode on PullRequest {
   deletions
   changedFiles
   mergeStateStatus
-  author { login }
+  author { login avatarUrl }
   headRefName
   headRefOid
   baseRefName
@@ -1480,6 +1482,7 @@ function normalizeGraphqlPullRequestSummary(repo: RepoLocator, input: unknown): 
     state: state === 'merged' ? 'closed' : state,
     draft: booleanValue(source.isDraft),
     author: stringValue(author?.login, 'unknown'),
+    authorAvatarUrl: stringValue(author?.avatarUrl, ''),
     headRef: stringValue(source.headRefName, ''),
     headSha: stringValue(source.headRefOid, ''),
     baseRef: stringValue(source.baseRefName, ''),
@@ -2739,11 +2742,14 @@ h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weig
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
 .post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.pr-row { grid-template-columns:32px minmax(0, 1fr) minmax(260px, auto); gap:12px; }
 .index-page .post-item[data-card-route] { cursor:pointer; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+.pr-author-avatar { width:32px; height:32px; border-radius:999px; object-fit:cover; background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+.pr-author-avatar-fallback { display:grid; place-items:center; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.02em; }
 .pr-row-main { min-width:0; display:grid; gap:2px; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2892,6 +2898,8 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   h1 { font-size:38px; }
   footer { flex-direction:column; align-items:flex-start; }
   .post-item { grid-template-columns:1fr; gap:8px; }
+  .pr-row { grid-template-columns:28px minmax(0, 1fr); gap:10px; }
+  .pr-author-avatar { width:28px; height:28px; }
   .pr-row-side { grid-template-columns:auto auto auto; justify-content:flex-start; flex-wrap:wrap; min-width:0; }
   .command-button { display:none; }
   .mobile-command-fab { display:flex; }
@@ -2904,7 +2912,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-section summary h2 { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:15px; font-weight:800; }
   .index-page .section-count { font-size:15px; font-weight:700; color:var(--muted); }
   .index-page .post-list { border-top:0; gap:10px; }
-  .index-page .post-item { position:relative; grid-template-columns:1fr; min-height:112px; gap:8px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .index-page .post-item { position:relative; grid-template-columns:28px minmax(0,1fr) auto; min-height:112px; gap:8px 10px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
   .index-page .post-item::before { content:""; position:absolute; left:24px; top:29px; width:10px; height:10px; border-radius:999px; background:#ff6257; box-shadow:0 0 14px rgba(255,98,87,.45); }
   .index-page .post-item[data-state="merged"]::before { background:#8b5cf6; box-shadow:0 0 14px rgba(139,92,246,.42); }
   .index-page .post-item[data-state="draft"]::before, .index-page .post-item[data-state="closed"]::before { background:var(--quiet); box-shadow:none; }
@@ -2956,14 +2964,15 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
   .index-page .post-list{border-top:0;gap:0;}
   
-  .index-page .post-item{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
+  .index-page .post-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
   .index-page .post-item:last-child{border-bottom:0;}
   .index-page .post-item:hover{background:rgba(255,255,255,.035);}
   
   
   
   .index-page .post-item:before,.index-page .post-item:after{content:none;}
-  .index-page .pr-row-main{grid-column:1;grid-row:1 / span 2;min-width:0;gap:2px;}
+  .index-page .pr-author-avatar{grid-column:1;grid-row:1 / span 2;align-self:center;}
+  .index-page .pr-row-main{grid-column:2;grid-row:1 / span 2;min-width:0;gap:2px;}
   .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
   .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
   .index-page .pr-title-line a{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;}
@@ -2971,7 +2980,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
   .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
   .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
+  .index-page .pr-row-side{grid-column:3;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
   .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
   .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
   .index-page .mergeability-icon.mergeability-mergeable{border-color:#2f7d46;background:#2f7d46;color:#07110a;}
@@ -3198,9 +3207,23 @@ function renderCard(pull) {
   const mobileMeta = '#' + pull.number + ' ' + stream;
   const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
   return '<article class="post-item pr-row" role="link" tabindex="0" data-card-route="' + escapeText(route) + '" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+    renderAuthorAvatar(pull) +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
     '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
+}
+function renderAuthorAvatar(pull) {
+  const author = pull.author || 'unknown';
+  const avatarUrl = pull.authorAvatarUrl || '';
+  if (avatarUrl) {
+    return '<img class="pr-author-avatar" src="' + escapeText(avatarUrl) + '" alt="' + escapeText(author + ' avatar') + '" loading="lazy" referrerpolicy="no-referrer" />';
+  }
+  return '<span class="pr-author-avatar pr-author-avatar-fallback" aria-label="' + escapeText(author + ' avatar') + '">' + escapeText(authorInitials(author)) + '</span>';
+}
+function authorInitials(value) {
+  const clean = String(value || '').replace(/[^a-z0-9]+/gi, ' ').trim();
+  if (!clean) return '?';
+  return clean.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
 function renderSection(section) {
