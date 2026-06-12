@@ -138,6 +138,7 @@ const REQUIRED_DIRS = [
   'src',
   'tooling',
   'manifests',
+  'hooks',
   'artifacts',
   'pages',
   'sites',
@@ -169,7 +170,7 @@ function resolveBundledOperatorRoot(): string {
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests'] as const;
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
@@ -1439,6 +1440,38 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         : `${requiredPath} is missing`,
     });
   }
+
+  const runtimeModuleGroups = [
+    {
+      name: 'runtime:intent',
+      files: [
+        'scripts/intent.js',
+        'hooks/intent.js',
+        'hooks/dispatcher.js',
+        'manifests/workflow-bundles.json',
+      ],
+    },
+    {
+      name: 'runtime:task-hook',
+      files: [
+        'scripts/task-hook.js',
+        'hooks/task/guidance.js',
+        'hooks/task/workflow.js',
+        'hooks/dispatcher.js',
+      ],
+    },
+  ] as const;
+
+  for (const group of runtimeModuleGroups) {
+    const missing = group.files.filter((file) => !fs.existsSync(path.join(resolvedHome, file)));
+    checks.push({
+      name: group.name,
+      status: missing.length === 0 ? 'connected' : 'unhealthy',
+      message: missing.length === 0
+        ? `${group.files.join(', ')} exist`
+        : `missing ${missing.join(', ')}`,
+    });
+  }
   try {
     const { Database } = await import('bun:sqlite');
     const db = new Database(path.join(resolvedHome, 'consuelo.db'));
@@ -1543,5 +1576,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
+
 
 
