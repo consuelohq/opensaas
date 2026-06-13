@@ -1196,7 +1196,8 @@ function writeArchiveServer(ip: string): void {
     'const decisionInfrastructureUrl = ' + JSON.stringify(DESIGN_DECISION_INFRASTRUCTURE_URL) + ';',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
-    'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
+    'const launcherCacheControl = "public, max-age=60, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800";',
+    'function h(type, cache){ const base = { "Cache-Control": cache === "launcher" ? launcherCacheControl : "no-store" }; if (type) base["Content-Type"] = type; return base; }',
     'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
     'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
     'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
@@ -1248,11 +1249,11 @@ function writeArchiveServer(ip: string): void {
     <section class="block" aria-label="Sites">
       <p class="label">SITES:</p>
       <ul>
-        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" data-hotkey="1" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" data-hotkey="4" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" data-hotkey="5" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
@@ -1263,11 +1264,31 @@ function writeArchiveServer(ip: string): void {
       </ul>
     </section>
   </main>
+  <script>
+    const siteHotkeys = {
+      "1": "https://app.consuelohq.com/welcome",
+      "2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}",
+      "3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing",
+      "4": "https://diffs.consuelohq.com",
+      "5": "${DESIGN_DOCS_URL}",
+    };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const target = event.target;
+      const tagName = target && target.tagName ? target.tagName.toLowerCase() : "";
+      if (tagName === "input" || tagName === "textarea" || (target && target.isContentEditable)) return;
+      const href = siteHotkeys[event.key];
+      if (!href) return;
+      event.preventDefault();
+      window.location.assign(href);
+    });
+  </script>
 </body>
 </html>`) + '; }',
     `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(officePathFor(version.path)) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? officePathFor(page.path) : officeArchivePath) + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href="' + safe(officeArchivePath) + '">Open Consuelo Sites</a></p></main></body></html>'; }`,
     'function entryForVersionRoute(pages, pathname){ const pageList = Object.values(pages || {}); for (const page of pageList){ if (!page || !page.path) continue; const base = page.path.endsWith("/") ? page.path.slice(0, -1) : page.path; const historyPath = base + "/versions"; if (pathname === historyPath || pathname === historyPath + "/") return { kind: "history", page }; if (pathname.startsWith(historyPath + "/")){ const parts = pathname.slice((historyPath + "/").length).split("/").filter(Boolean); const versionId = parts.shift(); const version = Array.isArray(page.versions) ? page.versions.find((item) => item && item.versionId === versionId) : null; if (version) return { kind: "version", page, version, suffix: parts.join("/") }; } } return null; }',
-    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const diffs = await proxyDiffsRoute(request); if (diffs) return diffs; const routePathname = publicRouteAlias(url.pathname); const pagefind = pagefindSuffix(routePathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(routePathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8", "launcher") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const diffs = await proxyDiffsRoute(request); if (diffs) return diffs; const routePathname = publicRouteAlias(url.pathname); const pagefind = pagefindSuffix(routePathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(routePathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
   ];
   writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
 }
@@ -2253,3 +2274,4 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
+
