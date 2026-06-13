@@ -1,0 +1,9 @@
+{
+  "files": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/scripts/os-release.ts"
+  ],
+  "updatedAt": "2026-06-13T16:14:53.082Z"
+}
