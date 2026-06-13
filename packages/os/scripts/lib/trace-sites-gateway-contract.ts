@@ -1,12 +1,25 @@
 export const TRACE_SITES_GATEWAY_CONTRACT_VERSION = '2026-06-13.pr1';
 
+export const TRACE_SITES = ['trace', 'trace-burn-intelligence'] as const;
+
+export type TraceSiteSlug = (typeof TRACE_SITES)[number];
 export type TraceSourceMode = 'local-networked' | 'cloud-compute' | 'local-off-network';
 export type TraceComputeRuntime = 'local-macos' | 'local-linux' | 'cloud-linux' | 'cloud-macos' | 'unknown';
 export type TraceRedactionStatus = 'redacted' | 'summarized' | 'raw';
 export type TraceServiceName = 'trace-read' | 'trace-ingest' | 'runner-control' | 'aggregate-cache';
 export type TraceGatewayRouteKind = 'read' | 'ingest' | 'live-events' | 'runner-control';
 export type TraceGatewayPublicBoundary = 'consuelo-gateway';
-export type TraceDirectBackendTarget = 'local-trace-db' | 'local-agent' | 'cloud-runner' | 'trace-store-file';
+export type TraceDirectBackendTarget = 'local-trace-db' | 'local-agent' | 'cloud-runner' | 'trace-store-file' | 'raw-trace-service';
+export type TraceGatewayBoundaryResponsibility =
+  | 'auth-session-scope'
+  | 'workspace-routing'
+  | 'allow-deny'
+  | 'rate-limits'
+  | 'service-discovery'
+  | 'protocol-translation'
+  | 'cache-materialized-aggregates'
+  | 'circuit-breaking'
+  | 'logs-metrics-analytics';
 
 export type TraceSitesArchitectureMode = {
   sourceMode: TraceSourceMode;
@@ -59,6 +72,11 @@ export type TraceGatewayDiscovery = {
   runnerControlService: TraceServiceName | null;
   sitesHydration: TraceSitesArchitectureMode['sitesHydration'];
   relayStatus: 'required' | 'not-required' | 'bridge-required';
+  traceBackendLocation: 'hosted-trace-backend' | null;
+  localRelayConnection: 'connected-through-consuelo-network' | 'bridge-required' | null;
+  cloudRunnerPool: 'consuelo-managed-runner-pool' | null;
+  retentionPolicyService: 'workspace-retention-policy' | null;
+  redactionPolicyService: 'workspace-redaction-policy' | null;
 };
 
 export type TraceIngestEnvelope = {
@@ -84,6 +102,9 @@ export type TraceIngestValidationError =
   | 'MISSING_SOURCE_MODE'
   | 'SOURCE_MODE_NOT_ALLOWED'
   | 'LOCAL_OFF_NETWORK_OUT_OF_SCOPE'
+  | 'MISSING_COMPUTE_RUNTIME'
+  | 'MISSING_RUNNER_ID'
+  | 'MISSING_SESSION_ID'
   | 'MISSING_TRACE_ID'
   | 'MISSING_CURSOR'
   | 'MISSING_IDEMPOTENCY_KEY'
@@ -93,6 +114,35 @@ export type TraceIngestValidationError =
 export type TraceIngestValidation = {
   ok: boolean;
   errors: TraceIngestValidationError[];
+};
+
+export type TraceReadQuery = {
+  workspaceId?: string;
+  workspaceHost?: string;
+  site?: string;
+  cursor?: string;
+  limit?: number;
+  includeRawPayload?: boolean;
+  requesterCanReadRawPayload?: boolean;
+};
+
+export type TraceReadPolicy = {
+  maxWindowSize: number;
+  allowedSites: readonly TraceSiteSlug[];
+  rawPayloadDefault: false;
+};
+
+export type TraceReadValidationError =
+  | 'MISSING_WORKSPACE_ID'
+  | 'MISSING_WORKSPACE_HOST'
+  | 'SITE_NOT_ALLOWED'
+  | 'MISSING_CURSOR'
+  | 'TRACE_WINDOW_TOO_LARGE'
+  | 'RAW_PAYLOAD_ACCESS_DENIED';
+
+export type TraceReadValidation = {
+  ok: boolean;
+  errors: TraceReadValidationError[];
 };
 
 export type TraceGatewayResilienceInput = {
@@ -136,10 +186,55 @@ export type TraceSitesDashboardSummary = {
   sourceModes: TraceSourceMode[];
 };
 
+export type TraceSitesLiveState = {
+  cursor: string;
+  events: TraceSitesDashboardEvent[];
+};
+
+export type TraceSitesLiveDelta = {
+  cursor: string;
+  event: TraceSitesDashboardEvent;
+};
+
+export type TraceSitesLiveDashboardState = TraceSitesLiveState & {
+  summary: TraceSitesDashboardSummary;
+};
+
+export const TRACE_GATEWAY_BOUNDARY_RESPONSIBILITIES: TraceGatewayBoundaryResponsibility[] = [
+  'auth-session-scope',
+  'workspace-routing',
+  'allow-deny',
+  'rate-limits',
+  'service-discovery',
+  'protocol-translation',
+  'cache-materialized-aggregates',
+  'circuit-breaking',
+  'logs-metrics-analytics',
+];
+
 export const DEFAULT_TRACE_INGEST_POLICY: TraceIngestPolicy = {
   maxPayloadBytes: 64 * 1024,
   allowedSourceModes: ['local-networked', 'cloud-compute'],
 };
+
+export const DEFAULT_TRACE_READ_POLICY: TraceReadPolicy = {
+  maxWindowSize: 100,
+  allowedSites: TRACE_SITES,
+  rawPayloadDefault: false,
+};
+
+export const TRACE_SITES_LIVE_UPDATE_CONTRACT = {
+  snapshotRoute: '/gateway/traces/recent',
+  eventRoute: '/gateway/traces/events',
+  primaryTransport: 'server-sent-events',
+  fallbackTransport: 'cursor-polling',
+  futureTransport: 'websocket',
+  hydration: 'snapshot-before-live-deltas',
+  ordering: 'workspace-cursor',
+  deltaShape: 'append-only-redacted-events',
+  dedupeKey: 'idempotencyKey',
+  replayWindow: 'bounded-cursor-window',
+} as const;
 
 export const TRACE_RETENTION_POLICY_CONTRACT = {
   policyType: 'workspace-config',
@@ -259,8 +354,12 @@ export function isDirectTraceBackendTarget(target: TraceGatewayPublicBoundary | 
   return target !== 'consuelo-gateway';
 }
 
-export function canScopeReadTraceSites(scope: TraceGatewaySessionScope, workspaceHost: string): boolean {
-  return scope.traceRead && scope.workspaceHost === workspaceHost && scope.allowedSites.includes('trace-burn-intelligence');
+export function canScopeReadTraceSites(
+  scope: TraceGatewaySessionScope,
+  workspaceHost: string,
+  site: TraceSiteSlug = 'trace-burn-intelligence',
+): boolean {
+  return scope.traceRead && scope.workspaceHost === workspaceHost && scope.allowedSites.includes(site);
 }
 
 export function resolveTraceGatewayDiscovery(input: TraceGatewayDiscoveryInput): TraceGatewayDiscovery {
@@ -277,6 +376,11 @@ export function resolveTraceGatewayDiscovery(input: TraceGatewayDiscoveryInput):
       runnerControlService: null,
       sitesHydration: 'unavailable-without-bridge',
       relayStatus: 'bridge-required',
+      traceBackendLocation: null,
+      localRelayConnection: 'bridge-required',
+      cloudRunnerPool: null,
+      retentionPolicyService: null,
+      redactionPolicyService: null,
     };
   }
 
@@ -290,6 +394,11 @@ export function resolveTraceGatewayDiscovery(input: TraceGatewayDiscoveryInput):
     runnerControlService: input.sourceMode === 'cloud-compute' ? 'runner-control' : null,
     sitesHydration: mode.sitesHydration,
     relayStatus: input.sourceMode === 'local-networked' ? 'required' : 'not-required',
+    traceBackendLocation: 'hosted-trace-backend',
+    localRelayConnection: input.sourceMode === 'local-networked' ? 'connected-through-consuelo-network' : null,
+    cloudRunnerPool: input.sourceMode === 'cloud-compute' ? 'consuelo-managed-runner-pool' : null,
+    retentionPolicyService: 'workspace-retention-policy',
+    redactionPolicyService: 'workspace-redaction-policy',
   };
 }
 
@@ -303,6 +412,9 @@ export function validateTraceIngestEnvelope(
   if (!envelope.sourceMode) errors.push('MISSING_SOURCE_MODE');
   if (envelope.sourceMode && !policy.allowedSourceModes.includes(envelope.sourceMode)) errors.push('SOURCE_MODE_NOT_ALLOWED');
   if (envelope.sourceMode === 'local-off-network') errors.push('LOCAL_OFF_NETWORK_OUT_OF_SCOPE');
+  if (!envelope.computeRuntime) errors.push('MISSING_COMPUTE_RUNTIME');
+  if (!envelope.runnerId) errors.push('MISSING_RUNNER_ID');
+  if (!envelope.sessionId) errors.push('MISSING_SESSION_ID');
   if (!envelope.traceId) errors.push('MISSING_TRACE_ID');
   if (!envelope.cursor) errors.push('MISSING_CURSOR');
   if (!envelope.idempotencyKey) errors.push('MISSING_IDEMPOTENCY_KEY');
@@ -310,6 +422,19 @@ export function validateTraceIngestEnvelope(
   if (envelope.redactionStatus !== 'redacted' && envelope.redactionStatus !== 'summarized') {
     errors.push('TRACE_PAYLOAD_NOT_REDACTED');
   }
+
+  return { ok: errors.length === 0, errors };
+}
+
+export function validateTraceReadQuery(query: TraceReadQuery, policy: TraceReadPolicy = DEFAULT_TRACE_READ_POLICY): TraceReadValidation {
+  const errors: TraceReadValidationError[] = [];
+
+  if (!query.workspaceId) errors.push('MISSING_WORKSPACE_ID');
+  if (!query.workspaceHost) errors.push('MISSING_WORKSPACE_HOST');
+  if (!query.site || !isTraceSiteSlug(query.site) || !policy.allowedSites.includes(query.site)) errors.push('SITE_NOT_ALLOWED');
+  if (!query.cursor) errors.push('MISSING_CURSOR');
+  if ((query.limit ?? policy.maxWindowSize) > policy.maxWindowSize) errors.push('TRACE_WINDOW_TOO_LARGE');
+  if (query.includeRawPayload && !query.requesterCanReadRawPayload) errors.push('RAW_PAYLOAD_ACCESS_DENIED');
 
   return { ok: errors.length === 0, errors };
 }
@@ -356,6 +481,41 @@ export function resolveTraceGatewayResilienceState(input: TraceGatewayResilience
     dashboardData: 'fresh',
     retryPolicy: 'normal',
     userVisibleState: 'healthy',
+  };
+}
+
+export function applyTraceSitesLiveDeltas(state: TraceSitesLiveState, deltas: TraceSitesLiveDelta[]): TraceSitesLiveDashboardState {
+  const uniqueEvents = new Map<string, TraceSitesDashboardEvent>();
+
+  for (const event of state.events) {
+    if (!uniqueEvents.has(event.idempotencyKey)) {
+      uniqueEvents.set(event.idempotencyKey, event);
+    }
+  }
+
+  let cursor = state.cursor;
+  const orderedDeltas = [...deltas].sort((left, right) => compareTraceCursors(left.cursor, right.cursor));
+
+  for (const delta of orderedDeltas) {
+    if (compareTraceCursors(delta.cursor, state.cursor) <= 0) {
+      continue;
+    }
+
+    if (compareTraceCursors(delta.cursor, cursor) > 0) {
+      cursor = delta.cursor;
+    }
+
+    if (!uniqueEvents.has(delta.event.idempotencyKey)) {
+      uniqueEvents.set(delta.event.idempotencyKey, delta.event);
+    }
+  }
+
+  const events = [...uniqueEvents.values()];
+
+  return {
+    cursor,
+    events,
+    summary: reduceTraceSitesDashboard(events),
   };
 }
 
@@ -409,6 +569,14 @@ export function reduceTraceSitesDashboard(events: TraceSitesDashboardEvent[]): T
       .sort((left, right) => right.count - left.count || left.cause.localeCompare(right.cause)),
     sourceModes: [...sourceModes].sort(),
   };
+}
+
+function isTraceSiteSlug(site: string): site is TraceSiteSlug {
+  return (TRACE_SITES as readonly string[]).includes(site);
+}
+
+function compareTraceCursors(left: string, right: string): number {
+  return left.localeCompare(right);
 }
 
 function sortTokenMap<TName extends 'branch' | 'tool'>(values: Map<string, number>, key: TName): Array<Record<TName, string> & { tokens: number }> {

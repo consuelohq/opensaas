@@ -2,9 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_TRACE_INGEST_POLICY,
+  DEFAULT_TRACE_READ_POLICY,
+  TRACE_GATEWAY_BOUNDARY_RESPONSIBILITIES,
   TRACE_GATEWAY_ROUTES,
   TRACE_RETENTION_POLICY_CONTRACT,
+  TRACE_SITES,
   TRACE_SITES_GATEWAY_CONTRACT_VERSION,
+  TRACE_SITES_LIVE_UPDATE_CONTRACT,
+  applyTraceSitesLiveDeltas,
   canScopeReadTraceSites,
   getTraceGatewayRoutesForSites,
   getTraceSitesArchitectureMode,
@@ -14,12 +19,14 @@ import {
   resolveTraceGatewayDiscovery,
   resolveTraceGatewayResilienceState,
   validateTraceIngestEnvelope,
+  validateTraceReadQuery,
   type TraceGatewaySessionScope,
 } from '../scripts/lib/trace-sites-gateway-contract';
 
 describe('Trace Sites gateway architecture contract', () => {
-  it('locks the PR1 contract version and the three source modes', () => {
+  it('locks the PR1 contract version, source modes, and hosted Trace Sites', () => {
     expect(TRACE_SITES_GATEWAY_CONTRACT_VERSION).toBe('2026-06-13.pr1');
+    expect(TRACE_SITES).toEqual(['trace', 'trace-burn-intelligence']);
     expect(listTraceSitesArchitectureModes().map((mode) => mode.sourceMode).sort()).toEqual([
       'cloud-compute',
       'local-networked',
@@ -63,8 +70,22 @@ describe('Trace Sites gateway architecture contract', () => {
     expect(sitesRoutes.map((route) => route.name).sort()).toEqual(['aggregates', 'events', 'ingest', 'recent', 'summary']);
     expect(sitesRoutes.every((route) => route.publicBoundary === 'consuelo-gateway')).toBe(true);
     expect(sitesRoutes.every((route) => route.path.startsWith('/gateway/'))).toBe(true);
-    expect(['local-trace-db', 'local-agent', 'cloud-runner', 'trace-store-file'].every(isDirectTraceBackendTarget)).toBe(true);
+    expect(['local-trace-db', 'local-agent', 'cloud-runner', 'trace-store-file', 'raw-trace-service'].every(isDirectTraceBackendTarget)).toBe(true);
     expect(isDirectTraceBackendTarget('consuelo-gateway')).toBe(false);
+  });
+
+  it('defines gateway responsibilities as the public system-design layer', () => {
+    expect(TRACE_GATEWAY_BOUNDARY_RESPONSIBILITIES).toEqual([
+      'auth-session-scope',
+      'workspace-routing',
+      'allow-deny',
+      'rate-limits',
+      'service-discovery',
+      'protocol-translation',
+      'cache-materialized-aggregates',
+      'circuit-breaking',
+      'logs-metrics-analytics',
+    ]);
   });
 
   it('defines the read, live, ingest, and runner-control gateway surfaces', () => {
@@ -83,7 +104,7 @@ describe('Trace Sites gateway architecture contract', () => {
       userId: 'usr_123',
       workspaceId: 'wrk_123',
       workspaceHost: 'testing.consuelohq.com',
-      allowedSites: ['trace-burn-intelligence'],
+      allowedSites: ['trace', 'trace-burn-intelligence'],
       traceRead: true,
       traceWrite: false,
       runnerControl: false,
@@ -91,10 +112,11 @@ describe('Trace Sites gateway architecture contract', () => {
       retentionPolicyId: 'ret_workspace_default',
     };
 
-    expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com')).toBe(true);
-    expect(canScopeReadTraceSites({ ...scope, traceRead: false }, 'testing.consuelohq.com')).toBe(false);
-    expect(canScopeReadTraceSites({ ...scope, allowedSites: ['office'] }, 'testing.consuelohq.com')).toBe(false);
-    expect(canScopeReadTraceSites(scope, 'other.consuelohq.com')).toBe(false);
+    expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com', 'trace')).toBe(true);
+    expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com', 'trace-burn-intelligence')).toBe(true);
+    expect(canScopeReadTraceSites({ ...scope, traceRead: false }, 'testing.consuelohq.com', 'trace')).toBe(false);
+    expect(canScopeReadTraceSites({ ...scope, allowedSites: ['office'] }, 'testing.consuelohq.com', 'trace')).toBe(false);
+    expect(canScopeReadTraceSites(scope, 'other.consuelohq.com', 'trace')).toBe(false);
   });
 });
 
@@ -111,6 +133,11 @@ describe('Trace Sites gateway routing and ingest contracts', () => {
       runnerControlService: null,
       sitesHydration: 'consuelo-gateway',
       relayStatus: 'required',
+      traceBackendLocation: 'hosted-trace-backend',
+      localRelayConnection: 'connected-through-consuelo-network',
+      cloudRunnerPool: null,
+      retentionPolicyService: 'workspace-retention-policy',
+      redactionPolicyService: 'workspace-redaction-policy',
     });
   });
 
@@ -126,6 +153,11 @@ describe('Trace Sites gateway routing and ingest contracts', () => {
       runnerControlService: 'runner-control',
       sitesHydration: 'consuelo-gateway',
       relayStatus: 'not-required',
+      traceBackendLocation: 'hosted-trace-backend',
+      localRelayConnection: null,
+      cloudRunnerPool: 'consuelo-managed-runner-pool',
+      retentionPolicyService: 'workspace-retention-policy',
+      redactionPolicyService: 'workspace-redaction-policy',
     });
   });
 
@@ -141,10 +173,13 @@ describe('Trace Sites gateway routing and ingest contracts', () => {
       runnerControlService: null,
       sitesHydration: 'unavailable-without-bridge',
       relayStatus: 'bridge-required',
+      traceBackendLocation: null,
+      localRelayConnection: 'bridge-required',
+      cloudRunnerPool: null,
     });
   });
 
-  it('requires workspace identity, allowed source mode, redaction, bounded payload, cursor, and idempotency for ingest', () => {
+  it('requires workspace identity, allowed source mode, source metadata, redaction, bounded payload, cursor, and idempotency for ingest', () => {
     expect(validateTraceIngestEnvelope({
       workspaceId: 'wrk_123',
       sourceMode: 'local-networked',
@@ -167,11 +202,131 @@ describe('Trace Sites gateway routing and ingest contracts', () => {
       'MISSING_WORKSPACE_ID',
       'SOURCE_MODE_NOT_ALLOWED',
       'LOCAL_OFF_NETWORK_OUT_OF_SCOPE',
+      'MISSING_COMPUTE_RUNTIME',
+      'MISSING_RUNNER_ID',
+      'MISSING_SESSION_ID',
       'MISSING_CURSOR',
       'MISSING_IDEMPOTENCY_KEY',
       'TRACE_PAYLOAD_TOO_LARGE',
       'TRACE_PAYLOAD_NOT_REDACTED',
     ]));
+  });
+
+  it('keeps Sites read queries scoped, cursor-windowed, and redacted by default', () => {
+    expect(validateTraceReadQuery({
+      workspaceId: 'wrk_123',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace',
+      cursor: '00000001',
+      limit: DEFAULT_TRACE_READ_POLICY.maxWindowSize,
+      includeRawPayload: false,
+    })).toEqual({ ok: true, errors: [] });
+
+    expect(validateTraceReadQuery({
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'office',
+      limit: DEFAULT_TRACE_READ_POLICY.maxWindowSize + 1,
+      includeRawPayload: true,
+    }).errors).toEqual(expect.arrayContaining([
+      'MISSING_WORKSPACE_ID',
+      'SITE_NOT_ALLOWED',
+      'MISSING_CURSOR',
+      'TRACE_WINDOW_TOO_LARGE',
+      'RAW_PAYLOAD_ACCESS_DENIED',
+    ]));
+  });
+});
+
+describe('Trace Sites gateway live update contract', () => {
+  it('uses snapshot-first SSE with cursor polling fallback and WebSocket as a future transport', () => {
+    expect(TRACE_SITES_LIVE_UPDATE_CONTRACT).toEqual({
+      snapshotRoute: '/gateway/traces/recent',
+      eventRoute: '/gateway/traces/events',
+      primaryTransport: 'server-sent-events',
+      fallbackTransport: 'cursor-polling',
+      futureTransport: 'websocket',
+      hydration: 'snapshot-before-live-deltas',
+      ordering: 'workspace-cursor',
+      deltaShape: 'append-only-redacted-events',
+      dedupeKey: 'idempotencyKey',
+      replayWindow: 'bounded-cursor-window',
+    });
+  });
+
+  it('applies live deltas after the snapshot cursor without double-counting idempotent retries', () => {
+    const liveState = applyTraceSitesLiveDeltas({
+      cursor: '00000002',
+      events: [
+        {
+          traceId: 'trc_local_1',
+          idempotencyKey: 'wrk:trc_local_1:1',
+          sourceMode: 'local-networked',
+          branch: 'task/sites/trace-live-system-design-alignment',
+          tool: 'trace:watch',
+          inputTokens: 100,
+          outputTokens: 300,
+          costUsd: 0.01,
+          success: true,
+        },
+      ],
+    }, [
+      {
+        cursor: '00000001',
+        event: {
+          traceId: 'stale_delta',
+          idempotencyKey: 'wrk:stale:1',
+          sourceMode: 'local-networked',
+          branch: 'stale',
+          tool: 'trace:watch',
+          inputTokens: 5000,
+          outputTokens: 5000,
+          costUsd: 5,
+          success: true,
+        },
+      },
+      {
+        cursor: '00000003',
+        event: {
+          traceId: 'trc_cloud_1',
+          idempotencyKey: 'wrk:trc_cloud_1:1',
+          sourceMode: 'cloud-compute',
+          branch: 'task/sites/trace-live-system-design-alignment',
+          tool: 'runner.exec',
+          inputTokens: 50,
+          outputTokens: 150,
+          costUsd: 0.02,
+          success: false,
+          errorCause: 'RUNNER_SATURATED',
+        },
+      },
+      {
+        cursor: '00000004',
+        event: {
+          traceId: 'trc_cloud_1_retry',
+          idempotencyKey: 'wrk:trc_cloud_1:1',
+          sourceMode: 'cloud-compute',
+          branch: 'task/sites/trace-live-system-design-alignment',
+          tool: 'runner.exec',
+          inputTokens: 5000,
+          outputTokens: 5000,
+          costUsd: 5,
+          success: false,
+          errorCause: 'DUPLICATE_RETRY',
+        },
+      },
+    ]);
+
+    expect(liveState.cursor).toBe('00000004');
+    expect(liveState.summary).toMatchObject({
+      calls: 2,
+      totalTraceBurn: 600,
+      outputTokens: 450,
+      totalCostUsd: 0.03,
+      errorPressure: 0.5,
+      avgBurnPerCall: 300,
+      sourceModes: ['cloud-compute', 'local-networked'],
+    });
+    expect(liveState.summary.failureCauses).toEqual([{ cause: 'RUNNER_SATURATED', count: 1 }]);
   });
 });
 
