@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-06-13T14:44:15.255Z"
+}
