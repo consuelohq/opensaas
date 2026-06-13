@@ -1,5 +1,9 @@
 import { randomBytes } from 'node:crypto';
 
+export const CONSUELO_DEVICE_VERIFICATION_URL = 'https://consuelohq.com/login/device';
+export const CONSUELO_DEVICE_CODE_URL = 'https://consuelohq.com/login/device/code';
+export const CONSUELO_OAUTH_ACCESS_TOKEN_URL = 'https://consuelohq.com/login/oauth/access_token';
+
 export type WorkspaceDeviceAuthorizationSession = {
   deviceCode: string;
   userCode: string;
@@ -28,7 +32,7 @@ export type WorkspaceDeviceAuthorizationPollResult =
 export type WorkspaceDeviceAuthorizationStartInput = {
   clientId: string;
   scope: string[];
-  verificationBaseUrl: string;
+  verificationBaseUrl?: string;
   now?: string;
 };
 
@@ -89,11 +93,12 @@ export function startWorkspaceDeviceAuthorization(
   const expiresAtMs = createdAtMs + DEVICE_CODE_TTL_MS;
   const userCode = randomUserCode();
   const deviceCode = randomToken('dev', 24);
+  const verificationBaseUrl = input.verificationBaseUrl ?? CONSUELO_DEVICE_VERIFICATION_URL;
   const session: StoredDeviceAuthorizationSession = {
     deviceCode,
     userCode,
-    verificationUri: input.verificationBaseUrl,
-    verificationUriComplete: verificationUriComplete(input.verificationBaseUrl, userCode),
+    verificationUri: verificationBaseUrl,
+    verificationUriComplete: verificationUriComplete(verificationBaseUrl, userCode),
     expiresAt: new Date(expiresAtMs).toISOString(),
     intervalSeconds: DEFAULT_INTERVAL_SECONDS,
     clientId: input.clientId,
