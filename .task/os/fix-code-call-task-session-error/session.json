@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c9723eb31a5b",
+  "tmuxSession": "opensaas-os-fix-code-call-task-session-error-c9723eb3",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-code-call-task-session-error",
+  "branch": "task/os/fix-code-call-task-session-error",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-code-call-task-session-error",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-code-call-task-session-error",
+  "prNumber": 1025,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1025",
+  "createdAt": "2026-06-13T18:41:08.317Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-code-call-task-session-error/.task/os/fix-code-call-task-session-error/session.json"
+}

@@ -507,6 +507,44 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'VALIDATION_ERROR')
 
+    def test_task_session_allows_matching_input_branch_for_code_call(self):
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {'stdout': 'ok'},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call(
+                'code.call',
+                taskSession=self.session,
+                tool_input={
+                    'branch': 'task/workspace-agents/test',
+                    'language': 'python',
+                    'mode': 'read',
+                    'code': 'print("ok")',
+                },
+            )
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(resolved_input['branch'], 'task/workspace-agents/test')
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['branch'], 'task/workspace-agents/test')
+
     def test_task_session_and_nested_batch_branch_conflict_is_standard_error(self):
         result = self.module._run_workspace_call(
             'batch',
