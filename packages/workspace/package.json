@@ -48,7 +48,8 @@
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
     "worker": "bun ./scripts/worker.ts",
-    "os:release-install": "bun ./scripts/os-release-install.ts"
+    "os:release-install": "bun ./scripts/os-release-install.ts",
+    "os:release-device-auth": "wrangler deploy --config ../os/cloudflare/os-device-authority/wrangler.toml"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
