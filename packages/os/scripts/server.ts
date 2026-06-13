@@ -10,7 +10,11 @@ import {
   type VerificationResult,
 } from './lib/security-gateway';
 import type { CallInput } from './lib/types';
-import { createTraceSitesGatewayLiveEndpoints, traceGatewayScopeFromHeaders } from './lib/trace-sites-gateway-live-endpoints';
+import {
+  createTraceSitesGatewayLiveEndpoints,
+  traceGatewayScopeFromHeaders,
+  type TraceSitesGatewayLiveEndpoints,
+} from './lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
 
 const DEFAULT_PORT = 8850;
@@ -18,6 +22,8 @@ const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
 const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
 const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
+
+let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
 
 type JsonObject = Record<string, unknown>;
 type ToolCategory = 'read' | 'write' | 'dangerous';
@@ -170,7 +176,10 @@ function resolveTraceDbPath(): string {
   if (TRACE_DB_ENV) return TRACE_DB_ENV;
   const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
   if (home) return path.join(home, 'traces', 'traces.db');
-  return path.join(process.env.HOME ?? '', 'Library/Application Support/OpenWorkspace/traces/e8425497c3ee20bf0a28e9da/traces.db');
+  if (process.platform === 'darwin') return path.join(process.env.HOME ?? '', 'Library', 'Application Support', 'OpenWorkspace', 'traces', 'traces.db');
+  if (process.platform === 'win32') return path.join(process.env.APPDATA ?? process.env.HOME ?? '', 'OpenWorkspace', 'traces', 'traces.db');
+  const dataHome = process.env.XDG_DATA_HOME ?? path.join(process.env.HOME ?? '', '.local', 'share');
+  return path.join(dataHome, 'OpenWorkspace', 'traces', 'traces.db');
 }
 
 function isTraceGatewayReadRoute(pathname: string): boolean {
@@ -178,6 +187,22 @@ function isTraceGatewayReadRoute(pathname: string): boolean {
     pathname === '/gateway/traces/summary' ||
     pathname === '/gateway/traces/aggregates' ||
     pathname === '/gateway/traces/events';
+}
+
+function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
+  traceGatewayEndpointCache ??= createTraceSitesGatewayLiveEndpoints({
+    backend: createLocalTraceSitesReadBackend({ dbPath: resolveTraceDbPath() }),
+    resolveScope: (traceRequest) => {
+      const scope = traceGatewayScopeFromHeaders(traceRequest);
+      const config = loadAuthConfigForRequest();
+      return {
+        ...scope,
+        workspaceId: scope.workspaceId === 'workspace-unknown' ? config.workspaceId : scope.workspaceId,
+        workspaceHost: scope.workspaceHost === '127.0.0.1:8850' ? config.workspaceHost : scope.workspaceHost,
+      };
+    },
+  });
+  return traceGatewayEndpointCache;
 }
 
 function healthResponse(): Response {
@@ -205,19 +230,7 @@ async function handleRequest(request: Request): Promise<Response> {
     });
     if (denied) return denied;
 
-    const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createLocalTraceSitesReadBackend({ dbPath: resolveTraceDbPath() }),
-      resolveScope: (traceRequest) => {
-        const scope = traceGatewayScopeFromHeaders(traceRequest);
-        const config = loadAuthConfigForRequest();
-        return {
-          ...scope,
-          workspaceId: scope.workspaceId === 'workspace-unknown' ? config.workspaceId : scope.workspaceId,
-          workspaceHost: scope.workspaceHost === '127.0.0.1:8850' ? config.workspaceHost : scope.workspaceHost,
-        };
-      },
-    });
-    return endpoints.handle(request);
+    return traceGatewayEndpoints().handle(request);
   }
 
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
