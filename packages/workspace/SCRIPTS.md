@@ -81,6 +81,17 @@ Defaults:
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
 
 
+### trace:analytics — inspect local workspace trace token and error usage
+
+Operator-only report for the local OpenWorkspace trace database. It shows cumulative windows for the past day, week, and month, plus top tools, branches, errors, slow calls, and high-output calls.
+
+```bash
+bun run trace:analytics
+bun run trace:analytics -- --db=/path/to/traces.db
+```
+
+The `Trace history` section explains the retention horizon for the selected database. When `rows_older_than_week` is `0`, the `past_week` and `past_month` windows are expected to match because the trace database has no rows before the 7-day cutoff.
+
 ---
 
 ## code.run / code mode
