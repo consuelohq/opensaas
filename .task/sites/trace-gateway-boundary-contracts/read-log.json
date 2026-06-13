@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/sites/trace-gateway-boundary-contracts/workpad.md",
+    "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/trace-sites-gateway-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-13T12:57:22.962Z"
+}
