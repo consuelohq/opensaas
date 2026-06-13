@@ -104,26 +104,6 @@ msgid "Verify Email"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr ""
@@ -146,6 +126,26 @@ msgstr ""
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
