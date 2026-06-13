@@ -31,9 +31,7 @@ import {
   type OsMode,
   type WorkspaceBootstrap,
 } from './lib/install-state';
-import { startWorkspaceDeviceAuthorization } from './lib/workspace-device-authorization';
 type ArtifactMode = 'local';
-type WorkspaceActivation = 'manual-url' | 'device-authorization';
 type SkillName = string;
 
 type InstallOptions = {
@@ -48,7 +46,6 @@ type InstallOptions = {
   mode?: OsMode;
   workspaceHost?: string;
   workspaceSlug?: string;
-  workspaceActivation?: WorkspaceActivation;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
@@ -175,13 +172,6 @@ function parseArgs(argv: string[]): InstallOptions {
     } else if (arg === '--workspace-slug') {
       options.workspaceSlug = normalizeWorkspaceSlug(readValue('--workspace-slug', index));
       index += 1;
-    } else if (arg === '--workspace-activation') {
-      const activation = readValue('--workspace-activation', index);
-      index += 1;
-      if (activation !== 'manual-url' && activation !== 'device-authorization') {
-        throw new Error('--workspace-activation must be manual-url or device-authorization');
-      }
-      options.workspaceActivation = activation;
     } else if (arg === '--connect-agent') {
       const agent = readValue('--connect-agent', index) as AgentName;
       index += 1;
@@ -204,9 +194,8 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --dry-run             print planned writes without writing',
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
-          '  --workspace-url <url> workspace URL such as internal.consuelohq.com',
+          '  --workspace-url <url> Consuelo workspace URL',
           '  --workspace-slug <id> short workspace name',
-          '  --workspace-activation <manual-url|device-authorization>',
           '  --connect-agent <id>  connect codex, claude, opencode, or factory',
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
@@ -289,42 +278,32 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     info('finish workspace identity, home, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
-    const mode = await select({
-      ...clackIo,
-      message: 'choose an OS mode',
-      initialValue: options.mode ?? 'local',
-      options: [
-        { value: 'local' as const, label: 'local compute', hint: 'runs on this machine; workspace URL stays the stable access path' },
-        { value: 'cloud' as const, label: 'cloud compute', hint: 'uses hosted team compute later; workspace URL stays the stable access path' },
-      ],
-    });
-    if (isCancel(mode)) { cancel('setup cancelled.'); process.exit(0); }
-
-    const workspaceActivation = await select({
-      ...clackIo,
-      message: 'connect workspace identity',
-      initialValue: options.workspaceActivation ?? 'manual-url',
-      options: [
-        { value: 'manual-url' as const, label: 'enter workspace URL', hint: 'current migration path' },
-        { value: 'device-authorization' as const, label: 'authorize in browser', hint: 'OAuth device flow for the website activation step' },
-      ],
-    });
-    if (isCancel(workspaceActivation)) { cancel('setup cancelled.'); process.exit(0); }
-
-    if (workspaceActivation === 'device-authorization') {
-      const session = startWorkspaceDeviceAuthorization({
-        clientId: 'consuelo-os-installer',
-        scope: ['workspace:read', 'os:connector:register'],
-        verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
+    let mode: OsMode = options.mode ?? 'local';
+    if (!options.mode) {
+      const selectedMode = await select({
+        ...clackIo,
+        message: 'choose an OS mode',
+        initialValue: 'local',
+        options: [
+          { value: 'local' as const, label: 'local' },
+          { value: 'cloud' as const, label: 'cloud' },
+        ],
       });
-      info(`OAuth activation prepared. Open this URL when the activation page is enabled: ${session.verificationUriComplete}`);
+      if (isCancel(selectedMode)) { cancel('setup cancelled.'); process.exit(0); }
+      mode = selectedMode;
+    }
+
+    if (mode === 'cloud') {
+      info('Cloud setup is handled by Consuelo. Open https://consuelohq.com/contact/ to get started.');
+      process.exit(0);
     }
 
     const workspaceHostInput = await text({
       ...clackIo,
       message: 'Consuelo workspace URL',
-      initialValue: options.workspaceHost ?? 'internal.consuelohq.com',
+      initialValue: options.workspaceHost ?? '',
       validate: (value) => {
+        if (value.trim().length === 0) return 'workspace URL is required';
         try {
           normalizeWorkspaceHost(value);
           return undefined;
@@ -404,7 +383,6 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       ...options,
       mode,
       home,
-      workspaceActivation,
       workspaceHost,
       workspaceSlug,
       selectedSkills: selectedSkills as SkillName[],
@@ -449,7 +427,6 @@ async function main(): Promise<void> {
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
-        workspaceActivation: options.workspaceActivation,
         workspaceHost: options.workspaceHost,
         workspaceSlug: options.workspaceSlug,
         connectAgents: options.connectAgents,
