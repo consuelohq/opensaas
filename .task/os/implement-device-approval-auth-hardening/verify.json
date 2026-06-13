@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/implement-device-approval-auth-hardening",
+  "base": "origin/task/os/implement-device-approval-auth-hardening",
+  "headSha": "c6eed4ed55fd96b9c0c553fd4426f844c9b884d8",
+  "changeHash": "458fda932d16404040f13bf2389468d38bd02783d4bec11049d017341d7c3f0d",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T14:46:50.374Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/implement-device-approval-auth-hardening/current.json",
+        ".task/os/implement-device-approval-auth-hardening/evidence-log.json",
+        ".task/os/implement-device-approval-auth-hardening/read-log.json",
+        ".task/os/implement-device-approval-auth-hardening/session.json",
+        ".task/os/implement-device-approval-auth-hardening/verify.json",
+        ".task/os/implement-device-approval-auth-hardening/workpad.md",
+        ".task/tasks/os/implement-device-approval-auth-hardening.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/tests/oauth-device-http-client.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -11,6 +11,12 @@ import {
   type DeviceLoginFetch,
 } from '../scripts/lib/workspace-device-login-client';
 
+const devicePublicKeyJwk = JSON.stringify({
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: '8Jt6QxQYJkVd4Zg7mWkH3mQ5b7Y2nLz7YdN3wB2p9aA',
+});
+
 function jsonResponse(body: unknown, init: { ok?: boolean; status?: number } = {}) {
   return {
     ok: init.ok ?? true,
@@ -22,7 +28,7 @@ function jsonResponse(body: unknown, init: { ok?: boolean; status?: number } = {
 }
 
 describe('workspace device-login HTTP client', () => {
-  it('requests a GitHub-shaped device code from consuelohq.com', async () => {
+  it('requests a GitHub-shaped device code from consuelohq.com with a device public key', async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchImpl: DeviceLoginFetch = async (url, init) => {
       calls.push({ url: String(url), init });
@@ -42,6 +48,7 @@ describe('workspace device-login HTTP client', () => {
       workspaceName: 'testing',
       workspaceSlug: 'testing',
       workspaceHost: 'testing.consuelohq.com',
+      devicePublicKeyJwk,
       fetchImpl,
       now: '2026-06-13T00:00:00.000Z',
     });
@@ -61,9 +68,13 @@ describe('workspace device-login HTTP client', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe(CONSUELO_DEVICE_CODE_URL);
     expect(calls[0].init?.method).toBe('POST');
-    expect(String(calls[0].init?.body)).toContain('client_id=consuelo-os-installer');
-    expect(String(calls[0].init?.body)).toContain('workspace_name=testing');
-    expect(String(calls[0].init?.body)).toContain('scope=workspace%3Aread+os%3Aconnector%3Aregister');
+    const requestBody = new URLSearchParams(String(calls[0].init?.body));
+    expect(requestBody.get('client_id')).toBe('consuelo-os-installer');
+    expect(requestBody.get('workspace_name')).toBe('testing');
+    expect(requestBody.get('scope')).toBe('workspace:read os:connector:register');
+    expect(requestBody.get('device_public_key_jwk')).toBe(devicePublicKeyJwk);
+    expect(requestBody.get('device_key_algorithm')).toBe('Ed25519');
+    expect(String(calls[0].init?.body)).not.toMatch(/password|username|basic_auth/i);
   });
 
   it('maps an approved token response to workspace bootstrap material', async () => {
@@ -77,6 +88,8 @@ describe('workspace device-login HTTP client', () => {
         connector_id: 'connector_123',
         connector_bootstrap_token: 'bootstrap_token_123',
         connector_bootstrap_expires_at: '2026-06-13T00:10:00.000Z',
+        device_public_key_thumbprint: 'dpk_123',
+        device_public_key_bound: true,
       });
     };
 

@@ -1,3 +1,5 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -31,6 +33,7 @@ export type RequestWorkspaceDeviceCodeInput = {
   workspaceName: string;
   workspaceSlug: string;
   workspaceHost: string;
+  devicePublicKeyJwk?: string;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
 };
@@ -41,6 +44,8 @@ export type PollWorkspaceDeviceAccessTokenInput = {
   intervalSeconds: number;
   fetchImpl?: DeviceLoginFetch;
 };
+
+const DEVICE_KEY_ALGORITHM = 'Ed25519';
 
 const defaultFetch: DeviceLoginFetch = async (url, init) => {
   if (typeof fetch !== 'function') {
@@ -88,6 +93,11 @@ function expiresAtFromNow(now: string | undefined, expiresInSeconds: number): st
   return new Date(safeBaseMs + expiresInSeconds * 1000).toISOString();
 }
 
+function generateDevicePublicKeyJwk(): string {
+  const { publicKey } = generateKeyPairSync('ed25519');
+  return JSON.stringify(publicKey.export({ format: 'jwk' }));
+}
+
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
   const response = await fetchImpl(url, init);
   const json = asRecord(await response.json());
@@ -108,6 +118,8 @@ export async function requestWorkspaceDeviceCode(
     workspace_name: input.workspaceName,
     workspace_slug: input.workspaceSlug,
     workspace_host: input.workspaceHost,
+    device_public_key_jwk: input.devicePublicKeyJwk ?? generateDevicePublicKeyJwk(),
+    device_key_algorithm: DEVICE_KEY_ALGORITHM,
   });
 
   try {
@@ -119,6 +131,11 @@ export async function requestWorkspaceDeviceCode(
       },
       body,
     });
+
+    const error = stringField(json, 'error');
+    if (error) {
+      return unavailable(error);
+    }
 
     const deviceCode = stringField(json, 'device_code', 'deviceCode');
     const userCode = stringField(json, 'user_code', 'userCode');

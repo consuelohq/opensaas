@@ -11,6 +11,11 @@ import {
 } from '../scripts/lib/workspace-device-authorization';
 
 const origin = 'https://os.consuelohq.com';
+const devicePublicKeyJwk = JSON.stringify({
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: '8Jt6QxQYJkVd4Zg7mWkH3mQ5b7Y2nLz7YdN3wB2p9aA',
+});
 
 function form(data: Record<string, string>): { body: string; headers: HeadersInit } {
   return {
@@ -20,7 +25,7 @@ function form(data: Record<string, string>): { body: string; headers: HeadersIni
 }
 
 describe('os device authority worker', () => {
-  it('serves GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
+  it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
@@ -36,6 +41,8 @@ describe('os device authority worker', () => {
         workspace_name: 'testing',
         workspace_slug: 'testing',
         workspace_host: 'testing.consuelohq.com',
+        device_public_key_jwk: devicePublicKeyJwk,
+        device_key_algorithm: 'Ed25519',
       }),
     }));
     expect(codeResponse.status).toBe(200);
@@ -62,12 +69,29 @@ describe('os device authority worker', () => {
     expect(page.status).toBe(200);
     await expect(page.text()).resolves.toContain('Approve this Mac');
 
-    const approve = await handler(new Request(`${origin}/login/device/approve`, {
+    const anonymousApprove = await handler(new Request(`${origin}/login/device/approve`, {
       method: 'POST',
       ...form({ user_code: String(codeJson.user_code).replace('-', '') }),
     }));
+    expect(anonymousApprove.status).toBe(401);
+    await expect(anonymousApprove.json()).resolves.toMatchObject({ error: 'account_session_required' });
+
+    const approve = await handler(new Request(`${origin}/login/device/approve`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-consuelo-account-id': 'account_google_123',
+        'x-consuelo-account-auth-method': 'google',
+      },
+      body: new URLSearchParams({ user_code: String(codeJson.user_code).replace('-', '') }).toString(),
+    }));
     expect(approve.status).toBe(200);
-    await expect(approve.text()).resolves.toContain('Approved. Return to your terminal.');
+    await expect(approve.json()).resolves.toMatchObject({
+      status: 'approved',
+      account_id: 'account_google_123',
+      account_auth_method: 'google',
+      device_public_key_bound: true,
+    });
 
     currentMs += 6000;
     const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
@@ -79,11 +103,14 @@ describe('os device authority worker', () => {
       }),
     }));
     expect(approved.status).toBe(200);
-    const approvedJson = await approved.json() as Record<string, string>;
+    const approvedJson = await approved.json() as Record<string, string | boolean>;
     expect(approvedJson.workspace_slug).toBe('testing');
     expect(approvedJson.workspace_host).toBe('testing.consuelohq.com');
     expect(approvedJson.connector_id).toBe('connector_testing');
     expect(approvedJson.connector_bootstrap_token).toMatch(/^cbt_/);
     expect(approvedJson.access_token).toMatch(/^osat_/);
+    expect(approvedJson.device_public_key_thumbprint).toMatch(/^dpk_/);
+    expect(approvedJson.device_public_key_bound).toBe(true);
+    expect(JSON.stringify(approvedJson)).not.toMatch(/password|username|basic_auth/i);
   });
 });
