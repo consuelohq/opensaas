@@ -361,6 +361,7 @@ async function attemptWorkspaceDeviceLogin(input: {
         clientId: DEVICE_LOGIN_CLIENT_ID,
         deviceCode: liveDeviceCode.session.deviceCode,
         intervalSeconds,
+        deviceKeyPair: liveDeviceCode.deviceKeyPair,
       });
 
       if (pollResult.status === 'approved') {
