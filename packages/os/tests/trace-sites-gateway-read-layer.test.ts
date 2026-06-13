@@ -13,7 +13,7 @@ import {
   type TraceSitesLiveDelta,
 } from '../scripts/lib/trace-sites-gateway-contract';
 
-const baseScope: TraceGatewaySessionScope = {
+const BASE_SCOPE: TraceGatewaySessionScope = {
   userId: 'usr_trace_sites',
   workspaceId: 'wrk_trace_sites',
   workspaceHost: 'testing.consuelohq.com',
@@ -25,7 +25,7 @@ const baseScope: TraceGatewaySessionScope = {
   retentionPolicyId: 'ret_workspace_default',
 };
 
-const localEvent: TraceSitesDashboardEvent = {
+const LOCAL_EVENT: TraceSitesDashboardEvent = {
   traceId: 'trc_local_1',
   idempotencyKey: 'wrk_trace_sites:trc_local_1:00000001',
   sourceMode: 'local-networked',
@@ -39,7 +39,7 @@ const localEvent: TraceSitesDashboardEvent = {
 
 function request(overrides: Partial<TraceSitesGatewayReadLayerRequest> = {}): TraceSitesGatewayReadLayerRequest {
   return {
-    scope: baseScope,
+    scope: BASE_SCOPE,
     workspaceId: 'wrk_trace_sites',
     workspaceHost: 'testing.consuelohq.com',
     site: 'trace-burn-intelligence',
@@ -51,10 +51,10 @@ function request(overrides: Partial<TraceSitesGatewayReadLayerRequest> = {}): Tr
 }
 
 describe('Trace Sites gateway read layer', () => {
-  it('lets a scoped workspace read recent Trace Sites events through the gateway read layer', async () => {
+  it('should return recent Trace Sites events when workspace has traceRead scope', async () => {
     const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({
       cursor: '00000001',
-      events: [localEvent],
+      events: [LOCAL_EVENT],
     }));
 
     const result = await readLayer.readTraceSitesDashboard(request());
@@ -70,10 +70,12 @@ describe('Trace Sites gateway read layer', () => {
       cursor: '00000001',
       dataState: 'fresh',
     });
-    expect(result.ok && result.discovery.readService).toBe('trace-read');
-    expect(result.ok && result.gatewayServices.readService).toBe('trace-read');
-    expect(result.ok && result.recentEvents).toEqual([localEvent]);
-    expect(result.ok && result.summary).toMatchObject({
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected Trace Sites read to succeed');
+    expect(result.discovery.readService).toBe('trace-read');
+    expect(result.gatewayServices.readService).toBe('trace-read');
+    expect(result.recentEvents).toEqual([LOCAL_EVENT]);
+    expect(result.summary).toMatchObject({
       calls: 1,
       totalTraceBurn: 400,
       outputTokens: 300,
@@ -84,11 +86,11 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('denies a workspace without trace-read scope', async () => {
-    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [localEvent] }));
+  it('should deny access when workspace lacks traceRead scope', async () => {
+    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [LOCAL_EVENT] }));
 
     const result = await readLayer.readTraceSitesDashboard(request({
-      scope: { ...baseScope, traceRead: false },
+      scope: { ...BASE_SCOPE, traceRead: false },
     }));
 
     expect(result).toMatchObject({
@@ -99,11 +101,11 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('denies a workspace without the trace-burn-intelligence Site scope', async () => {
-    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [localEvent] }));
+  it('should deny access when requested site is not in allowedSites', async () => {
+    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [LOCAL_EVENT] }));
 
     const result = await readLayer.readTraceSitesDashboard(request({
-      scope: { ...baseScope, allowedSites: ['trace'] },
+      scope: { ...BASE_SCOPE, allowedSites: ['trace'] },
       site: 'trace-burn-intelligence',
     }));
 
@@ -114,12 +116,14 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('discovers local-networked Trace Sites through required relay semantics', async () => {
-    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [localEvent] }));
+  it('should discover Trace Sites through relay semantics when sourceMode is local-networked', async () => {
+    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [LOCAL_EVENT] }));
 
     const result = await readLayer.readTraceSitesDashboard(request({ sourceMode: 'local-networked' }));
 
-    expect(result.ok && result.discovery).toMatchObject({
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected Trace Sites read to succeed');
+    expect(result.discovery).toMatchObject({
       publicBoundary: 'consuelo-gateway',
       sourceMode: 'local-networked',
       readService: 'trace-read',
@@ -131,9 +135,9 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('discovers cloud-compute runner control while reads still go through gateway services', async () => {
+  it('should wire runner control discovery when sourceMode is cloud-compute', async () => {
     const cloudEvent: TraceSitesDashboardEvent = {
-      ...localEvent,
+      ...LOCAL_EVENT,
       traceId: 'trc_cloud_1',
       idempotencyKey: 'wrk_trace_sites:trc_cloud_1:00000001',
       sourceMode: 'cloud-compute',
@@ -143,7 +147,9 @@ describe('Trace Sites gateway read layer', () => {
 
     const result = await readLayer.readTraceSitesDashboard(request({ sourceMode: 'cloud-compute' }));
 
-    expect(result.ok && result.discovery).toMatchObject({
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected Trace Sites read to succeed');
+    expect(result.discovery).toMatchObject({
       publicBoundary: 'consuelo-gateway',
       sourceMode: 'cloud-compute',
       readService: 'trace-read',
@@ -153,15 +159,15 @@ describe('Trace Sites gateway read layer', () => {
       cloudRunnerPool: 'consuelo-managed-runner-pool',
       traceBackendLocation: 'hosted-trace-backend',
     });
-    expect(result.ok && result.gatewayServices).toMatchObject({
+    expect(result.gatewayServices).toMatchObject({
       readService: 'trace-read',
       aggregateService: 'aggregate-cache',
       runnerControlService: 'runner-control',
     });
   });
 
-  it('returns bridge-required behavior for local off-network Trace Sites without a bridge', async () => {
-    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [localEvent] }));
+  it('should return bridge-required state when sourceMode is local-off-network and no bridge is configured', async () => {
+    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [LOCAL_EVENT] }));
 
     const result = await readLayer.readTraceSitesDashboard(request({ sourceMode: 'local-off-network' }));
 
@@ -182,12 +188,12 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('dedupes duplicate retry events by idempotency key through the PR1 dashboard reducer', async () => {
+  it('should deduplicate events by idempotency key when duplicate retries occur', async () => {
     const retryDelta: TraceSitesLiveDelta = {
       cursor: '00000002',
       event: {
         traceId: 'trc_local_1_retry',
-        idempotencyKey: localEvent.idempotencyKey,
+        idempotencyKey: LOCAL_EVENT.idempotencyKey,
         sourceMode: 'local-networked',
         branch: 'task/sites/trace-gateway-read-layer',
         tool: 'task.call',
@@ -200,18 +206,20 @@ describe('Trace Sites gateway read layer', () => {
     };
     const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({
       cursor: '00000001',
-      events: [localEvent],
+      events: [LOCAL_EVENT],
       deltas: [retryDelta],
     }));
 
     const result = await readLayer.readTraceSitesDashboard(request());
 
-    expect(result.ok && result.cursor).toBe('00000002');
-    expect(result.ok && result.recentEvents).toEqual([localEvent]);
-    expect(result.ok && result.summary).toEqual(reduceTraceSitesDashboard([localEvent]));
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected Trace Sites read to succeed');
+    expect(result.cursor).toBe('00000002');
+    expect(result.recentEvents).toEqual([LOCAL_EVENT]);
+    expect(result.summary).toEqual(reduceTraceSitesDashboard([LOCAL_EVENT]));
   });
 
-  it('returns cached aggregate data with degraded state when the trace store is unavailable and aggregate cache is available', async () => {
+  it('should return cached aggregates with degraded state when trace store is unavailable but cache is available', async () => {
     const cachedSummary: TraceSitesDashboardSummary = {
       calls: 42,
       totalTraceBurn: 12000,
@@ -248,10 +256,12 @@ describe('Trace Sites gateway read layer', () => {
         userVisibleState: 'trace-store-degraded',
       },
     });
-    expect(result.ok && result.summary).toEqual(cachedSummary);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected cached aggregate read to succeed');
+    expect(result.summary).toEqual(cachedSummary);
   });
 
-  it('returns unavailable state when the trace store is unavailable and no aggregate cache exists', async () => {
+  it('should return unavailable state when both trace store and aggregate cache are unavailable', async () => {
     const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({
       health: {
         traceStoreAvailable: false,
@@ -275,8 +285,8 @@ describe('Trace Sites gateway read layer', () => {
     });
   });
 
-  it('does not expose direct backend targets to Sites callers', async () => {
-    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [localEvent] }));
+  it('should not expose direct backend targets in serialized responses', async () => {
+    const readLayer = createTraceSitesGatewayReadLayer(createFixtureTraceSitesReadBackend({ events: [LOCAL_EVENT] }));
 
     const result = await readLayer.readTraceSitesDashboard(request());
     const serialized = JSON.stringify(result);
