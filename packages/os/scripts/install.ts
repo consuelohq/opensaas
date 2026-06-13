@@ -32,10 +32,6 @@ import {
   type WorkspaceBootstrap,
 } from './lib/install-state';
 import {
-  CONSUELO_DEVICE_VERIFICATION_URL,
-  startWorkspaceDeviceAuthorization,
-} from './lib/workspace-device-authorization';
-import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
 } from './lib/workspace-device-login-client';
@@ -347,27 +343,17 @@ async function attemptWorkspaceDeviceLogin(input: {
       workspaceSlug: input.workspaceSlug,
       workspaceHost: input.workspaceHost,
     });
-    const fallbackSession = liveDeviceCode.status === 'started'
-      ? undefined
-      : startWorkspaceDeviceAuthorization({
-          clientId: DEVICE_LOGIN_CLIENT_ID,
-          scope: DEVICE_LOGIN_SCOPE,
-          verificationBaseUrl: CONSUELO_DEVICE_VERIFICATION_URL,
-        });
-    const session = liveDeviceCode.status === 'started' ? liveDeviceCode.session : fallbackSession;
+    if (liveDeviceCode.status !== 'started') {
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback' };
+    }
 
-    if (!session) return { status: 'fallback' };
-
+    const session = liveDeviceCode.session;
     info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
     await openDeviceVerificationUrl(session.verificationUriComplete);
 
-    if (liveDeviceCode.status !== 'started') {
-      info('Device login unavailable; continuing with local workspace bootstrap.');
-      return { status: 'fallback', verificationUrl: session.verificationUriComplete };
-    }
-
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
-    let intervalSeconds = liveDeviceCode.session.intervalSeconds;
+    let intervalSeconds = session.intervalSeconds;
 
     while (Date.now() < deadlineMs) {
       await sleep(Math.min(intervalSeconds, 5) * 1000);
