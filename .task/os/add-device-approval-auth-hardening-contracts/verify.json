@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-device-approval-auth-hardening-contracts",
+  "base": "origin/task/os/add-device-approval-auth-hardening-contracts",
+  "headSha": "cf47d6a83ec7c46c50bcc880d5595c8ceffc19ac",
+  "changeHash": "bb89e7589fb0d87d1b400d40a90a5c981366ab01b0f5587a6e2130770d4587d4",
+  "changedFiles": [
+    "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T13:11:19.882Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-device-approval-auth-hardening-contracts/current.json",
+        ".task/os/add-device-approval-auth-hardening-contracts/evidence-log.json",
+        ".task/os/add-device-approval-auth-hardening-contracts/read-log.json",
+        ".task/os/add-device-approval-auth-hardening-contracts/session.json",
+        ".task/os/add-device-approval-auth-hardening-contracts/workpad.md",
+        ".task/tasks/os/add-device-approval-auth-hardening-contracts.json",
+        "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
