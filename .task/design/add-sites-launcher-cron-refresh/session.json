@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e30d15a07953",
+  "tmuxSession": "opensaas-design-add-sites-launcher-cron-refresh-e30d15a0",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-sites-launcher-cron-refresh",
+  "branch": "task/design/add-sites-launcher-cron-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-sites-launcher-cron-refresh",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-sites-launcher-cron-refresh",
+  "prNumber": 1018,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1018",
+  "createdAt": "2026-06-13T15:44:21.927Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-sites-launcher-cron-refresh/.task/design/add-sites-launcher-cron-refresh/session.json"
+}
