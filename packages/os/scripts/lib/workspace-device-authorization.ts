@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto';
 
-export const CONSUELO_DEVICE_VERIFICATION_URL = 'https://consuelohq.com/login/device';
-export const CONSUELO_DEVICE_CODE_URL = 'https://consuelohq.com/login/device/code';
-export const CONSUELO_OAUTH_ACCESS_TOKEN_URL = 'https://consuelohq.com/login/oauth/access_token';
+export const CONSUELO_DEVICE_VERIFICATION_URL = 'https://os.consuelohq.com/login/device';
+export const CONSUELO_DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
+export const CONSUELO_OAUTH_ACCESS_TOKEN_URL = 'https://os.consuelohq.com/login/oauth/access_token';
 
 export type WorkspaceDeviceAuthorizationSession = {
   deviceCode: string;

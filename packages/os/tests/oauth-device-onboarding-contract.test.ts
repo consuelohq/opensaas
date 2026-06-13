@@ -86,12 +86,12 @@ async function loadWorkspaceDeviceAuthorizationContract(): Promise<WorkspaceDevi
 }
 
 contractDescribe('workspace OAuth device authorization contract', () => {
-  it('should expose GitHub-style OAuth device endpoint paths on consuelohq.com', async () => {
+  it('should expose GitHub-style OAuth device endpoint paths on os.consuelohq.com', async () => {
     const contract = await loadWorkspaceDeviceAuthorizationContract();
 
-    expect(contract.CONSUELO_DEVICE_VERIFICATION_URL).toBe('https://consuelohq.com/login/device');
-    expect(contract.CONSUELO_DEVICE_CODE_URL).toBe('https://consuelohq.com/login/device/code');
-    expect(contract.CONSUELO_OAUTH_ACCESS_TOKEN_URL).toBe('https://consuelohq.com/login/oauth/access_token');
+    expect(contract.CONSUELO_DEVICE_VERIFICATION_URL).toBe('https://os.consuelohq.com/login/device');
+    expect(contract.CONSUELO_DEVICE_CODE_URL).toBe('https://os.consuelohq.com/login/device/code');
+    expect(contract.CONSUELO_OAUTH_ACCESS_TOKEN_URL).toBe('https://os.consuelohq.com/login/oauth/access_token');
     expect(JSON.stringify(contract)).not.toContain('app.consuelohq.com');
   });
 
