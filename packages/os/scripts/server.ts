@@ -1,13 +1,18 @@
 #!/usr/bin/env bun
 
+import path from 'node:path';
+
 import { executeCall, getSteering } from './os';
 import type { CallInput } from './lib/types';
+import { createTraceSitesGatewayLiveEndpoints, traceGatewayScopeFromHeaders } from './lib/trace-sites-gateway-live-endpoints';
+import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
 
 const DEFAULT_PORT = 8850;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
 const LEGACY_TOKEN_ENV = process.env.MCP_BEARER_TOKEN;
 const BEARER_TOKEN = process.env.CONSUELO_OS_BEARER_TOKEN ?? LEGACY_TOKEN_ENV ?? '';
+const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
 
 type JsonObject = Record<string, unknown>;
 
@@ -50,6 +55,27 @@ async function readCallInput(request: Request): Promise<CallInput> {
   return input as CallInput;
 }
 
+function resolveTraceDbPath(): string {
+  if (TRACE_DB_ENV) return TRACE_DB_ENV;
+  const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
+  if (home) return path.join(home, 'traces', 'traces.db');
+  return path.join(process.env.HOME ?? '', 'Library/Application Support/OpenWorkspace/traces/e8425497c3ee20bf0a28e9da/traces.db');
+}
+
+function isTraceGatewayReadRoute(pathname: string): boolean {
+  return pathname === '/gateway/traces/recent' ||
+    pathname === '/gateway/traces/summary' ||
+    pathname === '/gateway/traces/aggregates' ||
+    pathname === '/gateway/traces/events';
+}
+
+function traceGatewayEndpoints() {
+  return createTraceSitesGatewayLiveEndpoints({
+    backend: createLocalTraceSitesReadBackend({ dbPath: resolveTraceDbPath() }),
+    resolveScope: traceGatewayScopeFromHeaders,
+  });
+}
+
 function healthResponse(): Response {
   return jsonResponse({
     status: 'ok',
@@ -66,6 +92,10 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/health') return healthResponse();
   if (!isAuthorized(request)) return unauthorized();
+
+  if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
+    return traceGatewayEndpoints().handle(request);
+  }
 
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
     return textResponse(getSteering());
