@@ -303,6 +303,7 @@ proxies all arguments to `bun run fs` with cwd set to the selected task worktree
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
 bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
 bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
@@ -346,6 +347,7 @@ runs any command with cwd set to the selected task worktree. use for git, pretti
 bun run task:exec -- --area dialer git diff
 bun run task:exec -- --branch task/dialer/fix-thing git status --short
 bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
 bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
 bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
 bun run task:exec -- --branch task/dialer/fix-thing bun run review
@@ -429,12 +431,20 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
 
-`packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
+The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
 
 ```bash
-cd packages/workspace && bun install
+CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
+```
+
+Gateway and advanced provider overrides:
+
+```bash
+bun run semantic:embeddings -- doctor --json
+CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-embeddings bun run explore -- "query"
+CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
 ```bash
@@ -449,15 +459,18 @@ bun run explore -- "refresh everything" --reindex
 bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
+bad: embedding gateway failed
+ → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+
 bad: embedding model not found
- → the expected cached model is missing at ~/.cache/qmd/models/Qwen3-Embedding-4B-Q8_0.gguf.
+ → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
 ```
 
 ---
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next
@@ -543,12 +556,26 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
+
+### PR reference selectors
+
+Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.consuelohq.com/.../pull/<number>`, and Graphite URLs shaped like `/github/pr/<owner>/<repo>/<number>/...`.
+
+```bash
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
+```
+
+Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
+
 ### task:start — create task branch + worktree + PR
 
 creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json

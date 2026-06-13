@@ -34,6 +34,22 @@ export type ExecutionFinishInput = {
   durationMs: number;
 };
 
+export type SteeringGuardEventInput = {
+  traceId: string;
+  callerKey: string;
+  tool: string;
+  decision: string;
+  reason?: string;
+  nowMs: number;
+};
+
+export type SteeringGuardLookupInput = {
+  callerKey: string;
+  tool: string;
+  windowMs: number;
+  nowMs: number;
+};
+
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
   if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
@@ -90,6 +106,20 @@ function openDatabase(): Database {
       payload_json TEXT,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS steering_guard_events (
+      id TEXT PRIMARY KEY,
+      created_at_epoch INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      caller_key TEXT NOT NULL,
+      tool TEXT NOT NULL,
+      decision TEXT NOT NULL,
+      trace_id TEXT NOT NULL,
+      reason TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS steering_guard_events_lookup_idx
+      ON steering_guard_events(caller_key, tool, created_at_epoch);
   `);
   return db;
 }
@@ -140,6 +170,40 @@ export function recordExecutionFinished(input: ExecutionFinishInput): void {
       `execution.${input.status}`,
       safeJson({ errorCode: input.errorCode ?? input.output?.error?.code, durationMs: input.durationMs }),
       nowIso(),
+    );
+  } finally {
+    db.close();
+  }
+}
+
+
+export function readSteeringGuardDecisions(input: SteeringGuardLookupInput): string[] {
+  const db = openDatabase();
+  try {
+    const rows = db.query('SELECT decision FROM steering_guard_events WHERE caller_key = ? AND tool = ? AND created_at_epoch >= ? AND created_at_epoch <= ? ORDER BY created_at_epoch ASC, rowid ASC').all(
+      input.callerKey,
+      input.tool,
+      input.nowMs - input.windowMs,
+      input.nowMs,
+    ) as Array<{ decision: string }>;
+    return rows.map((row) => row.decision);
+  } finally {
+    db.close();
+  }
+}
+
+export function recordSteeringGuardEvent(input: SteeringGuardEventInput): void {
+  const db = openDatabase();
+  try {
+    db.query('INSERT OR REPLACE INTO steering_guard_events(id, created_at_epoch, created_at, caller_key, tool, decision, trace_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+      `${input.traceId}:${input.decision}`,
+      input.nowMs,
+      new Date(input.nowMs).toISOString(),
+      input.callerKey,
+      input.tool,
+      input.decision,
+      input.traceId,
+      input.reason ?? null,
     );
   } finally {
     db.close();

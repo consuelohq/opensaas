@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8067d84ba234",
+  "tmuxSession": "opensaas-os-add-workflow-intent-bundles-8067d84b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workflow-intent-bundles",
+  "branch": "task/os/add-workflow-intent-bundles",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workflow-intent-bundles",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workflow-intent-bundles",
+  "prNumber": 978,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/978",
+  "createdAt": "2026-06-11T21:15:20.648Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workflow-intent-bundles/.task/os/add-workflow-intent-bundles/session.json"
+}

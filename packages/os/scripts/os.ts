@@ -2,7 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
 import {
@@ -14,8 +14,10 @@ import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
   ensureRuntimePaths,
   getRuntimePaths,
+  readSteeringGuardDecisions,
   recordExecutionFinished,
   recordExecutionStarted,
+  recordSteeringGuardEvent,
 } from './lib/runtime-state';
 import {
   acquireSitePageLease,
@@ -75,6 +77,7 @@ export type SitesCommandResult = {
   officeAssetsDir: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
+  docsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -83,6 +86,7 @@ export type SitesCommandResult = {
   officeDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
+  docsIndexExists: boolean;
   message: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
@@ -204,6 +208,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeAssetsDir: sitesPaths.officeAssetsDir,
     tracesIndexPath: sitesPaths.tracesIndexPath,
     diffsIndexPath: sitesPaths.diffsIndexPath,
+    docsIndexPath: sitesPaths.docsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
     generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
@@ -212,6 +217,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeDataExists: fs.existsSync(sitesPaths.officeDataPath),
     tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
     diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
+    docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }
@@ -494,6 +500,306 @@ export function getSteering(): string {
   return sections.join('\n');
 }
 
+
+const STEERING_GUARD_WINDOW_MS = Number.parseInt(
+  process.env.CONSUELO_OS_STEERING_GUARD_WINDOW_MS ?? '300000',
+  10,
+);
+const STEERING_FORCE_WINDOW_MS = Number.parseInt(
+  process.env.CONSUELO_OS_STEERING_FORCE_WINDOW_MS ?? '300000',
+  10,
+);
+
+type SteeringGuardDecision =
+  | 'full'
+  | 'soft_guard'
+  | 'hard_guard'
+  | 'cooldown'
+  | 'forced_refresh'
+  | 'refresh_rate_limited'
+  | 'reason_required';
+
+type SteeringGuardOptions = {
+  callerKey?: string;
+  now?: () => number;
+};
+
+function steeringNow(options: SteeringGuardOptions): number {
+  return options.now ? options.now() : Date.now();
+}
+
+function steeringCallerKey(options: SteeringGuardOptions): string {
+  const raw = [
+    options.callerKey,
+    process.env.CONSUELO_OS_STEERING_CALLER_KEY,
+    process.env.CONSUELO_AGENT_RUN_ID,
+    process.env.MCP_SESSION_ID,
+    process.env.CLAUDE_CODE_SESSION_ID,
+    `process:${process.pid}`,
+  ].filter((value): value is string => Boolean(value)).join('|');
+  return createHash('sha256').update(raw).digest('hex').slice(0, 32);
+}
+
+function recordStarted(traceId: string, name: string, input: unknown): void {
+  recordExecutionStarted({ traceId, name, input });
+}
+
+function finishSteeringExecution(args: {
+  traceId: string;
+  name: string;
+  started: number;
+  steering: string;
+  decision: SteeringGuardDecision;
+  code: string;
+  reason?: string;
+}): void {
+  const durationMs = Date.now() - args.started;
+  const result: Record<string, unknown> = {
+    chars: args.steering.length,
+    estimatedOutputTokens: Math.max(1, Math.floor(args.steering.length / 4)),
+    content: args.steering,
+    decision: args.decision,
+  };
+  if (args.reason !== undefined) result.reason = args.reason;
+  recordExecutionFinished({
+    traceId: args.traceId,
+    status: 'succeeded',
+    output: {
+      ok: true,
+      name: args.name,
+      permission: 'read',
+      traceId: args.traceId,
+      durationMs,
+      result,
+      code: args.code,
+    },
+    durationMs,
+  });
+}
+
+function getSteeringGuardDecision(
+  callerKey: string,
+  traceId: string,
+  options: SteeringGuardOptions,
+): { decision: SteeringGuardDecision; attempt: number } {
+  const nowMs = steeringNow(options);
+  const prior = readSteeringGuardDecisions({
+    callerKey,
+    tool: 'get_steering',
+    windowMs: STEERING_GUARD_WINDOW_MS,
+    nowMs,
+  });
+  const decision: SteeringGuardDecision = prior.length === 0
+    ? 'full'
+    : prior.length === 1
+      ? 'soft_guard'
+      : prior.length === 2
+        ? 'hard_guard'
+        : 'cooldown';
+  recordSteeringGuardEvent({
+    traceId,
+    callerKey,
+    tool: 'get_steering',
+    decision,
+    nowMs,
+  });
+  return { decision, attempt: prior.length + 1 };
+}
+
+function getRefreshGuardDecision(
+  callerKey: string,
+  traceId: string,
+  reason: string,
+  options: SteeringGuardOptions,
+): { decision: SteeringGuardDecision; attempt: number } {
+  const nowMs = steeringNow(options);
+  const prior = readSteeringGuardDecisions({
+    callerKey,
+    tool: 'refresh_steering',
+    windowMs: STEERING_FORCE_WINDOW_MS,
+    nowMs,
+  });
+  const decision: SteeringGuardDecision = prior.length === 0
+    ? 'forced_refresh'
+    : 'refresh_rate_limited';
+  recordSteeringGuardEvent({
+    traceId,
+    callerKey,
+    tool: 'refresh_steering',
+    decision,
+    reason,
+    nowMs,
+  });
+  return { decision, attempt: prior.length + 1 };
+}
+
+function steeringGuardMessage(decision: SteeringGuardDecision, attempt: number): string {
+  if (decision === 'soft_guard') {
+    return `GET_STEERING_LOOP_GUARD
+
+You already received full OS steering very recently in this pre-task bootstrap context.
+Do not call get_steering again unless you are intentionally refreshing bootstrap context.
+
+Read only the specific file you need:
+- packages/os/STEERING.md
+- packages/os/manifests/core.manifest.json
+- packages/workspace/STEERING.md
+
+Useful alternatives:
+- fs.read for exact files
+- context.search for repo/project context
+- tools.search for tool discovery
+
+If you truly need a fresh full steering snapshot, call refresh_steering with a concrete reason.
+Attempt in current window: ${attempt}
+`;
+  }
+  if (decision === 'hard_guard') {
+    return `GET_STEERING_RATE_LIMITED
+
+Repeated get_steering calls look like a bootstrap loop. Full steering is withheld for this attempt.
+Continue with existing steering context or call refresh_steering with a concrete reason.
+Attempt in current window: ${attempt}
+`;
+  }
+  return `GET_STEERING_COOLDOWN
+
+Full steering is temporarily blocked because this caller repeatedly called get_steering in a short window.
+Use targeted file reads or search instead of retrying get_steering.
+Attempt in current window: ${attempt}
+`;
+}
+
+function refreshSteeringMessage(decision: SteeringGuardDecision, attempt: number): string {
+  if (decision === 'reason_required') {
+    return 'REFRESH_STEERING_REASON_REQUIRED\n\nrefresh_steering requires a concrete reason. Do not call it just to retry get_steering.\n';
+  }
+  return `REFRESH_STEERING_RATE_LIMITED
+
+refresh_steering was already used recently for this caller.
+Continue with existing context or targeted file reads. Attempt in current window: ${attempt}
+`;
+}
+
+export function executeGetSteering(
+  buildSteering: () => string = getSteering,
+  options: SteeringGuardOptions = {},
+): string {
+  ensureRuntimePaths();
+  const started = Date.now();
+  const traceId = createTraceId();
+  recordStarted(traceId, 'get_steering', {});
+
+  try {
+    const callerKey = steeringCallerKey(options);
+    const { decision, attempt } = getSteeringGuardDecision(callerKey, traceId, options);
+    if (decision !== 'full') {
+      const steering = steeringGuardMessage(decision, attempt);
+      const code = decision === 'soft_guard'
+        ? 'STEERING_LOOP_GUARD'
+        : decision === 'hard_guard'
+          ? 'STEERING_RATE_LIMITED'
+          : 'STEERING_COOLDOWN';
+      finishSteeringExecution({
+        traceId,
+        name: 'get_steering',
+        started,
+        steering,
+        decision,
+        code,
+      });
+      return steering;
+    }
+
+    const steering = buildSteering();
+    finishSteeringExecution({
+      traceId,
+      name: 'get_steering',
+      started,
+      steering,
+      decision: 'full',
+      code: 'OK',
+    });
+    return steering;
+  } catch (error: unknown) {
+    const durationMs = Date.now() - started;
+    recordExecutionFinished({
+      traceId,
+      status: 'failed',
+      errorCode: 'BOOTSTRAP_FAILED',
+      errorMessage: error instanceof Error ? error.message : 'OS bootstrap failed.',
+      durationMs,
+    });
+    throw error;
+  }
+}
+
+export function executeRefreshSteering(
+  reason: string,
+  buildSteering: () => string = getSteering,
+  options: SteeringGuardOptions = {},
+): string {
+  ensureRuntimePaths();
+  const started = Date.now();
+  const traceId = createTraceId();
+  const normalizedReason = reason.trim();
+  recordStarted(traceId, 'refresh_steering', { reason: normalizedReason });
+
+  try {
+    if (!normalizedReason) {
+      const steering = refreshSteeringMessage('reason_required', 1);
+      finishSteeringExecution({
+        traceId,
+        name: 'refresh_steering',
+        started,
+        steering,
+        decision: 'reason_required',
+        code: 'REFRESH_REASON_REQUIRED',
+        reason: '',
+      });
+      return steering;
+    }
+
+    const callerKey = steeringCallerKey(options);
+    const { decision, attempt } = getRefreshGuardDecision(callerKey, traceId, normalizedReason, options);
+    if (decision !== 'forced_refresh') {
+      const steering = refreshSteeringMessage(decision, attempt);
+      finishSteeringExecution({
+        traceId,
+        name: 'refresh_steering',
+        started,
+        steering,
+        decision,
+        code: 'REFRESH_RATE_LIMITED',
+        reason: normalizedReason,
+      });
+      return steering;
+    }
+
+    const steering = buildSteering();
+    finishSteeringExecution({
+      traceId,
+      name: 'refresh_steering',
+      started,
+      steering,
+      decision: 'forced_refresh',
+      code: 'OK',
+      reason: normalizedReason,
+    });
+    return steering;
+  } catch (error: unknown) {
+    const durationMs = Date.now() - started;
+    recordExecutionFinished({
+      traceId,
+      status: 'failed',
+      errorCode: 'REFRESH_STEERING_FAILED',
+      errorMessage: error instanceof Error ? error.message : 'OS steering refresh failed.',
+      durationMs,
+    });
+    throw error;
+  }
+}
+
 export function getRawSteering(): string {
   ensureRuntimePaths();
   const packageRoot = getPackageRoot();
@@ -766,7 +1072,12 @@ async function main(): Promise<void> {
   const rawInput = args[0];
 
   if (command === 'get-steering') {
-    writeStdout(getSteering());
+    writeStdout(executeGetSteering());
+    return;
+  }
+
+  if (command === 'refresh-steering') {
+    writeStdout(executeRefreshSteering(rawInput ?? ''));
     return;
   }
 
@@ -824,3 +1135,4 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
+

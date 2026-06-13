@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/clone-graphite-pr-inbox-ux",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 891,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/891",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/891",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/891/clone-graphite-pr-inbox-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/891",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/891/clone-graphite-pr-inbox-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clone-graphite-pr-inbox-ux",
+  "taskSession": "tsk_1c611ea7113f",
+  "tmuxSession": "opensaas-diff-cockpit-clone-graphite-pr-inbox-ux-1c611ea7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clone-graphite-pr-inbox-ux/.task/diff-cockpit/clone-graphite-pr-inbox-ux/session.json",
+  "createdAt": "2026-06-09T22:03:18.186Z"
+}

@@ -1,0 +1,16 @@
+{
+  "files": [
+    "package.json",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/tests/security-gateway.test.ts",
+    "packages/os/tests/workspace-gateway-contract.test.ts",
+    "packages/twenty-server/jest.config.mjs",
+    "packages/twenty-server/package.json",
+    "packages/twenty-server/src/engine/core-modules/cloudflare/controllers/dns-cloudflare.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/cloudflare/services/dns-cloudflare.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/workspace-cloudflare-gateway.contract.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/dns-manager/services/dns-manager.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/dns-manager/services/dns-manager.service.ts"
+  ],
+  "updatedAt": "2026-06-10T04:21:36.277Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/hydrate-pr-pages-from-shared-cache",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 873,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/873",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/873",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/873/hydrate-pr-pages-from-shared-cache",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/873",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/873/hydrate-pr-pages-from-shared-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hydrate-pr-pages-from-shared-cache",
+  "taskSession": "tsk_3e08ce9ef991",
+  "tmuxSession": "opensaas-diff-cockpit-hydrate-pr-pages-from-shared-cache-3e08ce9e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hydrate-pr-pages-from-shared-cache/.task/diff-cockpit/hydrate-pr-pages-from-shared-cache/session.json",
+  "createdAt": "2026-06-09T18:50:12.784Z"
+}

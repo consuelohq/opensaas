@@ -28,6 +28,7 @@ const {
   refExists,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const {
   assertCommitMessageFormat,
   assertTaskBranchName,
@@ -48,6 +49,35 @@ function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
 }
 
+function parseEnvLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return null;
+  const match = trimmed.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+  if (!match) return null;
+  let value = match[2] || '';
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  return [match[1], value];
+}
+
+function loadDotEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, 'utf8');
+  for (const line of content.split(/\r?\n/)) {
+    const entry = parseEnvLine(line);
+    if (!entry) continue;
+    const [key, value] = entry;
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+function loadLocalEnv(repoRoot) {
+  loadDotEnvFile(path.join(repoRoot, '.env'));
+  loadDotEnvFile(path.join(repoRoot, 'packages', '.env'));
+}
+
+
 function printHelp() {
   writeStdout('usage: bun run task:push -- --message "fix(area): summary" [options]');
   writeStdout('');
@@ -58,7 +88,7 @@ function printHelp() {
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
-  writeStdout('  --pr <number>          select task by pr number');
+  writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
   writeStdout('  --verify               require a matching publish-valid verify stamp (default)');
@@ -123,7 +153,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--cwd':
         args.cwd = value;
@@ -160,7 +191,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return args;
@@ -422,6 +453,7 @@ async function main() {
   assertCommitMessageFormat(args.message);
 
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
+  loadLocalEnv(repoRoot);
 
   const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
   if (verifyMismatch) {

@@ -1,0 +1,15 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/scripts/lib/codemode/tools/index.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/tests/fixtures/skills/senior-engineer-workspace.SKILL.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/code-run.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-08T02:53:08.299Z"
+}

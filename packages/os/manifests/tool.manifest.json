@@ -12,7 +12,7 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 128
+      "entryCount": 130
     }
   ],
   "tools": [
@@ -1553,12 +1553,54 @@
       }
     },
     {
+      "name": "code.call",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "codemode",
+      "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+      "core": true,
+      "definition": {
+        "name": "code.call",
+        "methodPath": [
+          "code",
+          "call"
+        ],
+        "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+        "category": "codemode",
+        "underlying": "os code.call",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "CodeCallInput",
+        "outputSchema": "CodeCallOutput",
+        "command": {
+          "script": "code-call",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "internal": "code.call",
+          "arguments": []
+        },
+        "exampleInput": {
+          "language": "python",
+          "mode": "read",
+          "code": "print(\"hello\")",
+          "maxResultChars": 20000
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "code.run",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+      "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
       "core": true,
       "definition": {
         "name": "code.run",
@@ -1566,7 +1608,7 @@
           "code",
           "run"
         ],
-        "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+        "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
         "category": "codemode",
         "underlying": "workspace code.run",
         "capabilities": {
@@ -1620,11 +1662,12 @@
           ]
         },
         "exampleInput": {
-          "code": "return await workspace_call(\"status\", {})",
+          "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
           "maxOperations": 25,
           "maxResultChars": 20000
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "decision.research"
       }
     },
     {
@@ -1914,7 +1957,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.check",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -1970,7 +2018,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.demo",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2031,7 +2084,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.digitalEguide",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2087,7 +2145,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.email",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2143,7 +2206,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.imageBrief",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2199,7 +2267,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.motionFrame",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2255,7 +2328,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.generate.website",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2293,7 +2371,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.designSystem.get",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2331,7 +2414,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.designSystems.list",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2369,7 +2457,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.skills.list",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2409,7 +2502,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.openDesign.build",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2447,7 +2545,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.railwayCheck",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2503,7 +2606,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.render.hyperframes",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2543,7 +2651,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.run",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2583,7 +2696,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.background",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2621,7 +2739,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.logs",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2659,7 +2782,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.status",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2699,7 +2827,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.ui.stop",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -2737,7 +2870,12 @@
           "arguments": []
         },
         "exampleInput": {},
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.upstreamStatus",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -3309,7 +3447,12 @@
           "portlessName": "design.localhost",
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.publish",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -3355,7 +3498,12 @@
         "exampleInput": {
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "office.refresh",
+        "workflowAliases": [
+          "design",
+          "sites"
+        ]
       }
     },
     {
@@ -3967,7 +4115,8 @@
           "contentFile": "/tmp/example.txt",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "workpad.write"
       }
     },
     {
@@ -4222,7 +4371,8 @@
           "hunks": true,
           "maxBytes": 20000
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "diff.inspect"
       }
     },
     {
@@ -4453,6 +4603,77 @@
           "url": "https://example.com"
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "intent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "workflow",
+      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "core": true,
+      "definition": {
+        "name": "intent",
+        "methodPath": [
+          "intent"
+        ],
+        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "category": "workflow",
+        "underlying": "workspace intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "WorkflowIntentOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "os",
+          "title": "example task intent"
+        }
       }
     },
     {
@@ -5717,7 +5938,8 @@
           "branch": "task/workspace-agents/example",
           "noTests": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.review"
       }
     },
     {
@@ -6270,7 +6492,8 @@
         "exampleInput": {
           "area": "workspace-agents"
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "stream.context"
       }
     },
     {
@@ -6599,6 +6822,16 @@
               "source": "command",
               "kind": "commandArray",
               "required": true
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ]
         },
@@ -6611,7 +6844,8 @@
           ],
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "test.run"
       }
     },
     {
@@ -6649,6 +6883,16 @@
               "source": "branch",
               "flag": "--branch",
               "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ],
           "jsonFlag": "--json"
@@ -6657,7 +6901,8 @@
           "branch": "task/workspace-agents/example",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.finish"
       }
     },
     {
@@ -6710,6 +6955,11 @@
             {
               "source": "worktree",
               "flag": "--worktree",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
               "kind": "value"
             }
           ],
@@ -6767,6 +7017,11 @@
               "source": "squash",
               "flag": "--squash",
               "kind": "boolean"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ],
           "jsonFlag": "--json"
@@ -6833,6 +7088,16 @@
               "source": "bodyTemplate",
               "flag": "--body-template",
               "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ],
           "jsonFlag": "--json"
@@ -6842,7 +7107,8 @@
           "taskOnly": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.pr"
       }
     },
     {
@@ -6879,6 +7145,16 @@
             {
               "source": "branch",
               "flag": "--branch",
+              "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
               "kind": "value"
             }
           ],
@@ -6956,6 +7232,16 @@
               "source": "reason",
               "flag": "--reason",
               "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ],
           "jsonFlag": "--json"
@@ -6966,7 +7252,8 @@
           "changed": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.push"
       }
     },
     {
@@ -7007,8 +7294,7 @@
             {
               "source": "title",
               "flag": "--title",
-              "kind": "value",
-              "required": true
+              "kind": "value"
             },
             {
               "source": "bodyFile",
@@ -7019,6 +7305,16 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
+              "kind": "value"
             }
           ],
           "jsonFlag": "--json"
@@ -7028,7 +7324,8 @@
           "title": "example task",
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "task.start"
       }
     },
     {
@@ -7190,7 +7487,8 @@
         "exampleInput": {
           "query": "linear issue",
           "limit": 5
-        }
+        },
+        "workflowRole": "tool.search"
       }
     },
     {
@@ -7240,7 +7538,8 @@
           "noStamp": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.verify"
       }
     },
     {

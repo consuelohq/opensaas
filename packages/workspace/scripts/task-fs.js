@@ -48,7 +48,8 @@ function showHelp() {
   writeStdout('options:');
   writeStdout('  --area <name>        select task by area');
   writeStdout('  --branch <branch>    select exact task branch');
-  writeStdout('  --pr <number>        select task by pr number');
+  writeStdout('  --pr <number-or-url> select task by pr number or supported PR URL');
+  writeStdout('  --github <url>       select task by GitHub, Graphite, or diffs PR URL');
   writeStdout('  --help               show this help');
   writeStdout('');
   writeStdout('examples:');

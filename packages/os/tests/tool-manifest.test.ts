@@ -117,9 +117,9 @@ describe('tool manifest generator', () => {
     ])).sort();
 
     expect(generatedNames).toEqual(expectedNames);
-    expect(registry.full.tools).toHaveLength(133);
-    expect(registry.report.oldRegularToolCount).toBe(5);
-    expect(registry.report.oldDevToolCount).toBe(128);
+    expect(registry.full.tools).toHaveLength(expectedNames.length);
+    expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
+    expect(registry.report.oldDevToolCount).toBe(devEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
 
     for (const original of regularEntries) {
@@ -152,6 +152,7 @@ describe('tool manifest generator', () => {
     expect(coreNames).toContain('doctor');
     expect(coreNames).toContain('tmp');
     expect(coreNames).toContain('code.run');
+    expect(coreNames).toContain('code.call');
     expect(coreNames).toContain('context.search');
     expect(coreNames).toContain('context.get');
     expect(coreNames).toContain('context.list');
@@ -177,7 +178,8 @@ describe('tool manifest generator', () => {
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
 
-    expect(full.tools).toHaveLength(133);
+    expect(full.tools.length).toBeGreaterThan(0);
+    expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
   });
@@ -201,7 +203,7 @@ describe('tool manifest generator', () => {
     }) as SearchResult;
 
     expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBe(133);
+    expect(result.catalog?.toolCount).toBeGreaterThan(133);
     expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
   });
 

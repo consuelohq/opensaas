@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_90e0bfd1a15e",
+  "tmuxSession": "opensaas-os-test-task-hook-workflow-contract-90e0bfd1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/test-task-hook-workflow-contract",
+  "branch": "task/os/test-task-hook-workflow-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-test-task-hook-workflow-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-test-task-hook-workflow-contract",
+  "prNumber": 957,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/957",
+  "createdAt": "2026-06-11T06:53:35.140Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-test-task-hook-workflow-contract/.task/os/test-task-hook-workflow-contract/session.json"
+}

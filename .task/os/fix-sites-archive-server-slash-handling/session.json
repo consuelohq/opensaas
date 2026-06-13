@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7a50179185d2",
+  "tmuxSession": "opensaas-os-fix-sites-archive-server-slash-handling-7a501791",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-sites-archive-server-slash-handling",
+  "branch": "task/os/fix-sites-archive-server-slash-handling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-server-slash-handling",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-server-slash-handling",
+  "prNumber": 882,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/882",
+  "createdAt": "2026-06-09T20:29:26.468Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-server-slash-handling/.task/os/fix-sites-archive-server-slash-handling/session.json"
+}

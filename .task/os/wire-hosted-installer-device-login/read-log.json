@@ -1,0 +1,14 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/consuelo-website/astro.config.mjs",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/pages/contact.astro",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-13T06:17:49.623Z"
+}

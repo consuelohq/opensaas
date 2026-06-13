@@ -1,0 +1,19 @@
+name = "consuelo-os-device-authority"
+main = "src/index.ts"
+compatibility_date = "2026-06-11"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "os.consuelohq.com/*", zone_name = "consuelohq.com" }
+]
+
+[vars]
+OS_DEVICE_AUTH_ORIGIN = "https://os.consuelohq.com"
+
+[[durable_objects.bindings]]
+name = "DEVICE_GRANTS"
+class_name = "OsDeviceGrantDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["OsDeviceGrantDurableObject"]

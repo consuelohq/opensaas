@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-os-device-approval-worker",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1001,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1001",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1001",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1001/ship-os-device-approval-worker",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1001",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1001/ship-os-device-approval-worker",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-device-approval-worker",
+  "taskSession": "tsk_9a75bab325d6",
+  "tmuxSession": "opensaas-os-ship-os-device-approval-worker-9a75bab3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-device-approval-worker/.task/os/ship-os-device-approval-worker/session.json",
+  "createdAt": "2026-06-13T11:52:44.042Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-task-hook-guidance-to-os-scripts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 951,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/951",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/951",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/951/add-task-hook-guidance-to-os-scripts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/951",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/951/add-task-hook-guidance-to-os-scripts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-task-hook-guidance-to-os-scripts",
+  "taskSession": "tsk_6af6f4aa1af4",
+  "tmuxSession": "opensaas-os-add-task-hook-guidance-to-os-scripts-6af6f4aa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-task-hook-guidance-to-os-scripts/.task/os/add-task-hook-guidance-to-os-scripts/session.json",
+  "createdAt": "2026-06-11T05:15:05.016Z"
+}

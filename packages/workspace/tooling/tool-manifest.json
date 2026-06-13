@@ -932,6 +932,39 @@
     "sessionRequired": false
   },
   {
+    "name": "code.call",
+    "methodPath": [
+      "code",
+      "call"
+    ],
+    "description": "run short language-specific code through staged Python, Bun, or Bash backends",
+    "category": "codemode",
+    "underlying": "workspace code.call",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "CodeCallInput",
+    "outputSchema": "CodeCallOutput",
+    "command": {
+      "script": "code-call",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "internal": "code.call",
+      "arguments": []
+    },
+    "exampleInput": {
+      "language": "python",
+      "mode": "read",
+      "code": "print(\"hello\")",
+      "maxResultChars": 20000
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "worker.call",
     "methodPath": [
       "worker",

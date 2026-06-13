@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-sites-archive-server-slash-handling",
+  "base": "origin/stream/os",
+  "headSha": "78889bdf593fb9e9f5dab4ef268012ea49a9ea8f",
+  "changeHash": "05be44b9a13889d25a43bdc86fa3b3d4e3c8404b81e8cc404c99ee24afc4d05c",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-09T20:46:03.380Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-sites-archive-server-slash-handling/current.json",
+        ".task/os/fix-sites-archive-server-slash-handling/evidence-log.json",
+        ".task/os/fix-sites-archive-server-slash-handling/read-log.json",
+        ".task/os/fix-sites-archive-server-slash-handling/session.json",
+        ".task/os/fix-sites-archive-server-slash-handling/verify.json",
+        ".task/os/fix-sites-archive-server-slash-handling/workpad.md",
+        ".task/tasks/os/fix-sites-archive-server-slash-handling.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+  "events": [
+    {
+      "id": "a4f8bf2a-bb64-48f9-9ca4-99986bd2b1f5",
+      "occurred_at": "2026-06-12T20:07:50.093Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "1be45514-8897-4e0a-adf7-71fc96ade968",
+      "occurred_at": "2026-06-12T20:13:45.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "f8968c30-c832-4d1d-a8fd-637c92317465",
+      "occurred_at": "2026-06-12T20:13:53.977Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "b18ddc7c-7af6-4c28-927e-37fda8783fab",
+      "occurred_at": "2026-06-12T20:14:37.103Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "97265b34-9957-49d1-a398-6eb11e2063ed",
+      "occurred_at": "2026-06-12T20:14:45.143Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "86a6a065-fcd1-4914-94ed-a679b989fd19",
+      "occurred_at": "2026-06-12T20:14:52.556Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "ac6b3a14-6123-4a7e-a898-10516a335068",
+      "occurred_at": "2026-06-12T20:15:43.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "da41e340-885c-43d7-9170-16325158b85c",
+      "occurred_at": "2026-06-12T20:17:26.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "98c600a6-a231-4c82-a49c-e6759a11beed",
+      "occurred_at": "2026-06-12T20:18:39.339Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "3bf69950-4d19-4c5d-99af-76e1e0e81f53",
+      "occurred_at": "2026-06-12T20:18:55.552Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "178e1be8-c8e7-4822-ae08-1ed225484777",
+      "occurred_at": "2026-06-12T20:19:17.962Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "1067d906-d14d-4f85-959a-e863407e329d",
+      "occurred_at": "2026-06-12T20:19:53.587Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "0426519f-ea1e-4106-9a00-1d73d2516bf2",
+      "occurred_at": "2026-06-12T20:20:20.607Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "3fe56c3e-46aa-44aa-a0aa-39160dc3925a",
+      "occurred_at": "2026-06-12T20:21:52.536Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "62e35adc-a511-4340-8c38-b52e24386148",
+      "occurred_at": "2026-06-12T20:21:53.144Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    },
+    {
+      "id": "2c8bee4d-c90e-44fc-a113-5eaf693be386",
+      "occurred_at": "2026-06-12T20:23:46.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/author-avatars-in-pr-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/author-avatars-in-pr-inbox"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-12T20:23:46.429Z"
+}

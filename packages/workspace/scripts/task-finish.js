@@ -14,6 +14,7 @@ const {
   removeWorktree,
 } = require('./lib/git');
 const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findTaskMeta } = require('./lib/task-meta');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const {
@@ -37,7 +38,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
-  writeStdout('  --pr <number>          select task by pr number');
+  writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout('  --stream <branch>      stream target to verify merge against (default: infer from task metadata or area)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --json                 output json');
@@ -77,7 +78,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--stream':
         args.stream = value;
@@ -97,7 +99,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return args;

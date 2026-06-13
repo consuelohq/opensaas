@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_56ad57720718",
+  "tmuxSession": "opensaas-security-fix-cloudflare-d1-registry-review-findings-56ad5772",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-cloudflare-d1-registry-review-findings",
+  "branch": "task/security/fix-cloudflare-d1-registry-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-cloudflare-d1-registry-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-cloudflare-d1-registry-review-findings",
+  "prNumber": 973,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/973",
+  "createdAt": "2026-06-11T18:44:51.177Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-cloudflare-d1-registry-review-findings/.task/security/fix-cloudflare-d1-registry-review-findings/session.json"
+}

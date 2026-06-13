@@ -33,6 +33,10 @@ export type ToolManifestConfig = {
   outputs?: {
     full?: string;
     core?: string;
+    workflows?: string;
+  };
+  workflows?: {
+    path: string;
   };
   core: CoreManifestConfig;
 };
@@ -69,6 +73,32 @@ export type GeneratedCoreManifest = {
   tools: GeneratedToolManifestEntry[];
 };
 
+export type WorkflowBundleConfig = {
+  id: string;
+  aliases?: string[];
+  roles?: string[];
+  categories?: string[];
+  subscriptions?: JsonObject[];
+};
+
+export type GeneratedWorkflowBundleEntry = {
+  id: string;
+  aliases: string[];
+  roles: string[];
+  categories: string[];
+  subscriptions: JsonObject[];
+  tools: GeneratedToolManifestEntry[];
+};
+
+export type GeneratedWorkflowBundles = {
+  version: 1;
+  kind: 'consuelo-os-workflow-bundles';
+  sourceManifest: string;
+  config: string;
+  source: string;
+  workflows: GeneratedWorkflowBundleEntry[];
+};
+
 export type ToolManifestReport = {
   oldRegularToolCount: number;
   oldDevToolCount: number;
@@ -85,15 +115,18 @@ export type BuildToolManifestOptions = {
   configPath?: string;
   fullOutputPath?: string;
   coreOutputPath?: string;
+  workflowsOutputPath?: string;
   write?: boolean;
 };
 
 export type BuildToolManifestResult = {
   full: GeneratedToolManifest;
   core: GeneratedCoreManifest;
+  workflows: GeneratedWorkflowBundles;
   report: ToolManifestReport;
   fullOutputPath: string;
   coreOutputPath: string;
+  workflowsOutputPath: string;
 };
 
 function isObject(value: unknown): value is JsonObject {
@@ -258,7 +291,76 @@ function sortEntries(entries: GeneratedToolManifestEntry[]): GeneratedToolManife
   return [...entries].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-function outputPathFromConfig(config: ToolManifestConfig, configDir: string, key: 'full' | 'core', fallback: string): string {
+function normalizeWorkflowConfig(configPath: string, value: JsonObject): WorkflowBundleConfig[] {
+  const workflows = value.workflows;
+  if (!Array.isArray(workflows) || workflows.some((item) => !isObject(item))) {
+    throw new Error(`${relativeToRepo(configPath)}: workflows must be an array of objects`);
+  }
+
+  return workflows.map((workflow) => ({
+    id: assertString(workflow.id, `${relativeToRepo(configPath)} workflow.id`),
+    aliases: valueToStringArray(workflow.aliases),
+    roles: valueToStringArray(workflow.roles),
+    categories: valueToStringArray(workflow.categories),
+    subscriptions: Array.isArray(workflow.subscriptions)
+      ? workflow.subscriptions.filter(isObject)
+      : [],
+  }));
+}
+
+function readWorkflowConfig(config: ToolManifestConfig, configDir: string): {
+  sourcePath: string;
+  workflows: WorkflowBundleConfig[];
+} {
+  const configuredPath = config.workflows?.path;
+  if (!configuredPath) {
+    return { sourcePath: '', workflows: [] };
+  }
+
+  const sourcePath = resolvePath(configuredPath, configDir);
+  return {
+    sourcePath,
+    workflows: normalizeWorkflowConfig(sourcePath, readJsonObject(sourcePath)),
+  };
+}
+
+function workflowMatches(entry: GeneratedToolManifestEntry, workflow: WorkflowBundleConfig): boolean {
+  const role = typeof entry.definition.workflowRole === 'string' ? entry.definition.workflowRole : undefined;
+  const category = entry.category.toLowerCase();
+
+  return Boolean(role && valueToStringArray(workflow.roles).includes(role))
+    || valueToStringArray(workflow.categories).some((workflowCategory) => category === workflowCategory.toLowerCase());
+}
+
+function buildWorkflowBundles(
+  config: ToolManifestConfig,
+  configDir: string,
+  configPath: string,
+  fullOutputPath: string,
+  fullTools: GeneratedToolManifestEntry[],
+): GeneratedWorkflowBundles {
+  const workflowConfig = readWorkflowConfig(config, configDir);
+  const workflows = workflowConfig.workflows.map((workflow) => ({
+    id: workflow.id,
+    aliases: valueToStringArray(workflow.aliases),
+    roles: valueToStringArray(workflow.roles),
+    categories: valueToStringArray(workflow.categories),
+    subscriptions: Array.isArray(workflow.subscriptions) ? workflow.subscriptions : [],
+    tools: fullTools.filter((entry) => workflowMatches(entry, workflow)),
+  }));
+
+  return {
+    version: 1,
+    kind: 'consuelo-os-workflow-bundles',
+    sourceManifest: relativeToRepo(fullOutputPath),
+    config: relativeToRepo(configPath),
+    source: workflowConfig.sourcePath ? relativeToRepo(workflowConfig.sourcePath) : '',
+    workflows,
+  };
+}
+
+
+function outputPathFromConfig(config: ToolManifestConfig, configDir: string, key: 'full' | 'core' | 'workflows', fallback: string): string {
   const configured = config.outputs?.[key];
   return configured ? resolvePath(configured, configDir) : fallback;
 }
@@ -278,6 +380,9 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
   const coreOutputPath = options.coreOutputPath
     ? path.resolve(options.coreOutputPath)
     : outputPathFromConfig(config, configDir, 'core', path.join(packageRoot, 'manifests', 'core.manifest.json'));
+  const workflowsOutputPath = options.workflowsOutputPath
+    ? path.resolve(options.workflowsOutputPath)
+    : outputPathFromConfig(config, configDir, 'workflows', path.join(packageRoot, 'manifests', 'workflow-bundles.json'));
 
   const withCore = entries.map((entry) => ({ ...entry, core: coreMatches(entry, coreConfig) }));
   const fullTools = sortEntries(withCore);
@@ -298,12 +403,15 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
     config: relativeToRepo(configPath),
     tools: coreTools,
   };
+  const workflows = buildWorkflowBundles(config, configDir, configPath, fullOutputPath, fullTools);
 
   return {
     full,
     core,
+    workflows,
     fullOutputPath,
     coreOutputPath,
+    workflowsOutputPath,
     report: {
       oldRegularToolCount: regularToolNames.length,
       oldDevToolCount: devToolNames.length,
@@ -322,8 +430,10 @@ export function generateToolManifest(options: BuildToolManifestOptions = {}): Bu
   const result = buildToolManifest(options);
   fs.mkdirSync(path.dirname(result.fullOutputPath), { recursive: true });
   fs.mkdirSync(path.dirname(result.coreOutputPath), { recursive: true });
+  fs.mkdirSync(path.dirname(result.workflowsOutputPath), { recursive: true });
   fs.writeFileSync(result.fullOutputPath, `${JSON.stringify(result.full, null, 2)}\n`);
   fs.writeFileSync(result.coreOutputPath, `${JSON.stringify(result.core, null, 2)}\n`);
+  fs.writeFileSync(result.workflowsOutputPath, `${JSON.stringify(result.workflows, null, 2)}\n`);
   return result;
 }
 
@@ -332,6 +442,7 @@ if (import.meta.main) {
     const result = generateToolManifest();
     process.stdout.write(`wrote ${relativeToRepo(result.fullOutputPath)} (${result.report.fullToolCount} tools)\n`);
     process.stdout.write(`wrote ${relativeToRepo(result.coreOutputPath)} (${result.report.coreToolCount} tools)\n`);
+    process.stdout.write(`wrote ${relativeToRepo(result.workflowsOutputPath)} (${result.workflows.workflows.length} workflows)\n`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(`${message}\n`);

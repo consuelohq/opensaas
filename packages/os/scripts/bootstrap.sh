@@ -26,6 +26,8 @@ BUN_STATUS="pending"
 SOURCE_STATUS="pending"
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
+CONTACT_URL="https://consuelohq.com/contact/"
+OS_MODE=""
 
 usage() {
   cat <<'USAGE'
@@ -48,6 +50,7 @@ Options:
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
   --refresh-source  refresh an existing hosted source checkout/archive before onboarding
+  --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
   --help, -h        show this help
@@ -103,6 +106,16 @@ parse_args() {
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
       --refresh-source) REFRESH_SOURCE=1 ;;
+      --mode)
+        shift
+        if [ "$#" -eq 0 ]; then
+          fail "--mode requires local or cloud"
+        fi
+        case "$1" in
+          local|cloud) OS_MODE="$1" ;;
+          *) fail "--mode must be local or cloud" ;;
+        esac
+        ;;
       --json) JSON=1 ;;
       --debug) DEBUG=1 ;;
       --help|-h)
@@ -183,6 +196,91 @@ This shell is non-interactive. Re-run with:
   printf '%s\n' "$message" > /dev/tty
   IFS= read -r _ < /dev/tty
 }
+
+open_contact_url() {
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would open $CONTACT_URL"
+    return 0
+  fi
+
+  if command -v open >/dev/null 2>&1; then
+    open "$CONTACT_URL"
+  else
+    log "Open $CONTACT_URL"
+  fi
+}
+
+choose_os_mode() {
+  if [ -n "$OS_MODE" ]; then
+    return 0
+  fi
+
+  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
+    OS_MODE="local"
+    return 0
+  fi
+
+  if ! has_tty; then
+    fail "Choose local or cloud before setup.
+
+This shell is non-interactive. Re-run with:
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local
+or:
+  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
+  fi
+
+  while true; do
+    printf '%s
+' "Choose Consuelo OS mode:" > /dev/tty
+    printf '%s
+' "1) local" > /dev/tty
+    printf '%s
+' "2) cloud" > /dev/tty
+    printf '%s' "Enter 1 or 2: " > /dev/tty
+    IFS= read -r mode_choice < /dev/tty
+
+    case "$mode_choice" in
+      ""|1|local) OS_MODE="local"; return 0 ;;
+      2|cloud) OS_MODE="cloud"; return 0 ;;
+      *) printf '%s
+' "Enter 1 for local or 2 for cloud." > /dev/tty ;;
+    esac
+  done
+}
+
+handle_cloud_mode() {
+  if [ "$OS_MODE" != "cloud" ]; then
+    return 0
+  fi
+
+  log "Consuelo cloud is handled by the Consuelo team. Opening the contact page."
+  open_contact_url
+  DEPENDENCY_STATUS="skipped"
+  ONBOARDING_STATUS="cloud_contact"
+  DAEMON_STATUS="skipped"
+  emit_json_summary
+  exit 0
+}
+
+render_dependency_progress() {
+  [ "$JSON" -eq 0 ] || return 0
+
+  log "C O N S U E L O   O S"
+  log "│"
+  log "● dependencies"
+  log "○ home"
+  log "○ skills"
+  log "○ artifacts"
+  log "○ agents"
+  log "○ health"
+  log ""
+}
+
+prompt_dependency_setup() {
+  prompt_enter "Consuelo OS needs its dependencies to continue.
+
+Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
+}
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -226,6 +324,10 @@ Install Bun manually, then re-run this bootstrap:
 TEXT
 }
 
+install_bun_runtime() {
+  curl -fsSL https://bun.sh/install | bash
+}
+
 ensure_bun() {
   if find_bun; then
     BUN_STATUS="present"
@@ -244,11 +346,7 @@ ensure_bun() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS uses Bun to run its local background runtime.
-Press Enter to install Bun, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
-  log "Installing Bun..."
-  curl -fsSL https://bun.sh/install | bash
+  run_with_loading_dots "Installing Bun" install_bun_runtime
   export PATH="$HOME/.bun/bin:$PATH"
 
   if ! find_bun; then
@@ -313,10 +411,6 @@ download_source() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS needs the local runtime source to continue.
-We can download/setup this now.
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
   require_command tar "Consuelo OS needs tar to unpack the source archive. tar is expected on supported macOS installs."
   require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
 
@@ -366,6 +460,11 @@ resolve_source() {
 
   download_source
 }
+install_runtime_dependencies() {
+  local os_dir="$1"
+  (cd "$os_dir" && "$BUN_BIN" install)
+}
+
 ensure_dependencies() {
   local os_dir="$REPO_DIR/packages/os"
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
@@ -379,12 +478,7 @@ ensure_dependencies() {
     return 0
   fi
 
-  prompt_enter "Consuelo OS needs its local runtime dependencies to continue.
-We can install/setup this now.
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-
-  log "Installing Consuelo OS runtime dependencies..."
-  (cd "$os_dir" && "$BUN_BIN" install)
+  run_with_loading_dots "Installing Consuelo OS runtime dependencies" install_runtime_dependencies "$os_dir"
   DEPENDENCY_STATUS="installed"
 }
 
@@ -404,7 +498,7 @@ run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" < /dev/tty
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}" < /dev/tty
 }
 
 run_install_with_tty() {
@@ -422,7 +516,7 @@ run_onboarding() { # run_onboarding_json
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$BUN_BIN" ]; then
-      "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --dry-run --yes --json
+      "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --dry-run --yes --json --mode "${OS_MODE:-local}"
       ONBOARDING_STATUS="dry_run"
     else
       log "dry-run: would run: bun --cwd $os_dir ./scripts/install.ts --dry-run --yes --json"
@@ -432,7 +526,7 @@ run_onboarding() { # run_onboarding_json
   fi
 
   if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
-    local install_args=(./scripts/install.ts --yes --json --home "$os_home")
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --mode "${OS_MODE:-local}")
     if [ "$INSTALL_DAEMONS" -eq 1 ]; then
       install_args+=(--install-daemons)
     fi
@@ -518,7 +612,7 @@ print_success_summary() {
   local os_home="$OS_HOME"
   local config_file="$os_home/config.json"
   local db_file="$os_home/consuelo.db"
-  local log_dir="$HOME/Library/Logs/Consuelo"
+  local log_dir="$os_home/logs"
   local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
@@ -545,7 +639,11 @@ print_success_summary() {
 
 main() {
   parse_args "$@"
+  choose_os_mode
+  handle_cloud_mode
   check_mac_prerequisites
+  render_dependency_progress
+  prompt_dependency_setup
   ensure_bun
   resolve_source
   ensure_dependencies
@@ -556,3 +654,4 @@ main() {
 }
 
 main "$@"
+

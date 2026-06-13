@@ -46,13 +46,20 @@ const DIGITAL_EGUIDE_TEMPLATE_DIR = 'packages/consuelo-design/templates/digital-
 const DIGITAL_EGUIDE_READER_SHELL_PATH = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/reader-shell.md`;
 const DESIGN_ARCHIVE_ROOT = path.join(OPEN_DESIGN_ROOT, '.od/consuelo/archive');
 const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
-const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
+const DESIGN_ARCHIVE_ROOT_REDIRECT_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
+const DESIGN_ARCHIVE_OFFICE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'office', 'index.html');
+const DESIGN_ARCHIVE_INDEX_PATH = DESIGN_ARCHIVE_OFFICE_INDEX_PATH;
 const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
 const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
 const DESIGN_ARCHIVE_PAGEFIND_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'pagefind');
 const DESIGN_ARCHIVE_PORT = 53935;
-const DESIGN_ARCHIVE_PATH = '/design-wiki';
-const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
+const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';
+const DESIGN_ARCHIVE_PATH = '/sites';
+const DESIGN_ARCHIVE_OFFICE_PATH = '/office';
+const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';
+const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';
+const DESIGN_ARCHIVE_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_PUBLIC_ORIGIN ?? 'https://sites.consuelohq.com';
+const DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN = process.env.CONSUELO_DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN ?? 'https://wiki.consuelohq.com';
 const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
 type ParsedArgs = {
   command: string;
@@ -1071,29 +1078,35 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
       writeArchiveIndex(payload);
     }
     const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const tracingTarget = `${archiveTarget}/trace-burn-intelligence`;
+    const diffsTarget = `${archiveTarget}/diffs`;
+    const launcherCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/', archiveTarget];
+    const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
-    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
-    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
+    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', tracingTarget];
+    const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', diffsTarget];
+    const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
+    const legacyDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     if (args.dryRun) {
-      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, command });
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, tracingCommand, diffsCommand] });
       else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
-    const result = await runCommand(command, REPO_ROOT);
-    if (result.exitCode !== 0) {
-      throw new Error(`tailscale serve failed for Consuelo Wiki: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
-    }
-    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_PATH, url, directUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
-    else if (!args.quiet) writeStdout(`design archive refreshed\nwiki: ${url}\nwikiDirect: ${directUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
+    const result = await setArchiveServePaths(tailscaleBin, archiveTarget);
+    if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, stdout: result.stdout.trim(), stderr: result.stderr.trim(), entries: payload.entries.length });
+    else if (!args.quiet) writeStdout(`design archive refreshed\nlauncher: ${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/\noffice: ${url}\nofficeDirect: ${directUrl}\nlegacyWiki: ${legacyUrl}\nlegacyWikiDirect: ${legacyDirectUrl}\ntarget: ${archiveTarget}\nentries: ${payload.entries.length}\n`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`failed to refresh Consuelo Wiki archive: ${message}`);
+    throw new Error(`failed to refresh Consuelo Sites archive: ${message}`);
   }
 }
 
 async function archiveServerShowsCurrentWiki(target: string): Promise<boolean> {
   try {
-    const response = await fetch(`${target}${DESIGN_ARCHIVE_PATH}`, { cache: 'no-store' });
+    const response = await fetch(`${target}${DESIGN_ARCHIVE_OFFICE_PATH}`, { cache: 'no-store' });
     if (!response.ok) return false;
     const html = await response.text();
     return html.includes('Recently Updated') && !html.includes('Recent Posts') && !html.includes('<h2>Featured</h2>');
@@ -1116,47 +1129,166 @@ async function stopArchiveServer(): Promise<void> {
 }
 
 async function ensureArchiveServer(ip: string): Promise<string> {
-  writeArchiveServer(ip);
-  const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
-  await stopArchiveServer();
+  try {
+    writeArchiveServer(ip);
+    const target = `http://${ip}:${DESIGN_ARCHIVE_PORT}`;
+    await stopArchiveServer();
 
-  const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
-    cwd: REPO_ROOT,
-    detached: true,
-    stdio: ['ignore', 'ignore', 'ignore'],
-  });
-  child.unref();
+    const child = spawn('bun', [DESIGN_ARCHIVE_SERVER_PATH], {
+      cwd: REPO_ROOT,
+      detached: true,
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    child.unref();
 
-  const deadline = Date.now() + 4000;
-  while (Date.now() < deadline) {
-    if (await archiveServerShowsCurrentWiki(target)) return target;
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    const deadline = Date.now() + 4000;
+    while (Date.now() < deadline) {
+      if (await archiveServerShowsCurrentWiki(target)) return target;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return target;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to ensure Consuelo Sites archive server: ${message}`);
   }
-  return target;
 }
 
+
+async function setArchiveServePaths(tailscaleBin: string, target: string): Promise<{ stdout: string; stderr: string }> {
+  try {
+    let stdout = '';
+    let stderr = '';
+    const routes = [
+      ['/', target],
+      [DESIGN_ARCHIVE_OFFICE_PATH, target],
+      [DESIGN_ARCHIVE_PATH, target],
+      [DESIGN_ARCHIVE_LEGACY_PATH, target],
+      ['/tracing', `${target}/trace-burn-intelligence`],
+      ['/diffs', `${target}/diffs`],
+    ] as const;
+    for (const [archivePath, routeTarget] of routes) {
+      const result = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', archivePath, routeTarget], REPO_ROOT);
+      stdout += result.stdout;
+      stderr += result.stderr;
+      if (result.exitCode !== 0) {
+        throw new Error(`tailscale serve failed for Consuelo Sites at ${archivePath}: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+      }
+    }
+    return { stdout, stderr };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to set Consuelo Sites archive serve paths: ${message}`);
+  }
+}
 
 function writeArchiveServer(ip: string): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   const lines = [
     'const archiveRoot = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT) + ';',
     'const indexPath = ' + JSON.stringify(DESIGN_ARCHIVE_INDEX_PATH) + ';',
+    'const rootRedirectPath = ' + JSON.stringify(DESIGN_ARCHIVE_ROOT_REDIRECT_PATH) + ';',
     'const dataPath = ' + JSON.stringify(DESIGN_ARCHIVE_DATA_PATH) + ';',
     'const pagefindRoot = ' + JSON.stringify(DESIGN_ARCHIVE_PAGEFIND_ROOT) + ';',
+    'const officeArchivePath = ' + JSON.stringify(DESIGN_ARCHIVE_OFFICE_PATH) + ';',
     'const archivePath = ' + JSON.stringify(DESIGN_ARCHIVE_PATH) + ';',
+    'const legacyArchivePath = ' + JSON.stringify(DESIGN_ARCHIVE_LEGACY_PATH) + ';',
+    'const docsUrl = ' + JSON.stringify(DESIGN_DOCS_URL) + ';',
+    'const decisionInfrastructureUrl = ' + JSON.stringify(DESIGN_DECISION_INFRASTRUCTURE_URL) + ';',
+    'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'const port = ' + JSON.stringify(DESIGN_ARCHIVE_PORT) + ';',
-    'function h(type){ const base = { "Cache-Control": "no-store" }; if (type) base["Content-Type"] = type; return base; }',
+    'const launcherCacheControl = "public, max-age=60, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800";',
+    'function h(type, cache){ const base = { "Cache-Control": cache === "launcher" ? launcherCacheControl : "no-store" }; if (type) base["Content-Type"] = type; return base; }',
     'function cleanPath(value){ return decodeURIComponent(value).split("/").filter(Boolean).join("/"); }',
     'function safeJoin(base, value){ const target = Bun.pathToFileURL(base + "/" + cleanPath(value)).pathname; const allowed = Bun.pathToFileURL(base + "/").pathname; return target.startsWith(allowed) ? target : null; }',
     'async function servePath(filePath){ const file = Bun.file(filePath); if (await file.exists()) return new Response(file, { headers: h() }); const index = Bun.file(filePath + "/index.html"); if (await index.exists()) return new Response(index, { headers: h("text/html; charset=utf-8") }); return null; }',
     'async function readPayload(){ try { return JSON.parse(await Bun.file(dataPath).text()); } catch { return { entries: [], pages: {} }; } }',
-    'async function readEntries(){ const data = await readPayload(); return Array.isArray(data.entries) ? data.entries : []; }',
-    'async function readPages(){ const data = await readPayload(); return data && data.pages && typeof data.pages === "object" ? data.pages : {}; }',
+    'async function readEntries(){ try { const data = await readPayload(); return Array.isArray(data.entries) ? data.entries : []; } catch { return []; } }',
+    'async function readPages(){ try { const data = await readPayload(); return data && data.pages && typeof data.pages === "object" ? data.pages : {}; } catch { return {}; } }',
     'async function proxyEntry(entry, request, suffix){ if (!entry || !entry.target) return null; if (!entry.target.startsWith("http://") && !entry.target.startsWith("https://")) return null; const target = new URL(entry.target); const requested = new URL(request.url); const base = target.pathname.endsWith("/") ? target.pathname.slice(0, -1) : target.pathname; const extra = suffix ? "/" + suffix.split("/").filter(Boolean).map(encodeURIComponent).join("/") : ""; target.pathname = base + extra; target.search = requested.search; return fetch(target, { method: request.method, headers: request.headers }); }',
-    'function pagefindSuffix(pathname){ if (pathname.startsWith(archivePath + "/pagefind/")) return pathname.slice((archivePath + "/pagefind/").length); if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
-    `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(version.path) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? page.path : "/design-wiki") + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href="/design-wiki">Open Consuelo Wiki</a></p></main></body></html>'; }`,
+    'function pagefindSuffix(pathname){ for (const base of archivePaths){ if (pathname.startsWith(base + "/pagefind/")) return pathname.slice((base + "/pagefind/").length); } if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
+    'function stripArtifactAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const base of archivePaths){ if (clean === base) return "/"; if (clean.startsWith(base + "/")) return clean.slice(base.length) || "/"; } return clean; }',
+    'function officePathFor(pathname){ const raw = String(pathname || "/"); const clean = raw.startsWith("/") ? raw : "/" + raw.replace(/^\\/+/, ""); return officeArchivePath + (clean === "/" ? "" : clean); }',
+    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; if (clean === "/tracing") return "/trace-burn-intelligence"; return pathname; }',
+    'async function proxyDiffsRoute(request){ const url = new URL(request.url); const clean = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (clean !== "/diffs" && !url.pathname.startsWith("/diffs/")) return null; const target = new URL("https://diffs.consuelohq.com"); target.pathname = clean === "/diffs" ? "/" : url.pathname.slice("/diffs".length); target.search = url.search; return fetch(target, { method: request.method, headers: request.headers }); }',
+    'function renderSitesLauncher(){ return ' + JSON.stringify(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10.3px, 2.62vw, 12.7px); line-height: 1.34; } main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); } .block { margin: 22px 0; } .rule { margin: 22px 0; } li { margin: 2.35px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.9px, 2.42vw, 11.5px); line-height: 1.32; } main { padding: 40px 10px; } li, .blog-item { white-space: nowrap; } }
+    main { padding: 32px 30px; max-width: none; }
+    h1, p { margin: 0; font: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 2px 0; white-space: nowrap; }
+    li::before { content: "- "; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
+      <ul>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" data-hotkey="1" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" data-hotkey="4" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" data-hotkey="5" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+  </main>
+  <script>
+    const siteHotkeys = {
+      "1": "https://app.consuelohq.com/welcome",
+      "2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}",
+      "3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing",
+      "4": "https://diffs.consuelohq.com",
+      "5": "${DESIGN_DOCS_URL}",
+    };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const target = event.target;
+      const tagName = target && target.tagName ? target.tagName.toLowerCase() : "";
+      if (tagName === "input" || tagName === "textarea" || (target && target.isContentEditable)) return;
+      const href = siteHotkeys[event.key];
+      if (!href) return;
+      event.preventDefault();
+      window.location.assign(href);
+    });
+  </script>
+</body>
+</html>`) + '; }',
+    `function renderVersionHistoryPage(page){ const versions = Array.isArray(page && page.versions) ? page.versions : []; const safe = (value) => String(value || "").replace(/[&<>"]/g, (char) => char === "&" ? "&amp;" : char === "<" ? "&lt;" : char === ">" ? "&gt;" : "&quot;"); const items = versions.map((version) => '<li><a href="' + safe(officePathFor(version.path)) + '">' + safe(version.versionId || "version") + '</a><span>' + safe(version.updatedAt || version.publishedAt || "") + '</span></li>').join(""); return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Archived versions - ' + safe(page && page.title ? page.title : "Design artifact") + '</title></head><body data-version-count="' + versions.length + '"><main><p><a href="' + safe(page && page.path ? officePathFor(page.path) : officeArchivePath) + '">Current version</a></p><h1>Archived versions</h1><ol>' + items + '</ol><p><a href="' + safe(officeArchivePath) + '">Open Consuelo Sites</a></p></main></body></html>'; }`,
     'function entryForVersionRoute(pages, pathname){ const pageList = Object.values(pages || {}); for (const page of pageList){ if (!page || !page.path) continue; const base = page.path.endsWith("/") ? page.path.slice(0, -1) : page.path; const historyPath = base + "/versions"; if (pathname === historyPath || pathname === historyPath + "/") return { kind: "history", page }; if (pathname.startsWith(historyPath + "/")){ const parts = pathname.slice((historyPath + "/").length).split("/").filter(Boolean); const versionId = parts.shift(); const version = Array.isArray(page.versions) ? page.versions.find((item) => item && item.versionId === versionId) : null; if (version) return { kind: "version", page, version, suffix: parts.join("/") }; } } return null; }',
-    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); if (url.pathname === "/" || url.pathname === archivePath || url.pathname === archivePath + "/") return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const pagefind = pagefindSuffix(url.pathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, url.pathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + "/")); if (entry){ const raw = url.pathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + url.pathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });'
+    'Bun.serve({ hostname: ' + JSON.stringify(ip) + ', port, async fetch(request){ try { const url = new URL(request.url); const cleanArchivePath = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (url.pathname === "/") return new Response(renderSitesLauncher(), { headers: h("text/html; charset=utf-8", "launcher") }); if (archivePaths.includes(url.pathname) || archivePaths.includes(cleanArchivePath)) return new Response(Bun.file(indexPath), { headers: h("text/html; charset=utf-8") }); const diffs = await proxyDiffsRoute(request); if (diffs) return diffs; const routePathname = publicRouteAlias(url.pathname); const pagefind = pagefindSuffix(routePathname); if (pagefind !== null){ const p = safeJoin(pagefindRoot, pagefind); if (p){ const response = await servePath(p); if (response) return response; } } const canonicalPathname = stripArtifactAlias(routePathname); const pages = await readPages(); const versionRoute = entryForVersionRoute(pages, canonicalPathname); if (versionRoute){ if (versionRoute.kind === "history") return new Response(renderVersionHistoryPage(versionRoute.page), { headers: h("text/html; charset=utf-8") }); const suffix = versionRoute.suffix || ""; if (versionRoute.version && versionRoute.version.artifactPath){ const p = safeJoin(archiveRoot, versionRoute.version.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(versionRoute.version, request, suffix); if (proxied) return proxied; return new Response("version not found", { status: 404, headers: h() }); } const entries = await readEntries(); const entry = entries.find((item) => canonicalPathname === item.path || canonicalPathname.startsWith(item.path + "/")); if (entry){ const raw = canonicalPathname.slice(entry.path.length); const suffix = raw.startsWith("/") ? raw.slice(1) : raw; if (entry.artifactPath){ const p = safeJoin(archiveRoot, entry.artifactPath + (suffix ? "/" + suffix : "")); if (p){ const response = await servePath(p); if (response) return response; } } const proxied = await proxyEntry(entry, request, suffix); if (proxied) return proxied; } const direct = safeJoin(archiveRoot, "artifacts" + canonicalPathname); if (direct){ const response = await servePath(direct); if (response) return response; } return new Response("not found", { status: 404, headers: h() }); } catch { return new Response("archive server error", { status: 500, headers: h() }); } } });',
   ];
   writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, lines.join('\n') + '\n');
 }
@@ -1179,7 +1311,7 @@ function normalizeArchivePayload(parsed: Partial<DesignArchivePayload>): DesignA
         versionId,
         previousVersionId: null,
         title: entry.title,
-        url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${versionPath}`,
+        url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${officePathForServePath(versionPath)}`,
         directUrl: `${entry.directUrl.replace(/\/$/, '')}/versions/${versionId}`,
         path: versionPath,
         target: entry.target,
@@ -1253,7 +1385,10 @@ function archiveEntryTimestamp(entry: DesignArchiveEntry): string {
 
 function archiveEntryFilterType(entry: DesignArchiveEntry): string {
   if (entry.path.split('/').filter(Boolean)[0] === 'website') return 'website';
-  return entry.template;
+  if (entry.template === 'guide' || entry.category === 'daily-deep-idea' || entry.category === 'research') return 'guide';
+  if (entry.template === 'spec') return 'spec';
+  if (entry.template === 'plan') return 'plan';
+  return 'uncategorized';
 }
 
 function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
@@ -1262,8 +1397,21 @@ function pagefindUrlForArchiveEntry(entry: DesignArchiveEntry): string {
   return relativePath.endsWith('/index.html') ? `/${relativePath}` : `/${relativePath}/index.html`;
 }
 
-function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+function rootPathForArchiveEntry(entry: DesignArchiveEntry): string {
   return entry.path.startsWith('/') ? entry.path : `/${entry.path}`;
+}
+
+function officePathForServePath(servePath: string): string {
+  const rootPath = servePath.startsWith('/') ? servePath : `/${servePath}`;
+  return `${DESIGN_ARCHIVE_OFFICE_PATH}${rootPath === '/' ? '' : rootPath}`;
+}
+
+function officePathForArchiveEntry(entry: DesignArchiveEntry): string {
+  return officePathForServePath(rootPathForArchiveEntry(entry));
+}
+
+function publicUrlForArchiveEntry(entry: DesignArchiveEntry): string {
+  return officePathForArchiveEntry(entry);
 }
 
 function renderArchiveIndex(payload: DesignArchivePayload): string {
@@ -1272,9 +1420,12 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     .sort((left, right) => archiveEntryTimestamp(right).localeCompare(archiveEntryTimestamp(left)));
   const renderItems = (entries: DesignArchiveEntry[]) => entries.map((entry) => {
     const timestamp = archiveEntryTimestamp(entry);
+    const filterType = archiveEntryFilterType(entry);
     return `
-        <article class="post-item" data-template="${escapeHtml(archiveEntryFilterType(entry))}" data-category="${escapeHtml(entry.category)}" data-version-count="${escapeHtml(String(entry.versionCount || 1))}">
-          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3><div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div><p>${escapeHtml(entry.path)}</p>
+        <article class="post-item" data-template="${escapeHtml(filterType)}" data-category="${escapeHtml(entry.category)}" data-version-count="${escapeHtml(String(entry.versionCount || 1))}">
+          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
+          <div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div>
+          <p>${escapeHtml(entry.path)}</p>
         </article>`;
   }).join('\n');
   const archiveCards = renderItems(visibleEntries);
@@ -1291,52 +1442,60 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     currentVersionId: entry.currentVersionId,
     versionCount: entry.versionCount,
   }));
-  const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published artifacts yet.</p>' : '';
+  const searchDataJson = JSON.stringify(searchEntries)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+  const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published sites yet.</p>' : '';
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo Wiki</title>
+  <title>Consuelo Sites</title>
   <style>
-    :root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; }
+    :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55, 37, 20, .14); }
     @media (prefers-color-scheme: dark) {
-      :root { color-scheme: dark; --paper:#111820; --surface:#18212b; --ink:#e9eef4; --muted:#a9b4bf; --quiet:#7f8b96; --line:#2a3642; --soft:#1d2732; --accent:#c7d0d9; --accent-soft:#263341; }
+      :root { color-scheme: dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); }
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; background:var(--paper); }
-    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
+    body { margin:0; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:var(--paper); }
     ::selection { background:var(--accent-soft); color:var(--ink); }
-    .shell { max-width:680px; margin:0 auto; padding:0 18px 32px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
-    .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; text-decoration:none; }
-    .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
+    .shell { max-width:720px; margin:0 auto; padding:0 22px 40px; }
+    .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--paper) 86%, transparent); backdrop-filter:blur(18px); }
+    .brand { color:var(--ink); font-size:20px; font-weight:800; letter-spacing:.01em; text-decoration:none; }
+    .nav { display:flex; align-items:center; gap:18px; font-size:13px; }
     .nav a { color:var(--ink); text-decoration:none; }
-    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
-    .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover, .page-button:hover, .search-button:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    .search-mark { font-size:24px; line-height:1; transform:translateY(-1px); }
     .search-button { display:inline-flex; align-items:center; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
-    h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
-    .lead { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.7; }
+    h1 { margin:0 0 20px; font-size:48px; line-height:.98; letter-spacing:-.06em; font-weight:850; }
+    .lead { margin:0 0 20px; color:var(--muted); font-size:15px; line-height:1.7; max-width:60ch; }
     .filter-row, .pagination, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
-    .search-row { margin-top:18px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+    .search-row { margin-top:18px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:var(--shadow); }
     .search-row[hidden] { display:none; }
     .filter-label { color:var(--muted); }
     .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
     .search-input::placeholder { color:var(--quiet); }
-    .search-input:focus { border-bottom-color:var(--accent); }
+    .search-input:focus { border-bottom-color:var(--accent-strong); }
     button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
-    button:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
-    button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-    button.active { color:var(--accent); font-weight:700; }
+    button:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+    button.active { color:var(--accent-strong); font-weight:800; }
     button.active::before { content:"["; color:var(--quiet); }
     button.active::after { content:"]"; color:var(--quiet); }
     .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
     .section[data-empty="true"] { display:none; }
-    h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
+    h2 { margin:0 0 24px; font-size:25px; line-height:1.15; letter-spacing:-.04em; font-weight:850; }
     .post-list { display:grid; gap:26px; }
-    .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; letter-spacing:-.02em; font-weight:500; }
+    .post-item { padding:2px 0; }
+    .post-item[hidden] { display:none; }
+    .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; letter-spacing:-.02em; font-weight:600; }
     .post-item h3 a { color:inherit; text-decoration:none; }
     .post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
     .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
@@ -1348,40 +1507,59 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
     .footer-links { display:flex; gap:10px; }
     .footer-links a { color:var(--ink); text-decoration:none; }
+    .palette-backdrop { position:fixed; inset:0; z-index:80; display:flex; align-items:flex-start; justify-content:center; padding:10vh 18px 18px; background:rgba(5,5,4,.68); backdrop-filter:blur(10px); }
+    .palette-backdrop[hidden] { display:none; }
+    .palette { width:min(720px, 100%); border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:0 30px 100px rgba(0,0,0,.45); overflow:hidden; }
+    .palette-head { padding:18px 22px 20px; border-bottom:1px solid var(--line); }
+    .palette-kicker { margin:0 0 4px; color:var(--accent); font-size:12px; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
+    .palette h2 { margin:0 0 8px; font-size:31px; }
+    .palette p { margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
+    .palette-search { width:100%; border:0; border-bottom:1px solid var(--line); padding:14px 22px; background:var(--soft); color:var(--ink); font:inherit; outline:none; }
+    .palette-list { max-height:420px; overflow:auto; padding:8px; }
+    .command { width:100%; display:grid; grid-template-columns:72px 1fr auto; gap:14px; align-items:center; padding:11px 12px; border-radius:13px; text-align:left; }
+    .command:hover, .command.active { background:var(--accent-soft); text-decoration:none; }
+    .key { justify-self:start; min-width:48px; padding:7px 10px; border:1px solid var(--line); border-radius:10px; color:var(--accent); background:var(--soft); font-weight:850; text-align:center; }
+    .command strong { display:block; margin-bottom:2px; font-size:15px; }
+    .command span { color:var(--muted); font-size:13px; line-height:1.35; }
+    .kind { color:var(--quiet); font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+    .palette-foot { display:flex; gap:10px; align-items:center; padding:10px 18px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    .kbd { padding:2px 6px; border:1px solid var(--line); border-radius:6px; background:var(--soft); color:var(--accent); font-weight:800; }
     @media (max-width: 680px) {
-      .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; }
-      .nav { gap:14px; flex-wrap:wrap; }
+      .shell { padding-inline:18px; }
+      .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; }      .nav { gap:14px; flex-wrap:wrap; }
       header.hero { padding-top:44px; }
-      h1 { font-size:38px; }
+      h1 { font-size:42px; }
       footer { flex-direction:column; align-items:flex-start; }
+      .command { grid-template-columns:56px 1fr; }
+      .kind { display:none; }
     }
   </style>
 </head>
 <body>
   <div class="shell">
     <div class="topbar" data-pagefind-ignore>
-      <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_PATH)}">Consuelo Wiki</a>
+      <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>
       <nav class="nav" aria-label="Primary">
         <a href="#recently-updated">Recently Updated</a>
-        <span aria-hidden="true">▣</span>
-        <button class="search-button" type="button" data-search-toggle aria-controls="wiki-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
+        <button class="search-button" type="button" data-palette-open aria-label="Open command palette">⌘K</button>
+        <button class="search-button" type="button" data-search-toggle aria-controls="sites-search" aria-expanded="false"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Search</span></button>
       </nav>
     </div>
     <header class="hero" data-pagefind-ignore>
-      <h1>Wiki</h1>
-      <p class="lead">Private tailnet notes, guides, and published artifacts from Consuelo.</p>
+      <h1>Office</h1>
+      <p class="lead">Private tailnet sites, guides, and published artifacts from Consuelo.</p>
       <div class="filter-row" aria-label="Filters">
         <span class="filter-label">Filters:</span>
         <button class="active" data-filter="all">All</button>
         <button data-filter="website">Website</button>
-        <button data-filter="research">Research</button>
+        <button data-filter="guide">Guide</button>
         <button data-filter="spec">Spec</button>
         <button data-filter="plan">Plan</button>
         <button data-filter="uncategorized">Uncategorized</button>
       </div>
       <label class="search-row" hidden>
         <span class="filter-label">Search:</span>
-        <input id="wiki-search" class="search-input" type="search" placeholder="type to filter the wiki" autocomplete="off" spellcheck="false" />
+        <input id="sites-search" class="search-input" type="search" placeholder="type to filter the sites archive" autocomplete="off" spellcheck="false" />
       </label>
     </header>
     <section class="section" id="recently-updated" data-section="recently-updated" data-empty="${visibleEntries.length === 0}" data-pagefind-ignore>
@@ -1396,10 +1574,21 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     ${emptyState}
     <footer data-pagefind-ignore>
       <span>© ${escapeHtml(new Date(payload.updatedAt).getFullYear().toString())} Consuelo. All rights reserved.</span>
-      <div class="footer-links" aria-label="Footer links"><a href="#recently-updated">Recently Updated</a></div>
     </footer>
   </div>
-  <script type="application/json" id="archive-search-data">${escapeHtml(JSON.stringify(searchEntries))}</script>
+  <div class="palette-backdrop" data-command-palette hidden data-pagefind-ignore>
+    <section class="palette" role="dialog" aria-modal="true" aria-labelledby="command-palette-title">
+      <div class="palette-head">
+        <p class="palette-kicker">Keyboard Cockpit</p>
+        <h2 id="command-palette-title">Jump without hunting.</h2>
+        <p>Slash opens this menu. Press G, then a command letter, to jump directly.</p>
+      </div>
+      <input class="palette-search" data-command-search type="search" placeholder="Search commands, e.g. guides, specs, trace..." autocomplete="off" spellcheck="false" />
+      <div class="palette-list" data-command-list></div>
+      <div class="palette-foot"><span class="kbd">/</span> open <span class="kbd">Esc</span> close <span class="kbd">G</span> then letter jumps <span class="kbd">Enter</span> run</div>
+    </section>
+  </div>
+  <script type="application/json" id="archive-search-data">${searchDataJson}</script>
   <script>
     const pageSize = 10;
     const archiveEntries = JSON.parse(document.getElementById('archive-search-data').textContent || '[]');
@@ -1409,6 +1598,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     let activeMode = 'archive';
     let pagefind = null;
     let pagefindLoadStarted = false;
+    let awaitingGoCommand = false;
     const list = document.querySelector('[data-results-list]');
     const title = document.querySelector('[data-results-title]');
     const originalCardsHtml = list.innerHTML;
@@ -1419,13 +1609,20 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     const nextButton = document.querySelector('[data-page="next"]');
     const searchToggle = document.querySelector('[data-search-toggle]');
     const searchRow = document.querySelector('.search-row');
-    const searchInput = document.querySelector('#wiki-search');
+    const searchInput = document.querySelector('#sites-search');
+    const palette = document.querySelector('[data-command-palette]');
+    const paletteOpen = document.querySelector('[data-palette-open]');
+    const commandSearch = document.querySelector('[data-command-search]');
+    const commandList = document.querySelector('[data-command-list]');
 
     const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
     const normalizeUrl = (value) => {
       let normalized = String(value || '');
       try { normalized = new URL(normalized).pathname; } catch { /* keep relative path */ }
-      if (normalized.startsWith('/design-wiki')) normalized = normalized.slice('/design-wiki'.length);
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}'.length);
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_PATH)}'.length);
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_LEGACY_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_LEGACY_PATH)}'.length);
+      if (normalized.startsWith('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}')) normalized = normalized.slice('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}'.length);
       while (normalized.startsWith('/')) normalized = normalized.slice(1);
       if (normalized.endsWith('/index.html')) normalized = normalized.slice(0, -'/index.html'.length);
       if (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
@@ -1446,6 +1643,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         return normalized === artifactPath || normalized === pagefindUrl || normalized === pathUrl || normalized.startsWith(artifactPath + '/') || normalized.startsWith(pagefindUrl + '/');
       }) || null;
     };
+    const openLink = (href) => { window.open(href, '_blank', 'noopener,noreferrer'); };
     const renderCard = (entry, fallback) => {
       const updatedAt = entry && entry.updatedAt ? entry.updatedAt : '';
       const date = updatedAt ? new Date(updatedAt).toLocaleDateString() : '';
@@ -1455,7 +1653,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       const filter = entry && entry.template ? entry.template : 'uncategorized';
       const category = entry && entry.category ? entry.category : '';
       return '<article class="post-item" data-template="' + escapeText(filter) + '" data-category="' + escapeText(category) + '">' +
-        '<h3><a href="' + escapeText(href) + '">' + escapeText(cardTitle) + '</a></h3>' +
+        '<h3><a href="' + escapeText(href) + '" target="_blank" rel="noopener noreferrer">' + escapeText(cardTitle) + '</a></h3>' +
         '<div class="post-meta" aria-label="Updated date">▣ ' + (date ? escapeText(date) : 'Search result') + '</div>' +
         '<p>' + escapeText(cardPath) + '</p>' +
       '</article>';
@@ -1481,6 +1679,14 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       prevButton.disabled = currentPage === 1;
       nextButton.disabled = currentPage === totalPages;
     };
+    const applyFilter = (filter, writeHash = true) => {
+      activeFilter = filter || 'all';
+      currentPage = 1;
+      document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === activeFilter));
+      if (writeHash) location.hash = activeFilter === 'all' ? '' : activeFilter;
+      if (activeQuery.trim()) scheduleSearch();
+      else { setArchiveMode(); renderPage(); }
+    };
     const renderLocalSearch = () => {
       const entries = archiveEntries.filter((entry) => entryMatchesFilter(entry) && localEntryMatchesQuery(entry));
       activeMode = 'search';
@@ -1493,7 +1699,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       if (pagefind) return Promise.resolve(pagefind);
       if (pagefindLoadStarted) return Promise.resolve(null);
       pagefindLoadStarted = true;
-      return import('${escapeHtml(DESIGN_ARCHIVE_PATH)}/pagefind/pagefind.js').then((module) => {
+      return import('${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}/pagefind/pagefind.js').then((module) => {
         pagefind = module;
         return pagefind;
       }, () => null);
@@ -1535,17 +1741,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       window.clearTimeout(searchTimer);
       searchTimer = window.setTimeout(() => { runSearch(); }, 120);
     };
-
-    document.querySelectorAll('[data-filter]').forEach((button) => {
-      button.addEventListener('click', () => {
-        activeFilter = button.dataset.filter;
-        currentPage = 1;
-        document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-        if (activeQuery.trim()) scheduleSearch();
-        else { setArchiveMode(); renderPage(); }
-      });
-    });
-
+    document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => applyFilter(button.dataset.filter)));
     searchToggle.addEventListener('click', () => {
       const shouldOpen = searchRow.hidden;
       searchRow.hidden = !shouldOpen;
@@ -1572,27 +1768,140 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         renderPage();
       }
     });
-
     prevButton.addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage -= 1;
         renderPage();
       }
     });
-
     nextButton.addEventListener('click', () => {
       currentPage += 1;
       renderPage();
     });
 
+    const baseCommands = [
+      { key: 'O', title: 'Office', description: 'Open the Office archive.', kind: 'link', url: '${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}' },
+      { key: 'D', title: 'Documentation', description: 'Open Consuelo docs.', kind: 'link', url: '${escapeHtml(DESIGN_DOCS_URL)}' },
+      { key: 'I', title: 'Software Is Becoming Decision Infrastructure', description: 'Open the decision-making under uncertainty essay.', kind: 'link', url: '${escapeHtml(DESIGN_DECISION_INFRASTRUCTURE_URL)}' },
+      { key: 'R', title: 'Recently Updated', description: 'Jump to the recently updated list.', kind: 'jump', url: '#recently-updated' },
+      { key: 'W', title: 'Website', description: 'Show website artifacts.', kind: 'filter', filter: 'website' },
+      { key: 'G', title: 'Guides', description: 'Show guide artifacts.', kind: 'filter', filter: 'guide' },
+      { key: 'E', title: 'Specs', description: 'Show specs.', kind: 'filter', filter: 'spec' },
+      { key: 'P', title: 'Plans', description: 'Show plans.', kind: 'filter', filter: 'plan' },
+    ];
+    const entryCommands = archiveEntries.slice(0, 12).map((entry, index) => ({ key: String((index + 1) % 10), title: entry.title, description: entry.path, kind: 'link', url: entry.url }));
+    const commands = [...baseCommands, ...entryCommands];
+    const runCommandItem = (command) => {
+      if (!command) return;
+      if (command.kind === 'filter') applyFilter(command.filter);
+      else if (command.kind === 'jump') window.location.hash = command.url;
+      else if (command.url) openLink(command.url);
+      closePalette();
+    };
+    const renderCommands = () => {
+      const query = commandSearch.value.trim().toLowerCase();
+      const visible = commands.filter((command) => !query || [command.title, command.description, command.kind, command.key].some((value) => String(value || '').toLowerCase().includes(query)));
+      commandList.innerHTML = visible.map((command, index) => '<button class="command' + (index === 0 ? ' active' : '') + '" type="button" data-command-key="' + escapeText(command.key) + '"><span class="key">G' + escapeText(command.key) + '</span><span><strong>' + escapeText(command.title) + '</strong><span>' + escapeText(command.description) + '</span></span><span class="kind">' + escapeText(command.kind) + '</span></button>').join('');
+      commandList.querySelectorAll('[data-command-key]').forEach((item) => item.addEventListener('click', () => runCommandItem(commands.find((command) => command.key === item.dataset.commandKey))));
+    };
+    const openPalette = () => {
+      palette.hidden = false;
+      commandSearch.value = '';
+      renderCommands();
+      commandSearch.focus();
+    };
+    const closePalette = () => {
+      palette.hidden = true;
+      awaitingGoCommand = false;
+    };
+    paletteOpen.addEventListener('click', openPalette);
+    commandSearch.addEventListener('input', renderCommands);
+    commandSearch.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closePalette();
+      if (event.key === 'Enter') runCommandItem(commands.find((command) => command.key === commandList.querySelector('.command.active')?.dataset.commandKey));
+    });
+    document.addEventListener('keydown', (event) => {
+      const tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '';
+      const isTyping = tag === 'input' || tag === 'textarea' || event.target?.isContentEditable;
+      if (event.key === 'Escape' && !palette.hidden) closePalette();
+      if (event.key === '/' && !isTyping) { event.preventDefault(); openPalette(); }
+      if (!isTyping && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openPalette(); }
+      if (!isTyping && event.key.toLowerCase() === 'g') { awaitingGoCommand = true; window.setTimeout(() => { awaitingGoCommand = false; }, 1200); return; }
+      if (!isTyping && awaitingGoCommand) {
+        const command = commands.find((item) => item.key.toLowerCase() === event.key.toLowerCase());
+        if (command) { event.preventDefault(); runCommandItem(command); }
+        awaitingGoCommand = false;
+      }
+    });
+    applyFilter(location.hash ? location.hash.slice(1) : 'all', false);
     renderPage();
   </script>
 </body>
 </html>\n`;
 }
+function renderArchiveRootRedirect(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; } @media (max-width: 1024px) { body { font-size: clamp(10px, 2.55vw, 12.4px); line-height: 1.36; } main { padding: clamp(20px, 4.8vw, 32px) clamp(10px, 2.5vw, 24px); } .block { margin: 23px 0; } .rule { margin: 23px 0; } li { margin: 2.1px 0; } } @media (max-width: 430px) { body { font-size: clamp(9.6px, 2.35vw, 11.2px); line-height: 1.34; } main { padding: 22px 10px; } li, .blog-item { white-space: nowrap; } }
+    main { padding: 32px 30px; max-width: none; }
+    h1, p { margin: 0; font: inherit; }
+    h1 { margin-bottom: 24px; text-transform: uppercase; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 2px 0; white-space: nowrap; }
+    li::before { content: "- "; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; } .md-label { color: #f2eee6; } .blog-item { white-space: nowrap; } @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
+      <ul>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>`;
+}
 
 function writeArchiveIndex(payload: DesignArchivePayload): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  mkdirSync(path.dirname(DESIGN_ARCHIVE_INDEX_PATH), { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_ROOT_REDIRECT_PATH, renderArchiveRootRedirect());
   writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
 }
 
@@ -1623,7 +1932,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
       versionId,
       previousVersionId,
       title,
-      url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${versionPath}`,
+      url: `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${officePathForServePath(versionPath)}`,
       directUrl: archiveDirectUrlForPath(tailscaleSelf, versionPath),
       path: versionPath,
       target: versionTarget ?? archiveTarget,
@@ -1648,7 +1957,7 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
       pageId,
       title,
       url,
-      directUrl: archiveDirectUrlForPath(tailscaleSelf, servePath),
+      directUrl: archiveDirectUrlForPath(tailscaleSelf, officePathForServePath(servePath)),
       path: servePath,
       target: archiveTarget,
       sourceTarget,
@@ -1666,16 +1975,13 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     writeArchiveIndex(payload);
     await runPagefindIndex();
     const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
-    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}`;
-    const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
-    const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, wikiTarget], REPO_ROOT);
-    if (archiveResult.exitCode !== 0) {
-      throw new Error(`tailscale serve failed for Consuelo Wiki: ${archiveResult.stderr || archiveResult.stdout || `exit ${archiveResult.exitCode}`}`);
-    }
-    return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
+    const archiveUrl = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
+    const archiveResult = await setArchiveServePaths(tailscaleBin, wikiTarget);
+    return { path: DESIGN_ARCHIVE_OFFICE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`failed to update Consuelo Wiki archive: ${message}`);
+    throw new Error(`failed to update Consuelo Sites archive: ${message}`);
   }
 }
 
@@ -1693,12 +1999,13 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const archiveTarget = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`;
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
-    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${servePath}`;
-    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
+    const publicServePath = officePathForServePath(servePath);
+    const url = `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${publicServePath}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${publicServePath}`;
     const archivePlan = {
       path: DESIGN_ARCHIVE_PATH,
-      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_PATH}` : null,
-      directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}` : null,
+      url: args.dryRun ? `${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}` : null,
+      directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}` : null,
       target: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`,
     };
     const publishedAt = new Date();

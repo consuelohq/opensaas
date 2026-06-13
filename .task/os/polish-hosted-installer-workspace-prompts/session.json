@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f211d6bfd414",
+  "tmuxSession": "opensaas-os-polish-hosted-installer-workspace-prompts-f211d6bf",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-hosted-installer-workspace-prompts",
+  "branch": "task/os/polish-hosted-installer-workspace-prompts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-hosted-installer-workspace-prompts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-hosted-installer-workspace-prompts",
+  "prNumber": 992,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/992",
+  "createdAt": "2026-06-13T05:13:42.833Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-hosted-installer-workspace-prompts/.task/os/polish-hosted-installer-workspace-prompts/session.json"
+}

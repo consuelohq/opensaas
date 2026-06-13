@@ -10,7 +10,10 @@ import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-r
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
 import { getInputSchema } from './schemas';
+import { executeCodeCall } from '../code-call/runtime';
+import type { CodeCallInput } from '../code-call/types';
 import { executeWorkerCall } from '../worker/runtime';
+
 import type {
   BranchResolution,
   CommandArgument,
@@ -24,6 +27,7 @@ import type {
 } from './types';
 
 const require = createRequire(import.meta.url);
+const { resolvePrRefNumber } = require('../pr-ref');
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
@@ -586,6 +590,17 @@ async function executeInternalTool<TData>(
   const internal = entry.command.internal;
   if (!internal) return null;
 
+  if (internal === 'code.call') {
+    return executeCodeCall(input as CodeCallInput, {
+      cwd: context.cwd,
+      env: context.env,
+      now: context.options.now,
+      randomUUID: context.options.randomUUID,
+      traceId: context.traceId,
+      requestId: context.requestId,
+    }) as Promise<ToolResult<TData>>;
+  }
+
   if (internal === 'worker.call') {
     return executeWorkerCall(entry, input, context) as Promise<ToolResult<TData>>;
   }
@@ -773,8 +788,13 @@ function resolveBranchIfNeeded(
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
   const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
+  const prReference = input.github ?? input.pr;
+  const explicitPrNumber = typeof prReference === 'string' || typeof prReference === 'number'
+    ? resolvePrRefNumber(String(prReference))
+    : undefined;
   const resolution = (options.branchResolver || resolveTaskBranch)({
     explicitBranch,
+    explicitPrNumber,
     cwd,
     env,
     currentTask: options.currentTask,
@@ -972,7 +992,7 @@ function resolveGitRoot(cwd: string): string {
 }
 
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
-  if (script === 'code-run' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
+  if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   return resolveControllerRoot(cwd) || cwd;
 }

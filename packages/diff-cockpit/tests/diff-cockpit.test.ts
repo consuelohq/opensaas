@@ -10,11 +10,13 @@ import {
   createWorker,
   deriveAssociatedStream,
   groupPullRequestSummaries,
+  normalizeReviewItems,
   parsePullRequestLocator,
   renderCodeBrowserPage,
   renderHistoryPage,
   renderIndexPage,
   renderReviewPage,
+  scorePullRequestSearch,
 } from '../src/index';
 
 describe('parsePullRequestLocator', () => {
@@ -46,6 +48,77 @@ describe('buildDiffCockpitUrl', () => {
     expect(buildDiffCockpitUrl({ owner: 'consuelohq', repo: 'opensaas', number: 708 })).toBe(
       'https://diffs.consuelohq.com/consuelohq/opensaas/pull/708',
     );
+  });
+});
+
+describe('normalizeReviewItems', () => {
+  test('keeps GitHub review thread resolution as source of truth for AI comments', () => {
+    const items = normalizeReviewItems(
+      [
+        {
+          id: 'issue-1',
+          provider: 'coderabbit',
+          author: 'coderabbitai',
+          body: 'Top-level CodeRabbit summary.',
+          url: 'https://github.com/consuelohq/opensaas/pull/708#issuecomment-1',
+          createdAt: '2026-06-03T04:00:00Z',
+          source: 'issue-comment',
+        },
+        {
+          id: 'review-2',
+          provider: 'codex',
+          author: 'chatgpt-codex-connector',
+          body: 'Inline Codex finding.',
+          url: 'https://github.com/consuelohq/opensaas/pull/708#discussion_r2',
+          createdAt: '2026-06-03T04:01:00Z',
+          source: 'review-comment',
+          path: 'packages/diff-cockpit/src/index.ts',
+          line: 42,
+        },
+      ],
+      [
+        {
+          id: 'PRRT_123',
+          isResolved: true,
+          isOutdated: false,
+          path: 'packages/diff-cockpit/src/index.ts',
+          line: 42,
+          comments: [
+            {
+              id: 'PRRC_2',
+              databaseId: 'review-2',
+              provider: 'codex',
+              author: 'chatgpt-codex-connector',
+              body: 'Inline Codex finding.',
+              url: 'https://github.com/consuelohq/opensaas/pull/708#discussion_r2',
+              createdAt: '2026-06-03T04:01:00Z',
+              path: 'packages/diff-cockpit/src/index.ts',
+              line: 42,
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      provider: 'coderabbit',
+      source: 'issue-comment',
+      canResolve: false,
+      isResolved: false,
+      resolutionSource: 'local',
+    });
+    expect(items[1]).toMatchObject({
+      provider: 'codex',
+      source: 'review-thread',
+      threadId: 'PRRT_123',
+      commentNodeId: 'PRRC_2',
+      canResolve: true,
+      isResolved: true,
+      resolutionSource: 'github',
+      path: 'packages/diff-cockpit/src/index.ts',
+      line: 42,
+    });
   });
 });
 
@@ -123,14 +196,21 @@ describe('createGithubPullRequestIndexLoader', () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
       calls.push(url);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } },
           { number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
           { number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/722')) return Response.json({ number: 722, title: 'Stream/diff-cockpit', html_url: 'https://github.com/consuelohq/opensaas/pull/722', state: 'open', draft: false, additions: 3879, deletions: 32, changed_files: 12, updated_at: '2026-06-03T05:04:00Z', created_at: '2026-06-03T03:44:00Z', user: { login: 'ko' }, head: { ref: 'stream/diff-cockpit', sha: 'streamsha' }, base: { ref: 'main', sha: 'basesha' } });
       if (url.endsWith('/pulls/734')) return Response.json({ number: 734, title: 'rework home screen', html_url: 'https://github.com/consuelohq/opensaas/pull/734', state: 'open', draft: false, additions: 250, deletions: 10, changed_files: 2, updated_at: '2026-06-03T07:32:00Z', created_at: '2026-06-03T07:30:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/rework-home-screen', sha: 'tasksha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.endsWith('/pulls/726')) return Response.json({ number: 726, title: 'merged drawer work', html_url: 'https://github.com/consuelohq/opensaas/pull/726', state: 'closed', draft: false, additions: 0, deletions: 0, changed_files: 0, merged_at: '2026-06-03T04:30:00Z', closed_at: '2026-06-03T04:30:00Z', updated_at: '2026-06-03T04:30:00Z', created_at: '2026-06-03T04:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/drawer', sha: 'mergedsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
@@ -143,17 +223,17 @@ describe('createGithubPullRequestIndexLoader', () => {
       throw new Error('unexpected index url ' + url);
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher })({ owner: 'consuelohq', repo: 'opensaas' });
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1');
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1');
     expect(result.warnings).toEqual([]);
-    expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open' });
-    expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'failure', reviewStatus: 'changes_requested', lifecycleStatus: 'open' });
+    expect(result.pulls[0]).toMatchObject({ number: 722, kind: 'stream', associatedStream: 'stream/diff-cockpit', additions: 3879, deletions: 32, changedFiles: 12, checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open' });
+    expect(result.pulls[1]).toMatchObject({ number: 734, kind: 'task', associatedStream: 'stream/diff-cockpit', checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open' });
     expect(result.pulls[2]).toMatchObject({ number: 726, lifecycleStatus: 'merged', associatedStream: 'stream/diff-cockpit' });
   });
 });
 
 describe('createGithubPullRequestLoader', () => {
-  test('fetches live GitHub PR metadata, files, review comments, and stream commits', async () => {
+  test('fetches live GitHub PR metadata, files, review comments, and commits', async () => {
     const calls: string[] = [];
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
@@ -188,6 +268,13 @@ describe('createGithubPullRequestLoader', () => {
 
       if (url.endsWith('/pulls/708/files?per_page=100&page=2')) {
         return Response.json([]);
+      }
+
+      if (url.endsWith('/pulls/708/commits?per_page=100&page=1')) {
+        return Response.json([
+          { sha: 'prsha1', html_url: 'https://github.com/consuelohq/opensaas/commit/prsha1', commit: { message: 'feat(os): pr commit', author: { name: 'Ko', date: '2026-06-03T03:58:00Z' } }, author: { login: 'kokayi' } },
+          { sha: 'prsha2', html_url: 'https://github.com/consuelohq/opensaas/commit/prsha2', commit: { message: 'fix(os): second pr commit', author: { name: 'Ko', date: '2026-06-03T03:57:00Z' } }, author: { login: 'kokayi' } },
+        ]);
       }
 
       if (url.endsWith('/pulls/708/reviews?per_page=100&page=1')) {
@@ -267,6 +354,7 @@ describe('createGithubPullRequestLoader', () => {
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/commits?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=2');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/issues/708/comments?per_page=100&page=1');
@@ -274,7 +362,7 @@ describe('createGithubPullRequestLoader', () => {
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=1');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=2');
     expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=100&page=1');
-    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=100&page=2');
+    expect(calls).not.toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=100&page=2');
     expect(result.pull.title).toBe('Stream/os');
     expect(result.files).toHaveLength(1);
     expect(result.files[0]?.filename).toBe('packages/workspace/scripts/status.js');
@@ -284,6 +372,7 @@ describe('createGithubPullRequestLoader', () => {
       'github',
     ]);
     expect(result.comments[2]?.path).toBe('packages/diff-cockpit/src/index.ts');
+    expect(result.commits.map((commit) => commit.shortSha)).toEqual(['prsha1', 'prsha2']);
     expect(result.streamCommits).toEqual([
       {
         sha: 'abc123',
@@ -325,7 +414,7 @@ describe('createGithubPullRequestLoader', () => {
           base: { ref: 'stream/diff-cockpit', sha: 'def456' },
         });
       }
-      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?')) {
+      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?') || url.includes('/pulls/44/commits?')) {
         return Response.json([]);
       }
       throw new Error(`unexpected non-stream url ${url}`);
@@ -334,6 +423,7 @@ describe('createGithubPullRequestLoader', () => {
     const loader = createGithubPullRequestLoader({ fetcher });
     const result = await loader({ owner: 'consuelohq', repo: 'opensaas', number: 44 });
 
+    expect(result.commits).toEqual([]);
     expect(result.streamCommits).toEqual([]);
     expect(calls.some((url) => url.includes('/commits?sha='))).toBe(false);
   });
@@ -353,7 +443,7 @@ describe('createGithubPullRequestLoader', () => {
           base: { ref: 'main', sha: 'def456' },
         });
       }
-      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?')) {
+      if (url.includes('/files?') || url.includes('/reviews?') || url.includes('/comments?') || url.includes('/pulls/12/commits?')) {
         return Response.json([]);
       }
       throw new Error(`unexpected empty url ${url}`);
@@ -414,17 +504,16 @@ describe('createGithubPullRequestIndexLoader GraphQL mergeability', () => {
       ] } } } });
     };
     const result = await createGithubPullRequestIndexLoader({ fetcher, token: 'token' })({ owner: 'consuelohq', repo: 'opensaas' });
-    expect(calls).toEqual(['https://api.github.com/graphql', 'https://api.github.com/graphql']);
+    expect(calls).toEqual(['https://api.github.com/graphql']);
     expect(result.pulls.map((pull) => ({ number: pull.number, mergeability: pull.mergeability, additions: pull.additions, changedFiles: pull.changedFiles }))).toEqual([
       { number: 1, mergeability: 'mergeable', additions: 5, changedFiles: 2 },
       { number: 3, mergeability: 'conflicts', additions: 7, changedFiles: 3 },
-      { number: 2, mergeability: 'merged', additions: 2, changedFiles: 1 },
     ]);
   });
 });
 
 describe('pull request index grouping', () => {
-  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'success', reviewStatus: 'approved', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit', mergeability: 'mergeable' } as const;
+  const basePull = { number: 1, kind: 'task', title: 'Example', htmlUrl: 'https://github.com/consuelohq/opensaas/pull/1', state: 'open', draft: false, author: 'ko', headRef: 'task/diff-cockpit/example', headSha: 'sha', baseRef: 'stream/diff-cockpit', baseSha: 'base', mergeable: true, mergeableState: 'clean', createdAt: '2026-06-03T00:00:00Z', updatedAt: '2026-06-03T00:01:00Z', cockpitUrl: '/consuelohq/opensaas/pull/1', additions: 1, deletions: 0, changedFiles: 1, checkStatus: 'unknown', reviewStatus: 'none', lifecycleStatus: 'open', mergeStatus: 'open', mergedAt: '', closedAt: '', associatedStream: 'stream/diff-cockpit', mergeability: 'mergeable' } as const;
   test('derives stream ownership from stream and task branches', () => {
     expect(deriveAssociatedStream({ ...basePull, headRef: 'stream/os', baseRef: 'main' })).toBe('stream/os');
     expect(deriveAssociatedStream({ ...basePull, headRef: 'task/workspace-agents/fix', baseRef: 'main' })).toBe('stream/workspace-agents');
@@ -451,6 +540,23 @@ describe('pull request index grouping', () => {
     ], { showAllStreams: true });
     expect(sections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20]);
     expect(allSections.find((section) => section.id === 'streams')?.pulls.map((pull) => pull.number)).toEqual([20, 21]);
+  });
+  test('scores dotted fuzzy PR search across PR fields', () => {
+    const pull = {
+      ...basePull,
+      number: 889,
+      title: 'hotfix code call codemode facade',
+      headRef: 'task/diff-cockpit/hotfix-code-call-codemode-facade',
+      associatedStream: 'stream/diff-cockpit',
+    };
+
+    const codeCallScore = scorePullRequestSearch(pull, 'code.call');
+    const numberScore = scorePullRequestSearch(pull, '889');
+    const missingScore = scorePullRequestSearch(pull, 'missing');
+
+    expect(codeCallScore > 0).toBe(true);
+    expect(numberScore > missingScore).toBe(true);
+    expect(missingScore).toBe(0);
   });
 });
 
@@ -488,40 +594,54 @@ describe('renderCodeBrowserPage', () => {
 });
 
 describe('renderIndexPage', () => {
-  test('renders a Pull Requests inbox with stream filters and no pagination', () => {
+  test('renders a Graphite-like PR inbox with command search and load-more sections', () => {
     const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
-    expect(html).toContain('Pull Requests');
-    expect(html).toContain('href="/consuelohq/opensaas/tree/main/packages"');
-    expect(html).toContain('>main</a>');
-    expect(html).not.toContain('<span aria-hidden="true">▣</span>');
-    expect(html).not.toContain('Recently Updated');
+
+    expect(html).toContain('Consuelo Diffs');
+    expect(html).not.toContain('>Pull Requests</a>');
+    expect(html).not.toContain('>main</a>');
+    expect(html).not.toContain('<h1>Pull Requests</h1>');
     expect(html).toContain('data-sections-root');
     expect(html).toContain('data-stream-filter');
     expect(html).toContain('data-active-stream');
-    expect(html).toContain('Streams');
-    expect(html).toContain('Merging and recently merged');
-    expect(html).toContain("pull.mergeability === 'conflicts'");
-    expect(html).toContain('relativeTime');
-    expect(html).toContain('formatDelta');
-    expect(html).toContain('pr-delta');
-    expect(html).toContain('mergeability-icon');
-    expect(html).toContain('mergeability-');
-    expect(html).toContain("pull.mergeability === 'conflicts'");
-    expect(html).toContain('post-list .post-item:last-child');
+    expect(html).toContain('<details class="section pr-section" open data-section-id="open">');
+    expect(html).toContain('<details class="section pr-section" open data-section-id="closed">');
+    expect(html).toContain('data-command-trigger');
+    expect(html).toContain('data-command-palette');
+    expect(html).toContain('id="diff-command-input"');
+    expect(html).toContain('Search PRs or jump pages, e.g. code.call');
+    expect(html).toContain('class="command-button command-button-plain"');
+    expect(html).not.toContain('id="diff-cockpit-search"');
+    expect(html).not.toContain('data-search-toggle');
+    expect(html).toContain('data-command-page');
+    expect(html).toContain('class="mobile-command-fab"');
+    expect(html).toContain('command-bottom-drawer');
     expect(html).toContain('const sectionPageSize = 10');
-    expect(html).toContain('data-page-next');
+    expect(html).toContain('data-load-more');
+    expect(html).toContain('pr-author-avatar');
+    expect(html).toContain('renderAuthorAvatar');
+    expect(html).toContain('Load more');
+    expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
-    expect(html).toContain("cacheSchemaVersion = 'v2-mergeability'");
+    expect(html).toContain("cacheSchemaVersion = 'v4-mergeability-live'");
     expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('refreshIndexIfStale');
+    expect(html).toContain("window.addEventListener('focus'");
     expect(html).toContain('button:focus:not(:focus-visible)');
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
-    expect(html).toContain('pr-row-meta-line');
+    expect(html).toContain('pr-subtitle');
+    expect(html).toContain("stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount");
+    expect(html).toContain('stream-compact-button');
+    expect(html).toContain('data-card-route');
+    expect(html).not.toContain('pr-row-meta-line');
+    expect(html).not.toContain("pull.author + ' · #'");
+    expect(html).not.toContain("escapeText(pull.headRef) + ' → '");
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
@@ -536,6 +656,10 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
+    expect(html).toContain('data-ai-sidebar="open"');
+    expect(html).toContain('id="ai-comments-sidebar"');
+    expect(html).toContain('id="ai-comments-toggle"');
+    expect(html).toContain('aria-label="AI review comments"');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -557,15 +681,20 @@ describe('renderReviewPage', () => {
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
     expect(html).toContain('data-current-view="diff"');
-    expect(html).toContain('>Drawer</button>');
-    expect(html).toContain('<strong>drawer</strong>');
+    expect(html).toContain('>Panel</button>');
+    expect(html).toContain('<strong>panel</strong>');
     expect(html).toContain('id="mergeability-button"');
     expect(html).toContain('id="merge-pr-button"');
     expect(html).toContain('id="mergeability-popover"');
+    expect(html).toContain('id="mergeability-nav-button"');
+    expect(html).toContain('id="commit-nav-button"');
+    expect(html).not.toContain('>GitHub</a>');
+    expect(html).not.toContain('>Graphite</a>');
+    expect(html).not.toContain('>DiffsHub</a>');
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
     expect(html).toContain('id="mobile-files-toggle"');
-    expect(html).toContain('aria-label="Open files"');
+    expect(html).toContain('aria-label="Close files"');
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
     expect(html).toContain('@media (max-width: 760px)');
@@ -573,8 +702,8 @@ describe('renderReviewPage', () => {
     expect(html).toContain('.diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }');
     expect(html).toContain('.diff-gutter { padding-right:4px; }');
     expect(html).toContain('.inline-comment { margin-left:68px; }');
-    expect(html).toContain('--paper:#070a0d');
-    expect(html).toContain('--surface:#0b0f13');
+    expect(html).toContain('--paper:#0f0f0d');
+    expect(html).toContain('--surface:#191814');
     expect(html).toContain('id="file-pane-resizer"');
     expect(html).toContain('font-family: Inter');
     expect(html).toContain('font-size:13px');
@@ -587,7 +716,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('height:calc(100dvh - 76px)');
     expect(html).toContain('height:calc(100dvh - 132px)');
     expect(script).toContain('renderLongDiffs();');
-    expect(script).toContain("event.key === 'd'");
+    expect(script).toContain("event.key === 'p'");
     expect(script).not.toContain("event.key === 'r'");
     expect(script).toContain("event.key === 'f'");
     expect(script).toContain("event.key === 'm'");
@@ -597,7 +726,7 @@ describe('renderReviewPage', () => {
     expect(script).toContain('renderInlineComments');
     expect(script).toContain('navigateToComment');
     expect(script).toContain('IntersectionObserver');
-    expect(script).toContain('updateActiveFileFromScroll');
+    expect(script).toContain('updateActiveFileFromViewport');
     expect(script).toContain('parseHunkHeader');
     expect(script).toContain('oldLine');
     expect(script).toContain('newLine');
@@ -627,18 +756,133 @@ describe('renderReviewPage', () => {
     expect(script).toContain('mergePullRequest');
     expect(script).toContain("apiPath + '/merge'");
     expect(script).toContain('event.metaKey || event.ctrlKey');
-    expect(script).toContain("stateLabel === 'clean'");
+    expect(script).toContain("mergeabilityLabel");
     expect(script).toContain('Files to inspect before merging');
     expect(script).toContain('relativeCommitTime');
     expect(script).toContain('formatCommitDelta');
     expect(script).toContain('data-comment-jump');
     expect(script).toContain('data-comment-file');
     expect(script).toContain('data-comment-line');
+    expect(html).toContain('id="copy-review-link"');
+    expect(html).toContain('id="copy-current-commit-link"');
+    expect(html).toContain('id="drawer-prompt"');
+    expect(html).toContain('data-drawer-section-toggle="checks"');
+    expect(html).toContain('data-drawer-section-toggle="comments"');
+    expect(html).toContain('data-drawer-section-toggle="commits"');
+    expect(script).toContain('renderDrawerSection');
+    expect(script).toContain('toggleDrawerSection');
+    expect(script).toContain('copyReviewLink');
+    expect(script).toContain('copyCurrentCommitLink');
+    expect(script).toContain('renderMarkdownBlocks');
+    expect(script).toContain('renderAiCommentsSidebar');
+    expect(script).toContain('data-ai-review-toggle');
+    expect(script).toContain('copyReviewItemField');
+    expect(script).toContain('resolveReviewItem');
+    expect(script).toContain("apiPath + '/review-threads/'");
     expect(() => new Function(script || '')).not.toThrow();
   });
 });
 
+async function githubWebhookSignature(body: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  return 'sha256=' + Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 describe('createWorker', () => {
+  test('updates GitHub review threads through the review thread API endpoint', async () => {
+    const calls: Array<{ url: string; method?: string; body?: string }> = [];
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    cacheStore.set(cacheKey, Response.json({ cached: true }));
+    const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
+      calls.push({ url: String(input), method: init?.method, body: String(init?.body ?? '') });
+      if (String(input) === 'https://api.github.com/graphql') {
+        return Response.json({ data: { resolveReviewThread: { thread: { id: 'PRRT_1', isResolved: true } } } });
+      }
+      throw new Error('unexpected review thread mutation url ' + String(input));
+    };
+    const worker = createWorker({ fetcher, cache });
+
+    const missingToken = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }));
+    const response = await worker.fetch(
+      new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708/review-threads/PRRT_1/resolve', { method: 'POST' }),
+      { GITHUB_TOKEN: 'token' },
+    );
+    const payload = await response.json() as { ok: boolean; action: string; edgeInvalidated: boolean; invalidated: string[] };
+
+    expect(missingToken.status).toBe(401);
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({ ok: true, action: 'resolve', edgeInvalidated: true });
+    expect(payload.invalidated).toContain('/api/consuelohq/opensaas/pull/708');
+    expect(cacheStore.has(cacheKey)).toBe(false);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ url: 'https://api.github.com/graphql', method: 'POST' });
+    expect(calls[0]?.body || '').toContain('resolveReviewThread');
+    expect(calls[0]?.body || '').toContain('PRRT_1');
+  });
+
+  test('invalidates PR cache for resolved GitHub review-thread webhooks', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    cacheStore.set(cacheKey, Response.json({ cached: true }));
+    const body = JSON.stringify({
+      action: 'resolved',
+      pull_request: { number: 708 },
+      repository: { name: 'opensaas', owner: { login: 'consuelohq' } },
+      thread: { id: 'PRRT_1' },
+    });
+    const signature = await githubWebhookSignature(body, 'secret');
+    const worker = createWorker({ fetcher: async () => Response.json([]), cache });
+
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/api/github/webhook', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-github-event': 'pull_request_review_thread',
+        'x-hub-signature-256': signature,
+      },
+      body,
+    }), { GITHUB_WEBHOOK_SECRET: 'secret' });
+    const payload = await response.json() as { ok: boolean; edgeInvalidated: boolean; invalidated: string[] };
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({ ok: true, edgeInvalidated: true });
+    expect(payload.invalidated).toContain('/api/consuelohq/opensaas/pull/708');
+    expect(cacheStore.has(cacheKey)).toBe(false);
+  });
+
   test('routes the homepage to the live PR index shell', async () => {
     const worker = createWorker({ fetcher: async () => Response.json([]) });
     const response = await worker.fetch(new Request('https://diffs.consuelohq.com/'));
@@ -646,6 +890,75 @@ describe('createWorker', () => {
 
     expect(response.status).toBe(200);
     expect(html).toContain('Consuelo Diffs');
+  });
+
+
+  test('hydrates PR pages from shared API cache when available', async () => {
+    const file = { filename: 'packages/cached.ts', status: 'modified', additions: 1, deletions: 1, changes: 2, patch: '@@ -1 +1 @@\n-old\n+new', blobUrl: '' };
+    const cachedReviewData = {
+      locator: { owner: 'consuelohq', repo: 'opensaas', number: 708 },
+      pull: {
+        number: 708,
+        title: 'Cached PR',
+        htmlUrl: 'https://github.com/consuelohq/opensaas/pull/708',
+        state: 'open',
+        draft: false,
+        author: 'ko',
+        headRef: 'task/cache',
+        headSha: 'headsha',
+        baseRef: 'stream/diff-cockpit',
+        baseSha: 'basesha',
+        mergeable: true,
+        mergeableState: 'clean',
+        updatedAt: '2026-06-09T00:00:00Z',
+      },
+      files: [file],
+      tree: { type: 'root', name: '', path: '', children: [{ type: 'file', name: 'cached.ts', path: 'packages/cached.ts', children: [], file }] },
+      comments: [],
+      streamCommits: [],
+      warnings: [],
+      checks: [],
+    };
+    const cacheStore = new Map<string, Response>([
+      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers', Response.json(cachedReviewData)],
+    ]);
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        if (response.headers.has('vary')) throw new Error('cache.put rejects Vary response headers');
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const worker = createWorker({
+      cache,
+      fetcher: async (input) => {
+        throw new Error('unexpected live fetch during cached page render: ' + String(input));
+      },
+    });
+
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/pull/708'));
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('id="diff-cockpit-initial-data"');
+    expect(html).toContain('Cached PR');
+    expect(html).toContain('packages/cached.ts');
+  });
+
+  test('keeps the PR loading shell when shared API cache misses', async () => {
+    const worker = createWorker({ fetcher: async () => Response.json([]) });
+    const response = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/pull/708'));
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('Loading live GitHub data');
+    expect(html).not.toContain('id="diff-cockpit-initial-data"');
   });
 
 
@@ -696,7 +1009,7 @@ describe('createWorker', () => {
     expect(historyApi.status).toBe(200);
   });
 
-  test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
+  test('refresh endpoint uses waitUntil so cron does not block on slow cache warming', async () => {
     const cacheStore = new Map<string, Response>();
     const cache = {
       async match(request: Request): Promise<Response | undefined> {
@@ -710,16 +1023,78 @@ describe('createWorker', () => {
         return cacheStore.delete(request.url);
       },
     };
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let calls = 0;
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      await gate;
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([{ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } }]);
+      }
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'queued refresh', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/queued-refresh', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error(`unexpected queued refresh url ${url}`);
+    };
+    const worker = createWorker({ fetcher, cache });
+    const waitUntilPromises: Promise<unknown>[] = [];
+    const responsePromise = worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [757], reason: 'cron.diff-cockpit' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' }, { waitUntil: (promise: Promise<unknown>) => waitUntilPromises.push(promise) });
+
+    const response = await Promise.race([
+      responsePromise,
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 10)),
+    ]);
+
+    expect(response).not.toBe('timeout');
+    expect(waitUntilPromises).toHaveLength(1);
+    expect(calls).toBe(0);
+    release();
+    await Promise.all(waitUntilPromises);
+    expect(calls > 0).toBe(true);
+    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757?_dcv=v5-review-commit-popovers')).toBe(true);
+  });
+
+  test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        if (response.headers.has('vary')) throw new Error('cache.put rejects Vary response headers');
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
     let calls = 0;
     const fetcher = async (input: string | URL): Promise<Response> => {
       calls += 1;
       const url = String(input);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'event driven cache refresh hooks', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/event-driven-cache-refresh-hooks', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.endsWith('/contents/packages?ref=main')) return Response.json([{ name: 'diff-cockpit', path: 'packages/diff-cockpit', type: 'dir', html_url: '', sha: 'pkgsha' }]);
       if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([{ sha: 'pkgcommit', html_url: '', commit: { message: 'feat(diff-cockpit): add browser', author: { name: 'Ko', date: '2026-06-05T05:00:00Z' } }, author: { login: 'kokayicobb' } }]);
@@ -762,12 +1137,14 @@ describe('createWorker', () => {
   test('returns homepage API shared cache headers and 304 for unchanged ETags', async () => {
     const fetcher = async (input: string | URL): Promise<Response> => {
       const url = String(input);
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=1')) {
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
         return Response.json([
           { number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
         ]);
       }
-      if (url.endsWith('/pulls?state=all&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
       if (url.endsWith('/pulls/750')) return Response.json({ number: 750, title: 'homepage cache headers', html_url: 'https://github.com/consuelohq/opensaas/pull/750', state: 'open', draft: false, additions: 12, deletions: 1, changed_files: 2, updated_at: '2026-06-03T18:10:00Z', created_at: '2026-06-03T18:05:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/homepage-cache-headers', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
       if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [{ status: 'completed', conclusion: 'success' }] });
       if (url.includes('/pulls/750/reviews')) return Response.json(url.endsWith('page=1') ? [{ state: 'COMMENTED' }] : []);

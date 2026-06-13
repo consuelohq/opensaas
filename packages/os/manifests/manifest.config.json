@@ -14,12 +14,14 @@
   ],
   "outputs": {
     "full": "packages/os/manifests/tool.manifest.json",
-    "core": "packages/os/manifests/core.manifest.json"
+    "core": "packages/os/manifests/core.manifest.json",
+    "workflows": "packages/os/manifests/workflow-bundles.json"
   },
   "core": {
     "includeNames": [
       "audit",
       "checkFiles",
+      "code.call",
       "code.run",
       "confidenceScore",
       "confirm",
@@ -31,6 +33,7 @@
       "git.diff",
       "git.status",
       "github",
+      "intent",
       "review.run",
       "status",
       "tmp",
@@ -62,5 +65,8 @@
       "railway",
       "sentry"
     ]
+  },
+  "workflows": {
+    "path": "packages/os/tooling/workflows.json"
   }
 }

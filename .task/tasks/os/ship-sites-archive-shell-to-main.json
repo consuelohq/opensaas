@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-sites-archive-shell-to-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 878,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/878",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/878",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/878/ship-sites-archive-shell-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/878",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/878/ship-sites-archive-shell-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-sites-archive-shell-to-main",
+  "taskSession": "tsk_ba6902a2bfb3",
+  "tmuxSession": "opensaas-os-ship-sites-archive-shell-to-main-ba6902a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-sites-archive-shell-to-main/.task/os/ship-sites-archive-shell-to-main/session.json",
+  "createdAt": "2026-06-09T20:11:09.522Z"
+}
