@@ -1,11 +1,11 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { refreshDiffCockpitCache } from '../packages/workspace/hooks/diff-cockpit/cache-refresh';
 
-export type CronJobKind = 'diff-cockpit';
+export type CronJobKind = 'diff-cockpit' | 'sites-launcher';
 
 export type CronJobManifest = {
   schema: 'consuelo.cron.v1';
@@ -20,6 +20,8 @@ export type CronJobManifest = {
   codePaths?: string[];
   warmPullLimit?: number;
   warmIntervalMs?: number;
+  refreshCommand?: string[];
+  expectedCacheControl?: string;
 };
 
 export type DiffCockpitPullFingerprint = {
@@ -40,15 +42,27 @@ export type CronJobState = {
   jobs: Record<string, CronJobStateEntry>;
 };
 
+export type SitesLauncherSnapshot = {
+  url: string;
+  status: number;
+  ok: boolean;
+  cacheControl: string;
+  cfCacheStatus: string;
+  hasNumericHotkeys: boolean;
+};
+
 export type CronJobStateEntry = {
   lastCheckedAt?: string;
   lastChangedAt?: string;
   lastFingerprint?: string;
-  lastPayload?: DiffCockpitPullFingerprint[];
+  lastPayload?: DiffCockpitPullFingerprint[] | SitesLauncherSnapshot;
   lastStatus?: 'changed' | 'unchanged' | 'skipped' | 'error';
   lastError?: string;
   lastCacheRefreshAt?: string;
 };
+
+type CommandResult = { stdout: string; stderr: string; exitCode: number };
+type CommandRunner = (command: string[], cwd: string) => Promise<CommandResult>;
 
 type DiscoveredJob = {
   dirName: string;
@@ -65,6 +79,7 @@ type RunOnceOptions = {
   statePath?: string;
   logPath?: string;
   fetcher?: typeof fetch;
+  commandRunner?: CommandRunner;
   now?: Date;
 };
 
@@ -72,6 +87,9 @@ const DEFAULT_ROOT = 'cron_jobs';
 const DEFAULT_INTERVAL_MS = 30_000;
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_ORIGIN = 'https://diffs.consuelohq.com';
+const DEFAULT_SITES_ORIGIN = 'https://sites.consuelohq.com';
+const DEFAULT_SITES_REFRESH_COMMAND = ['bun', 'packages/workspace/scripts/consuelo-design.ts', 'refresh', '--json'];
+const DEFAULT_SITES_EXPECTED_CACHE_CONTROL = 'public, max-age=60, s-maxage=86400';
 const DEFAULT_WARM_PULL_LIMIT = 20;
 const DEFAULT_WARM_INTERVAL_MS = 5 * 60_000;
 
@@ -259,7 +277,37 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
 
     try {
       const env = { ...process.env, ...readEnvFile(path.join(job.dir, job.manifest.envFile || '.env')) };
-      const previous = state.jobs[name]?.lastPayload || [];
+
+      if (job.manifest.kind === 'sites-launcher') {
+        const now = options.now || new Date();
+        const command = job.manifest.refreshCommand || parseCommand(env.SITES_LAUNCHER_REFRESH_COMMAND) || DEFAULT_SITES_REFRESH_COMMAND;
+        const origin = job.manifest.origin || env.SITES_LAUNCHER_ORIGIN || DEFAULT_SITES_ORIGIN;
+        const expectedCacheControl = job.manifest.expectedCacheControl || env.SITES_LAUNCHER_EXPECTED_CACHE_CONTROL || DEFAULT_SITES_EXPECTED_CACHE_CONTROL;
+        if (!options.dryRun) {
+          await refreshSitesLauncher({ command, runner: options.commandRunner });
+        }
+        const current = await loadSitesLauncherSnapshot({ origin, expectedCacheControl, fetcher: options.fetcher || fetch });
+        const previous = state.jobs[name]?.lastPayload || null;
+        const previousFingerprint = stableFingerprint(previous);
+        const currentFingerprint = stableFingerprint(current);
+        const changed = previousFingerprint !== currentFingerprint;
+        result.checked += 1;
+        if (changed) result.changed += 1;
+        result.jobs.push({ name, status: changed ? 'changed' : 'unchanged' });
+        state.jobs[name] = {
+          lastCheckedAt: now.toISOString(),
+          lastChangedAt: changed ? now.toISOString() : state.jobs[name]?.lastChangedAt,
+          lastFingerprint: currentFingerprint,
+          lastPayload: current,
+          lastStatus: changed ? 'changed' : 'unchanged',
+          lastError: '',
+          lastCacheRefreshAt: !options.dryRun ? now.toISOString() : state.jobs[name]?.lastCacheRefreshAt,
+        };
+        await appendLog(logFile, name + ': ' + (options.dryRun ? 'checked' : 'refreshed') + ' status=' + current.status + ' cache-control=' + current.cacheControl + (current.cfCacheStatus ? ' cf-cache-status=' + current.cfCacheStatus : '') + (options.dryRun ? ' dry-run' : ''));
+        continue;
+      }
+
+      const previous = Array.isArray(state.jobs[name]?.lastPayload) ? state.jobs[name]?.lastPayload as DiffCockpitPullFingerprint[] : [];
       const current = await loadDiffCockpitFingerprint({
         repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
         prLimit: job.manifest.prLimit || positiveNumber(env.DIFF_COCKPIT_PR_LIMIT, 50),
@@ -317,6 +365,53 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
   return result;
 }
 
+export async function refreshSitesLauncher(options: { command?: string[]; runner?: CommandRunner }): Promise<CommandResult> {
+  const command = options.command && options.command.length > 0 ? options.command : DEFAULT_SITES_REFRESH_COMMAND;
+  const result = await (options.runner || runCommand)(command, process.cwd());
+  if (result.exitCode !== 0) {
+    throw new Error('sites launcher refresh failed: ' + (result.stderr || result.stdout || 'exit ' + result.exitCode));
+  }
+  return result;
+}
+
+export async function loadSitesLauncherSnapshot(options: {
+  origin?: string;
+  expectedCacheControl?: string;
+  fetcher?: typeof fetch;
+}): Promise<SitesLauncherSnapshot> {
+  const origin = (options.origin || DEFAULT_SITES_ORIGIN).replace(/\/$/, '');
+  const response = await (options.fetcher || fetch)(origin + '/', {
+    headers: { accept: 'text/html' },
+  });
+  const body = await response.text().catch(() => '');
+  const cacheControl = response.headers.get('cache-control') || '';
+  const cfCacheStatus = response.headers.get('cf-cache-status') || '';
+  const expected = options.expectedCacheControl || DEFAULT_SITES_EXPECTED_CACHE_CONTROL;
+  if (!response.ok) throw new Error('sites launcher returned HTTP ' + response.status);
+  if (expected && !cacheControl.includes(expected)) {
+    throw new Error('sites launcher cache-control missing "' + expected + '": ' + (cacheControl || '<empty>'));
+  }
+  const hasNumericHotkeys = ['1', '2', '3', '4', '5'].every((key) => body.includes('data-hotkey="' + key + '"')) && body.includes('const siteHotkeys = {');
+  if (!hasNumericHotkeys) throw new Error('sites launcher numeric hotkeys are missing from HTML');
+  return {
+    url: origin + '/',
+    status: response.status,
+    ok: response.ok,
+    cacheControl,
+    cfCacheStatus,
+    hasNumericHotkeys,
+  };
+}
+
+async function runCommand(command: string[], cwd: string): Promise<CommandResult> {
+  const child = Bun.spawn(command, { cwd, stdout: 'pipe', stderr: 'pipe' });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+    child.exited,
+  ]);
+  return { stdout, stderr, exitCode };
+}
 export async function loadDiffCockpitFingerprint(options: {
   repo: string;
   prLimit: number;
@@ -426,7 +521,7 @@ function normalizePull(value: unknown): DiffCockpitPullFingerprint | null {
 function validateManifest(manifest: CronJobManifest, manifestPath: string): void {
   if (manifest.schema !== 'consuelo.cron.v1') throw new Error(`invalid cron schema in ${manifestPath}`);
   if (!manifest.name) throw new Error(`missing cron name in ${manifestPath}`);
-  if (manifest.kind !== 'diff-cockpit') throw new Error(`unsupported cron kind in ${manifestPath}: ${manifest.kind}`);
+  if (manifest.kind !== 'diff-cockpit' && manifest.kind !== 'sites-launcher') throw new Error(`unsupported cron kind in ${manifestPath}: ${manifest.kind}`);
   if (!Number.isFinite(manifest.intervalMs) || manifest.intervalMs < 1000) throw new Error(`invalid intervalMs in ${manifestPath}`);
 }
 
@@ -473,6 +568,11 @@ async function appendLog(filePath: string, message: string): Promise<void> {
 
 async function writeJson(filePath: string, value: unknown): Promise<void> {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+function parseCommand(value: string | undefined): string[] | null {
+  if (!value || !value.trim()) return null;
+  return value.trim().split(/\s+/).filter(Boolean);
 }
 
 function envExample(): string {
@@ -552,3 +652,4 @@ function writeLine(value: string): void {
 }
 
 if (import.meta.main) void main();
+

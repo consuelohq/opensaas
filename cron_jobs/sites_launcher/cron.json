@@ -1,0 +1,16 @@
+{
+  "schema": "consuelo.cron.v1",
+  "name": "sites-launcher",
+  "kind": "sites-launcher",
+  "enabled": true,
+  "intervalMs": 60000,
+  "envFile": ".env",
+  "origin": "https://sites.consuelohq.com",
+  "refreshCommand": [
+    "bun",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "refresh",
+    "--json"
+  ],
+  "expectedCacheControl": "public, max-age=60, s-maxage=86400"
+}
