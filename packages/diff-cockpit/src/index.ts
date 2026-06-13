@@ -16,6 +16,7 @@ export type GitHubPullRequest = {
   state: string;
   draft: boolean;
   author: string;
+  authorAvatarUrl?: string;
   headRef: string;
   headSha: string;
   baseRef: string;
@@ -836,10 +837,16 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
   return root;
 }
 
-export function renderIndexPage(repo: RepoLocator): string {
+export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndexData | null = null, initialEtag = ''): string {
   const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
   const mainCodePath = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages`;
+  const initialDataScript = initialData
+    ? `  <script id="diff-cockpit-index-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
+  const initialEtagScript = initialEtag
+    ? `  <script id="diff-cockpit-index-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
+    : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -900,17 +907,20 @@ export function renderIndexPage(repo: RepoLocator): string {
       <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
-  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
 </body>
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null): string {
+export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null, initialEtag = ''): string {
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
+  const initialEtagScript = initialEtag
+    ? `  <script id="diff-cockpit-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
     : '';
 
   return `<!doctype html>
@@ -988,7 +998,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
 </html>`;
 }
@@ -1200,7 +1210,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/') {
-        return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+        try {
+          const repo = parseRepoLocator('', defaultRepo);
+          const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
+        } catch {
+          return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+        }
       }
 
 
@@ -1223,10 +1240,17 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       const repoRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/?$/);
       if (repoRouteMatch) {
-        return html(renderIndexPage({
+        const repo = {
           owner: decodeURIComponent(repoRouteMatch[1] || ''),
           repo: decodeURIComponent(repoRouteMatch[2] || ''),
-        }));
+        };
+        try {
+          const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
+        } catch {
+          return html(renderIndexPage(repo));
+        }
       }
 
       let locator: PullRequestLocator;
@@ -1238,9 +1262,13 @@ export function createWorker(options: GithubLoaderOptions = {}) {
           headers: { 'content-type': 'text/html; charset=utf-8' },
         });
       }
-      const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
-      const initialData = await readCachedJsonData<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
-      return html(renderReviewPage(locator, initialData));
+      try {
+        const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+        const initialData = await readCachedJsonSnapshot<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
+        return html(renderReviewPage(locator, initialData?.data ?? null, initialData?.etag ?? ''));
+      } catch {
+        return html(renderReviewPage(locator));
+      }
     },
   };
 }
@@ -1366,6 +1394,7 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
     state: stringValue(source.state, 'unknown'),
     draft: booleanValue(source.draft),
     author: stringValue(user?.login, 'unknown'),
+    authorAvatarUrl: stringValue(user?.avatar_url, ''),
     headRef: stringValue(head?.ref, ''),
     headSha: stringValue(head?.sha, ''),
     baseRef: stringValue(base?.ref, ''),
@@ -1461,7 +1490,7 @@ fragment PullRequestIndexNode on PullRequest {
   deletions
   changedFiles
   mergeStateStatus
-  author { login }
+  author { login avatarUrl }
   headRefName
   headRefOid
   baseRefName
@@ -1480,6 +1509,7 @@ function normalizeGraphqlPullRequestSummary(repo: RepoLocator, input: unknown): 
     state: state === 'merged' ? 'closed' : state,
     draft: booleanValue(source.isDraft),
     author: stringValue(author?.login, 'unknown'),
+    authorAvatarUrl: stringValue(author?.avatarUrl, ''),
     headRef: stringValue(source.headRefName, ''),
     headSha: stringValue(source.headRefOid, ''),
     baseRef: stringValue(source.baseRefName, ''),
@@ -2229,7 +2259,8 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   const reason = stringValue(input.reason, 'manual');
   const planned = buildCacheRefreshPlan(requestOrigin, repo, pullNumbers, codePaths);
 
-  if (deps.ctx) {
+  const waitForCompletion = new URL(deps.request.url).searchParams.get('wait') === '1';
+  if (deps.ctx && !waitForCompletion) {
     deps.ctx.waitUntil(refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin).catch(() => undefined));
     return internalJson({
       ok: true,
@@ -2245,6 +2276,7 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
     ok: true,
     reason,
     cache: deps.edgeCache ? 'edge' : 'none',
+    completed: true,
     refreshed,
   });
 }
@@ -2373,6 +2405,11 @@ type MemoryCachedJson = {
   expiresAt: number;
 };
 
+type CachedJsonSnapshot<T> = {
+  data: T;
+  etag: string;
+};
+
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
 const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
@@ -2404,18 +2441,24 @@ async function getOrSetCachedJson(
 }
 
 async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
+  const snapshot = await readCachedJsonSnapshot<T>(edgeCache, cacheRequest);
+  return snapshot?.data ?? null;
+}
+
+async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
   try {
     if (edgeCache) {
       const cached = await edgeCache.match(cacheRequest);
       if (cached?.status === 200) {
         void writeMemoryCachedJson(cacheRequest, cached.clone());
-        return await cached.clone().json() as T;
+        const body = await cached.clone().text();
+        return { data: JSON.parse(body) as T, etag: cached.headers.get('etag') || makeWeakEtag(body) };
       }
     }
   } catch {
     // Fall through to the isolate-local cache.
   }
-  return readMemoryCachedJsonData<T>(cacheRequest);
+  return readMemoryCachedJsonSnapshot<T>(cacheRequest);
 }
 async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
   try {
@@ -2471,10 +2514,15 @@ function readMemoryCachedJson(cacheRequest: Request, clientRequest: Request): Re
 }
 
 function readMemoryCachedJsonData<T>(cacheRequest: Request): T | null {
+  const snapshot = readMemoryCachedJsonSnapshot<T>(cacheRequest);
+  return snapshot?.data ?? null;
+}
+
+function readMemoryCachedJsonSnapshot<T>(cacheRequest: Request): CachedJsonSnapshot<T> | null {
   const cached = getMemoryCachedJson(cacheRequest);
   if (!cached) return null;
   try {
-    return JSON.parse(cached.body) as T;
+    return { data: JSON.parse(cached.body) as T, etag: cached.etag };
   } catch {
     memoryJsonCache.delete(memoryCacheKey(cacheRequest));
     return null;
@@ -2739,11 +2787,14 @@ h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weig
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
 .post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.pr-row { grid-template-columns:32px minmax(0, 1fr) minmax(260px, auto); gap:12px; }
 .index-page .post-item[data-card-route] { cursor:pointer; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+.pr-author-avatar { width:32px; height:32px; border-radius:999px; object-fit:cover; background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+.pr-author-avatar-fallback { display:grid; place-items:center; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.02em; }
 .pr-row-main { min-width:0; display:grid; gap:2px; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2892,6 +2943,8 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   h1 { font-size:38px; }
   footer { flex-direction:column; align-items:flex-start; }
   .post-item { grid-template-columns:1fr; gap:8px; }
+  .pr-row { grid-template-columns:28px minmax(0, 1fr); gap:10px; }
+  .pr-author-avatar { width:28px; height:28px; }
   .pr-row-side { grid-template-columns:auto auto auto; justify-content:flex-start; flex-wrap:wrap; min-width:0; }
   .command-button { display:none; }
   .mobile-command-fab { display:flex; }
@@ -2904,7 +2957,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-section summary h2 { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:15px; font-weight:800; }
   .index-page .section-count { font-size:15px; font-weight:700; color:var(--muted); }
   .index-page .post-list { border-top:0; gap:10px; }
-  .index-page .post-item { position:relative; grid-template-columns:1fr; min-height:112px; gap:8px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .index-page .post-item { position:relative; grid-template-columns:28px minmax(0,1fr) auto; min-height:112px; gap:8px 10px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
   .index-page .post-item::before { content:""; position:absolute; left:24px; top:29px; width:10px; height:10px; border-radius:999px; background:#ff6257; box-shadow:0 0 14px rgba(255,98,87,.45); }
   .index-page .post-item[data-state="merged"]::before { background:#8b5cf6; box-shadow:0 0 14px rgba(139,92,246,.42); }
   .index-page .post-item[data-state="draft"]::before, .index-page .post-item[data-state="closed"]::before { background:var(--quiet); box-shadow:none; }
@@ -2956,14 +3009,15 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
   .index-page .post-list{border-top:0;gap:0;}
   
-  .index-page .post-item{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
+  .index-page .post-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
   .index-page .post-item:last-child{border-bottom:0;}
   .index-page .post-item:hover{background:rgba(255,255,255,.035);}
   
   
   
   .index-page .post-item:before,.index-page .post-item:after{content:none;}
-  .index-page .pr-row-main{grid-column:1;grid-row:1 / span 2;min-width:0;gap:2px;}
+  .index-page .pr-author-avatar{grid-column:1;grid-row:1 / span 2;align-self:center;}
+  .index-page .pr-row-main{grid-column:2;grid-row:1 / span 2;min-width:0;gap:2px;}
   .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
   .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
   .index-page .pr-title-line a{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;}
@@ -2971,7 +3025,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
   .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
   .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .index-page .pr-row-side{grid-column:2;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
+  .index-page .pr-row-side{grid-column:3;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
   .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
   .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
   .index-page .mergeability-icon.mergeability-mergeable{border-color:#2f7d46;background:#2f7d46;color:#07110a;}
@@ -3198,9 +3252,23 @@ function renderCard(pull) {
   const mobileMeta = '#' + pull.number + ' ' + stream;
   const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
   return '<article class="post-item pr-row" role="link" tabindex="0" data-card-route="' + escapeText(route) + '" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+    renderAuthorAvatar(pull) +
     '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
     '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
     '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
+}
+function renderAuthorAvatar(pull) {
+  const author = pull.author || 'unknown';
+  const avatarUrl = pull.authorAvatarUrl || '';
+  if (avatarUrl) {
+    return '<img class="pr-author-avatar" src="' + escapeText(avatarUrl) + '" alt="' + escapeText(author + ' avatar') + '" loading="lazy" referrerpolicy="no-referrer" />';
+  }
+  return '<span class="pr-author-avatar pr-author-avatar-fallback" aria-label="' + escapeText(author + ' avatar') + '">' + escapeText(authorInitials(author)) + '</span>';
+}
+function authorInitials(value) {
+  const clean = String(value || '').replace(/[^a-z0-9]+/gi, ' ').trim();
+  if (!clean) return '?';
+  return clean.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
 function renderSection(section) {
@@ -3253,13 +3321,38 @@ function clearStaleIndexCaches() { try { for (let index = localStorage.length - 
 function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedIndex(); if (cached) applyIndexData(cached); return cached; }
 let lastIndexLoadAt = 0;
 let indexLoadInFlight = null;
+let currentIndexEtag = readInitialIndexEtag();
+function readScriptJson(id) {
+  const element = document.getElementById(id);
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+function readInitialIndexData() { return readScriptJson('diff-cockpit-index-initial-data'); }
+function readInitialIndexEtag() { return readScriptJson('diff-cockpit-index-initial-etag') || ''; }
 function loadIndex(options = {}) {
-  const cached = options.useCache === false ? null : loadCachedIndex();
+  const initial = options.useCache === false ? null : readInitialIndexData();
+  const cached = options.useCache === false ? null : (initial || loadCachedIndex());
+  if (initial) applyIndexData(initial);
   if (indexLoadInFlight) return indexLoadInFlight;
   lastIndexLoadAt = Date.now();
-  indexLoadInFlight = fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
-    .then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); })
-    .then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); return merged; }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+  const headers = { accept: 'application/json' };
+  if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
+  indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })
+    .then((response) => {
+      if (response.status === 304) return null;
+      if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
+      const etag = response.headers.get('etag') || '';
+      return response.json().then((data) => ({ data, etag }));
+    })
+    .then((result) => {
+      if (!result) return cached;
+      if (result.etag) currentIndexEtag = result.etag;
+      const merged = mergeIndexWithCache(result.data, cached);
+      localStorage.setItem(cacheKey, JSON.stringify(merged));
+      applyIndexData(merged);
+      return merged;
+    }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
     .finally(() => { indexLoadInFlight = null; });
   return indexLoadInFlight;
 }
@@ -3277,7 +3370,6 @@ if (commandInput) commandInput.addEventListener('keydown', (event) => { if (even
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
 window.addEventListener('focus', () => refreshIndexIfStale(5000));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
-document.addEventListener('pointerdown', () => refreshIndexIfStale(12000), { passive: true });
 window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
@@ -3378,6 +3470,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
+let currentReviewEtag = readInitialReviewEtag();
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
 loadLiveData();
@@ -3415,6 +3508,12 @@ function readInitialReviewData() {
   try { return JSON.parse(element.textContent); }
   catch { return null; }
 }
+function readInitialReviewEtag() {
+  const element = document.getElementById('diff-cockpit-initial-etag');
+  if (!element || !element.textContent) return '';
+  try { return JSON.parse(element.textContent) || ''; }
+  catch { return ''; }
+}
 
 function applyReviewData(data) {
   state.data = data;
@@ -3432,14 +3531,20 @@ function applyReviewData(data) {
 }
 
 function loadLiveData() {
-  fetch(apiPath, { headers: { accept: 'application/json' } })
+  const headers = { accept: 'application/json' };
+  if (currentReviewEtag) headers['If-None-Match'] = currentReviewEtag;
+  fetch(apiPath, { headers, cache: 'no-cache' })
     .then((response) => {
+      if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR fetch failed: ' + response.status);
-      return response.json();
+      const etag = response.headers.get('etag') || '';
+      return response.json().then((data) => ({ data, etag }));
     })
     .then(
-      (data) => {
-        applyReviewData(data);
+      (result) => {
+        if (!result) return;
+        if (result.etag) currentReviewEtag = result.etag;
+        applyReviewData(result.data);
       },
       (error) => {
         if (!state.data) els.tree.textContent = error.message || String(error);

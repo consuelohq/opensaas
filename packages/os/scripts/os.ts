@@ -77,6 +77,7 @@ export type SitesCommandResult = {
   officeAssetsDir: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
+  docsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -85,6 +86,7 @@ export type SitesCommandResult = {
   officeDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
+  docsIndexExists: boolean;
   message: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
@@ -206,6 +208,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeAssetsDir: sitesPaths.officeAssetsDir,
     tracesIndexPath: sitesPaths.tracesIndexPath,
     diffsIndexPath: sitesPaths.diffsIndexPath,
+    docsIndexPath: sitesPaths.docsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
     generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
@@ -214,6 +217,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeDataExists: fs.existsSync(sitesPaths.officeDataPath),
     tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
     diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
+    docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }
@@ -1131,3 +1135,4 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
+

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8b883f011b77",
+  "tmuxSession": "opensaas-os-implement-manifest-driven-task-hook-workflow-8b883f01",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/implement-manifest-driven-task-hook-workflow",
+  "branch": "task/os/implement-manifest-driven-task-hook-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-manifest-driven-task-hook-workflow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-manifest-driven-task-hook-workflow",
+  "prNumber": 958,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/958",
+  "createdAt": "2026-06-11T07:13:02.699Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-manifest-driven-task-hook-workflow/.task/os/implement-manifest-driven-task-hook-workflow/session.json"
+}

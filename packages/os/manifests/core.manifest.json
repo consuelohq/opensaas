@@ -230,7 +230,8 @@
           "maxOperations": 25,
           "maxResultChars": 20000
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "decision.research"
       }
     },
     {
@@ -1300,7 +1301,8 @@
           "contentFile": "/tmp/example.txt",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "workpad.write"
       }
     },
     {
@@ -1449,7 +1451,8 @@
           "hunks": true,
           "maxBytes": 20000
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "diff.inspect"
       }
     },
     {
@@ -1622,6 +1625,77 @@
           "preset": "review"
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "intent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "workflow",
+      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "core": true,
+      "definition": {
+        "name": "intent",
+        "methodPath": [
+          "intent"
+        ],
+        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "category": "workflow",
+        "underlying": "workspace intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "WorkflowIntentOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "os",
+          "title": "example task intent"
+        }
       }
     },
     {
@@ -2114,7 +2188,8 @@
           "branch": "task/workspace-agents/example",
           "noTests": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.review"
       }
     },
     {
@@ -2204,7 +2279,8 @@
         "exampleInput": {
           "area": "workspace-agents"
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "stream.context"
       }
     },
     {
@@ -2555,7 +2631,8 @@
           ],
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "test.run"
       }
     },
     {
@@ -2611,7 +2688,8 @@
           "branch": "task/workspace-agents/example",
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.finish"
       }
     },
     {
@@ -2816,7 +2894,8 @@
           "taskOnly": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.pr"
       }
     },
     {
@@ -2960,7 +3039,8 @@
           "changed": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "task.push"
       }
     },
     {
@@ -3031,7 +3111,8 @@
           "title": "example task",
           "dryRun": true
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "task.start"
       }
     },
     {
@@ -3158,7 +3239,8 @@
         "exampleInput": {
           "query": "linear issue",
           "limit": 5
-        }
+        },
+        "workflowRole": "tool.search"
       }
     },
     {
@@ -3208,7 +3290,8 @@
           "noStamp": true,
           "dryRun": true
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "workflowRole": "validation.verify"
       }
     }
   ]

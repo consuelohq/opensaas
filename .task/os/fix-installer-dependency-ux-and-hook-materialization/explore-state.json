@@ -1,0 +1,1133 @@
+{
+  "query": "OS bootstrap installer materialize hooks intent task hook doctor validation tests",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+      "score": 0.7843,
+      "belief_prior": 0.6421,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "Wrapper renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenu.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuUpdateNavigationMorphItemsByPage.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useFilterActionsWithCommandMenuSearch.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenCalendarEventInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenEmailThreadInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenRecordInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenUpdateMultipleRecordsPageInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useSetGlobalCommandMenuContext.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useUpdateCommandMenuPageInfo.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenu.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 3952,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.9327,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenu.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuUpdateNavigationMorphItemsByPage.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useFilterActionsWithCommandMenuSearch.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 25,
+        "end": 49
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx:function:renderHooks:25-49",
+        "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 25,
+          "end": 49
+        },
+        "content_hash": "06f13f9e7537568b92023bfeca20e0692ab805d2b5fd94cb853a2df3290280f9",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.32666666666666655,
+        "graphRelevance": 0.32666666666666655,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7843000000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 9.799999999999997
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+      "score": 0.7843,
+      "belief_prior": 0.6421,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "Wrapper renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenuHistory.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuUpdateNavigationMorphItemsByPage.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useFilterActionsWithCommandMenuSearch.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenCalendarEventInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenEmailThreadInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenRecordInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useOpenUpdateMultipleRecordsPageInCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useSetGlobalCommandMenuContext.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useUpdateCommandMenuPageInfo.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenuHistory.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4640,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.9327,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuOnItemClick.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/useCommandMenuHistory.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuUpdateNavigationMorphItemsByPage.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useFilterActionsWithCommandMenuSearch.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 22,
+        "end": 51
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx:function:renderHooks:22-51",
+        "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 22,
+          "end": 51
+        },
+        "content_hash": "0e7aa7614173348b468724715eed4eb268cfafcd18ca66acc39138ae9f417c8e",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.32666666666666655,
+        "graphRelevance": 0.32666666666666655,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7843000000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 9.799999999999997
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts",
+      "score": 0.7811,
+      "belief_prior": 0.6406,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/useVerifyLogin.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/translations"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/useVerifyLogin.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/translations"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/types"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2296,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.6173,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook(() => useVerifyLogin(), { wrapper: ({ children }) =>",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+        "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+        "packages/twenty-front/src/modules/auth/hooks/useVerifyLogin.ts",
+        "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+        "packages/twenty-shared/src/types/AddressFieldsType.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 29,
+        "end": 35
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts:function:renderHooks:29-35",
+        "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 29,
+          "end": 35
+        },
+        "content_hash": "4f2c04e91f36deb18c1db96101c422258a95f375474f973808692b33e23b0a47",
+        "preview": "const renderHooks = () => { const { result } = renderHook(() => useVerifyLogin(), { wrapper: ({ children }) =>"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2733333333333333,
+        "graphRelevance": 0.2733333333333333,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7811000000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 8.2
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx",
+      "score": 0.7765,
+      "belief_prior": 0.6383,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useNavigateCommandMenu.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useNavigateCommandMenu.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 3308,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.6277,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/useNavigateCommandMenu.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 38,
+        "end": 64
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx:function:renderHooks:38-64",
+        "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 38,
+          "end": 64
+        },
+        "content_hash": "3c4040e227ad5fad8f75732b7e0790da8af2a311e5dfb693287313798bd6cbe9",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19666666666666668,
+        "graphRelevance": 0.19666666666666668,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7765000000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 5.9
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+      "score": 0.7765,
+      "belief_prior": 0.6383,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 8574,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.6277,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuCloseAnimationCompleteCleanup.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx",
+        "packages/twenty-front/src/modules/command-menu/hooks/useWorkflowCommandMenu.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 60,
+        "end": 133
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx:function:renderHooks:60-133",
+        "path": "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 60,
+          "end": 133
+        },
+        "content_hash": "1f56202b692708c546f1e23a40f4aa75334530f1dc5b7aab4bca412cf64d6eb3",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19666666666666668,
+        "graphRelevance": 0.19666666666666668,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7765000000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 5.9
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+      "score": 0.7731,
+      "belief_prior": 0.6366,
+      "symbol": "renderHooks",
+      "chunk_type": "function",
+      "file_outline": "Wrapper renderHooks",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/useAuth.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/auth/hooks/useAuth.ts",
+          "type": "tested_by",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 6527,
+      "chunk_count": 5,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.4173,
+      "reason": "hybrid match: function renderHooks",
+      "preview": "const renderHooks = () => { const { result } = renderHook( () => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/auth/hooks/__tests__/useIsLogged.test.ts",
+        "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts",
+        "packages/twenty-front/src/modules/auth/hooks/useAuth.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 89,
+        "end": 99
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx:function:renderHooks:89-99",
+        "path": "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+        "kind": "function",
+        "name": "renderHooks",
+        "symbol_path": "renderHooks",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 89,
+          "end": 99
+        },
+        "content_hash": "84bd9b56c463f6d617d22e47f736080c92abeecacf5f49fc00d2f8fbe1dea73b",
+        "preview": "const renderHooks = () => { const { result } = renderHook( () => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.13999999999999999,
+        "graphRelevance": 0.13999999999999999,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.23500000000000001,
+        "nameMatch": 1,
+        "rawScore": 0.7731000000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 4.199999999999999
+      }
+    },
+    {
+      "path": "packages/os/hooks/intent.js",
+      "score": 0.7612,
+      "belief_prior": 0.6306,
+      "symbol": "loadIntentManifest",
+      "chunk_type": "function",
+      "file_outline": "readJson loadIntentManifest loadWorkflowBundles copyWorkflowBundle createWorkflowLookup createGeneratedTaskSession eventTaskSession requireTaskSession initialHookEvent createWorkflowIntentRuntime",
+      "typed_edges": [
+        {
+          "path": "packages/os/hooks/dispatcher.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/hooks/dispatcher.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/workflow-intent.test.ts",
+          "type": "imported_by",
+          "symbol": "../hooks/intent.js"
+        },
+        {
+          "path": "packages/os/tests/workflow-intent.test.ts",
+          "type": "imports",
+          "symbol": "../hooks/intent.js"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 6563,
+      "chunk_count": 12,
+      "last_modified": 1781213156,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.8866,
+      "reason": "hybrid match: function loadIntentManifest",
+      "preview": "function loadIntentManifest(options = {}) { if (Array.isArray(options.manifest)) return options.manifest; const manifest = readJson(options.manifestPath || DEFAULT_MANIFEST_PATH);",
+      "graph_connections": [
+        "packages/os/hooks/dispatcher.js",
+        "packages/os/tests/workflow-intent.test.ts"
+      ],
+      "graph_connection_count": 2,
+      "lines": {
+        "start": 15,
+        "end": 20
+      },
+      "target": {
+        "key": "packages/os/hooks/intent.js:function:loadIntentManifest:15-20",
+        "path": "packages/os/hooks/intent.js",
+        "kind": "function",
+        "name": "loadIntentManifest",
+        "symbol_path": "loadIntentManifest",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 15,
+          "end": 20
+        },
+        "content_hash": "2cdfb468fde1b60bbd34b8c5050045314409046df9791d56166af0f3c18cdfde",
+        "preview": "function loadIntentManifest(options = {}) { if (Array.isArray(options.manifest)) return options.manifest; const manifest = readJson(options.manifestPath || DEFAULT_MANIFEST_PATH);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.08666666666666667,
+        "graphRelevance": 0.08666666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.2,
+        "nameMatch": 1,
+        "rawScore": 0.7611500000000002,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.4,
+        "weightedEdges": 2.6
+      }
+    },
+    {
+      "path": "packages/os/scripts/lib/install-state.ts",
+      "score": 0.7532,
+      "belief_prior": 0.6266,
+      "symbol": "materializeWorkspaceConnectorBootstrap",
+      "chunk_type": "function",
+      "file_outline": "resolveBundledOperatorRoot expandHome resolveOsHome nowIso writeJsonFile readJsonFile samePath materializeProductPackageRoot materializeOperator createDefaultConfig getInstalledSitesPaths addProvisionDirectoryAction addProvisionFileAction buildInstalledSitesIndex buildInstalledPagesIndex buildInstalledOfficeIndex buildInstalledReservedSiteIndex materializeSites escapeXml renderCloudflaredLaunchdPlist renderGatewayAuthSmokeScript materializeWorkspaceConnectorBootstrap loadOsConfig detectAgents connectAgent isJsonObject readJsonObject toPackageRootRelative toPortableSkillJson compactSkillMetadata listSkillDirs getSkillName collectSkillFiles skillTreeHash copyBundledSkill readSkillInstallMetadata writeInstalledSkillsRegistry migrateSelectedSkillNames seedBundledSkills readBundledToolManifest compactToolEntry toolEntryHash listToolDirs readToolInstallMetadata readInstalledToolDefinition shellSingleQuote toolWrapperScript writeBundledTool writeInstalledToolsRegistry seedBundledTools provisionLocalOs part 1 provisionLocalOs part 1 provisionLocalOs part 2 runDoctor runDoctor",
+      "typed_edges": [
+        {
+          "path": "packages/os/scripts/doctor.ts",
+          "type": "imports",
+          "symbol": "./lib/install-state"
+        },
+        {
+          "path": "packages/os/scripts/install.ts",
+          "type": "imports",
+          "symbol": "./lib/install-state"
+        },
+        {
+          "path": "packages/os/scripts/doctor.ts",
+          "type": "imported_by",
+          "symbol": "./lib/install-state"
+        },
+        {
+          "path": "packages/os/scripts/install.ts",
+          "type": "imported_by",
+          "symbol": "./lib/install-state"
+        },
+        {
+          "path": "packages/os/scripts/lib/app-files-client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/artifacts.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/capabilities.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/onboarding-skills.ts",
+          "type": "imports",
+          "symbol": "./onboarding-skills"
+        },
+        {
+          "path": "packages/os/scripts/lib/security-gateway.ts",
+          "type": "imports",
+          "symbol": "./security-gateway"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imports",
+          "symbol": "./sites"
+        },
+        {
+          "path": "packages/os/scripts/lib/skills.ts",
+          "type": "imports",
+          "symbol": "./skills"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-connector-transport.ts",
+          "type": "imports",
+          "symbol": "./workspace-connector-transport"
+        },
+        {
+          "path": "packages/os/scripts/lib/onboarding-skills.ts",
+          "type": "imported_by",
+          "symbol": "./onboarding-skills"
+        },
+        {
+          "path": "packages/os/scripts/lib/security-gateway.ts",
+          "type": "imported_by",
+          "symbol": "./security-gateway"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imported_by",
+          "symbol": "./sites"
+        },
+        {
+          "path": "packages/os/scripts/lib/skills.ts",
+          "type": "imported_by",
+          "symbol": "./skills"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-connector-transport.ts",
+          "type": "imported_by",
+          "symbol": "./workspace-connector-transport"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 46082,
+      "chunk_count": 76,
+      "last_modified": 1781222286,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.3442,
+      "reason": "hybrid match: function materializeWorkspaceConnectorBootstrap",
+      "preview": "function materializeWorkspaceConnectorBootstrap(input: { home: string; port: number;",
+      "graph_connections": [
+        "packages/os/scripts/doctor.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/app-files-client.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/capabilities.ts",
+        "packages/os/scripts/lib/onboarding-skills.ts",
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/sites.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 556,
+        "end": 636
+      },
+      "target": {
+        "key": "packages/os/scripts/lib/install-state.ts:function:materializeWorkspaceConnectorBootstrap:556-636",
+        "path": "packages/os/scripts/lib/install-state.ts",
+        "kind": "function",
+        "name": "materializeWorkspaceConnectorBootstrap",
+        "symbol_path": "materializeWorkspaceConnectorBootstrap",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 556,
+          "end": 636
+        },
+        "content_hash": "79412c80b05081219e795f66081dc8eeb445b430a26f9eb640b3192fb4d0a789",
+        "preview": "function materializeWorkspaceConnectorBootstrap(input: { home: string; port: number;"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.49666666666666665,
+        "graphRelevance": 0.35,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.14500000000000002,
+        "nameMatch": 0,
+        "rawScore": 0.7532000000000002,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 14.899999999999999
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15489,
+    "total_chunks": 76226,
+    "last_indexed": "2026-06-12T19:39:07.124Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenu.test.tsx": {
+      "prior": 0.6421,
+      "posterior": 0.6421,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useCommandMenuHistory.test.tsx": {
+      "prior": 0.6421,
+      "posterior": 0.6421,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/auth/hooks/__tests__/useVerifyLogin.test.ts": {
+      "prior": 0.6406,
+      "posterior": 0.6406,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useNavigateCommandMenu.test.tsx": {
+      "prior": 0.6383,
+      "posterior": 0.6383,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/command-menu/hooks/__tests__/useWorkflowCommandMenu.test.tsx": {
+      "prior": 0.6383,
+      "posterior": 0.6383,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx": {
+      "prior": 0.6366,
+      "posterior": 0.6366,
+      "observations": []
+    },
+    "packages/os/hooks/intent.js": {
+      "prior": 0.6306,
+      "posterior": 0.6306,
+      "observations": []
+    },
+    "packages/os/scripts/lib/install-state.ts": {
+      "prior": 0.6266,
+      "posterior": 0.6266,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/fix-installer-dependency-ux-and-hook-materialization",
+  "mode": "exploring",
+  "worktree_id": "task/os/fix-installer-dependency-ux-and-hook-materialization",
+  "updated_at": "2026-06-12T19:46:32.970Z"
+}

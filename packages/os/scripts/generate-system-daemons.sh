@@ -59,7 +59,7 @@ if ! id -u "$consuelo_user" >/dev/null 2>&1; then
   exit 1
 fi
 consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_home/Library/Logs/Consuelo}"
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
 workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
 portless_label="$(sanitize_label 'com.consuelo.portless.system' "${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}")"
 watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}")"

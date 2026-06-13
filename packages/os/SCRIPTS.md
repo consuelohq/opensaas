@@ -431,12 +431,20 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
 
-`packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
+The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
 
 ```bash
-cd packages/workspace && bun install
+CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
+```
+
+Gateway and advanced provider overrides:
+
+```bash
+bun run semantic:embeddings -- doctor --json
+CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-embeddings bun run explore -- "query"
+CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
 ```bash
@@ -451,15 +459,18 @@ bun run explore -- "refresh everything" --reindex
 bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
+bad: embedding gateway failed
+ → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+
 bad: embedding model not found
- → the expected cached model is missing at ~/.cache/qmd/models/Qwen3-Embedding-4B-Q8_0.gguf.
+ → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
 ```
 
 ---
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next

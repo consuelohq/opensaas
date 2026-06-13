@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/test-task-hook-workflow-contract/workpad.md",
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/package.json",
+    "packages/os/scripts/task-hook.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hook-workflow-contract.test.ts",
+    "packages/os/tests/task-hooks.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-11T06:59:04.725Z"
+}

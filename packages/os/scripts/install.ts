@@ -29,8 +29,8 @@ import {
   resolveOsHome,
   type AgentName,
   type OsMode,
+  type WorkspaceBootstrap,
 } from './lib/install-state';
-
 type ArtifactMode = 'local';
 type SkillName = string;
 
@@ -44,6 +44,8 @@ type InstallOptions = {
   skipDaemons: boolean;
   home?: string;
   mode?: OsMode;
+  workspaceHost?: string;
+  workspaceSlug?: string;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
@@ -58,6 +60,70 @@ const AGENT_NAMES = new Set<AgentName>([
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
+}
+
+function normalizeWorkspaceHost(value: string): string {
+  const raw = value.trim();
+  const withProtocol = raw.includes('://') ? raw : `https://${raw}`;
+  const url = new URL(withProtocol);
+  const hostname = url.hostname.toLowerCase();
+
+  if (hostname.length === 0 || !hostname.includes('.')) {
+    throw new Error('workspace URL must include a valid hostname');
+  }
+
+  return hostname;
+}
+
+function slugFromWorkspaceHost(workspaceHost: string): string {
+  const [firstLabel] = workspaceHost.split('.');
+  const slug = firstLabel
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return slug || 'workspace';
+}
+
+function normalizeWorkspaceSlug(value: string): string {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  if (slug.length === 0) {
+    throw new Error('workspace short name is required');
+  }
+
+  return slug;
+}
+
+function createManualWorkspaceBootstrap(input: {
+  workspaceSlug: string;
+  workspaceHost: string;
+}): WorkspaceBootstrap {
+  const workspaceSlug = normalizeWorkspaceSlug(input.workspaceSlug);
+  const workspaceHost = normalizeWorkspaceHost(input.workspaceHost);
+  const safeIdSegment = workspaceSlug.replace(/-/g, '_');
+
+  return {
+    workspaceId: `workspace_${safeIdSegment}`,
+    workspaceSlug,
+    workspaceHost,
+    connectorId: `connector_${safeIdSegment}`,
+    connectorTransport: 'websocket-relay',
+  };
+}
+
+function maybeCreateWorkspaceBootstrap(options: InstallOptions): WorkspaceBootstrap | undefined {
+  if (!options.workspaceHost || !options.workspaceSlug) return undefined;
+
+  return createManualWorkspaceBootstrap({
+    workspaceHost: options.workspaceHost,
+    workspaceSlug: options.workspaceSlug,
+  });
 }
 
 function parseArgs(argv: string[]): InstallOptions {
@@ -100,6 +166,12 @@ function parseArgs(argv: string[]): InstallOptions {
       if (mode !== 'local' && mode !== 'cloud')
         throw new Error('--mode must be local or cloud');
       options.mode = mode;
+    } else if (arg === '--workspace-url') {
+      options.workspaceHost = normalizeWorkspaceHost(readValue('--workspace-url', index));
+      index += 1;
+    } else if (arg === '--workspace-slug') {
+      options.workspaceSlug = normalizeWorkspaceSlug(readValue('--workspace-slug', index));
+      index += 1;
     } else if (arg === '--connect-agent') {
       const agent = readValue('--connect-agent', index) as AgentName;
       index += 1;
@@ -122,6 +194,8 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --dry-run             print planned writes without writing',
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
+          '  --workspace-url <url> Consuelo workspace URL',
+          '  --workspace-slug <id> short workspace name',
           '  --connect-agent <id>  connect codex, claude, opencode, or factory',
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
@@ -200,20 +274,62 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['home', 'skills', 'artifacts', 'agents', 'health']);
-    info('finish home, skills, artifacts, agents, and health before the final background service step.');
+    printOsBanner(['workspace', 'home', 'skills', 'artifacts', 'agents', 'health']);
+    info('finish workspace identity, home, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
-    const mode = await select({
+    let mode: OsMode = options.mode ?? 'local';
+    if (!options.mode) {
+      const selectedMode = await select({
+        ...clackIo,
+        message: 'choose an OS mode',
+        initialValue: 'local',
+        options: [
+          { value: 'local' as const, label: 'local' },
+          { value: 'cloud' as const, label: 'cloud' },
+        ],
+      });
+      if (isCancel(selectedMode)) { cancel('setup cancelled.'); process.exit(0); }
+      mode = selectedMode;
+    }
+
+    if (mode === 'cloud') {
+      info('Cloud setup is handled by Consuelo. Open https://consuelohq.com/contact/ to get started.');
+      process.exit(0);
+    }
+
+    const workspaceHostInput = await text({
       ...clackIo,
-      message: 'choose an OS mode',
-      initialValue: options.mode ?? 'local',
-      options: [
-        { value: 'local' as const, label: 'local OS', hint: 'runs on this machine' },
-        { value: 'cloud' as const, label: 'connect to cloud OS', hint: 'uses hosted workspace services later' },
-      ],
+      message: 'Consuelo workspace URL',
+      initialValue: options.workspaceHost ?? '',
+      validate: (value) => {
+        if (value.trim().length === 0) return 'workspace URL is required';
+        try {
+          normalizeWorkspaceHost(value);
+          return undefined;
+        } catch (error: unknown) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      },
     });
-    if (isCancel(mode)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(workspaceHostInput)) { cancel('setup cancelled.'); process.exit(0); }
+    const workspaceHost = normalizeWorkspaceHost(workspaceHostInput);
+
+    const workspaceSlugInput = await text({
+      ...clackIo,
+      message: 'workspace short name',
+      initialValue: options.workspaceSlug ?? slugFromWorkspaceHost(workspaceHost),
+      validate: (value) => {
+        try {
+          normalizeWorkspaceSlug(value);
+          return undefined;
+        } catch (error: unknown) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      },
+    });
+    if (isCancel(workspaceSlugInput)) { cancel('setup cancelled.'); process.exit(0); }
+    const workspaceSlug = normalizeWorkspaceSlug(workspaceSlugInput);
 
     const home = await text({
       ...clackIo,
@@ -263,7 +379,17 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (isCancel(installDaemons)) { cancel('setup cancelled.'); process.exit(0); }
     info('background service is the final setup step; tokens and secrets stay local and are not printed.');
 
-    return { ...options, mode, home, selectedSkills: selectedSkills as SkillName[], artifactMode, connectAgents, installDaemons };
+    return {
+      ...options,
+      mode,
+      home,
+      workspaceHost,
+      workspaceSlug,
+      selectedSkills: selectedSkills as SkillName[],
+      artifactMode,
+      connectAgents,
+      installDaemons,
+    };
   } catch (error: unknown) {
     throw new Error(`install prompt failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -286,6 +412,7 @@ async function main(): Promise<void> {
               ? 'planning local OS install...'
               : 'installing local OS...',
           ).start();
+    const workspaceBootstrap = maybeCreateWorkspaceBootstrap(options);
     const result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
@@ -293,12 +420,15 @@ async function main(): Promise<void> {
       connectAgents: options.connectAgents,
       selectedSkills: options.selectedSkills,
       artifactStorage: options.artifactMode,
+      workspaceBootstrap,
     });
     const payload = {
       ...result,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
+        workspaceHost: options.workspaceHost,
+        workspaceSlug: options.workspaceSlug,
         connectAgents: options.connectAgents,
         installDaemons: options.installDaemons,
       },
@@ -348,3 +478,4 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
+

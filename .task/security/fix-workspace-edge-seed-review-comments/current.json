@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-workspace-edge-seed-review-comments",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 982,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/982",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/982",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/982/fix-workspace-edge-seed-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/982",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/982/fix-workspace-edge-seed-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-edge-seed-review-comments",
+  "taskSession": "tsk_bf262d39d698",
+  "tmuxSession": "opensaas-security-fix-workspace-edge-seed-review-comments-bf262d39",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-edge-seed-review-comments/.task/security/fix-workspace-edge-seed-review-comments/session.json",
+  "createdAt": "2026-06-12T17:48:28.695Z"
+}

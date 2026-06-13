@@ -53,6 +53,8 @@ export type ArtifactDescriptor = {
   traceId?: string;
   skillName?: string;
   createdAt?: string;
+  currentVersionId?: string;
+  versionCount?: number;
 };
 
 export type CallOutput = {

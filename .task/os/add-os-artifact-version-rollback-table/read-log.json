@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/artifacts.test.ts"
+  ],
+  "updatedAt": "2026-06-11T02:53:31.939Z"
+}

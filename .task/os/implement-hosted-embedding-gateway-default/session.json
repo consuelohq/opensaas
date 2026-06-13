@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_effead14ac15",
+  "tmuxSession": "opensaas-os-implement-hosted-embedding-gateway-default-effead14",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/implement-hosted-embedding-gateway-default",
+  "branch": "task/os/implement-hosted-embedding-gateway-default",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-hosted-embedding-gateway-default",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-hosted-embedding-gateway-default",
+  "prNumber": 966,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/966",
+  "createdAt": "2026-06-11T08:58:22.367Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-hosted-embedding-gateway-default/.task/os/implement-hosted-embedding-gateway-default/session.json"
+}

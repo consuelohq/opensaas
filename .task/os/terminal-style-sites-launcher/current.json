@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/terminal-style-sites-launcher",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 908,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/908",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/908",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/908/terminal-style-sites-launcher",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/908",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/908/terminal-style-sites-launcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-terminal-style-sites-launcher",
+  "taskSession": "tsk_b50096c19f70",
+  "tmuxSession": "opensaas-os-terminal-style-sites-launcher-b50096c1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-terminal-style-sites-launcher/.task/os/terminal-style-sites-launcher/session.json",
+  "createdAt": "2026-06-10T01:54:32.857Z"
+}
