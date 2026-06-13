@@ -220,3 +220,35 @@ test('tunes mobile launcher closer to the Pierre reference', () => {
     expect(source).toContain(marker);
   }
 });
+
+
+test('adds numeric launcher hotkeys for Sites navigation', () => {
+  for (const marker of [
+    'data-hotkey="1"',
+    'data-hotkey="2"',
+    'data-hotkey="3"',
+    'data-hotkey="4"',
+    'data-hotkey="5"',
+    'const siteHotkeys = {',
+    '"1": "https://app.consuelohq.com/welcome"',
+    '"2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
+    '"3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
+    '"4": "https://diffs.consuelohq.com"',
+    '"5": "${DESIGN_DOCS_URL}"',
+    'document.addEventListener("keydown"',
+    'window.location.assign(href)',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
+
+test('caches the root launcher at the browser and edge while keeping archive paths conservative', () => {
+  for (const marker of [
+    'const launcherCacheControl = "public, max-age=60, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800";',
+    'function h(type, cache)',
+    'cache === "launcher" ? launcherCacheControl : "no-store"',
+    'h("text/html; charset=utf-8", "launcher")',
+  ]) {
+    expect(source).toContain(marker);
+  }
+});
