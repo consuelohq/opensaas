@@ -3,8 +3,6 @@ import LaunchFooter from '../../components/launch/LaunchFooter.astro';
 import LaunchHeader from '../../components/launch/LaunchHeader.astro';
 import LaunchLayout from '../../layouts/LaunchLayout.astro';
 
-const userCode = Astro.url.searchParams.get('user_code') ?? '';
-const formattedCode = userCode.replace(/(.{4})(?=.)/g, '$1-');
 const description = 'Authorize Consuelo OS on this device.';
 ---
 
@@ -21,17 +19,28 @@ const description = 'Authorize Consuelo OS on this device.';
 
       <div class="device-auth__card">
         <span class="device-auth__label launch-mono">Device code</span>
-        <strong class="device-auth__code launch-mono">{formattedCode || 'Waiting for code'}</strong>
+        <strong class="device-auth__code launch-mono" data-device-code>Waiting for code</strong>
       </div>
 
       <p class="launch-copy device-auth__copy">
-        Approval is not enabled on this public page yet. Keep the terminal open; the installer will continue with local workspace setup when live authorization is unavailable.
+        Return to your terminal to continue setup. Browser approval will become active once the hosted approval endpoint is deployed.
       </p>
     </div>
   </section>
 
   <LaunchFooter />
 </LaunchLayout>
+
+<script is:inline>
+  const deviceCodeNode = document.querySelector('[data-device-code]');
+  const rawUserCode = new URLSearchParams(window.location.search).get('user_code') ?? '';
+  const normalizedUserCode = rawUserCode.replace(/[^a-z0-9]/gi, '').toUpperCase();
+  const formattedUserCode = normalizedUserCode.replace(/(.{4})(?=.)/g, '$1-');
+
+  if (deviceCodeNode && formattedUserCode) {
+    deviceCodeNode.textContent = formattedUserCode;
+  }
+</script>
 
 <style>
   .device-auth {

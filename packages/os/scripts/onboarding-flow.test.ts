@@ -45,7 +45,7 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain('pollWorkspaceDeviceAccessToken');
     expect(install).toContain('openDeviceVerificationUrl');
     expect(install).toContain('Device login unavailable; continuing with local workspace bootstrap.');
-    expect(install).toContain('CONSUELO_DEVICE_VERIFICATION_URL');
+    expect(install).toContain("if (liveDeviceCode.status !== 'started')");
     expect(install).not.toContain('workspaceActivation');
     expect(install).not.toContain('app.consuelohq.com/os/activate');
   });
