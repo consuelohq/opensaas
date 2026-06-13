@@ -19,6 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Test e-postası"
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -69,31 +74,6 @@ msgid "Update your subscription"
 msgstr "Aboneliğini güncelle"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Test e-postası"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
-msgstr "E-posta adresinizi onaylayın"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
-msgstr "E-postayı Doğrula"
-
-#. js-lingui-explicit-id
 #: src/emails/send-invite-link.email.tsx
 msgid "Join your team on Consuelo"
 msgstr ""
@@ -107,26 +87,6 @@ msgstr "{senderName} (<0>{senderEmail}</0>) sizi <1>{workspaceName}</1> adında 
 #: src/emails/send-invite-link.email.tsx
 msgid "Accept invite"
 msgstr "Daveti kabul et"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Şifre güncellendi"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Hesabınızın ({email}) şifresinin {formattedDate} tarihinde başarıyla değiştirildiğine dair bir doğrulama bu."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Bu değişikliği başlatmadıysanız, lütfen hemen çalışma alanı sahibinizle iletişime geçin."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
@@ -154,13 +114,43 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "Bu bağlantı sadece {duration} boyunca geçerlidir. Bağlantı çalışmazsa, doğrudan giriş doğrulama bağlantısını kullanabilirsiniz:"
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "E-posta adresinizi onaylayın"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "E-postayı Doğrula"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Şifre güncellendi"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Hesabınızın ({email}) şifresinin {formattedDate} tarihinde başarıyla değiştirildiğine dair bir doğrulama bu."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Bu değişikliği başlatmadıysanız, lütfen hemen çalışma alanı sahibinizle iletişime geçin."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
@@ -187,6 +177,16 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "Yeni bir çalışma alanı oluştur"
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
