@@ -63,6 +63,22 @@ cd packages/diff-cockpit && bun run test
 
 Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
+### os:release — release all public Consuelo OS surfaces
+
+Operator-only release wrapper for publishing every public OS surface that the hosted installer depends on. Use this as the default OS release command after OS installer or device approval changes.
+
+```bash
+bun run os:release -- --dry-run
+bun run os:release
+bun run os:release -- --install-only
+bun run os:release -- --device-auth-only
+```
+
+Default release order:
+
+1. `install.consuelohq.com/os` via `os:release-install`
+2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
+
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
@@ -80,6 +96,21 @@ Defaults:
 - Installer path: `/os`
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
 
+### os:release-device-auth — release the OS device approval authority
+
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+
+```bash
+bun run os:release-device-auth -- --dry-run
+bun run os:release-device-auth
+bun run os:release-device-auth -- --verify-only
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-device-authority`
+- Route: `os.consuelohq.com/*`
+- Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
 
 ---
 
