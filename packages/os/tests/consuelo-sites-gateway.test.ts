@@ -2,18 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+  authorizeConsueloGatewayRequest,
   canReadConsueloSite,
   createConsueloSitesGateway,
   discoverConsueloSiteServices,
   resolveConsueloGatewayRequest,
   routeConsueloGatewayRequest,
-  type ConsueloGatewayRequest,
-  type ConsueloGatewaySessionScope,
 } from '../scripts/lib/consuelo-sites-gateway';
-import {
-  createDefaultConsueloSiteServiceRegistry,
-  registerConsueloSiteService,
-} from '../scripts/lib/consuelo-sites-gateway-registry';
+import { createConsueloSiteServiceRegistry, registerConsueloSiteService } from '../scripts/lib/consuelo-sites-gateway-registry';
+import { createTraceConsueloSiteServiceRegistry } from '../scripts/lib/consuelo-sites-trace-adapter';
+import type { ConsueloGatewayRequest, ConsueloGatewaySessionScope } from '../scripts/lib/consuelo-sites-gateway-types';
 
 const baseScope: ConsueloGatewaySessionScope = {
   userId: 'usr_gateway',
@@ -37,11 +35,13 @@ function request(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatew
   };
 }
 
+function traceGateway() {
+  return createConsueloSitesGateway({ registry: createTraceConsueloSiteServiceRegistry() });
+}
+
 describe('Consuelo Sites Gateway contract service', () => {
   it('should resolve workspace identity when request contains host/session scope', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const decision = resolveConsueloGatewayRequest(gateway, request());
+    const decision = resolveConsueloGatewayRequest(traceGateway(), request());
 
     expect(decision).toMatchObject({
       ok: true,
@@ -57,9 +57,7 @@ describe('Consuelo Sites Gateway contract service', () => {
   });
 
   it('should deny access when workspace identity is missing', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const decision = resolveConsueloGatewayRequest(gateway, request({
+    const decision = resolveConsueloGatewayRequest(traceGateway(), request({
       session: { ...baseScope, workspaceId: '', workspaceHost: '' },
     }));
 
@@ -71,9 +69,7 @@ describe('Consuelo Sites Gateway contract service', () => {
   });
 
   it('should deny access when requested Site is not allowed', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const decision = canReadConsueloSite(gateway, request({
+    const decision = canReadConsueloSite(traceGateway(), request({
       session: { ...baseScope, allowedSites: ['trace'] },
       site: 'trace-burn-intelligence',
     }));
@@ -84,17 +80,26 @@ describe('Consuelo Sites Gateway contract service', () => {
     });
   });
 
-  it('should route Trace Site read capability through the registered Trace gateway service', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
+  it('should authorize generically before gateway routing', () => {
+    const decision = authorizeConsueloGatewayRequest(traceGateway(), request());
 
-    const result = routeConsueloGatewayRequest(gateway, request({ capability: 'trace-read' }));
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) throw new Error('expected authorization to pass');
+    expect(decision.workspace.workspaceId).toBe('wrk_gateway');
+    expect(decision.degradation.state).toBe('healthy');
+  });
+
+  it('should route Trace Site read capability through the registered Trace adapter service', () => {
+    const result = routeConsueloGatewayRequest(traceGateway(), request({ capability: 'trace-read' }));
 
     expect(result).toMatchObject({
       ok: true,
       publicBoundary: 'consuelo-gateway',
       route: {
-        publicRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/traces/*',
+        gatewayRouteFamily: '/gateway/traces/*',
         gatewayServiceName: 'trace-sites-read-layer',
+        gatewayAdapterName: 'trace-sites-read-layer',
         capability: 'trace-read',
         site: 'trace-burn-intelligence',
       },
@@ -102,9 +107,7 @@ describe('Consuelo Sites Gateway contract service', () => {
   });
 
   it('should not expose local DB, local agent, cloud runner, trace files, or raw internal service targets', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const result = routeConsueloGatewayRequest(gateway, request());
+    const result = routeConsueloGatewayRequest(traceGateway(), request());
     const serialized = JSON.stringify(result);
 
     for (const forbidden of [
@@ -115,6 +118,7 @@ describe('Consuelo Sites Gateway contract service', () => {
       `raw-${'trace'}-service`,
       'directBackendTarget',
       'backendTarget',
+      'backendServiceName',
       'implementationPath',
       'sqlite',
       '.db',
@@ -123,33 +127,8 @@ describe('Consuelo Sites Gateway contract service', () => {
     }
   });
 
-  it('should preserve local-networked, cloud-compute, and local-off-network source-mode semantics generically', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    expect(gateway.sourceModePolicy).toMatchObject({
-      'local-networked': {
-        computeLocation: 'user-device',
-        requiresRelay: true,
-        sitesHydration: 'consuelo-gateway',
-      },
-      'cloud-compute': {
-        computeLocation: 'consuelo-managed-runner',
-        requiresRelay: false,
-        supportsRunnerControl: true,
-        sitesHydration: 'consuelo-gateway',
-      },
-      'local-off-network': {
-        computeLocation: 'user-device',
-        bridgeRequired: true,
-        sitesHydration: 'bridge-required',
-      },
-    });
-  });
-
   it('should return bridge-required/degraded state for local-off-network without a bridge', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const result = routeConsueloGatewayRequest(gateway, request({ sourceMode: 'local-off-network' }));
+    const result = routeConsueloGatewayRequest(traceGateway(), request({ sourceMode: 'local-off-network' }));
 
     expect(result).toMatchObject({
       ok: false,
@@ -163,33 +142,34 @@ describe('Consuelo Sites Gateway contract service', () => {
     });
   });
 
-  it('should expose service discovery as gateway service names, not backend implementation paths', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const discovery = discoverConsueloSiteServices(gateway, request());
+  it('should expose service discovery as gateway service names and route families', () => {
+    const discovery = discoverConsueloSiteServices(traceGateway(), request());
 
     expect(discovery).toMatchObject({
       ok: true,
       publicBoundary: 'consuelo-gateway',
       services: [expect.objectContaining({
         gatewayServiceName: 'trace-sites-read-layer',
-        serviceName: 'trace-sites-read-layer',
+        gatewayAdapterName: 'trace-sites-read-layer',
         capability: 'trace-read',
-        publicRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/traces/*',
+        gatewayRouteFamily: '/gateway/traces/*',
       })],
     });
     expect(JSON.stringify(discovery)).not.toContain('implementationPath');
     expect(JSON.stringify(discovery)).not.toContain(`local-${'agent'}`);
+    expect(JSON.stringify(discovery)).not.toContain('backendServiceName');
   });
 
   it('should support registering future Sites without changing Trace-specific code', () => {
-    const registry = registerConsueloSiteService(createDefaultConsueloSiteServiceRegistry(), {
+    const registry = registerConsueloSiteService(createConsueloSiteServiceRegistry(), {
       site: 'office',
       capability: 'office-read',
       gatewayServiceName: 'office-sites-read-layer',
       serviceName: 'office-sites-read-layer',
-      backendServiceName: 'office-sites-read-layer',
-      publicRouteFamily: '/office/*',
+      gatewayAdapterName: 'office-sites-read-layer',
+      publicSiteRouteFamily: '/office/*',
+      gatewayRouteFamily: '/gateway/office/*',
       supportedSourceModes: ['local-networked', 'cloud-compute'],
       cachePolicy: { strategy: 'materialized-window', ttlSeconds: 30 },
       circuitState: { state: 'closed', retryPolicy: 'normal' },
@@ -213,15 +193,14 @@ describe('Consuelo Sites Gateway contract service', () => {
         site: 'office',
         capability: 'office-read',
         gatewayServiceName: 'office-sites-read-layer',
-        publicRouteFamily: '/office/*',
+        publicSiteRouteFamily: '/office/*',
+        gatewayRouteFamily: '/gateway/office/*',
       },
     });
   });
 
-  it('should keep Trace read/live layer as backend adapters under the generic gateway', () => {
-    const gateway = createConsueloSitesGateway({ registry: createDefaultConsueloSiteServiceRegistry() });
-
-    const discovery = discoverConsueloSiteServices(gateway, request({ capability: 'trace-live' }));
+  it('should keep Trace read/live layer as adapters under the generic gateway', () => {
+    const discovery = discoverConsueloSiteServices(traceGateway(), request({ capability: 'trace-live' }));
 
     expect(discovery.ok).toBe(true);
     expect(discovery.services).toEqual(expect.arrayContaining([
@@ -229,10 +208,23 @@ describe('Consuelo Sites Gateway contract service', () => {
         site: 'trace-burn-intelligence',
         capability: 'trace-live',
         gatewayServiceName: 'trace-sites-live-endpoints',
-        backendServiceName: 'trace-sites-live-endpoints',
-        publicRouteFamily: '/traces/*',
+        gatewayAdapterName: 'trace-sites-live-endpoints',
+        publicSiteRouteFamily: '/traces/*',
+        gatewayRouteFamily: '/gateway/traces/*',
       }),
     ]));
     expect(discovery.services.every((service) => service.publicBoundary === 'consuelo-gateway')).toBe(true);
+  });
+
+  it('should allow Trace to be absent without changing generic gateway core behavior', () => {
+    const gateway = createConsueloSitesGateway({ registry: createConsueloSiteServiceRegistry() });
+    const authorization = authorizeConsueloGatewayRequest(gateway, request());
+    const route = routeConsueloGatewayRequest(gateway, request());
+
+    expect(authorization.ok).toBe(true);
+    expect(route).toMatchObject({
+      ok: false,
+      error: { code: 'SERVICE_NOT_FOUND' },
+    });
   });
 });

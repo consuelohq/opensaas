@@ -1,115 +1,36 @@
-export const CONSUELO_GATEWAY_PUBLIC_BOUNDARY = 'consuelo-gateway' as const;
+import {
+  CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+  type ConsueloGatewayServiceDiscoveryQuery,
+  type ConsueloGatewayServiceRegistration,
+  type ConsueloSiteServiceRegistry,
+} from './consuelo-sites-gateway-types';
 
-export type ConsueloGatewayPublicBoundary = typeof CONSUELO_GATEWAY_PUBLIC_BOUNDARY;
-export type ConsueloSiteSlug = 'trace' | 'trace-burn-intelligence' | (string & {});
-export type ConsueloGatewaySourceMode = 'local-networked' | 'cloud-compute' | 'local-off-network';
-export type ConsueloGatewayServiceCapability =
-  | 'trace-read'
-  | 'trace-live'
-  | 'trace-ingest'
-  | 'runner-control'
-  | (string & {});
+export {
+  CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+  type ConsueloGatewayCachePolicy,
+  type ConsueloGatewayCircuitState,
+  type ConsueloGatewayPublicBoundary,
+  type ConsueloGatewayServiceCapability,
+  type ConsueloGatewayServiceRegistration,
+  type ConsueloGatewaySourceMode,
+  type ConsueloSiteServiceRegistry,
+  type ConsueloSiteSlug,
+} from './consuelo-sites-gateway-types';
 
-export type ConsueloGatewayCachePolicy = {
-  strategy: 'cursor-window' | 'materialized-window' | 'event-stream' | 'write-through' | 'control-plane' | 'none';
-  ttlSeconds: number;
-};
-
-export type ConsueloGatewayCircuitState = {
-  state: 'closed' | 'degraded' | 'open';
-  retryPolicy: 'normal' | 'backoff' | 'circuit-open' | 'manual-bridge-required';
-};
-
-export type ConsueloGatewayServiceRegistration = {
-  publicBoundary?: ConsueloGatewayPublicBoundary;
-  site: ConsueloSiteSlug;
-  capability: ConsueloGatewayServiceCapability;
-  serviceName: string;
-  gatewayServiceName: string;
-  backendServiceName: string;
-  publicRouteFamily: string;
-  supportedSourceModes: ConsueloGatewaySourceMode[];
-  cachePolicy: ConsueloGatewayCachePolicy;
-  circuitState: ConsueloGatewayCircuitState;
-};
-
-export type ConsueloGatewayServiceDiscoveryQuery = {
-  site: ConsueloSiteSlug;
-  capability: ConsueloGatewayServiceCapability;
-  sourceMode: ConsueloGatewaySourceMode;
-};
-
-export type ConsueloSiteServiceRegistry = ConsueloGatewayServiceRegistration[];
-
-const DIRECT_BACKEND_TARGETS = [
-  'local-trace-db',
-  'local-agent',
-  'cloud-runner',
-  'trace-store-file',
-  'raw-trace-service',
+const IMPLEMENTATION_TARGET_LABELS = [
+  ['local', 'trace', 'db'].join('-'),
+  ['local', 'agent'].join('-'),
+  ['cloud', 'runner'].join('-'),
+  ['trace', 'store', 'file'].join('-'),
+  ['raw', 'trace', 'service'].join('-'),
   'sqlite',
   '.db',
 ] as const;
-
-export const CONSUELO_TRACE_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServiceRegistration[] = [
-  {
-    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
-    site: 'trace',
-    capability: 'trace-read',
-    serviceName: 'trace-sites-read-layer',
-    gatewayServiceName: 'trace-sites-read-layer',
-    backendServiceName: 'trace-sites-read-layer',
-    publicRouteFamily: '/traces/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
-    cachePolicy: { strategy: 'cursor-window', ttlSeconds: 10 },
-    circuitState: { state: 'closed', retryPolicy: 'normal' },
-  },
-  {
-    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
-    site: 'trace-burn-intelligence',
-    capability: 'trace-read',
-    serviceName: 'trace-sites-read-layer',
-    gatewayServiceName: 'trace-sites-read-layer',
-    backendServiceName: 'trace-sites-read-layer',
-    publicRouteFamily: '/traces/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
-    cachePolicy: { strategy: 'materialized-window', ttlSeconds: 10 },
-    circuitState: { state: 'closed', retryPolicy: 'normal' },
-  },
-  {
-    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
-    site: 'trace',
-    capability: 'trace-live',
-    serviceName: 'trace-sites-live-endpoints',
-    gatewayServiceName: 'trace-sites-live-endpoints',
-    backendServiceName: 'trace-sites-live-endpoints',
-    publicRouteFamily: '/traces/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
-    cachePolicy: { strategy: 'event-stream', ttlSeconds: 0 },
-    circuitState: { state: 'closed', retryPolicy: 'normal' },
-  },
-  {
-    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
-    site: 'trace-burn-intelligence',
-    capability: 'trace-live',
-    serviceName: 'trace-sites-live-endpoints',
-    gatewayServiceName: 'trace-sites-live-endpoints',
-    backendServiceName: 'trace-sites-live-endpoints',
-    publicRouteFamily: '/traces/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
-    cachePolicy: { strategy: 'event-stream', ttlSeconds: 0 },
-    circuitState: { state: 'closed', retryPolicy: 'normal' },
-  },
-];
 
 export function createConsueloSiteServiceRegistry(
   registrations: ConsueloGatewayServiceRegistration[] = [],
 ): ConsueloSiteServiceRegistry {
   return registrations.map(normalizeServiceRegistration);
-}
-
-export function createDefaultConsueloSiteServiceRegistry(): ConsueloSiteServiceRegistry {
-  return createConsueloSiteServiceRegistry(CONSUELO_TRACE_SITE_SERVICE_REGISTRATIONS);
 }
 
 export function registerConsueloSiteService(
@@ -148,10 +69,12 @@ function assertGatewayServiceRegistration(registration: ConsueloGatewayServiceRe
   const descriptor = [
     registration.serviceName,
     registration.gatewayServiceName,
-    registration.backendServiceName,
+    registration.gatewayAdapterName,
+    registration.publicSiteRouteFamily,
+    registration.gatewayRouteFamily,
   ].join(' ');
 
-  if (DIRECT_BACKEND_TARGETS.some((target) => descriptor.includes(target))) {
-    throw new Error('direct backend targets cannot be registered as Consuelo Gateway services');
+  if (IMPLEMENTATION_TARGET_LABELS.some((label) => descriptor.includes(label))) {
+    throw new Error('implementation targets cannot be registered as Consuelo Gateway services');
   }
 }
