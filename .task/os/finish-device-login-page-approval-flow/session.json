@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1981dd1d4433",
+  "tmuxSession": "opensaas-os-finish-device-login-page-approval-flow-1981dd1d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-device-login-page-approval-flow",
+  "branch": "task/os/finish-device-login-page-approval-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-device-login-page-approval-flow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-device-login-page-approval-flow",
+  "prNumber": 998,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/998",
+  "createdAt": "2026-06-13T06:31:49.412Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-device-login-page-approval-flow/.task/os/finish-device-login-page-approval-flow/session.json"
+}
