@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-device-approval-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1016,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1016",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1016",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1016/fix-device-approval-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1016",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1016/fix-device-approval-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-approval-review-comments",
+  "taskSession": "tsk_66755a6476ce",
+  "tmuxSession": "opensaas-os-fix-device-approval-review-comments-66755a64",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-approval-review-comments/.task/os/fix-device-approval-review-comments/session.json",
+  "createdAt": "2026-06-13T15:12:15.256Z"
+}

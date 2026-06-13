@@ -31,7 +31,7 @@ type StorageLike = { get<T>(key: string): Promise<T | undefined>; put<T>(key: st
 type StateLike = { storage: StorageLike };
 type StubLike = { fetch(request: Request): Promise<Response> };
 type NamespaceLike = { idFromName(name: string): unknown; get(id: unknown): StubLike };
-type Env = { DEVICE_GRANTS: NamespaceLike; OS_DEVICE_AUTH_ORIGIN?: string };
+type Env = { DEVICE_GRANTS: NamespaceLike; OS_DEVICE_AUTH_ORIGIN?: string; OS_DEVICE_AUTH_ASSERTION_SECRET?: string };
 
 const ORIGIN = 'https://os.consuelohq.com';
 const TTL_MS = 15 * 60 * 1000;
@@ -40,6 +40,9 @@ const INTERVAL = 5;
 const GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
 const TOKEN_KEY = 'access' + '_token';
 const CONNECTOR_TOKEN_KEY = 'connector_bootstrap' + '_token';
+const AUTH_ASSERTION_HEADER = 'x-consuelo-account-assertion';
+const DEVICE_PROOF_PAYLOAD_KEY = 'device_public_key_proof_payload';
+const DEVICE_PROOF_KEY = 'device_public_key_proof';
 const ALLOWED_AUTH_METHODS = ['google', 'passkey', 'magic_link', 'hardware_key', 'admin_invite'] as const;
 const ALLOWED_AUTH_METHOD_SET = new Set<string>(ALLOWED_AUTH_METHODS);
 const REJECTED_AUTH_METHODS = new Set<string>(['password', 'username_password', 'basic', 'basic_auth']);
@@ -49,9 +52,11 @@ const text = (body: string, init: ResponseInit = {}) => new Response(body, { ...
 const methodNotAllowed = (allow: string) => new Response('Method not allowed\n', { status: 405, headers: { allow, 'content-type': 'text/plain; charset=utf-8', 'x-content-type-options': 'nosniff' } });
 
 function b64(bytes: Uint8Array): string { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, ''); }
+function b64Decode(value: string): Uint8Array { const normalized = value.replace(/-/g, '+').replace(/_/g, '/'); const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='); const raw = atob(padded); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
 function rand(prefix: string, len: number): string { const bytes = new Uint8Array(len); crypto.getRandomValues(bytes); return `${prefix}_${b64(bytes)}`; }
 function userCode(): string { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const bytes = new Uint8Array(8); crypto.getRandomValues(bytes); const c = Array.from(bytes, b => alphabet[b % alphabet.length]); return `${c.slice(0, 4).join('')}-${c.slice(4).join('')}`; }
 async function hash(value: string): Promise<string> { try { return b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))); } catch { throw new Error('hash failed'); } }
+async function hmac(secret: string, value: string): Promise<string> { try { const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); return b64(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)))); } catch { throw new Error('auth assertion signing failed'); } }
 async function devicePublicKeyThumbprint(value: string): Promise<string> { try { return `dpk_${(await hash(value)).slice(0, 32)}`; } catch { throw new Error('device public key thumbprint failed'); } }
 function slug(value: string): string { const out = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); if (!out) throw new Error('workspace_name is required'); return out; }
 function cleanCode(value: string): string { return value.trim().replace(/[^a-z0-9]/gi, '').toUpperCase(); }
@@ -59,6 +64,8 @@ function showCode(value: string): string { return cleanCode(value).replace(/(.{4
 function htmlEscape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c)); }
 async function params(request: Request): Promise<URLSearchParams> { try { const ct = request.headers.get('content-type') ?? ''; if (ct.includes('application/json')) { const body = await request.json() as Record<string, string>; return new URLSearchParams(body); } return new URLSearchParams(await request.text()); } catch { throw new Error('parse failed'); } }
 function verifyUrl(origin: string, code: string): string { const url = new URL('/login/device', origin); url.searchParams.set('user_code', cleanCode(code)); return url.toString(); }
+function stringField(record: Record<string, unknown>, key: string): string { const value = record[key]; return typeof value === 'string' ? value : ''; }
+function expectedDeviceProofPayload(input: { clientId: string; deviceCode: string; devicePublicKeyThumbprint: string }): string { return `${input.clientId}.${input.deviceCode}.${input.devicePublicKeyThumbprint}`; }
 
 function page(input: { code: string; message?: string; error?: string }): string {
   const shown = htmlEscape(showCode(input.code));
@@ -76,12 +83,31 @@ class DurableStore implements Store {
 
 export function createMemoryDeviceGrantStore(): Store { const m = new Map<string, Grant>(); return { put(g) { m.set(g.hash, { ...g }); return Promise.resolve(); }, byHash(h) { const g = m.get(h); return Promise.resolve(g ? { ...g } : undefined); }, byUserCode(c) { for (const g of m.values()) if (cleanCode(g.userCode) === cleanCode(c)) return Promise.resolve({ ...g }); return Promise.resolve(undefined); }, del(h) { m.delete(h); return Promise.resolve(); } }; }
 
-function approvalAuth(request: Request): { status: 'missing' } | { status: 'weak'; method: string } | { status: 'allowed'; accountId: string; method: StrongerAuthMethod } {
-  const accountId = request.headers.get('x-consuelo-account-id')?.trim() ?? '';
-  const method = request.headers.get('x-consuelo-account-auth-method')?.trim().toLowerCase() ?? '';
-  if (!accountId || !method) return { status: 'missing' };
+async function approvalAuth(request: Request, secret: string | undefined, nowMs: number): Promise<{ status: 'missing' } | { status: 'weak'; method: string } | { status: 'allowed'; accountId: string; method: StrongerAuthMethod }> {
+  const assertion = request.headers.get(AUTH_ASSERTION_HEADER)?.trim() ?? '';
+  if (!secret || !assertion) return { status: 'missing' };
+  const [payload, signature] = assertion.split('.');
+  if (!payload || !signature) return { status: 'missing' };
+  const expected = await hmac(secret, payload);
+  if (signature !== expected) return { status: 'missing' };
+  const parsed = JSON.parse(new TextDecoder().decode(b64Decode(payload))) as Record<string, unknown>;
+  const accountId = stringField(parsed, 'account_id').trim();
+  const method = stringField(parsed, 'auth_method').trim().toLowerCase();
+  const expiresAt = Date.parse(stringField(parsed, 'expires_at'));
+  if (!accountId || !method || !Number.isFinite(expiresAt) || nowMs >= expiresAt) return { status: 'missing' };
   if (REJECTED_AUTH_METHODS.has(method) || !ALLOWED_AUTH_METHOD_SET.has(method)) return { status: 'weak', method };
   return { status: 'allowed', accountId, method: method as StrongerAuthMethod };
+}
+
+async function verifyDevicePublicKeyProof(g: Grant, input: { clientId: string; deviceCode: string; proofPayload: string; proof: string }): Promise<boolean> {
+  try {
+    const expectedPayload = expectedDeviceProofPayload({ clientId: input.clientId, deviceCode: input.deviceCode, devicePublicKeyThumbprint: g.devicePublicKeyThumbprint });
+    if (input.proofPayload !== expectedPayload || !input.proof) return false;
+    const key = await crypto.subtle.importKey('jwk', JSON.parse(g.devicePublicKeyJwk), { name: 'Ed25519' }, false, ['verify']);
+    return await crypto.subtle.verify({ name: 'Ed25519' }, key, b64Decode(input.proof), new TextEncoder().encode(input.proofPayload));
+  } catch {
+    return false;
+  }
 }
 
 function approvedJson(g: Grant): Record<string, unknown> {
@@ -99,7 +125,7 @@ function approvedJson(g: Grant): Record<string, unknown> {
   };
 }
 
-export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: string; now?: () => number }) {
+export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: string; now?: () => number; approvalAssertionSecret?: string }) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
   return async (request: Request): Promise<Response> => {
@@ -139,7 +165,7 @@ export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: s
         const g = await input.store.byUserCode(code);
         if (!g) return json({ error: 'device_code_not_found' }, { status: 404 });
         if (now() >= g.expiresAt) { await input.store.del(g.hash); return json({ error: 'expired_token' }, { status: 410 }); }
-        const auth = approvalAuth(request);
+        const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
         g.status = 'approved';
@@ -154,9 +180,14 @@ export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: s
         if (request.method !== 'POST') return methodNotAllowed('POST');
         const p = await params(request);
         if (p.get('grant_type') !== GRANT_TYPE) return json({ error: 'unsupported_grant_type' }, { status: 400 });
-        const g = await input.store.byHash(await hash(p.get('device_code') ?? ''));
+        const deviceCode = p.get('device_code') ?? '';
+        const g = await input.store.byHash(await hash(deviceCode));
         if (!g) return json({ error: 'access_denied' }, { status: 400 });
         if (now() >= g.expiresAt) { await input.store.del(g.hash); return json({ error: 'expired_token' }, { status: 400 }); }
+        const clientId = p.get('client_id') ?? '';
+        const proofPayload = p.get(DEVICE_PROOF_PAYLOAD_KEY) ?? '';
+        const proof = p.get(DEVICE_PROOF_KEY) ?? '';
+        if (!await verifyDevicePublicKeyProof(g, { clientId, deviceCode, proofPayload, proof })) return json({ error: 'invalid_device_public_key_proof' }, { status: 400 });
         if (g.lastPoll && now() - g.lastPoll < g.interval * 1000) { g.interval += INTERVAL; g.lastPoll = now(); await input.store.put(g); return json({ error: 'slow_down', interval: g.interval }, { status: 400 }); }
         g.lastPoll = now(); await input.store.put(g);
         if (g.status !== 'approved') return json({ error: 'authorization_pending', interval: g.interval }, { status: 400 });
@@ -172,8 +203,8 @@ export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: s
 
 export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
-  constructor(state: StateLike, env: { OS_DEVICE_AUTH_ORIGIN?: string }) {
-    this.handler = createOsDeviceAuthorityHandler({ store: new DurableStore(state.storage), origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN });
+  constructor(state: StateLike, env: { OS_DEVICE_AUTH_ORIGIN?: string; OS_DEVICE_AUTH_ASSERTION_SECRET?: string }) {
+    this.handler = createOsDeviceAuthorityHandler({ store: new DurableStore(state.storage), origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN, approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET });
   }
   fetch(request: Request) { return this.handler(request); }
 }

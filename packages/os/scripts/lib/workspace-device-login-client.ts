@@ -1,4 +1,4 @@
-import { generateKeyPairSync } from 'node:crypto';
+import { createPrivateKey, generateKeyPairSync, sign as nodeSign } from 'node:crypto';
 
 import {
   CONSUELO_DEVICE_CODE_URL,
@@ -19,8 +19,14 @@ export type DeviceLoginFetch = (
   init?: RequestInit,
 ) => Promise<DeviceLoginFetchResponse>;
 
+export type WorkspaceDeviceKeyPair = {
+  algorithm: 'Ed25519';
+  publicKeyJwk: string;
+  signingKeyJwk: string;
+};
+
 export type DeviceCodeRequestResult =
-  | { status: 'started'; session: WorkspaceDeviceAuthorizationSession }
+  | { status: 'started'; session: WorkspaceDeviceAuthorizationSession; deviceKeyPair: WorkspaceDeviceKeyPair }
   | { status: 'unavailable'; message: string };
 
 export type DeviceAccessTokenPollResult =
@@ -33,7 +39,7 @@ export type RequestWorkspaceDeviceCodeInput = {
   workspaceName: string;
   workspaceSlug: string;
   workspaceHost: string;
-  devicePublicKeyJwk?: string;
+  deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
 };
@@ -42,6 +48,8 @@ export type PollWorkspaceDeviceAccessTokenInput = {
   clientId: string;
   deviceCode: string;
   intervalSeconds: number;
+  deviceKeyPair?: WorkspaceDeviceKeyPair;
+  devicePublicKeyThumbprint?: string;
   fetchImpl?: DeviceLoginFetch;
 };
 
@@ -93,9 +101,49 @@ function expiresAtFromNow(now: string | undefined, expiresInSeconds: number): st
   return new Date(safeBaseMs + expiresInSeconds * 1000).toISOString();
 }
 
-function generateDevicePublicKeyJwk(): string {
-  const { publicKey } = generateKeyPairSync('ed25519');
-  return JSON.stringify(publicKey.export({ format: 'jwk' }));
+function b64(bytes: Uint8Array): string {
+  return Buffer.from(bytes).toString('base64url');
+}
+
+async function sha256(value: string): Promise<string> {
+  try {
+    return b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))));
+  } catch {
+    throw new Error('device key digest failed');
+  }
+}
+
+export async function devicePublicKeyThumbprint(publicKeyJwk: string): Promise<string> {
+  try {
+    return `dpk_${(await sha256(publicKeyJwk)).slice(0, 32)}`;
+  } catch {
+    throw new Error('device key thumbprint failed');
+  }
+}
+
+export function generateWorkspaceDeviceKeyPair(): WorkspaceDeviceKeyPair {
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  return {
+    algorithm: DEVICE_KEY_ALGORITHM,
+    publicKeyJwk: JSON.stringify(publicKey.export({ format: 'jwk' })),
+    signingKeyJwk: JSON.stringify(privateKey.export({ format: 'jwk' })),
+  };
+}
+
+export function devicePublicKeyProofPayload(input: {
+  clientId: string;
+  deviceCode: string;
+  devicePublicKeyThumbprint: string;
+}): string {
+  return `${input.clientId}.${input.deviceCode}.${input.devicePublicKeyThumbprint}`;
+}
+
+export function createDevicePublicKeyProof(input: {
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+  payload: string;
+}): string {
+  const signingKey = createPrivateKey({ key: JSON.parse(input.deviceKeyPair.signingKeyJwk), format: 'jwk' });
+  return b64(nodeSign(null, Buffer.from(input.payload), signingKey));
 }
 
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
@@ -112,14 +160,15 @@ async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestI
 export async function requestWorkspaceDeviceCode(
   input: RequestWorkspaceDeviceCodeInput,
 ): Promise<DeviceCodeRequestResult> {
+  const deviceKeyPair = input.deviceKeyPair ?? generateWorkspaceDeviceKeyPair();
   const body = new URLSearchParams({
     client_id: input.clientId,
     scope: input.scope.join(' '),
     workspace_name: input.workspaceName,
     workspace_slug: input.workspaceSlug,
     workspace_host: input.workspaceHost,
-    device_public_key_jwk: input.devicePublicKeyJwk ?? generateDevicePublicKeyJwk(),
-    device_key_algorithm: DEVICE_KEY_ALGORITHM,
+    device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+    device_key_algorithm: deviceKeyPair.algorithm,
   });
 
   try {
@@ -150,6 +199,7 @@ export async function requestWorkspaceDeviceCode(
 
     return {
       status: 'started',
+      deviceKeyPair,
       session: {
         deviceCode,
         userCode,
@@ -172,6 +222,20 @@ export async function pollWorkspaceDeviceAccessToken(
     device_code: input.deviceCode,
     grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
   });
+
+  if (input.deviceKeyPair) {
+    const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
+    const proofPayload = devicePublicKeyProofPayload({
+      clientId: input.clientId,
+      deviceCode: input.deviceCode,
+      devicePublicKeyThumbprint: thumbprint,
+    });
+    body.set('device_public_key_proof_payload', proofPayload);
+    body.set('device_public_key_proof', createDevicePublicKeyProof({
+      deviceKeyPair: input.deviceKeyPair,
+      payload: proofPayload,
+    }));
+  }
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
