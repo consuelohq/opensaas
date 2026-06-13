@@ -13,26 +13,37 @@ const daemonGenerator = readFileSync(
 );
 
 describe('Consuelo OS hosted onboarding flow', () => {
-  test('skills and artifacts are real prompts, not banner-only steps', () => {
+  test('skills are a real prompt with explicit multiselect instructions', () => {
     expect(install).toContain('selectedSkills');
-    expect(install).toContain("message: 'select skills to enable'");
-    expect(install).toContain('artifactMode');
-    expect(install).toContain("message: 'choose artifact storage'");
+    expect(install).toContain("message: 'select skills to enable — Use Space to select skills, press Enter to continue'");
     expect(install).toContain('skills, artifacts, agents, and health');
   });
 
-  test('workspace identity is a real first-user prompt before local setup', () => {
-    expect(install).toContain('workspaceHost');
-    expect(install).toContain('workspaceSlug');
-    expect(install).toContain("message: 'Consuelo workspace URL'");
-    expect(install).toContain("message: 'workspace short name'");
-    expect(install).toContain('createManualWorkspaceBootstrap');
-    expect(install).toContain('workspace URL is required');
+  test('local artifact storage is automatic after local mode is selected', () => {
+    expect(install).toContain("artifactMode: 'local'");
+    expect(install).toContain('artifactMode: options.artifactMode');
+    expect(install).not.toContain("message: 'choose artifact storage'");
+    expect(install).not.toContain('local artifacts (save generated files under OS home)');
+  });
+
+  test('workspace identity asks for a name and derives slug plus host internally', () => {
+    expect(install).toContain('workspaceName');
+    expect(install).toContain('--workspace-name');
+    expect(install).toContain("message: 'enter workspace name'");
+    expect(install).toContain('workspaceHostFromSlug');
+    expect(install).toContain('consuelohq.com');
+    expect(install).toContain('workspace name is required');
+    expect(install).not.toContain("message: 'Consuelo workspace URL'");
+    expect(install).not.toContain("message: 'workspace short name'");
+    expect(install).not.toContain('workspace URL is required');
+    expect(install).not.toContain('internal.consuelohq.com');
+  });
+
+  test('normal installer does not expose fake activation choices', () => {
     expect(install).not.toContain('workspaceActivation');
     expect(install).not.toContain('startWorkspaceDeviceAuthorization');
     expect(install).not.toContain('device-authorization');
     expect(install).not.toContain('app.consuelohq.com/os/activate');
-    expect(install).not.toContain('internal.consuelohq.com');
   });
 
   test('local and cloud mode labels are plain choices', () => {
