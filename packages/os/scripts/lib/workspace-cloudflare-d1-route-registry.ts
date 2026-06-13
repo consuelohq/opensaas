@@ -9,6 +9,15 @@ export type WorkspaceRouteD1RouteTarget =
       connectorId: string;
       connectorStatus: 'connected' | 'disconnected';
       tunnelOriginUrl: string;
+    }
+  | {
+      kind: 'site-snapshot';
+      siteId: string;
+      versionId: string;
+      manifestKey: string;
+      htmlKey?: string;
+      contentType?: string;
+      cachePolicy: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
     };
 
 export type WorkspaceRouteD1Route = {
