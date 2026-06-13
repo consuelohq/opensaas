@@ -44,6 +44,7 @@ type InstallOptions = {
   skipDaemons: boolean;
   home?: string;
   mode?: OsMode;
+  workspaceName?: string;
   workspaceHost?: string;
   workspaceSlug?: string;
   artifactMode: ArtifactMode;
@@ -62,6 +63,8 @@ function writeStdout(value: string): void {
   process.stdout.write(value);
 }
 
+const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
+
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();
   const withProtocol = raw.includes('://') ? raw : `https://${raw}`;
@@ -69,35 +72,32 @@ function normalizeWorkspaceHost(value: string): string {
   const hostname = url.hostname.toLowerCase();
 
   if (hostname.length === 0 || !hostname.includes('.')) {
-    throw new Error('workspace URL must include a valid hostname');
+    throw new Error('workspace host must include a valid hostname');
   }
 
   return hostname;
 }
 
-function slugFromWorkspaceHost(workspaceHost: string): string {
-  const [firstLabel] = workspaceHost.split('.');
-  const slug = firstLabel
+function normalizeWorkspaceName(value: string): string {
+  const workspaceName = value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-  return slug || 'workspace';
+  if (workspaceName.length === 0) {
+    throw new Error('workspace name is required');
+  }
+
+  return workspaceName;
+}
+
+function workspaceHostFromSlug(workspaceSlug: string): string {
+  return `${workspaceSlug}.${WORKSPACE_BASE_DOMAIN}`;
 }
 
 function normalizeWorkspaceSlug(value: string): string {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-
-  if (slug.length === 0) {
-    throw new Error('workspace short name is required');
-  }
-
-  return slug;
+  return normalizeWorkspaceName(value);
 }
 
 function createManualWorkspaceBootstrap(input: {
@@ -166,11 +166,18 @@ function parseArgs(argv: string[]): InstallOptions {
       if (mode !== 'local' && mode !== 'cloud')
         throw new Error('--mode must be local or cloud');
       options.mode = mode;
+    } else if (arg === '--workspace-name') {
+      const workspaceName = normalizeWorkspaceName(readValue('--workspace-name', index));
+      index += 1;
+      options.workspaceName = workspaceName;
+      options.workspaceSlug = workspaceName;
+      options.workspaceHost = workspaceHostFromSlug(workspaceName);
     } else if (arg === '--workspace-url') {
       options.workspaceHost = normalizeWorkspaceHost(readValue('--workspace-url', index));
       index += 1;
     } else if (arg === '--workspace-slug') {
       options.workspaceSlug = normalizeWorkspaceSlug(readValue('--workspace-slug', index));
+      options.workspaceName = options.workspaceSlug;
       index += 1;
     } else if (arg === '--connect-agent') {
       const agent = readValue('--connect-agent', index) as AgentName;
@@ -194,8 +201,7 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --dry-run             print planned writes without writing',
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
-          '  --workspace-url <url> Consuelo workspace URL',
-          '  --workspace-slug <id> short workspace name',
+          '  --workspace-name <name> workspace name',
           '  --connect-agent <id>  connect codex, claude, opencode, or factory',
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
@@ -298,38 +304,23 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       process.exit(0);
     }
 
-    const workspaceHostInput = await text({
+    const workspaceNameInput = await text({
       ...clackIo,
-      message: 'Consuelo workspace URL',
-      initialValue: options.workspaceHost ?? '',
+      message: 'enter workspace name',
+      initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
       validate: (value) => {
-        if (value.trim().length === 0) return 'workspace URL is required';
         try {
-          normalizeWorkspaceHost(value);
+          normalizeWorkspaceName(value);
           return undefined;
         } catch (error: unknown) {
           return error instanceof Error ? error.message : String(error);
         }
       },
     });
-    if (isCancel(workspaceHostInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceHost = normalizeWorkspaceHost(workspaceHostInput);
-
-    const workspaceSlugInput = await text({
-      ...clackIo,
-      message: 'workspace short name',
-      initialValue: options.workspaceSlug ?? slugFromWorkspaceHost(workspaceHost),
-      validate: (value) => {
-        try {
-          normalizeWorkspaceSlug(value);
-          return undefined;
-        } catch (error: unknown) {
-          return error instanceof Error ? error.message : String(error);
-        }
-      },
-    });
-    if (isCancel(workspaceSlugInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceSlug = normalizeWorkspaceSlug(workspaceSlugInput);
+    if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
+    const workspaceName = normalizeWorkspaceName(workspaceNameInput);
+    const workspaceSlug = workspaceName;
+    const workspaceHost = workspaceHostFromSlug(workspaceSlug);
 
     const home = await text({
       ...clackIo,
@@ -342,7 +333,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
       ...clackIo,
-      message: 'select skills to enable',
+      message: 'select skills to enable — Use Space to select skills, press Enter to continue',
       options: skillPrompt.options,
       initialValues: skillPrompt.initialValues,
       cursorAt: skillPrompt.cursorAt,
@@ -352,13 +343,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
 
-    const artifactMode = await select({
-      ...clackIo,
-      message: 'choose artifact storage',
-      initialValue: options.artifactMode,
-      options: [{ value: 'local' as const, label: 'local artifacts', hint: 'save generated files under OS home' }],
-    });
-    if (isCancel(artifactMode)) { cancel('setup cancelled.'); process.exit(0); }
+    const artifactMode = options.artifactMode;
 
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
@@ -383,6 +368,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       ...options,
       mode,
       home,
+      workspaceName,
       workspaceHost,
       workspaceSlug,
       selectedSkills: selectedSkills as SkillName[],
@@ -427,6 +413,7 @@ async function main(): Promise<void> {
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
+        workspaceName: options.workspaceName,
         workspaceHost: options.workspaceHost,
         workspaceSlug: options.workspaceSlug,
         connectAgents: options.connectAgents,
@@ -478,4 +465,3 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
-

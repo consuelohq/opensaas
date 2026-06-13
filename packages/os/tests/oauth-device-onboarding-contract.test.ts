@@ -32,10 +32,13 @@ type WorkspaceDeviceAuthorizationPollResult =
   | { status: 'denied' | 'expired'; errorCode: string };
 
 type WorkspaceDeviceAuthorizationContract = {
+  CONSUELO_DEVICE_VERIFICATION_URL: string;
+  CONSUELO_DEVICE_CODE_URL: string;
+  CONSUELO_OAUTH_ACCESS_TOKEN_URL: string;
   startWorkspaceDeviceAuthorization: (input: {
     clientId: string;
     scope: string[];
-    verificationBaseUrl: string;
+    verificationBaseUrl?: string;
     now?: string;
   }) => WorkspaceDeviceAuthorizationSession;
   pollWorkspaceDeviceAuthorization: (input: {
@@ -63,11 +66,14 @@ async function loadWorkspaceDeviceAuthorizationContract(): Promise<WorkspaceDevi
     modulePath
   )) as Partial<WorkspaceDeviceAuthorizationContract>;
   const requiredExports: Array<keyof WorkspaceDeviceAuthorizationContract> = [
+    'CONSUELO_DEVICE_VERIFICATION_URL',
+    'CONSUELO_DEVICE_CODE_URL',
+    'CONSUELO_OAUTH_ACCESS_TOKEN_URL',
     'startWorkspaceDeviceAuthorization',
     'pollWorkspaceDeviceAuthorization',
   ];
   const missingExports = requiredExports.filter(
-    (name) => typeof module[name] !== 'function',
+    (name) => module[name] === undefined,
   );
 
   if (missingExports.length > 0) {
@@ -80,20 +86,30 @@ async function loadWorkspaceDeviceAuthorizationContract(): Promise<WorkspaceDevi
 }
 
 contractDescribe('workspace OAuth device authorization contract', () => {
+  it('should expose GitHub-style OAuth device endpoint paths on consuelohq.com', async () => {
+    const contract = await loadWorkspaceDeviceAuthorizationContract();
+
+    expect(contract.CONSUELO_DEVICE_VERIFICATION_URL).toBe('https://consuelohq.com/login/device');
+    expect(contract.CONSUELO_DEVICE_CODE_URL).toBe('https://consuelohq.com/login/device/code');
+    expect(contract.CONSUELO_OAUTH_ACCESS_TOKEN_URL).toBe('https://consuelohq.com/login/oauth/access_token');
+    expect(JSON.stringify(contract)).not.toContain('app.consuelohq.com');
+  });
+
   it('should start onboarding with a device code and no OS or tunnel credentials before approval', async () => {
-    const { startWorkspaceDeviceAuthorization } =
-      await loadWorkspaceDeviceAuthorizationContract();
+    const {
+      CONSUELO_DEVICE_VERIFICATION_URL,
+      startWorkspaceDeviceAuthorization,
+    } = await loadWorkspaceDeviceAuthorizationContract();
 
     const session = startWorkspaceDeviceAuthorization({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read', 'os:connector:register'],
-      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
       now: '2026-06-11T00:00:00.000Z',
     });
 
     expect(session.deviceCode).toMatch(/^dev_[a-zA-Z0-9_-]{24,}$/);
     expect(session.userCode).toMatch(/^[A-Z0-9-]{8,}$/);
-    expect(session.verificationUri).toBe('https://app.consuelohq.com/os/activate');
+    expect(session.verificationUri).toBe(CONSUELO_DEVICE_VERIFICATION_URL);
     expect(session.verificationUriComplete).toContain(session.userCode.replace(/-/g, ''));
     expect(session.intervalSeconds).toBeGreaterThanOrEqual(5);
     expect(new Date(session.expiresAt).getTime()).toBeGreaterThan(
@@ -108,7 +124,6 @@ contractDescribe('workspace OAuth device authorization contract', () => {
     const session = startWorkspaceDeviceAuthorization({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read', 'os:connector:register'],
-      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
       now: '2026-06-11T00:00:00.000Z',
     });
 
@@ -137,7 +152,6 @@ contractDescribe('workspace OAuth device authorization contract', () => {
     const session = startWorkspaceDeviceAuthorization({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read', 'os:connector:register'],
-      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
       now: '2026-06-11T00:00:00.000Z',
     });
 
@@ -174,7 +188,6 @@ contractDescribe('workspace OAuth device authorization contract', () => {
     const session = startWorkspaceDeviceAuthorization({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read', 'os:connector:register'],
-      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
       now: '2026-06-11T00:00:00.000Z',
     });
 
@@ -187,7 +200,6 @@ contractDescribe('workspace OAuth device authorization contract', () => {
     const deniedSession = startWorkspaceDeviceAuthorization({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read', 'os:connector:register'],
-      verificationBaseUrl: 'https://app.consuelohq.com/os/activate',
       now: '2026-06-11T00:00:00.000Z',
     });
 

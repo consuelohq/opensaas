@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".pr1-write-probe",
+    ".task/os/add-script-parity-audit-tests/workpad.md",
+    "packages/os/scripts/lib/task-session.js",
+    "packages/os/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-06-13T05:25:43.170Z"
+}
