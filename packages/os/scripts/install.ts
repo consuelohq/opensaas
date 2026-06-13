@@ -31,6 +31,14 @@ import {
   type OsMode,
   type WorkspaceBootstrap,
 } from './lib/install-state';
+import {
+  CONSUELO_DEVICE_VERIFICATION_URL,
+  startWorkspaceDeviceAuthorization,
+} from './lib/workspace-device-authorization';
+import {
+  pollWorkspaceDeviceAccessToken,
+  requestWorkspaceDeviceCode,
+} from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
 
@@ -47,6 +55,9 @@ type InstallOptions = {
   workspaceName?: string;
   workspaceHost?: string;
   workspaceSlug?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  deviceLoginStatus?: 'approved' | 'fallback' | 'skipped';
+  deviceLoginUrl?: string;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
@@ -64,6 +75,9 @@ function writeStdout(value: string): void {
 }
 
 const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
+const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
+const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 45_000;
 
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();
@@ -118,6 +132,7 @@ function createManualWorkspaceBootstrap(input: {
 }
 
 function maybeCreateWorkspaceBootstrap(options: InstallOptions): WorkspaceBootstrap | undefined {
+  if (options.workspaceBootstrap) return options.workspaceBootstrap;
   if (!options.workspaceHost || !options.workspaceSlug) return undefined;
 
   return createManualWorkspaceBootstrap({
@@ -275,6 +290,119 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
   return `saved to ${result.home}`;
 }
 
+
+type DeviceLoginAttemptResult = {
+  status: 'approved' | 'fallback' | 'skipped';
+  verificationUrl?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+};
+
+function workspaceBootstrapFromApprovedDeviceGrant(input: {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  connectorId: string;
+  connectorBootstrapToken: string;
+}): WorkspaceBootstrap {
+  return {
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    connectorId: input.connectorId,
+    connectorTransport: 'websocket-relay',
+    connectorBootstrapToken: input.connectorBootstrapToken,
+  };
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function openDeviceVerificationUrl(url: string): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+
+  try {
+    const proc = Bun.spawn(['open', url], {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    });
+    const exitCode = await proc.exited;
+    return exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function attemptWorkspaceDeviceLogin(input: {
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  dryRun: boolean;
+}): Promise<DeviceLoginAttemptResult> {
+  if (input.dryRun) return { status: 'skipped' };
+
+  try {
+    const liveDeviceCode = await requestWorkspaceDeviceCode({
+      clientId: DEVICE_LOGIN_CLIENT_ID,
+      scope: DEVICE_LOGIN_SCOPE,
+      workspaceName: input.workspaceName,
+      workspaceSlug: input.workspaceSlug,
+      workspaceHost: input.workspaceHost,
+    });
+    const fallbackSession = liveDeviceCode.status === 'started'
+      ? undefined
+      : startWorkspaceDeviceAuthorization({
+          clientId: DEVICE_LOGIN_CLIENT_ID,
+          scope: DEVICE_LOGIN_SCOPE,
+          verificationBaseUrl: CONSUELO_DEVICE_VERIFICATION_URL,
+        });
+    const session = liveDeviceCode.status === 'started' ? liveDeviceCode.session : fallbackSession;
+
+    if (!session) return { status: 'fallback' };
+
+    info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
+    await openDeviceVerificationUrl(session.verificationUriComplete);
+
+    if (liveDeviceCode.status !== 'started') {
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+    }
+
+    const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
+    let intervalSeconds = liveDeviceCode.session.intervalSeconds;
+
+    while (Date.now() < deadlineMs) {
+      await sleep(Math.min(intervalSeconds, 5) * 1000);
+      const pollResult = await pollWorkspaceDeviceAccessToken({
+        clientId: DEVICE_LOGIN_CLIENT_ID,
+        deviceCode: liveDeviceCode.session.deviceCode,
+        intervalSeconds,
+      });
+
+      if (pollResult.status === 'approved') {
+        info('Consuelo OS authorization approved.');
+        return {
+          status: 'approved',
+          verificationUrl: session.verificationUriComplete,
+          workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(pollResult),
+        };
+      }
+
+      if (pollResult.status === 'pending' || pollResult.status === 'slow_down') {
+        intervalSeconds = pollResult.intervalSeconds;
+        continue;
+      }
+
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+    }
+
+    info('Device login was not approved before timeout; continuing with local workspace bootstrap.');
+    return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+  } catch {
+    info('Device login unavailable; continuing with local workspace bootstrap.');
+    return { status: 'fallback' };
+  }
+}
+
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
@@ -321,6 +449,12 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const workspaceName = normalizeWorkspaceName(workspaceNameInput);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    const deviceLogin = await attemptWorkspaceDeviceLogin({
+      workspaceName,
+      workspaceSlug,
+      workspaceHost,
+      dryRun: options.dryRun,
+    });
 
     const home = await text({
       ...clackIo,
@@ -371,6 +505,9 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       workspaceName,
       workspaceHost,
       workspaceSlug,
+      workspaceBootstrap: deviceLogin.workspaceBootstrap,
+      deviceLoginStatus: deviceLogin.status,
+      deviceLoginUrl: deviceLogin.verificationUrl,
       selectedSkills: selectedSkills as SkillName[],
       artifactMode,
       connectAgents,
@@ -416,6 +553,8 @@ async function main(): Promise<void> {
         workspaceName: options.workspaceName,
         workspaceHost: options.workspaceHost,
         workspaceSlug: options.workspaceSlug,
+        deviceLoginStatus: options.deviceLoginStatus,
+        deviceLoginUrl: options.deviceLoginUrl,
         connectAgents: options.connectAgents,
         installDaemons: options.installDaemons,
       },
