@@ -1,0 +1,88 @@
+---
+import LaunchFooter from '../../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../../components/launch/LaunchHeader.astro';
+import LaunchLayout from '../../layouts/LaunchLayout.astro';
+
+const userCode = Astro.url.searchParams.get('user_code') ?? '';
+const formattedCode = userCode.replace(/(.{4})(?=.)/g, '$1-');
+const description = 'Authorize Consuelo OS on this device.';
+---
+
+<LaunchLayout title="Authorize Consuelo OS" description={description}>
+  <LaunchHeader />
+
+  <section class="launch-section device-auth">
+    <div class="launch-content device-auth__content">
+      <p class="device-auth__eyebrow launch-mono">Consuelo OS</p>
+      <h1 class="device-auth__title launch-mono">Authorize this device</h1>
+      <p class="launch-copy device-auth__copy">
+        Consuelo OS is asking to connect this Mac to your workspace. Confirm the code below matches the code shown in your terminal.
+      </p>
+
+      <div class="device-auth__card">
+        <span class="device-auth__label launch-mono">Device code</span>
+        <strong class="device-auth__code launch-mono">{formattedCode || 'Waiting for code'}</strong>
+      </div>
+
+      <p class="launch-copy device-auth__copy">
+        Approval is not enabled on this public page yet. Keep the terminal open; the installer will continue with local workspace setup when live authorization is unavailable.
+      </p>
+    </div>
+  </section>
+
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .device-auth {
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
+  }
+
+  .device-auth__content {
+    max-width: 720px;
+    text-align: center;
+  }
+
+  .device-auth__eyebrow {
+    color: var(--color-accent, #7c3aed);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .device-auth__title {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 0.9;
+    margin: 1rem 0;
+  }
+
+  .device-auth__copy {
+    max-width: 58ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .device-auth__card {
+    margin: 2rem auto;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+  }
+
+  .device-auth__label {
+    display: block;
+    margin-bottom: 0.75rem;
+    opacity: 0.72;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .device-auth__code {
+    display: block;
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    letter-spacing: 0.08em;
+  }
+</style>
