@@ -745,6 +745,14 @@ describe('renderReviewPage', () => {
     expect(script).toContain("setDrawer(document.body.dataset.reviewDrawer !== 'open')");
     expect(script).not.toContain('drawerContent.scrollTo');
     expect(script).toContain('scrollToFile(state.selected);');
+    expect(html).not.toContain('scroll-behavior:smooth');
+    expect(script).not.toContain("behavior: 'smooth'");
+    expect(script).toContain('preserveDiffViewport');
+    expect(script).toContain('preserveDiffViewport(() => setDrawer');
+    expect(script).toContain('preserveDiffViewport(() => setAiSidebar');
+    expect(script).toContain('preserveDiffViewport(() => setFilePaneDrawer');
+    expect(script).toContain('captureDiffViewport');
+    expect(script).toContain('restoreDiffViewport');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
     expect(html).toContain('id="commit-popover"');
@@ -1279,3 +1287,4 @@ describe('createWorker', () => {
     expect(second.status).toBe(304);
   });
 });
+
