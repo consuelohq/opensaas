@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-install-edge-site-snapshot-publish",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1032,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1032",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1032",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1032/wire-install-edge-site-snapshot-publish",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1032",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1032/wire-install-edge-site-snapshot-publish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-install-edge-site-snapshot-publish",
+  "taskSession": "tsk_e81bad160a29",
+  "tmuxSession": "opensaas-os-wire-install-edge-site-snapshot-publish-e81bad16",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-install-edge-site-snapshot-publish/.task/os/wire-install-edge-site-snapshot-publish/session.json",
+  "createdAt": "2026-06-14T03:52:46.388Z"
+}

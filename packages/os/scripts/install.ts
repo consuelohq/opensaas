@@ -35,9 +35,12 @@ import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
 } from './lib/workspace-device-login-client';
+import {
+  publishWorkspaceEdgeSnapshot,
+  type WorkspaceEdgePublishResult,
+} from './lib/install-edge-site-publisher';
 type ArtifactMode = 'local';
 type SkillName = string;
-
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -58,6 +61,13 @@ type InstallOptions = {
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
+type InstallEdgePublishPayload =
+  | WorkspaceEdgePublishResult
+  | {
+      status: 'planned';
+      workspaceHost?: string;
+      message: string;
+    };
 
 const AGENT_NAMES = new Set<AgentName>([
   'codex',
@@ -532,8 +542,31 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
+    let edgePublish: InstallEdgePublishPayload;
+    if (options.dryRun) {
+      edgePublish = {
+        status: 'planned',
+        workspaceHost: workspaceBootstrap?.workspaceHost,
+        message: 'workspace edge site snapshot publish planned',
+      };
+    } else {
+      const approvedWorkspaceBootstrap = options.workspaceBootstrap;
+      if (!approvedWorkspaceBootstrap) {
+        throw new Error(
+          'workspace edge publish requires approved workspace bootstrap from device login',
+        );
+      }
+      info('publishing workspace site to edge...');
+      edgePublish = await publishWorkspaceEdgeSnapshot({
+        home: result.home,
+        workspaceId: approvedWorkspaceBootstrap.workspaceId,
+        workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
+        workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
+      });
+    }
     const payload = {
       ...result,
+      edgePublish,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
