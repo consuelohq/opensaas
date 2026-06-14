@@ -820,7 +820,7 @@ def _check_command_guardrails(command: str) -> str | None:
 def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
     if not isinstance(tool_input, dict):
         return None
-    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash', 'mac.write'}
+    mutating_path_tools = {'fs.write', 'fs.trash', 'mac.write'}
     if tool not in mutating_path_tools:
         return None
     for key in ('path', 'target', 'destination', 'dest', 'to'):

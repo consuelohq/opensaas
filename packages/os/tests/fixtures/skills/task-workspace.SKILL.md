@@ -616,11 +616,8 @@ await workspace.call({
         from: 1,
         to: 40
       });
-      const patch = await workspace.fs.patch({
-        path: "packages/workspace/SCRIPTS.md",
-        from: 12,
-        to: 18,
-        contentFile: "/tmp/replacement.md"
+      const patch = await workspace.fs.apply_patch({
+        patchFile: "/tmp/change.patch"
       });
       const after = await workspace.fs.read({
         path: "packages/workspace/SCRIPTS.md",
@@ -733,7 +730,7 @@ Tool preference order:
 
 1. `context.search`, `explore`, `decideNext`, and `confidenceScore` for discovery and prior context.
 2. `code.run` for semantic workflows that compose multiple typed tools.
-3. `fs.read`, `fs.search`, `fs.list`, `fs.patch`, `fs.write`, and `fs.trash` for exact file work.
+3. `fs.read`, `fs.search`, `fs.list`, `fs.apply_patch`, `fs.write`, and `fs.trash` for exact file work.
 4. `batch` for independent read-only calls or fixed mechanical checklists.
 5. `git.diff` for structured diff inspection after edits.
 6. `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, and `task.merge` for known workflows.

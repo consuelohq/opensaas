@@ -91,7 +91,7 @@ function exampleEnvelope(entry: ToolManifestEntry, ok: boolean): string {
 }
 
 function markdownCell(value: string): string {
-  return value.replace(/\|/g, '\\|').replace(/\n/g, '<br />');
+  return value.replace(/\|/g, '&#124;').replace(/\n/g, '<br />');
 }
 
 function capabilitySummary(entry: ToolManifestEntry): string {

@@ -23,9 +23,9 @@ Preference order:
 
 Use direct typed workspace tools for single known operations and durable transitions.
 Use context.search, explore, decideNext, and confidenceScore for discovery and prior context.
-Use no-session code.run for multi-step read/investigation before a task exists.
-Use task-scoped code.run for semantic workflows that compose multiple typed tools inside a task.
-Use exact task-scoped file tools for file work: fs.read, fs.search, fs.list, fs.patch, fs.write, and fs.trash.
+Use no-session code.run for programmable read/investigation before a task exists.
+Use task-scoped code.run for small programs over typed workspace APIs inside a task.
+Use exact task-scoped file tools for simple file work: fs.read, fs.search, fs.list, fs.apply_patch, fs.write, and fs.trash.
 Use batch for fixed independent checklists where later steps do not depend on earlier results.
 Use git.diff for structured diff inspection after edits.
 Use lifecycle tools directly: status, audit, review.run, verify, task.push, task.pr, task.merge, and task.finish.
@@ -42,24 +42,26 @@ Use review.run for workspace review.
 Use verify for the publish safety gate.
 Use confirm for validation evidence when it adds proof.
 Use dev for service-backed local infrastructure and behavior validation.
-code.run is a semantic composer over the existing typed workspace tools. It is not a separate execution environment and not a guardrail bypass.
+code.run is code mode over workspace APIs. It is not just tool chaining, not a separate execution environment, and not a guardrail bypass.
 
-Do not wrap a single obvious typed call in code.run. Use direct os.call for one known operation unless code.run is adding summarization, branching, or composition value.
+Do not wrap a single obvious typed call in code.run. Use direct os.call for one known operation unless code.run is adding local computation, filtering, branching, retries, joins, summarization, or output reduction.
 
-Prefer code.run when the work is workspace orchestration:
+Prefer code.run when the work needs programmable workspace API control flow:
 
-inspect traces/logs/status and summarize the result
-search → read → decide
-read → patch/write → reread
-inspect manifest/config/docs and return a compact answer
-coordinate several typed workspace tools in one semantic pass
-avoid ad hoc python -c, node -e, heredocs, or long shell strings for file inspection/transformation when typed workspace tools can do it
+inspect many traces/logs/status rows, filter locally, and return a compact result
+search -&gt; read only the relevant matches -&gt; decide
+read -&gt; patch/write -&gt; reread -&gt; validate invariants
+inspect manifest/config/docs, join facts, and return the mismatch
+run validation and return status plus the useful tail instead of full logs
+coordinate several dependent typed workspace calls in one semantic pass
+avoid ad hoc python -c, node -e, heredocs, or long shell strings when a code-mode program over typed workspace APIs can do it
 Use no-session code.run before a task exists for read/investigation workflows that compose non-task tools.
 
 Use task-scoped code.run after task.start when composing task-scoped tools. Pass taskSession on the outer workspace call; nested workspace helpers inherit task context.
 
-Do not drop task.call, but treat it as the last-mile command runner.
+Batch is not code.run. Use batch only for fixed independent fan-out/fan-in. Use code.run when later steps depend on earlier results or when intermediate output should stay inside code mode.
 
+Do not drop task.call, but treat it as the last-mile command runner.
 Use task.call when the command itself is the evidence:
 
 run focused tests

@@ -300,14 +300,6 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
-```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
-```
-
-Use `patch` for a precise line-range replacement after reading the target range. Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **apply_patch**
 ```bash
@@ -335,11 +327,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist

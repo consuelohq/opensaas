@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
 // fs.js — safe file operations for agents
-// wraps bat (read), rg (search), and provides stdin-based write/patch/apply-patch
-// usage: bun run fs -- <read|search|write|patch> [options]
+// wraps bat (read), rg (search), and provides stdin-based write/apply-patch
+// usage: bun run fs -- <read|search|write|apply-patch> [options]
 
 const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
@@ -76,20 +76,6 @@ function writeHelp() {
   out('  bun run fs -- write src/foo.ts --content "export const x = 1;" --mkdirs');
 }
 
-function patchHelp() {
-  out('usage: cat replacement.ts | bun run fs -- patch <path> --from N --to M');
-  out('');
-  out('replace a line range with stdin content. shows diff.');
-  out('');
-  out('options:');
-  out('  --from N       first line to replace (required)');
-  out('  --to M         last line to replace (required)');
-  out('  --stdin        read replacement from stdin (default)');
-  out('  --content <t>       inline replacement for single-line patches');
-  out('  --content-file <p>  read replacement from a file for multiline patches');
-  out('  --dry-run           show diff without applying');
-}
-
 
 function applyPatchHelp() {
   out('usage: bun run fs -- apply-patch [options]');
@@ -121,7 +107,6 @@ function mainHelp() {
   out('  search  search files (wraps rg)');
   out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
-  out('  patch   replace a line range from stdin');
   out('  apply-patch apply an anchored patch file');
   out('  http    make http requests (wraps xh)');
   out('  trash   safe delete (moves to trash, not rm)');
@@ -490,83 +475,11 @@ function cmdWrite(argv) {
   logToWorkpad(filePath, append ? 'append' : 'write');
 }
 
-// ── patch ──
-
-function readReplacementContent({ inlineContent, contentFile }) {
-  const content = readFilePayload({ inlineContent, contentFile });
-  if (content === null) return null;
-
-  if (inlineContent !== null) {
-    const newline = String.fromCharCode(10);
-
-    if (inlineContent.includes(newline)) {
-      err('error: multiline --content is unsafe; use --content-file for multiline patches');
-      return null;
-    }
-  }
-
-  return content;
-}
+// ── removed patch command ──
 
 function cmdPatch(argv) {
-  if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; }
-
-  const dryRun = argv.includes('--dry-run');
-  let from = null;
-  let to = null;
-  let filePath = null;
-  let inlineContent = null;
-  let contentFile = null;
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--from') { from = parseInt(argv[++i], 10); }
-    else if (a === '--to') { to = parseInt(argv[++i], 10); }
-    else if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--stdin') { /* skip */ }
-    else if (a === '--dry-run') { /* skip */ }
-    else if (!a.startsWith('--') && !filePath) { filePath = a; }
-  }
-
-  if (!filePath) { err('error: file path required'); patchHelp(); return; }
-  if (from === null || to === null) { err('error: --from and --to are required'); patchHelp(); return; }
-  if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < 1 || from > to) {
-    err('error: invalid line range; expected positive integers with --from <= --to');
-    return;
-  }
-
-  const fp = resolve(filePath);
-  if (!fs.existsSync(fp)) { err(`error: ${filePath} not found`); return; }
-
-  const replacement = readReplacementContent({ inlineContent, contentFile });
-  if (replacement === null) return;
-
-  const lines = fs.readFileSync(fp, 'utf8').split('\n');
-  if (from > lines.length || to > lines.length) {
-    err(`error: invalid line range; ${filePath} has only ${lines.length} lines`);
-    return;
-  }
-
-  const removed = lines.slice(from - 1, to);
-  const newLines = replacement.endsWith('\n') ? replacement.slice(0, -1).split('\n') : replacement.split('\n');
-
-  const result = [...lines.slice(0, from - 1), ...newLines, ...lines.slice(to)];
-
-  out(`── patch ${filePath}:${from}-${to} ──`);
-  out(`removing ${removed.length} lines, inserting ${newLines.length} lines`);
-  out('');
-  removed.forEach((l, i) => out(`- ${String(from + i).padStart(4)}: ${l}`));
-  out('');
-  newLines.forEach((l, i) => out(`+ ${String(from + i).padStart(4)}: ${l}`));
-
-  if (dryRun) { out('\n(dry run — no changes applied)'); return; }
-
-  fs.writeFileSync(fp, result.join('\n'));
-  out(`\npatched ${filePath}`);
-
-  logToWorkpad(filePath, `patch lines ${from}-${to}`);
+  err('error: fs.patch has been removed. Use bun run fs -- apply-patch --patch-file <file>, --patch-text <text>, or --stdin. Workspace tools should call fs.apply_patch.');
 }
-
 
 // ── apply-patch ──
 
@@ -758,61 +671,115 @@ function applyUpdateHunks(rawPath, originalContent, hunks) {
   return joinPatchFileContent(lines);
 }
 
+function displayPatchPath(target) {
+  const relative = path.relative(process.cwd(), target.resolved);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : target.rawPath;
+}
+
+function conflictForPatchPath(existing, incoming) {
+  return `conflicting patch operations for ${incoming.rawPath} and ${existing.path}`;
+}
+
 function applyPatchOperations(operations) {
   const plannedWrites = new Map();
-  const plannedDeletes = new Set();
+  const plannedDeletes = new Map();
   const touched = [];
 
-  function patchKey(target) {
-    return target.resolved;
+  function touch(target) {
+    touched.push(displayPatchPath(target));
   }
 
-  function plannedContent(rawPath, key) {
-    if (plannedWrites.has(key)) return plannedWrites.get(key).content;
-    const { resolved } = assertSafePatchPath(rawPath);
-    if (!fs.existsSync(resolved)) throw new Error(`patch file not found: ${rawPath}`);
-    if (!fs.statSync(resolved).isFile()) throw new Error(`patch target must be a file: ${rawPath}`);
-    return fs.readFileSync(resolved, 'utf8');
+  function plannedContent(target) {
+    const deletePlan = plannedDeletes.get(target.resolved);
+    if (deletePlan) throw new Error(conflictForPatchPath(deletePlan, target));
+    const writePlan = plannedWrites.get(target.resolved);
+    if (writePlan) return writePlan.content;
+    if (!fs.existsSync(target.resolved)) throw new Error(`patch file not found: ${target.rawPath}`);
+    if (!fs.statSync(target.resolved).isFile()) throw new Error(`patch target must be a file: ${target.rawPath}`);
+    return fs.readFileSync(target.resolved, 'utf8');
+  }
+
+  function planWrite(target, content) {
+    const deletePlan = plannedDeletes.get(target.resolved);
+    if (deletePlan) throw new Error(conflictForPatchPath(deletePlan, target));
+    plannedWrites.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved, content });
+    touch(target);
+  }
+
+  function planDelete(target) {
+    const writePlan = plannedWrites.get(target.resolved);
+    if (writePlan) throw new Error(conflictForPatchPath(writePlan, target));
+    if (!fs.existsSync(target.resolved)) throw new Error(`patch file not found: ${target.rawPath}`);
+    plannedDeletes.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved });
+    touch(target);
   }
 
   for (const operation of operations) {
     const target = assertSafePatchPath(operation.path);
-    const targetKey = patchKey(target);
     if (operation.type === 'add') {
-      if (fs.existsSync(target.resolved) || plannedWrites.has(targetKey)) throw new Error(`patch target already exists: ${operation.path}`);
-      plannedWrites.set(targetKey, { path: operation.path, content: joinPatchFileContent(operation.content) });
-      plannedDeletes.delete(targetKey);
-      touched.push(operation.path);
+      if (fs.existsSync(target.resolved) || plannedWrites.has(target.resolved)) throw new Error(`patch target already exists: ${operation.path}`);
+      if (plannedDeletes.has(target.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(target.resolved), target));
+      planWrite(target, joinPatchFileContent(operation.content));
       continue;
     }
 
     if (operation.type === 'delete') {
-      if (!fs.existsSync(target.resolved) && !plannedWrites.has(targetKey)) throw new Error(`patch file not found: ${operation.path}`);
-      plannedWrites.delete(targetKey);
-      plannedDeletes.add(targetKey);
-      touched.push(operation.path);
+      planDelete(target);
       continue;
     }
 
     if (operation.type === 'update') {
-      const updatedContent = applyUpdateHunks(operation.path, plannedContent(operation.path, targetKey), operation.hunks);
+      const updatedContent = applyUpdateHunks(operation.path, plannedContent(target), operation.hunks);
       if (operation.moveTo) {
         const moveTarget = assertSafePatchPath(operation.moveTo);
-        const moveKey = patchKey(moveTarget);
-        if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveKey)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
-        plannedDeletes.add(targetKey);
-        plannedWrites.delete(targetKey);
-        plannedWrites.set(moveKey, { path: operation.moveTo, content: updatedContent });
-        touched.push(operation.path, operation.moveTo);
+        if (target.resolved === moveTarget.resolved) throw new Error(`conflicting patch operations for ${operation.path} and ${operation.moveTo}`);
+        if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveTarget.resolved)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
+        if (plannedDeletes.has(moveTarget.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(moveTarget.resolved), moveTarget));
+        plannedWrites.delete(target.resolved);
+        plannedDeletes.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved });
+        plannedWrites.set(moveTarget.resolved, { path: displayPatchPath(moveTarget), rawPath: moveTarget.rawPath, resolved: moveTarget.resolved, content: updatedContent });
+        touch(target);
+        touch(moveTarget);
       } else {
-        plannedWrites.set(targetKey, { path: operation.path, content: updatedContent });
-        plannedDeletes.delete(targetKey);
-        touched.push(operation.path);
+        planWrite(target, updatedContent);
       }
     }
   }
 
   return { plannedWrites, plannedDeletes, touched: Array.from(new Set(touched)) };
+}
+
+function applyPlannedPatchMutations(plan) {
+  const stagedWrites = [];
+  try {
+    for (const writePlan of plan.plannedWrites.values()) {
+      const dir = path.dirname(writePlan.resolved);
+      if (fs.existsSync(dir) && !fs.statSync(dir).isDirectory()) throw new Error(`patch target parent is not a directory: ${writePlan.path}`);
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    let index = 0;
+    for (const writePlan of plan.plannedWrites.values()) {
+      const dir = path.dirname(writePlan.resolved);
+      const tempPath = path.join(dir, `.apply-patch-${process.pid}-${Date.now()}-${index++}.tmp`);
+      fs.writeFileSync(tempPath, writePlan.content);
+      stagedWrites.push({ ...writePlan, tempPath });
+    }
+
+    for (const writePlan of stagedWrites) {
+      fs.renameSync(writePlan.tempPath, writePlan.resolved);
+    }
+
+    for (const [resolved, deletePlan] of plan.plannedDeletes) {
+      if (plan.plannedWrites.has(resolved)) continue;
+      if (fs.existsSync(deletePlan.resolved)) fs.unlinkSync(deletePlan.resolved);
+    }
+  } catch (error) {
+    for (const writePlan of stagedWrites) {
+      if (fs.existsSync(writePlan.tempPath)) fs.unlinkSync(writePlan.tempPath);
+    }
+    throw error;
+  }
 }
 
 function cmdApplyPatch(argv) {
@@ -844,15 +811,7 @@ function cmdApplyPatch(argv) {
 
     if (dryRun) { out('\n(dry run — no changes applied)'); return; }
 
-    for (const [resolved, planned] of plan.plannedWrites) {
-      fs.mkdirSync(path.dirname(resolved), { recursive: true });
-      fs.writeFileSync(resolved, planned.content);
-    }
-
-    for (const resolved of plan.plannedDeletes) {
-      if (plan.plannedWrites.has(resolved)) continue;
-      if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
-    }
+    applyPlannedPatchMutations(plan);
 
     out('\npatch applied');
     plan.touched.forEach((filePath) => logToWorkpad(filePath, 'apply-patch'));

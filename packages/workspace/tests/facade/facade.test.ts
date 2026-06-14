@@ -302,14 +302,12 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+  it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
     const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
-    const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
-      writeFileSync(patchPayload, 'patched one\npatched two\n');
 
       const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
         cwd: tempRoot,
@@ -318,19 +316,14 @@ describe('typed facade executor', () => {
       expect(writeResult.status).toBe(0);
       expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
 
-      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+      const stalePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad'], {
         cwd: tempRoot,
         encoding: 'utf8',
       });
-      expect(inlinePatchResult.status).toBe(1);
-      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
-
-      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
-        cwd: tempRoot,
-        encoding: 'utf8',
-      });
-      expect(patchResult.status).toBe(0);
-      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+      expect(stalePatchResult.status).toBe(1);
+      expect(stalePatchResult.stderr).toContain('fs.patch has been removed');
+      expect(stalePatchResult.stderr).toContain('apply-patch');
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }

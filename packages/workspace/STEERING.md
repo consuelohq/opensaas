@@ -489,7 +489,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | `git checkout -- <file>`, `git restore <file>` | Typed `git.restorePaths` when available; otherwise ask or use smallest task-scoped fallback with exact paths | Restore can discard edits. Needs path-level intent. |
 | `git merge <branch>` | `stream.sync`, `task.pr`, `task.merge`, or future `stream.mergeIntoTask` | Stream/task merges need metadata handling, conflict reporting, and branch guarantees. |
 | `gh pr view`, `gh pr checks`, `gh api` through `task.call` or legacy `task.exec` | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree shell work. |
-| `cat > file <<EOF ... EOF` | `tmp` + `fs.write` with `contentFile`; `fs.patch` with `contentFile`; or `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
+| `cat > file <<EOF ... EOF` | `tmp` + `fs.write` with `contentFile` or `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
 | `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | temp script/input file + `task.call` argv; or `code.run` | Large inline scripts cross too many parsing layers. |
 | giant `bash -lc "..."` strings | typed tool, `code.run`, or short argv array | Shell strings hide intent and trigger safety filters. |
 | multiple operations joined with `&&` | `code.run` for dependent steps; `batch` for independent read-only steps | Chained shell hides which step failed. |
@@ -1104,14 +1104,13 @@ do not ask before doing basic investigation.
 
 Source code is a structured payload. Do not send multiline code through inline command arguments. Inline patch content travels through JSON, shell parsing, facade argument building, argv parsing, and line splitting; those layers can convert real newlines into literal `\n` text or shift line ranges into the wrong language region.
 
-Use `fs.patch --content-file` or stdin for targeted multiline line-range replacements. Use `fs.apply_patch` with `patchFile` for marker/diff patches that update, add, move, or delete files. Use inline `--content` or `patchText` only for short scalar payloads. After patching, reread the changed range or file and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
+Use `fs.apply_patch` with `patchFile` or stdin for marker/diff patches that update, add, move, or delete files. Use inline `patchText` only for short scalar payloads. After patching, reread the changed range or file and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
 
 The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter, inserting literal `\n` sequences into TypeScript, or applying a line-number patch after nearby code shifted. Treat shell-safe transport and anchored context as part of correctness, not as formatting details.
 
 File edit primitive routing:
 
 - Use `fs.read` before editing an existing file.
-- Use `fs.patch` for targeted line-range replacement in an existing file when the exact line range is stable.
 - Use `fs.apply_patch` for anchored marker/diff patches, especially multi-file edits and add/move/delete operations.
 - Use `fs.write` for new files, whole-file replacement, or exact appends.
 - Use `contentFile` or `patchFile` for multiline or large payloads. Inline `content` and `patchText` are only for short scalar text.
