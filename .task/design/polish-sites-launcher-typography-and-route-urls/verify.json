@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/polish-sites-launcher-typography-and-route-urls",
+  "base": "origin/task/design/polish-sites-launcher-typography-and-route-urls",
+  "headSha": "ffb5c72deaa97d5dd7909fd59709e771f8b8c0c7",
+  "changeHash": "f98a84034caf39714cbae4e33877dd006b9baf2727c6750e7407c304a95e39c5",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T07:17:55.922Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/polish-sites-launcher-typography-and-route-urls/current.json",
+        ".task/design/polish-sites-launcher-typography-and-route-urls/evidence-log.json",
+        ".task/design/polish-sites-launcher-typography-and-route-urls/read-log.json",
+        ".task/design/polish-sites-launcher-typography-and-route-urls/session.json",
+        ".task/design/polish-sites-launcher-typography-and-route-urls/workpad.md",
+        ".task/tasks/design/polish-sites-launcher-typography-and-route-urls.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

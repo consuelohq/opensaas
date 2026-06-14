@@ -16,6 +16,7 @@ export type GitHubPullRequest = {
   state: string;
   draft: boolean;
   author: string;
+  authorAvatarUrl?: string;
   headRef: string;
   headSha: string;
   baseRef: string;
@@ -84,6 +85,50 @@ export type ReviewComment = {
   source: 'review' | 'issue-comment' | 'review-comment';
   path?: string;
   line?: number;
+  nodeId?: string;
+  databaseId?: string;
+};
+
+export type ReviewItemSource = ReviewComment['source'] | 'review-thread';
+export type ReviewResolutionSource = 'github' | 'local';
+
+export type ReviewThreadComment = {
+  id: string;
+  databaseId: string;
+  provider: ReviewProvider;
+  author: string;
+  body: string;
+  url: string;
+  createdAt: string;
+  path?: string;
+  line?: number;
+};
+
+export type ReviewThread = {
+  id: string;
+  isResolved: boolean;
+  isOutdated: boolean;
+  path?: string;
+  line?: number;
+  comments: ReviewThreadComment[];
+};
+
+export type ReviewItem = {
+  id: string;
+  provider: ReviewProvider;
+  source: ReviewItemSource;
+  author: string;
+  body: string;
+  htmlUrl: string;
+  createdAt: string;
+  threadId?: string;
+  commentNodeId?: string;
+  path?: string;
+  line?: number;
+  isResolved: boolean;
+  isOutdated: boolean;
+  canResolve: boolean;
+  resolutionSource: ReviewResolutionSource;
 };
 
 export type StreamCommit = {
@@ -109,6 +154,8 @@ export type PullRequestReviewData = {
   files: GitHubPullRequestFile[];
   tree: FileTreeNode;
   comments: ReviewComment[];
+  reviewItems: ReviewItem[];
+  commits: StreamCommit[];
   streamCommits: StreamCommit[];
   warnings: string[];
   checks: CheckSummary[];
@@ -200,6 +247,7 @@ type DiffCockpitEnv = {
   GH_TOKEN?: string;
   DIFF_COCKPIT_DEFAULT_REPO?: string;
   DIFF_COCKPIT_REFRESH_TOKEN?: string;
+  GITHUB_WEBHOOK_SECRET?: string;
 };
 
 type WorkerExecutionContext = {
@@ -210,7 +258,8 @@ const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
 const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
-const INDEX_FRONT_PAGE_PULL_LIMIT = 30;
+const INDEX_OPEN_PULL_LIMIT = 75;
+const INDEX_RECENT_PULL_LIMIT = 75;
 const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
 type PullRequestSearchTarget = Pick<
@@ -604,13 +653,26 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
 
     const headers = createGithubHeaders(options.token);
     const apiBase = `https://api.github.com/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
-    const pullsJson = await fetchJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls?state=all&sort=updated&direction=desc`,
-      headers,
-      'GitHub pull requests fetch failed',
-      { maxPages: INDEX_MAX_PAGES },
-    );
+    const [openPullsJson, recentPullsJson] = await Promise.all([
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=open&sort=updated&direction=desc`,
+        headers,
+        'GitHub open pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+      fetchJsonArrayPages(
+        fetcher,
+        `${apiBase}/pulls?state=closed&sort=updated&direction=desc`,
+        headers,
+        'GitHub closed pull requests fetch failed',
+        { maxPages: INDEX_MAX_PAGES },
+      ),
+    ]);
+    const pullsJson = dedupePullRequestJson([
+      ...openPullsJson.slice(0, INDEX_OPEN_PULL_LIMIT),
+      ...recentPullsJson.slice(0, INDEX_RECENT_PULL_LIMIT),
+    ]);
     const enrichedPulls = await Promise.all(
       pullsJson
         .slice(0, INDEX_ENRICH_LIMIT)
@@ -628,6 +690,30 @@ export function createGithubPullRequestIndexLoader(options: GithubLoaderOptions 
       warnings,
     };
   };
+}
+
+function dedupePullRequestJson(items: unknown[]): unknown[] {
+  const seen = new Set<number>();
+  const deduped: unknown[] = [];
+  for (const item of items) {
+    const record = optionalRecord(item);
+    const number = numberValue(record?.number, 0);
+    if (!number || seen.has(number)) continue;
+    seen.add(number);
+    deduped.push(item);
+  }
+  return deduped;
+}
+
+function dedupePullRequestSummaries(pulls: PullRequestSummary[]): PullRequestSummary[] {
+  const seen = new Set<number>();
+  const deduped: PullRequestSummary[] = [];
+  for (const pull of pulls) {
+    if (!pull.number || seen.has(pull.number)) continue;
+    seen.add(pull.number);
+    deduped.push(pull);
+  }
+  return deduped;
 }
 
 export function createGithubPullRequestLoader(options: GithubLoaderOptions = {}) {
@@ -681,7 +767,12 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         ...normalizeReviewComments(issueCommentsJson, 'issue-comment'),
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
+      const reviewThreads = options.token
+        ? await loadReviewThreads(fetcher, locator, headers, warnings)
+        : [];
+      const reviewItems = normalizeReviewItems(comments, reviewThreads);
       const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
+      const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
       const streamCommits = pull.headRef.startsWith('stream/')
         ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
         : [];
@@ -692,6 +783,8 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
         files,
         tree: buildFileTree(files),
         comments,
+        reviewItems,
+        commits,
         streamCommits,
         warnings,
         checks,
@@ -753,13 +846,13 @@ export function renderIndexPage(repo: RepoLocator): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consolidate Diffs · ${escapeHtml(repoLabel)}</title>
+  <title>Consuelo Diffs · ${escapeHtml(repoLabel)}</title>
   <style>${renderStyles()}</style>
 </head>
 <body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
@@ -817,9 +910,6 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
-  const githubUrl = `https://github.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
-  const graphiteUrl = `https://app.graphite.com/github/pr/${locator.owner}/${locator.repo}/${locator.number}`;
-  const diffsHubUrl = `https://diffshub.com/${locator.owner}/${locator.repo}/pull/${locator.number}`;
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -834,7 +924,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -843,11 +933,11 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       }</h1>
       <p id="pr-meta" class="muted">Loading live GitHub data…</p>
     </div>
-    <nav class="links" aria-label="Pull request links">
-      <a href="${escapeAttribute(githubUrl)}">GitHub</a>
-      <a href="${escapeAttribute(graphiteUrl)}">Graphite</a>
-      <a href="${escapeAttribute(diffsHubUrl)}">DiffsHub</a>
-      <button id="drawer-toggle" type="button" aria-expanded="false">Drawer</button>
+    <nav class="links" aria-label="Pull request controls">
+      <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
+      <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
+      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="true">AI comments</button>
+      <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
   <main class="layout">
@@ -859,34 +949,44 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
-    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">▣</button>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Close files" aria-expanded="true">×</button>
     <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
       <div id="diff-root" class="diff-root" data-diffs-library="@pierre/diffs"></div>
     </section>
-    <aside id="review-drawer" class="review-drawer" aria-label="Review drawer" aria-hidden="true">
+    <aside id="review-drawer" class="review-drawer" aria-label="Review panel" aria-hidden="true">
       <div class="drawer-head">
-        <strong>drawer</strong>
+        <strong>panel</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
         <div class="action-grid" aria-label="Review actions">
           <button id="copy-all-comments" class="action-button" type="button" title="Copy all review comments">□ Copy all</button>
+          <button id="copy-review-link" class="action-button" type="button" title="Copy pull request link">Copy PR</button>
+          <button id="copy-current-commit-link" class="action-button" type="button" title="Copy current commit link">Copy Commit</button>
           <button id="open-chatgpt-prompt" class="action-button" type="button">Open ChatGPT</button>
           <button id="copy-codex-prompt" class="action-button" type="button">Copy Codex</button>
-          <button id="mergeability-button" class="action-button" type="button">Mergeability</button>
+          <button id="mergeability-button" class="action-button" type="button" data-open-mergeability>Mergeability</button>
           <button id="merge-pr-button" class="action-button" type="button">Merge PR</button>
         </div>
-        <p class="muted">Keyboard: <span class="kbd">d</span> drawer · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
-        <div id="drawer-status" class="drawer-section"><h2>Status</h2><div class="comment-card muted">Loading PR status…</div></div>
-        <div id="drawer-checks" class="drawer-section"><h2>Checks</h2><div class="comment-card muted">Loading checks…</div></div>
-        <div id="drawer-summary" class="drawer-section"><h2>Review summary</h2><div class="comment-card muted">Loading review context…</div></div>
-        <div id="drawer-comments" class="drawer-section"><h2>Comments</h2><div class="comment-card muted">No comments loaded yet.</div></div>
-        <div id="drawer-commits" class="drawer-section"><h2>Recent stream commits</h2><div class="commit-card muted">No stream commits loaded yet.</div></div>
+        <p class="muted">Keyboard: <span class="kbd">p</span> panel · <span class="kbd">f</span> files · <span class="kbd">m</span> mergeability · <span class="kbd">⌘M</span> merge PR · <span class="kbd">v</span> current view · <span class="kbd">i</span> inline comments · <span class="kbd">c</span> copy comments · <span class="kbd">g</span> ChatGPT · <span class="kbd">Esc</span> close</p>
+        <div id="drawer-status" class="drawer-section drawer-section-open"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="status" aria-expanded="true"><span>Status</span><span class="drawer-section-caret">⌄</span></button></div><div class="drawer-section-body"><div class="comment-card muted">Loading PR status…</div></div></div>
+        <div id="drawer-summary" class="drawer-section drawer-section-open"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="summary" aria-expanded="true"><span>Review summary</span><span class="drawer-section-caret">⌄</span></button></div><div class="drawer-section-body"><div class="comment-card muted">Loading review context…</div></div></div>
+        <div id="drawer-prompt" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="prompt" aria-expanded="false"><span>Prompt for AI agents</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-checks" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="checks" aria-expanded="false"><span>Checks</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-comments" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="comments" aria-expanded="false"><span>Comments</span><span class="drawer-section-caret">›</span></button></div></div>
+        <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
-    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Stream commits" hidden></div>
+    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="AI review comments" aria-hidden="false">
+      <div class="ai-comments-head">
+        <div><strong>AI comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
+        <button id="ai-comments-close" type="button">Close</button>
+      </div>
+      <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
+    </aside>
+    <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
 ${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
@@ -912,7 +1012,7 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -961,7 +1061,7 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consolidate Diffs</a>
+      <a class="brand" href="/">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
         <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
@@ -1003,6 +1103,10 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       if (url.pathname === '/internal/cache/refresh') {
         return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
+      }
+
+      if (url.pathname === '/api/github/webhook') {
+        return handleGithubWebhook({ request, env, edgeCache });
       }
 
 
@@ -1051,6 +1155,21 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
+      }
+
+      const reviewThreadApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/review-threads\/([^/]+)\/(resolve|unresolve)$/);
+      if (reviewThreadApiMatch) {
+        if (request.method !== 'POST') {
+          return json({ ok: false, error: 'Use POST to update a review thread.' }, 405);
+        }
+        const locator = {
+          owner: decodeURIComponent(reviewThreadApiMatch[1] || ''),
+          repo: decodeURIComponent(reviewThreadApiMatch[2] || ''),
+          number: Number(reviewThreadApiMatch[3]),
+        };
+        const threadId = decodeURIComponent(reviewThreadApiMatch[4] || '');
+        const action = reviewThreadApiMatch[5] === 'unresolve' ? 'unresolve' : 'resolve';
+        return mutateGithubReviewThread(options.fetcher ?? fetch, token, threadId, action, edgeCache, url.origin, locator);
       }
 
       const mergeApiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/pull\/(\d+)\/merge$/);
@@ -1248,6 +1367,7 @@ function normalizePullRequest(input: unknown): GitHubPullRequest {
     state: stringValue(source.state, 'unknown'),
     draft: booleanValue(source.draft),
     author: stringValue(user?.login, 'unknown'),
+    authorAvatarUrl: stringValue(user?.avatar_url, ''),
     headRef: stringValue(head?.ref, ''),
     headSha: stringValue(head?.sha, ''),
     baseRef: stringValue(base?.ref, ''),
@@ -1264,82 +1384,90 @@ async function loadGraphqlPullRequestIndex(
   token: string,
   warnings: string[],
 ): Promise<PullRequestIndexData> {
-  const pulls: PullRequestSummary[] = [];
-  let after: string | null = null;
-  for (let page = 1; page <= INDEX_MAX_PAGES; page += 1) {
-    try {
-      const response = await fetcher('https://api.github.com/graphql', {
-        method: 'POST',
-        headers: {
-          ...createGithubHeaders(token),
-          'content-type': 'application/json',
+  try {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        ...createGithubHeaders(token),
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
+        variables: {
+          owner: repo.owner,
+          name: repo.repo,
+          openFirst: INDEX_OPEN_PULL_LIMIT,
+          recentFirst: INDEX_RECENT_PULL_LIMIT,
         },
-        body: JSON.stringify({
-          query: GRAPHQL_PULL_REQUEST_INDEX_QUERY,
-          variables: { owner: repo.owner, name: repo.repo, after, first: INDEX_FRONT_PAGE_PULL_LIMIT },
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
-      }
-      const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
-      if (Array.isArray(json.errors) && json.errors.length > 0) {
-        throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
-      }
-      const repository = optionalRecord(optionalRecord(json.data)?.repository);
-      const connection = optionalRecord(repository?.pullRequests);
-      const nodes = Array.isArray(connection?.nodes) ? connection.nodes : [];
-      pulls.push(...nodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)));
-      const pageInfo = optionalRecord(connection?.pageInfo);
-      if (!booleanValue(pageInfo?.hasNextPage)) {
-        break;
-      }
-      after = stringValue(pageInfo?.endCursor, '');
-      if (!after) {
-        warnings.push('GitHub GraphQL pagination stopped without an end cursor');
-        break;
-      }
-    } catch (error: unknown) {
-      warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
-      throw error;
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL pull request fetch failed: ${response.status}`);
     }
+    const json = requireRecord(await response.json(), 'Invalid GitHub GraphQL response');
+    if (Array.isArray(json.errors) && json.errors.length > 0) {
+      throw new Error(`GitHub GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    const repository = optionalRecord(optionalRecord(json.data)?.repository);
+    const openConnection = optionalRecord(repository?.openPullRequests) ?? optionalRecord(repository?.pullRequests);
+    const recentConnection = optionalRecord(repository?.recentPullRequests);
+    const openNodes = Array.isArray(openConnection?.nodes) ? openConnection.nodes : [];
+    const recentNodes = Array.isArray(recentConnection?.nodes) ? recentConnection.nodes : [];
+    const pulls = dedupePullRequestSummaries([
+      ...openNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+      ...recentNodes.map((node) => normalizeGraphqlPullRequestSummary(repo, node)),
+    ]);
+    if (booleanValue(optionalRecord(openConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Open pull request backlog capped at ${INDEX_OPEN_PULL_LIMIT}`);
+    }
+    if (booleanValue(optionalRecord(recentConnection?.pageInfo)?.hasNextPage)) {
+      warnings.push(`Recent pull request backlog capped at ${INDEX_RECENT_PULL_LIMIT}`);
+    }
+    return {
+      repo,
+      pulls,
+      updatedAt: deriveIndexUpdatedAt(pulls),
+      warnings,
+    };
+  } catch (error: unknown) {
+    warnings.push(`GitHub GraphQL pull request fetch failed: ${getErrorMessage(error)}`);
+    throw error;
   }
-  return {
-    repo,
-    pulls,
-    updatedAt: deriveIndexUpdatedAt(pulls),
-    warnings,
-  };
 }
 
 const GRAPHQL_PULL_REQUEST_INDEX_QUERY = `
-query DiffCockpitPullRequests($owner: String!, $name: String!, $after: String, $first: Int!) {
+query DiffCockpitPullRequests($owner: String!, $name: String!, $openFirst: Int!, $recentFirst: Int!) {
   repository(owner: $owner, name: $name) {
-    pullRequests(first: $first, after: $after, states: [OPEN, CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+    openPullRequests: pullRequests(first: $openFirst, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        number
-        title
-        url
-        state
-        isDraft
-        merged
-        mergedAt
-        closedAt
-        createdAt
-        updatedAt
-        additions
-        deletions
-        changedFiles
-        mergeStateStatus
-        author { login }
-        headRefName
-        headRefOid
-        baseRefName
-        baseRefOid
-      }
+      nodes { ...PullRequestIndexNode }
+    }
+    recentPullRequests: pullRequests(first: $recentFirst, states: [CLOSED, MERGED], orderBy: { field: UPDATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
+      nodes { ...PullRequestIndexNode }
     }
   }
+}
+fragment PullRequestIndexNode on PullRequest {
+  number
+  title
+  url
+  state
+  isDraft
+  merged
+  mergedAt
+  closedAt
+  createdAt
+  updatedAt
+  additions
+  deletions
+  changedFiles
+  mergeStateStatus
+  author { login avatarUrl }
+  headRefName
+  headRefOid
+  baseRefName
+  baseRefOid
 }
 `;
 
@@ -1354,6 +1482,7 @@ function normalizeGraphqlPullRequestSummary(repo: RepoLocator, input: unknown): 
     state: state === 'merged' ? 'closed' : state,
     draft: booleanValue(source.isDraft),
     author: stringValue(author?.login, 'unknown'),
+    authorAvatarUrl: stringValue(author?.avatarUrl, ''),
     headRef: stringValue(source.headRefName, ''),
     headSha: stringValue(source.headRefOid, ''),
     baseRef: stringValue(source.baseRefName, ''),
@@ -1405,16 +1534,7 @@ async function enrichPullRequestSummary(
   try {
     const basePull = normalizePullRequest(pullJson);
     const detailJson = await fetchPullRequestDetail(fetcher, apiBase, headers, basePull.number, pullJson, warnings);
-    const detailPull = normalizePullRequest(detailJson);
-    const checkRuns = await fetchCheckRuns(fetcher, apiBase, detailPull.headSha || basePull.headSha, headers, warnings);
-    const reviews = await fetchPartialJsonArrayPages(
-      fetcher,
-      `${apiBase}/pulls/${detailPull.number || basePull.number}/reviews`,
-      headers,
-      warnings,
-      `reviews for #${detailPull.number || basePull.number}`,
-    );
-    return normalizePullRequestSummary(repo, detailJson, checkRuns, reviews);
+    return normalizePullRequestSummary(repo, detailJson, [], []);
   } catch (error: unknown) {
     warnings.push(`summary: ${getErrorMessage(error)}`);
     return normalizePullRequestSummary(repo, pullJson, [], []);
@@ -1503,13 +1623,13 @@ function normalizeMergeability(pull: GitHubPullRequest, lifecycleStatus: PullReq
   if (lifecycleStatus === 'closed') return 'closed';
   if (lifecycleStatus === 'draft') return 'draft';
   const state = pull.mergeableState.toLowerCase();
-  if (['dirty', 'blocked', 'behind', 'unstable'].includes(state)) return 'conflicts';
-  if (state === 'clean' || state === 'has_hooks') return 'mergeable';
-  if (state && state !== 'unknown') return 'conflicts';
-  if (pull.mergeable === true) return 'mergeable';
+  if (state === 'dirty') return 'conflicts';
+  if (['clean', 'has_hooks', 'unstable', 'blocked', 'behind'].includes(state)) return 'mergeable';
   if (pull.mergeable === false) return 'conflicts';
+  if (pull.mergeable === true) return 'mergeable';
   return 'unknown';
 }
+
 
 export function deriveAssociatedStream(pull: Pick<GitHubPullRequest, 'headRef' | 'baseRef'>): string {
   if (pull.headRef.startsWith('stream/')) {
@@ -1545,7 +1665,7 @@ export function groupPullRequestSummaries(
     {
       id: 'open',
       title: 'Open',
-      pulls: scoped.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft'),
+      pulls: scoped.filter((pull) => pull.kind !== 'stream' && (pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')),
     },
     { id: 'closed', title: 'Closed', pulls: scoped.filter((pull) => pull.lifecycleStatus === 'closed') },
   ];
@@ -1568,6 +1688,7 @@ function normalizeLifecycleStatus(
   if (pull.state === 'closed') return 'closed';
   return 'open';
 }
+
 
 function normalizeCheckStatus(checkRuns: unknown[]): PullRequestCheckStatus {
   if (checkRuns.length === 0) {
@@ -1602,6 +1723,7 @@ function isSuccessfulCheckRun(input: unknown): boolean {
   return ['success', 'skipped', 'neutral'].includes(conclusion);
 }
 
+
 function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   const states = reviews
     .map((item) => optionalRecord(item))
@@ -1611,6 +1733,26 @@ function normalizeReviewStatus(reviews: unknown[]): PullRequestReviewStatus {
   if (states.includes('APPROVED')) return 'approved';
   if (states.includes('COMMENTED')) return 'commented';
   return states.length > 0 ? 'unknown' : 'none';
+}
+
+async function loadPullCommits(
+  fetcher: Fetcher,
+  apiBase: string,
+  number: number,
+  headers: HeadersInit,
+): Promise<StreamCommit[]> {
+  try {
+    const json = await fetchJsonArrayPages(
+      fetcher,
+      `${apiBase}/pulls/${number}/commits`,
+      headers,
+      'GitHub pull request commits fetch failed',
+      { maxPages: 1 },
+    );
+    return normalizeStreamCommits(json);
+  } catch {
+    return [];
+  }
 }
 
 function normalizeFiles(input: unknown): GitHubPullRequestFile[] {
@@ -1652,6 +1794,90 @@ async function loadStreamCommits(
   }
 }
 
+async function loadReviewThreads(
+  fetcher: Fetcher,
+  locator: PullRequestLocator,
+  headers: HeadersInit,
+  warnings: string[],
+): Promise<ReviewThread[]> {
+  const query = [
+    'query DiffCockpitReviewThreads($owner: String!, $repo: String!, $number: Int!) {' ,
+    'repository(owner: $owner, name: $repo) {' ,
+    'pullRequest(number: $number) {' ,
+    'reviewThreads(first: 100) {' ,
+    'nodes { id isResolved isOutdated path line comments(first: 30) {' ,
+    'nodes { id databaseId url body createdAt path line author { login } }' ,
+    '} } } } } }' ,
+  ].join(' ');
+
+  try {
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        variables: { owner: locator.owner, repo: locator.repo, number: locator.number },
+      }),
+    });
+    if (!response.ok) {
+      warnings.push('review threads unavailable: GitHub GraphQL returned ' + response.status);
+      return [];
+    }
+    return normalizeReviewThreadsResponse(await response.json());
+  } catch (error: unknown) {
+    warnings.push('review threads unavailable: ' + getErrorMessage(error));
+    return [];
+  }
+}
+
+function normalizeReviewThreadsResponse(input: unknown): ReviewThread[] {
+  const root = optionalRecord(input);
+  const data = optionalRecord(root?.data);
+  const repository = optionalRecord(data?.repository);
+  const pullRequest = optionalRecord(repository?.pullRequest);
+  const reviewThreads = optionalRecord(pullRequest?.reviewThreads);
+  const nodes = Array.isArray(reviewThreads?.nodes) ? reviewThreads.nodes : [];
+  return nodes
+    .map((thread) => {
+      const record = optionalRecord(thread);
+      if (!record) return null;
+      const commentsConnection = optionalRecord(record.comments);
+      const comments = Array.isArray(commentsConnection?.nodes) ? commentsConnection.nodes : [];
+      const line = numberValue(record.line, 0);
+      const item: ReviewThread = {
+        id: stringValue(record.id, ''),
+        isResolved: booleanValue(record.isResolved),
+        isOutdated: booleanValue(record.isOutdated),
+        ...(record.path ? { path: stringValue(record.path, '') } : {}),
+        ...(line > 0 ? { line } : {}),
+        comments: comments.map(normalizeReviewThreadComment).filter((comment): comment is ReviewThreadComment => Boolean(comment)),
+      };
+      return item.id ? item : null;
+    })
+    .filter((thread): thread is ReviewThread => Boolean(thread));
+}
+
+function normalizeReviewThreadComment(input: unknown): ReviewThreadComment | null {
+  const record = optionalRecord(input);
+  if (!record) return null;
+  const authorRecord = optionalRecord(record.author);
+  const author = stringValue(authorRecord?.login, 'unknown');
+  const body = stringValue(record.body, '').trim();
+  if (!body) return null;
+  const line = numberValue(record.line, 0);
+  const databaseId = stringValue(record.databaseId, '');
+  return {
+    id: stringValue(record.id, databaseId || body),
+    databaseId,
+    provider: detectReviewProvider(author),
+    author,
+    body,
+    url: stringValue(record.url, ''),
+    createdAt: stringValue(record.createdAt, ''),
+    ...(record.path ? { path: stringValue(record.path, '') } : {}),
+    ...(line > 0 ? { line } : {}),
+  };
+}
 async function loadChecks(
   fetcher: Fetcher,
   apiBase: string,
@@ -1704,6 +1930,8 @@ function normalizeReviewComments(
         url: stringValue(record.html_url, ''),
         createdAt: stringValue(record.submitted_at ?? record.created_at, ''),
         source,
+        ...(record.node_id ? { nodeId: stringValue(record.node_id, '') } : {}),
+        ...(record.id ? { databaseId: stringValue(record.id, '') } : {}),
         ...(record.path ? { path: stringValue(record.path, '') } : {}),
         ...(line > 0 ? { line } : {}),
       };
@@ -1711,6 +1939,71 @@ function normalizeReviewComments(
     .filter((comment): comment is ReviewComment => Boolean(comment));
 }
 
+export function normalizeReviewItems(comments: ReviewComment[], threads: ReviewThread[] = []): ReviewItem[] {
+  const itemsByKey = new Map<string, ReviewItem>();
+
+  for (const comment of comments) {
+    if (!isAiReviewProvider(comment.provider)) continue;
+    const item: ReviewItem = {
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      ...(comment.path ? { path: comment.path } : {}),
+      ...(comment.line ? { line: comment.line } : {}),
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    };
+    itemsByKey.set(reviewItemKey(comment.nodeId, comment.id, comment.url), item);
+  }
+
+  for (const thread of threads) {
+    for (const comment of thread.comments) {
+      if (!isAiReviewProvider(comment.provider)) continue;
+      const item: ReviewItem = {
+        id: comment.id,
+        provider: comment.provider,
+        source: 'review-thread',
+        author: comment.author,
+        body: comment.body,
+        htmlUrl: comment.url,
+        createdAt: comment.createdAt,
+        threadId: thread.id,
+        commentNodeId: comment.id,
+        ...(comment.path || thread.path ? { path: comment.path || thread.path } : {}),
+        ...(comment.line || thread.line ? { line: comment.line || thread.line } : {}),
+        isResolved: thread.isResolved,
+        isOutdated: thread.isOutdated,
+        canResolve: true,
+        resolutionSource: 'github',
+      };
+      itemsByKey.set(reviewItemKey(comment.id, comment.databaseId, comment.url), item);
+    }
+  }
+
+  return Array.from(itemsByKey.values()).sort(compareReviewItems);
+}
+
+function isAiReviewProvider(provider: ReviewProvider): boolean {
+  return provider === 'coderabbit' || provider === 'codex' || provider === 'claude';
+}
+
+function reviewItemKey(commentNodeId: string | undefined, id: string, htmlUrl: string): string {
+  return htmlUrl || commentNodeId || id;
+}
+
+function compareReviewItems(a: ReviewItem, b: ReviewItem): number {
+  const pathCompare = (a.path || '').localeCompare(b.path || '');
+  if (pathCompare !== 0) return pathCompare;
+  const lineCompare = (a.line || 0) - (b.line || 0);
+  if (lineCompare !== 0) return lineCompare;
+  return a.createdAt.localeCompare(b.createdAt);
+}
 function normalizeStreamCommits(input: unknown): StreamCommit[] {
   if (!Array.isArray(input)) {
     return [];
@@ -1787,6 +2080,113 @@ function normalizeOrderIndex(index: number): number {
 }
 
 
+type ReviewThreadMutationAction = 'resolve' | 'unresolve';
+
+async function mutateGithubReviewThread(
+  fetcher: Fetcher,
+  token: string | undefined,
+  threadId: string,
+  action: ReviewThreadMutationAction,
+  edgeCache: EdgeCache | null,
+  requestOrigin: string,
+  locator: PullRequestLocator,
+): Promise<Response> {
+  if (!token) return json({ ok: false, error: 'GitHub token is required to update review threads.' }, 401);
+  if (!threadId) return json({ ok: false, error: 'review thread id is required.' }, 400);
+  try {
+    const mutationName = action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
+    const query = 'mutation DiffCockpitReviewThread($threadId: ID!) { ' + mutationName + '(input: { threadId: $threadId }) { thread { id isResolved } } }';
+    const response = await fetcher('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...createGithubHeaders(token), 'content-type': 'application/json' },
+      body: JSON.stringify({ query, variables: { threadId } }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return json({ ok: false, error: 'GitHub GraphQL review thread mutation failed.', details: payload }, response.status);
+    }
+    const invalidated = await invalidatePullRequestReviewCache(edgeCache, requestOrigin, locator);
+    return json({ ok: true, action, payload, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
+  } catch (error: unknown) {
+    return json({ ok: false, error: getErrorMessage(error) }, 502);
+  }
+}
+
+async function invalidatePullRequestReviewCache(
+  edgeCache: EdgeCache | null,
+  requestOrigin: string,
+  locator: PullRequestLocator,
+): Promise<{ path: string; edgeInvalidated: boolean }> {
+  try {
+    const apiUrl = new URL(`${requestOrigin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+    const cacheRequest = makeApiCacheRequest(apiUrl);
+    memoryJsonCache.delete(memoryCacheKey(cacheRequest));
+    const edgeInvalidated = edgeCache ? await edgeCache.delete(cacheRequest) : false;
+    return { path: apiUrl.pathname, edgeInvalidated };
+  } catch (error: unknown) {
+    throw new Error(`failed to invalidate PR cache: ${getErrorMessage(error)}`);
+  }
+}
+
+type GithubWebhookDeps = {
+  request: Request;
+  env?: DiffCockpitEnv;
+  edgeCache: EdgeCache | null;
+};
+
+async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
+  if (deps.request.method !== 'POST') return internalJson({ error: 'GitHub webhook requires POST' }, 405);
+  const secret = deps.env?.GITHUB_WEBHOOK_SECRET;
+  if (!secret) return internalJson({ error: 'GITHUB_WEBHOOK_SECRET is not configured' }, 503);
+  const body = await deps.request.text();
+  const valid = await verifyGithubWebhookSignature(body, deps.request.headers.get('x-hub-signature-256') || '', secret);
+  if (!valid) return internalJson({ error: 'invalid GitHub webhook signature' }, 401);
+  const event = deps.request.headers.get('x-github-event') || '';
+  let payload: unknown;
+  try { payload = JSON.parse(body); } catch (error: unknown) { return internalJson({ error: 'invalid JSON body: ' + getErrorMessage(error) }, 400); }
+  const record = optionalRecord(payload);
+  const action = stringValue(record?.action, '');
+  if (event !== 'pull_request_review_thread' || !['resolved', 'unresolved'].includes(action)) {
+    return internalJson({ ok: true, event, action, invalidated: [] });
+  }
+  const pull = optionalRecord(record?.pull_request);
+  const repo = optionalRecord(record?.repository);
+  const ownerRecord = optionalRecord(repo?.owner);
+  const owner = stringValue(ownerRecord?.login, '');
+  const repoName = stringValue(repo?.name, '');
+  const pullNumber = numberValue(pull?.number, 0);
+  if (!owner || !repoName || pullNumber <= 0) {
+    return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
+  }
+  try {
+    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, COCKPIT_ORIGIN, { owner, repo: repoName, number: pullNumber });
+    return internalJson({ ok: true, event, action, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
+  } catch (error: unknown) {
+    return internalJson({ ok: false, error: getErrorMessage(error) }, 502);
+  }
+}
+
+async function verifyGithubWebhookSignature(body: string, signature: string, secret: string): Promise<boolean> {
+  try {
+    if (!signature.startsWith('sha256=')) return false;
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+    const expected = 'sha256=' + Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+    return timingSafeEqual(expected, signature);
+  } catch {
+    return false;
+  }
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    result |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  }
+  return result === 0;
+}
 type CacheRefreshInput = {
   repo?: string;
   pulls?: unknown;
@@ -1861,7 +2261,7 @@ async function refreshCacheEntries(
 ): Promise<{ homepage: string; pulls: string[]; code: string[]; history: string[] }> {
   try {
     const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
-    const homepageRequest = new Request(homepageUrl, { headers: { accept: 'application/json' } });
+    const homepageRequest = makeApiCacheRequest(new URL(homepageUrl));
     const homepageData = await deps.indexLoader(repo);
     await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
     const [codeResults, pullResults] = await Promise.all([
@@ -1889,8 +2289,8 @@ async function refreshCodePathCache(
   try {
     const codeUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=main&path=${encodeURIComponent(path)}`;
     const historyUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=main&path=${encodeURIComponent(path)}`;
-    const codeRequest = new Request(codeUrl, { headers: { accept: 'application/json' } });
-    const historyRequest = new Request(historyUrl, { headers: { accept: 'application/json' } });
+    const codeRequest = makeApiCacheRequest(new URL(codeUrl));
+    const historyRequest = makeApiCacheRequest(new URL(historyUrl));
     const [codeData, historyData] = await Promise.all([
       deps.codeLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
       deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
@@ -1913,7 +2313,7 @@ async function refreshPullCache(
 ): Promise<string> {
   try {
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
-    const pullRequest = new Request(pullUrl, { headers: { accept: 'application/json' } });
+    const pullRequest = makeApiCacheRequest(new URL(pullUrl));
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
     await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
     return new URL(pullUrl).pathname;
@@ -1977,10 +2377,13 @@ type MemoryCachedJson = {
 };
 
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
+const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
 
 function makeApiCacheRequest(url: URL): Request {
-  return new Request(url.toString(), { headers: { accept: 'application/json' } });
+  const cacheUrl = new URL(url.toString());
+  cacheUrl.searchParams.set('_dcv', API_CACHE_SCHEMA_VERSION);
+  return new Request(cacheUrl.toString(), { headers: { accept: 'application/json' } });
 }
 
 async function getOrSetCachedJson(
@@ -2209,9 +2612,9 @@ function renderNotFoundPage(): string {
 
 function renderStyles(): string {
   return `
-:root { color-scheme: light; --paper:#f8f1e7; --surface:#fffaf3; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-soft:#ead5bd; --danger:#9b2d2d; }
+:root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --danger:#9b2d2d; --shadow:0 18px 60px rgba(55, 37, 20, .14); }
 @media (prefers-color-scheme: dark) {
-  :root { color-scheme: dark; --paper:#070a0d; --surface:#0b0f13; --ink:#edf1f5; --muted:#a2abb4; --quiet:#737c85; --line:#20262d; --soft:#12181e; --accent:#d4d8dd; --accent-soft:#1b222a; --danger:#ff9d9d; }
+  :root { color-scheme: dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --danger:#ff9d9d; --shadow:0 28px 90px rgba(0,0,0,.42); }
 }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--paper); }
@@ -2219,10 +2622,10 @@ html, body, button, a { -webkit-tap-highlight-color: transparent; }
 body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
 a { color:inherit; text-decoration:none; }
-a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+a:hover, button:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
 button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
 button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline:none; }
-button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-soft); outline-offset:3px; }
+button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
 .shell { max-width:min(1180px, calc(100vw - 48px)); margin:0 auto; padding:0 18px 32px; }
 .index-shell { max-width:min(1720px, calc(100vw - 48px)); padding:0 10px 28px; }
 .wiki-topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:54px; border-bottom:1px solid var(--line); }
@@ -2236,15 +2639,15 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .command-backdrop { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.36); backdrop-filter:blur(7px); }
 .command-backdrop[hidden], .command-palette[hidden] { display:none; }
 .command-palette { position:fixed; inset:0; z-index:41; display:grid; place-items:start center; padding:9vh 18px 18px; }
-.command-panel { width:min(640px, calc(100vw - 32px)); max-height:min(760px, calc(100vh - 80px)); overflow:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:0 24px 80px rgba(0,0,0,.42); }
+.command-panel { width:min(720px, calc(100vw - 32px)); max-height:min(760px, calc(100vh - 80px)); overflow:auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
 .command-panel-head { display:flex; justify-content:space-between; gap:18px; padding:18px; border-bottom:1px solid var(--line); }
 .command-kicker, .command-section-title { margin:0 0 6px; color:var(--accent); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .command-panel h2 { margin:0 0 6px; font-size:30px; }
 .command-caption { margin:0; color:var(--muted); font-size:13px; }
 .command-close { color:var(--muted); }
 .command-input-row { display:block; padding:14px 18px; border-bottom:1px solid var(--line); }
-.command-input { width:100%; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); padding:12px 14px; font:inherit; font-size:15px; outline:none; }
-.command-input:focus { border-color:var(--accent); }
+.command-input { width:100%; border:0; border-bottom:1px solid var(--line); border-radius:0; background:var(--soft); color:var(--ink); padding:14px 22px; font:inherit; font-size:15px; outline:none; }
+.command-input:focus { border-bottom-color:var(--accent-strong); }
 .command-section { padding:12px; border-bottom:1px solid var(--line); }
 .command-list { display:grid; gap:6px; }
 .command-item { width:100%; min-height:52px; display:grid; grid-template-columns:54px minmax(0,1fr); align-items:center; gap:12px; padding:9px 10px; border:1px solid transparent; border-radius:11px; text-align:left; }
@@ -2253,7 +2656,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .command-item small { display:block; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
 .command-empty { padding:14px 10px; color:var(--muted); }
 .command-foot { display:flex; gap:14px; justify-content:flex-end; padding:10px 14px; color:var(--quiet); font-size:12px; }
-.mobile-command-fab { display:none; position:fixed; right:18px; bottom:18px; z-index:35; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:999px; background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.3); font-weight:800; }
+.mobile-command-fab { display:none; position:fixed; left:18px; right:auto; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:35; width:56px; height:56px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:999px; background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.3); font-weight:800; }
 
 .code-shell { max-width:min(1180px, calc(100vw - 48px)); }
 .code-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:46px 0 22px; border-bottom:1px solid var(--line); }
@@ -2293,7 +2696,7 @@ button:focus-visible, a:focus-visible, .search-input:focus-visible { outline:2px
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { letter-spacing:-.03em; margin:0 0 16px; }
 .markdown-body p { margin:0 0 14px; color:var(--ink); }
 .markdown-body code { padding:1px 5px; border-radius:5px; background:var(--soft); }
-.code-body pre { margin:0; font:13px/1.6 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
+.code-body pre { margin:0; font:13px/1.6 Menlo, Monaco, Consolas, "Liberation Mono", monospace; white-space:pre; }
 @media (max-width: 760px) {
   .code-shell { max-width:calc(100vw - 20px); }
   .code-hero { align-items:flex-start; flex-direction:column; gap:14px; padding:34px 0 20px; }
@@ -2339,24 +2742,29 @@ h2 { margin:0; font-size:17px; line-height:1.2; letter-spacing:-.02em; font-weig
 .section-count { color:var(--quiet); font-size:16px; }
 button.section-count { cursor:pointer; }
 .post-item { display:grid; grid-template-columns:minmax(0, 1fr) minmax(260px, auto); gap:18px; min-height:44px; padding:8px 14px; border-bottom:1px solid var(--line); align-items:center; }
+.pr-row { grid-template-columns:32px minmax(0, 1fr) minmax(260px, auto); gap:12px; }
+.index-page .post-item[data-card-route] { cursor:pointer; }
 .post-item:hover { background:var(--soft); }
 .post-item h3 { margin:0; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:500; }
 .post-meta { color:var(--quiet); font-size:13px; line-height:1.35; }
 .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+.pr-author-avatar { width:32px; height:32px; border-radius:999px; object-fit:cover; background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+.pr-author-avatar-fallback { display:grid; place-items:center; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.02em; }
 .pr-row-main { min-width:0; display:grid; gap:2px; }
 .pr-title-line { display:flex; align-items:baseline; gap:10px; min-width:0; flex-wrap:wrap; }
 .pr-title-line a { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pr-title-meta { color:var(--quiet); font-size:12px; font-weight:400; white-space:nowrap; }
+.pr-file-chip, .pr-avatar, .mobile-pr-table-head, .pr-author, .pr-author-sep, .pr-mobile-meta, .pr-mobile-files { display:none; }
 .pr-subtitle { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:13px; }
 .pr-subtitle span { white-space:nowrap; }
-.pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:260px; }
+.pr-row-side { display:grid; grid-template-columns:auto 120px 54px; align-items:center; justify-content:end; gap:12px; color:var(--quiet); font-size:13px; white-space:nowrap; min-width:220px; }
 .status-set { display:inline-flex; align-items:center; gap:6px; }
 .pr-delta { min-width:112px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
 .pr-updated { min-width:42px; text-align:right; color:var(--quiet); font-variant-numeric:tabular-nums; }
 .mergeability-icon, .review-icon, .check-icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--line); border-radius:999px; font-size:11px; flex:0 0 auto; }
 .mergeability-icon:empty, .review-icon:empty, .check-icon:empty { display:none; }
-.mergeability-icon.mergeability-mergeable { color:#2f8a44; }
-.mergeability-icon.mergeability-conflicts { color:#bc3b3b; }
+.mergeability-icon.mergeability-mergeable { color:#1f7a3a; border-color:#1f7a3a; }
+.mergeability-icon.mergeability-conflicts { color:#ef4444; border-color:#ef4444; }
 .mergeability-icon.mergeability-merged { color:#6f4bd8; }
 .mergeability-icon.mergeability-draft, .mergeability-icon.mergeability-closed, .mergeability-icon.mergeability-unknown { color:var(--quiet); }
 .stream-chip { color:var(--accent); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
@@ -2374,12 +2782,18 @@ mark { background:var(--accent-soft); color:var(--ink); }
 .page-button[disabled] { color:var(--quiet); cursor:default; text-decoration:none; }
 footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--muted); font-size:13px; }
 .footer-links { display:flex; gap:10px; }
-.review-page { overflow:hidden; --file-pane-width:330px; }
+.review-page { overflow:hidden; --file-pane-width:460px; }
+
+.review-page .topbar, .review-page .review-topbar, .review-page .links, .review-page .file-pane, .review-page .pane-heading, .review-page .tree-root, .review-page .tree-node, .review-page .directory-toggle, .review-page .tree-label, .review-page .tree-stats, .review-page .selected-file, .review-page .diff-file-header, .review-page .diff-file-path, .review-page .diff-file-stats, .review-page .inline-comment, .review-page .comment-card, .review-page .commit-popover, .review-page .review-drawer { font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.review-page .diff-fallback, .review-page .code-body pre, .review-page .comment-body pre, .review-page .comment-body code { font-family:Menlo, Monaco, Consolas, "Liberation Mono", monospace; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision; }
 .topbar { height:76px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 18px; border-bottom:1px solid var(--line); background:var(--paper); }
 .eyebrow { margin:0 0 4px; font-size:12px; color:var(--quiet); text-transform:uppercase; letter-spacing:.08em; }
 .review-topbar h1 { margin:0; font-size:18px; line-height:1.2; letter-spacing:-.02em; }
 #pr-meta { margin:4px 0 0; font-size:13px; }
 .links { display:flex; align-items:center; gap:12px; white-space:nowrap; font-size:13px; }
+.nav-status-button { color:var(--muted); }
+.nav-status-button[data-status="mergeable"] { color:#2f7d46; }
+.nav-status-button[data-status="unmergeable"] { color:#ef4444; }
   .layout { height:calc(100dvh - 76px); display:grid; grid-template-columns:var(--file-pane-width) 5px minmax(0, 1fr); position:relative; overflow:hidden; border-top:1px solid var(--line); }
 body[data-file-pane-collapsed="true"] .layout { grid-template-columns:0 0 minmax(0, 1fr); }
 body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed="true"] .file-pane-resizer { display:none; }
@@ -2412,7 +2826,7 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .diff-file-header { position:sticky; top:39px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:var(--paper); color:var(--muted); font-size:13px; }
 .diff-file-path { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .diff-file-stats { color:var(--quiet); white-space:nowrap; }
-.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.diff-fallback { margin:0; padding:0 0 18px; background:transparent; overflow:visible; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font:13px/1.58 Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 .diff-line { min-height:20px; display:grid; grid-template-columns:42px 42px minmax(0, 1fr); align-items:start; padding:0 8px 0 0; white-space:normal; max-width:100%; }
 .diff-gutter { color:var(--quiet); text-align:right; padding-right:5px; user-select:none; font-variant-numeric:tabular-nums; }
 .diff-code { min-width:0; overflow:visible; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
@@ -2424,17 +2838,47 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
 .mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
 .mobile-file-backdrop { display:none; }
+.ai-comments-sidebar { position:absolute; top:0; right:0; width:min(380px, 36vw); height:100%; transform:translateX(0); transition:transform .16s ease; border-left:1px solid var(--line); background:var(--paper); z-index:4; overflow:auto; }
+body[data-ai-sidebar="closed"] .ai-comments-sidebar { transform:translateX(100%); }
+body[data-ai-sidebar="open"] .review-pane { margin-right:min(380px, 36vw); }
+.ai-comments-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:14px; border-bottom:1px solid var(--line); background:var(--paper); }
+.ai-comments-head p { margin:4px 0 0; font-size:12px; }
+.ai-comments-content { display:grid; gap:8px; padding:10px; }
+.ai-review-card { border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden; }
+.ai-review-card.is-resolved { opacity:.68; }
+.ai-review-summary { width:100%; display:grid; grid-template-columns:auto minmax(0, 1fr) auto auto; gap:8px; align-items:start; padding:10px; text-align:left; }
+.ai-review-main { min-width:0; display:grid; gap:3px; }
+.ai-review-main strong, .ai-review-main span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ai-review-main span { color:var(--muted); font-size:12px; }
+.ai-review-expanded { border-top:1px solid var(--line); padding:10px; display:grid; gap:10px; }
+.ai-review-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.ai-review-action { display:inline-flex; align-items:center; min-height:28px; border:1px solid var(--line); border-radius:999px; padding:4px 9px; color:var(--muted); background:var(--paper); font-size:12px; }
+@media (max-width: 1120px) { body[data-ai-sidebar="open"] .review-pane { margin-right:0; } .ai-comments-sidebar { width:min(420px, 92vw); z-index:6; box-shadow:-18px 0 45px rgba(0,0,0,.22); } }
 .review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
-.drawer-content { padding:14px; display:grid; gap:16px; }
+.drawer-content { padding:14px; display:grid; gap:10px; }
 .action-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
 .action-button { display:flex; justify-content:center; align-items:center; min-height:38px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
 .drawer-section { border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:hidden; }
-.drawer-section h2 { margin:0; padding:12px 12px 8px; font-size:13px; color:var(--ink); }
+.drawer-section-head { border-bottom:1px solid var(--line); background:var(--surface); }
+.drawer-section-toggle { width:100%; min-height:40px; display:grid; grid-template-columns:minmax(0, 1fr) auto auto; align-items:center; gap:8px; padding:9px 12px; text-align:left; font-size:13px; font-weight:650; }
+.drawer-section-state { color:var(--quiet); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
+.drawer-section-caret { color:var(--quiet); font-size:14px; }
+.drawer-section-body { display:grid; gap:0; }
 .comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
-.summary-chip { margin-right:6px; cursor:pointer; }
-.commit-popover { position:absolute; right:18px; top:88px; z-index:8; width:min(520px, calc(100vw - 36px)); max-height:min(620px, calc(100vh - 120px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
+.drawer-section-body > .comment-card:first-child, .drawer-section-body > .commit-card:first-child { border-top:0; }
+.review-summary-card { display:flex; flex-wrap:wrap; gap:6px; }
+.summary-chip { margin-right:0; cursor:pointer; }
+.prompt-preview { max-height:360px; overflow:auto; }
+.comment-body h1, .comment-body h2, .comment-body h3 { margin:10px 0 6px; font-size:14px; line-height:1.25; }
+.comment-body p, .comment-body ul, .comment-body ol, .comment-body blockquote { margin:0 0 8px; }
+.comment-body ul, .comment-body ol { padding-left:20px; }
+.comment-body blockquote { border-left:3px solid var(--line); padding-left:10px; color:var(--muted); }
+.comment-body pre { margin:8px 0; padding:10px; overflow:auto; white-space:pre-wrap; }
+.markdown-details { margin:8px 0; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+.markdown-details summary { padding:8px 10px; cursor:pointer; font-weight:650; }
+.commit-popover { position:fixed; right:16px; top:54px; z-index:20; width:min(520px, calc(100vw - 32px)); max-height:min(620px, calc(100vh - 72px)); overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 18px 50px rgba(0,0,0,.24); }
 .commit-popover[hidden] { display:none; }
 .commit-popover-head { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .commit-popover-list { display:grid; }
@@ -2442,7 +2886,7 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
 .comment-body { font-size:13px; line-height:1.5; }
-.comment-body pre, .comment-body code { font-family:"SFMono-Regular", Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-body pre, .comment-body code { font-family:Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
 .comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
@@ -2454,9 +2898,38 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   h1 { font-size:38px; }
   footer { flex-direction:column; align-items:flex-start; }
   .post-item { grid-template-columns:1fr; gap:8px; }
+  .pr-row { grid-template-columns:28px minmax(0, 1fr); gap:10px; }
+  .pr-author-avatar { width:28px; height:28px; }
   .pr-row-side { grid-template-columns:auto auto auto; justify-content:flex-start; flex-wrap:wrap; min-width:0; }
   .command-button { display:none; }
   .mobile-command-fab { display:flex; }
+  .index-shell { max-width:calc(100vw - 36px); padding:0 0 calc(92px + env(safe-area-inset-bottom)); }
+  .index-page .wiki-topbar { min-height:0; align-items:flex-start; flex-direction:row; padding:36px 2px 28px; border-bottom:0; }
+  .index-page .brand { font-size:34px; line-height:1.05; font-weight:800; letter-spacing:-.04em; }
+  .index-page .nav, .index-page header.hero, .index-page .filter-row, .index-page .stream-filter-row { display:none; }
+  .index-page .section { margin:0 0 38px; border:0; background:transparent; overflow:visible; }
+  .index-page .pr-section summary { padding:0 2px 14px; }
+  .index-page .pr-section summary h2 { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:15px; font-weight:800; }
+  .index-page .section-count { font-size:15px; font-weight:700; color:var(--muted); }
+  .index-page .post-list { border-top:0; gap:10px; }
+  .index-page .post-item { position:relative; grid-template-columns:28px minmax(0,1fr) auto; min-height:112px; gap:8px 10px; padding:20px 52px 20px 52px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .index-page .post-item::before { content:""; position:absolute; left:24px; top:29px; width:10px; height:10px; border-radius:999px; background:#ff6257; box-shadow:0 0 14px rgba(255,98,87,.45); }
+  .index-page .post-item[data-state="merged"]::before { background:#8b5cf6; box-shadow:0 0 14px rgba(139,92,246,.42); }
+  .index-page .post-item[data-state="draft"]::before, .index-page .post-item[data-state="closed"]::before { background:var(--quiet); box-shadow:none; }
+  .index-page .post-item::after { content:"›"; position:absolute; right:24px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:42px; line-height:1; }
+  .index-page .post-item h3 { font-size:19px; font-weight:650; line-height:1.25; }
+  .index-page .pr-title-line { align-items:center; gap:10px; flex-wrap:nowrap; }
+  .index-page .pr-title-line a { flex:0 1 auto; }
+  .index-page .pr-file-chip { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; padding:2px 8px; background:var(--soft); color:var(--muted); font-size:13px; font-weight:650; }
+  .index-page .pr-subtitle { margin-top:2px; gap:8px; font-size:15px; overflow:hidden; white-space:nowrap; }
+  .index-page .post-item[data-kind="stream"] .stream-compact-button, .index-page .post-item[data-kind="stream"] .pr-subtitle-stream-separator { display:none; }
+  .index-page .pr-subtitle-file-separator, .index-page .pr-subtitle-file-count { display:none; }
+  .index-page .stream-compact-button { max-width:168px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid var(--line); border-radius:7px; padding:2px 7px; color:var(--muted); background:rgba(255,255,255,.03); }
+  .index-page .pr-row-side { display:flex; align-items:center; gap:14px; margin-top:8px; color:var(--muted); font-size:15px; }
+  .index-page .status-set { display:none; }
+  .index-page .pr-delta, .index-page .pr-updated { min-width:0; text-align:left; }
+  .index-page .pr-delta::after { content:"•"; margin-left:14px; color:var(--quiet); }
+  .index-page .section-pager { border-top:0; padding:14px 0 0; }
   .command-palette { align-items:end; place-items:end center; padding:0; }
   .command-panel { width:100%; max-height:min(82vh, 720px); border-radius:18px 18px 0 0; border-left:0; border-right:0; border-bottom:0; }
   .command-panel-head { padding:16px; }
@@ -2476,6 +2949,64 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+
+@media (max-width: 760px) {
+  .index-shell{max-width:calc(100vw - 28px);padding:0 0 calc(92px + env(safe-area-inset-bottom));}
+  .index-page .wiki-topbar{padding:36px 2px 32px;border-bottom:0;min-height:0;}
+  .index-page .brand{font-size:30px;line-height:1.08;font-weight:800;letter-spacing:-.035em;}
+  .index-page .nav,.index-page header.hero,.index-page .filter-row,.index-page .stream-filter-row{display:none;}
+  .index-page .section{margin:0 0 18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);overflow:hidden;}
+  .index-page .pr-section summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:9px 14px;border-bottom:1px solid var(--line);list-style:none;}
+  
+  
+  
+  .index-page .pr-section summary h2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-transform:none;letter-spacing:-.01em;font-size:19px;font-weight:400;}
+  .index-page .section-count{font-size:19px;font-weight:400;color:var(--muted);}
+  .index-page .post-list{border-top:0;gap:0;}
+  
+  .index-page .post-item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:4px;align-items:center;min-height:68px;padding:11px 14px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;}
+  .index-page .post-item:last-child{border-bottom:0;}
+  .index-page .post-item:hover{background:rgba(255,255,255,.035);}
+  
+  
+  
+  .index-page .post-item:before,.index-page .post-item:after{content:none;}
+  .index-page .pr-author-avatar{grid-column:1;grid-row:1 / span 2;align-self:center;}
+  .index-page .pr-row-main{grid-column:2;grid-row:1 / span 2;min-width:0;gap:2px;}
+  .index-page .post-item h3{font-size:15px;font-weight:400;line-height:1.22;letter-spacing:0;}
+  .index-page .pr-title-line{align-items:center;gap:8px;flex-wrap:nowrap;}
+  .index-page .pr-title-line a{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;}
+  .index-page .pr-file-chip{display:none;}
+  .index-page .pr-subtitle{margin-top:2px;gap:6px;min-width:0;overflow:hidden;color:var(--muted);font-size:13px;line-height:1.25;white-space:nowrap;}
+  .index-page .stream-compact-button,.index-page .pr-subtitle-stream-separator,.index-page .pr-subtitle-repo,.index-page .pr-subtitle-file-count,.index-page .pr-subtitle-file-separator{display:none;}
+  .index-page .pr-mobile-meta{display:inline;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .index-page .pr-row-side{grid-column:3;grid-row:1 / span 2;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:4px 8px;align-items:center;justify-content:end;min-width:86px;color:var(--muted);font-size:13px;}
+  .index-page .status-set{grid-column:1 / span 2;grid-row:2;display:flex;justify-content:flex-end;gap:0;}
+  .index-page .mergeability-icon{width:21px;height:21px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;} .index-page .review-icon,.index-page .check-icon{display:none;}
+  .index-page .mergeability-icon.mergeability-mergeable{border-color:#2f7d46;background:#2f7d46;color:#07110a;}
+  .index-page .mergeability-icon.mergeability-conflicts{border-color:#ef4444;color:#ef4444;background:transparent;}
+  .index-page .mergeability-icon:empty{display:inline-flex;}
+  .index-page .mergeability-icon:empty:before{content:"-";color:var(--quiet);font-weight:500;}
+  .index-page .pr-delta{display:none;}
+  .index-page .pr-updated{grid-column:2;grid-row:1;min-width:0;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .index-page .pr-mobile-files{display:inline;grid-column:1;grid-row:1;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;}
+}
+
+@media (max-width: 760px) {
+  .index-page .post-item::before, .index-page .post-item::after, .index-page .post-item:before, .index-page .post-item:after { content:none !important; display:none !important; }
+  .index-page .review-icon, .index-page .check-icon { display:none !important; }
+  .index-page .status-set { gap:0 !important; }
+  .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
+}
+
+@media (max-width: 760px) {
+  .index-page .post-item::before, .index-page .post-item::after, .index-page .post-item:before, .index-page .post-item:after { content:none !important; display:none !important; }
+  .index-page .review-icon, .index-page .check-icon { display:none !important; }
+  .index-page .status-set { gap:0 !important; }
+  .index-page .mergeability-icon.mergeability-conflicts { border-color:#ef4444 !important; color:#ef4444 !important; background:transparent !important; }
+  .index-page .mergeability-icon.mergeability-mergeable { border-color:#2f7d46 !important; background:#2f7d46 !important; color:#07110a !important; }
+}
 }
 `;
 }
@@ -2599,7 +3130,7 @@ function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v2-mergeability';
+const cacheSchemaVersion = 'v4-mergeability-live';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
 const sectionPageSize = 10;
@@ -2623,14 +3154,14 @@ const commandClose = document.querySelector('[data-command-close]');
 const pageCommandItems = Array.from(document.querySelectorAll('[data-command-page]'));
 const escapeText = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const openPull = (route) => { window.location.href = route; };
-const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && (pull.mergeability === 'conflicts' || pull.checkStatus === 'failure')) || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
+const kindMatchesFilter = (pull) => activeFilter === 'all' || pull.kind === activeFilter || (activeFilter === 'failing' && pull.mergeability === 'conflicts') || (activeFilter === 'open' && pull.lifecycleStatus === 'open') || (activeFilter === 'draft' && pull.lifecycleStatus === 'draft');
 const queryMatchesPull = (pull) => !activeQuery.trim() || scorePullRequestSearchValue(pull, activeQuery) > 0;
 function visiblePulls() { return pulls.filter((pull) => kindMatchesFilter(pull) && queryMatchesPull(pull) && (!activeStream || pull.associatedStream === activeStream)); }
 function groupSections(source) {
   return [
     { id: 'streams', title: 'Streams', pulls: source.filter((pull) => pull.kind === 'stream' && (showAllStreams || pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'recently-merged', title: 'Merging and recently merged', pulls: source.filter((pull) => pull.lifecycleStatus === 'merged') },
-    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft') },
+    { id: 'open', title: 'Open', pulls: source.filter((pull) => pull.kind !== 'stream' && (pull.lifecycleStatus === 'open' || pull.lifecycleStatus === 'draft')) },
     { id: 'closed', title: 'Closed', pulls: source.filter((pull) => pull.lifecycleStatus === 'closed') },
   ].filter((section) => section.pulls.length > 0);
 }
@@ -2672,11 +3203,27 @@ function relativeTime(value) { const date = new Date(value); if (Number.isNaN(da
 function renderCard(pull) {
   const route = routePrefix + pull.number;
   const stream = pull.associatedStream || pull.baseRef || 'No stream';
-  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + formatFileCount(pull.changedFiles);
-  return '<article class="post-item pr-row" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
-    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a></h3>' +
-    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span aria-hidden="true">•</span><span>' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span aria-hidden="true">•</span><span>' + escapeText(formatFileCount(pull.changedFiles)) + '</span></p></div>' +
-    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span><span class="review-icon review-' + escapeText(pull.reviewStatus || 'unknown') + '" title="review: ' + escapeText(pull.reviewStatus || 'unknown') + '">' + reviewIcon(pull.reviewStatus) + '</span><span class="check-icon check-' + escapeText(pull.checkStatus || 'unknown') + '" title="checks: ' + escapeText(pull.checkStatus || 'unknown') + '">' + checkIcon(pull.checkStatus) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span></div></article>';
+  const fileCount = formatFileCount(pull.changedFiles);
+  const mobileMeta = '#' + pull.number + ' ' + stream;
+  const subtitleText = stream + ' • ' + repoLabel + ' #' + pull.number + ' • ' + fileCount;
+  return '<article class="post-item pr-row" role="link" tabindex="0" data-card-route="' + escapeText(route) + '" data-kind="' + escapeText(pull.kind) + '" data-state="' + escapeText(pull.lifecycleStatus) + '">' +
+    renderAuthorAvatar(pull) +
+    '<div class="pr-row-main"><h3 class="pr-title-line"><a href="' + escapeText(route) + '" data-pr-route="' + escapeText(route) + '">' + escapeText(pull.title) + '</a><span class="pr-title-meta pr-file-chip">' + escapeText(fileCount) + '</span></h3>' +
+    '<p class="pr-subtitle" aria-label="' + escapeText(subtitleText) + '"><button class="stream-chip stream-compact-button" type="button" data-stream-filter="' + escapeText(stream) + '" title="Show stream task sessions">' + escapeText(stream) + '</button><span class="pr-subtitle-stream-separator" aria-hidden="true">•</span><span class="pr-subtitle-repo">' + escapeText(repoLabel) + ' #' + escapeText(pull.number) + '</span><span class="pr-mobile-meta">' + escapeText(mobileMeta) + '</span><span class="pr-subtitle-file-separator" aria-hidden="true">•</span><span class="pr-subtitle-file-count">' + escapeText(fileCount) + '</span></p></div>' +
+    '<div class="pr-row-side"><span class="status-set"><span class="mergeability-icon mergeability-' + escapeText(pull.mergeability || 'unknown') + '" title="mergeability: ' + escapeText(pull.mergeability || 'unknown') + '">' + mergeabilityIcon(pull.mergeability) + '</span></span><span class="pr-delta">' + formatDelta(pull) + '</span><span class="pr-updated">' + relativeTime(pull.updatedAt) + '</span><span class="pr-mobile-files">' + escapeText(fileCount) + '</span></div></article>';
+}
+function renderAuthorAvatar(pull) {
+  const author = pull.author || 'unknown';
+  const avatarUrl = pull.authorAvatarUrl || '';
+  if (avatarUrl) {
+    return '<img class="pr-author-avatar" src="' + escapeText(avatarUrl) + '" alt="' + escapeText(author + ' avatar') + '" loading="lazy" referrerpolicy="no-referrer" />';
+  }
+  return '<span class="pr-author-avatar pr-author-avatar-fallback" aria-label="' + escapeText(author + ' avatar') + '">' + escapeText(authorInitials(author)) + '</span>';
+}
+function authorInitials(value) {
+  const clean = String(value || '').replace(/[^a-z0-9]+/gi, ' ').trim();
+  if (!clean) return '?';
+  return clean.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
 function renderSection(section) {
@@ -2695,6 +3242,16 @@ function renderSections() {
   streamLabel.textContent = activeStream || '';
   sectionsRoot.innerHTML = sections.length ? sections.map(renderSection).join('') : '<section class="section"><h2>No matching pull requests</h2><p class="muted">Try another filter, command search, or stream.</p></section>';
   document.querySelectorAll('[data-pr-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); openPull(link.getAttribute('data-pr-route')); }));
+  document.querySelectorAll('[data-card-route]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      openPull(card.getAttribute('data-card-route'));
+    });
+    card.addEventListener('keydown', (event) => {
+      if (event.target.closest('a,button,input,textarea,select')) return;
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPull(card.getAttribute('data-card-route')); }
+    });
+  });
   document.querySelectorAll('[data-stream-filter]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); activeStream = button.getAttribute('data-stream-filter') || ''; resetSectionLimits(); renderSections(); }));
   document.querySelectorAll('[data-toggle-streams]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); showAllStreams = !showAllStreams; sectionLimits.streams = sectionPageSize; renderSections(); }));
   document.querySelectorAll('[data-load-more]').forEach((button) => button.addEventListener('click', () => { const id = button.getAttribute('data-load-more'); sectionLimits[id] = (sectionLimits[id] || sectionPageSize) + sectionPageSize; renderSections(); }));
@@ -2706,7 +3263,7 @@ function renderCommandResults() {
   const scoredPulls = pulls.map((pull) => ({ pull, score: scorePullRequestSearchValue(pull, query) })).filter((item) => !query || item.score > 0).sort((left, right) => right.score - left.score || new Date(right.pull.updatedAt).getTime() - new Date(left.pull.updatedAt).getTime()).slice(0, 8);
   commandResults.innerHTML = scoredPulls.length ? scoredPulls.map(({ pull }) => { const route = routePrefix + pull.number; const stream = pull.associatedStream || pull.baseRef || 'No stream'; return '<button class="command-item command-pr-item" type="button" data-command-route="' + escapeText(route) + '"><span class="command-key">#' + escapeText(pull.number) + '</span><span><strong>' + escapeText(pull.title) + '</strong><small>' + escapeText(stream + ' • ' + repoLabel + ' #' + pull.number) + '</small></span></button>'; }).join('') : '<div class="command-empty">No PRs match this command search.</div>';
 }
-function filterCommandPages() { const query = commandInput ? commandInput.value.trim() : ''; pageCommandItems.forEach((item) => { const label = item.getAttribute('data-command-label') || item.textContent || ''; item.hidden = Boolean(query) && scoreSearchValue(label, query.toLowerCase(), normalizeSearchValue(query), splitSearchTokens(query), 1) === 0; }); }
+function filterCommandPages() { const query = commandInput ? commandInput.value.trim() : ''; if (commandPages && commandPages.parentElement) commandPages.parentElement.hidden = Boolean(query); pageCommandItems.forEach((item) => { item.hidden = Boolean(query); }); }
 function openCommandPalette() { commandPalette.hidden = false; commandBackdrop.hidden = false; document.body.dataset.commandPaletteState = 'open'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'true')); renderCommandResults(); filterCommandPages(); window.setTimeout(() => commandInput && commandInput.focus(), 0); }
 function closeCommandPalette() { commandPalette.hidden = true; commandBackdrop.hidden = true; document.body.dataset.commandPaletteState = 'closed'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false')); }
 function updateActiveFilterButtons(filter) { document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === filter)); }
@@ -2717,24 +3274,41 @@ function mergeIndexWithCache(data, cached) { if (!cached || !Array.isArray(cache
 function applyIndexData(data) { pulls = Array.isArray(data.pulls) ? data.pulls : []; resetSectionLimits(); renderSections(); }
 function clearStaleIndexCaches() { try { for (let index = localStorage.length - 1; index >= 0; index -= 1) { const key = localStorage.key(index); if (key && key.startsWith(staleCachePrefix) && key !== cacheKey) localStorage.removeItem(key); } } catch { } }
 function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedIndex(); if (cached) applyIndexData(cached); return cached; }
-function loadIndex() { const cached = loadCachedIndex(); fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' }).then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); }).then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; }); }
+let lastIndexLoadAt = 0;
+let indexLoadInFlight = null;
+function loadIndex(options = {}) {
+  const cached = options.useCache === false ? null : loadCachedIndex();
+  if (indexLoadInFlight) return indexLoadInFlight;
+  lastIndexLoadAt = Date.now();
+  indexLoadInFlight = fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
+    .then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); })
+    .then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); return merged; }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+    .finally(() => { indexLoadInFlight = null; });
+  return indexLoadInFlight;
+}
+function refreshIndexIfStale(minAgeMs = 10000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
 document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => { activeFilter = button.dataset.filter; resetSectionLimits(); updateActiveFilterButtons(activeFilter); renderSections(); }));
 clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLimits(); renderSections(); });
 commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
 if (commandClose) commandClose.addEventListener('click', closeCommandPalette);
 if (commandBackdrop) commandBackdrop.addEventListener('click', closeCommandPalette);
+if (commandPalette) commandPalette.addEventListener('click', (event) => { if (event.target === commandPalette) closeCommandPalette(); });
 if (commandInput) commandInput.addEventListener('input', () => { activeQuery = commandInput.value; resetSectionLimits(); filterCommandPages(); window.clearTimeout(commandInput.dataset.timer); commandInput.dataset.timer = String(window.setTimeout(renderSections, 80)); });
 if (commandResults) commandResults.addEventListener('click', (event) => { const button = event.target.closest('[data-command-route]'); if (button) openPull(button.getAttribute('data-command-route')); });
 if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
 if (commandInput) commandInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { const firstPr = commandResults && commandResults.querySelector('[data-command-route]'); const firstPage = commandPages && commandPages.querySelector('[data-command-page]:not([hidden])'); if (firstPr) openPull(firstPr.getAttribute('data-command-route')); else if (firstPage) runPageCommand(firstPage); } });
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
+window.addEventListener('focus', () => refreshIndexIfStale(5000));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
+document.addEventListener('pointerdown', () => refreshIndexIfStale(12000), { passive: true });
+window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
 }
 function renderReviewClientScript(apiPath: string): string {
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set() };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -2743,14 +3317,24 @@ const els = {
   selected: document.getElementById('selected-file'),
   diff: document.getElementById('diff-root'),
   drawerToggle: document.getElementById('drawer-toggle'),
+  navMergeability: document.getElementById('mergeability-nav-button'),
+  navCommits: document.getElementById('commit-nav-button'),
+  aiCommentsToggle: document.getElementById('ai-comments-toggle'),
+  aiCommentsSidebar: document.getElementById('ai-comments-sidebar'),
+  aiCommentsClose: document.getElementById('ai-comments-close'),
+  aiCommentsSummary: document.getElementById('ai-comments-summary'),
+  aiCommentsContent: document.getElementById('ai-comments-content'),
   drawerClose: document.getElementById('drawer-close'),
   copyAll: document.getElementById('copy-all-comments'),
+  copyReviewLink: document.getElementById('copy-review-link'),
+  copyCurrentCommitLink: document.getElementById('copy-current-commit-link'),
   openChatGpt: document.getElementById('open-chatgpt-prompt'),
   copyCodex: document.getElementById('copy-codex-prompt'),
   mergeabilityButton: document.getElementById('mergeability-button'),
   mergePrButton: document.getElementById('merge-pr-button'),
   drawerSummary: document.getElementById('drawer-summary'),
   drawerStatus: document.getElementById('drawer-status'),
+  drawerPrompt: document.getElementById('drawer-prompt'),
   drawerChecks: document.getElementById('drawer-checks'),
   drawerComments: document.getElementById('drawer-comments'),
   drawerCommits: document.getElementById('drawer-commits'),
@@ -2767,33 +3351,49 @@ els.drawerToggle.addEventListener('click', () => {
   setDrawer(document.body.dataset.reviewDrawer !== 'open');
 });
 els.drawerClose.addEventListener('click', () => setDrawer(false));
+els.aiCommentsToggle.addEventListener('click', () => setAiSidebar(document.body.dataset.aiSidebar !== 'open'));
+els.aiCommentsClose.addEventListener('click', () => setAiSidebar(false));
 els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
 els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
+els.copyReviewLink.addEventListener('click', () => copyReviewLink());
+els.copyCurrentCommitLink.addEventListener('click', () => copyCurrentCommitLink());
 document.addEventListener('click', (event) => {
+  const sectionButton = event.target.closest('[data-drawer-section-toggle]');
+  if (sectionButton) { event.preventDefault(); toggleDrawerSection(sectionButton.dataset.drawerSectionToggle); return; }
   const folderButton = event.target.closest('[data-folder-path]');
   if (folderButton) { toggleFolder(folderButton.dataset.folderPath); return; }
   const commitButton = event.target.closest('[data-open-commits]');
-  if (commitButton) { renderCommitPopover(); return; }
+  if (commitButton) { toggleCommitPopover(); return; }
   const closeCommits = event.target.closest('[data-close-commits]');
   if (closeCommits) { closeCommitPopover(); return; }
   const mergeabilityButton = event.target.closest('[data-open-mergeability]');
-  if (mergeabilityButton) { renderMergeabilityPopover(); return; }
+  if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
+  const aiToggle = event.target.closest('[data-ai-review-toggle]');
+  if (aiToggle) { toggleReviewItem(aiToggle.dataset.reviewItemId); return; }
+  const aiCopyLink = event.target.closest('[data-ai-review-copy-link]');
+  if (aiCopyLink) { copyReviewItemField(aiCopyLink.dataset.reviewItemId, 'link'); return; }
+  const aiCopyBody = event.target.closest('[data-ai-review-copy-body]');
+  if (aiCopyBody) { copyReviewItemField(aiCopyBody.dataset.reviewItemId, 'body'); return; }
+  const aiCopyPrompt = event.target.closest('[data-ai-review-copy-prompt]');
+  if (aiCopyPrompt) { copyReviewItemField(aiCopyPrompt.dataset.reviewItemId, 'prompt'); return; }
+  const aiResolve = event.target.closest('[data-ai-review-resolve]');
+  if (aiResolve) { resolveReviewItem(aiResolve.dataset.reviewItemId); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
   if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
 });
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
-els.mergeabilityButton.addEventListener('click', () => renderMergeabilityPopover());
+
 els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === 'd') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'p') setDrawer(document.body.dataset.reviewDrawer !== 'open');
   if (event.key === 'f') toggleFilePane();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
-  if (event.key === 'm') renderMergeabilityPopover();
+  if (event.key === 'm') toggleMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
@@ -2819,6 +3419,11 @@ function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+function setAiSidebar(open) {
+  document.body.dataset.aiSidebar = open ? 'open' : 'closed';
+  els.aiCommentsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  els.aiCommentsSidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
 }
 function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
@@ -2846,6 +3451,7 @@ function applyReviewData(data) {
   renderLongDiffs();
   setupActiveFileObserver();
   renderDrawer();
+  renderAiCommentsSidebar();
 }
 
 function loadLiveData() {
@@ -2894,6 +3500,8 @@ function renderMergeResult(message) {
 function renderHeader() {
   const pull = state.data.pull;
   const commentCount = state.data.comments ? state.data.comments.length : 0;
+  const aiCommentCount = aiReviewItems().length;
+  els.aiCommentsToggle.textContent = aiCommentCount.toLocaleString() + ' AI';
   els.title.textContent = pull.title;
   els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author + ' · ' + commentCount + ' review comments';
   els.count.textContent = String(state.data.files.length);
@@ -2966,16 +3574,137 @@ function fileDomId(filename) {
   return 'file-' + String(filename || '').replace(/[^a-zA-Z0-9_-]+/g, '-');
 }
 
+function aiReviewItems() {
+  if (Array.isArray(state.data?.reviewItems)) return state.data.reviewItems;
+  return (state.data?.comments || [])
+    .filter((comment) => ['coderabbit', 'codex', 'claude'].includes(comment.provider))
+    .map((comment) => ({
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      path: comment.path,
+      line: comment.line,
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    }));
+}
+
+function renderAiCommentsSidebar() {
+  const items = aiReviewItems();
+  const unresolved = items.filter((item) => !item.isResolved).length;
+  els.aiCommentsSummary.textContent = items.length.toLocaleString() + ' AI item' + (items.length === 1 ? '' : 's') + ' · ' + unresolved.toLocaleString() + ' unresolved';
+  els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
+}
+
+function renderAiReviewItem(item) {
+  const expanded = state.expandedReviewItems.has(item.id);
+  const stateClass = item.isResolved ? 'is-resolved' : 'is-unresolved';
+  const stateLabel = item.isResolved ? 'resolved' : 'unresolved';
+  const sourceLabel = item.canResolve ? 'GitHub thread' : 'local only';
+  const location = item.path ? item.path + (item.line ? ':' + item.line : '') : 'conversation';
+  const jump = item.path ? '<button class="ai-review-action" type="button" data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '">jump</button>' : '';
+  const body = expanded ? '<div class="ai-review-expanded"><div class="comment-body">' + renderMarkdown(item.body) + '</div><div class="ai-review-actions"><button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button><button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + jump + renderReviewResolveButton(item) + '</div></div>' : '';
+  return '<article class="ai-review-card ' + stateClass + '"><button class="ai-review-summary" type="button" data-ai-review-toggle data-review-item-id="' + escapeAttribute(item.id) + '" aria-expanded="' + String(expanded) + '"><span class="badge">' + escapeHtml(item.provider) + '</span><span class="ai-review-main"><strong>' + escapeHtml(location) + '</strong><span>' + escapeHtml(previewText(item.body, 126)) + '</span></span><span class="badge">' + escapeHtml(stateLabel) + '</span><span class="badge">' + escapeHtml(sourceLabel) + '</span></button>' + body + '</article>';
+}
+
+function renderReviewResolveButton(item) {
+  if (!item.canResolve || !item.threadId) return '<span class="badge">' + escapeHtml(item.resolutionSource || 'local') + '</span>';
+  return '<button class="ai-review-action" type="button" data-ai-review-resolve data-review-item-id="' + escapeAttribute(item.id) + '">' + (item.isResolved ? 'mark unresolved' : 'mark resolved') + '</button>';
+}
+
+function toggleReviewItem(itemId) {
+  if (!itemId) return;
+  if (state.expandedReviewItems.has(itemId)) state.expandedReviewItems.delete(itemId);
+  else state.expandedReviewItems.add(itemId);
+  renderAiCommentsSidebar();
+}
+
+function findReviewItem(itemId) {
+  return aiReviewItems().find((item) => item.id === itemId) || null;
+}
+
+function copyReviewItemField(itemId, field) {
+  const item = findReviewItem(itemId);
+  if (!item) return;
+  if (field === 'link') { copyText(item.htmlUrl || ''); return; }
+  if (field === 'body') { copyText(item.body || ''); return; }
+  copyText('@agent please handle this review item.\\n\\n' + reviewItemMarkdown(item));
+}
+
+function reviewItemMarkdown(item) {
+  const lines = ['Provider: ' + item.provider, 'State: ' + (item.isResolved ? 'resolved' : 'unresolved'), 'Source: ' + item.resolutionSource];
+  if (item.path) lines.push('Location: ' + item.path + (item.line ? ':' + item.line : ''));
+  if (item.htmlUrl) lines.push('URL: ' + item.htmlUrl);
+  lines.push('', item.body || '');
+  return lines.join('\\n');
+}
+
+async function resolveReviewItem(itemId) {
+  const item = findReviewItem(itemId);
+  if (!item || !item.canResolve || !item.threadId) return;
+  const action = item.isResolved ? 'unresolve' : 'resolve';
+  try {
+    const response = await fetch(apiPath + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
+    if (!response.ok) return;
+    item.isResolved = !item.isResolved;
+    renderAiCommentsSidebar();
+    loadLiveData();
+  } catch {
+    renderAiCommentsSidebar();
+  }
+}
+
+function previewText(value, maxLength) {
+  const compact = String(value || '').replace(/\s+/g, ' ').trim();
+  return compact.length > maxLength ? compact.slice(0, maxLength - 1) + '…' : compact;
+}
 function renderDrawer() {
   const comments = state.data.comments || [];
-  const commits = state.data.streamCommits || [];
+  const commits = reviewCommits();
   const checks = state.data.checks || [];
   const pull = state.data.pull;
-  els.drawerStatus.innerHTML = '<h2>Status</h2><div class="comment-card"><span class="badge">' + escapeHtml(pull.state) + '</span> <button class="badge summary-chip" type="button" data-open-mergeability>mergeability: ' + escapeHtml(pull.mergeableState || 'unknown') + '</button> <span class="badge">open: ' + escapeHtml(String(pull.state === 'open')) + '</span></div>';
-  els.drawerChecks.innerHTML = '<h2>Checks</h2>' + (checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>');
-  els.drawerSummary.innerHTML = '<h2>Review summary</h2><div class="comment-card"><span class="badge">' + comments.length + ' comments</span> <button class="badge summary-chip" type="button" data-open-commits>' + commits.length + ' stream commits</button></div>';
-  els.drawerComments.innerHTML = '<h2>Comments</h2>' + (comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>');
-  els.drawerCommits.innerHTML = '<h2>Recent stream commits</h2>' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found for this head branch.</div>');
+  const mergeLabel = mergeabilityLabel(pull);
+  const commentsLabel = comments.length.toLocaleString() + ' ' + (comments.length === 1 ? 'comment' : 'comments');
+  const commitsLabel = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
+  const checksLabel = checks.length.toLocaleString() + ' ' + (checks.length === 1 ? 'check' : 'checks');
+  els.navMergeability.textContent = mergeLabel;
+  els.navMergeability.dataset.status = mergeLabel;
+  els.navCommits.textContent = commitsLabel;
+  const statusBody = '<div class="comment-card compact-status"><button class="badge summary-chip" type="button" data-open-mergeability>' + escapeHtml(mergeLabel) + '</button> <span class="badge">' + escapeHtml(pull.state) + '</span> <span class="badge">' + escapeHtml(pull.headRef || '') + ' -> ' + escapeHtml(pull.baseRef || '') + '</span></div>';
+  const summaryBody = '<div class="comment-card review-summary-card"><button class="badge summary-chip" type="button" data-drawer-section-toggle="comments">' + escapeHtml(commentsLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="commits" data-open-commits>' + escapeHtml(commitsLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="checks">' + escapeHtml(checksLabel) + '</button> <button class="badge summary-chip" type="button" data-drawer-section-toggle="prompt">agent prompt</button></div>';
+  const promptBody = '<div class="comment-card"><div class="comment-meta">Prompt preview</div><div class="comment-body prompt-preview">' + renderMarkdown(buildChatGptPrompt()) + '</div></div>';
+  els.drawerStatus.innerHTML = renderDrawerSection('status', 'Status', statusBody, true);
+  els.drawerSummary.innerHTML = renderDrawerSection('summary', 'Review summary', summaryBody, true);
+  els.drawerPrompt.innerHTML = renderDrawerSection('prompt', 'Prompt for AI agents', promptBody, false);
+  els.drawerChecks.innerHTML = renderDrawerSection('checks', 'Checks', checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>', false);
+  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
+  els.drawerCommits.innerHTML = renderDrawerSection('commits', 'Commits', commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>', false);
+}
+
+function renderDrawerSection(sectionId, title, bodyHtml, defaultOpen) {
+  const open = drawerSectionIsOpen(sectionId, defaultOpen);
+  const stateLabel = open ? 'Hide' : 'Show';
+  const caret = open ? '⌄' : '›';
+  const body = open ? '<div class="drawer-section-body">' + bodyHtml + '</div>' : '';
+  return '<div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="' + escapeAttribute(sectionId) + '" aria-expanded="' + String(open) + '"><span>' + escapeHtml(title) + '</span><span class="drawer-section-state">' + stateLabel + '</span><span class="drawer-section-caret">' + caret + '</span></button></div>' + body;
+}
+
+function drawerSectionIsOpen(sectionId, defaultOpen) {
+  const value = state.drawerSections ? state.drawerSections[sectionId] : undefined;
+  return typeof value === 'boolean' ? value : defaultOpen;
+}
+
+function toggleDrawerSection(sectionId) {
+  if (!sectionId) return;
+  const defaultOpen = sectionId === 'status' || sectionId === 'summary';
+  state.drawerSections[sectionId] = !drawerSectionIsOpen(sectionId, defaultOpen);
+  renderDrawer();
 }
 
 function renderComment(comment) {
@@ -2990,30 +3719,50 @@ function renderCommit(commit) {
   return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function reviewCommits() {
+  if (Array.isArray(state.data?.commits) && state.data.commits.length) return state.data.commits;
+  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return state.data.streamCommits;
+  return [];
+}
+function toggleCommitPopover() {
+  if (!els.commitPopover.hidden) { closeCommitPopover(); return; }
+  renderCommitPopover();
+}
 function renderCommitPopover() {
-  const commits = state.data?.streamCommits || [];
+  const commits = reviewCommits();
   els.commitPopover.hidden = false;
-  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>stream commits</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No stream commits found.</div>') + '</div>';
+  closeMergeabilityPopover();
+  els.commitPopover.innerHTML = '<div class="commit-popover-head"><strong>' + commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits') + '</strong><button type="button" data-close-commits>Close</button></div><div class="commit-popover-list">' + (commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>') + '</div>';
 }
 
 function closeCommitPopover() {
   els.commitPopover.hidden = true;
 }
+function mergeabilityLabel(pull) {
+  const stateLabel = String(pull?.mergeableState || 'unknown').toLowerCase();
+  const unmergeable = ['dirty'].includes(stateLabel) || pull?.mergeable === false;
+  return unmergeable ? 'unmergeable' : 'mergeable';
+}
+function toggleMergeabilityPopover() {
+  if (!els.mergeabilityPopover.hidden) { closeMergeabilityPopover(); return; }
+  renderMergeabilityPopover();
+}
 function renderMergeabilityPopover() {
+  closeCommitPopover();
   const pull = state.data?.pull || {};
   const files = state.data?.files || [];
   const stateLabel = String(pull.mergeableState || 'unknown').toLowerCase();
-  const clean = stateLabel === 'clean';
-  const dirty = ['dirty', 'blocked'].includes(stateLabel) || pull.mergeable === false;
-  const title = clean ? 'clean' : escapeHtml(stateLabel || 'unknown');
+  const clean = mergeabilityLabel(pull) === 'mergeable';
+  const dirty = !clean;
+  const title = escapeHtml(mergeabilityLabel(pull));
   const fileList = dirty && files.length ? '<ul class="mergeability-files">' + files.map((file) => '<li>' + escapeHtml(file.filename) + '</li>').join('') + '</ul>' : '';
   const body = clean
-    ? '<p class="muted">This PR reports a clean merge state.</p>'
+    ? '<p class="muted">This PR is mergeable.</p>'
     : dirty
       ? '<p class="muted">Files to inspect before merging:</p>' + fileList
       : '<p class="muted">This PR is mergeable but GitHub reports state: ' + escapeHtml(stateLabel || 'unknown') + '.</p>';
   els.mergeabilityPopover.hidden = false;
-  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Mergeability</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + title + '</p>' + body + '</div>';
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>' + title + '</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card">' + body + '</div>';
 }
 
 function closeMergeabilityPopover() {
@@ -3097,7 +3846,6 @@ function renderPatchFallback(patch, filename) {
       const hunk = parseHunkHeader(line);
       oldLine = hunk.oldStart;
       newLine = hunk.newStart;
-      rows.push(renderDiffLine(line, 'hunk', '', ''));
       continue;
     }
     if (line.startsWith('+')) {
@@ -3142,12 +3890,146 @@ function renderCheck(check) {
 }
 
 function renderMarkdown(markdown) {
-  return escapeHtml(String(markdown || ''))
-    .replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
-    .replace(/\`([^\`]+)\`/g, '<code>$1</code>')
-    .replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>')
-    .replace(/\\[([^\\]]+)\\]\\((https?:[^)]+)\\)/g, '<a href="$2">$1</a>')
-    .replace(/\\n/g, '<br>');
+  return renderMarkdownBlocks(String(markdown || ''));
+}
+
+function renderMarkdownBlocks(markdown) {
+  const newline = String.fromCharCode(10);
+  const lines = String(markdown || '').replaceAll(String.fromCharCode(13) + newline, newline).split(newline);
+  const html = [];
+  let paragraph = [];
+  let listItems = [];
+  let inCode = false;
+  let codeLines = [];
+  const codeFence = String.fromCharCode(96, 96, 96);
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    html.push('<p>' + renderInlineMarkdown(paragraph.join(' ')) + '</p>');
+    paragraph = [];
+  }
+  function flushList() {
+    if (!listItems.length) return;
+    html.push('<ul>' + listItems.map((item) => '<li>' + renderInlineMarkdown(item) + '</li>').join('') + '</ul>');
+    listItems = [];
+  }
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith(codeFence)) {
+      if (inCode) {
+        html.push('<pre><code>' + escapeHtml(codeLines.join(newline)) + '</code></pre>');
+        codeLines = [];
+        inCode = false;
+      } else {
+        flushParagraph();
+        flushList();
+        inCode = true;
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+    if (trimmed === '<details>') {
+      flushParagraph();
+      flushList();
+      html.push('<details class="markdown-details">');
+      continue;
+    }
+    if (trimmed === '</details>') {
+      flushParagraph();
+      flushList();
+      html.push('</details>');
+      continue;
+    }
+    if (trimmed.startsWith('<summary>') && trimmed.endsWith('</summary>')) {
+      flushParagraph();
+      flushList();
+      html.push('<summary>' + renderInlineMarkdown(trimmed.slice(9, -10)) + '</summary>');
+      continue;
+    }
+    const headingLevel = markdownHeadingLevel(trimmed);
+    if (headingLevel > 0) {
+      flushParagraph();
+      flushList();
+      html.push('<h' + headingLevel + '>' + renderInlineMarkdown(trimmed.slice(headingLevel + 1)) + '</h' + headingLevel + '>');
+      continue;
+    }
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      flushParagraph();
+      listItems.push(trimmed.slice(2));
+      continue;
+    }
+    if (trimmed.startsWith('>')) {
+      flushParagraph();
+      flushList();
+      html.push('<blockquote>' + renderInlineMarkdown(trimmed.slice(1).trim()) + '</blockquote>');
+      continue;
+    }
+    paragraph.push(trimmed);
+  }
+  if (inCode) html.push('<pre><code>' + escapeHtml(codeLines.join(newline)) + '</code></pre>');
+  flushParagraph();
+  flushList();
+  return html.join('');
+}
+
+function markdownHeadingLevel(value) {
+  let level = 0;
+  while (value.charAt(level) === '#') level += 1;
+  return level > 0 && level <= 3 && value.charAt(level) === ' ' ? level : 0;
+}
+
+function renderInlineMarkdown(value) {
+  const backtick = String.fromCharCode(96);
+  return renderMarkdownLinks(replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>'));
+}
+
+function replaceDelimited(value, marker, openTag, closeTag) {
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const start = value.indexOf(marker, cursor);
+    if (start === -1) return output + value.slice(cursor);
+    const end = value.indexOf(marker, start + marker.length);
+    if (end === -1) return output + value.slice(cursor);
+    output += value.slice(cursor, start) + openTag + value.slice(start + marker.length, end) + closeTag;
+    cursor = end + marker.length;
+  }
+  return output;
+}
+
+function renderMarkdownLinks(value) {
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const labelStart = value.indexOf('[', cursor);
+    if (labelStart === -1) return output + value.slice(cursor);
+    const labelEnd = value.indexOf(']', labelStart + 1);
+    const urlStart = labelEnd >= 0 ? labelEnd + 1 : -1;
+    if (labelEnd === -1 || value.charAt(urlStart) !== '(') {
+      output += value.slice(cursor, labelStart + 1);
+      cursor = labelStart + 1;
+      continue;
+    }
+    const urlEnd = value.indexOf(')', urlStart + 1);
+    if (urlEnd === -1) return output + value.slice(cursor);
+    const label = value.slice(labelStart + 1, labelEnd);
+    const url = value.slice(urlStart + 1, urlEnd);
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      output += value.slice(cursor, urlEnd + 1);
+      cursor = urlEnd + 1;
+      continue;
+    }
+    output += value.slice(cursor, labelStart) + '<a href="' + escapeAttribute(url) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    cursor = urlEnd + 1;
+  }
+  return output;
 }
 
 function navigateToComment(file, line) {

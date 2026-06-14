@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/test-task-hook-workflow-contract",
+  "base": "origin/stream/os",
+  "headSha": "e27629a4ec49f586b556efc12e7bcb8abdd183fa",
+  "changeHash": "1ed88a098cd9056b6976884b445d9ec56a5993a83cb9e42849818295be8a103c",
+  "changedFiles": [
+    "packages/os/tests/task-hook-workflow-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T07:01:07.722Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/test-task-hook-workflow-contract/current.json",
+        ".task/os/test-task-hook-workflow-contract/evidence-log.json",
+        ".task/os/test-task-hook-workflow-contract/explore-state.json",
+        ".task/os/test-task-hook-workflow-contract/read-log.json",
+        ".task/os/test-task-hook-workflow-contract/session.json",
+        ".task/os/test-task-hook-workflow-contract/workpad.md",
+        ".task/tasks/os/test-task-hook-workflow-contract.json",
+        "packages/os/tests/task-hook-workflow-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

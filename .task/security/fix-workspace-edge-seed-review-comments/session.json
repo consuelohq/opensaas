@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bf262d39d698",
+  "tmuxSession": "opensaas-security-fix-workspace-edge-seed-review-comments-bf262d39",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-workspace-edge-seed-review-comments",
+  "branch": "task/security/fix-workspace-edge-seed-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-edge-seed-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-edge-seed-review-comments",
+  "prNumber": 982,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/982",
+  "createdAt": "2026-06-12T17:48:28.691Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-workspace-edge-seed-review-comments/.task/security/fix-workspace-edge-seed-review-comments/session.json"
+}

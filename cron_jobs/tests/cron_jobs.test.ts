@@ -8,6 +8,7 @@ import {
   discoverJobs,
   launchAgentLabel,
   loadDiffCockpitFingerprint,
+  loadSitesLauncherSnapshot,
   runOnce,
   selectWarmPullNumbers,
   sanitizeName,
@@ -135,4 +136,54 @@ describe('cron_jobs primitive', () => {
     expect(existsSync(statePath)).toBe(false);
     expect(stableFingerprint([{ b: 1, a: 2 }])).toBe('[{"a":2,"b":1}]');
   });
+  test('should discover enabled sites launcher jobs', async () => {
+    const root = await tempRoot();
+    await mkdir(path.join(root, 'sites_launcher'), { recursive: true });
+    await Bun.write(path.join(root, 'sites_launcher', 'cron.json'), JSON.stringify({ schema: 'consuelo.cron.v1', name: 'sites-launcher', kind: 'sites-launcher', enabled: true, intervalMs: 60000, origin: 'https://sites.consuelohq.com' }));
+    const jobs = await discoverJobs(root);
+    expect(jobs.some((job) => job.manifest.name === 'sites-launcher' && job.manifest.kind === 'sites-launcher')).toBe(true);
+  });
+
+  test('should validate sites launcher cache headers and numeric hotkeys', async () => {
+    const fetcher: typeof fetch = async () => new Response(
+      '<a data-hotkey="1"></a><a data-hotkey="2"></a><a data-hotkey="3"></a><a data-hotkey="4"></a><a data-hotkey="5"></a><script>const siteHotkeys = {}</script>',
+      { status: 200, headers: { 'cache-control': 'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800', 'cf-cache-status': 'HIT' } },
+    );
+    const snapshot = await loadSitesLauncherSnapshot({ origin: 'https://sites.consuelohq.com', expectedCacheControl: 's-maxage=86400', fetcher });
+    expect(snapshot).toEqual({
+      url: 'https://sites.consuelohq.com/',
+      status: 200,
+      ok: true,
+      cacheControl: 'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800',
+      cfCacheStatus: 'HIT',
+      hasNumericHotkeys: true,
+    });
+  });
+
+  test('should refresh and verify the sites launcher job', async () => {
+    const root = await tempRoot();
+    const statePath = path.join(root, 'state.json');
+    const logPath = path.join(root, 'cron.log');
+    await mkdir(path.join(root, 'sites_launcher'), { recursive: true });
+    await Bun.write(path.join(root, 'sites_launcher', 'cron.json'), JSON.stringify({ schema: 'consuelo.cron.v1', name: 'sites-launcher', kind: 'sites-launcher', enabled: true, intervalMs: 60000, origin: 'https://sites.consuelohq.com', expectedCacheControl: 's-maxage=86400' }));
+    const commands: string[][] = [];
+    const commandRunner = async (command: string[]) => {
+      commands.push(command);
+      return { stdout: '{\"ok\":true}', stderr: '', exitCode: 0 };
+    };
+    const fetcher: typeof fetch = async () => new Response(
+      '<a data-hotkey="1"></a><a data-hotkey="2"></a><a data-hotkey="3"></a><a data-hotkey="4"></a><a data-hotkey="5"></a><script>const siteHotkeys = {}</script>',
+      { status: 200, headers: { 'cache-control': 'public, max-age=60, s-maxage=86400', 'cf-cache-status': 'DYNAMIC' } },
+    );
+
+    const result = await runOnce({ root, statePath, logPath, force: true, fetcher, commandRunner });
+
+    expect(result.checked).toBe(1);
+    expect(result.changed).toBe(1);
+    expect(result.errors).toBe(0);
+    expect(commands[0]).toEqual(['bun', 'packages/workspace/scripts/consuelo-design.ts', 'refresh', '--json']);
+    expect(await readFile(statePath, 'utf8')).toContain('sites-launcher');
+    expect(await readFile(logPath, 'utf8')).toContain('sites-launcher: refreshed status=200');
+  });
 });
+

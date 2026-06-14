@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-task-workflow-hook-dispatcher",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 971,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/971",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/971",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/971/wire-task-workflow-hook-dispatcher",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/971",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/971/wire-task-workflow-hook-dispatcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-task-workflow-hook-dispatcher",
+  "taskSession": "tsk_27644351a8e4",
+  "tmuxSession": "opensaas-os-wire-task-workflow-hook-dispatcher-27644351",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-task-workflow-hook-dispatcher/.task/os/wire-task-workflow-hook-dispatcher/session.json",
+  "createdAt": "2026-06-11T18:33:43.254Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-hosted-installer-local-cloud-flow",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 987,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/987",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/987",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/987/fix-hosted-installer-local-cloud-flow",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/987",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/987/fix-hosted-installer-local-cloud-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-installer-local-cloud-flow",
+  "taskSession": "tsk_eec63822cc6b",
+  "tmuxSession": "opensaas-os-fix-hosted-installer-local-cloud-flow-eec63822",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-installer-local-cloud-flow/.task/os/fix-hosted-installer-local-cloud-flow/session.json",
+  "createdAt": "2026-06-12T21:23:11.035Z"
+}

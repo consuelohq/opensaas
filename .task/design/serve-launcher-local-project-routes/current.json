@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/serve-launcher-local-project-routes",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 931,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/931",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/931",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/931/serve-launcher-local-project-routes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/931",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/931/serve-launcher-local-project-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-serve-launcher-local-project-routes",
+  "taskSession": "tsk_16debe9703e0",
+  "tmuxSession": "opensaas-design-serve-launcher-local-project-routes-16debe97",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-serve-launcher-local-project-routes/.task/design/serve-launcher-local-project-routes/session.json",
+  "createdAt": "2026-06-10T06:04:28.196Z"
+}

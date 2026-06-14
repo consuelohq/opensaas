@@ -1,0 +1,10 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-13T05:19:37.444Z"
+}

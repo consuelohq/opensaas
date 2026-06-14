@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/responsive-sites-launcher-spacing",
+  "base": "origin/task/design/responsive-sites-launcher-spacing",
+  "headSha": "be9a84a0e698d603c8d03af6bc6a0b799dfc683c",
+  "changeHash": "06248b5d4cf044d358949f3529ea86bc6e705f22ced19786b609122ad0c5f409",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-11T07:31:45.869Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/responsive-sites-launcher-spacing/current.json",
+        ".task/design/responsive-sites-launcher-spacing/evidence-log.json",
+        ".task/design/responsive-sites-launcher-spacing/read-log.json",
+        ".task/design/responsive-sites-launcher-spacing/session.json",
+        ".task/design/responsive-sites-launcher-spacing/workpad.md",
+        ".task/tasks/design/responsive-sites-launcher-spacing.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

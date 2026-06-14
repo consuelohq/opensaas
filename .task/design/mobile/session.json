@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1063a5e7837f",
+  "tmuxSession": "opensaas-design-mobile-1063a5e7",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/mobile",
+  "branch": "task/design/mobile",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-mobile",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-mobile",
+  "prNumber": 942,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/942",
+  "createdAt": "2026-06-10T08:22:22.735Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-mobile/.task/design/mobile/session.json"
+}
