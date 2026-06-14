@@ -661,10 +661,14 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
-    expect(html).toContain('data-ai-sidebar="open"');
+    expect(html).toContain('data-ai-sidebar="closed"');
+    expect(html).not.toContain('<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open"');
     expect(html).toContain('id="ai-comments-sidebar"');
     expect(html).toContain('id="ai-comments-toggle"');
-    expect(html).toContain('aria-label="AI review comments"');
+    expect(html).toContain('aria-label="Comments"');
+    expect(html).toContain('<div><strong>Comments</strong>');
+    expect(html).not.toContain('AI comments</button>');
+    expect(html).not.toContain('<strong>AI comments</strong>');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -686,6 +690,9 @@ describe('renderReviewPage', () => {
     expect(html).not.toContain(']).finally(loadLiveData)');
     const script = html.split('<script type="module">')[1]?.split('</script>')[0] ?? '';
     expect(script).toContain('buildCommentsMarkdown');
+    expect(script).toContain('sortCommitsNewestFirst');
+    expect(script).toContain('new Date(right.committedAt || 0).getTime()');
+    expect(script).toContain("els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment')");
     expect(html).toContain('data-review-drawer="closed"');
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');

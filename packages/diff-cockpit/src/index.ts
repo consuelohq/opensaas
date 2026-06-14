@@ -933,7 +933,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-ai-sidebar="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -945,7 +945,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <nav class="links" aria-label="Pull request controls">
       <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
       <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
-      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="true">AI comments</button>
+      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="false">Comments</button>
       <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
@@ -988,9 +988,9 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
         <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
-    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="AI review comments" aria-hidden="false">
+    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="Comments" aria-hidden="true">
       <div class="ai-comments-head">
-        <div><strong>AI comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
+        <div><strong>Comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
         <button id="ai-comments-close" type="button">Close</button>
       </div>
       <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
@@ -3625,11 +3625,15 @@ function renderMergeResult(message) {
   els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Merge PR</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + escapeHtml(message) + '</p></div>';
 }
 
+function formatCountLabel(count, singular) {
+  return count.toLocaleString() + ' ' + singular + (count === 1 ? '' : 's');
+}
+
 function renderHeader() {
   const pull = state.data.pull;
   const commentCount = state.data.comments ? state.data.comments.length : 0;
   const aiCommentCount = aiReviewItems().length;
-  els.aiCommentsToggle.textContent = aiCommentCount.toLocaleString() + ' AI';
+  els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment');
   els.title.textContent = pull.title;
   els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author + ' · ' + commentCount + ' review comments';
   els.count.textContent = String(state.data.files.length);
@@ -3726,7 +3730,7 @@ function aiReviewItems() {
 function renderAiCommentsSidebar() {
   const items = aiReviewItems();
   const unresolved = items.filter((item) => !item.isResolved).length;
-  els.aiCommentsSummary.textContent = items.length.toLocaleString() + ' AI item' + (items.length === 1 ? '' : 's') + ' · ' + unresolved.toLocaleString() + ' unresolved';
+  els.aiCommentsSummary.textContent = formatCountLabel(items.length, 'comment') + ' · ' + unresolved.toLocaleString() + ' unresolved';
   els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
 }
 
@@ -3847,9 +3851,13 @@ function renderCommit(commit) {
   return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function sortCommitsNewestFirst(commits) {
+  return [...commits].sort((left, right) => new Date(right.committedAt || 0).getTime() - new Date(left.committedAt || 0).getTime());
+}
+
 function reviewCommits() {
-  if (Array.isArray(state.data?.commits) && state.data.commits.length) return state.data.commits;
-  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return state.data.streamCommits;
+  if (Array.isArray(state.data?.commits) && state.data.commits.length) return sortCommitsNewestFirst(state.data.commits);
+  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return sortCommitsNewestFirst(state.data.streamCommits);
   return [];
 }
 function toggleCommitPopover() {
