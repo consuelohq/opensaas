@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/consuelo-design/templates/digital-eguides/spec.md",
+    "packages/os/skills/consuelo-design/references/agents.md",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "updatedAt": "2026-06-10T06:04:08.914Z"
+}
