@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/scripts/lib/code-call/types.ts",
+    "packages/os/scripts/lib/codemode/tools/index.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-06-14T18:40:00.845Z"
+}

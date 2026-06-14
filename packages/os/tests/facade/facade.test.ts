@@ -326,15 +326,45 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('allows matching taskSession and branch for code.call', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-session-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_code_call', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        taskSession: 'tsk_code_call',
+        branch: TEST_BRANCH,
+        language: 'python',
+        mode: 'read',
+        code: 'print("ok")',
+        cwd: tempRoot,
+      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data?.stdout?.trim()).toBe('ok');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mismatched taskSession and branch', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-conflict-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_conflict', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        language: 'python',
+        mode: 'read',
+        code: 'print("blocked")',
+        cwd: tempRoot,
+      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {
@@ -538,3 +568,4 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
