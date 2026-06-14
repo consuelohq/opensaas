@@ -2,9 +2,9 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` - running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** task worktrees are lightweight git checkouts. `task:start` links the root `node_modules` from the main worktree, and it also links package-scoped `node_modules` directories that Yarn creates under `packages/*`. Those package-scoped links matter for Nx/TypeScript resolution because dependencies can be installed under a package directory rather than only at repo root.
 
 every script supports `--help` and `--json`.
 
