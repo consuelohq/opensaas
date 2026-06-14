@@ -5,6 +5,18 @@ function pathExists(candidatePath) {
   return fs.existsSync(candidatePath);
 }
 
+function isPathInside(parentPath, candidatePath) {
+  const parent = path.resolve(parentPath);
+  const candidate = path.resolve(candidatePath);
+  const relativePath = path.relative(parent, candidate);
+
+  return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
+}
+
+function isSafeRelativePath(relativePath) {
+  return relativePath !== '' && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
+}
+
 function maybeSymlinkDirectory(source, target) {
   if (!pathExists(source) || pathExists(target)) {
     return null;
@@ -26,27 +38,27 @@ function findWorkspacePackageNodeModules(repoRoot) {
   const found = [];
 
   function visit(directory) {
-    if (!pathExists(directory)) {
+    if (!pathExists(directory) || !isPathInside(packagesRoot, directory)) {
       return;
     }
 
     const entries = fs.readdirSync(directory, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (!entry.isDirectory() && !entry.isSymbolicLink()) {
-        continue;
-      }
+      const entryPath = path.join(directory, entry.name);
 
       if (entry.name === 'node_modules') {
-        found.push(path.join(directory, entry.name));
+        if (isPathInside(repoRoot, entryPath)) {
+          found.push(entryPath);
+        }
         continue;
       }
 
-      if (entry.name.startsWith('.')) {
+      if (!entry.isDirectory() || entry.name.startsWith('.')) {
         continue;
       }
 
-      visit(path.join(directory, entry.name));
+      visit(entryPath);
     }
   }
 
@@ -70,7 +82,17 @@ function linkTaskWorktreeNodeModules({ repoRoot, worktreePath, writeStderr = () 
 
   for (const source of findWorkspacePackageNodeModules(repoRoot)) {
     const relativePath = path.relative(repoRoot, source);
+
+    if (!isSafeRelativePath(relativePath)) {
+      continue;
+    }
+
     const target = path.join(worktreePath, relativePath);
+
+    if (!isPathInside(worktreePath, target)) {
+      continue;
+    }
+
     const packageLink = maybeSymlinkDirectory(source, target);
 
     if (!packageLink) {
