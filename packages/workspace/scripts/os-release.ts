@@ -93,15 +93,14 @@ function runScript(scriptName: string, options: Pick<Options, 'dryRun' | 'noVeri
   writeOut(`$ bun ${args.join(' ')}`);
   const result = spawnSync('bun', args, {
     cwd: REPO_ROOT,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: 'inherit',
   });
 
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-
+  if (result.error) {
+    throw new Error(`Failed to spawn bun: ${result.error.message}`);
+  }
   if (result.status !== 0) {
-    throw new Error(`bun ${args.join(' ')} failed with exit code ${result.status}`);
+    throw new Error(`bun ${args.join(' ')} failed with exit code ${result.status ?? 'unknown'}`);
   }
 }
 

@@ -7,6 +7,7 @@ const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
 const HEALTH_URL = 'https://os.consuelohq.com/health';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
+const REQUEST_TIMEOUT_MS = 30_000;
 
 type Options = {
   dryRun: boolean;
@@ -37,6 +38,7 @@ Examples:
   bun run os:release-device-auth -- --dry-run
   bun run os:release-device-auth
   bun run os:release-device-auth -- --verify-only
+  bun run os:release-device-auth -- --no-verify
 `);
 }
 
@@ -67,6 +69,13 @@ function parseArgs(argv: string[]): Options {
     }
   }
 
+  if (options.verifyOnly && options.noVerify) {
+    throw new Error('--verify-only and --no-verify are mutually exclusive');
+  }
+  if (options.verifyOnly && options.dryRun) {
+    throw new Error('--verify-only cannot be combined with --dry-run');
+  }
+
   return options;
 }
 
@@ -74,22 +83,23 @@ function run(command: string, args: string[], options: { cwd?: string } = {}): v
   writeOut(`$ ${[command, ...args].join(' ')}`);
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? REPO_ROOT,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: 'inherit',
   });
 
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-
+  if (result.error) {
+    throw new Error(`Failed to spawn ${command}: ${result.error.message}`);
+  }
   if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(' ')} failed with exit code ${result.status}`);
+    throw new Error(`${command} ${args.join(' ')} failed with exit code ${result.status ?? 'unknown'}`);
   }
 }
 
 async function readJson(url: string, init?: RequestInit): Promise<{ status: number; json: Record<string, unknown> }> {
   try {
+    const signal = init?.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS);
     const response = await fetch(url, {
       ...init,
+      signal,
       headers: {
         'user-agent': 'consuelo-os-release-operator/1.0',
         ...(init?.headers ?? {}),
@@ -99,7 +109,12 @@ async function readJson(url: string, init?: RequestInit): Promise<{ status: numb
     const json = await response.json() as Record<string, unknown>;
     return { status: response.status, json };
   } catch (error: unknown) {
-    throw new Error(`Device authority request failed: ${error instanceof Error ? error.message : String(error)}`);
+    const errorName = error instanceof Error ? error.name : '';
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const suffix = errorName === 'TimeoutError' || errorName === 'AbortError'
+      ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+      : errorMessage;
+    throw new Error(`Device authority request failed: ${suffix}`);
   }
 }
 

@@ -112,7 +112,7 @@ function renderCommand(entry: ToolManifestEntry): string[] {
     '| Field | Value |',
     '| --- | --- |',
     `| Category | ${markdownCell(entry.category)} |`,
-    `| Signature | \`${renderSignature(entry)}\` |`,
+    `| Signature | \`${markdownCell(renderSignature(entry))}\` |`,
     `| Runtime | \`${markdownCell(entry.underlying)}\` |`,
     `| Capability | ${capabilitySummary(entry)} |`,
     `| Default timeout | ${entry.defaultTimeout}ms |`,

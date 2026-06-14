@@ -184,6 +184,6 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(payloadIndex).toBeGreaterThan(publishCallIndex);
     expect(successIndex).toBeGreaterThan(payloadIndex);
     expect(installSource).toContain('edgePublish,');
-    expect(installSource).toContain('workspace edge publish requires approved workspace bootstrap from device login');
+    expect(installSource).toContain('workspace edge site snapshot publish skipped: approved device login not available');
   });
 });

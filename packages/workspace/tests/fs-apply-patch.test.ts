@@ -31,7 +31,7 @@ afterEach(() => {
   }
 });
 
-test('exposes apply_patch with lowercase snake public tool naming', () => {
+test('should expose apply_patch when reading the public tool manifest', () => {
   const manifest = readJson('packages/workspace/tooling/tool-manifest.json') as Array<{
     name: string;
     methodPath?: string[];
@@ -46,7 +46,7 @@ test('exposes apply_patch with lowercase snake public tool naming', () => {
   expect(applyPatch?.command?.subcommand).toBe('apply-patch');
 });
 
-test('includes apply_patch in the OS dev and core manifests', () => {
+test('should include apply_patch when building OS manifests', () => {
   const devManifest = readJson('packages/os/tooling/dev-tool-manifest.json') as Array<{ name: string }>;
   const coreManifest = readJson('packages/os/manifests/core.manifest.json') as { tools: Array<{ name: string; definition?: { name?: string } }> };
 
@@ -55,7 +55,7 @@ test('includes apply_patch in the OS dev and core manifests', () => {
   expect(coreManifest.tools.find((entry) => entry.name === 'fs.apply_patch')?.definition?.name).toBe('fs.apply_patch');
 });
 
-test('applies an anchored patch file with update add and delete operations', () => {
+test('should apply update add and delete operations when using an anchored patch file', () => {
   const root = makeTempDirectory();
   mkdirSync(path.join(root, 'src'));
   writeFileSync(path.join(root, 'src', 'example.ts'), ['export const value = 1;', 'export const keep = true;', ''].join('\n'));
@@ -88,7 +88,7 @@ test('applies an anchored patch file with update add and delete operations', () 
   expect(existsSync(path.join(root, 'src', 'obsolete.ts'))).toBe(false);
 });
 
-test('supports patchText transport for short OpenCode-style payloads', () => {
+test('should support patchText transport when payloads are short', () => {
   const root = makeTempDirectory();
   writeFileSync(path.join(root, 'example.txt'), 'before\n');
   const patchText = [
@@ -108,7 +108,7 @@ test('supports patchText transport for short OpenCode-style payloads', () => {
   expect(readFileSync(path.join(root, 'example.txt'), 'utf8')).toBe('after\n');
 });
 
-test('supports move markers and dry-run does not mutate files', () => {
+test('should support move markers without mutating files when dry-run is enabled', () => {
   const root = makeTempDirectory();
   mkdirSync(path.join(root, 'src'));
   writeFileSync(path.join(root, 'src', 'old.ts'), 'export const name = "old";\n');
@@ -136,7 +136,7 @@ test('supports move markers and dry-run does not mutate files', () => {
   expect(readFileSync(path.join(root, 'src', 'new.ts'), 'utf8')).toBe('export const name = "new";\n');
 });
 
-test('rejects unsafe patch paths', () => {
+test('should reject patch payloads when paths escape the worktree', () => {
   const root = makeTempDirectory();
   const patchPath = path.join(root, 'unsafe.patch');
   writeFileSync(patchPath, ['*** Begin Patch', '*** Add File: ../outside.txt', '+bad', '*** End Patch', ''].join('\n'));
@@ -147,7 +147,28 @@ test('rejects unsafe patch paths', () => {
   expect(result.stderr).toContain('unsafe patch path');
 });
 
-test('does not partially mutate files when a later hunk fails', () => {
+
+test('should reject duplicate adds when equivalent patch paths resolve to the same file', () => {
+  const root = makeTempDirectory();
+  mkdirSync(path.join(root, 'src'));
+  const patchText = [
+    '*** Begin Patch',
+    '*** Add File: src/equivalent.ts',
+    '+export const first = true;',
+    '*** Add File: ./src/equivalent.ts',
+    '+export const second = true;',
+    '*** End Patch',
+    '',
+  ].join('\n');
+
+  const result = runFs(root, ['apply-patch', '--patch-text', patchText]);
+
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toContain('patch target already exists');
+  expect(existsSync(path.join(root, 'src', 'equivalent.ts'))).toBe(false);
+});
+
+test('should avoid partial mutation when a later hunk fails', () => {
   const root = makeTempDirectory();
   writeFileSync(path.join(root, 'existing.txt'), 'stable\n');
   const patchText = [
