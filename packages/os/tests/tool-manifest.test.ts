@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -167,6 +168,50 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('consueloDesign.generateWebsite');
     expect(coreNames).not.toContain('daily-revenue-brief');
     expect(coreNames).not.toContain('get_raw_steering');
+  });
+
+
+  it('should expose fs.apply_patch only when building OS manifest surfaces', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
+    const devNames = devEntries.map((entry) => String(entry.name));
+    const fullEntry = registry.full.tools.find((entry) => entry.name === 'fs.apply_patch');
+    const coreEntry = registry.core.tools.find((entry) => entry.name === 'fs.apply_patch');
+    const devEntry = devEntries.find((entry) => entry.name === 'fs.apply_patch');
+
+    expect(fullNames).toContain('fs.apply_patch');
+    expect(coreNames).toContain('fs.apply_patch');
+    expect(devNames).toContain('fs.apply_patch');
+    expect(fullNames).not.toContain('fs.patch');
+    expect(coreNames).not.toContain('fs.patch');
+    expect(devNames).not.toContain('fs.patch');
+    expect((fullEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
+    expect((coreEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
+    expect(devEntry?.inputSchema).toBe('FsApplyPatchInput');
+  });
+
+  it('should validate fs.apply_patch input when exactly one patch transport is provided', () => {
+    const schema = getInputSchema('FsApplyPatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({ patchText: '*** Begin Patch\n*** End Patch' }).success).toBe(true);
+    expect(schema?.safeParse({ patchFile: '/tmp/change.patch' }).success).toBe(true);
+    expect(schema?.safeParse({ patchText: '*** Begin Patch\n*** End Patch', patchFile: '/tmp/change.patch' }).success).toBe(false);
+    expect(schema?.safeParse({}).success).toBe(false);
+    expect(schemaTypeSignatures.FsApplyPatchInput).toContain('patchText?: string');
+    expect(schemaTypeSignatures.FsApplyPatchInput).toContain('patchFile?: string');
+  });
+
+  it('should expose fs.apply_patch when generating OS TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const generatedClient = readFileSync(join(packageRoot, 'src/generated/tool-client.ts'), 'utf8');
+
+    expect(generatedWorkspace).toContain('apply_patch');
+    expect(generatedWorkspace).toContain('patchText?: string');
+    expect(generatedWorkspace).not.toContain('fs.patch');
+    expect(generatedClient).toContain('createWorkspaceClient');
   });
 
   it('writes full and core manifests to override output paths', () => {

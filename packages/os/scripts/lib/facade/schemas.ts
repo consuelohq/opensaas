@@ -189,6 +189,18 @@ export const FsWriteInput = z.object({
   path: ['content'],
 });
 
+
+export const FsApplyPatchInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ...branchField,
+  patchText: z.string().optional(),
+  patchFile: optionalString,
+}).refine((input) => Boolean(input.patchText) !== Boolean(input.patchFile), {
+  message: 'provide exactly one of patchText or patchFile',
+  path: ['patchText'],
+});
+
 export const FsHttpInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -916,6 +928,7 @@ export const schemaRegistry = {
   FsSearchInput,
   FsListInput,
   FsWriteInput,
+  FsApplyPatchInput,
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
@@ -1019,6 +1032,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
