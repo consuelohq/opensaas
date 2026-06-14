@@ -571,7 +571,7 @@ async function main(): Promise<void> {
       info(summarizeActions(result));
       if (!suppressFinalSummary) {
         info(
-          `next: CONSUELO_HOME=${result.home} bun --cwd ${result.home} run doctor`,
+          `next: CONSUELO_HOME=${result.home} bun run --cwd ${result.home} doctor`,
         );
         printEnd('OS ready');
       }

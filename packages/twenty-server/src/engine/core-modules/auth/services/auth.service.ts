@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import crypto, { randomUUID } from 'node:crypto';
+import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 
 import { msg } from '@lingui/core/macro';
 import { render } from '@react-email/render';
@@ -66,6 +66,10 @@ import { AuthProviderEnum } from 'src/engine/core-modules/workspace/types/worksp
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { workspaceValidator } from 'src/engine/core-modules/workspace/workspace.validate';
 import { PermissionsService } from 'src/engine/metadata-modules/permissions/permissions.service';
+
+type OsDeviceApprovalResult =
+  | { status: 'approved'; email: string; workspaceId: string }
+  | { status: 'failed'; message: string };
 
 @Injectable()
 // eslint-disable-next-line twenty/inject-workspace-repository
@@ -525,8 +529,7 @@ export class AuthService {
         AuthExceptionCode.FORBIDDEN_EXCEPTION,
       );
     }
-
-    const authorizationCode = crypto.randomBytes(42).toString('hex');
+    const authorizationCode = randomBytes(42).toString('hex');
 
     const expiresAt = addMilliseconds(new Date().getTime(), ms('5m'));
 
@@ -841,6 +844,133 @@ export class AuthService {
     }
   }
 
+  private normalizeOsDeviceUserCode(value?: string): string {
+    return (value ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+  }
+
+  private createOsDeviceApprovalAssertion(input: {
+    accountId: string;
+    sharedKey: string;
+  }): string {
+    const payload = Buffer.from(
+      JSON.stringify({
+        account_id: input.accountId,
+        auth_method: 'google',
+        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      }),
+    ).toString('base64url');
+
+    const signature = createHmac('sha256', input.sharedKey)
+      .update(payload)
+      .digest('base64url');
+
+    return `${payload}.${signature}`;
+  }
+
+  async approveOsDeviceWithGoogle({
+    firstName,
+    lastName,
+    email: rawEmail,
+    picture,
+    locale,
+    osDeviceUserCode,
+  }: GoogleRequest['user']): Promise<OsDeviceApprovalResult> {
+    const userCode = this.normalizeOsDeviceUserCode(osDeviceUserCode);
+
+    if (!userCode) {
+      return { status: 'failed', message: 'Missing Consuelo OS device code.' };
+    }
+    try {
+      const approvalAssertionSecret = this.twentyConfigService.get(
+        'OS_DEVICE_AUTH_ASSERTION_SECRET',
+      );
+
+      if (!approvalAssertionSecret) {
+        return {
+          status: 'failed',
+          message: 'Consuelo OS device approval is not configured.',
+        };
+      }
+
+      const email = rawEmail.toLowerCase();
+      const existingUser =
+        await this.userService.findUserByEmailWithWorkspaces(email);
+      let approvedUser: UserEntity | undefined = existingUser ?? undefined;
+      let approvedWorkspace: WorkspaceEntity | undefined;
+
+      if (existingUser) {
+        const availableWorkspaces =
+          await this.userWorkspaceService.findAvailableWorkspacesByEmail(email);
+
+        approvedWorkspace =
+          availableWorkspaces.availableWorkspacesForSignIn[0]?.workspace ??
+          availableWorkspaces.availableWorkspacesForSignUp[0]?.workspace;
+      }
+
+      if (!approvedUser || !approvedWorkspace) {
+        const signInResult = await this.signInUp({
+          workspace: undefined,
+          userData: this.formatUserDataPayload(
+            {
+              firstName,
+              lastName,
+              email,
+              picture,
+              locale,
+              isEmailAlreadyVerified: true,
+            },
+            existingUser,
+          ).userData,
+          authParams: {
+            provider: AuthProviderEnum.Google,
+          },
+        });
+
+        approvedUser = signInResult.user;
+        approvedWorkspace = signInResult.workspace;
+      }
+
+      const approvalUrl = new URL(
+        '/login/device/approve',
+        this.twentyConfigService.get('OS_DEVICE_AUTH_ORIGIN'),
+      );
+      const assertion = this.createOsDeviceApprovalAssertion({
+        accountId: approvedUser.id,
+        sharedKey: approvalAssertionSecret,
+      });
+
+      const response = await fetch(approvalUrl, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'x-consuelo-account-assertion': assertion,
+        },
+        body: new URLSearchParams({ user_code: userCode }),
+      });
+
+      if (!response.ok) {
+        return {
+          status: 'failed',
+          message:
+            'Consuelo OS rejected this device approval. Restart the installer and try again.',
+        };
+      }
+
+      return {
+        status: 'approved',
+        email: approvedUser.email,
+        workspaceId: approvedWorkspace.id,
+      };
+    } catch {
+      return {
+        status: 'failed',
+        message:
+          'Consuelo OS approval service is unavailable. Return to the terminal and try again.',
+      };
+    }
+  }
+
   async signInUpWithSocialSSO(
     {
       firstName,
@@ -970,7 +1100,10 @@ export class AuthService {
       });
     } catch (error) {
       return this.guardRedirectService.getRedirectErrorUrlAndCaptureExceptions({
-        error,
+        error:
+          error instanceof Error
+            ? error
+            : new Error('Unknown social SSO error'),
         workspace:
           this.workspaceDomainsService.getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain(
             currentWorkspace,
