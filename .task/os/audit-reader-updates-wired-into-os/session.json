@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b1bb92208d8e",
+  "tmuxSession": "opensaas-os-audit-reader-updates-wired-into-os-b1bb9220",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/audit-reader-updates-wired-into-os",
+  "branch": "task/os/audit-reader-updates-wired-into-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-audit-reader-updates-wired-into-os",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-audit-reader-updates-wired-into-os",
+  "prNumber": 947,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/947",
+  "createdAt": "2026-06-11T03:26:11.120Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-audit-reader-updates-wired-into-os/.task/os/audit-reader-updates-wired-into-os/session.json"
+}

@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-design/package.json",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "updatedAt": "2026-06-11T03:48:26.353Z"
+}
