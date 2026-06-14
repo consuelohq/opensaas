@@ -51,7 +51,7 @@ export type WorkspaceCloudflareEdgeRouteResolution =
       hostname: string;
       route: string;
       surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
-      auth: 'required';
+      auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
       auditEvent: 'workspace.hostname.route.allowed';
       target: WorkspaceCloudflareEdgeRouteTarget;
     }
@@ -79,11 +79,14 @@ export type WorkspaceCloudflareEdgeRouterInput = {
   internalSigningSecret?: string;
   fetchUpstream?: (request: Request) => Promise<Response>;
   siteSnapshots?: WorkspaceSitesSnapshotStore;
+  workspaceBaseDomains?: string[];
+  reservedHostnames?: string[];
 };
 
 const SAFE_ERROR_MESSAGES: Record<string, string> = {
   WORKSPACE_HOSTNAME_NOT_FOUND: 'Workspace hostname was not found',
   WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND: 'Workspace route was not found',
+  WORKSPACE_HOSTNAME_RESERVED: 'Workspace hostname is protected',
   WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE:
     'Workspace route is temporarily unavailable',
   WORKSPACE_EDGE_ROUTER_ERROR: 'Workspace route is temporarily unavailable',
@@ -93,6 +96,32 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
 };
 
 const SITE_SNAPSHOT_CACHE_AUTHORITY = 'sites-snapshot';
+const DEFAULT_WORKSPACE_BASE_DOMAINS = ['consuelohq.com'];
+const DEFAULT_RESERVED_HOSTNAMES = [
+  'app.consuelohq.com',
+  'docs.consuelohq.com',
+  'diffs.consuelohq.com',
+  'install.consuelohq.com',
+  'linear.consuelohq.com',
+  'api.consuelohq.com',
+  'www.consuelohq.com',
+  'sites.consuelohq.com',
+];
+
+const normalizeHostname = (host: string): string => host.trim().toLowerCase().replace(/\.$/, '');
+
+const normalizeHostnameList = (values: readonly string[] | undefined, defaults: readonly string[]): string[] =>
+  (values && values.length > 0 ? values : defaults).map(normalizeHostname);
+
+const isReservedWorkspaceHostname = (host: string, reservedHostnames?: string[]): boolean =>
+  normalizeHostnameList(reservedHostnames, DEFAULT_RESERVED_HOSTNAMES).includes(normalizeHostname(host));
+
+const isWorkspaceBaseDomainHost = (host: string, workspaceBaseDomains?: string[]): boolean => {
+  const hostname = normalizeHostname(host);
+  return normalizeHostnameList(workspaceBaseDomains, DEFAULT_WORKSPACE_BASE_DOMAINS).some((domain) =>
+    hostname.endsWith('.' + domain) && hostname !== domain,
+  );
+};
 
 const createSafeErrorResponse = (input: {
   status: 404 | 503;
@@ -344,11 +373,19 @@ export const createWorkspaceCloudflareEdgeRouter = (
     async fetch(request: Request): Promise<Response> {
       try {
         const inboundUrl = new URL(request.url);
-        const cachedSiteSnapshot = await readCachedSiteSnapshot({
-          request,
-          cache: input.siteSnapshots?.cache ?? getDefaultSiteCache(),
-        });
-        if (cachedSiteSnapshot) return cachedSiteSnapshot;
+        if (isReservedWorkspaceHostname(inboundUrl.hostname, input.reservedHostnames)) {
+          return createSafeErrorResponse({
+            status: 404,
+            code: 'WORKSPACE_HOSTNAME_RESERVED',
+          });
+        }
+        if (inboundUrl.pathname === '/' && isWorkspaceBaseDomainHost(inboundUrl.hostname, input.workspaceBaseDomains)) {
+          const cachedSiteSnapshot = await readCachedSiteSnapshot({
+            request,
+            cache: input.siteSnapshots?.cache ?? getDefaultSiteCache(),
+          });
+          if (cachedSiteSnapshot) return cachedSiteSnapshot;
+        }
 
         const resolution = await input.registry.resolve({
           host: inboundUrl.hostname,
@@ -364,6 +401,12 @@ export const createWorkspaceCloudflareEdgeRouter = (
         }
 
         if (resolution.target.kind === 'site-snapshot') {
+          if (resolution.auth !== 'public') {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+            });
+          }
           return await serveSiteSnapshot({
             request,
             resolution: resolution as Extract<
@@ -420,3 +463,8 @@ export const createWorkspaceCloudflareEdgeRouter = (
     },
   };
 };
+
+
+
+
+
