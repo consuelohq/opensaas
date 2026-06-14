@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 pattern = "internal.consuelohq.com/*"
 zone_name = "consuelohq.com"
 [[routes]]
-pattern = "sites.consuelohq.com/*"
+pattern = "*.consuelohq.com/*"
 zone_name = "consuelohq.com"
 [[d1_databases]]
 binding = "WORKSPACE_ROUTE_REGISTRY"

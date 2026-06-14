@@ -1,29 +1,15 @@
 # consuelo-workspace-edge
 
-`consuelo-workspace-edge` is the Cloudflare edge gateway for workspace routes. It remains the single Worker for public workspace routing instead of adding a parallel Sites Worker.
+The workspace-edge Worker is the single edge gateway for workspace hostnames. Public workspace pages are served as site snapshots from Cloudflare Cache API and R2. Connector and hosted service routes continue to use signed proxy behavior.
 
-## Routing model
+## Hostname model
 
-D1 (`WORKSPACE_ROUTE_REGISTRY`) is the routing source of truth. The Worker resolves the hostname and path, then chooses one of two read paths:
+Workspace hostnames are the routing boundary. Examples: kokayi.consuelohq.com and openai.consuelohq.com. D1 maps hostnames and path prefixes to route targets. A root path can be a public site snapshot, while connector paths such as /mcp and /traces stay signed connector routes.
 
-1. `service-upstream` / `os-connector`: signed proxy behavior. This preserves the existing internal/app/OS connector routing model.
-2. `site-snapshot`: static Sites snapshot behavior. Public reads hit Cloudflare Cache API first, then R2 (`SITES_SNAPSHOTS`) on miss. The user machine is not in the read path.
+## Reserved platform hosts
 
-## Sites snapshot path
+Wildcard routing must not capture platform services. The router blocks reserved hosts before cache or D1 lookup. Reserved defaults include app, docs, diffs, install, linear, api, www, and legacy sites hostnames under consuelohq.com. The internal hostname remains explicitly routed for internal workspace-edge flows.
 
-The intended public read flow for stable Sites pages such as `sites.consuelohq.com/` is:
+## Local authoring and edge publishing
 
-```text
-browser -> Cloudflare Worker -> Cache API HIT -> response
-browser -> Cloudflare Worker -> D1 route -> R2 snapshot -> Cache API put -> response
-```
-
-Snapshot routes use `x-consuelo-edge-cache-authority: sites-snapshot` so the Worker only trusts cache entries that were produced by the Sites snapshot runtime.
-
-## Why R2 first, not KV
-
-R2 is the durable versioned bundle store for future OS user Sites. KV can still be added later as a small-object/pointer accelerator, but this Worker does not require a KV namespace to make the read path edge-owned. This keeps the first implementation aligned with the existing Cloudflare setup: one Worker, one D1 registry, one new R2 bucket, and Cache API.
-
-## Publisher role
-
-Local OS/cron jobs should render and publish immutable snapshots into R2, update the D1 route pointer, then warm and verify the public URL. They should not be the origin for normal public reads.
+The local OS remains the authoring layer: consuelo.db, artifacts, sites, and local cache. The cloud layer receives only published immutable snapshots. D1 holds the hostname/path/current version pointer, R2 stores immutable HTML and assets, and Cache API serves hot public responses. Public reads should not depend on the user machine.

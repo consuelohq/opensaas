@@ -442,7 +442,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     });
 
     const response = await router.fetch(
-      new Request('https://sites.consuelohq.com/?utm_source=noise', {
+      new Request('https://kokayi.consuelohq.com/?utm_source=noise', {
         headers: { cookie: 'noise=1' },
       }),
     );
@@ -451,7 +451,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(await response.text()).toContain('cached launcher');
     expect(response.headers.get('x-consuelo-sites-cache')).toBe('hit');
     expect(resolveCount).toBe(0);
-    expect(cacheKeys).toEqual(['https://sites.consuelohq.com/']);
+    expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
   });
 
   it('should serve D1 site snapshots from R2 and populate the edge cache', async () => {
@@ -480,10 +480,10 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
         return {
           allowed: true,
           workspaceId: 'workspace_123',
-          hostname: 'sites.consuelohq.com',
+          hostname: 'kokayi.consuelohq.com',
           route: '/',
           surface: 'sites',
-          auth: 'required',
+          auth: 'public',
           auditEvent: 'workspace.hostname.route.allowed',
           target: {
             kind: 'site-snapshot',
@@ -506,7 +506,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     });
 
     const response = await router.fetch(
-      new Request('https://sites.consuelohq.com/?utm_source=noise'),
+      new Request('https://kokayi.consuelohq.com/?utm_source=noise'),
     );
 
     expect(response.status).toBe(200);
@@ -517,7 +517,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(response.headers.get('x-consuelo-edge-cache-authority')).toBe('sites-snapshot');
     expect(cachePuts).toEqual([
       {
-        url: 'https://sites.consuelohq.com/',
+        url: 'https://kokayi.consuelohq.com/',
         body: '<!doctype html><title>edge launcher</title>',
       },
     ]);
@@ -533,10 +533,10 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
         return {
           allowed: true,
           workspaceId: 'workspace_123',
-          hostname: 'sites.consuelohq.com',
+          hostname: 'kokayi.consuelohq.com',
           route: '/',
           surface: 'sites',
-          auth: 'required',
+          auth: 'public',
           auditEvent: 'workspace.hostname.route.allowed',
           target: {
             kind: 'site-snapshot',
@@ -553,7 +553,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       siteSnapshots: { r2: { get: async () => null } },
     });
 
-    const response = await router.fetch(new Request('https://sites.consuelohq.com/'));
+    const response = await router.fetch(new Request('https://kokayi.consuelohq.com/'));
 
     expect(response.status).toBe(503);
     const body = JSON.stringify(await response.json());
@@ -561,3 +561,4 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body).not.toMatch(/manifestKey|bucket|sites\/workspace_123|secret/i);
   });
 });
+
