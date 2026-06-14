@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-os-google-oauth-device-approval",
+  "base": "origin/stream/os",
+  "headSha": "9f0103f13f96e8e338551d8d26a16145aa13d770",
+  "changeHash": "760932bb19716ac0028167e7595d6edb5241de7488708a04d3f03828e1fadf0b",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/os-release-device-auth.ts"
+  ],
+  "verifiedAt": "2026-06-14T23:54:12.174Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-os-google-oauth-device-approval/current.json",
+        ".task/os/wire-os-google-oauth-device-approval/evidence-log.json",
+        ".task/os/wire-os-google-oauth-device-approval/read-log.json",
+        ".task/os/wire-os-google-oauth-device-approval/session.json",
+        ".task/os/wire-os-google-oauth-device-approval/workpad.md",
+        ".task/tasks/os/wire-os-google-oauth-device-approval.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/os-release-device-auth.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

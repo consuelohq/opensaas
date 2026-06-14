@@ -95,7 +95,74 @@ async function proofFields(input: {
   };
 }
 
+const googleFetch: typeof fetch = async (input) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (url === 'https://oauth2.googleapis.com/token') {
+    return new Response(JSON.stringify({ id_token: 'verified-google-id-token' }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+  if (url.startsWith('https://oauth2.googleapis.com/tokeninfo')) {
+    return new Response(JSON.stringify({
+      aud: 'test-google-client-id',
+      sub: 'google-sub-123',
+      email: 'ko@example.com',
+      email_verified: 'true',
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+  return new Response(JSON.stringify({ error: 'unexpected_google_fetch' }), { status: 500 });
+};
+
 describe('os device authority worker', () => {
+  it('approves a pending OS device through Cloudflare-native Google OAuth', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const { codeJson, deviceKeyPair } = await startGrant(handler);
+
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    expect(start.status).toBe(302);
+    const location = start.headers.get('location') ?? '';
+    expect(location).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+    expect(location).toContain('client_id=test-google-client-id');
+    expect(location).toContain(encodeURIComponent(`${origin}/login/google/callback`));
+    const state = new URL(location).searchParams.get('state');
+    expect(state).toMatch(/^state_/);
+
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(200);
+    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+
+    const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(approved.status).toBe(200);
+    await expect(approved.json()).resolves.toMatchObject({
+      workspace_slug: 'testing',
+      workspace_host: 'testing.consuelohq.com',
+      device_public_key_bound: true,
+    });
+  });
+
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
