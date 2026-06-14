@@ -2307,15 +2307,15 @@ await workspace.call({
 
 ## filesystem
 
-### workspace.fs.applyPatch
+### workspace.fs.apply_patch
 
 apply an anchored patch file with embedded task-worktree-relative paths
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.applyPatch({ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
-| Runtime | `workspace fs.applyPatch` |
+| Signature | `workspace.fs.apply_patch({ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Runtime | `workspace fs.apply_patch` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 30000ms |
 
@@ -2323,7 +2323,7 @@ apply an anchored patch file with embedded task-worktree-relative paths
 
 ```ts
 await workspace.call({
-  "tool": "fs.applyPatch",
+  "tool": "fs.apply_patch",
   "input": {
     "branch": "task/workspace-agents/example",
     "patchFile": "/tmp/change.patch",

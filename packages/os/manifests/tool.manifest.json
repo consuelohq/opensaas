@@ -12,7 +12,7 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 130
+      "entryCount": 131
     }
   ],
   "tools": [
@@ -3726,6 +3726,59 @@
           "limit": 5
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "fs.apply_patch",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "filesystem",
+      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "core": true,
+      "definition": {
+        "name": "fs.apply_patch",
+        "methodPath": [
+          "fs",
+          "apply_patch"
+        ],
+        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+        "category": "filesystem",
+        "underlying": "workspace fs.apply_patch",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 30000,
+        "inputSchema": "FsApplyPatchInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "task:fs",
+          "subcommand": "apply-patch",
+          "branchMode": "required",
+          "branchArgumentStyle": "prefix",
+          "dryRunFlag": "--dry-run",
+          "arguments": [
+            {
+              "source": "patchText",
+              "flag": "--patch-text",
+              "kind": "value"
+            },
+            {
+              "source": "patchFile",
+              "flag": "--patch-file",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "branch": "task/workspace-agents/example",
+          "patchFile": "/tmp/change.patch",
+          "dryRun": true
+        },
+        "sessionRequired": true
       }
     },
     {

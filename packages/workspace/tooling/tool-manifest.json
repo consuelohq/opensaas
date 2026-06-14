@@ -298,14 +298,14 @@
     "sessionRequired": true
   },
   {
-    "name": "fs.applyPatch",
+    "name": "fs.apply_patch",
     "methodPath": [
       "fs",
-      "applyPatch"
+      "apply_patch"
     ],
     "description": "apply an anchored patch file with embedded task-worktree-relative paths",
     "category": "filesystem",
-    "underlying": "workspace fs.applyPatch",
+    "underlying": "workspace fs.apply_patch",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
