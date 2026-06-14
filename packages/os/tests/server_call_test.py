@@ -327,7 +327,6 @@ class WorkspaceCallServerTest(unittest.TestCase):
         protected_file = protected_root + 'config'
         tool_inputs = {
             'fs.write': {'path': protected_file, 'content': 'x'},
-            'fs.patch': {'path': protected_file, 'from': 1, 'to': 1, 'content': 'x'},
             'fs.trash': {'path': protected_file},
             'mac.write': {'path': protected_file, 'content': 'x'},
         }

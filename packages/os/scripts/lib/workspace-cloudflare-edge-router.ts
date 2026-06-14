@@ -454,6 +454,7 @@ const serveSiteSnapshot = async (input: {
     return createSafeErrorResponse({
       status: 503,
       code: 'WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE',
+      request: input.request,
     });
   }
 };

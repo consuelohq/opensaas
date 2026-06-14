@@ -34,7 +34,7 @@ function firstArgumentAsInput(args: unknown[]): ToolInput {
 
 function recordChangedPath(toolName: string, input: ToolInput, state: CodeRunRegistryState): void {
   if (!toolName.startsWith('fs.')) return;
-  if (!['fs.write', 'fs.patch', 'fs.trash'].includes(toolName)) return;
+  if (!['fs.write', 'fs.apply_patch', 'fs.trash'].includes(toolName)) return;
   if (typeof input.path === 'string') state.changedFiles.add(input.path);
 }
 
@@ -88,10 +88,24 @@ function createCallTool(repoRoot: string, options: BuildToolRegistryOptions, sta
       return result;
     }
 
-    const result = await executeTool(toolName, normalizedInput, { cwd: repoRoot, logMode: 'errors' });
-    state.operations.push(compactOperation(toolName, normalizedInput, result));
-    if (result.ok) recordChangedPath(toolName, normalizedInput, state);
-    return result;
+    try {
+      const result = await executeTool(toolName, normalizedInput, { cwd: repoRoot, logMode: 'errors' });
+      state.operations.push(compactOperation(toolName, normalizedInput, result));
+      if (result.ok) recordChangedPath(toolName, normalizedInput, state);
+      return result;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const result = createToolResult({
+        ok: false,
+        code: 'COMMAND_FAILED',
+        message: 'workspace_call failed for ' + toolName + ': ' + message,
+        data: null,
+        stderr: message,
+        exitCode: 1,
+      });
+      state.operations.push(compactOperation(toolName, normalizedInput, result));
+      return result;
+    }
   };
 }
 

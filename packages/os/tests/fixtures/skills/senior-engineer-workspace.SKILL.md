@@ -18,7 +18,7 @@ Use direct typed workspace tools for single known operations and durable transit
 Use context.search, explore, decideNext, and confidenceScore for discovery and prior context.
 Use no-session code.run for programmable read/investigation before a task exists.
 Use task-scoped code.run for small programs over typed workspace APIs inside a task.
-Use exact task-scoped file tools for simple file work: fs.read, fs.search, fs.list, fs.patch, fs.write, and fs.trash.
+Use exact task-scoped file tools for simple file work: fs.read, fs.search, fs.list, fs.apply_patch, fs.write, and fs.trash.
 Use batch for fixed independent checklists where later steps do not depend on earlier results.
 Use git.diff for structured diff inspection after edits.
 Use lifecycle tools directly: status, audit, review.run, verify, task.push, task.pr, task.merge, and task.finish.

@@ -12,7 +12,7 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 131
+      "entryCount": 130
     }
   ],
   "tools": [
@@ -3848,79 +3848,6 @@
           "branch": "task/workspace-agents/example",
           "path": "packages/os/scripts",
           "depth": 1
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "fs.patch",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "replace a line range in a task worktree file",
-      "core": true,
-      "definition": {
-        "name": "fs.patch",
-        "methodPath": [
-          "fs",
-          "patch"
-        ],
-        "description": "replace a line range in a task worktree file",
-        "category": "filesystem",
-        "underlying": "workspace fs.patch",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": true,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsPatchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "patch",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "from",
-              "flag": "--from",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "to",
-              "flag": "--to",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "content",
-              "flag": "--content",
-              "kind": "value"
-            },
-            {
-              "source": "contentFile",
-              "flag": "--content-file",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "path": "tmp/example.txt",
-          "from": 1,
-          "to": 1,
-          "dryRun": true,
-          "contentFile": "/tmp/replacement.txt"
         },
         "sessionRequired": true
       }

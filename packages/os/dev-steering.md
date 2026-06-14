@@ -607,7 +607,7 @@ do not ask before doing basic investigation.
 
 Source code is a structured payload. Do not send multiline code through inline command arguments. Inline patch content travels through JSON, shell parsing, facade argument building, argv parsing, and line splitting; those layers can convert real newlines into literal `\n` text or shift line ranges into the wrong language region.
 
-Use `fs.patch --content-file` or stdin for multiline replacements. Use inline `--content` only for single-line edits. After patching, reread the changed range and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
+Use `fs.apply_patch --patch-file` or stdin for multiline patchsets. Use inline `--patch-text` only for short scalar payloads. After patching, reread the changed range and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
 
 The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter or inserting literal `\n` sequences into TypeScript. Treat shell-safe transport as part of correctness, not as a formatting detail.
 

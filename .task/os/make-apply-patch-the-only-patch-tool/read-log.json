@@ -1,0 +1,25 @@
+{
+  "files": [
+    ".task/os/make-apply-patch-the-only-patch-tool/workpad.md",
+    ".task/tasks/os/make-apply-patch-the-only-patch-tool.json",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/server_call_test.py",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/codemode/tools/index.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/context-trace.test.js",
+    "packages/workspace/tests/fs-apply-patch.test.ts",
+    "packages/workspace/tests/task-workpad.test.ts",
+    "packages/workspace/tests/tools-search-v2.test.ts"
+  ],
+  "updatedAt": "2026-06-14T17:29:56.713Z"
+}
