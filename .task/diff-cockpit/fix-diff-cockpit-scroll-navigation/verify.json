@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+  "base": "stream/diff-cockpit",
+  "headSha": "485e511cd2ec073fd507f04f77c8f23e30b1c834",
+  "changeHash": "2f380f4c9dba61839f2d1c636695db67649a21b739d8f2974ffdf434356775e9",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T18:31:19.625Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/current.json",
+        ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/evidence-log.json",
+        ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/read-log.json",
+        ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/session.json",
+        ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/workpad.md",
+        ".task/tasks/diff-cockpit/fix-diff-cockpit-scroll-navigation.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
