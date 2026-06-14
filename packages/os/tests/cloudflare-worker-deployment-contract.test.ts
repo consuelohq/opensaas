@@ -35,7 +35,7 @@ function requireScript(scripts: Record<string, string>, key: string): string {
 }
 
 contractDescribe('workspace Cloudflare Worker deployment contract', () => {
-  it('should ship a Wrangler-deployable workspace edge Worker with D1 bindings and the explicit internal route', () => {
+  it('should ship a Wrangler-deployable workspace edge Worker with D1 bindings and controlled wildcard workspace routing', () => {
     const wrangler = readRequiredFile(wranglerPath);
 
     expect(wrangler).toMatch(/name\s*=\s*["']consuelo-workspace-edge["']/);
@@ -47,18 +47,24 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/database_id\s*=\s*["'][0-9a-f-]{36}["']/i);
     expect(wrangler).not.toMatch(/database_id\s*=\s*["']00000000-0000-0000-0000-000000000000["']/);
     expect(wrangler).toMatch(/pattern\s*=\s*["']internal\.consuelohq\.com\/\*["']/);
-    expect(wrangler).not.toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
+    expect(wrangler).toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
+    expect(wrangler).not.toMatch(/pattern\s*=\s*["']sites\.consuelohq\.com\/\*["']/);
+    expect(wrangler).toMatch(/\[\[r2_buckets\]\]/);
+    expect(wrangler).toMatch(/binding\s*=\s*["']SITES_SNAPSHOTS["']/);
+    expect(wrangler).toMatch(/bucket_name\s*=\s*["']consuelo-sites-snapshots["']/);
     expect(wrangler).toMatch(/zone_name\s*=\s*["']consuelohq\.com["']/);
     expect(wrangler).not.toMatch(/CONSUELO_EDGE_SIGNING_SECRET\s*=\s*["'][^"']+["']/);
     expect(wrangler).not.toMatch(/api[_-]?token\s*=\s*["'][^"']+["']/i);
   });
-  it('should expose a Worker entrypoint that composes the router with the D1 registry and edge signing secret', () => {
+  it('should expose a Worker entrypoint that composes the router with D1, R2 snapshots, and edge signing', () => {
     const worker = readRequiredFile(workerEntrypointPath);
 
     expect(worker).toMatch(/createWorkspaceCloudflareEdgeRouter/);
     expect(worker).toMatch(/createWorkspaceCloudflareD1RouteRegistry/);
     expect(worker).toMatch(/WORKSPACE_ROUTE_REGISTRY/);
     expect(worker).toMatch(/CONSUELO_EDGE_SIGNING_SECRET/);
+    expect(worker).toMatch(/SITES_SNAPSHOTS/);
+    expect(worker).toMatch(/siteSnapshots/);
     expect(worker).toMatch(
       /export\s+(?:(?:async\s+)?function|const)\s+fetch|export\s*\{[^}]*\bfetch\b[^}]*\}/,
     );
@@ -67,7 +73,6 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
   });
   it('should ship a D1 migration for the edge route registry tables and indexes', () => {
     const migration = readRequiredFile(d1MigrationPath);
-
     expect(migration).toMatch(/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+workspace_route_registry/i);
     expect(migration).toMatch(/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+workspace_connectors/i);
     expect(migration).toMatch(/hostname\s+TEXT\s+PRIMARY\s+KEY/i);

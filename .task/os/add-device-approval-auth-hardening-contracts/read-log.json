@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-06-13T12:58:48.943Z"
+}

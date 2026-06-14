@@ -31,6 +31,10 @@ import {
   type OsMode,
   type WorkspaceBootstrap,
 } from './lib/install-state';
+import {
+  pollWorkspaceDeviceAccessToken,
+  requestWorkspaceDeviceCode,
+} from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
 
@@ -44,8 +48,12 @@ type InstallOptions = {
   skipDaemons: boolean;
   home?: string;
   mode?: OsMode;
+  workspaceName?: string;
   workspaceHost?: string;
   workspaceSlug?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  deviceLoginStatus?: 'approved' | 'fallback' | 'skipped';
+  deviceLoginUrl?: string;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
@@ -62,6 +70,11 @@ function writeStdout(value: string): void {
   process.stdout.write(value);
 }
 
+const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
+const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
+const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 45_000;
+
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();
   const withProtocol = raw.includes('://') ? raw : `https://${raw}`;
@@ -69,35 +82,32 @@ function normalizeWorkspaceHost(value: string): string {
   const hostname = url.hostname.toLowerCase();
 
   if (hostname.length === 0 || !hostname.includes('.')) {
-    throw new Error('workspace URL must include a valid hostname');
+    throw new Error('workspace host must include a valid hostname');
   }
 
   return hostname;
 }
 
-function slugFromWorkspaceHost(workspaceHost: string): string {
-  const [firstLabel] = workspaceHost.split('.');
-  const slug = firstLabel
+function normalizeWorkspaceName(value: string): string {
+  const workspaceName = value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-  return slug || 'workspace';
+  if (workspaceName.length === 0) {
+    throw new Error('workspace name is required');
+  }
+
+  return workspaceName;
+}
+
+function workspaceHostFromSlug(workspaceSlug: string): string {
+  return `${workspaceSlug}.${WORKSPACE_BASE_DOMAIN}`;
 }
 
 function normalizeWorkspaceSlug(value: string): string {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-
-  if (slug.length === 0) {
-    throw new Error('workspace short name is required');
-  }
-
-  return slug;
+  return normalizeWorkspaceName(value);
 }
 
 function createManualWorkspaceBootstrap(input: {
@@ -118,6 +128,7 @@ function createManualWorkspaceBootstrap(input: {
 }
 
 function maybeCreateWorkspaceBootstrap(options: InstallOptions): WorkspaceBootstrap | undefined {
+  if (options.workspaceBootstrap) return options.workspaceBootstrap;
   if (!options.workspaceHost || !options.workspaceSlug) return undefined;
 
   return createManualWorkspaceBootstrap({
@@ -166,11 +177,18 @@ function parseArgs(argv: string[]): InstallOptions {
       if (mode !== 'local' && mode !== 'cloud')
         throw new Error('--mode must be local or cloud');
       options.mode = mode;
+    } else if (arg === '--workspace-name') {
+      const workspaceName = normalizeWorkspaceName(readValue('--workspace-name', index));
+      index += 1;
+      options.workspaceName = workspaceName;
+      options.workspaceSlug = workspaceName;
+      options.workspaceHost = workspaceHostFromSlug(workspaceName);
     } else if (arg === '--workspace-url') {
       options.workspaceHost = normalizeWorkspaceHost(readValue('--workspace-url', index));
       index += 1;
     } else if (arg === '--workspace-slug') {
       options.workspaceSlug = normalizeWorkspaceSlug(readValue('--workspace-slug', index));
+      options.workspaceName = options.workspaceSlug;
       index += 1;
     } else if (arg === '--connect-agent') {
       const agent = readValue('--connect-agent', index) as AgentName;
@@ -194,8 +212,7 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --dry-run             print planned writes without writing',
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
-          '  --workspace-url <url> Consuelo workspace URL',
-          '  --workspace-slug <id> short workspace name',
+          '  --workspace-name <name> workspace name',
           '  --connect-agent <id>  connect codex, claude, opencode, or factory',
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
@@ -269,6 +286,110 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
   return `saved to ${result.home}`;
 }
 
+
+type DeviceLoginAttemptResult = {
+  status: 'approved' | 'fallback' | 'skipped';
+  verificationUrl?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+};
+
+function workspaceBootstrapFromApprovedDeviceGrant(input: {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  connectorId: string;
+  connectorBootstrapToken: string;
+}): WorkspaceBootstrap {
+  return {
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    connectorId: input.connectorId,
+    connectorTransport: 'websocket-relay',
+    connectorBootstrapToken: input.connectorBootstrapToken,
+  };
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function openDeviceVerificationUrl(url: string): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+
+  try {
+    const proc = Bun.spawn(['open', url], {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    });
+    const exitCode = await proc.exited;
+    return exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function attemptWorkspaceDeviceLogin(input: {
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  dryRun: boolean;
+}): Promise<DeviceLoginAttemptResult> {
+  if (input.dryRun) return { status: 'skipped' };
+
+  try {
+    const liveDeviceCode = await requestWorkspaceDeviceCode({
+      clientId: DEVICE_LOGIN_CLIENT_ID,
+      scope: DEVICE_LOGIN_SCOPE,
+      workspaceName: input.workspaceName,
+      workspaceSlug: input.workspaceSlug,
+      workspaceHost: input.workspaceHost,
+    });
+    if (liveDeviceCode.status !== 'started') {
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback' };
+    }
+
+    const session = liveDeviceCode.session;
+    info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
+    await openDeviceVerificationUrl(session.verificationUriComplete);
+
+    const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
+    let intervalSeconds = session.intervalSeconds;
+
+    while (Date.now() < deadlineMs) {
+      await sleep(Math.min(intervalSeconds, 5) * 1000);
+      const pollResult = await pollWorkspaceDeviceAccessToken({
+        clientId: DEVICE_LOGIN_CLIENT_ID,
+        deviceCode: liveDeviceCode.session.deviceCode,
+        intervalSeconds,
+        deviceKeyPair: liveDeviceCode.deviceKeyPair,
+      });
+
+      if (pollResult.status === 'approved') {
+        info('Consuelo OS authorization approved.');
+        return {
+          status: 'approved',
+          verificationUrl: session.verificationUriComplete,
+          workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(pollResult),
+        };
+      }
+
+      if (pollResult.status === 'pending' || pollResult.status === 'slow_down') {
+        intervalSeconds = pollResult.intervalSeconds;
+        continue;
+      }
+
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+    }
+
+    info('Device login was not approved before timeout; continuing with local workspace bootstrap.');
+    return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+  } catch {
+    info('Device login unavailable; continuing with local workspace bootstrap.');
+    return { status: 'fallback' };
+  }
+}
+
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
@@ -298,38 +419,29 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       process.exit(0);
     }
 
-    const workspaceHostInput = await text({
+    const workspaceNameInput = await text({
       ...clackIo,
-      message: 'Consuelo workspace URL',
-      initialValue: options.workspaceHost ?? '',
+      message: 'enter workspace name',
+      initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
       validate: (value) => {
-        if (value.trim().length === 0) return 'workspace URL is required';
         try {
-          normalizeWorkspaceHost(value);
+          normalizeWorkspaceName(value);
           return undefined;
         } catch (error: unknown) {
           return error instanceof Error ? error.message : String(error);
         }
       },
     });
-    if (isCancel(workspaceHostInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceHost = normalizeWorkspaceHost(workspaceHostInput);
-
-    const workspaceSlugInput = await text({
-      ...clackIo,
-      message: 'workspace short name',
-      initialValue: options.workspaceSlug ?? slugFromWorkspaceHost(workspaceHost),
-      validate: (value) => {
-        try {
-          normalizeWorkspaceSlug(value);
-          return undefined;
-        } catch (error: unknown) {
-          return error instanceof Error ? error.message : String(error);
-        }
-      },
+    if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
+    const workspaceName = normalizeWorkspaceName(workspaceNameInput);
+    const workspaceSlug = workspaceName;
+    const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    const deviceLogin = await attemptWorkspaceDeviceLogin({
+      workspaceName,
+      workspaceSlug,
+      workspaceHost,
+      dryRun: options.dryRun,
     });
-    if (isCancel(workspaceSlugInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceSlug = normalizeWorkspaceSlug(workspaceSlugInput);
 
     const home = await text({
       ...clackIo,
@@ -342,7 +454,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
       ...clackIo,
-      message: 'select skills to enable',
+      message: 'select skills to enable — Use Space to select skills, press Enter to continue',
       options: skillPrompt.options,
       initialValues: skillPrompt.initialValues,
       cursorAt: skillPrompt.cursorAt,
@@ -352,13 +464,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
 
-    const artifactMode = await select({
-      ...clackIo,
-      message: 'choose artifact storage',
-      initialValue: options.artifactMode,
-      options: [{ value: 'local' as const, label: 'local artifacts', hint: 'save generated files under OS home' }],
-    });
-    if (isCancel(artifactMode)) { cancel('setup cancelled.'); process.exit(0); }
+    const artifactMode = options.artifactMode;
 
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
@@ -383,8 +489,12 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       ...options,
       mode,
       home,
+      workspaceName,
       workspaceHost,
       workspaceSlug,
+      workspaceBootstrap: deviceLogin.workspaceBootstrap,
+      deviceLoginStatus: deviceLogin.status,
+      deviceLoginUrl: deviceLogin.verificationUrl,
       selectedSkills: selectedSkills as SkillName[],
       artifactMode,
       connectAgents,
@@ -427,8 +537,11 @@ async function main(): Promise<void> {
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
+        workspaceName: options.workspaceName,
         workspaceHost: options.workspaceHost,
         workspaceSlug: options.workspaceSlug,
+        deviceLoginStatus: options.deviceLoginStatus,
+        deviceLoginUrl: options.deviceLoginUrl,
         connectAgents: options.connectAgents,
         installDaemons: options.installDaemons,
       },
@@ -478,4 +591,3 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
-

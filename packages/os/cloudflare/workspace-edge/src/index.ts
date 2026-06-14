@@ -2,7 +2,10 @@ import {
   createWorkspaceCloudflareD1RouteRegistry,
   type WorkspaceRouteD1Database,
 } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
-import { createWorkspaceCloudflareEdgeRouter } from '../../../scripts/lib/workspace-cloudflare-edge-router';
+import {
+  createWorkspaceCloudflareEdgeRouter,
+  type WorkspaceSitesEdgeR2Bucket,
+} from '../../../scripts/lib/workspace-cloudflare-edge-router';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -19,6 +22,7 @@ type WorkspaceEdgeLogger = {
 type WorkspaceEdgeEnvironment = {
   WORKSPACE_ROUTE_REGISTRY: WorkspaceRouteD1Database;
   CONSUELO_EDGE_SIGNING_SECRET: string;
+  SITES_SNAPSHOTS?: WorkspaceSitesEdgeR2Bucket;
   WORKSPACE_EDGE_LOGGER?: WorkspaceEdgeLogger;
 };
 
@@ -55,6 +59,7 @@ export async function fetch(
     const router = createWorkspaceCloudflareEdgeRouter({
       registry,
       internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
+      siteSnapshots: { r2: env.SITES_SNAPSHOTS },
     });
 
     return await router.fetch(request);
