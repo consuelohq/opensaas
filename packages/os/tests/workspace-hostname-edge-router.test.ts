@@ -47,17 +47,48 @@ contractDescribe('workspace hostname edge routing contract', () => {
       },
       siteSnapshots: { cache: { async match() { cacheMatchCount += 1; return null; }, async put() {} } },
     });
-
     for (const host of ['app.consuelohq.com', 'docs.consuelohq.com', 'diffs.consuelohq.com', 'install.consuelohq.com']) {
       const response = await router.fetch(new Request('https://' + host + '/'));
-      const body = (await response.json()) as { error: { code: string } };
+      const body = (await response.json()) as { error: { code: string; message: string; request_id: string; help_url: string } };
       expect(response.status).toBe(404);
       expect(body.error.code).toBe('WORKSPACE_HOSTNAME_RESERVED');
+      expect(body.error.message).toBe('This workspace is protected by Consuelo platform safety.');
+      expect(body.error.request_id).toBeTruthy();
+      expect(body.error.help_url).toBe('https://os.consuelohq.com/help/workspace-access');
     }
     expect(resolveCount).toBe(0);
     expect(cacheMatchCount).toBe(0);
   });
 
+  it('renders a Cloudflare-style platform safety page for browser requests', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } = await loadContract();
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          return { allowed: false, status: 404, errorCode: 'UNEXPECTED_D1_LOOKUP', auditEvent: 'workspace.hostname.route.denied' };
+        },
+      },
+    });
+
+    const response = await router.fetch(new Request('https://diffs.consuelohq.com/', {
+      headers: {
+        accept: 'text/html,application/xhtml+xml',
+        'cf-ray': 'test-ray-IAD',
+        'cf-connecting-ip': 'redacted-test-ip',
+      },
+    }));
+    const body = await response.text();
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(body).toContain('This workspace is protected');
+    expect(body).toContain('Consuelo platform safety');
+    expect(body).toContain('WORKSPACE_HOSTNAME_RESERVED');
+    expect(body).toContain('test-ray-IAD');
+    expect(body).toContain('diffs.consuelohq.com');
+    expect(body).toContain('Click to reveal IP');
+    expect(body).not.toContain('UNEXPECTED_D1_LOOKUP');
+  });
   it('serves public workspace root snapshots for personal and business hostnames', async () => {
     const { createWorkspaceCloudflareEdgeRouter } = await loadContract();
     const cachePuts: Array<{ url: string; body: string }> = [];
