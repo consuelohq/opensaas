@@ -82,6 +82,22 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ---
 
+## github -- typed GitHub facade
+
+Preferred GitHub tool for agents. Use semantic operations and presets instead of constructing raw `gh` CLI arguments.
+
+```bash
+bun --cwd packages/os ./scripts/github.js pr.view --pr 436 --preset review
+bun --cwd packages/os ./scripts/github.js pr.checks --pr 436
+bun --cwd packages/os ./scripts/github.js branch.compare --base main --head stream/os
+```
+
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the OS response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
+Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
+
+---
+
 ## the task lifecycle
 
 every change — even tiny ones — follows this flow. no exceptions.
@@ -1433,4 +1449,5 @@ bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section
 ```
 
 Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
+
 
