@@ -1103,6 +1103,8 @@ bun run github -- branch.compare --base main --head stream/workspace-agents
 
 Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
 
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the workspace response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
 ---
 
 ### tool-runner — run one typed workspace tool
