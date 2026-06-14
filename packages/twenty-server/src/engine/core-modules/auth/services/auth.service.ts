@@ -940,6 +940,7 @@ export class AuthService {
       });
 
       const response = await fetch(approvalUrl, {
+        signal: AbortSignal.timeout(30_000),
         method: 'POST',
         headers: {
           Accept: 'application/json',

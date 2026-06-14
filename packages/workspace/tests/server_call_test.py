@@ -566,6 +566,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
 
+    def test_missing_task_session_with_input_branch_is_not_branch_conflict(self):
+        result = self.module._run_workspace_call(
+            'fs.read',
+            taskSession='tsk_missing',
+            tool_input={'path': 'AGENTS.md', 'branch': 'task/workspace-agents/test'},
+        )
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
+
     def test_top_level_task_session_resolves_from_scoped_metadata_without_root_session(self):
         self._remove_legacy_session()
         self._write_scoped_session()

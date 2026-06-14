@@ -552,17 +552,22 @@ async function main(): Promise<void> {
     } else {
       const approvedWorkspaceBootstrap = options.workspaceBootstrap;
       if (!approvedWorkspaceBootstrap) {
-        throw new Error(
-          'workspace edge publish requires approved workspace bootstrap from device login',
-        );
+        info('Device approval not completed; skipping workspace edge snapshot publish.');
+        edgePublish = {
+          status: 'planned',
+          workspaceHost: workspaceBootstrap?.workspaceHost,
+          message:
+            'workspace edge site snapshot publish skipped: approved device login not available',
+        };
+      } else {
+        info('publishing workspace site to edge...');
+        edgePublish = await publishWorkspaceEdgeSnapshot({
+          home: result.home,
+          workspaceId: approvedWorkspaceBootstrap.workspaceId,
+          workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
+          workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
+        });
       }
-      info('publishing workspace site to edge...');
-      edgePublish = await publishWorkspaceEdgeSnapshot({
-        home: result.home,
-        workspaceId: approvedWorkspaceBootstrap.workspaceId,
-        workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
-        workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
-      });
     }
     const payload = {
       ...result,

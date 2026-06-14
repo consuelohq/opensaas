@@ -34,6 +34,8 @@ const wranglerConfig = 'cloudflare/workspace-edge/wrangler.toml';
 const siteId = 'launcher';
 const contentType = 'text/html; charset=utf-8';
 const forbiddenLogWords = /token|secret|credential/gi;
+const commandTimeoutMs = 120_000;
+const fetchTimeoutMs = 30_000;
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const versionId = (value: string) => `sha256-${hash(value).slice(0, 16)}`;
 const sql = (value: string) => `'${value.replace(/'/g, "''")}'`;
@@ -65,8 +67,24 @@ const run = async (runner: CommandRunner, plan: WorkspaceEdgeSnapshotPlan, stage
   entries.push({ stage, argv, exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr });
   if (result.exitCode !== 0) { writeLog(log, entries); throw new InstallEdgePublishError({ stage, workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish failed during ${stage}`, diagnostics: { exitCode: result.exitCode } }); }
 };
-const defaultRunner: CommandRunner = async ({ argv, cwd }) => { const proc = Bun.spawn(argv, { cwd, stdout: 'pipe', stderr: 'pipe' }); return { stdout: await new Response(proc.stdout).text(), stderr: await new Response(proc.stderr).text(), exitCode: await proc.exited }; };
-const defaultFetch = async (url: string, init?: RequestInit) => { if (typeof fetch !== 'function') throw new Error('fetch unavailable'); return await fetch(url, init); };
+const defaultRunner: CommandRunner = async ({ argv, cwd }) => {
+  const proc = Bun.spawn(argv, { cwd, stdout: 'pipe', stderr: 'pipe' });
+  const timeout = setTimeout(() => proc.kill(), commandTimeoutMs);
+  try {
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+    return { stdout, stderr, exitCode };
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+const defaultFetch = async (url: string, init?: RequestInit) => {
+  if (typeof fetch !== 'function') throw new Error('fetch unavailable');
+  return await fetch(url, { ...init, signal: init?.signal ?? AbortSignal.timeout(fetchTimeoutMs) });
+};
 
 export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise<WorkspaceEdgePublishResult> {
   const log = logPath(input.home, input.now);
@@ -80,15 +98,25 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
   fs.writeFileSync(routeSqlPath, `${plan.routeSql}\n`, { mode: 0o600 });
   await run(runner, plan, 'r2_upload', log, entries, ['wrangler', 'r2', 'object', 'put', `${bucket}/${plan.snapshotKey}`, '--remote', '--file', plan.snapshotPath, '--content-type', contentType]);
   await run(runner, plan, 'd1_upsert', log, entries, ['wrangler', 'd1', 'execute', d1, '--remote', '--config', wranglerConfig, '--file', routeSqlPath]);
-  const response = await (input.fetchImpl ?? defaultFetch)(plan.verifyUrl, { headers: { 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
-  const body = await response.text();
-  const cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
-  const sitesCache = response.headers.get('x-consuelo-sites-cache');
-  const siteVersion = response.headers.get('x-consuelo-site-version');
-  entries.push({ stage: 'edge_verify', url: plan.verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, bodyHash: hash(body) });
-  if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== plan.versionId || hash(body) !== plan.contentHash) {
+  let response: Response;
+  let cacheAuthority: string | null = null;
+  let sitesCache: string | null = null;
+  try {
+    response = await (input.fetchImpl ?? defaultFetch)(plan.verifyUrl, { headers: { 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
+    const body = await response.text();
+    cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
+    sitesCache = response.headers.get('x-consuelo-sites-cache');
+    const siteVersion = response.headers.get('x-consuelo-site-version');
+    const bodyHash = hash(body);
+    entries.push({ stage: 'edge_verify', url: plan.verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, bodyHash });
+    if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== plan.versionId || bodyHash !== plan.contentHash) {
+      writeLog(log, entries);
+      throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${plan.verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion } });
+    }
+  } catch (error: unknown) {
     writeLog(log, entries);
-    throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${plan.verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion } });
+    if (error instanceof InstallEdgePublishError) throw error;
+    throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${plan.verifyUrl}`, diagnostics: { error: error instanceof Error ? error.message : String(error) }, cause: error });
   }
   writeLog(log, entries);
   return { status: 'succeeded', workspaceId: plan.workspaceId, workspaceSlug: plan.workspaceSlug, workspaceHost: plan.workspaceHost, siteId, versionId: plan.versionId, snapshotKey: plan.snapshotKey, snapshotPath: plan.snapshotPath, verifyUrl: plan.verifyUrl, logPath: log, httpStatus: response.status, cacheAuthority, sitesCache };
