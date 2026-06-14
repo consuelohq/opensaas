@@ -298,6 +298,50 @@
     "sessionRequired": true
   },
   {
+    "name": "fs.applyPatch",
+    "methodPath": [
+      "fs",
+      "applyPatch"
+    ],
+    "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+    "category": "filesystem",
+    "underlying": "workspace fs.applyPatch",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": true,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsApplyPatchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "apply-patch",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "patchText",
+          "flag": "--patch-text",
+          "kind": "value"
+        },
+        {
+          "source": "patchFile",
+          "flag": "--patch-file",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "branch": "task/workspace-agents/example",
+      "patchFile": "/tmp/change.patch",
+      "dryRun": true
+    },
+    "sessionRequired": true
+  },
+  {
     "name": "http",
     "methodPath": [
       "fs",
