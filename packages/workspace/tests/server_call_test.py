@@ -507,6 +507,44 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'VALIDATION_ERROR')
 
+    def test_task_session_allows_matching_input_branch_for_code_call(self):
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {'stdout': 'ok'},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call(
+                'code.call',
+                taskSession=self.session,
+                tool_input={
+                    'branch': 'task/workspace-agents/test',
+                    'language': 'python',
+                    'mode': 'read',
+                    'code': 'print("ok")',
+                },
+            )
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(resolved_input['branch'], 'task/workspace-agents/test')
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['branch'], 'task/workspace-agents/test')
+
     def test_task_session_and_nested_batch_branch_conflict_is_standard_error(self):
         result = self.module._run_workspace_call(
             'batch',
@@ -524,6 +562,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_missing_task_session_is_standard_error(self):
         result = self.module._run_workspace_call('fs.read', taskSession='tsk_missing', tool_input={'path': 'AGENTS.md'})
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
+
+    def test_missing_task_session_with_input_branch_is_not_branch_conflict(self):
+        result = self.module._run_workspace_call(
+            'fs.read',
+            taskSession='tsk_missing',
+            tool_input={'path': 'AGENTS.md', 'branch': 'task/workspace-agents/test'},
+        )
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
@@ -795,7 +843,6 @@ class WorkspaceCallServerTest(unittest.TestCase):
         protected_file = protected_root + 'config'
         tool_inputs = {
             'fs.write': {'path': protected_file, 'content': 'x'},
-            'fs.patch': {'path': protected_file, 'from': 1, 'to': 1, 'content': 'x'},
             'fs.trash': {'path': protected_file},
             'mac.write': {'path': protected_file, 'content': 'x'},
         }

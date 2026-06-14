@@ -75,9 +75,9 @@ describe('tools.search v2 intent resolution', () => {
   });
 
   it('keeps exact tool names as the strongest signal', () => {
-    const payload = runSearch('fs.patch', ['--limit', '5']);
-    expect(payload.recommended).toBe('fs.patch');
-    expect(names(payload)[0]).toBe('fs.patch');
+    const payload = runSearch('fs.apply_patch', ['--limit', '5']);
+    expect(payload.recommended).toBe('fs.apply_patch');
+    expect(names(payload)[0]).toBe('fs.apply_patch');
   });
 
   it('covers filesystem search/read/list and mutating file operations with safety guidance', () => {
@@ -88,7 +88,7 @@ describe('tools.search v2 intent resolution', () => {
     const writePayload = runSearch('write patch file contents', ['--limit', '8']);
     const writeNames = names(writePayload);
     expect(writeNames).toContain('fs.write');
-    expect(writeNames).toContain('fs.patch');
+    expect(writeNames).toContain('fs.apply_patch');
     expect(String(JSON.stringify(writePayload.guidance))).toContain('mutating');
   });
 

@@ -38,7 +38,7 @@ const { getTaskWorkpadPath, readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = 
 const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { parsePrRef } = require('./lib/pr-ref');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
-
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
 
@@ -425,24 +425,11 @@ async function main() {
     const worktreePath = worktree.path;
     removeStaleRootTaskState(worktreePath);
 
-    // symlink node_modules from main worktree so tests/lint/typecheck work
-    const worktreeNodeModules = path.join(worktreePath, 'node_modules');
-    if (!fs.existsSync(worktreeNodeModules)) {
-      const mainNodeModules = path.join(repoRoot, 'node_modules');
-      if (fs.existsSync(mainNodeModules)) {
-        fs.symlinkSync(mainNodeModules, worktreeNodeModules);
-        writeStderr('symlinked node_modules from main worktree');
-      }
-    }
-
-    const workspacePackageNodeModules = path.join(worktreePath, 'packages', 'workspace', 'node_modules');
-    if (!fs.existsSync(workspacePackageNodeModules)) {
-      const mainWorkspacePackageNodeModules = path.join(repoRoot, 'packages', 'workspace', 'node_modules');
-      if (fs.existsSync(mainWorkspacePackageNodeModules)) {
-        fs.symlinkSync(mainWorkspacePackageNodeModules, workspacePackageNodeModules);
-        writeStderr('symlinked packages/workspace/node_modules from main worktree');
-      }
-    }
+    linkTaskWorktreeNodeModules({
+      repoRoot,
+      worktreePath,
+      writeStderr,
+    });
 
     const taskTmux = ensureTaskTmuxSession({
       area,

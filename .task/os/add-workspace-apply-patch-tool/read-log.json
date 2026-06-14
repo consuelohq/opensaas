@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-node-modules.test.js",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-14T04:35:31.056Z"
+}

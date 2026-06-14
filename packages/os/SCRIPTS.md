@@ -82,6 +82,22 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ---
 
+## github -- typed GitHub facade
+
+Preferred GitHub tool for agents. Use semantic operations and presets instead of constructing raw `gh` CLI arguments.
+
+```bash
+bun --cwd packages/os ./scripts/github.js pr.view --pr 436 --preset review
+bun --cwd packages/os ./scripts/github.js pr.checks --pr 436
+bun --cwd packages/os ./scripts/github.js branch.compare --base main --head stream/os
+```
+
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the OS response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
+Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
+
+---
+
 ## the task lifecycle
 
 every change — even tiny ones — follows this flow. no exceptions.
@@ -233,19 +249,20 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -264,11 +281,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content "..."
  → error: directory does not exist
@@ -1432,4 +1449,5 @@ bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section
 ```
 
 Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
+
 

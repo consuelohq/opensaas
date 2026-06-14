@@ -2,9 +2,9 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` - running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** task worktrees are lightweight git checkouts. `task:start` links the root `node_modules` from the main worktree, and it also links package-scoped `node_modules` directories that Yarn creates under `packages/*`. Those package-scoped links matter for Nx/TypeScript resolution because dependencies can be installed under a package directory rather than only at repo root.
 
 every script supports `--help` and `--json`.
 
@@ -63,6 +63,22 @@ cd packages/diff-cockpit && bun run test
 
 Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
+### os:release — release all public Consuelo OS surfaces
+
+Operator-only release wrapper for publishing every public OS surface that the hosted installer depends on. Use this as the default OS release command after OS installer or device approval changes.
+
+```bash
+bun run os:release -- --dry-run
+bun run os:release
+bun run os:release -- --install-only
+bun run os:release -- --device-auth-only
+```
+
+Default release order:
+
+1. `install.consuelohq.com/os` via `os:release-install`
+2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
+
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
@@ -80,6 +96,22 @@ Defaults:
 - Installer path: `/os`
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
 
+### os:release-device-auth — release the OS device approval authority
+
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+
+```bash
+bun run os:release-device-auth -- --dry-run
+bun run os:release-device-auth
+bun run os:release-device-auth -- --verify-only
+bun run os:release-device-auth -- --no-verify
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-device-authority`
+- Route: `os.consuelohq.com/*`
+- Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
 
 ---
 
@@ -268,14 +300,15 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -294,11 +327,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist

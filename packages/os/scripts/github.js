@@ -14,13 +14,14 @@ const PRESET_FIELDS = {
 };
 
 const CHECK_FIELDS = ['bucket', 'completedAt', 'description', 'event', 'link', 'name', 'startedAt', 'state', 'workflow'];
+const SAMPLE_LIMIT = 12;
+const TEXT_PREVIEW_LIMIT = 4000;
+const BODY_PREVIEW_LIMIT = 600;
+const MESSAGE_PREVIEW_LIMIT = 240;
+const COMPACT_SCALAR_LIMIT = 24;
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
-}
-
-function writeStderr(value = '') {
-  process.stderr.write(`${value}\n`);
 }
 
 function parseArgs(argv) {
@@ -96,33 +97,115 @@ function parseMaybeJson(stdout) {
   try { return JSON.parse(stdout); } catch { return stdout; }
 }
 
-function output(operation, args, commandResult, extra = {}) {
-  const value = {
-    ok: true,
-    operation,
-    repo: args.repo,
-    dryRun: Boolean(args.dryRun),
-    command: commandResult.command,
-    data: commandResult.data,
-    stdout: typeof commandResult.data === 'string' ? commandResult.data : commandResult.stdout,
-    ...extra,
+function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function jsonChars(value) {
+  if (value === null || value === undefined) return 0;
+  try { return JSON.stringify(value).length; } catch { return 0; }
+}
+
+function previewText(value, limit = TEXT_PREVIEW_LIMIT) {
+  const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
+  return {
+    text: text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text,
+    chars: text.length,
+    truncated: text.length > limit,
+    omittedChars: Math.max(0, text.length - limit),
   };
-  writeStdout(JSON.stringify(value, null, 2));
 }
 
-function fieldsFor(args, fallbackPreset = 'summary') {
-  const preset = args.preset || fallbackPreset;
-  const presetFields = PRESET_FIELDS[preset];
-  if (!presetFields) throw new Error(`unknown github preset: ${preset}`);
-  const fields = args.fields.length > 0 ? args.fields : presetFields;
-  return Array.from(new Set(fields));
+function compactScalarObject(value, limit = COMPACT_SCALAR_LIMIT) {
+  if (!isObject(value)) return value;
+  const entries = Object.entries(value);
+  const compact = {};
+  let used = 0;
+  for (const [key, entryValue] of entries) {
+    if (used >= limit) break;
+    if (entryValue === null || ['string', 'number', 'boolean'].includes(typeof entryValue)) {
+      compact[key] = typeof entryValue === 'string' ? previewText(entryValue, MESSAGE_PREVIEW_LIMIT).text : entryValue;
+      used += 1;
+    }
+  }
+  return compact;
 }
 
-function summarizePrReview(data) {
-  if (!data || typeof data !== 'object') return data;
-  const checks = Array.isArray(data.statusCheckRollup) ? data.statusCheckRollup : [];
-  const failed = checks.filter((check) => ['FAILURE', 'FAILED', 'ERROR', 'CANCELLED', 'TIMED_OUT'].includes(String(check.conclusion || check.state || '').toUpperCase()));
-  const pending = checks.filter((check) => ['PENDING', 'QUEUED', 'IN_PROGRESS', 'EXPECTED'].includes(String(check.state || check.conclusion || '').toUpperCase()));
+function sampleArray(items, mapper, limit = SAMPLE_LIMIT) {
+  const array = asArray(items);
+  const sample = array.slice(0, limit).map(mapper);
+  return {
+    total: array.length,
+    sample,
+    truncated: array.length > limit,
+    omitted: Math.max(0, array.length - limit),
+  };
+}
+
+function checkState(check) {
+  return String(check.conclusion || check.state || check.status || '').toUpperCase();
+}
+
+function isFailedCheck(check) {
+  return ['FAILURE', 'FAILED', 'ERROR', 'CANCELLED', 'TIMED_OUT'].includes(checkState(check));
+}
+
+function isPendingCheck(check) {
+  return ['PENDING', 'QUEUED', 'IN_PROGRESS', 'EXPECTED', 'REQUESTED', 'WAITING'].includes(checkState(check));
+}
+
+function compactUser(value) {
+  if (typeof value === 'string') return { login: value };
+  if (!isObject(value)) return null;
+  return compactScalarObject(value, 6);
+}
+
+function compactCheck(value) {
+  const check = isObject(value) ? value : {};
+  return {
+    name: check.name || check.workflow || '',
+    state: check.state || check.conclusion || check.status || '',
+    bucket: check.bucket || '',
+    workflow: check.workflow || '',
+    event: check.event || '',
+    link: check.link || check.url || check.detailsUrl || '',
+    startedAt: check.startedAt || check.started_at || '',
+    completedAt: check.completedAt || check.completed_at || '',
+    description: previewText(check.description || check.summary || '', MESSAGE_PREVIEW_LIMIT).text,
+  };
+}
+
+function compactReview(value) {
+  const review = isObject(value) ? value : {};
+  return {
+    id: review.id || review.databaseId || '',
+    state: review.state || '',
+    author: compactUser(review.author || review.user),
+    submittedAt: review.submittedAt || review.submitted_at || '',
+    body: previewText(review.body || '', BODY_PREVIEW_LIMIT).text,
+    bodyChars: String(review.body || '').length,
+  };
+}
+
+function compactFile(value) {
+  const file = isObject(value) ? value : {};
+  return {
+    path: file.path || file.filename || '',
+    status: file.status || '',
+    additions: typeof file.additions === 'number' ? file.additions : undefined,
+    deletions: typeof file.deletions === 'number' ? file.deletions : undefined,
+    changes: typeof file.changes === 'number' ? file.changes : undefined,
+    previousFilename: file.previousFilename || file.previous_filename || undefined,
+    patchChars: typeof file.patch === 'string' ? file.patch.length : undefined,
+  };
+}
+
+function compactPr(value) {
+  const data = isObject(value) ? value : {};
   return {
     number: data.number,
     title: data.title,
@@ -133,19 +216,179 @@ function summarizePrReview(data) {
     merge: {
       state: data.mergeStateStatus,
       reviewDecision: data.reviewDecision,
-      ready: data.state === 'OPEN' && !failed.length && !pending.length && data.mergeStateStatus !== 'DIRTY',
+      isDraft: Boolean(data.isDraft),
     },
-    checks: { total: checks.length, failed, pending },
-    reviews: { latest: data.latestReviews || [] },
-    raw: data,
+    author: compactUser(data.author),
   };
+}
+
+function checkSummary(checks) {
+  const array = asArray(checks);
+  return {
+    total: array.length,
+    failed: array.filter((check) => isFailedCheck(isObject(check) ? check : {})).length,
+    pending: array.filter((check) => isPendingCheck(isObject(check) ? check : {})).length,
+  };
+}
+
+function compactPrViewPacket(data) {
+  if (!isObject(data)) return { summary: {}, details: {} };
+  const checks = asArray(data.statusCheckRollup);
+  const reviews = asArray(data.latestReviews);
+  const files = asArray(data.files);
+  const checksDigest = checkSummary(checks);
+  return {
+    summary: {
+      ...compactPr(data),
+      checks: checksDigest,
+      reviews: { total: reviews.length },
+      files: { total: files.length },
+      ready: data.state === 'OPEN'
+        && checksDigest.failed === 0
+        && checksDigest.pending === 0
+        && data.mergeStateStatus !== 'DIRTY',
+    },
+    details: {
+      checks: sampleArray(checks, compactCheck),
+      reviews: sampleArray(reviews, compactReview),
+      files: sampleArray(files, compactFile),
+    },
+  };
+}
+
+function compactListPacket(data, mapper, summary = {}) {
+  return {
+    summary: { total: asArray(data).length, ...summary },
+    details: { items: sampleArray(data, mapper) },
+  };
+}
+
+function compactComparePacket(data) {
+  if (!isObject(data)) return { summary: {}, details: {} };
+  const commits = asArray(data.commits);
+  const files = asArray(data.files);
+  return {
+    summary: {
+      status: data.status,
+      aheadBy: data.ahead_by,
+      behindBy: data.behind_by,
+      totalCommits: data.total_commits,
+      commits: { total: commits.length },
+      files: { total: files.length },
+      url: data.html_url || data.url,
+    },
+    details: {
+      commits: sampleArray(commits, (commit) => {
+        const item = isObject(commit) ? commit : {};
+        const nestedCommit = isObject(item.commit) ? item.commit : {};
+        return {
+          sha: item.sha,
+          url: item.html_url || item.url,
+          message: previewText(nestedCommit.message || item.message || '', MESSAGE_PREVIEW_LIMIT).text,
+          author: compactUser(nestedCommit.author || item.author),
+        };
+      }),
+      files: sampleArray(files, compactFile),
+    },
+  };
+}
+
+function compactDiffPacket(stdout) {
+  return {
+    summary: { textChars: String(stdout || '').length },
+    details: { text: previewText(stdout) },
+  };
+}
+
+function compactUnknownPacket(data) {
+  if (Array.isArray(data)) return compactListPacket(data, compactScalarObject);
+  if (typeof data === 'string') return compactDiffPacket(data);
+  if (isObject(data)) {
+    return {
+      summary: compactScalarObject(data),
+      details: { keys: Object.keys(data).slice(0, COMPACT_SCALAR_LIMIT) },
+    };
+  }
+  return { summary: {}, details: {} };
+}
+
+function compactGithubData(operation, data, stdout) {
+  switch (operation) {
+    case 'pr.view': return compactPrViewPacket(data);
+    case 'pr.checks': return compactListPacket(data, compactCheck, checkSummary(data));
+    case 'pr.reviews': return compactListPacket(data, compactReview);
+    case 'pr.files': {
+      const files = isObject(data) && Array.isArray(data.files) ? data.files : data;
+      return compactListPacket(files, compactFile);
+    }
+    case 'pr.diff': return compactDiffPacket(stdout || (typeof data === 'string' ? data : ''));
+    case 'pr.list': return compactListPacket(data, compactPr);
+    case 'branch.compare': return compactComparePacket(data);
+    case 'repo.view': return compactUnknownPacket(data);
+    case 'raw': return compactUnknownPacket(data);
+    default: return compactUnknownPacket(data);
+  }
+}
+
+function extraOutputFields(extra) {
+  const allowed = ['fields', 'full', 'mergeMethod', 'reason'];
+  const output = {};
+  for (const key of allowed) {
+    if (Object.prototype.hasOwnProperty.call(extra, key)) output[key] = extra[key];
+  }
+  return output;
+}
+
+function createGithubOutput(operation, args, commandResult, extra = {}) {
+  const stdout = typeof commandResult.stdout === 'string' ? commandResult.stdout : '';
+  const data = commandResult.data;
+  const compact = compactGithubData(operation, data, stdout);
+  const dataJsonChars = jsonChars(data);
+  const packet = {
+    schema: 'github.packet.v1',
+    operation,
+    repo: args.repo,
+    dryRun: Boolean(args.dryRun),
+    summary: compact.summary,
+    details: compact.details,
+    raw: {
+      dataJsonChars,
+      stdoutChars: stdout.length,
+      dataOmitted: dataJsonChars > 0,
+      stdoutOmitted: stdout.length > 0,
+      note: dataJsonChars || stdout.length
+        ? 'Raw GitHub payload omitted. This packet includes bounded summaries, counts, and samples.'
+        : 'No raw GitHub payload was produced.',
+    },
+  };
+  return {
+    ok: true,
+    operation,
+    repo: args.repo,
+    dryRun: Boolean(args.dryRun),
+    command: commandResult.command,
+    ...extraOutputFields(extra),
+    summary: compact.summary,
+    packet,
+  };
+}
+
+function output(operation, args, commandResult, extra = {}) {
+  writeStdout(JSON.stringify(createGithubOutput(operation, args, commandResult, extra), null, 2));
+}
+
+function fieldsFor(args, fallbackPreset = 'summary') {
+  const preset = args.preset || fallbackPreset;
+  const presetFields = PRESET_FIELDS[preset];
+  if (!presetFields) throw new Error(`unknown github preset: ${preset}`);
+  const fields = args.fields.length > 0 ? args.fields : presetFields;
+  return Array.from(new Set(fields));
 }
 
 function prView(args) {
   const fields = fieldsFor(args, 'review');
   const result = gh(['pr', 'view', requirePr(args), '--repo', args.repo, '--json', fields.join(',')], { dryRun: args.dryRun });
-  const summary = !args.dryRun && (args.preset || 'review') === 'review' ? summarizePrReview(result.data) : null;
-  output(args.operation, args, result, { fields, summary });
+  output(args.operation, args, result, { fields });
 }
 
 function prChecks(args) {
@@ -224,4 +467,10 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  createGithubOutput,
+};

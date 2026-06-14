@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-code-call-task-session-branch-handling",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1038,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1038",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1038",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1038/fix-os-code-call-task-session-branch-handling",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1038",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1038/fix-os-code-call-task-session-branch-handling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-code-call-task-session-branch-handling",
+  "taskSession": "tsk_b4a01d686b98",
+  "tmuxSession": "opensaas-os-fix-os-code-call-task-session-branch-handling-b4a01d68",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-code-call-task-session-branch-handling/.task/os/fix-os-code-call-task-session-branch-handling/session.json",
+  "createdAt": "2026-06-14T18:21:40.333Z"
+}

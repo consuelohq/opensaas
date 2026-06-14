@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e81bad160a29",
+  "tmuxSession": "opensaas-os-wire-install-edge-site-snapshot-publish-e81bad16",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-install-edge-site-snapshot-publish",
+  "branch": "task/os/wire-install-edge-site-snapshot-publish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-install-edge-site-snapshot-publish",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-install-edge-site-snapshot-publish",
+  "prNumber": 1032,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1032",
+  "createdAt": "2026-06-14T03:52:46.387Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-install-edge-site-snapshot-publish/.task/os/wire-install-edge-site-snapshot-publish/session.json"
+}

@@ -45,7 +45,7 @@ function exampleEnvelope(entry: ToolManifestEntry, ok: boolean): string {
 }
 
 function markdownCell(value: string): string {
-  return value.replace(/\|/g, '\\|').replace(/\n/g, '<br />');
+  return value.replace(/\|/g, '&#124;').replace(/\n/g, '<br />');
 }
 
 function capabilitySummary(entry: ToolManifestEntry): string {
@@ -66,7 +66,7 @@ function renderCommand(entry: ToolManifestEntry): string[] {
     '| Field | Value |',
     '| --- | --- |',
     `| Category | ${markdownCell(entry.category)} |`,
-    `| Signature | \`${renderSignature(entry)}\` |`,
+    `| Signature | \`${markdownCell(renderSignature(entry))}\` |`,
     `| Runtime | \`${markdownCell(entry.underlying)}\` |`,
     `| Capability | ${capabilitySummary(entry)} |`,
     `| Default timeout | ${entry.defaultTimeout}ms |`,
