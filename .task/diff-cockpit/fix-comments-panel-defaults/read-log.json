@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/diff-cockpit/README.md",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-14T22:40:37.933Z"
+}

@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-comments-panel-defaults",
+  "base": "origin/stream/diff-cockpit",
+  "headSha": "03c20043bbf3c1cd61bbc9d744f7e7a79408960f",
+  "changeHash": "2a3d2623e922d8ec597b6a53a4dd097ce30649f25c16a0dfab133eccc862832c",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T22:45:21.671Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-comments-panel-defaults/current.json",
+        ".task/diff-cockpit/fix-comments-panel-defaults/evidence-log.json",
+        ".task/diff-cockpit/fix-comments-panel-defaults/read-log.json",
+        ".task/diff-cockpit/fix-comments-panel-defaults/session.json",
+        ".task/diff-cockpit/fix-comments-panel-defaults/workpad.md",
+        ".task/tasks/diff-cockpit/fix-comments-panel-defaults.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
