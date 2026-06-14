@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
 const HEALTH_URL = 'https://os.consuelohq.com/health';
+const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -118,6 +119,28 @@ async function readJson(url: string, init?: RequestInit): Promise<{ status: numb
   }
 }
 
+async function readText(url: string, init?: RequestInit): Promise<{ status: number; text: string }> {
+  try {
+    const signal = init?.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+    const response = await fetch(url, {
+      ...init,
+      signal,
+      headers: {
+        'user-agent': 'consuelo-os-release-operator/1.0',
+        ...(init?.headers ?? {}),
+      },
+    });
+    return { status: response.status, text: await response.text() };
+  } catch (error: unknown) {
+    const errorName = error instanceof Error ? error.name : '';
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const suffix = errorName === 'TimeoutError' || errorName === 'AbortError'
+      ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+      : errorMessage;
+    throw new Error(`Device authority request failed: ${suffix}`);
+  }
+}
+
 async function verifyDeviceAuthority(): Promise<void> {
   try {
     const health = await readJson(HEALTH_URL);
@@ -126,6 +149,17 @@ async function verifyDeviceAuthority(): Promise<void> {
     }
 
     writeOut(`Verified ${HEALTH_URL}`);
+
+    const devicePage = await readText(DEVICE_PAGE_URL);
+    if (
+      devicePage.status !== 200 ||
+      !devicePage.text.includes('/login/google/start') ||
+      devicePage.text.includes('app.consuelohq.com')
+    ) {
+      throw new Error(`Device authority Google approval page check failed: status=${devicePage.status}`);
+    }
+
+    writeOut('Verified Google approval entrypoint on os.consuelohq.com');
 
     const missingKey = await readJson(DEVICE_CODE_URL, {
       method: 'POST',
