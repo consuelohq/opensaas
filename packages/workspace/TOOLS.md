@@ -34,7 +34,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | consuelo design | 21 |
 | context | 7 |
 | decision engine | 6 |
-| filesystem | 6 |
+| filesystem | 7 |
 | generation | 2 |
 | git | 1 |
 | github | 2 |
@@ -2306,6 +2306,67 @@ await workspace.call({
 ```
 
 ## filesystem
+
+### workspace.fs.applyPatch
+
+apply an anchored patch file with embedded task-worktree-relative paths
+
+| Field | Value |
+| --- | --- |
+| Category | filesystem |
+| Signature | `workspace.fs.applyPatch({ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>` |
+| Runtime | `workspace fs.applyPatch` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "fs.applyPatch",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "patchFile": "/tmp/change.patch",
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
 
 ### workspace.fs.list
 
