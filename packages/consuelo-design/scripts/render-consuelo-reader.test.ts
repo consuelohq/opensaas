@@ -280,6 +280,12 @@ describe('reader nav allocation and tap-scroll refinement', () => {
     expect(html).toContain('.reader-links { display:flex; justify-content:flex-end; justify-self:end;');
     expect(html).not.toContain('grid-template-columns:minmax(120px,auto) minmax(0,1fr) auto');
     expect(html).toContain('class="reader-nav-task"');
+    expect(html).toContain('grid-template-columns:minmax(0,1fr) auto');
+    expect(html).toContain('.reader-links { display:none; }');
+    expect(html).toContain('.reader-brand { position:relative; z-index:2; display:block; min-width:0; }');
+    expect(html).toContain('.reader-nav-task { justify-self:end; }');
+    expect(html).toContain('.reader-links a,.reader-nav-task { color:rgba(241,241,241,.72); }');
+    expect(html).not.toContain('.reader-nav-task { color:#202020; }');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 
@@ -386,3 +392,85 @@ describe('reader mixed module flattening', () => {
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });
+
+describe('reader navigable shell affordances', () => {
+  test('renders line rail and mobile drawer entries for every top-level section', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Consuelo OS Spec',
+      eyebrow: 'Spec · OS',
+      thesis: 'The shell should expose every section as a navigable line.',
+      sections: [
+        { id: 'summary', eyebrow: 'Summary', title: 'Summary', body: ['First section.'] },
+        { id: 'product-principles', eyebrow: 'product principles', title: 'What should not be re-litigated', body: ['Second section.'] },
+        { id: 'system-design', eyebrow: 'system design', title: 'OS server spine', body: ['Third section.'] },
+        { id: 'gateway', eyebrow: 'Gateway', title: 'Gateway', body: ['Fourth section.'] },
+        { id: 'sites', eyebrow: 'Sites', title: 'Sites', body: ['Fifth section.'] },
+      ],
+      components: [{ type: 'openQuestions', title: 'Open questions', questions: [{ title: 'Follow-up', body: 'What ships next?' }] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'OS tooling', items: [{ status: 'current', text: 'Build the line rail.' }] }],
+    });
+
+    for (const title of ['Summary', 'product principles', 'system design', 'Gateway', 'Sites', 'Open questions', 'Task']) {
+      expect(html).toContain(`data-reader-section-title="${title}"`);
+      expect(html).toContain(`>${title}</span>`);
+    }
+    expect(html.match(/data-reader-section-target=/g)?.length).toBeGreaterThanOrEqual(7);
+    expect(html).toContain('class="reader-section-line"');
+    expect(html).toContain('class="reader-section-line-mark"');
+    expect(html).toContain('width:24px');
+    expect(html).toContain('min-height:8px');
+    expect(html).toContain('right:7px; width:30px');
+    expect(html).toContain('width:22px; height:2px');
+    expect(html).toContain('max-height:min(84dvh, 760px)');
+    expect(html).toContain('bottom:calc(82px + env(safe-area-inset-bottom,0px))');
+    expect(html).not.toContain('data-reader-section-title="What should not be re-litigated"');
+    expect(html).not.toContain('data-reader-section-title="OS server spine"');
+    expect(html).toContain('class="reader-section-drawer"');
+    expect(html).toContain('data-section-drawer-toggle');
+    expect(html).toContain('aria-label="Open section drawer"');
+    expect(html).toContain('class="reader-section-drawer-list"');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+
+  test('adds clipboard helpers for selection copy, find-next, and task block markdown copy', () => {
+    const html = renderConsueloReader({
+      template: 'spec',
+      title: 'Task Copy Fixture',
+      thesis: 'Tasks should be transferable to other agents as Markdown.',
+      sections: [{ id: 'summary', title: 'Summary', body: ['Searchable repeated term. Searchable repeated term.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{
+        title: '2. Add/update OS tooling',
+        tag: 'OS',
+        items: [
+          { status: 'done', text: 'Create/update fs.patch as the primary safe file edit command.' },
+          { status: 'current', text: 'Read mac.read and task.call command behavior.' },
+          { status: 'todo', text: 'Document stale read failure modes.' },
+        ],
+      }],
+    });
+
+    expect(html).toContain('class="task-copy-button"');
+    expect(html).toContain('class="task-copy-icon"');
+    expect(html).not.toContain('>Copy</button>');
+    expect(html).toContain('aria-label="Copy task as Markdown"');
+    expect(html).toContain('data-copy-markdown="## 2. Add/update OS tooling');
+    expect(html).toContain('- [x] Create/update fs.patch as the primary safe file edit command.');
+    expect(html).toContain('- [>] Read mac.read and task.call command behavior.');
+    expect(html).toContain('function copySelectedText');
+    expect(html).toContain('navigator.clipboard.writeText');
+    expect(html).toContain('class="reader-copy-toast"');
+    expect(html).toContain('function showCopyToast');
+    expect(html).toContain('selection.removeAllRanges(); showCopyToast');
+    expect(html).toContain('suppressSelectionCopyUntil = Date.now() + 600');
+    expect(html).toContain('function handleReaderFindEnter');
+    expect(html).toContain('function findNextOccurrence');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+
+
+
