@@ -114,6 +114,7 @@ export const CodeRunInput = z.object({
 export const CodeCallInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...branchField,
   language: z.string().min(1),
   code: z.string().min(1).optional(),
   codeFile: optionalString,
