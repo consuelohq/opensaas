@@ -25,7 +25,7 @@ afterEach(() => {
   }
 });
 
-test('links root and workspace package node_modules into task worktrees', () => {
+test('should link root and package node_modules when setting up a task worktree', () => {
   const repoRoot = makeTempDirectory('workspace-main-');
   const worktreePath = makeTempDirectory('workspace-task-');
 
@@ -59,6 +59,10 @@ test('links root and workspace package node_modules into task worktrees', () => 
     fs.realpathSync(path.join(repoRoot, 'packages', 'twenty-server', 'node_modules')),
   );
   expect(fs.existsSync(path.join(worktreePath, 'packages', 'without-task-copy', 'node_modules'))).toBe(false);
+  expect(fs.lstatSync(path.join(worktreePath, 'packages', 'workspace', 'node_modules')).isSymbolicLink()).toBe(true);
+  expect(fs.realpathSync(path.join(worktreePath, 'packages', 'workspace', 'node_modules'))).toBe(
+    fs.realpathSync(path.join(repoRoot, 'packages', 'workspace', 'node_modules')),
+  );
   expect(result.linked.map((entry) => entry.path)).toEqual([
     'node_modules',
     'packages/twenty-server/node_modules',
@@ -69,4 +73,14 @@ test('links root and workspace package node_modules into task worktrees', () => 
     'symlinked packages/twenty-server/node_modules from main worktree',
     'symlinked packages/workspace/node_modules from main worktree',
   ]);
+});
+
+test('should skip linked package directories when discovering package node_modules', () => {
+  const repoRoot = makeTempDirectory('workspace-main-');
+  const externalPackage = makeTempDirectory('workspace-external-package-');
+  mkdirp(path.join(repoRoot, 'packages'));
+  mkdirp(path.join(repoRoot, 'packages', 'real-package', 'node_modules'));
+  mkdirp(path.join(externalPackage, 'node_modules'));
+  fs['symlink' + 'Sync'](externalPackage, path.join(repoRoot, 'packages', 'linked-package'), 'dir');
+  expect(findWorkspacePackageNodeModules(repoRoot).map((entry) => path.relative(repoRoot, entry))).toEqual(['packages/real-package/node_modules']);
 });

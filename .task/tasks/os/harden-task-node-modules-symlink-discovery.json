@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-task-node-modules-symlink-discovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1029,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1029",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1029",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1029/harden-task-node-modules-symlink-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1029",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1029/harden-task-node-modules-symlink-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-task-node-modules-symlink-discovery",
+  "taskSession": "tsk_a9f0ed8f7c91",
+  "tmuxSession": "opensaas-os-harden-task-node-modules-symlink-discovery-a9f0ed8f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-task-node-modules-symlink-discovery/.task/os/harden-task-node-modules-symlink-discovery/session.json",
+  "createdAt": "2026-06-14T01:06:02.524Z"
+}
