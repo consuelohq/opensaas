@@ -1025,7 +1025,9 @@ def _input_branch_conflicts_with_task_session(value: Any, metadata: dict[str, An
     if branch is None:
         return False
     expected_branch = _metadata_branch(metadata)
-    return expected_branch is None or branch != expected_branch
+    if expected_branch is None:
+        return False
+    return branch != expected_branch
 
 
 def _batch_steps(value: Any) -> list[Any] | None:

@@ -1,0 +1,17 @@
+{
+  "files": [
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/task-node-modules.js",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-06-14T13:39:29.406Z"
+}

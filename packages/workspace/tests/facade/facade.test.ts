@@ -719,15 +719,72 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('should accept taskSession when explicit branch matches session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-match-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_match',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const plans: CommandPlan[] = [];
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_match',
+        branch: TEST_BRANCH,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--branch');
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject taskSession when explicit branch conflicts with session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-conflict-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_conflict',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {

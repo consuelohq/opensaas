@@ -763,8 +763,12 @@ function applyPatchOperations(operations) {
   const plannedDeletes = new Set();
   const touched = [];
 
-  function plannedContent(rawPath) {
-    if (plannedWrites.has(rawPath)) return plannedWrites.get(rawPath);
+  function patchKey(target) {
+    return target.resolved;
+  }
+
+  function plannedContent(rawPath, key) {
+    if (plannedWrites.has(key)) return plannedWrites.get(key).content;
     const { resolved } = assertSafePatchPath(rawPath);
     if (!fs.existsSync(resolved)) throw new Error(`patch file not found: ${rawPath}`);
     if (!fs.statSync(resolved).isFile()) throw new Error(`patch target must be a file: ${rawPath}`);
@@ -773,34 +777,36 @@ function applyPatchOperations(operations) {
 
   for (const operation of operations) {
     const target = assertSafePatchPath(operation.path);
+    const targetKey = patchKey(target);
     if (operation.type === 'add') {
-      if (fs.existsSync(target.resolved) || plannedWrites.has(operation.path)) throw new Error(`patch target already exists: ${operation.path}`);
-      plannedWrites.set(operation.path, joinPatchFileContent(operation.content));
-      plannedDeletes.delete(operation.path);
+      if (fs.existsSync(target.resolved) || plannedWrites.has(targetKey)) throw new Error(`patch target already exists: ${operation.path}`);
+      plannedWrites.set(targetKey, { path: operation.path, content: joinPatchFileContent(operation.content) });
+      plannedDeletes.delete(targetKey);
       touched.push(operation.path);
       continue;
     }
 
     if (operation.type === 'delete') {
-      if (!fs.existsSync(target.resolved) && !plannedWrites.has(operation.path)) throw new Error(`patch file not found: ${operation.path}`);
-      plannedWrites.delete(operation.path);
-      plannedDeletes.add(operation.path);
+      if (!fs.existsSync(target.resolved) && !plannedWrites.has(targetKey)) throw new Error(`patch file not found: ${operation.path}`);
+      plannedWrites.delete(targetKey);
+      plannedDeletes.add(targetKey);
       touched.push(operation.path);
       continue;
     }
 
     if (operation.type === 'update') {
-      const updatedContent = applyUpdateHunks(operation.path, plannedContent(operation.path), operation.hunks);
+      const updatedContent = applyUpdateHunks(operation.path, plannedContent(operation.path, targetKey), operation.hunks);
       if (operation.moveTo) {
         const moveTarget = assertSafePatchPath(operation.moveTo);
-        if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(operation.moveTo)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
-        plannedDeletes.add(operation.path);
-        plannedWrites.delete(operation.path);
-        plannedWrites.set(operation.moveTo, updatedContent);
+        const moveKey = patchKey(moveTarget);
+        if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveKey)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
+        plannedDeletes.add(targetKey);
+        plannedWrites.delete(targetKey);
+        plannedWrites.set(moveKey, { path: operation.moveTo, content: updatedContent });
         touched.push(operation.path, operation.moveTo);
       } else {
-        plannedWrites.set(operation.path, updatedContent);
-        plannedDeletes.delete(operation.path);
+        plannedWrites.set(targetKey, { path: operation.path, content: updatedContent });
+        plannedDeletes.delete(targetKey);
         touched.push(operation.path);
       }
     }
@@ -838,16 +844,14 @@ function cmdApplyPatch(argv) {
 
     if (dryRun) { out('\n(dry run — no changes applied)'); return; }
 
-    for (const rawPath of plan.plannedDeletes) {
-      if (plan.plannedWrites.has(rawPath)) continue;
-      const { resolved } = assertSafePatchPath(rawPath);
-      if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
+    for (const [resolved, planned] of plan.plannedWrites) {
+      fs.mkdirSync(path.dirname(resolved), { recursive: true });
+      fs.writeFileSync(resolved, planned.content);
     }
 
-    for (const [rawPath, content] of plan.plannedWrites) {
-      const { resolved } = assertSafePatchPath(rawPath);
-      fs.mkdirSync(path.dirname(resolved), { recursive: true });
-      fs.writeFileSync(resolved, content);
+    for (const resolved of plan.plannedDeletes) {
+      if (plan.plannedWrites.has(resolved)) continue;
+      if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
     }
 
     out('\npatch applied');

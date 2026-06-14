@@ -183,4 +183,24 @@ contractDescribe('install edge site publisher', () => {
       workspaceHost: 'internal.consuelohq.com',
     });
   });
+
+  it('should preserve stage diagnostics when edge verification request fails', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+
+    await expect(publisher.publishWorkspaceEdgeSnapshot({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
+      fetchImpl: async () => { throw new Error('network stalled'); },
+      now: '2026-06-14T00:00:00.000Z',
+    })).rejects.toMatchObject({
+      code: 'INSTALL_EDGE_PUBLISH_FAILED',
+      stage: 'edge_verify',
+      workspaceHost: 'internal.consuelohq.com',
+      diagnostics: { error: 'network stalled' },
+    });
+  });
 });

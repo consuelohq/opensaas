@@ -104,6 +104,7 @@ Operator-only release script for publishing the Cloudflare Worker under `package
 bun run os:release-device-auth -- --dry-run
 bun run os:release-device-auth
 bun run os:release-device-auth -- --verify-only
+bun run os:release-device-auth -- --no-verify
 ```
 
 Defaults:

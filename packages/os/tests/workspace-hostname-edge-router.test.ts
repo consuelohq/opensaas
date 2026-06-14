@@ -60,7 +60,7 @@ contractDescribe('workspace hostname edge routing contract', () => {
     expect(cacheMatchCount).toBe(0);
   });
 
-  it('renders a Cloudflare-style platform safety page for browser requests', async () => {
+  it('should render a Cloudflare-style platform safety page when the request prefers HTML', async () => {
     const { createWorkspaceCloudflareEdgeRouter } = await loadContract();
     const router = createWorkspaceCloudflareEdgeRouter({
       registry: {
