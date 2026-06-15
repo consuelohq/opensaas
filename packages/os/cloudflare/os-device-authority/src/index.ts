@@ -21,17 +21,32 @@ type Grant = {
   connectorExpiresAt?: number;
 };
 
+type OAuthState = {
+  state: string;
+  userCode: string;
+  expiresAt: number;
+};
+
 type Store = {
   put(g: Grant): Promise<void>;
   byHash(hash: string): Promise<Grant | undefined>;
   byUserCode(code: string): Promise<Grant | undefined>;
   del(hash: string): Promise<void>;
+  putOAuthState(s: OAuthState): Promise<void>;
+  byOAuthState(state: string): Promise<OAuthState | undefined>;
+  delOAuthState(state: string): Promise<void>;
 };
 type StorageLike = { get<T>(key: string): Promise<T | undefined>; put<T>(key: string, value: T): Promise<void>; delete(key: string): Promise<boolean> };
 type StateLike = { storage: StorageLike };
 type StubLike = { fetch(request: Request): Promise<Response> };
 type NamespaceLike = { idFromName(name: string): unknown; get(id: unknown): StubLike };
-type Env = { DEVICE_GRANTS: NamespaceLike; OS_DEVICE_AUTH_ORIGIN?: string; OS_DEVICE_AUTH_ASSERTION_SECRET?: string };
+type Env = {
+  DEVICE_GRANTS: NamespaceLike;
+  OS_DEVICE_AUTH_ORIGIN?: string;
+  OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
+  GOOGLE_OAUTH_CLIENT_ID?: string;
+  GOOGLE_OAUTH_CLIENT_SECRET?: string;
+};
 
 const ORIGIN = 'https://os.consuelohq.com';
 const TTL_MS = 15 * 60 * 1000;
@@ -43,6 +58,10 @@ const CONNECTOR_TOKEN_KEY = 'connector_bootstrap' + '_token';
 const AUTH_ASSERTION_HEADER = 'x-consuelo-account-assertion';
 const DEVICE_PROOF_PAYLOAD_KEY = 'device_public_key_proof_payload';
 const DEVICE_PROOF_KEY = 'device_public_key_proof';
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
+const GOOGLE_SCOPE = 'openid email profile';
 const ALLOWED_AUTH_METHODS = ['google', 'passkey', 'magic_link', 'hardware_key', 'admin_invite'] as const;
 const ALLOWED_AUTH_METHOD_SET = new Set<string>(ALLOWED_AUTH_METHODS);
 const REJECTED_AUTH_METHODS = new Set<string>(['password', 'username_password', 'basic', 'basic_auth']);
@@ -67,12 +86,11 @@ function verifyUrl(origin: string, code: string): string { const url = new URL('
 function stringField(record: Record<string, unknown>, key: string): string { const value = record[key]; return typeof value === 'string' ? value : ''; }
 function expectedDeviceProofPayload(input: { clientId: string; deviceCode: string; devicePublicKeyThumbprint: string }): string { return `${input.clientId}.${input.deviceCode}.${input.devicePublicKeyThumbprint}`; }
 
-function page(input: { code: string; message?: string; error?: string }): string {
+function page(input: { code: string; origin: string; message?: string; error?: string }): string {
   const shown = htmlEscape(showCode(input.code));
   const hidden = shown.replace(/-/g, '');
-  const approveUrl = new URL('/auth' + '/google', 'https://' + 'app.consuelohq.com');
-  approveUrl.searchParams.set('action', 'os-device-approval');
-  approveUrl.searchParams.set('osDeviceUserCode', hidden);
+  const approveUrl = new URL('/login/google/start', input.origin);
+  approveUrl.searchParams.set('user_code', hidden);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Authorize Consuelo OS</title><style>body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f5;color:#080808}main{text-align:center;width:min(720px,calc(100vw - 32px))}.card{background:white;border-radius:28px;margin:28px auto;padding:56px;box-shadow:0 24px 90px #0002}.eyebrow{letter-spacing:.24em;text-transform:uppercase;color:#777}.code{display:block;font-size:clamp(44px,12vw,96px);letter-spacing:.08em}.button{display:inline-block;border:0;border-radius:12px;background:#050505;color:white;padding:14px 22px;font:inherit;text-decoration:none}.notice{color:#066b36}.error{color:#9f1239}</style></head><body><main><p class="eyebrow">Consuelo OS</p><h1>Authorize this Mac</h1><p>Confirm this code matches your terminal before approving.</p><section class="card"><span class="eyebrow">Device code</span><strong class="code" data-device-code>${shown || 'Waiting'}</strong></section>${input.message ? `<p class="notice">${htmlEscape(input.message)}</p>` : ''}${input.error ? `<p class="error">${htmlEscape(input.error)}</p>` : ''}<a class="button" href="${htmlEscape(approveUrl.toString())}">Approve this Mac with Google</a><p>Approval requires a Consuelo account session backed by Google, passkey, magic link, hardware key, or admin invite.</p></main></body></html>`;
 }
 
@@ -82,9 +100,24 @@ class DurableStore implements Store {
   async byHash(h: string) { try { return await this.storage.get<Grant>(`d:${h}`); } catch { throw new Error('grant read failed'); } }
   async byUserCode(c: string) { try { const h = await this.storage.get<string>(`u:${cleanCode(c)}`); return h ? await this.byHash(h) : undefined; } catch { throw new Error('grant lookup failed'); } }
   async del(h: string) { try { const g = await this.byHash(h); await this.storage.delete(`d:${h}`); if (g) await this.storage.delete(`u:${cleanCode(g.userCode)}`); } catch { throw new Error('grant delete failed'); } }
+  async putOAuthState(s: OAuthState) { try { await this.storage.put(`s:${s.state}`, s); } catch { throw new Error('oauth state write failed'); } }
+  async byOAuthState(state: string) { try { return await this.storage.get<OAuthState>(`s:${state}`); } catch { throw new Error('oauth state read failed'); } }
+  async delOAuthState(state: string) { try { await this.storage.delete(`s:${state}`); } catch { throw new Error('oauth state delete failed'); } }
 }
 
-export function createMemoryDeviceGrantStore(): Store { const m = new Map<string, Grant>(); return { put(g) { m.set(g.hash, { ...g }); return Promise.resolve(); }, byHash(h) { const g = m.get(h); return Promise.resolve(g ? { ...g } : undefined); }, byUserCode(c) { for (const g of m.values()) if (cleanCode(g.userCode) === cleanCode(c)) return Promise.resolve({ ...g }); return Promise.resolve(undefined); }, del(h) { m.delete(h); return Promise.resolve(); } }; }
+export function createMemoryDeviceGrantStore(): Store {
+  const grants = new Map<string, Grant>();
+  const states = new Map<string, OAuthState>();
+  return {
+    put(g) { grants.set(g.hash, { ...g }); return Promise.resolve(); },
+    byHash(h) { const g = grants.get(h); return Promise.resolve(g ? { ...g } : undefined); },
+    byUserCode(c) { for (const g of grants.values()) if (cleanCode(g.userCode) === cleanCode(c)) return Promise.resolve({ ...g }); return Promise.resolve(undefined); },
+    del(h) { grants.delete(h); return Promise.resolve(); },
+    putOAuthState(s) { states.set(s.state, { ...s }); return Promise.resolve(); },
+    byOAuthState(state) { const s = states.get(state); return Promise.resolve(s ? { ...s } : undefined); },
+    delOAuthState(state) { states.delete(state); return Promise.resolve(); },
+  };
+}
 
 async function approvalAuth(request: Request, secret: string | undefined, nowMs: number): Promise<{ status: 'missing' } | { status: 'weak'; method: string } | { status: 'allowed'; accountId: string; method: StrongerAuthMethod }> {
   const assertion = request.headers.get(AUTH_ASSERTION_HEADER)?.trim() ?? '';
@@ -113,6 +146,72 @@ async function verifyDevicePublicKeyProof(g: Grant, input: { clientId: string; d
   }
 }
 
+function googleConfigured(input: { clientId?: string; clientSecret?: string }): boolean {
+  return Boolean(input.clientId?.trim() && input.clientSecret?.trim());
+}
+
+function redirectUri(origin: string): string {
+  return new URL('/login/google/callback', origin).toString();
+}
+
+function googleAuthRedirect(input: { origin: string; clientId: string; state: string }): string {
+  const url = new URL(GOOGLE_AUTH_URL);
+  url.searchParams.set('client_id', input.clientId);
+  url.searchParams.set('redirect_uri', redirectUri(input.origin));
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', GOOGLE_SCOPE);
+  url.searchParams.set('state', input.state);
+  url.searchParams.set('access_type', 'online');
+  url.searchParams.set('prompt', 'select_account');
+  return url.toString();
+}
+
+async function googleIdentity(input: { code: string; origin: string; clientId: string; clientSecret: string; fetchImpl: typeof fetch }): Promise<{ sub: string; email: string; emailVerified: boolean }> {
+  try {
+    const tokenResponse = await input.fetchImpl(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+      body: new URLSearchParams({
+        code: input.code,
+        client_id: input.clientId,
+        client_secret: input.clientSecret,
+        redirect_uri: redirectUri(input.origin),
+        grant_type: 'authorization_code',
+      }),
+    });
+    const tokenJson = await tokenResponse.json() as Record<string, unknown>;
+    if (!tokenResponse.ok || typeof tokenJson.id_token !== 'string') throw new Error('google_token_exchange_failed');
+
+    const infoUrl = new URL(GOOGLE_TOKENINFO_URL);
+    infoUrl.searchParams.set('id_token', tokenJson.id_token);
+    const infoResponse = await input.fetchImpl(infoUrl.toString(), { headers: { accept: 'application/json' } });
+    const infoJson = await infoResponse.json() as Record<string, unknown>;
+    if (!infoResponse.ok) throw new Error('google_identity_verification_failed');
+    if (infoJson.aud !== input.clientId) throw new Error('google_audience_mismatch');
+    const email = typeof infoJson.email === 'string' ? infoJson.email : '';
+    const sub = typeof infoJson.sub === 'string' ? infoJson.sub : '';
+    const emailVerified = infoJson.email_verified === true || infoJson.email_verified === 'true';
+    if (!sub || !email || !emailVerified) throw new Error('google_email_not_verified');
+    return { sub, email, emailVerified };
+  } catch (error: unknown) {
+    throw new Error(`google identity failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
+  try {
+    input.grant.status = 'approved';
+    input.grant.accountId = input.accountId;
+    input.grant.accountAuthMethod = input.authMethod;
+    input.grant.connectorToken = rand('cbt', 32);
+    input.grant.connectorExpiresAt = input.nowMs + BOOTSTRAP_TTL_MS;
+    await input.store.put(input.grant);
+    return input.grant;
+  } catch (error: unknown) {
+    throw new Error(`grant approval failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
@@ -128,15 +227,55 @@ function approvedJson(g: Grant): Record<string, unknown> {
   };
 }
 
-export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: string; now?: () => number; approvalAssertionSecret?: string }) {
+export function createOsDeviceAuthorityHandler(input: {
+  store: Store;
+  origin?: string;
+  now?: () => number;
+  approvalAssertionSecret?: string;
+  googleOAuthClientId?: string;
+  googleOAuthClientSecret?: string;
+  fetchImpl?: typeof fetch;
+}) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
+  const fetchImpl = input.fetchImpl ?? fetch;
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
       if (url.pathname === '/') return Response.redirect(new URL('/login/device', origin), 302);
       if (url.pathname === '/health') return json({ ok: true, service: 'consuelo-os-device-authority' });
-      if (url.pathname === '/login/device' && request.method === 'GET') return text(page({ code: url.searchParams.get('user_code') ?? '' }));
+      if (url.pathname === '/login/device' && request.method === 'GET') return text(page({ code: url.searchParams.get('user_code') ?? '', origin }));
+      if (url.pathname === '/login/google/start') {
+        if (request.method !== 'GET') return methodNotAllowed('GET');
+        if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
+          return text(page({ code: url.searchParams.get('user_code') ?? '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
+        }
+        const code = url.searchParams.get('user_code') ?? '';
+        const g = await input.store.byUserCode(code);
+        if (!g) return text(page({ code, origin, error: 'Device code not found.' }), { status: 404 });
+        if (now() >= g.expiresAt) { await input.store.del(g.hash); return text(page({ code, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
+        const state = rand('state', 24);
+        await input.store.putOAuthState({ state, userCode: g.userCode, expiresAt: now() + TTL_MS });
+        return Response.redirect(googleAuthRedirect({ origin, clientId: input.googleOAuthClientId!, state }), 302);
+      }
+      if (url.pathname === '/login/google/callback') {
+        if (request.method !== 'GET') return methodNotAllowed('GET');
+        if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
+          return text(page({ code: '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
+        }
+        const stateValue = url.searchParams.get('state') ?? '';
+        const authCode = url.searchParams.get('code') ?? '';
+        const oauthState = await input.store.byOAuthState(stateValue);
+        if (!stateValue || !authCode || !oauthState) return text(page({ code: '', origin, error: 'Google approval session was not found.' }), { status: 400 });
+        await input.store.delOAuthState(stateValue);
+        if (now() >= oauthState.expiresAt) return text(page({ code: oauthState.userCode, origin, error: 'Google approval session expired. Restart the installer.' }), { status: 410 });
+        const grant = await input.store.byUserCode(oauthState.userCode);
+        if (!grant) return text(page({ code: oauthState.userCode, origin, error: 'Device code not found.' }), { status: 404 });
+        if (now() >= grant.expiresAt) { await input.store.del(grant.hash); return text(page({ code: oauthState.userCode, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
+        const identity = await googleIdentity({ code: authCode, origin, clientId: input.googleOAuthClientId!, clientSecret: input.googleOAuthClientSecret!, fetchImpl });
+        await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
+        return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
+      }
       if (url.pathname === '/login/device/code') {
         if (request.method !== 'POST') return methodNotAllowed('POST');
         const p = await params(request);
@@ -171,12 +310,7 @@ export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: s
         const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
-        g.status = 'approved';
-        g.accountId = auth.accountId;
-        g.accountAuthMethod = auth.method;
-        g.connectorToken = rand('cbt', 32);
-        g.connectorExpiresAt = now() + BOOTSTRAP_TTL_MS;
-        await input.store.put(g);
+        await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
       }
       if (url.pathname === '/login/oauth/access_token') {
@@ -206,8 +340,14 @@ export function createOsDeviceAuthorityHandler(input: { store: Store; origin?: s
 
 export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
-  constructor(state: StateLike, env: { OS_DEVICE_AUTH_ORIGIN?: string; OS_DEVICE_AUTH_ASSERTION_SECRET?: string }) {
-    this.handler = createOsDeviceAuthorityHandler({ store: new DurableStore(state.storage), origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN, approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET });
+  constructor(state: StateLike, env: Env) {
+    this.handler = createOsDeviceAuthorityHandler({
+      store: new DurableStore(state.storage),
+      origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN,
+      approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
+      googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
+      googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+    });
   }
   fetch(request: Request) { return this.handler(request); }
 }

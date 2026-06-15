@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
 const HEALTH_URL = 'https://os.consuelohq.com/health';
+const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -94,27 +95,43 @@ function run(command: string, args: string[], options: { cwd?: string } = {}): v
   }
 }
 
+async function fetchWithDefaults(url: string, init?: RequestInit): Promise<Response> {
+  const signal = init?.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  return fetch(url, {
+    ...init,
+    signal,
+    headers: {
+      'user-agent': 'consuelo-os-release-operator/1.0',
+      ...(init?.headers ?? {}),
+    },
+  });
+}
+
+function requestFailureMessage(error: unknown): string {
+  const errorName = error instanceof Error ? error.name : '';
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  return errorName === 'TimeoutError' || errorName === 'AbortError'
+    ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+    : errorMessage;
+}
+
 async function readJson(url: string, init?: RequestInit): Promise<{ status: number; json: Record<string, unknown> }> {
   try {
-    const signal = init?.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-    const response = await fetch(url, {
-      ...init,
-      signal,
-      headers: {
-        'user-agent': 'consuelo-os-release-operator/1.0',
-        ...(init?.headers ?? {}),
-      },
-    });
+    const response = await fetchWithDefaults(url, init);
 
     const json = await response.json() as Record<string, unknown>;
     return { status: response.status, json };
   } catch (error: unknown) {
-    const errorName = error instanceof Error ? error.name : '';
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const suffix = errorName === 'TimeoutError' || errorName === 'AbortError'
-      ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
-      : errorMessage;
-    throw new Error(`Device authority request failed: ${suffix}`);
+    throw new Error(`Device authority request failed: ${requestFailureMessage(error)}`);
+  }
+}
+
+async function readText(url: string, init?: RequestInit): Promise<{ status: number; text: string }> {
+  try {
+    const response = await fetchWithDefaults(url, init);
+    return { status: response.status, text: await response.text() };
+  } catch (error: unknown) {
+    throw new Error(`Device authority request failed: ${requestFailureMessage(error)}`);
   }
 }
 
@@ -126,6 +143,14 @@ async function verifyDeviceAuthority(): Promise<void> {
     }
 
     writeOut(`Verified ${HEALTH_URL}`);
+
+    const devicePage = await readText(DEVICE_PAGE_URL);
+    const expectedGoogleStartHref = 'href="https://os.consuelohq.com/login/google/start?user_code=RELSMOKE"';
+    if (devicePage.status !== 200 || !devicePage.text.includes(expectedGoogleStartHref)) {
+      throw new Error(`Device authority Google approval page check failed: status=${devicePage.status}`);
+    }
+
+    writeOut('Verified Google approval entrypoint on os.consuelohq.com');
 
     const missingKey = await readJson(DEVICE_CODE_URL, {
       method: 'POST',
