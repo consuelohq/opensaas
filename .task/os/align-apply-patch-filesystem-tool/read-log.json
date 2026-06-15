@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/align-apply-patch-filesystem-tool/workpad.md",
+    "package.json",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/STEERING.md"
+  ],
+  "updatedAt": "2026-06-14T05:26:37.294Z"
+}

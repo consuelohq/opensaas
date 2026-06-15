@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9ae0ff9c6b4e",
+  "tmuxSession": "opensaas-diff-cockpit-fix-diff-cockpit-scroll-navigation-9ae0ff9c",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+  "branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-diff-cockpit-scroll-navigation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-diff-cockpit-scroll-navigation",
+  "prNumber": 1037,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1037",
+  "createdAt": "2026-06-14T18:13:14.347Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-diff-cockpit-scroll-navigation/.task/diff-cockpit/fix-diff-cockpit-scroll-navigation/session.json"
+}

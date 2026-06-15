@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-unified-os-release-command",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1019,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1019",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1019",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1019/add-unified-os-release-command",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1019",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1019/add-unified-os-release-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command",
+  "taskSession": "tsk_946809e71276",
+  "tmuxSession": "opensaas-os-add-unified-os-release-command-946809e7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command/.task/os/add-unified-os-release-command/session.json",
+  "createdAt": "2026-06-13T16:07:42.192Z"
+}

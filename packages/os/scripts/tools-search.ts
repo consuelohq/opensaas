@@ -281,8 +281,8 @@ const INTENT_PACKS: IntentPack[] = [
     label: 'write or patch task worktree files',
     terms: ['write', 'patch', 'edit', 'replace', 'file', 'contents'],
     requireAny: ['write', 'patch', 'edit', 'replace'],
-    boost: { 'fs.patch': 82, 'fs.write': 78, 'fs.trash': 18, 'fs.read': 8 },
-    mutatingGuidance: 'fs.write, fs.patch, and fs.trash mutate task worktree files; prefer fs.read/fs.search for investigation.',
+    boost: { 'fs.apply_patch': 86, 'fs.write': 78, 'fs.trash': 18, 'fs.read': 8 },
+    mutatingGuidance: 'fs.write, fs.apply_patch, and fs.trash mutate task worktree files; prefer fs.read/fs.search for investigation.',
   },
   {
     id: 'browser-screenshot',

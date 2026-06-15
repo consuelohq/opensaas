@@ -708,11 +708,6 @@ async function executeInternalTool<TData>(
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
-  if (typeof input.branch === 'string') return {
-    ok: false,
-    code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
-  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
@@ -721,7 +716,14 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
     message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
   };
 
-  const branch = metadata.branch || metadata.taskBranch;
+  const branch = metadata.branch || metadata.taskBranch || '';
+  const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
+  if (explicitBranch && explicitBranch !== branch) return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'input.branch does not match taskSession branch. Pass the taskSession returned by task.start and do not override its branch.',
+  };
+
   return { ok: true, branch, metadata };
 }
 
@@ -1045,3 +1047,4 @@ function logResult(
     },
   });
 }
+

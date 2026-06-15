@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { executeGetSteering, executeRefreshSteering } from '../scripts/os';
+import { executeGetSteering, executeRefreshSteering, getSteering } from '../scripts/os';
 
 const homes: string[] = [];
 
@@ -37,6 +37,30 @@ afterEach(() => {
 });
 
 describe('OS steering execution recording', () => {
+  it('loads local steering folder files and ignores legacy steering.md', () => {
+    const home = makeHome();
+    const steeringDir = path.join(home, 'steering');
+    fs.mkdirSync(steeringDir, { recursive: true });
+    fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
+    fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
+    fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
+
+    const first = getSteering();
+
+    expect(first).toContain('# system_prompt.md');
+    expect(first).toContain('local system body');
+    expect(first).toContain('# decision.md');
+    expect(first).toContain('local decision body');
+    expect(first).not.toContain('legacy body must be ignored');
+    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# decision.md'));
+
+    fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nupdated system body\n');
+    const second = getSteering();
+
+    expect(second).toContain('updated system body');
+    expect(second).not.toContain('local system body');
+  });
+
   it('records get-steering with metadata and full steering body', () => {
     const home = makeHome();
     const steering = executeGetSteering(() => 'os steering payload '.repeat(40));
@@ -70,7 +94,7 @@ describe('OS steering execution recording', () => {
 
     expect(first).toBe('os steering payload');
     expect(second).toContain('GET_STEERING_LOOP_GUARD');
-    expect(second).toContain('packages/os/STEERING.md');
+    expect(second).toContain('$CONSUELO_HOME/steering/system_prompt.md');
     expect(third).toContain('GET_STEERING_RATE_LIMITED');
     expect(fourth).toContain('GET_STEERING_COOLDOWN');
     expect(builds).toBe(1);

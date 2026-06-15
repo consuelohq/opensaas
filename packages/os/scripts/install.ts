@@ -35,9 +35,12 @@ import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
 } from './lib/workspace-device-login-client';
+import {
+  publishWorkspaceEdgeSnapshot,
+  type WorkspaceEdgePublishResult,
+} from './lib/install-edge-site-publisher';
 type ArtifactMode = 'local';
 type SkillName = string;
-
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -58,6 +61,13 @@ type InstallOptions = {
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
+type InstallEdgePublishPayload =
+  | WorkspaceEdgePublishResult
+  | {
+      status: 'planned';
+      workspaceHost?: string;
+      message: string;
+    };
 
 const AGENT_NAMES = new Set<AgentName>([
   'codex',
@@ -73,7 +83,7 @@ function writeStdout(value: string): void {
 const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
 const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
 const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
-const DEVICE_LOGIN_POLL_TIMEOUT_MS = 45_000;
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();
@@ -532,8 +542,36 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
+    let edgePublish: InstallEdgePublishPayload;
+    if (options.dryRun) {
+      edgePublish = {
+        status: 'planned',
+        workspaceHost: workspaceBootstrap?.workspaceHost,
+        message: 'workspace edge site snapshot publish planned',
+      };
+    } else {
+      const approvedWorkspaceBootstrap = options.workspaceBootstrap;
+      if (!approvedWorkspaceBootstrap) {
+        info('Device approval not completed; skipping workspace edge snapshot publish.');
+        edgePublish = {
+          status: 'planned',
+          workspaceHost: workspaceBootstrap?.workspaceHost,
+          message:
+            'workspace edge site snapshot publish skipped: approved device login not available',
+        };
+      } else {
+        info('publishing workspace site to edge...');
+        edgePublish = await publishWorkspaceEdgeSnapshot({
+          home: result.home,
+          workspaceId: approvedWorkspaceBootstrap.workspaceId,
+          workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
+          workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
+        });
+      }
+    }
     const payload = {
       ...result,
+      edgePublish,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
@@ -571,7 +609,7 @@ async function main(): Promise<void> {
       info(summarizeActions(result));
       if (!suppressFinalSummary) {
         info(
-          `next: CONSUELO_HOME=${result.home} bun --cwd ${result.home} run doctor`,
+          `next: CONSUELO_HOME=${result.home} bun run --cwd ${result.home} doctor`,
         );
         printEnd('OS ready');
       }

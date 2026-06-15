@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-install-edge-site-snapshot-publish",
+  "base": "stream/os",
+  "headSha": "a5956841fc49f24b4bbe3f1d3289cc213ad65c64",
+  "changeHash": "6e9cbffe6c3b490d96721ec1ce86dbb48cfbe959216475ff14e9cf7022ec6293",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T04:14:35.453Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-install-edge-site-snapshot-publish/current.json",
+        ".task/os/wire-install-edge-site-snapshot-publish/evidence-log.json",
+        ".task/os/wire-install-edge-site-snapshot-publish/read-log.json",
+        ".task/os/wire-install-edge-site-snapshot-publish/session.json",
+        ".task/os/wire-install-edge-site-snapshot-publish/workpad.md",
+        ".task/tasks/os/wire-install-edge-site-snapshot-publish.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/tests/install-edge-site-publisher.test.ts",
+        "packages/os/tests/install-workspace-bootstrap-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

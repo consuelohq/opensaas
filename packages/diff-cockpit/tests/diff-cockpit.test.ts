@@ -631,7 +631,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
     expect(html).toContain('refreshIndexIfStale');
+    expect(html).toContain('readInitialIndexData');
+    expect(html).toContain('diff-cockpit-index-initial-data');
+    expect(html).toContain('If-None-Match');
+    expect(html).toContain('response.status === 304');
     expect(html).toContain("window.addEventListener('focus'");
+    expect(html).not.toContain("document.addEventListener('pointerdown', () => refreshIndexIfStale");
     expect(html).toContain('button:focus:not(:focus-visible)');
     expect(html).toContain('-webkit-tap-highlight-color: transparent');
     expect(html).toContain('pr-title-line');
@@ -656,10 +661,14 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
-    expect(html).toContain('data-ai-sidebar="open"');
+    expect(html).toContain('data-ai-sidebar="closed"');
+    expect(html).not.toContain('<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open"');
     expect(html).toContain('id="ai-comments-sidebar"');
     expect(html).toContain('id="ai-comments-toggle"');
-    expect(html).toContain('aria-label="AI review comments"');
+    expect(html).toContain('aria-label="Comments"');
+    expect(html).toContain('<div><strong>Comments</strong>');
+    expect(html).not.toContain('AI comments</button>');
+    expect(html).not.toContain('<strong>AI comments</strong>');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -673,10 +682,17 @@ describe('renderReviewPage', () => {
     expect(html).toContain("event.key === 'Escape'");
     expect(html).toContain('loadLiveData();');
     expect(html).toContain('loadViewerLibraries();');
+    expect(html).toContain('readInitialReviewData');
+    expect(html).toContain('diff-cockpit-initial-etag');
+    expect(html).toContain('If-None-Match');
+    expect(html).toContain('response.status === 304');
     expect(html.indexOf('loadLiveData();')).toBeLessThan(html.indexOf('loadViewerLibraries();'));
     expect(html).not.toContain(']).finally(loadLiveData)');
     const script = html.split('<script type="module">')[1]?.split('</script>')[0] ?? '';
     expect(script).toContain('buildCommentsMarkdown');
+    expect(script).toContain('sortCommitsNewestFirst');
+    expect(script).toContain('new Date(right.committedAt || 0).getTime()');
+    expect(script).toContain("els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment')");
     expect(html).toContain('data-review-drawer="closed"');
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
@@ -736,6 +752,14 @@ describe('renderReviewPage', () => {
     expect(script).toContain("setDrawer(document.body.dataset.reviewDrawer !== 'open')");
     expect(script).not.toContain('drawerContent.scrollTo');
     expect(script).toContain('scrollToFile(state.selected);');
+    expect(html).not.toContain('scroll-behavior:smooth');
+    expect(script).not.toContain("behavior: 'smooth'");
+    expect(script).toContain('preserveDiffViewport');
+    expect(script).toContain('preserveDiffViewport(() => setDrawer');
+    expect(script).toContain('preserveDiffViewport(() => setAiSidebar');
+    expect(script).toContain('preserveDiffViewport(() => setFilePaneDrawer');
+    expect(script).toContain('captureDiffViewport');
+    expect(script).toContain('restoreDiffViewport');
     expect(script).toContain('class=\"diff-file\"');
     expect(script).not.toContain('new state.diffModule.FileDiff');
     expect(html).toContain('id="commit-popover"');
@@ -1068,6 +1092,70 @@ describe('createWorker', () => {
     expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757?_dcv=v5-review-commit-popovers')).toBe(true);
   });
 
+  test('server-renders warmed inbox and PR pages from shared API cache', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    let calls = 0;
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
+          { number: 757, title: 'warmed server page', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko', avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4' }, head: { ref: 'task/diff-cockpit/warmed-server-page', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/757')) return Response.json({ number: 757, title: 'warmed server page', html_url: 'https://github.com/consuelohq/opensaas/pull/757', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-05T00:21:00Z', created_at: '2026-06-05T00:20:00Z', user: { login: 'ko', avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4' }, head: { ref: 'task/diff-cockpit/warmed-server-page', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error(`unexpected server hydration url ${url}`);
+    };
+    const worker = createWorker({ fetcher, cache });
+
+    const refresh = await worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh?wait=1', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [757], reason: 'cron.diff-cockpit' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    const refreshed = await refresh.json() as { queued?: boolean; completed?: boolean };
+    const callsAfterRefresh = calls;
+    const inbox = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas'));
+    const prPage = await worker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas/pull/757'));
+    const inboxHtml = await inbox.text();
+    const prHtml = await prPage.text();
+
+    expect(refresh.status).toBe(200);
+    expect(refreshed).toMatchObject({ completed: true });
+    expect(refreshed.queued).toBe(undefined);
+    expect(inbox.status).toBe(200);
+    expect(prPage.status).toBe(200);
+    expect(inboxHtml).toContain('id="diff-cockpit-index-initial-data"');
+    expect(inboxHtml).toContain('id="diff-cockpit-index-initial-etag"');
+    expect(inboxHtml).toContain('warmed server page');
+    expect(prHtml).toContain('id="diff-cockpit-initial-data"');
+    expect(prHtml).toContain('id="diff-cockpit-initial-etag"');
+    expect(prHtml).toContain('warmed server page');
+    expect(calls).toBe(callsAfterRefresh);
+  });
+
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
     const cacheStore = new Map<string, Response>();
     const cache = {
@@ -1206,3 +1294,4 @@ describe('createWorker', () => {
     expect(second.status).toBe(304);
   });
 });
+

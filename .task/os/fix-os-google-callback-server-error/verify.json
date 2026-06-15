@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-os-google-callback-server-error",
+  "base": "origin/stream/os",
+  "headSha": "78864fa8e0b6a1d377f57be22c1f37d33c34d945",
+  "changeHash": "31d958e40925298d825d549732ee24cb8dde8727efb30bd1aedfd5f6a0e5f26a",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-15T01:00:51.614Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-os-google-callback-server-error/current.json",
+        ".task/os/fix-os-google-callback-server-error/evidence-log.json",
+        ".task/os/fix-os-google-callback-server-error/read-log.json",
+        ".task/os/fix-os-google-callback-server-error/session.json",
+        ".task/os/fix-os-google-callback-server-error/workpad.md",
+        ".task/tasks/os/fix-os-google-callback-server-error.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 
 // fs.js — safe file operations for agents
-// wraps bat (read), rg (search), and provides stdin-based write/patch
-// usage: bun run fs -- <read|search|write|patch> [options]
+// wraps bat (read), rg (search), and provides stdin-based write/apply-patch
+// usage: bun run fs -- <read|search|write|apply-patch> [options]
 
 const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { findTaskMeta, getTaskWorkpadPath } = require('./lib/task-meta');
 
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
@@ -62,29 +63,38 @@ function writeHelp() {
   out('');
   out('options:');
   out('  --stdin        read content from stdin (default)');
-  out('  --content <t>  inline content (for short writes)');
-  out('  --force        overwrite existing file');
+  out('  --content <t>       inline content (for short writes)');
+  out('  --content-file <p>  read content from a file for multiline writes');
+  out('  --force             overwrite existing file');
   out('  --append       append instead of overwrite');
   out('  --mkdirs       create parent directories');
   out('');
   out('examples:');
   out('  cat /tmp/new.ts | bun run fs -- write src/foo.ts --force');
+  out('  bun run fs -- write src/foo.ts --content-file /tmp/new.ts --force');
   out('  echo "line" | bun run fs -- write src/foo.ts --append');
   out('  bun run fs -- write src/foo.ts --content "export const x = 1;" --mkdirs');
 }
 
-function patchHelp() {
-  out('usage: cat replacement.ts | bun run fs -- patch <path> --from N --to M');
+
+function applyPatchHelp() {
+  out('usage: bun run fs -- apply-patch [options]');
   out('');
-  out('replace a line range with stdin content. shows diff.');
+  out('apply an anchored patch file with embedded paths.');
   out('');
   out('options:');
-  out('  --from N       first line to replace (required)');
-  out('  --to M         last line to replace (required)');
-  out('  --stdin        read replacement from stdin (default)');
-  out('  --content <t>       inline replacement for single-line patches');
-  out('  --content-file <p>  read replacement from a file for multiline patches');
-  out('  --dry-run           show diff without applying');
+  out('  --patch-file <p>  read patch text from a file');
+  out('  --patch-text <t>  inline patch text for short patches');
+  out('  --stdin           read patch text from stdin (default)');
+  out('  --dry-run         parse and plan without applying changes');
+  out('');
+  out('supported markers:');
+  out('  *** Begin Patch');
+  out('  *** Update File: src/existing.ts');
+  out('  *** Add File: src/new.ts');
+  out('  *** Move to: src/renamed.ts');
+  out('  *** Delete File: src/old.ts');
+  out('  *** End Patch');
 }
 
 function mainHelp() {
@@ -97,7 +107,7 @@ function mainHelp() {
   out('  search  search files (wraps rg)');
   out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
-  out('  patch   replace a line range from stdin');
+  out('  apply-patch apply an anchored patch file');
   out('  http    make http requests (wraps xh)');
   out('  trash   safe delete (moves to trash, not rm)');
   out('');
@@ -375,6 +385,43 @@ function cmdList(argv) {
 
 // ── write ──
 
+function readFilePayload({ inlineContent, contentFile }) {
+  if (inlineContent !== null && contentFile !== null) {
+    err('error: use exactly one of --content or --content-file');
+    return null;
+  }
+
+  if (contentFile !== null) {
+    const contentPath = path.resolve(process.cwd(), contentFile);
+    try {
+      const contentFileStats = fs.statSync(contentPath);
+      fs.accessSync(contentPath, fs.constants.R_OK);
+      if (!contentFileStats.isFile()) {
+        err(`error: content file must be a regular file: ${contentFile}`);
+        return null;
+      }
+    } catch {
+      err(`error: content file not found or not readable: ${contentFile}`);
+      return null;
+    }
+    return fs.readFileSync(contentPath, 'utf8');
+  }
+
+  if (inlineContent !== null) return inlineContent;
+
+  if (process.stdin.isTTY) {
+    err('error: no content (pipe via stdin, use --content, or use --content-file)');
+    return null;
+  }
+
+  const stdinContent = readStdin();
+  if (stdinContent === '') {
+    err('error: no content received on stdin');
+    return null;
+  }
+  return stdinContent;
+}
+
 function cmdWrite(argv) {
   if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
 
@@ -383,11 +430,13 @@ function cmdWrite(argv) {
   const mkdirs = argv.includes('--mkdirs');
 
   let inlineContent = null;
+  let contentFile = null;
   let filePath = null;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--content') { inlineContent = argv[++i]; }
+    else if (a === '--content-file') { contentFile = argv[++i]; }
     else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
     else if (!a.startsWith('--') && !filePath) { filePath = a; }
   }
@@ -395,9 +444,9 @@ function cmdWrite(argv) {
   if (!filePath) { err('error: file path required'); writeHelp(); return; }
 
   const fp = resolve(filePath);
-  const content = inlineContent !== null ? inlineContent : readStdin();
+  const content = readFilePayload({ inlineContent, contentFile });
 
-  if (!content && inlineContent === null) { err('error: no content (pipe via stdin or use --content)'); return; }
+  if (content === null) return;
 
   if (fs.existsSync(fp) && !force && !append) {
     err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
@@ -426,126 +475,367 @@ function cmdWrite(argv) {
   logToWorkpad(filePath, append ? 'append' : 'write');
 }
 
-// ── patch ──
+// ── removed patch command ──
 
-function readReplacementContent({ inlineContent, contentFile, stdinRequested }) {
-  if (inlineContent !== null && contentFile !== null) {
-    err('error: use exactly one of --content or --content-file');
+function cmdPatch(argv) {
+  err('error: fs.patch has been removed. Use bun run fs -- apply-patch --patch-file <file>, --patch-text <text>, or --stdin. Workspace tools should call fs.apply_patch.');
+}
+
+// ── apply-patch ──
+
+function readPatchPayload({ patchText, patchFile }) {
+  if (patchText !== null && patchFile !== null) {
+    err('error: use exactly one of --patch-text or --patch-file');
     return null;
   }
 
-  if (contentFile !== null) {
-    const contentPath = path.resolve(process.cwd(), contentFile);
+  if (patchFile !== null) {
+    const patchPath = path.resolve(process.cwd(), patchFile);
     try {
-      const contentFileStats = fs.statSync(contentPath);
-      fs.accessSync(contentPath, fs.constants.R_OK);
-      if (!contentFileStats.isFile()) {
-        err(`error: content file must be a regular file: ${contentFile}`);
+      const patchFileStats = fs.statSync(patchPath);
+      fs.accessSync(patchPath, fs.constants.R_OK);
+      if (!patchFileStats.isFile()) {
+        err(`error: patch file must be a regular file: ${patchFile}`);
         return null;
       }
     } catch {
-      err(`error: content file not found or not readable: ${contentFile}`);
+      err(`error: patch file not found or not readable: ${patchFile}`);
       return null;
     }
-    return fs.readFileSync(contentPath, 'utf8');
+    return fs.readFileSync(patchPath, 'utf8');
   }
 
-  if (inlineContent !== null) {
-    const newline = String.fromCharCode(10);
-
-    if (inlineContent.includes(newline)) {
-      err('error: multiline --content is unsafe; use --content-file for multiline patches');
-      return null;
-    }
-
-    return inlineContent;
-  }
+  if (patchText !== null) return patchText;
 
   if (process.stdin.isTTY) {
-    err('error: no replacement content (pipe via stdin, use --content, or use --content-file)');
+    err('error: no patch text (pipe via stdin, use --patch-text, or use --patch-file)');
     return null;
   }
 
   const stdinContent = readStdin();
   if (stdinContent === '') {
-    err('error: no replacement content received on stdin');
+    err('error: no patch text received on stdin');
     return null;
   }
   return stdinContent;
 }
 
-function cmdPatch(argv) {
-  if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; }
+function assertSafePatchPath(rawPath) {
+  if (!rawPath || typeof rawPath !== 'string') throw new Error('unsafe patch path: empty path');
+  if (path.isAbsolute(rawPath)) throw new Error(`unsafe patch path: ${rawPath}`);
+  const parts = rawPath.split(/[\\/]+/).filter(Boolean);
+  if (parts.includes('..') || parts.includes('.git')) throw new Error(`unsafe patch path: ${rawPath}`);
+  const resolved = resolve(rawPath);
+  const relative = path.relative(process.cwd(), resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error(`unsafe patch path: ${rawPath}`);
+  return { rawPath, resolved };
+}
+
+function parsePatchHeader(line, prefix) {
+  if (!line.startsWith(prefix)) return null;
+  return line.slice(prefix.length).trim();
+}
+
+function isOperationMarker(line) {
+  return line.startsWith('*** Update File: ')
+    || line.startsWith('*** Add File: ')
+    || line.startsWith('*** Delete File: ')
+    || line.startsWith('*** End Patch');
+}
+
+function parseApplyPatch(patchText) {
+  const lines = patchText.replace(/\r\n/g, '\n').split('\n');
+  let index = 0;
+  while (index < lines.length && lines[index].trim() === '') index += 1;
+  if (lines[index] !== '*** Begin Patch') throw new Error('invalid patch: missing *** Begin Patch');
+  index += 1;
+
+  const operations = [];
+  while (index < lines.length) {
+    const line = lines[index];
+    if (line === '*** End Patch') return operations;
+
+    const addPath = parsePatchHeader(line, '*** Add File: ');
+    if (addPath !== null) {
+      index += 1;
+      const content = [];
+      while (index < lines.length && !isOperationMarker(lines[index])) {
+        const contentLine = lines[index];
+        if (contentLine === '') {
+          index += 1;
+          continue;
+        }
+        if (!contentLine.startsWith('+')) throw new Error(`invalid add-file line: ${contentLine}`);
+        content.push(contentLine.slice(1));
+        index += 1;
+      }
+      operations.push({ type: 'add', path: addPath, content });
+      continue;
+    }
+
+    const deletePath = parsePatchHeader(line, '*** Delete File: ');
+    if (deletePath !== null) {
+      operations.push({ type: 'delete', path: deletePath });
+      index += 1;
+      continue;
+    }
+
+    const updatePath = parsePatchHeader(line, '*** Update File: ');
+    if (updatePath !== null) {
+      index += 1;
+      const operation = { type: 'update', path: updatePath, moveTo: null, hunks: [] };
+      let currentHunk = [];
+      while (index < lines.length && !isOperationMarker(lines[index])) {
+        const hunkLine = lines[index];
+        const moveTo = parsePatchHeader(hunkLine, '*** Move to: ');
+        if (moveTo !== null) {
+          if (currentHunk.length > 0) {
+            operation.hunks.push(currentHunk);
+            currentHunk = [];
+          }
+          operation.moveTo = moveTo;
+          index += 1;
+          continue;
+        }
+        if (hunkLine.startsWith('@@')) {
+          if (currentHunk.length > 0) {
+            operation.hunks.push(currentHunk);
+            currentHunk = [];
+          }
+          index += 1;
+          continue;
+        }
+        if (hunkLine === '\\ No newline at end of file') {
+          index += 1;
+          continue;
+        }
+        const marker = hunkLine[0];
+        if (marker !== ' ' && marker !== '+' && marker !== '-') {
+          throw new Error(`invalid update hunk line: ${hunkLine}`);
+        }
+        currentHunk.push({ marker, text: hunkLine.slice(1) });
+        index += 1;
+      }
+      if (currentHunk.length > 0) operation.hunks.push(currentHunk);
+      if (operation.hunks.length === 0 && !operation.moveTo) throw new Error(`invalid update: no hunks for ${updatePath}`);
+      operations.push(operation);
+      continue;
+    }
+
+    if (line.trim() === '') {
+      index += 1;
+      continue;
+    }
+    throw new Error(`invalid patch marker: ${line}`);
+  }
+
+  throw new Error('invalid patch: missing *** End Patch');
+}
+
+function splitPatchFileContent(content) {
+  const hasFinalNewline = content.endsWith('\n');
+  const body = hasFinalNewline ? content.slice(0, -1) : content;
+  return body === '' ? [] : body.split('\n');
+}
+
+function joinPatchFileContent(lines) {
+  return lines.length === 0 ? '' : `${lines.join('\n')}\n`;
+}
+
+function findSubsequence(lines, target, startIndex) {
+  if (target.length === 0) return -1;
+  for (let index = startIndex; index <= lines.length - target.length; index += 1) {
+    let matched = true;
+    for (let offset = 0; offset < target.length; offset += 1) {
+      if (lines[index + offset] !== target[offset]) {
+        matched = false;
+        break;
+      }
+    }
+    if (matched) return index;
+  }
+  return -1;
+}
+
+function applyUpdateHunks(rawPath, originalContent, hunks) {
+  const lines = splitPatchFileContent(originalContent);
+  let cursor = 0;
+  for (const hunk of hunks) {
+    const before = hunk.filter((entry) => entry.marker !== '+').map((entry) => entry.text);
+    const after = hunk.filter((entry) => entry.marker !== '-').map((entry) => entry.text);
+    const matchIndex = findSubsequence(lines, before, cursor);
+    if (matchIndex < 0) throw new Error(`patch hunk did not match: ${rawPath}`);
+    lines.splice(matchIndex, before.length, ...after);
+    cursor = matchIndex + after.length;
+  }
+  return joinPatchFileContent(lines);
+}
+
+function displayPatchPath(target) {
+  const relative = path.relative(process.cwd(), target.resolved);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : target.rawPath;
+}
+
+function conflictForPatchPath(existing, incoming) {
+  return `conflicting patch operations for ${incoming.rawPath} and ${existing.path}`;
+}
+
+function applyPatchOperations(operations) {
+  const plannedWrites = new Map();
+  const plannedDeletes = new Map();
+  const touched = [];
+
+  function touch(target) {
+    touched.push(displayPatchPath(target));
+  }
+
+  function plannedContent(target) {
+    const deletePlan = plannedDeletes.get(target.resolved);
+    if (deletePlan) throw new Error(conflictForPatchPath(deletePlan, target));
+    const writePlan = plannedWrites.get(target.resolved);
+    if (writePlan) return writePlan.content;
+    if (!fs.existsSync(target.resolved)) throw new Error(`patch file not found: ${target.rawPath}`);
+    if (!fs.statSync(target.resolved).isFile()) throw new Error(`patch target must be a file: ${target.rawPath}`);
+    return fs.readFileSync(target.resolved, 'utf8');
+  }
+
+  function planWrite(target, content) {
+    const deletePlan = plannedDeletes.get(target.resolved);
+    if (deletePlan) throw new Error(conflictForPatchPath(deletePlan, target));
+    plannedWrites.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved, content });
+    touch(target);
+  }
+
+  function planDelete(target) {
+    const writePlan = plannedWrites.get(target.resolved);
+    if (writePlan) throw new Error(conflictForPatchPath(writePlan, target));
+    if (!fs.existsSync(target.resolved)) throw new Error(`patch file not found: ${target.rawPath}`);
+    plannedDeletes.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved });
+    touch(target);
+  }
+
+  for (const operation of operations) {
+    const target = assertSafePatchPath(operation.path);
+    if (operation.type === 'add') {
+      if (fs.existsSync(target.resolved) || plannedWrites.has(target.resolved)) throw new Error(`patch target already exists: ${operation.path}`);
+      if (plannedDeletes.has(target.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(target.resolved), target));
+      planWrite(target, joinPatchFileContent(operation.content));
+      continue;
+    }
+
+    if (operation.type === 'delete') {
+      planDelete(target);
+      continue;
+    }
+
+    if (operation.type === 'update') {
+      const updatedContent = applyUpdateHunks(operation.path, plannedContent(target), operation.hunks);
+      if (operation.moveTo) {
+        const moveTarget = assertSafePatchPath(operation.moveTo);
+        if (target.resolved === moveTarget.resolved) throw new Error(`conflicting patch operations for ${operation.path} and ${operation.moveTo}`);
+        if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveTarget.resolved)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
+        if (plannedDeletes.has(moveTarget.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(moveTarget.resolved), moveTarget));
+        plannedWrites.delete(target.resolved);
+        plannedDeletes.set(target.resolved, { path: displayPatchPath(target), rawPath: target.rawPath, resolved: target.resolved });
+        plannedWrites.set(moveTarget.resolved, { path: displayPatchPath(moveTarget), rawPath: moveTarget.rawPath, resolved: moveTarget.resolved, content: updatedContent });
+        touch(target);
+        touch(moveTarget);
+      } else {
+        planWrite(target, updatedContent);
+      }
+    }
+  }
+
+  return { plannedWrites, plannedDeletes, touched: Array.from(new Set(touched)) };
+}
+
+function applyPlannedPatchMutations(plan) {
+  const stagedWrites = [];
+  try {
+    for (const writePlan of plan.plannedWrites.values()) {
+      const dir = path.dirname(writePlan.resolved);
+      if (fs.existsSync(dir) && !fs.statSync(dir).isDirectory()) throw new Error(`patch target parent is not a directory: ${writePlan.path}`);
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    let index = 0;
+    for (const writePlan of plan.plannedWrites.values()) {
+      const dir = path.dirname(writePlan.resolved);
+      const tempPath = path.join(dir, `.apply-patch-${process.pid}-${Date.now()}-${index++}.tmp`);
+      fs.writeFileSync(tempPath, writePlan.content);
+      stagedWrites.push({ ...writePlan, tempPath });
+    }
+
+    for (const writePlan of stagedWrites) {
+      fs.renameSync(writePlan.tempPath, writePlan.resolved);
+    }
+
+    for (const [resolved, deletePlan] of plan.plannedDeletes) {
+      if (plan.plannedWrites.has(resolved)) continue;
+      if (fs.existsSync(deletePlan.resolved)) fs.unlinkSync(deletePlan.resolved);
+    }
+  } catch (error) {
+    for (const writePlan of stagedWrites) {
+      if (fs.existsSync(writePlan.tempPath)) fs.unlinkSync(writePlan.tempPath);
+    }
+    throw error;
+  }
+}
+
+function cmdApplyPatch(argv) {
+  if (argv.includes('--help')) { applyPatchHelp(); return; }
 
   const dryRun = argv.includes('--dry-run');
-  let from = null;
-  let to = null;
-  let filePath = null;
-  let inlineContent = null;
-  let contentFile = null;
-  let stdinRequested = false;
+  let patchText = null;
+  let patchFile = null;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--from') { from = parseInt(argv[++i], 10); }
-    else if (a === '--to') { to = parseInt(argv[++i], 10); }
-    else if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--stdin') { stdinRequested = true; }
-    else if (a === '--dry-run') { /* skip */ }
-    else if (!a.startsWith('--') && !filePath) { filePath = a; }
+    if (a === '--patch-text') patchText = argv[++i];
+    else if (a === '--patch-file') patchFile = argv[++i];
+    else if (a === '--stdin' || a === '--dry-run') { /* skip */ }
   }
 
-  if (!filePath) { err('error: file path required'); patchHelp(); return; }
-  if (from === null || to === null) { err('error: --from and --to are required'); patchHelp(); return; }
-  if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < 1 || from > to) {
-    err('error: invalid line range; expected positive integers with --from <= --to');
-    return;
+  const payload = readPatchPayload({ patchText, patchFile });
+  if (payload === null) return;
+
+  try {
+    const operations = parseApplyPatch(payload);
+    const plan = applyPatchOperations(operations);
+
+    out(`── apply-patch ──`);
+    out(`operations: ${operations.length}`);
+    out(`writes: ${plan.plannedWrites.size}`);
+    out(`deletes: ${plan.plannedDeletes.size}`);
+    plan.touched.forEach((filePath) => out(`  ${filePath}`));
+
+    if (dryRun) { out('\n(dry run — no changes applied)'); return; }
+
+    applyPlannedPatchMutations(plan);
+
+    out('\npatch applied');
+    plan.touched.forEach((filePath) => logToWorkpad(filePath, 'apply-patch'));
+  } catch (e) {
+    err(`error: ${e.message || e}`);
   }
-
-  const fp = resolve(filePath);
-  if (!fs.existsSync(fp)) { err(`error: ${filePath} not found`); return; }
-
-  const replacement = readReplacementContent({ inlineContent, contentFile, stdinRequested });
-  if (replacement === null) return;
-
-  const lines = fs.readFileSync(fp, 'utf8').split('\n');
-  if (from > lines.length || to > lines.length) {
-    err(`error: invalid line range; ${filePath} has only ${lines.length} lines`);
-    return;
-  }
-
-  const removed = lines.slice(from - 1, to);
-  const newLines = replacement.endsWith('\n') ? replacement.slice(0, -1).split('\n') : replacement.split('\n');
-
-  const result = [...lines.slice(0, from - 1), ...newLines, ...lines.slice(to)];
-
-  out(`── patch ${filePath}:${from}-${to} ──`);
-  out(`removing ${removed.length} lines, inserting ${newLines.length} lines`);
-  out('');
-  removed.forEach((l, i) => out(`- ${String(from + i).padStart(4)}: ${l}`));
-  out('');
-  newLines.forEach((l, i) => out(`+ ${String(from + i).padStart(4)}: ${l}`));
-
-  if (dryRun) { out('\n(dry run — no changes applied)'); return; }
-
-  fs.writeFileSync(fp, result.join('\n'));
-  out(`\npatched ${filePath}`);
-
-  logToWorkpad(filePath, `patch lines ${from}-${to}`);
 }
 
 // ── workpad logging ──
 
 function logToWorkpad(filePath, action) {
-  // walk up from cwd looking for .task/workpad.md
   let dir = process.cwd();
   while (dir !== '/') {
-    const wp = path.join(dir, '.task', 'workpad.md');
-    if (fs.existsSync(wp)) {
-      const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      fs.appendFileSync(wp, `\n- ${ts} ${action}: \`${filePath}\``);
-      return;
+    const taskMeta = findTaskMeta(dir);
+    const candidates = [];
+    if (taskMeta?.data) candidates.push(getTaskWorkpadPath(taskMeta.dir, taskMeta.data));
+    candidates.push(path.join(dir, '.task', 'workpad.md'));
+
+    for (const wp of Array.from(new Set(candidates))) {
+      if (fs.existsSync(wp)) {
+        const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        fs.appendFileSync(wp, `\n- ${ts} ${action}: \`${filePath}\``);
+        return;
+      }
     }
     dir = path.dirname(dir);
   }
@@ -619,6 +909,7 @@ function cmdTrash(argv) {
     case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
+    case 'apply-patch': cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;
     case 'trash': cmdTrash(rest); break;
     default:

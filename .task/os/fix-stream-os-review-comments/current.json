@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-os-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1036,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1036",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1036",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1036/fix-stream-os-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1036",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1036/fix-stream-os-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-os-review-comments",
+  "taskSession": "tsk_ed8fcdc2a7d6",
+  "tmuxSession": "opensaas-os-fix-stream-os-review-comments-ed8fcdc2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-os-review-comments/.task/os/fix-stream-os-review-comments/session.json",
+  "createdAt": "2026-06-14T13:27:12.436Z"
+}

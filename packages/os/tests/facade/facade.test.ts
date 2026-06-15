@@ -148,6 +148,34 @@ describe('typed facade executor', () => {
     expect(plans[0].args).toContain(entry?.command.dryRunFlag);
   });
 
+  it('should route fs.apply_patch when task session metadata is present', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'consuelo-os-apply-patch-'));
+    const taskSession = 'tsk_apply_patch_test';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('fs.apply_patch', {
+        taskSession,
+        patchText: '*** Begin Patch\n*** End Patch',
+        dryRun: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toContain('apply-patch');
+      expect(plans[0].args).toContain('--patch-text');
+      expect(plans[0].args).toContain('--dry-run');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
   it('passes request ids through the envelope', async () => {
     const result = await executeTool('fs.read', {
       ...exampleInput('fs.read'),
@@ -326,15 +354,45 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('allows matching taskSession and branch for code.call', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-session-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_code_call', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        taskSession: 'tsk_code_call',
+        branch: TEST_BRANCH,
+        language: 'python',
+        mode: 'read',
+        code: 'print("ok")',
+        cwd: tempRoot,
+      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data?.stdout?.trim()).toBe('ok');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mismatched taskSession and branch', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-conflict-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_conflict', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        language: 'python',
+        mode: 'read',
+        code: 'print("blocked")',
+        cwd: tempRoot,
+      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {
@@ -538,3 +596,4 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+

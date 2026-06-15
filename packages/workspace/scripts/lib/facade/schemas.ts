@@ -139,12 +139,27 @@ export const ToolsSearchInput = z.object({
   message: 'readOnly and mutating cannot both be true',
   path: ['mutating'],
 });
+const fsReadPageFields = {
+  offset: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
+  from: z.number().int().positive().optional(),
+  to: z.number().int().positive().optional(),
+};
+
+const FsReadFileInput = z.object({
+  path: z.string().min(1),
+  ...fsReadPageFields,
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive().optional(),
-  to: z.number().int().positive().optional(),
+  path: optionalString,
+  files: z.array(FsReadFileInput).min(1).optional(),
+  ...fsReadPageFields,
+}).refine((input) => Boolean(input.path || input.files?.length), {
+  message: 'provide either path or files',
+  path: ['path'],
 });
 
 export const FsSearchInput = z.object({
@@ -183,18 +198,16 @@ export const FsWriteInput = z.object({
   path: ['content'],
 });
 
-export const FsPatchInput = z.object({
+
+export const FsApplyPatchInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  content: z.string().optional(),
-  contentFile: optionalString,
-}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
-  message: 'provide exactly one of content or contentFile',
-  path: ['content'],
+  patchText: z.string().optional(),
+  patchFile: optionalString,
+}).refine((input) => Boolean(input.patchText) !== Boolean(input.patchFile), {
+  message: 'provide exactly one of patchText or patchFile',
+  path: ['patchText'],
 });
 
 export const FsHttpInput = z.object({
@@ -914,7 +927,7 @@ export const schemaRegistry = {
   FsSearchInput,
   FsListInput,
   FsWriteInput,
-  FsPatchInput,
+  FsApplyPatchInput,
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
@@ -1014,11 +1027,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
-  FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
+  FsReadInput: '{ path?: string; offset?: number; limit?: number; from?: number; to?: number; files?: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1102,7 +1115,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
-  FsReadOutput: 'Array<{ path: string; from: number; to: number; total: number; lines: string[] }>',
+  FsReadOutput: '{ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "error"; path: string; error: { code: string; message: string; details?: Record<string, unknown> } } | { results: Array<{ path: string; ok: boolean; result?: { type: string; [key: string]: unknown }; error?: { code: string; message: string; details?: Record<string, unknown> } }> }',
   FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',

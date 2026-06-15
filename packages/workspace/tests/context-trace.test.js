@@ -49,7 +49,7 @@ INSERT INTO tool_traces(
   'trc_visible_1',
   'trc_mcp_1',
   'mcp',
-  'fs.patch',
+  'fs.apply_patch',
   'tsk_1',
   'task/workspace-agents/example',
   '/tmp/worktree',
@@ -60,7 +60,7 @@ INSERT INTO tool_traces(
   42,
   json.dumps({'path': 'src/a.ts'}),
   json.dumps({'path': 'src/a.ts', 'branch': 'task/workspace-agents/example'}),
-  json.dumps({'ok': False, 'message': 'multiline patch failed'}),
+  json.dumps({'ok': False, 'message': 'apply_patch failed'}),
   'multiline --content is unsafe',
 ))
 conn.execute("""
@@ -98,7 +98,7 @@ test('context trace filters local sqlite rows without supabase env', () => {
   expect(payload.rows[0]).toMatchObject({
     traceId: 'trc_visible_1',
     mcpTraceId: 'trc_mcp_1',
-    tool: 'fs.patch',
+    tool: 'fs.apply_patch',
     status: 'error',
     ok: false,
     code: 'COMMAND_FAILED',
@@ -116,7 +116,7 @@ test('context trace returns raw structured payloads when requested', () => {
   const payload = JSON.parse(result.stdout);
   expect(payload.count).toBe(1);
   expect(payload.rows[0].input).toEqual({ path: 'src/a.ts' });
-  expect(payload.rows[0].result).toEqual({ ok: false, message: 'multiline patch failed' });
+  expect(payload.rows[0].result).toEqual({ ok: false, message: 'apply_patch failed' });
   expect(payload.rows[0].stderr).toBe('multiline --content is unsafe');
 });
 

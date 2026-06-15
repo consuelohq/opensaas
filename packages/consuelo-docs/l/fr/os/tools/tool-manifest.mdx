@@ -2194,12 +2194,12 @@ example error envelope:
 }
 ```
 
-### fs.patch
+### fs.apply_patch
 
 replace a line range in a task worktree file
 
-- signature: `workspace.fs.patch(\{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
-- wraps: `workspace fs.patch`
+- signature: `workspace.fs.apply_patch(\{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace fs.apply_patch`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
 
@@ -2207,7 +2207,7 @@ example call:
 
 ```ts
 await workspace.call({
-  "tool": "fs.patch",
+  "tool": "fs.apply_patch",
   "input": {
     "branch": "task/workspace-agents/example",
     "path": "tmp/example.txt",

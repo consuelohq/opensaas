@@ -698,11 +698,6 @@ async function executeInternalTool<TData>(
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
-  if (typeof input.branch === 'string') return {
-    ok: false,
-    code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
-  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
@@ -712,6 +707,12 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   };
 
   const branch = metadata.branch || metadata.taskBranch;
+  if (typeof input.branch === 'string' && input.branch !== branch) return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'Pass either taskSession or a matching explicit branch, not a conflicting branch.',
+  };
+
   return { ok: true, branch, metadata };
 }
 
@@ -854,6 +855,24 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
 
   if (kind === 'boolean') {
     if (argument.flag && value === true) args.push(argument.flag);
+    return;
+  }
+
+  if (kind === 'readFileArray') {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      if (typeof item === 'string') {
+        args.push(item);
+        continue;
+      }
+      if (typeof item !== 'object' || item === null) continue;
+      const file = item as Record<string, unknown>;
+      if (typeof file.path !== 'string' || file.path.length === 0) continue;
+      args.push(file.path);
+      for (const [source, flag] of [['offset', '--offset'], ['limit', '--limit'], ['from', '--from'], ['to', '--to']] as const) {
+        if (typeof file[source] === 'number') args.push(flag, String(file[source]));
+      }
+    }
     return;
   }
 

@@ -2,9 +2,9 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` - running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** task worktrees are lightweight git checkouts. `task:start` links the root `node_modules` from the main worktree, and it also links package-scoped `node_modules` directories that Yarn creates under `packages/*`. Those package-scoped links matter for Nx/TypeScript resolution because dependencies can be installed under a package directory rather than only at repo root.
 
 every script supports `--help` and `--json`.
 
@@ -63,6 +63,22 @@ cd packages/diff-cockpit && bun run test
 
 Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
+### os:release — release all public Consuelo OS surfaces
+
+Operator-only release wrapper for publishing every public OS surface that the hosted installer depends on. Use this as the default OS release command after OS installer or device approval changes.
+
+```bash
+bun run os:release -- --dry-run
+bun run os:release
+bun run os:release -- --install-only
+bun run os:release -- --device-auth-only
+```
+
+Default release order:
+
+1. `install.consuelohq.com/os` via `os:release-install`
+2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
+
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
@@ -80,6 +96,22 @@ Defaults:
 - Installer path: `/os`
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
 
+### os:release-device-auth — release the OS device approval authority
+
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+
+```bash
+bun run os:release-device-auth -- --dry-run
+bun run os:release-device-auth
+bun run os:release-device-auth -- --verify-only
+bun run os:release-device-auth -- --no-verify
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-device-authority`
+- Route: `os.consuelohq.com/*`
+- Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
 
 ### trace:analytics — inspect local workspace trace token and error usage
 
@@ -240,16 +272,18 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+provides bounded file reads plus search, list, write/apply-patch, http, and trash helpers. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 ```bash
-bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
-bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts  # multiple files
-bun run fs -- read src/foo.ts --plain                   # no decoration (best for piping)
-bun run fs -- read src/foo.ts --json                    # structured json (automation-safe)
+bun run fs -- read src/foo.ts --offset 1 --limit 120              # bounded text page
+bun run fs -- read src/foo.ts --from 120 --to 180                 # range aliases for page semantics
+bun run fs -- read src/a.ts --limit 50 src/b.ts --offset 100      # multiple files
+bun run fs -- read src/foo.ts --plain                             # text content only in human mode
+bun run fs -- read src/foo.ts --json                              # text-page/media/binary/error json
 ```
+
+`read --json` is the agent-safe ingestion path. it returns MIME metadata, UTF-8 text pages with `offset`/`limit`/`truncated`/`next`, supported media descriptors, binary descriptors, or typed errors. it does not use terminal decoration or dump arbitrary binary as text.
 
 **search**
 ```bash
@@ -279,14 +313,15 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -305,11 +340,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
@@ -1046,7 +1081,7 @@ routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the l
 ```bash
 bun run workspace -- status
 bun run workspace -- stream.context '{"area":"workspace-agents"}'
-bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md","offset":1,"limit":80}'
 bun run workspace -- batch '[{"tool":"status","input":{}}]'
 ```
 
@@ -1112,7 +1147,7 @@ GitHub output is intentionally bounded. The script returns a `github.packet.v1` 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
 
 ```bash
-bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}'
 bun run tool-runner -- context.categories '{}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
@@ -1124,7 +1159,7 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
@@ -1485,7 +1520,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|
-| `bat` | syntax-highlighted file reading | `bun run fs -- read` |
+| `bat` | terminal-only file decoration | `bun run fs -- read` |
 | `rg` | fast regex search | `bun run fs -- search` |
 | `eza` | modern ls with tree view | `bun run fs -- list` |
 | `fd` | fast file finder | `bun run fs -- list --find` |
