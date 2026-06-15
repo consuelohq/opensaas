@@ -261,13 +261,13 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def test_safety_blocks_task_exec_destructive_command_and_writes_audit_log(self):
         self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')
         command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
-        result = self.module._run_workspace_call('task.exec', tool_input={'command': ['bash', '-lc', command]})
+        result = self.module._run_workspace_call('code.call', tool_input={'language': 'bash', 'mode': 'verify', 'code': command})
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
         audit = Path(self.module._SAFETY_AUDIT_FILE).read_text(encoding='utf-8')
         self.assertIn('"blocked": true', audit)
-        self.assertIn('task.exec', audit)
+        self.assertIn('code.call', audit)
 
     def test_safety_blocks_mac_exec_destructive_command_before_execution(self):
         command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
@@ -291,7 +291,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._run_workspace_call('batch', tool_input={
             'steps': [
                 {'tool': 'status', 'input': {}},
-                {'tool': 'task.exec', 'input': {'command': command}},
+                {'tool': 'code.call', 'input': {'language': 'bash', 'mode': 'verify', 'code': command}},
             ],
         })
         self.assert_standard_envelope(result)
@@ -304,7 +304,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._run_workspace_call('batch', tool_input=[
             {'tool': 'status', 'input': {}},
             {'tool': 'batch', 'input': [
-                {'tool': 'task.exec', 'input': {'command': command}},
+                {'tool': 'code.call', 'input': {'language': 'bash', 'mode': 'verify', 'code': command}},
             ]},
         ])
         self.assert_standard_envelope(result)
@@ -353,7 +353,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_safety_blocks_supplemental_system_commands(self):
         command = ''.join(chr(value) for value in [100, 105, 115, 107, 117, 116, 105, 108, 32, 101, 114, 97, 115, 101, 32, 100, 105, 115, 107])
-        result = self.module._run_workspace_call('task.exec', tool_input={'command': command})
+        result = self.module._run_workspace_call('code.call', tool_input={'language': 'bash', 'mode': 'verify', 'code': command})
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
@@ -361,20 +361,20 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_workspace_call_trace_inputs_are_scan_friendly(self):
         inputs = self.module._trace_inputs('workspace.call', (), {
-            'tool': 'task.exec',
-            'tool_input': {'command': ['bash', '-lc', 'echo hello']},
+            'tool': 'code.call',
+            'tool_input': {'language': 'bash', 'mode': 'verify', 'code': 'echo hello'},
             'taskSession': 'tsk_123',
             'timeout': 120,
         })
-        self.assertEqual(inputs['action'], 'task.exec')
-        self.assertEqual(inputs['tool'], 'task.exec')
+        self.assertEqual(inputs['action'], 'code.call')
+        self.assertEqual(inputs['tool'], 'code.call')
         self.assertEqual(inputs['taskSession'], 'tsk_123')
         self.assertEqual(inputs['timeout'], 120)
         self.assertIn('bash -lc echo hello', inputs['inputSummary'])
-        self.assertEqual(self.module._trace_run_name('workspace.call', inputs), 'task.exec')
+        self.assertEqual(self.module._trace_run_name('workspace.call', inputs), 'code.call')
 
     def test_workspace_call_trace_output_surfaces_task_context(self):
-        inputs = {'tool': 'task.exec', 'taskSession': 'tsk_123'}
+        inputs = {'tool': 'code.call', 'taskSession': 'tsk_123'}
         result = {
             'ok': True,
             'code': 'OK',
@@ -387,10 +387,10 @@ class WorkspaceCallServerTest(unittest.TestCase):
         }
         usage = {'prompt_tokens': 1, 'completion_tokens': 2, 'total_tokens': 3}
         output = self.module._trace_outputs('workspace.call', inputs, result, usage)
-        self.assertEqual(output['summary'], 'OK · task.exec · tmux=opensaas-test-tmux')
+        self.assertEqual(output['summary'], 'OK · code.call · tmux=opensaas-test-tmux')
         self.assertTrue(output['ok'])
         self.assertEqual(output['code'], 'OK')
-        self.assertEqual(output['tool'], 'task.exec')
+        self.assertEqual(output['tool'], 'code.call')
         self.assertEqual(output['taskSession'], 'tsk_123')
         self.assertEqual(output['tmuxSession'], 'opensaas-test-tmux')
         self.assertEqual(output['branch'], 'task/workspace-agents/test')
@@ -401,13 +401,15 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def test_batch_trace_summary_lists_child_tools(self):
         summary = self.module._trace_input_summary('batch', [
             {'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}},
-            {'tool': 'task.exec', 'input': {'command': ['git', 'status']}},
+            {'tool': 'code.call', 'input': {'language': 'bash', 'mode': 'verify', 'code': 'git status'}},
         ])
-        self.assertEqual(summary, '2 steps: fs.read, task.exec')
+        self.assertEqual(summary, '2 steps: fs.read, code.call')
 
     def test_trace_command_summary_truncates_long_values(self):
-        summary = self.module._trace_input_summary('task.exec', {
-            'command': ['python3', '-c', 'x' * 500],
+        summary = self.module._trace_input_summary('code.call', {
+            'language': 'python',
+            'mode': 'verify',
+            'code': 'x' * 500,
         })
         self.assertLessEqual(len(summary), self.module._TRACE_SUMMARY_LIMIT)
         self.assertTrue(summary.endswith('…'))

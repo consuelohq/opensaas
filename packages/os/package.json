@@ -71,7 +71,6 @@
     "install:system-daemons:quiet": "bash ./scripts/install-system-daemons.sh --quiet",
     "install:system-daemons:dry-run": "bash ./scripts/install-system-daemons.sh --dry-run",
     "task:init": "bun ./scripts/task-init.js",
-    "task:exec": "bun ./scripts/task-exec.js",
     "install:system-daemons:debug": "CONSUELO_OS_DEBUG=1 bash ./scripts/install-system-daemons.sh --debug",
     "uninstall:system-daemons": "bash ./scripts/uninstall-system-daemons.sh",
     "uninstall:system-daemons:dry-run": "bash ./scripts/uninstall-system-daemons.sh --dry-run",

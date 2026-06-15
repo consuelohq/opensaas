@@ -363,13 +363,97 @@ describe('typed facade executor', () => {
         branch: TEST_BRANCH,
         language: 'python',
         mode: 'read',
-        code: 'print("ok")',
+        code: 'import os\nprint(os.environ["TASK_BRANCH"])\nprint(os.environ["TASK_WORKTREE"])',
         cwd: tempRoot,
       }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
-      expect(result.data?.stdout?.trim()).toBe('ok');
+      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, tempRoot]);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not perform ambient task selection for http without task context', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('http', {
+      url: 'https://example.com',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'AMBIGUOUS_TASK_SELECTION',
+        message: 'multiple active task worktrees match; pass taskSession',
+        candidates: [
+          { branch: 'task/os/one', area: 'os', worktree: '/tmp/one' },
+          { branch: 'task/os/two', area: 'os', worktree: '/tmp/two' },
+        ],
+      }),
+      currentTask: null,
+      candidates: [
+        { branch: 'task/os/one', area: 'os', worktree: '/tmp/one' },
+        { branch: 'task/os/two', area: 'os', worktree: '/tmp/two' },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(['run', 'fs', '--', 'http', 'https://example.com']);
+  });
+
+  it('does not perform ambient task selection for code.call without task context', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-no-session-'));
+    try {
+      const result = await executeTool('code.call', {
+        language: 'python',
+        mode: 'read',
+        code: 'print("standalone")',
+        cwd: tempRoot,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        branchResolver: () => ({
+          ok: false,
+          code: 'AMBIGUOUS_TASK_SELECTION',
+          message: 'multiple active task worktrees match; pass taskSession',
+          candidates: [
+            { branch: 'task/os/one', area: 'os', worktree: '/tmp/one' },
+            { branch: 'task/os/two', area: 'os', worktree: '/tmp/two' },
+          ],
+        }),
+        currentTask: null,
+        candidates: [
+          { branch: 'task/os/one', area: 'os', worktree: '/tmp/one' },
+          { branch: 'task/os/two', area: 'os', worktree: '/tmp/two' },
+        ],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data?.stdout?.trim()).toBe('standalone');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs code.call edit mode inside an explicit task worktree', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-edit-session-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_code_call_edit', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        taskSession: 'tsk_code_call_edit',
+        language: 'python',
+        mode: 'edit',
+        code: 'from pathlib import Path\nPath("edited.txt").write_text("changed")\nprint("edited")',
+        cwd: tempRoot,
+      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data?.stdout?.trim()).toBe('edited');
+      expect(result.data?.filesChanged).toContain('edited.txt');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }

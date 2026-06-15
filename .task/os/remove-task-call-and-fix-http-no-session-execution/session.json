@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e9a97f4c5254",
+  "tmuxSession": "opensaas-os-remove-task-call-and-fix-http-no-session-executi-e9a97f4c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-task-call-and-fix-http-no-session-execution",
+  "branch": "task/os/remove-task-call-and-fix-http-no-session-execution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-task-call-and-fix-http-no-session-execution",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-task-call-and-fix-http-no-session-execution",
+  "prNumber": 1063,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1063",
+  "createdAt": "2026-06-15T07:25:08.251Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-task-call-and-fix-http-no-session-execution/.task/os/remove-task-call-and-fix-http-no-session-execution/session.json"
+}
