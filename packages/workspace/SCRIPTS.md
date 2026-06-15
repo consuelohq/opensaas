@@ -272,16 +272,18 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+provides bounded file reads plus search, list, write/apply-patch, http, and trash helpers. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 ```bash
-bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
-bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts  # multiple files
-bun run fs -- read src/foo.ts --plain                   # no decoration (best for piping)
-bun run fs -- read src/foo.ts --json                    # structured json (automation-safe)
+bun run fs -- read src/foo.ts --offset 1 --limit 120              # bounded text page
+bun run fs -- read src/foo.ts --from 120 --to 180                 # range aliases for page semantics
+bun run fs -- read src/a.ts --limit 50 src/b.ts --offset 100      # multiple files
+bun run fs -- read src/foo.ts --plain                             # text content only in human mode
+bun run fs -- read src/foo.ts --json                              # text-page/media/binary/error json
 ```
+
+`read --json` is the agent-safe ingestion path. it returns MIME metadata, UTF-8 text pages with `offset`/`limit`/`truncated`/`next`, supported media descriptors, binary descriptors, or typed errors. it does not use terminal decoration or dump arbitrary binary as text.
 
 **search**
 ```bash
@@ -1079,7 +1081,7 @@ routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the l
 ```bash
 bun run workspace -- status
 bun run workspace -- stream.context '{"area":"workspace-agents"}'
-bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md","offset":1,"limit":80}'
 bun run workspace -- batch '[{"tool":"status","input":{}}]'
 ```
 
@@ -1145,7 +1147,7 @@ GitHub output is intentionally bounded. The script returns a `github.packet.v1` 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
 
 ```bash
-bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}'
 bun run tool-runner -- context.categories '{}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
@@ -1157,7 +1159,7 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
@@ -1518,7 +1520,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|
-| `bat` | syntax-highlighted file reading | `bun run fs -- read` |
+| `bat` | terminal-only file decoration | `bun run fs -- read` |
 | `rg` | fast regex search | `bun run fs -- search` |
 | `eza` | modern ls with tree view | `bun run fs -- list` |
 | `fd` | fast file finder | `bun run fs -- list --find` |

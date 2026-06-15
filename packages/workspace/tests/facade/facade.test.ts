@@ -354,6 +354,78 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
+  it('passes fs read page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_page');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_page',
+        path: 'packages/workspace/scripts/fs.js',
+        offset: 10,
+        limit: 5,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'packages/workspace/scripts/fs.js',
+        '--offset',
+        '10',
+        '--limit',
+        '5',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes fs read multi-file page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_files');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_files',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 2 },
+          { path: 'src/b.ts', offset: 10, limit: 3 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'src/a.ts',
+        '--offset',
+        '1',
+        '--limit',
+        '2',
+        'src/b.ts',
+        '--offset',
+        '10',
+        '--limit',
+        '3',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {

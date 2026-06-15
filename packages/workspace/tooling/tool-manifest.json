@@ -5,7 +5,7 @@
       "fs",
       "read"
     ],
-    "description": "read file contents with an optional line range",
+    "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
     "category": "filesystem",
     "underlying": "workspace fs read, or task:fs read when a branch is resolved",
     "capabilities": {
@@ -26,8 +26,17 @@
       "arguments": [
         {
           "source": "path",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "offset",
+          "flag": "--offset",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
         },
         {
           "source": "from",
@@ -38,12 +47,18 @@
           "source": "to",
           "flag": "--to",
           "kind": "value"
+        },
+        {
+          "source": "files",
+          "kind": "readFileArray"
         }
       ]
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example",
-      "path": "packages/workspace/package.json"
+      "path": "packages/workspace/scripts/fs.js",
+      "offset": 1,
+      "limit": 120
     },
     "sessionRequired": true
   },

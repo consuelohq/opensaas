@@ -858,6 +858,24 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
     return;
   }
 
+  if (kind === 'readFileArray') {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      if (typeof item === 'string') {
+        args.push(item);
+        continue;
+      }
+      if (typeof item !== 'object' || item === null) continue;
+      const file = item as Record<string, unknown>;
+      if (typeof file.path !== 'string' || file.path.length === 0) continue;
+      args.push(file.path);
+      for (const [source, flag] of [['offset', '--offset'], ['limit', '--limit'], ['from', '--from'], ['to', '--to']] as const) {
+        if (typeof file[source] === 'number') args.push(flag, String(file[source]));
+      }
+    }
+    return;
+  }
+
   if (kind === 'array' || kind === 'commandArray') {
     if (!Array.isArray(value)) return;
     if (value.length === 0) return;

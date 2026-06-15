@@ -38,7 +38,7 @@ export type ToolResult<TData = unknown> = {
   apiVersion: '1.0.0';
 };
 
-export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray';
+export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray' | 'readFileArray';
 
 export type CommandArgument = {
   source: string;

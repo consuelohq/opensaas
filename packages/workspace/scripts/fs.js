@@ -1,13 +1,14 @@
 #!/usr/bin/env bun
 
 // fs.js — safe file operations for agents
-// wraps bat (read), rg (search), and provides stdin-based write/apply-patch
+// provides bounded file reads, search, list, write/apply-patch, http, and trash operations
 // usage: bun run fs -- <read|search|write|apply-patch> [options]
 
 const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { findTaskMeta, getTaskWorkpadPath } = require('./lib/task-meta');
+const ReadFs = require('./lib/fs/read');
 
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
@@ -28,18 +29,20 @@ function which(bin) {
 // ── helpers shown contextually ──
 
 function readHelp() {
-  out('usage: bun run fs -- read <path> [--from N] [--to M] [path2 --from N --to M ...]');
+  out('usage: bun run fs -- read <path> [--offset N] [--limit M] [path2 --offset N --limit M ...]');
   out('');
-  out('read files with line numbers. wraps bat.');
+  out('safely ingest a bounded view of a file for agents.');
   out('');
   out('options:');
-  out('  --from N       start line (1-based)');
-  out('  --to M         end line (1-based)');
-  out('  --plain        no line numbers or decoration');
-  out('  --json         json output: { path, from, to, lines: [...] }');
+  out('  --offset N     start line (1-based, preferred)');
+  out('  --limit M      max lines to return (preferred, capped)');
+  out('  --from N       start line alias for --offset');
+  out('  --to M         inclusive end line alias; converted to a limit');
+  out('  --plain        print only text content in human mode');
+  out('  --json         structured output: text-page, media, binary, or error');
   out('');
-  out('multi-file: each path starts a new segment with its own --from/--to');
-  out('  bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150');
+  out('multi-file: each path starts a new segment with its own page flags');
+  out('  bun run fs -- read src/a.ts --offset 1 --limit 50 src/b.ts --offset 100 --limit 50 --json');
 }
 
 function searchHelp() {
@@ -103,7 +106,7 @@ function mainHelp() {
   out('safe file operations for agents.');
   out('');
   out('commands:');
-  out('  read    read files with line numbers and ranges');
+  out('  read    bounded structured file ingestion with pagination');
   out('  search  search files (wraps rg)');
   out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
@@ -116,21 +119,11 @@ function mainHelp() {
 
 // ── read ──
 
-function parseReadSegments(argv) {
-  const segments = [];
-  let current = null;
-
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
-    else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
-    else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
-    else if (!a.startsWith('--')) {
-      current = { path: a, from: null, to: null };
-      segments.push(current);
-    }
-  }
-  return segments;
+function readPayloadHasErrors(payload) {
+  if (!payload) return false;
+  if (payload.type === 'error') return true;
+  if (Array.isArray(payload.results)) return payload.results.some((entry) => entry && entry.ok === false);
+  return false;
 }
 
 function cmdRead(argv) {
@@ -138,46 +131,41 @@ function cmdRead(argv) {
 
   const plain = argv.includes('--plain');
   const json = argv.includes('--json');
-  const all = argv.includes('--all');
-  const segments = parseReadSegments(argv);
-
-  if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
-
-  const results = [];
-
-  for (const seg of segments) {
-    const fp = resolve(seg.path);
-    if (!fs.existsSync(fp)) { err(`error: ${seg.path} not found`); continue; }
-
-    const content = fs.readFileSync(fp, 'utf8');
-    const allLines = content.split('\n');
-    const from = seg.from || 1;
-    const to = seg.to || allLines.length;
-    const slice = allLines.slice(from - 1, to);
-
+  let segments;
+  try {
+    segments = ReadFs.parseReadSegments(argv);
+  } catch (error) {
+    const readError = error instanceof ReadFs.ReadError
+      ? error
+      : new ReadFs.ReadError('INVALID_ARGUMENT', error instanceof Error ? error.message : String(error));
     if (json) {
-      results.push({ path: seg.path, from, to, total: allLines.length, lines: slice });
-      continue;
+      out(JSON.stringify({ type: 'error', path: '', error: { code: readError.code, message: readError.message } }, null, 2));
+      return;
     }
-
-    // try bat for pretty output
-    if (!plain && which('bat')) {
-      const batArgs = ['bat', '--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp];
-      const r = spawnSync('bat', ['--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp], {
-        encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      out(r.stdout.trimEnd());
-    } else {
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      slice.forEach((line, idx) => {
-        const lineNum = from + idx;
-        out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
-      });
-    }
+    err(`${readError.code}: ${readError.message}`);
+    readHelp();
+    return;
   }
 
-  if (json) out(JSON.stringify(results, null, 2));
+  if (segments.length === 0) {
+    if (json) {
+      out(JSON.stringify({ type: 'error', path: '', error: { code: 'INVALID_ARGUMENT', message: 'no file path given' } }, null, 2));
+      return;
+    }
+    err('error: no file path given');
+    readHelp();
+    return;
+  }
+
+  const payload = ReadFs.readResources({ root: process.cwd(), requests: segments });
+  if (json) {
+    out(JSON.stringify(payload, null, 2));
+    return;
+  }
+
+  const rendered = ReadFs.renderReadHuman(payload, plain);
+  if (rendered) out(rendered);
+  if (readPayloadHasErrors(payload)) process.exitCode = 1;
 }
 
 // ── search ──
