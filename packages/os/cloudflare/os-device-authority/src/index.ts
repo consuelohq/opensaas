@@ -86,10 +86,10 @@ function verifyUrl(origin: string, code: string): string { const url = new URL('
 function stringField(record: Record<string, unknown>, key: string): string { const value = record[key]; return typeof value === 'string' ? value : ''; }
 function expectedDeviceProofPayload(input: { clientId: string; deviceCode: string; devicePublicKeyThumbprint: string }): string { return `${input.clientId}.${input.deviceCode}.${input.devicePublicKeyThumbprint}`; }
 
-function page(input: { code: string; message?: string; error?: string }): string {
+function page(input: { code: string; origin: string; message?: string; error?: string }): string {
   const shown = htmlEscape(showCode(input.code));
   const hidden = shown.replace(/-/g, '');
-  const approveUrl = new URL('/login/google/start', ORIGIN);
+  const approveUrl = new URL('/login/google/start', input.origin);
   approveUrl.searchParams.set('user_code', hidden);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Authorize Consuelo OS</title><style>body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f5;color:#080808}main{text-align:center;width:min(720px,calc(100vw - 32px))}.card{background:white;border-radius:28px;margin:28px auto;padding:56px;box-shadow:0 24px 90px #0002}.eyebrow{letter-spacing:.24em;text-transform:uppercase;color:#777}.code{display:block;font-size:clamp(44px,12vw,96px);letter-spacing:.08em}.button{display:inline-block;border:0;border-radius:12px;background:#050505;color:white;padding:14px 22px;font:inherit;text-decoration:none}.notice{color:#066b36}.error{color:#9f1239}</style></head><body><main><p class="eyebrow">Consuelo OS</p><h1>Authorize this Mac</h1><p>Confirm this code matches your terminal before approving.</p><section class="card"><span class="eyebrow">Device code</span><strong class="code" data-device-code>${shown || 'Waiting'}</strong></section>${input.message ? `<p class="notice">${htmlEscape(input.message)}</p>` : ''}${input.error ? `<p class="error">${htmlEscape(input.error)}</p>` : ''}<a class="button" href="${htmlEscape(approveUrl.toString())}">Approve this Mac with Google</a><p>Approval requires a Consuelo account session backed by Google, passkey, magic link, hardware key, or admin invite.</p></main></body></html>`;
 }
@@ -244,16 +244,16 @@ export function createOsDeviceAuthorityHandler(input: {
       const url = new URL(request.url);
       if (url.pathname === '/') return Response.redirect(new URL('/login/device', origin), 302);
       if (url.pathname === '/health') return json({ ok: true, service: 'consuelo-os-device-authority' });
-      if (url.pathname === '/login/device' && request.method === 'GET') return text(page({ code: url.searchParams.get('user_code') ?? '' }));
+      if (url.pathname === '/login/device' && request.method === 'GET') return text(page({ code: url.searchParams.get('user_code') ?? '', origin }));
       if (url.pathname === '/login/google/start') {
         if (request.method !== 'GET') return methodNotAllowed('GET');
         if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
-          return text(page({ code: url.searchParams.get('user_code') ?? '', error: 'Google approval is not configured yet.' }), { status: 503 });
+          return text(page({ code: url.searchParams.get('user_code') ?? '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
         }
         const code = url.searchParams.get('user_code') ?? '';
         const g = await input.store.byUserCode(code);
-        if (!g) return text(page({ code, error: 'Device code not found.' }), { status: 404 });
-        if (now() >= g.expiresAt) { await input.store.del(g.hash); return text(page({ code, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
+        if (!g) return text(page({ code, origin, error: 'Device code not found.' }), { status: 404 });
+        if (now() >= g.expiresAt) { await input.store.del(g.hash); return text(page({ code, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
         const state = rand('state', 24);
         await input.store.putOAuthState({ state, userCode: g.userCode, expiresAt: now() + TTL_MS });
         return Response.redirect(googleAuthRedirect({ origin, clientId: input.googleOAuthClientId!, state }), 302);
@@ -261,20 +261,20 @@ export function createOsDeviceAuthorityHandler(input: {
       if (url.pathname === '/login/google/callback') {
         if (request.method !== 'GET') return methodNotAllowed('GET');
         if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
-          return text(page({ code: '', error: 'Google approval is not configured yet.' }), { status: 503 });
+          return text(page({ code: '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
         }
         const stateValue = url.searchParams.get('state') ?? '';
         const authCode = url.searchParams.get('code') ?? '';
         const oauthState = await input.store.byOAuthState(stateValue);
-        if (!stateValue || !authCode || !oauthState) return text(page({ code: '', error: 'Google approval session was not found.' }), { status: 400 });
+        if (!stateValue || !authCode || !oauthState) return text(page({ code: '', origin, error: 'Google approval session was not found.' }), { status: 400 });
         await input.store.delOAuthState(stateValue);
-        if (now() >= oauthState.expiresAt) return text(page({ code: oauthState.userCode, error: 'Google approval session expired. Restart the installer.' }), { status: 410 });
+        if (now() >= oauthState.expiresAt) return text(page({ code: oauthState.userCode, origin, error: 'Google approval session expired. Restart the installer.' }), { status: 410 });
         const grant = await input.store.byUserCode(oauthState.userCode);
-        if (!grant) return text(page({ code: oauthState.userCode, error: 'Device code not found.' }), { status: 404 });
-        if (now() >= grant.expiresAt) { await input.store.del(grant.hash); return text(page({ code: oauthState.userCode, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
+        if (!grant) return text(page({ code: oauthState.userCode, origin, error: 'Device code not found.' }), { status: 404 });
+        if (now() >= grant.expiresAt) { await input.store.del(grant.hash); return text(page({ code: oauthState.userCode, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
         const identity = await googleIdentity({ code: authCode, origin, clientId: input.googleOAuthClientId!, clientSecret: input.googleOAuthClientSecret!, fetchImpl });
         await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
-        return text(page({ code: oauthState.userCode, message: `Approved for ${identity.email}. Return to your terminal.` }));
+        return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
       }
       if (url.pathname === '/login/device/code') {
         if (request.method !== 'POST') return methodNotAllowed('POST');

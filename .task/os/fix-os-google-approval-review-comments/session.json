@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8c89ec51dbf2",
+  "tmuxSession": "opensaas-os-fix-os-google-approval-review-comments-8c89ec51",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-approval-review-comments",
+  "branch": "task/os/fix-os-google-approval-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-approval-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-approval-review-comments",
+  "prNumber": 1051,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1051",
+  "createdAt": "2026-06-15T00:36:00.389Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-approval-review-comments/.task/os/fix-os-google-approval-review-comments/session.json"
+}
