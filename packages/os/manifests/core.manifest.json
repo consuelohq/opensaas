@@ -1045,7 +1045,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "read file contents with an optional line range",
+      "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
       "core": true,
       "definition": {
         "name": "fs.read",
@@ -1053,7 +1053,7 @@
           "fs",
           "read"
         ],
-        "description": "read file contents with an optional line range",
+        "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
         "category": "filesystem",
         "underlying": "workspace fs read, or task:fs read when a branch is resolved",
         "capabilities": {
@@ -1074,8 +1074,22 @@
           "arguments": [
             {
               "source": "path",
-              "kind": "value",
-              "required": true
+              "kind": "value"
+            },
+            {
+              "source": "filesJson",
+              "flag": "--files-json",
+              "kind": "value"
+            },
+            {
+              "source": "offset",
+              "flag": "--offset",
+              "kind": "value"
+            },
+            {
+              "source": "limit",
+              "flag": "--limit",
+              "kind": "value"
             },
             {
               "source": "from",
@@ -1090,10 +1104,39 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "path": "packages/os/package.json"
+          "branch": "task/os/example",
+          "path": "packages/os/scripts/fs.js",
+          "offset": 1,
+          "limit": 120
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "examples": [
+          {
+            "label": "single paged file",
+            "input": {
+              "path": "packages/os/scripts/fs.js",
+              "offset": 1,
+              "limit": 120
+            }
+          },
+          {
+            "label": "multiple paged files",
+            "input": {
+              "files": [
+                {
+                  "path": "packages/os/scripts/fs.js",
+                  "offset": 1,
+                  "limit": 80
+                },
+                {
+                  "path": "packages/os/tooling/dev-tool-manifest.json",
+                  "offset": 1,
+                  "limit": 120
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {

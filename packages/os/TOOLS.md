@@ -2430,12 +2430,12 @@ await workspace.call({
 
 ### workspace.fs.read
 
-read file contents with an optional line range
+read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>` |
+| Signature | `workspace.fs.read({ path?: string; files?: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<FsReadTextPage &#124; FsReadBinary &#124; FsReadMedia &#124; FsReadError &#124; { results: Array<{ path: string; ok: true; page: FsReadTextPage &#124; FsReadBinary &#124; FsReadMedia } &#124; { path: string; ok: false; error: FsReadError }> }>>` |
 | Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -2446,8 +2446,10 @@ read file contents with an optional line range
 await workspace.call({
   "tool": "fs.read",
   "input": {
-    "branch": "task/workspace-agents/example",
-    "path": "packages/os/package.json"
+    "branch": "task/os/example",
+    "path": "packages/os/scripts/fs.js",
+    "offset": 1,
+    "limit": 120
   }
 });
 ```
