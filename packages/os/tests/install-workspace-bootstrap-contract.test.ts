@@ -165,4 +165,25 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       ]),
     );
   });
+
+  it('should await edge site snapshot publish before reporting install success', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    const publishImportIndex = installSource.indexOf('publishWorkspaceEdgeSnapshot');
+    const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
+    const publishCallIndex = installSource.indexOf('await publishWorkspaceEdgeSnapshot');
+    const payloadIndex = installSource.indexOf('const payload = {');
+    const successIndex = installSource.indexOf('spin?.succeed');
+
+    expect(publishImportIndex).toBeGreaterThan(-1);
+    expect(provisionIndex).toBeGreaterThan(-1);
+    expect(publishCallIndex).toBeGreaterThan(provisionIndex);
+    expect(payloadIndex).toBeGreaterThan(publishCallIndex);
+    expect(successIndex).toBeGreaterThan(payloadIndex);
+    expect(installSource).toContain('edgePublish,');
+    expect(installSource).toContain('workspace edge site snapshot publish skipped: approved device login not available');
+  });
 });

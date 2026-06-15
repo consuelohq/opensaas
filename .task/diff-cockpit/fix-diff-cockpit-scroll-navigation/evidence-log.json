@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+  "events": [
+    {
+      "id": "a26c8699-843b-4086-b11c-40b8d0186e92",
+      "occurred_at": "2026-06-14T18:13:39.926Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "086a8eb2-57b4-4ca7-852e-45698565a8a9",
+      "occurred_at": "2026-06-14T18:14:00.873Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "260a3d65-b0f7-4355-ab97-acbc6ce34723",
+      "occurred_at": "2026-06-14T18:14:00.997Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "1e1e8afd-b3ec-4f47-8d50-533058f11e21",
+      "occurred_at": "2026-06-14T18:14:12.811Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "9dbac341-4c8d-44ee-ac15-92471dc9b18c",
+      "occurred_at": "2026-06-14T18:14:45.225Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "5a45023c-9dd5-4396-8b8e-1d6c2ef4a5ce",
+      "occurred_at": "2026-06-14T18:15:05.684Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "1627f330-abcf-430f-b068-f687cd56750a",
+      "occurred_at": "2026-06-14T18:16:23.412Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "31a8536a-1e91-48ad-b4bc-22ee80482de6",
+      "occurred_at": "2026-06-14T18:18:25.679Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "79852705-a579-4062-bfaf-3a15d2caa6ee",
+      "occurred_at": "2026-06-14T18:22:03.424Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "feb60d0e-324f-4a0e-bb9a-6e2c8fa31d03",
+      "occurred_at": "2026-06-14T18:24:14.294Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "9db1fd97-48c1-4d0f-b788-a623a56ffb6d",
+      "occurred_at": "2026-06-14T18:25:01.504Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "46ed2d32-cda8-48ba-88d2-97f30922d5ae",
+      "occurred_at": "2026-06-14T18:28:04.985Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "cceb2633-ef3d-4433-86a0-cd4fadac1c81",
+      "occurred_at": "2026-06-14T18:28:11.625Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    },
+    {
+      "id": "eddff15a-bcff-42ba-9bba-a9f015fe01c9",
+      "occurred_at": "2026-06-14T18:29:55.013Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-diff-cockpit-scroll-navigation"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T18:29:55.091Z"
+}

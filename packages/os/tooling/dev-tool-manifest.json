@@ -235,14 +235,14 @@
     "workflowRole": "workpad.write"
   },
   {
-    "name": "fs.patch",
+    "name": "fs.apply_patch",
     "methodPath": [
       "fs",
-      "patch"
+      "apply_patch"
     ],
-    "description": "replace a line range in a task worktree file",
+    "description": "apply an anchored patch file with embedded task-worktree-relative paths",
     "category": "filesystem",
-    "underlying": "workspace fs.patch",
+    "underlying": "workspace fs.apply_patch",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -250,51 +250,31 @@
       "safeToRetry": false
     },
     "defaultTimeout": 30000,
-    "inputSchema": "FsPatchInput",
+    "inputSchema": "FsApplyPatchInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "task:fs",
-      "subcommand": "patch",
+      "subcommand": "apply-patch",
       "branchMode": "required",
       "branchArgumentStyle": "prefix",
       "dryRunFlag": "--dry-run",
       "arguments": [
         {
-          "source": "path",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "from",
-          "flag": "--from",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "to",
-          "flag": "--to",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "content",
-          "flag": "--content",
+          "source": "patchText",
+          "flag": "--patch-text",
           "kind": "value"
         },
         {
-          "source": "contentFile",
-          "flag": "--content-file",
+          "source": "patchFile",
+          "flag": "--patch-file",
           "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example",
-      "path": "tmp/example.txt",
-      "from": 1,
-      "to": 1,
-      "dryRun": true,
-      "contentFile": "/tmp/replacement.txt"
+      "patchFile": "/tmp/change.patch",
+      "dryRun": true
     },
     "sessionRequired": true
   },

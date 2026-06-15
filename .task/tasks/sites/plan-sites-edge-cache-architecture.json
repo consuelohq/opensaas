@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/plan-sites-edge-cache-architecture",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1026,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1026",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1026",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1026/plan-sites-edge-cache-architecture",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1026",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1026/plan-sites-edge-cache-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-plan-sites-edge-cache-architecture",
+  "taskSession": "tsk_aa90d25b11e4",
+  "tmuxSession": "opensaas-sites-plan-sites-edge-cache-architecture-aa90d25b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-plan-sites-edge-cache-architecture/.task/sites/plan-sites-edge-cache-architecture/session.json",
+  "createdAt": "2026-06-13T21:11:16.609Z"
+}

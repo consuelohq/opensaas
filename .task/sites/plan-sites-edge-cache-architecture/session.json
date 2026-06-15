@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_aa90d25b11e4",
+  "tmuxSession": "opensaas-sites-plan-sites-edge-cache-architecture-aa90d25b",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/plan-sites-edge-cache-architecture",
+  "branch": "task/sites/plan-sites-edge-cache-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-plan-sites-edge-cache-architecture",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-plan-sites-edge-cache-architecture",
+  "prNumber": 1026,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1026",
+  "createdAt": "2026-06-13T21:11:16.608Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-plan-sites-edge-cache-architecture/.task/sites/plan-sites-edge-cache-architecture/session.json"
+}

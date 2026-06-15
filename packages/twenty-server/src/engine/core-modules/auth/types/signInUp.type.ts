@@ -8,7 +8,8 @@ import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspac
 export type SocialSSOSignInUpActionType =
   | 'create-new-workspace'
   | 'list-available-workspaces'
-  | 'join-workspace';
+  | 'join-workspace'
+  | 'os-device-approval';
 
 export type SignInUpBaseParams = {
   invitation?: AppTokenEntity;

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-apply-patch-filesystem-tool",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1034,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1034",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1034",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1034/align-apply-patch-filesystem-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1034",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1034/align-apply-patch-filesystem-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool",
+  "taskSession": "tsk_29ae8e3d149b",
+  "tmuxSession": "opensaas-os-align-apply-patch-filesystem-tool-29ae8e3d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool/.task/os/align-apply-patch-filesystem-tool/session.json",
+  "createdAt": "2026-06-14T05:08:22.848Z"
+}

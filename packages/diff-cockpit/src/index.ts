@@ -837,10 +837,16 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
   return root;
 }
 
-export function renderIndexPage(repo: RepoLocator): string {
+export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndexData | null = null, initialEtag = ''): string {
   const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
   const mainCodePath = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages`;
+  const initialDataScript = initialData
+    ? `  <script id="diff-cockpit-index-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
+  const initialEtagScript = initialEtag
+    ? `  <script id="diff-cockpit-index-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
+    : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -901,17 +907,20 @@ export function renderIndexPage(repo: RepoLocator): string {
       <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
-  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
 </body>
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null): string {
+export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null, initialEtag = ''): string {
   const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
+    : '';
+  const initialEtagScript = initialEtag
+    ? `  <script id="diff-cockpit-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
     : '';
 
   return `<!doctype html>
@@ -924,7 +933,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-ai-sidebar="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
@@ -936,7 +945,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <nav class="links" aria-label="Pull request controls">
       <button id="mergeability-nav-button" class="nav-status-button" type="button" data-open-mergeability>mergeable</button>
       <button id="commit-nav-button" class="nav-status-button" type="button" data-open-commits>0 commits</button>
-      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="true">AI comments</button>
+      <button id="ai-comments-toggle" class="nav-status-button" type="button" aria-expanded="false">Comments</button>
       <button id="drawer-toggle" type="button" aria-expanded="false">Panel</button>
     </nav>
   </header>
@@ -979,9 +988,9 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
         <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
-    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="AI review comments" aria-hidden="false">
+    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="Comments" aria-hidden="true">
       <div class="ai-comments-head">
-        <div><strong>AI comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
+        <div><strong>Comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
         <button id="ai-comments-close" type="button">Close</button>
       </div>
       <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
@@ -989,7 +998,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-${initialDataScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
 </body>
 </html>`;
 }
@@ -1201,7 +1210,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/') {
-        return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+        try {
+          const repo = parseRepoLocator('', defaultRepo);
+          const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
+        } catch {
+          return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
+        }
       }
 
 
@@ -1224,10 +1240,17 @@ export function createWorker(options: GithubLoaderOptions = {}) {
 
       const repoRouteMatch = url.pathname.match(/^\/([^/]+)\/([^/]+)\/?$/);
       if (repoRouteMatch) {
-        return html(renderIndexPage({
+        const repo = {
           owner: decodeURIComponent(repoRouteMatch[1] || ''),
           repo: decodeURIComponent(repoRouteMatch[2] || ''),
-        }));
+        };
+        try {
+          const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
+        } catch {
+          return html(renderIndexPage(repo));
+        }
       }
 
       let locator: PullRequestLocator;
@@ -1239,9 +1262,13 @@ export function createWorker(options: GithubLoaderOptions = {}) {
           headers: { 'content-type': 'text/html; charset=utf-8' },
         });
       }
-      const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
-      const initialData = await readCachedJsonData<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
-      return html(renderReviewPage(locator, initialData));
+      try {
+        const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
+        const initialData = await readCachedJsonSnapshot<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
+        return html(renderReviewPage(locator, initialData?.data ?? null, initialData?.etag ?? ''));
+      } catch {
+        return html(renderReviewPage(locator));
+      }
     },
   };
 }
@@ -2232,7 +2259,8 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
   const reason = stringValue(input.reason, 'manual');
   const planned = buildCacheRefreshPlan(requestOrigin, repo, pullNumbers, codePaths);
 
-  if (deps.ctx) {
+  const waitForCompletion = new URL(deps.request.url).searchParams.get('wait') === '1';
+  if (deps.ctx && !waitForCompletion) {
     deps.ctx.waitUntil(refreshCacheEntries(deps, repo, pullNumbers, codePaths, requestOrigin).catch(() => undefined));
     return internalJson({
       ok: true,
@@ -2248,6 +2276,7 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
     ok: true,
     reason,
     cache: deps.edgeCache ? 'edge' : 'none',
+    completed: true,
     refreshed,
   });
 }
@@ -2376,6 +2405,11 @@ type MemoryCachedJson = {
   expiresAt: number;
 };
 
+type CachedJsonSnapshot<T> = {
+  data: T;
+  etag: string;
+};
+
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
 const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
@@ -2407,18 +2441,24 @@ async function getOrSetCachedJson(
 }
 
 async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
+  const snapshot = await readCachedJsonSnapshot<T>(edgeCache, cacheRequest);
+  return snapshot?.data ?? null;
+}
+
+async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
   try {
     if (edgeCache) {
       const cached = await edgeCache.match(cacheRequest);
       if (cached?.status === 200) {
         void writeMemoryCachedJson(cacheRequest, cached.clone());
-        return await cached.clone().json() as T;
+        const body = await cached.clone().text();
+        return { data: JSON.parse(body) as T, etag: cached.headers.get('etag') || makeWeakEtag(body) };
       }
     }
   } catch {
     // Fall through to the isolate-local cache.
   }
-  return readMemoryCachedJsonData<T>(cacheRequest);
+  return readMemoryCachedJsonSnapshot<T>(cacheRequest);
 }
 async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
   try {
@@ -2474,10 +2514,15 @@ function readMemoryCachedJson(cacheRequest: Request, clientRequest: Request): Re
 }
 
 function readMemoryCachedJsonData<T>(cacheRequest: Request): T | null {
+  const snapshot = readMemoryCachedJsonSnapshot<T>(cacheRequest);
+  return snapshot?.data ?? null;
+}
+
+function readMemoryCachedJsonSnapshot<T>(cacheRequest: Request): CachedJsonSnapshot<T> | null {
   const cached = getMemoryCachedJson(cacheRequest);
   if (!cached) return null;
   try {
-    return JSON.parse(cached.body) as T;
+    return { data: JSON.parse(cached.body) as T, etag: cached.etag };
   } catch {
     memoryJsonCache.delete(memoryCacheKey(cacheRequest));
     return null;
@@ -2617,7 +2662,7 @@ function renderStyles(): string {
   :root { color-scheme: dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --danger:#ff9d9d; --shadow:0 28px 90px rgba(0,0,0,.42); }
 }
 * { box-sizing:border-box; }
-html { scroll-behavior:smooth; background:var(--paper); }
+html { background:var(--paper); }
 html, body, button, a { -webkit-tap-highlight-color: transparent; }
 body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
 ::selection { background:var(--accent-soft); color:var(--ink); }
@@ -3276,13 +3321,38 @@ function clearStaleIndexCaches() { try { for (let index = localStorage.length - 
 function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedIndex(); if (cached) applyIndexData(cached); return cached; }
 let lastIndexLoadAt = 0;
 let indexLoadInFlight = null;
+let currentIndexEtag = readInitialIndexEtag();
+function readScriptJson(id) {
+  const element = document.getElementById(id);
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+function readInitialIndexData() { return readScriptJson('diff-cockpit-index-initial-data'); }
+function readInitialIndexEtag() { return readScriptJson('diff-cockpit-index-initial-etag') || ''; }
 function loadIndex(options = {}) {
-  const cached = options.useCache === false ? null : loadCachedIndex();
+  const initial = options.useCache === false ? null : readInitialIndexData();
+  const cached = options.useCache === false ? null : (initial || loadCachedIndex());
+  if (initial) applyIndexData(initial);
   if (indexLoadInFlight) return indexLoadInFlight;
   lastIndexLoadAt = Date.now();
-  indexLoadInFlight = fetch(apiPath, { headers: { accept: 'application/json' }, cache: 'no-cache' })
-    .then((response) => { if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status); return response.json(); })
-    .then((data) => { const merged = mergeIndexWithCache(data, cached); localStorage.setItem(cacheKey, JSON.stringify(merged)); applyIndexData(merged); return merged; }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+  const headers = { accept: 'application/json' };
+  if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
+  indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })
+    .then((response) => {
+      if (response.status === 304) return null;
+      if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
+      const etag = response.headers.get('etag') || '';
+      return response.json().then((data) => ({ data, etag }));
+    })
+    .then((result) => {
+      if (!result) return cached;
+      if (result.etag) currentIndexEtag = result.etag;
+      const merged = mergeIndexWithCache(result.data, cached);
+      localStorage.setItem(cacheKey, JSON.stringify(merged));
+      applyIndexData(merged);
+      return merged;
+    }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
     .finally(() => { indexLoadInFlight = null; });
   return indexLoadInFlight;
 }
@@ -3300,7 +3370,6 @@ if (commandInput) commandInput.addEventListener('keydown', (event) => { if (even
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
 window.addEventListener('focus', () => refreshIndexIfStale(5000));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
-document.addEventListener('pointerdown', () => refreshIndexIfStale(12000), { passive: true });
 window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
@@ -3347,14 +3416,12 @@ const els = {
   mergeabilityPopover: document.getElementById('mergeability-popover'),
 };
 
-els.drawerToggle.addEventListener('click', () => {
-  setDrawer(document.body.dataset.reviewDrawer !== 'open');
-});
-els.drawerClose.addEventListener('click', () => setDrawer(false));
-els.aiCommentsToggle.addEventListener('click', () => setAiSidebar(document.body.dataset.aiSidebar !== 'open'));
-els.aiCommentsClose.addEventListener('click', () => setAiSidebar(false));
-els.mobileFilesToggle.addEventListener('click', () => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open'));
-els.mobileFileBackdrop.addEventListener('click', () => setFilePaneDrawer(false));
+els.drawerToggle.addEventListener('click', () => preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open')));
+els.drawerClose.addEventListener('click', () => preserveDiffViewport(() => setDrawer(false)));
+els.aiCommentsToggle.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(document.body.dataset.aiSidebar !== 'open')));
+els.aiCommentsClose.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(false)));
+els.mobileFilesToggle.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open')));
+els.mobileFileBackdrop.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(false)));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
 els.copyReviewLink.addEventListener('click', () => copyReviewLink());
 els.copyCurrentCommitLink.addEventListener('click', () => copyCurrentCommitLink());
@@ -3390,7 +3457,7 @@ els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 els.mergePrButton.addEventListener('click', () => mergePullRequest());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === 'p') setDrawer(document.body.dataset.reviewDrawer !== 'open');
+  if (event.key === 'p') preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open'));
   if (event.key === 'f') toggleFilePane();
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
   if (event.key === 'm') toggleMergeabilityPopover();
@@ -3398,9 +3465,10 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'i') toggleInlineComments();
   if (event.key === 'c') copyText(buildCommentsMarkdown());
   if (event.key === 'g') openChatGptPrompt();
-  if (event.key === 'Escape') { setDrawer(false); setFilePaneDrawer(false); closeCommitPopover(); closeMergeabilityPopover(); }
+  if (event.key === 'Escape') { preserveDiffViewport(() => { setDrawer(false); setFilePaneDrawer(false); }); closeCommitPopover(); closeMergeabilityPopover(); }
 });
 
+let currentReviewEtag = readInitialReviewEtag();
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
 loadLiveData();
@@ -3415,6 +3483,54 @@ function loadViewerLibraries() {
     // Viewer libraries are optional progressive enhancement; the built-in long diff renders first.
   });
 }
+function getReviewPane() {
+  return els.diff.closest('.review-pane');
+}
+
+function captureDiffViewport() {
+  const pane = getReviewPane();
+  if (!pane) return null;
+  const paneTop = pane.getBoundingClientRect().top;
+  const stickyOffset = els.selected ? els.selected.offsetHeight + 8 : 48;
+  const sections = Array.from(document.querySelectorAll('.diff-file'));
+  let anchor = null;
+  for (const section of sections) {
+    const top = section.getBoundingClientRect().top - paneTop;
+    if (top <= stickyOffset) anchor = section;
+    else break;
+  }
+  return {
+    scrollTop: pane.scrollTop,
+    fileId: anchor ? anchor.id : '',
+    offset: anchor ? anchor.getBoundingClientRect().top - paneTop : 0,
+  };
+}
+
+function restoreDiffViewport(snapshot) {
+  if (!snapshot) return;
+  const restore = () => {
+    const pane = getReviewPane();
+    if (!pane) return;
+    if (snapshot.fileId) {
+      const anchor = document.getElementById(snapshot.fileId);
+      if (anchor) {
+        const paneTop = pane.getBoundingClientRect().top;
+        const delta = anchor.getBoundingClientRect().top - paneTop - snapshot.offset;
+        pane.scrollTop += delta;
+        return;
+      }
+    }
+    pane.scrollTop = snapshot.scrollTop;
+  };
+  window.requestAnimationFrame(() => { restore(); window.setTimeout(restore, 200); });
+}
+
+function preserveDiffViewport(callback) {
+  const snapshot = captureDiffViewport();
+  callback();
+  restoreDiffViewport(snapshot);
+}
+
 function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -3438,6 +3554,12 @@ function readInitialReviewData() {
   try { return JSON.parse(element.textContent); }
   catch { return null; }
 }
+function readInitialReviewEtag() {
+  const element = document.getElementById('diff-cockpit-initial-etag');
+  if (!element || !element.textContent) return '';
+  try { return JSON.parse(element.textContent) || ''; }
+  catch { return ''; }
+}
 
 function applyReviewData(data) {
   state.data = data;
@@ -3455,14 +3577,20 @@ function applyReviewData(data) {
 }
 
 function loadLiveData() {
-  fetch(apiPath, { headers: { accept: 'application/json' } })
+  const headers = { accept: 'application/json' };
+  if (currentReviewEtag) headers['If-None-Match'] = currentReviewEtag;
+  fetch(apiPath, { headers, cache: 'no-cache' })
     .then((response) => {
+      if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR fetch failed: ' + response.status);
-      return response.json();
+      const etag = response.headers.get('etag') || '';
+      return response.json().then((data) => ({ data, etag }));
     })
     .then(
-      (data) => {
-        applyReviewData(data);
+      (result) => {
+        if (!result) return;
+        if (result.etag) currentReviewEtag = result.etag;
+        applyReviewData(result.data);
       },
       (error) => {
         if (!state.data) els.tree.textContent = error.message || String(error);
@@ -3497,11 +3625,15 @@ function renderMergeResult(message) {
   els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Merge PR</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">' + escapeHtml(message) + '</p></div>';
 }
 
+function formatCountLabel(count, singular) {
+  return count.toLocaleString() + ' ' + singular + (count === 1 ? '' : 's');
+}
+
 function renderHeader() {
   const pull = state.data.pull;
   const commentCount = state.data.comments ? state.data.comments.length : 0;
   const aiCommentCount = aiReviewItems().length;
-  els.aiCommentsToggle.textContent = aiCommentCount.toLocaleString() + ' AI';
+  els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment');
   els.title.textContent = pull.title;
   els.meta.textContent = '#' + pull.number + ' · ' + pull.state + (pull.draft ? ' · draft' : '') + ' · ' + pull.headRef + ' → ' + pull.baseRef + ' · by ' + pull.author + ' · ' + commentCount + ' review comments';
   els.count.textContent = String(state.data.files.length);
@@ -3516,7 +3648,7 @@ function renderTree() {
       renderTree();
       renderSelectedFile();
       scrollToFile(state.selected);
-      setFilePaneDrawer(false);
+      preserveDiffViewport(() => setFilePaneDrawer(false));
     });
   }
 }
@@ -3567,7 +3699,7 @@ function renderDiffFile(file) {
 function scrollToFile(file) {
   if (!file) return;
   const target = document.getElementById(fileDomId(file.filename));
-  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (target) target.scrollIntoView({ block: 'start' });
 }
 
 function fileDomId(filename) {
@@ -3598,7 +3730,7 @@ function aiReviewItems() {
 function renderAiCommentsSidebar() {
   const items = aiReviewItems();
   const unresolved = items.filter((item) => !item.isResolved).length;
-  els.aiCommentsSummary.textContent = items.length.toLocaleString() + ' AI item' + (items.length === 1 ? '' : 's') + ' · ' + unresolved.toLocaleString() + ' unresolved';
+  els.aiCommentsSummary.textContent = formatCountLabel(items.length, 'comment') + ' · ' + unresolved.toLocaleString() + ' unresolved';
   els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
 }
 
@@ -3719,9 +3851,13 @@ function renderCommit(commit) {
   return '<article class="commit-card"><div class="commit-meta">' + link + ' · ' + escapeHtml(commit.author) + ' · ' + escapeHtml(relativeCommitTime(commit.committedAt)) + ' · <span class="commit-delta">' + escapeHtml(formatCommitDelta(commit)) + '</span></div><p class="commit-title">' + escapeHtml(commit.message) + '</p></article>';
 }
 
+function sortCommitsNewestFirst(commits) {
+  return [...commits].sort((left, right) => new Date(right.committedAt || 0).getTime() - new Date(left.committedAt || 0).getTime());
+}
+
 function reviewCommits() {
-  if (Array.isArray(state.data?.commits) && state.data.commits.length) return state.data.commits;
-  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return state.data.streamCommits;
+  if (Array.isArray(state.data?.commits) && state.data.commits.length) return sortCommitsNewestFirst(state.data.commits);
+  if (Array.isArray(state.data?.streamCommits) && state.data.streamCommits.length) return sortCommitsNewestFirst(state.data.streamCommits);
   return [];
 }
 function toggleCommitPopover() {
@@ -4034,9 +4170,9 @@ function renderMarkdownLinks(value) {
 
 function navigateToComment(file, line) {
   const target = document.getElementById(fileDomId(file));
-  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (target) target.scrollIntoView({ block: 'start' });
   const comment = document.querySelector('[data-comment-file="' + CSS.escape(file) + '"][data-comment-line="' + CSS.escape(String(line || '')) + '"]');
-  if (comment) comment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (comment) comment.scrollIntoView({ block: 'center' });
 }
 
 function setupCommentJumps() {
@@ -4079,7 +4215,9 @@ function updateActiveFileFromViewport() {
 }
 
 function toggleFilePane() {
-  document.body.dataset.filePaneCollapsed = document.body.dataset.filePaneCollapsed === 'true' ? 'false' : 'true';
+  preserveDiffViewport(() => {
+    document.body.dataset.filePaneCollapsed = document.body.dataset.filePaneCollapsed === 'true' ? 'false' : 'true';
+  });
 }
 
 function toggleFolder(folderPath) {
@@ -4090,13 +4228,17 @@ function toggleFolder(folderPath) {
 }
 
 function toggleCurrentView() {
-  state.currentView = !state.currentView;
-  document.body.dataset.currentView = state.currentView ? 'current' : 'diff';
+  preserveDiffViewport(() => {
+    state.currentView = !state.currentView;
+    document.body.dataset.currentView = state.currentView ? 'current' : 'diff';
+  });
 }
 
 function toggleInlineComments() {
-  state.inlineCommentsVisible = !state.inlineCommentsVisible;
-  document.body.dataset.commentsVisible = state.inlineCommentsVisible ? 'true' : 'false';
+  preserveDiffViewport(() => {
+    state.inlineCommentsVisible = !state.inlineCommentsVisible;
+    document.body.dataset.commentsVisible = state.inlineCommentsVisible ? 'true' : 'false';
+  });
 }
 
 function setupFilePaneResize() {

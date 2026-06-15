@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_447ac43ab5fe",
+  "tmuxSession": "opensaas-os-device-approval-447ac43a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/device-approval",
+  "branch": "task/os/device-approval",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-device-approval",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-device-approval",
+  "prNumber": 1023,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1023",
+  "createdAt": "2026-06-13T16:40:19.825Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-device-approval/.task/os/device-approval/session.json"
+}

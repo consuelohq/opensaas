@@ -820,7 +820,7 @@ def _check_command_guardrails(command: str) -> str | None:
 def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
     if not isinstance(tool_input, dict):
         return None
-    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash', 'mac.write'}
+    mutating_path_tools = {'fs.write', 'fs.trash', 'mac.write'}
     if tool not in mutating_path_tools:
         return None
     for key in ('path', 'target', 'destination', 'dest', 'to'):
@@ -1006,8 +1006,28 @@ def _effective_task_session(task_session: str | None, tool_input: Any) -> tuple[
     return task_session or input_task_session, None
 
 
-def _input_has_branch(value: Any) -> bool:
-    return isinstance(value, dict) and isinstance(value.get('branch'), str)
+def _input_branch(value: Any) -> str | None:
+    if isinstance(value, dict) and isinstance(value.get('branch'), str) and value.get('branch'):
+        return value.get('branch')
+    return None
+
+
+def _metadata_branch(metadata: dict[str, Any] | None) -> str | None:
+    if not isinstance(metadata, dict):
+        return None
+    branch = metadata.get('branch') or metadata.get('taskBranch')
+    return branch if isinstance(branch, str) and branch else None
+
+
+
+def _input_branch_conflicts_with_task_session(value: Any, metadata: dict[str, Any] | None) -> bool:
+    branch = _input_branch(value)
+    if branch is None:
+        return False
+    expected_branch = _metadata_branch(metadata)
+    if expected_branch is None:
+        return False
+    return branch != expected_branch
 
 
 def _batch_steps(value: Any) -> list[Any] | None:
@@ -1031,8 +1051,7 @@ def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
             return True
     return False
 
-
-def _batch_has_branch_conflict(value: Any) -> bool:
+def _batch_has_branch_conflict(value: Any, metadata: dict[str, Any] | None) -> bool:
     steps = _batch_steps(value)
     if steps is None:
         return False
@@ -1041,9 +1060,9 @@ def _batch_has_branch_conflict(value: Any) -> bool:
             continue
         child_tool = step.get('tool')
         child_input = step.get('input') if 'input' in step else step.get('args')
-        if child_tool == 'batch' and _batch_has_branch_conflict(child_input):
+        if child_tool == 'batch' and _batch_has_branch_conflict(child_input, metadata):
             return True
-        if _input_has_branch(child_input):
+        if _input_branch_conflicts_with_task_session(child_input, metadata):
             return True
     return False
 
@@ -1137,7 +1156,11 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         return finish(result)
     _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=False)
 
-    if effective_task_session and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+    task_session_metadata = _task_session_metadata(effective_task_session) if effective_task_session else None
+    if effective_task_session and (
+        _input_branch_conflicts_with_task_session(normalized_input, task_session_metadata)
+        or (tool == 'batch' and _batch_has_branch_conflict(normalized_input, task_session_metadata))
+    ):
         return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
@@ -1145,7 +1168,6 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             data={'tool': tool, 'taskSession': effective_task_session},
             traceId=trace_id,
         ))
-
     if not effective_task_session and _tool_requires_task_session(tool, normalized_input):
         return finish(_envelope(
             ok=False,
