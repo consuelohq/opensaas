@@ -24,6 +24,15 @@ export type WorkspaceCloudflareEdgeRouteTarget =
         | 'versioned-asset'
         | 'mutable-artifact'
         | 'private-preview';
+    }
+  | {
+      kind: 'consuelo-gateway-service';
+      serviceName:
+        | 'trace-sites-read-layer'
+        | 'trace-sites-live-endpoints'
+        | (string & {});
+      gatewayRouteFamily: string;
+      publicSiteRouteFamily: string;
     };
 
 export type WorkspaceSitesEdgeCache = {
@@ -410,6 +419,34 @@ const createSiteSnapshotResponse = (input: {
     },
   });
 
+const createConsueloGatewayServiceResponse = (input: {
+  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
+    target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'consuelo-gateway-service' }>;
+  };
+}): Response => Response.json(
+  {
+    ok: true,
+    publicBoundary: 'consuelo-gateway',
+    workspace: {
+      workspaceId: input.resolution.workspaceId,
+      workspaceHost: input.resolution.hostname,
+    },
+    route: {
+      serviceName: input.resolution.target.serviceName,
+      gatewayServiceName: input.resolution.target.serviceName,
+      gatewayRouteFamily: input.resolution.target.gatewayRouteFamily,
+      publicSiteRouteFamily: input.resolution.target.publicSiteRouteFamily,
+    },
+  },
+  {
+    status: 200,
+    headers: {
+      'cache-control': 'no-store',
+      'x-consuelo-edge-route-authority': 'consuelo-gateway-service',
+    },
+  },
+);
+
 const serveSiteSnapshot = async (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
@@ -516,6 +553,20 @@ export const createWorkspaceCloudflareEdgeRouter = (
               >;
             },
             store: input.siteSnapshots,
+          });
+        }
+
+        if (resolution.target.kind === 'consuelo-gateway-service') {
+          return createConsueloGatewayServiceResponse({
+            resolution: resolution as Extract<
+              WorkspaceCloudflareEdgeRouteResolution,
+              { allowed: true }
+            > & {
+              target: Extract<
+                WorkspaceCloudflareEdgeRouteTarget,
+                { kind: 'consuelo-gateway-service' }
+              >;
+            },
           });
         }
 
