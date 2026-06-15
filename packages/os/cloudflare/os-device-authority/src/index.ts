@@ -268,7 +268,7 @@ export function createOsDeviceAuthorityHandler(input: {
 }) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
-  const fetchImpl = input.fetchImpl ?? fetch;
+  const fetchImpl = input.fetchImpl ?? ((url, init) => globalThis.fetch(url, init));
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createMemoryDeviceGrantStore,
@@ -128,6 +128,10 @@ const failingGoogleTokenFetch: typeof fetch = async (input) => {
   return new Response(JSON.stringify({ error: 'unexpected_google_fetch' }), { status: 500 });
 };
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe('os device authority worker', () => {
   it('should approve a pending OS device when Google OAuth callback succeeds', async () => {
     const handler = createOsDeviceAuthorityHandler({
@@ -172,6 +176,47 @@ describe('os device authority worker', () => {
       workspace_host: 'testing.consuelohq.com',
       device_public_key_bound: true,
     });
+  });
+
+  it('should call the default global fetch with the Cloudflare global receiver', async () => {
+    const originalFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', async function (this: unknown, input: RequestInfo | URL) {
+      expect(this).toBe(globalThis);
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      if (url === 'https://oauth2.googleapis.com/token') {
+        return new Response(JSON.stringify({ id_token: 'verified-google-id-token' }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url.startsWith('https://oauth2.googleapis.com/tokeninfo')) {
+        return new Response(JSON.stringify({
+          aud: 'test-google-client-id',
+          sub: 'google-sub-123',
+          email: 'ko@example.com',
+          email_verified: 'true',
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      return originalFetch.call(globalThis, input);
+    });
+
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+    });
+    const { codeJson } = await startGrant(handler);
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(200);
+    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
   });
 
   it('should reject Google OAuth callback when state is unknown', async () => {
