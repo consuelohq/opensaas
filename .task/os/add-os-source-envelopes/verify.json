@@ -1,0 +1,76 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-os-source-envelopes",
+  "base": "origin/task/os/add-os-source-envelopes",
+  "headSha": "2b4e5dd6d3f448cf92180c110eac820e750b5c22",
+  "changeHash": "4f05f7efd5c445acf6a759ff9b8bc0550b8dab925e253d0318c1ae614edb83e7",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/source-envelope.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/src/generated/tool-client.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/source-envelope.test.ts"
+  ],
+  "verifiedAt": "2026-06-15T08:24:02.130Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-os-source-envelopes/current.json",
+        ".task/os/add-os-source-envelopes/evidence-log.json",
+        ".task/os/add-os-source-envelopes/read-log.json",
+        ".task/os/add-os-source-envelopes/session.json",
+        ".task/os/add-os-source-envelopes/verify.json",
+        ".task/os/add-os-source-envelopes/workpad.md",
+        ".task/tasks/os/add-os-source-envelopes.json",
+        "packages/os/TOOLS.md",
+        "packages/os/scripts/generate-docs.ts",
+        "packages/os/scripts/generate-types.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/scripts/lib/source-envelope.ts",
+        "packages/os/scripts/lib/types.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/src/generated/tool-client.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/tests/source-envelope.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

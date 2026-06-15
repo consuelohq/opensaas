@@ -1,0 +1,22 @@
+{
+  "files": [
+    ".task/os/add-os-source-envelopes/workpad.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/lib/facade/errors.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/source-envelope.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "updatedAt": "2026-06-15T08:21:30.309Z"
+}

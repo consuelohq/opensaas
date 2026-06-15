@@ -13,6 +13,7 @@ import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
 import type { CodeCallInput } from '../code-call/types';
 import { executeWorkerCall } from '../worker/runtime';
+import { wrapToolResultWithSources } from '../source-envelope';
 import type {
   BranchResolution,
   CommandArgument,
@@ -111,6 +112,13 @@ export async function executeTool<TData = unknown>(
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
   let entry = getToolManifestEntry(toolName);
+  const withSources = (
+    result: ToolResult<TData>,
+    sourceInput: ToolInput = input,
+  ): ToolResult<TData> => wrapToolResultWithSources(toolName, result, {
+    input: sourceInput,
+    entry,
+  });
 
   try {
     if (!entry) {
@@ -125,7 +133,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, '', undefined, undefined, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>);
     }
 
     const schema = getInputSchema(entry.inputSchema);
@@ -141,7 +149,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>);
     }
 
     const parsed = schema.safeParse(input);
@@ -157,7 +165,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>);
     }
 
     const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
@@ -174,7 +182,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, normalizedInput);
     }
     if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
       const recovery = buildTaskSessionRequiredRecovery(toolName, entry, normalizedInput);
@@ -189,7 +197,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, normalizedInput);
     }
     const scopedInput = taskSessionResolution?.ok ? {
       ...normalizedInput,
@@ -206,7 +214,7 @@ export async function executeTool<TData = unknown>(
       requestId,
       options,
     });
-    if (internalResult) return internalResult;
+    if (internalResult) return withSources(internalResult, scopedInput);
 
     const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
@@ -221,7 +229,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, scopedInput);
     }
 
     const commandInput = {
@@ -246,7 +254,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, commandInput);
     }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
@@ -266,7 +274,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, commandInput);
     }
 
     const parsedStdout = parseStdout(runResult.stdout, Boolean(entry.command.jsonFlag));
@@ -284,7 +292,7 @@ export async function executeTool<TData = unknown>(
         now: options.now,
       });
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result as ToolResult<TData>;
+      return withSources(result as ToolResult<TData>, commandInput);
     }
 
     if (isToolResult(parsedStdout.data)) {
@@ -298,7 +306,7 @@ export async function executeTool<TData = unknown>(
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result;
+      return withSources(result, commandInput);
     }
 
     const ok = runResult.exitCode === 0;
@@ -316,7 +324,7 @@ export async function executeTool<TData = unknown>(
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
     logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-    return result;
+    return withSources(result, commandInput);
   } catch (error: unknown) {
     const message = getErrorMessage(error);
     const result = createToolResult({
@@ -331,7 +339,7 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
-    return result as ToolResult<TData>;
+    return withSources(result as ToolResult<TData>);
   }
 }
 
@@ -1047,4 +1055,6 @@ function logResult(
     },
   });
 }
+
+
 

@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { executeGetSteering, executeRefreshSteering, getSteering } from '../scripts/os';
+import { executeCall, executeGetSteering, executeRefreshSteering, getSteering } from '../scripts/os';
 
 const homes: string[] = [];
 
@@ -59,6 +59,34 @@ describe('OS steering execution recording', () => {
 
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
+  });
+
+  it('records get-steering with source envelope metadata', () => {
+    const home = makeHome();
+    const steering = executeGetSteering(() => '# system_prompt.md\n\nsource ready');
+
+    expect(steering).toContain('source ready');
+
+    const row = readExecution(home);
+    const output = JSON.parse(String(row.output_json)) as { sources?: Array<Record<string, unknown>> };
+    expect(output.sources?.[0]).toMatchObject({
+      title: 'Consuelo OS steering',
+      kind: 'steering',
+      uri: expect.stringMatching(/^os:\/\/get_steering\//),
+    });
+  });
+
+  it('returns sources from the OS call boundary', async () => {
+    makeHome();
+
+    const output = await executeCall({ name: 'get_raw_steering', input: {} });
+
+    expect(output.sources?.[0]).toMatchObject({
+      title: 'get_raw_steering call',
+      kind: 'tool',
+      toolName: 'get_raw_steering',
+      uri: expect.stringMatching(/^os:\/\/call\/get_raw_steering\//),
+    });
   });
 
   it('records get-steering with metadata and full steering body', () => {
@@ -131,3 +159,5 @@ describe('OS steering execution recording', () => {
     expect(builds).toBe(2);
   });
 });
+
+

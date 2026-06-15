@@ -157,7 +157,7 @@ function renderDocs(): string {
   lines.push(
     '## result envelope',
     '',
-    'Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, and `apiVersion`. When callers pass a `requestId`, the facade echoes it back so work can be correlated across logs and task evidence.',
+    'Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, and `apiVersion`. Results may also include `sources`, a compact list of OS source envelopes that let ChatGPT and other clients cite tool evidence without parsing raw JSON. When callers pass a `requestId`, the facade echoes it back so work can be correlated across logs and task evidence.',
     '',
     '## error codes',
     '',
@@ -178,3 +178,5 @@ function main(): void {
 }
 
 main();
+
+

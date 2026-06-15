@@ -25,6 +25,21 @@ export type CallInput = {
   traceId?: string;
 };
 
+export type SourceEnvelope = {
+  id: string;
+  title: string;
+  kind: 'steering' | 'file' | 'search' | 'trace' | 'review' | 'verify' | 'pr' | 'commit' | 'tool' | 'audit';
+  uri: string;
+  summary: string;
+  toolName?: string;
+  traceId?: string;
+  url?: string;
+  lineStart?: number;
+  lineEnd?: number;
+  lines?: Array<{ line: number; text: string }>;
+  metadata?: Record<string, unknown>;
+};
+
 export type ArtifactDescriptor = {
   id?: string;
   name: string;
@@ -65,6 +80,7 @@ export type CallOutput = {
   durationMs?: number;
   result?: unknown;
   artifacts?: ArtifactDescriptor[];
+  sources?: SourceEnvelope[];
   proposedWrites?: unknown[];
   requiresApproval?: boolean;
   error?: {
@@ -80,3 +96,4 @@ export type SkillContext = {
   userId?: string;
   manifestEntry: OsManifestEntry;
 };
+

@@ -176,6 +176,17 @@ describe('typed facade executor', () => {
   });
 
 
+  it('adds source envelopes at the facade boundary', async () => {
+    const result = await executeTool('status', exampleInput('status'), stableOptions(successfulRunner()));
+
+    expect(result.sources?.[0]).toMatchObject({
+      title: 'status result',
+      kind: 'tool',
+      toolName: 'status',
+      traceId: 'trc_abc123def456',
+    });
+  });
+
   it('passes request ids through the envelope', async () => {
     const result = await executeTool('fs.read', {
       ...exampleInput('fs.read'),
@@ -680,4 +691,6 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+
 

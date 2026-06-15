@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-source-envelopes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1069,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1069",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1069",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1069/add-os-source-envelopes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1069",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1069/add-os-source-envelopes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-source-envelopes",
+  "taskSession": "tsk_109cad004e19",
+  "tmuxSession": "opensaas-os-add-os-source-envelopes-109cad00",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-source-envelopes/.task/os/add-os-source-envelopes/session.json",
+  "createdAt": "2026-06-15T07:57:14.359Z"
+}
