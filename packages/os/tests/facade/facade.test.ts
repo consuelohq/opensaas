@@ -185,6 +185,65 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
+  it('plans fs.read with offset and limit page semantics', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-read-page-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_read_page');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_read_page',
+        path: 'packages/os/scripts/fs.js',
+        offset: 5,
+        limit: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--offset');
+      expect(plans[0].args).toContain('5');
+      expect(plans[0].args).toContain('--limit');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('plans fs.read multi-file input through files-json', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-read-multi-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_read_multi');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_read_multi',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 80 },
+          { path: 'src/b.ts', offset: 100, limit: 60 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const filesJsonIndex = plans[0].args.indexOf('--files-json');
+      expect(filesJsonIndex).toBeGreaterThan(-1);
+      expect(JSON.parse(plans[0].args[filesJsonIndex + 1])).toEqual([
+        { path: 'src/a.ts', offset: 1, limit: 80 },
+        { path: 'src/b.ts', offset: 100, limit: 60 },
+      ]);
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('fs.read', {

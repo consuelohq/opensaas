@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os/add-effect-backed-bounded-fs-read/workpad.md",
+    "package.json",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/read.ts",
+    "packages/os/src/generated/tool-client.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "updatedAt": "2026-06-15T09:03:20.075Z"
+}

@@ -578,6 +578,10 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, method: "get" };
   }
 
+  if (toolName === "fs.read" && Array.isArray(input.files)) {
+    return { ...input, filesJson: JSON.stringify(input.files) };
+  }
+
   if (toolName === "review.run") {
     return { ...input, mine: true };
   }
