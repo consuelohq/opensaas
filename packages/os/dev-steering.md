@@ -993,13 +993,13 @@ await workspace.call({ tool: "context.search", input: { keyword: "workspace tool
 
 ## shell command construction with base64 + JSON escaping
 
-Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When raw shell is necessary inside `task.exec`, keep the command as a command array and avoid nested JSON/string quoting.
+Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When raw shell is necessary inside `code.call`, keep the command as a command array and avoid nested JSON/string quoting.
 
 If a command must decode base64 through Python, keep the encoded payload as a positional argument:
 
 ```ts
 await workspace.call({
-  tool: "task.exec",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["python3", "-c", "import base64,sys;print(base64.b64decode(sys.argv[1]).decode())", "BASE64_STRING"],
@@ -1042,7 +1042,7 @@ For repo changes, exploration should include the nearest existing implementation
 
 Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
 
-Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.exec`. If raw shell is used, explain why the workspace facade was not sufficient.
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace code.call`. If raw shell is used, explain why the workspace facade was not sufficient.
 
 
 ## Workspace docs are part of the change
@@ -1072,11 +1072,11 @@ Before reporting completion, verify one of these is true:
 For typed facade changes, the expected validation path is:
 
 ```ts
-await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 120 })
-await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 120 })
-await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bash", "-lc", "cd packages/workspace && bun run test tests/facade/facade.test.ts"] }, timeout: 300000 })
-await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "audit", "--", "--scripts", "--json"] }, timeout: 120 })
-await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "review", "--", "--base", "stream/workspace-agents", "--no-tests", "--json"] }, timeout: 600000 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 120 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 120 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bash", "-lc", "cd packages/workspace && bun run test tests/facade/facade.test.ts"] }, timeout: 300000 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "audit", "--", "--scripts", "--json"] }, timeout: 120 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "review", "--", "--base", "stream/workspace-agents", "--no-tests", "--json"] }, timeout: 600000 })
 ```
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.

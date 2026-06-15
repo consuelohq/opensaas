@@ -1,7 +1,7 @@
 {
   "version": 1,
   "kind": "consuelo-os-workflow-bundles",
-  "sourceManifest": "packages/os/manifests/tool.manifest.json",
+  "sourceManifest": "../../../../../../../../var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-os-tool-manifest-FRiKof/tool.manifest.json",
   "config": "packages/os/manifests/manifest.config.json",
   "source": "packages/os/tooling/workflows.json",
   "workflows": [
@@ -73,6 +73,49 @@
         }
       ],
       "tools": [
+        {
+          "name": "code.call",
+          "kind": "facade-tool",
+          "source": "dev-tooling",
+          "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+          "category": "codemode",
+          "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+          "core": true,
+          "definition": {
+            "name": "code.call",
+            "methodPath": [
+              "code",
+              "call"
+            ],
+            "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+            "category": "codemode",
+            "underlying": "os code.call",
+            "capabilities": {
+              "readOnly": false,
+              "mutating": true,
+              "deterministic": false,
+              "safeToRetry": false
+            },
+            "defaultTimeout": 300000,
+            "inputSchema": "CodeCallInput",
+            "outputSchema": "CodeCallOutput",
+            "command": {
+              "script": "code-call",
+              "branchMode": "none",
+              "jsonFlag": "--json",
+              "internal": "code.call",
+              "arguments": []
+            },
+            "exampleInput": {
+              "language": "python",
+              "mode": "read",
+              "code": "print(\"hello\")",
+              "maxResultChars": 20000
+            },
+            "sessionRequired": false,
+            "workflowRole": "test.run"
+          }
+        },
         {
           "name": "code.run",
           "kind": "facade-tool",
@@ -449,67 +492,6 @@
             },
             "sessionRequired": false,
             "workflowRole": "stream.context"
-          }
-        },
-        {
-          "name": "task.exec",
-          "kind": "facade-tool",
-          "source": "dev-tooling",
-          "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-          "category": "task lifecycle",
-          "description": "legacy alias for task.call; run a command inside a task worktree",
-          "core": true,
-          "definition": {
-            "name": "task.exec",
-            "methodPath": [
-              "task",
-              "exec"
-            ],
-            "description": "legacy alias for task.call; run a command inside a task worktree",
-            "category": "task lifecycle",
-            "underlying": "workspace task.exec",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 300000,
-            "inputSchema": "TaskExecInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "task:exec",
-              "branchMode": "required",
-              "branchArgumentStyle": "prefix",
-              "arguments": [
-                {
-                  "source": "command",
-                  "kind": "commandArray",
-                  "required": true
-                },
-                {
-                  "source": "pr",
-                  "flag": "--pr",
-                  "kind": "value"
-                },
-                {
-                  "source": "github",
-                  "flag": "--github",
-                  "kind": "value"
-                }
-              ]
-            },
-            "exampleInput": {
-              "branch": "task/workspace-agents/example",
-              "command": [
-                "git",
-                "status",
-                "--short"
-              ],
-              "dryRun": true
-            },
-            "sessionRequired": true,
-            "workflowRole": "test.run"
           }
         },
         {
