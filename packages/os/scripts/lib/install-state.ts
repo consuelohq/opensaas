@@ -157,7 +157,7 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
   'security/generated/auth.json',
   'security/generated/Caddyfile',
 ] as const;
-const DEFAULT_PORT = 8850;
+const DEFAULT_PORT = 8960;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');

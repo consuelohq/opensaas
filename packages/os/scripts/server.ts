@@ -17,7 +17,7 @@ import {
 } from './lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
 
-const DEFAULT_PORT = 8850;
+const DEFAULT_PORT = 8960;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
 const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
@@ -198,7 +198,7 @@ function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
       return {
         ...scope,
         workspaceId: scope.workspaceId === 'workspace-unknown' ? config.workspaceId : scope.workspaceId,
-        workspaceHost: scope.workspaceHost === '127.0.0.1:8850' ? config.workspaceHost : scope.workspaceHost,
+        workspaceHost: scope.workspaceHost === '127.0.0.1:8960' ? config.workspaceHost : scope.workspaceHost,
       };
     },
   });
