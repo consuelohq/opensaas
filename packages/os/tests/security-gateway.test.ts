@@ -130,6 +130,7 @@ type GatewayModule = {
   renderCaddyGatewayConfig: (input: {
     workspaceHost: string;
     upstream: { host: string; port: number };
+    caddy?: { host: '127.0.0.1'; port: number };
     mtls?: { enabled: boolean; caFile: string };
   }) => string;
   createPublicRouteRegistry: (input: {
@@ -582,12 +583,15 @@ describe('Consuelo OS public gateway security contract', () => {
     const input = {
       workspaceHost: 'acme.consuelohq.com',
       upstream: { host: '127.0.0.1', port: 8850 },
+      caddy: { host: '127.0.0.1' as const, port: 8970 },
       mtls: { enabled: true, caFile: '/Users/example/.consuelo/os/security/generated/client-ca.pem' },
     };
     const caddyfile = gateway.renderCaddyGatewayConfig(input);
 
     expect(gateway.renderCaddyGatewayConfig(input)).toBe(caddyfile);
     expect(caddyfile).toContain('acme.consuelohq.com');
+    expect(caddyfile).toContain('http://127.0.0.1:8970');
+    expect(caddyfile).toContain('@workspace_host host acme.consuelohq.com');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850');
     expect(caddyfile).toContain('request_body');
     expect(caddyfile).toContain('max_size 10MB');
@@ -600,6 +604,7 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('require_and_verify');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
+    expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8970');
     expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
     expect(caddyfile).not.toContain('header_up -X-Consuelo-Signature');
     expect(caddyfile).not.toContain('header_up -X-Consuelo-Token-Id');
@@ -908,8 +913,10 @@ describe('Consuelo OS public gateway security contract', () => {
     `);
 
     const caddyfile = readFileSync(join(tempHome, 'security', 'generated', 'Caddyfile'), 'utf8');
+    expect(caddyfile).toContain('http://127.0.0.1:8970');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
+    expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8970');
   });
 
   it('discovers generated auth from the installed OS home when explicit auth env is unset', () => {

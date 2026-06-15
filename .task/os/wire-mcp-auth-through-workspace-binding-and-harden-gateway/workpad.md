@@ -37,6 +37,8 @@ started: 2026-06-15
 - 2026-06-15 04:27:00 `review.run`: passed — OK
 - 2026-06-15 04:27:12 `verify`: passed — OK
 - 2026-06-15 04:27:37 `verify`: passed — OK
+- 2026-06-15 05:04:08 `review.run`: passed — OK
+- 2026-06-15 05:04:20 `verify`: passed — OK
 
 ## key decisions
 
@@ -275,7 +277,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/current.json`, `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/evidence-log.json`, `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/read-log.json`, `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/session.json`, `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/verify.json`, `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/workpad.md`, `.task/tasks/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway.json`, `packages/os/cloudflare/workspace-edge/README.md`, `packages/os/cloudflare/workspace-edge/src/index.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`, `packages/os/tests/cloudflare-edge-router.test.ts`, `packages/os/tests/security-gateway.test.ts`, `packages/os/tests/workspace-gateway-contract.test.ts`
+- changed files: `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/workpad.md`, `packages/os/cloudflare/workspace-edge/README.md`, `packages/os/cloudflare/workspace-edge/src/index.ts`, `packages/os/scripts/lib/security-gateway.ts`, `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`, `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts`, `packages/os/scripts/lib/workspace-connector-transport.ts`, `packages/os/scripts/lib/workspace-mcp-connection-auth.ts`, `packages/os/tests/cloudflare-connector-transport-contract.test.ts`, `packages/os/tests/cloudflare-edge-router.test.ts`, `packages/os/tests/cloudflare-provisioning-contract.test.ts`, `packages/os/tests/cloudflare-worker-deployment-contract.test.ts`, `packages/os/tests/install-workspace-bootstrap-contract.test.ts`, `packages/os/tests/mcp-oauth-connect-flow.test.ts`, `packages/os/tests/security-gateway.test.ts`, `packages/os/tests/workspace-gateway-contract.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
@@ -291,3 +293,9 @@ bun run task:finish
 - Ran `verify`: publish-valid stamp written to `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/verify.json`.
 
 - 2026-06-15 04:27:30 apply-patch: `.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/workpad.md`
+
+- 2026-06-15 05:01:58 apply-patch: `packages/os/cloudflare/workspace-edge/README.md`
+- 2026-06-15 05:02:09 apply-patch: `packages/os/cloudflare/workspace-edge/src/index.ts`
+- 2026-06-15 05:02:18 apply-patch: `packages/os/scripts/lib/security-gateway.ts`
+- 2026-06-15 05:02:52 apply-patch: `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- 2026-06-15 05:03:02 apply-patch: `packages/os/tests/cloudflare-edge-router.test.ts`

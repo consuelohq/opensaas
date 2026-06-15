@@ -59,6 +59,7 @@ type GatewayModule = {
   renderCaddyGatewayConfig: (input: {
     workspaceHost: string;
     upstream: { host: string; port: number };
+    caddy?: { host: '127.0.0.1'; port: number };
     mtls?: { enabled: boolean; caFile: string };
   }) => string;
 };
@@ -221,10 +222,13 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
     const caddyfile = gateway.renderCaddyGatewayConfig({
       workspaceHost: 'acme.consuelohq.com',
       upstream: { host: '127.0.0.1', port: 8850 },
+      caddy: { host: '127.0.0.1', port: 8970 },
       mtls: { enabled: true, caFile: '/Users/example/.consuelo/os/security/generated/client-ca.pem' },
     });
 
     expect(caddyfile).toContain('acme.consuelohq.com');
+    expect(caddyfile).toContain('http://127.0.0.1:8970');
+    expect(caddyfile).toContain('@workspace_host host acme.consuelohq.com');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850');
     expect(caddyfile).toContain('request_body');
     expect(caddyfile).toContain('max_size 10MB');

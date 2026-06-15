@@ -50,7 +50,7 @@ type WorkspaceCloudflareEdgeRouteResolution =
       hostname: string;
       route: string;
       surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
-      auth: 'required';
+      auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
       auditEvent: 'workspace.hostname.route.allowed';
       target: WorkspaceCloudflareEdgeRouteTarget;
     }
@@ -103,6 +103,14 @@ type WorkspaceMcpProviderNetworkPolicy = {
   sourceIpHeader?: string;
 };
 
+type WorkspaceMcpConnectionAuthHandler = {
+  fetch: (request: Request, context: {
+    workspaceId: string;
+    hostname: string;
+    connectorId: string;
+  }) => Promise<Response | null>;
+};
+
 type WorkspaceCloudflareEdgeRouterContract = {
   createWorkspaceCloudflareEdgeRouter: (input: {
     registry: WorkspaceCloudflareEdgeRouteRegistry;
@@ -110,6 +118,7 @@ type WorkspaceCloudflareEdgeRouterContract = {
     fetchUpstream?: (request: Request) => Promise<Response>;
     siteSnapshots?: WorkspaceSitesSnapshotStore;
     mcpConnectionCredentials?: WorkspaceMcpConnectionCredentialStore;
+    mcpConnectionAuth?: WorkspaceMcpConnectionAuthHandler;
     mcpProviderNetwork?: WorkspaceMcpProviderNetworkPolicy;
   }) => WorkspaceCloudflareEdgeRouter;
 };
@@ -739,6 +748,65 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests).toHaveLength(0);
   });
 
+  it('should handle MCP OAuth and lifecycle endpoints at the edge after D1 route policy without proxying to the connector', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const authRequests: Array<{ url: string; context: { workspaceId: string; connectorId: string; hostname: string } }> = [];
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve(input) {
+        expect(input.path).toBe('/mcp/oauth/start');
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      mcpConnectionAuth: {
+        async fetch(request, context) {
+          authRequests.push({ url: request.url, context });
+          return new Response(JSON.stringify({ ok: true, handled: 'mcp-oauth' }), {
+            headers: { 'content-type': 'application/json; charset=utf-8' },
+          });
+        },
+      },
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('unexpected proxy', { status: 200 });
+      },
+    });
+
+    const response = await router.fetch(new Request('https://kokayi.consuelohq.com/mcp/oauth/start'));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ handled: 'mcp-oauth' });
+    expect(authRequests).toEqual([
+      {
+        url: 'https://kokayi.consuelohq.com/mcp/oauth/start',
+        context: {
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          connectorId: 'connector_123',
+        },
+      },
+    ]);
+    expect(upstreamRequests).toHaveLength(0);
+  });
+
   it('should fail closed when an OS connector route is offline', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
@@ -767,7 +835,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body.error.code).toBe('WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE');
     expect(JSON.stringify(body)).not.toMatch(/tunnel|token|secret/i);
   });
-  it('should serve public site snapshots from edge cache before D1 resolution', async () => {
+  it('should not serve workspace host root cache until D1 route policy allows a public site snapshot', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     let resolveCount = 0;
@@ -791,7 +859,81 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       registry: {
         async resolve() {
           resolveCount += 1;
-          throw new Error('D1 should not be consulted for a public cache hit');
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/',
+            surface: 'sites',
+            auth: 'required',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'private-launcher',
+              versionId: 'version_1',
+              manifestKey: 'sites/workspace_123/private-launcher/version_1/index.html',
+              cachePolicy: 'private-preview',
+            },
+          };
+        },
+      },
+      siteSnapshots: { cache: siteCache },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/?utm_source=noise', {
+        headers: { cookie: 'noise=1' },
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_EDGE_AUTH_REQUIRED' },
+    });
+    expect(resolveCount).toBe(1);
+    expect(cacheKeys).toEqual([]);
+  });
+
+  it('should serve a cached root snapshot only after D1 confirms the route is explicitly public', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    let resolveCount = 0;
+    const cacheKeys: string[] = [];
+    const siteCache: WorkspaceSitesEdgeCache = {
+      async match(request) {
+        cacheKeys.push(request.url);
+        return new Response('<!doctype html><title>cached launcher</title>', {
+          headers: {
+            'cache-control': 'public, max-age=60, s-maxage=2592000, stale-while-revalidate=604800',
+            'content-type': 'text/html; charset=utf-8',
+            'x-consuelo-edge-cache-authority': 'sites-snapshot',
+          },
+        });
+      },
+      async put() {
+        throw new Error('cache put should not run on a hit');
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          resolveCount += 1;
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_1',
+              manifestKey: 'sites/workspace_123/launcher/version_1/index.html',
+              cachePolicy: 'static-shell',
+            },
+          };
         },
       },
       siteSnapshots: { cache: siteCache },
@@ -806,7 +948,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('cached launcher');
     expect(response.headers.get('x-consuelo-sites-cache')).toBe('hit');
-    expect(resolveCount).toBe(0);
+    expect(resolveCount).toBe(1);
     expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
   });
 

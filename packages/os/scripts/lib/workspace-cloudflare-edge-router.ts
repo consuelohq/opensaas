@@ -1,4 +1,20 @@
-import { createHash, createHmac } from 'node:crypto';
+import { createHmac } from 'node:crypto';
+
+import {
+  MCP_ACCESS_SCOPE,
+  isWorkspaceMcpConnectionAuthPath,
+  type WorkspaceMcpConnectionAuthHandler,
+  type WorkspaceMcpConnectionCredentialStore,
+} from './workspace-mcp-connection-auth';
+
+export {
+  createWorkspaceMcpConnectionCredentialStore,
+  mcpConnectionCredentialStorageKey,
+  type StoredWorkspaceMcpConnectionCredential,
+  type WorkspaceMcpConnectionCredentialKv,
+  type WorkspaceMcpConnectionCredentialStore,
+  type WorkspaceMcpCredentialValidationResult,
+} from './workspace-mcp-connection-auth';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -44,49 +60,6 @@ export type WorkspaceSitesSnapshotStore = {
   r2?: WorkspaceSitesEdgeR2Bucket;
 };
 
-export type StoredWorkspaceMcpConnectionCredential = {
-  credentialId: string;
-  workspaceId: string;
-  connectorId: string;
-  subjectId: string;
-  scopes: string[];
-  status: 'active' | 'rotated' | 'revoked';
-  createdAt: string;
-  lastUsedAt?: string;
-  rotatedAt?: string;
-  revokedAt?: string;
-};
-
-export type WorkspaceMcpConnectionCredentialKv = {
-  get: <T = unknown>(key: string, options?: unknown) => Promise<T | null>;
-  put?: (key: string, value: string, options?: unknown) => Promise<void>;
-};
-
-export type WorkspaceMcpCredentialValidationResult =
-  | {
-      allowed: true;
-      credentialId: string;
-      workspaceId: string;
-      connectorId: string;
-      subjectId: string;
-      scopes: string[];
-    }
-  | {
-      allowed: false;
-      status: 401 | 403;
-      errorCode: string;
-    };
-
-export type WorkspaceMcpConnectionCredentialStore = {
-  validate: (input: {
-    credential: string;
-    workspaceId: string;
-    connectorId: string;
-    requiredScope: string;
-    now: string;
-  }) => Promise<WorkspaceMcpCredentialValidationResult>;
-};
-
 export type WorkspaceMcpProviderNetworkPolicy = {
   allowedCidrs: string[];
   sourceIpHeader?: string;
@@ -130,6 +103,7 @@ export type WorkspaceCloudflareEdgeRouterInput = {
   workspaceBaseDomains?: string[];
   reservedHostnames?: string[];
   mcpConnectionCredentials?: WorkspaceMcpConnectionCredentialStore;
+  mcpConnectionAuth?: WorkspaceMcpConnectionAuthHandler;
   mcpProviderNetwork?: WorkspaceMcpProviderNetworkPolicy;
 };
 
@@ -327,71 +301,6 @@ const signEdgeRequest = (input: {
     .update(canonical)
     .digest('hex')}`;
 };
-
-export const mcpConnectionCredentialStorageKey = (credential: string): string =>
-  `${MCP_CREDENTIAL_KEY_PREFIX}${createHash('sha256').update(credential).digest('hex')}`;
-
-const isStoredMcpConnectionCredential = (
-  value: unknown,
-): value is StoredWorkspaceMcpConnectionCredential => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const record = value as Partial<StoredWorkspaceMcpConnectionCredential>;
-  return (
-    typeof record.credentialId === 'string' &&
-    typeof record.workspaceId === 'string' &&
-    typeof record.connectorId === 'string' &&
-    typeof record.subjectId === 'string' &&
-    Array.isArray(record.scopes) &&
-    record.scopes.every((scope) => typeof scope === 'string') &&
-    (record.status === 'active' || record.status === 'rotated' || record.status === 'revoked') &&
-    typeof record.createdAt === 'string'
-  );
-};
-
-export const createWorkspaceMcpConnectionCredentialStore = (input: {
-  kv: WorkspaceMcpConnectionCredentialKv;
-}): WorkspaceMcpConnectionCredentialStore => ({
-  async validate(request) {
-    try {
-      const storageKey = mcpConnectionCredentialStorageKey(request.credential);
-      const stored = await input.kv.get<unknown>(storageKey, { type: 'json' });
-
-      if (!isStoredMcpConnectionCredential(stored)) {
-        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_INVALID' };
-      }
-      if (stored.status === 'rotated') {
-        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_ROTATED' };
-      }
-      if (stored.status === 'revoked') {
-        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_REVOKED' };
-      }
-      if (stored.workspaceId !== request.workspaceId) {
-        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_WORKSPACE_MISMATCH' };
-      }
-      if (stored.connectorId !== request.connectorId) {
-        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_CONNECTOR_MISMATCH' };
-      }
-      if (!stored.scopes.includes(request.requiredScope)) {
-        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_MISSING_SCOPE' };
-      }
-
-      await input.kv
-        .put?.(storageKey, JSON.stringify({ ...stored, lastUsedAt: request.now }))
-        .catch(() => undefined);
-
-      return {
-        allowed: true,
-        credentialId: stored.credentialId,
-        workspaceId: stored.workspaceId,
-        connectorId: stored.connectorId,
-        subjectId: stored.subjectId,
-        scopes: [...stored.scopes],
-      };
-    } catch (error: unknown) {
-      return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_INVALID' };
-    }
-  },
-});
 
 type ParsedIpAddress = {
   version: 4 | 6;
@@ -745,14 +654,6 @@ export const createWorkspaceCloudflareEdgeRouter = (
             request,
           });
         }
-        if (inboundUrl.pathname === '/' && isWorkspaceBaseDomainHost(inboundUrl.hostname, input.workspaceBaseDomains)) {
-          const cachedSiteSnapshot = await readCachedSiteSnapshot({
-            request,
-            cache: input.siteSnapshots?.cache ?? getDefaultSiteCache(),
-          });
-          if (cachedSiteSnapshot) return cachedSiteSnapshot;
-        }
-
         const resolution = await input.registry.resolve({
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,
@@ -797,6 +698,31 @@ export const createWorkspaceCloudflareEdgeRouter = (
           return createSafeErrorResponse({
             status: 503,
             code: 'WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE',
+            request,
+          });
+        }
+
+        if (
+          resolution.target.kind === 'os-connector' &&
+          isWorkspaceMcpConnectionAuthPath(inboundUrl.pathname)
+        ) {
+          if (!input.mcpConnectionAuth) {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+              request,
+            });
+          }
+
+          const authResponse = await input.mcpConnectionAuth.fetch(request, {
+            workspaceId: resolution.workspaceId,
+            hostname: resolution.hostname,
+            connectorId: resolution.target.connectorId,
+          });
+
+          return authResponse ?? createSafeErrorResponse({
+            status: 404,
+            code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
             request,
           });
         }

@@ -9,6 +9,7 @@ type PublicGatewayMetadata = {
   routeMode: 'workspace-subdomain';
   connectorMode: 'outbound-os-connector';
   hostname: string;
+  caddy: { host: '127.0.0.1'; port: number };
   upstream: { host: string; port: number };
 };
 
@@ -129,6 +130,7 @@ const PUBLIC_ROUTES = [
   '/apps/chatgpt',
 ] as const;
 
+const DEFAULT_CADDY_GATEWAY_PORT = 8970;
 const MAX_TIMESTAMP_SKEW_MS = 5 * 60 * 1000;
 
 function nowIso(): string {
@@ -214,13 +216,17 @@ function writeStoredAuth(config: GatewaySecurityConfig, stored: StoredAuthConfig
 function createPublicGatewayMetadata(input: {
   workspaceHost: string;
   upstream: { host: string; port: number };
+  caddy?: { host: '127.0.0.1'; port: number };
 }): PublicGatewayMetadata {
   requirePrivateUpstream(input.upstream);
+  const caddy = input.caddy ?? { host: '127.0.0.1', port: DEFAULT_CADDY_GATEWAY_PORT };
+  requirePrivateUpstream(caddy);
   return {
     provider: 'cloudflare',
     routeMode: 'workspace-subdomain',
     connectorMode: 'outbound-os-connector',
     hostname: input.workspaceHost,
+    caddy: { ...caddy },
     upstream: { ...input.upstream },
   };
 }
@@ -291,13 +297,16 @@ export function createGatewaySecurityConfig(input: {
   workspaceSlug: string;
   workspaceHost: string;
   upstreamPort?: number;
+  caddyPort?: number;
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
   const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 8960 };
+  const caddy = { host: '127.0.0.1' as const, port: input.caddyPort ?? DEFAULT_CADDY_GATEWAY_PORT };
   const publicGateway = createPublicGatewayMetadata({
     workspaceHost: input.workspaceHost,
     upstream,
+    caddy,
   });
   const existing = fs.existsSync(generatedAuthPath)
     ? readStoredAuthFile(generatedAuthPath)
@@ -339,6 +348,7 @@ export function createGatewaySecurityConfig(input: {
     renderCaddyGatewayConfig({
       workspaceHost: input.workspaceHost,
       upstream,
+      caddy,
     }),
     { mode: 0o600 },
   );
@@ -528,9 +538,12 @@ export function verifyMachineRequest(input: {
 export function renderCaddyGatewayConfig(input: {
   workspaceHost: string;
   upstream: { host: string; port: number };
+  caddy?: { host: '127.0.0.1'; port: number };
   mtls?: { enabled: boolean; caFile: string };
 }): string {
   requirePrivateUpstream(input.upstream);
+  const caddy = input.caddy ?? { host: '127.0.0.1' as const, port: DEFAULT_CADDY_GATEWAY_PORT };
+  requirePrivateUpstream(caddy);
   const mtlsBlock = input.mtls?.enabled
     ? `
   tls {
@@ -541,26 +554,31 @@ export function renderCaddyGatewayConfig(input: {
   }
 `
     : '';
-  return `${input.workspaceHost} {
-  encode zstd gzip
-  request_body {
-    max_size 10MB
-  }
-  log {
-    output stderr
-    format console
-  }
-  reverse_proxy ${input.upstream.host}:${input.upstream.port} {
-    header_up -X-Consuelo-Edge-Signature
-    header_up -X-Consuelo-Connector-Id
-    header_up -X-Consuelo-Hostname
-    header_up -X-Consuelo-Route
-    header_up -X-Consuelo-Surface
-    transport http {
-      dial_timeout 5s
-      response_header_timeout 30s
+  return `http://${caddy.host}:${caddy.port} {
+  @workspace_host host ${input.workspaceHost}
+  handle @workspace_host {
+    encode zstd gzip
+    request_body {
+      max_size 10MB
     }
-  }${mtlsBlock}}
+    log {
+      output stderr
+      format console
+    }
+    reverse_proxy ${input.upstream.host}:${input.upstream.port} {
+      header_up -X-Consuelo-Edge-Signature
+      header_up -X-Consuelo-Connector-Id
+      header_up -X-Consuelo-Hostname
+      header_up -X-Consuelo-Route
+      header_up -X-Consuelo-Surface
+      transport http {
+        dial_timeout 5s
+        response_header_timeout 30s
+      }
+    }
+  }
+  respond 404
+}${mtlsBlock}
 `;
 }
 

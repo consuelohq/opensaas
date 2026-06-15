@@ -150,6 +150,8 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
+    expect(plist).toContain('http://127.0.0.1:8970');
+    expect(plist).not.toContain('http://127.0.0.1:8960');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

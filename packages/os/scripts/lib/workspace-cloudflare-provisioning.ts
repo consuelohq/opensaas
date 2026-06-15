@@ -93,6 +93,7 @@ export type WorkspaceCloudflareProvisioningResult = {
 };
 
 const OS_ROUTE_PREFIXES = ['/mcp', '/traces'] as const;
+const DEFAULT_CADDY_LOCAL_SERVICE_URL = 'http://127.0.0.1:8970';
 
 const normalizeBaseDomain = (baseDomain: string): string => {
   const normalized = baseDomain
@@ -159,7 +160,7 @@ export const planWorkspaceCloudflareProvisioning = (
   const edgeHostname = normalizeBaseDomain(
     input.edgeHostname ?? 'workspace-edge.consuelohq.com',
   );
-  const localServiceUrl = input.localServiceUrl ?? 'http://localhost:3000';
+  const localServiceUrl = input.localServiceUrl ?? DEFAULT_CADDY_LOCAL_SERVICE_URL;
   const workspaceHostname = `${workspaceSlug}.${baseDomain}`;
   const osTunnelHostname = `${connectorLabel}.os-origin.${baseDomain}`;
   const osTarget: WorkspaceCloudflareRouteTarget = {
