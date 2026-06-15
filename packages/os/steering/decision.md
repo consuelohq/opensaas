@@ -1,27 +1,3 @@
----
-title: "decision.md"
-description: "Decision-process doctrine used by Consuelo OS agents."
----
-
-{/* Generated from packages/os/steering/decision.md. Do not edit this page directly. */}
-
-> Decision-process doctrine used by Consuelo OS agents.
-
-<Note>
-This page is generated from `packages/os/steering/decision.md`. Edit the source Markdown, then run `bun run --cwd packages/consuelo-docs generate-os-source-docs` to refresh the public docs.
-</Note>
-
-## What this file controls
-
-| Field | Value |
-| --- | --- |
-| Source file | `packages/os/steering/decision.md` |
-| Runtime role | Decision-engine doctrine for evidence collection, confidence, validation, and next action selection inside Consuelo OS. |
-| Controls | How OS agents inspect facts, resolve conflicts, preserve intent, and choose the next safe action. |
-| Generated route | `/os/agent-context/decision` |
-
-## Source document
-
 # decision process
 
 ## decision log: Consuelo app GraphQL, Files API, and future OS API boundary
@@ -37,7 +13,7 @@ This page is generated from `packages/os/steering/decision.md`. Edit the source 
 you are working inside the workspace mcp app. the app exposes exactly two tools:
 
 - `workspace.get_steering()`
-- `workspace.call(\{ tool, input, taskSession, timeout \})`
+- `workspace.call({ tool, input, taskSession, timeout })`
 
 normal decision-engine workflow uses structured `workspace.call` inputs. do not construct nested shell strings or JSON-in-shell command strings for normal workspace operations.
 
@@ -380,7 +356,7 @@ what to remember:
 use this flow when starting from a question or bug:
 
 ```ts
-await workspace.call({ tool: "explore", input: { query: "{question or goal}" }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "<question or goal>" }, timeout: 120 })
 await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
@@ -389,13 +365,13 @@ then do the recommended action.
 if it says to read a file, read the file through the workspace script so the read can be tracked:
 
 ```ts
-await workspace.call({ tool: "fs.read", taskSession, input: { path: "{path}" }, timeout: 120 })
+await workspace.call({ tool: "fs.read", taskSession, input: { path: "<path>" }, timeout: 120 })
 ```
 
 if the read happened outside normal tracking, mark it:
 
 ```ts
-await workspace.call({ tool: "decideNext", input: { markRead: "{path}" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
 ```
 
 then check confidence:
@@ -577,7 +553,7 @@ confirm after the system has something real to validate.
 
 confirmation can include:
 
-- `workspace.call(\{ tool: "verify", taskSession, input: \{\} \})`
+- `workspace.call({ tool: "verify", taskSession, input: {} })`
 - targeted tests
 - runtime logs
 - production or browser verification
@@ -612,7 +588,7 @@ primary task file:
 queryable mirror:
 
 ```text
-~/.cache/workspace-index/{repo-hash}/index.db
+~/.cache/workspace-index/<repo-hash>/index.db
 ```
 
 the json file exists so agents and humans can inspect task evidence easily.
@@ -654,13 +630,13 @@ it understands more only after reading evidence-producing files.
 
 preferred behavior:
 
-- reads through `workspace.call(\{ tool: "fs.read", ... \})` should create `file.read` evidence automatically
+- reads through `workspace.call({ tool: "fs.read", ... })` should create `file.read` evidence automatically
 - direct reads outside the wrapper should be manually marked
 
 manual fallback:
 
 ```ts
-await workspace.call({ tool: "decideNext", input: { markRead: "{path}" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: { markRead: "<path>" }, timeout: 120 })
 ```
 
 if a file was read and the system does not know it, the next decision will be weaker.
@@ -909,7 +885,7 @@ qwen can bridge synonyms, but it still needs a meaningful task.
 before reading random files:
 
 ```ts
-await workspace.call({ tool: "explore", input: { query: "{goal}" }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "<goal>" }, timeout: 120 })
 await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
 ```
 
