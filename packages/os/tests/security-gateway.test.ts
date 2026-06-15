@@ -658,6 +658,80 @@ describe('Consuelo OS public gateway security contract', () => {
   });
 
 
+  it('authorizes local /mcp requests only with generated route-scoped signed gateway tokens', () => {
+    const authPath = join(tempHome, 'security', 'generated', 'auth.json');
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
+    const result = readJsonFromBun<JsonObject>(`
+      const { createGatewaySecurityConfig, issueAgentAppToken, signMachineRequest } = await import('./scripts/lib/security-gateway.ts');
+      const home = process.env.CONSUELO_OS_HOME;
+      const config = createGatewaySecurityConfig({
+        home,
+        workspaceId: 'workspace-acme',
+        workspaceSlug: 'acme',
+        workspaceHost: 'acme.consuelohq.com',
+      });
+      const token = issueAgentAppToken({
+        config,
+        callerId: 'chatgpt-app-1',
+        appId: 'chatgpt',
+        scopes: ['route:/mcp:access'],
+        expiresInSeconds: 300,
+      });
+      const body = ${JSON.stringify(body)};
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'server-mcp-signed-nonce',
+      });
+      const { handleRequest } = await import('./scripts/server.ts');
+      async function request(init) {
+        const response = await handleRequest(new Request('http://127.0.0.1:8850/mcp', {
+          method: 'POST',
+          headers: init.headers,
+          body: init.body,
+        }));
+        const text = await response.text();
+        let json = null;
+        try { json = JSON.parse(text); } catch {}
+        return { status: response.status, text, json };
+      }
+      const allowed = await request({ headers: signed.headers, body });
+      const unsigned = await request({ headers: {}, body });
+      const missingScopeToken = issueAgentAppToken({
+        config,
+        callerId: 'chatgpt-app-2',
+        appId: 'chatgpt',
+        scopes: ['route:/gateway/traces:read'],
+        expiresInSeconds: 300,
+      });
+      const missingScopeSigned = signMachineRequest({
+        config,
+        token: missingScopeToken,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce: 'server-mcp-missing-scope-nonce',
+      });
+      const missingScope = await request({ headers: missingScopeSigned.headers, body });
+      process.stdout.write(JSON.stringify({ allowed, unsigned, missingScope }));
+    `, {
+      CONSUELO_OS_AUTH_CONFIG: authPath,
+    });
+
+    expect(result.allowed).toMatchObject({
+      status: 200,
+      json: { jsonrpc: '2.0', id: 1, result: { tools: expect.any(Array) } },
+    });
+    expect(JSON.stringify(result.allowed)).toContain('get_steering');
+    expect(result.unsigned).toMatchObject({ status: 401, json: { error: { code: 'MISSING_SIGNATURE' } } });
+    expect(result.missingScope).toMatchObject({ status: 403, json: { error: { code: 'MISSING_SCOPE' } } });
+  });
+
   it('authorizes protected /call requests with generated signed scoped app tokens only', () => {
     const authPath = join(tempHome, 'security', 'generated', 'auth.json');
     const body = JSON.stringify({ name: 'get_raw_steering' });

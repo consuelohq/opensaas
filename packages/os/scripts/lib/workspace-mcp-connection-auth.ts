@@ -153,6 +153,7 @@ export type WorkspaceMcpApprovedConnectorBindingStore = {
     subjectId: string;
     now: string;
   }) => Promise<WorkspaceMcpApprovedConnectorBinding | null>;
+  putApprovedBinding?: (input: WorkspaceMcpApprovedConnectorBinding) => Promise<void>;
 };
 
 export type WorkspaceMcpGoogleIdentity = {
@@ -630,6 +631,13 @@ export const createWorkspaceMcpConnectionCredentialStore = (input: {
 export const createWorkspaceMcpApprovedConnectorBindingStore = (input: {
   kv: WorkspaceMcpConnectionCredentialKv;
 }): WorkspaceMcpApprovedConnectorBindingStore => ({
+  async putApprovedBinding(binding) {
+    try {
+      await input.kv.put(workspaceMcpApprovedBindingStorageKey(binding), JSON.stringify(binding));
+    } catch {
+      throw new Error('MCP approved connector binding write failed');
+    }
+  },
   async findApprovedBinding(request) {
     try {
       const binding = await readJson({

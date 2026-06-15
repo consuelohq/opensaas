@@ -50,6 +50,13 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/pattern\s*=\s*["']internal\.consuelohq\.com\/\*["']/);
     expect(wrangler).toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
     expect(wrangler).not.toMatch(/pattern\s*=\s*["']sites\.consuelohq\.com\/\*["']/);
+    for (const bindingName of [
+      'MCP_CONNECTION_CREDENTIALS',
+      'MCP_CONNECTION_STATES',
+      'MCP_APPROVED_CONNECTOR_BINDINGS',
+    ]) {
+      expect(wrangler).toContain(`binding = \"${bindingName}\"`);
+    }
     expect(wrangler).toMatch(/\[\[r2_buckets\]\]/);
     expect(wrangler).toMatch(/binding\s*=\s*["']SITES_SNAPSHOTS["']/);
     expect(wrangler).toMatch(/bucket_name\s*=\s*["']consuelo-sites-snapshots["']/);

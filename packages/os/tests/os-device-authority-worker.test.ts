@@ -16,6 +16,10 @@ import {
   generateWorkspaceDeviceKeyPair,
   type WorkspaceDeviceKeyPair,
 } from '../scripts/lib/workspace-device-login-client';
+import {
+  createWorkspaceMcpApprovedConnectorBindingStore,
+  type WorkspaceMcpConnectionCredentialKv,
+} from '../scripts/lib/workspace-mcp-connection-auth';
 
 const origin = 'https://os.consuelohq.com';
 const approvalAssertionSecret = 'test-approval-assertion-secret';
@@ -45,6 +49,28 @@ async function authAssertion(input: {
   );
   const signature = b64(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))));
   return `${payload}.${signature}`;
+}
+
+
+function createMemoryKv(): WorkspaceMcpConnectionCredentialKv & { entries: Map<string, string> } {
+  const entries = new Map<string, string>();
+  return {
+    entries,
+    async get<T = unknown>(key: string, options?: unknown): Promise<T | null> {
+      const value = entries.get(key);
+      if (value === undefined) return null;
+      const type = typeof options === 'object' && options !== null && 'type' in options
+        ? (options as { type?: unknown }).type
+        : undefined;
+      return (type === 'json' ? JSON.parse(value) : value) as T;
+    },
+    async put(key: string, value: string): Promise<void> {
+      entries.set(key, value);
+    },
+    async delete(key: string): Promise<void> {
+      entries.delete(key);
+    },
+  };
 }
 
 function form(data: Record<string, string>): { body: string; headers: HeadersInit } {
@@ -133,6 +159,41 @@ afterEach(() => {
 });
 
 describe('os device authority worker', () => {
+  it('should record an approved MCP connector binding when Google approves an OS device', async () => {
+    const approvedKv = createMemoryKv();
+    const approvedBindings = createWorkspaceMcpApprovedConnectorBindingStore({ kv: approvedKv });
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+      approvedBindings,
+    });
+    const { codeJson } = await startGrant(handler);
+
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+
+    expect(callback.status).toBe(200);
+    const binding = await approvedBindings.findApprovedBinding({
+      workspaceId: 'workspace_testing',
+      connectorId: 'connector_testing',
+      subjectId: 'google:google-sub-123',
+      now: '2026-06-13T00:00:00.000Z',
+    });
+    expect(binding).toMatchObject({
+      workspaceId: 'workspace_testing',
+      connectorId: 'connector_testing',
+      subjectId: 'google:google-sub-123',
+      subjectEmail: 'ko@example.com',
+      status: 'active',
+      capabilities: ['tools:list', 'tools:call'],
+    });
+    expect(binding?.deviceId).toMatch(/^device_/);
+  });
   it('should approve a pending OS device when Google OAuth callback succeeds', async () => {
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
