@@ -532,9 +532,36 @@ export function renderCaddyGatewayConfig(input: {
 }): string {
   requirePrivateUpstream(input.upstream);
   const mtlsBlock = input.mtls?.enabled
-    ? `\n  tls {\n    client_auth {\n      mode require_and_verify\n      trusted_ca_cert_file ${input.mtls.caFile}\n    }\n  }\n`
+    ? `
+  tls {
+    client_auth {
+      mode require_and_verify
+      trusted_ca_cert_file ${input.mtls.caFile}
+    }
+  }
+`
     : '';
-  return `${input.workspaceHost} {\n  encode zstd gzip\n  reverse_proxy ${input.upstream.host}:${input.upstream.port}${mtlsBlock}}\n`;
+  return `${input.workspaceHost} {
+  encode zstd gzip
+  request_body {
+    max_size 10MB
+  }
+  log {
+    output stderr
+    format console
+  }
+  reverse_proxy ${input.upstream.host}:${input.upstream.port} {
+    header_up -X-Consuelo-Edge-Signature
+    header_up -X-Consuelo-Connector-Id
+    header_up -X-Consuelo-Hostname
+    header_up -X-Consuelo-Route
+    header_up -X-Consuelo-Surface
+    transport http {
+      dial_timeout 5s
+      response_header_timeout 30s
+    }
+  }${mtlsBlock}}
+`;
 }
 
 export function createPublicRouteRegistry(input: {

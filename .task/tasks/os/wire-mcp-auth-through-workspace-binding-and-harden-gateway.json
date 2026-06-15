@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1062,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1062",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1062",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1062/wire-mcp-auth-through-workspace-binding-and-harden-gateway",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1062",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1062/wire-mcp-auth-through-workspace-binding-and-harden-gateway",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-mcp-auth-through-workspace-binding-and-harden-gateway",
+  "taskSession": "tsk_a291d2791350",
+  "tmuxSession": "opensaas-os-wire-mcp-auth-through-workspace-binding-and-hard-a291d279",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-mcp-auth-through-workspace-binding-and-harden-gateway/.task/os/wire-mcp-auth-through-workspace-binding-and-harden-gateway/session.json",
+  "createdAt": "2026-06-15T04:08:35.869Z"
+}

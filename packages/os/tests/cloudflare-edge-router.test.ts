@@ -73,12 +73,44 @@ type WorkspaceCloudflareEdgeRouter = {
   fetch: (request: Request) => Promise<Response>;
 };
 
+type WorkspaceMcpCredentialValidationResult =
+  | {
+      allowed: true;
+      credentialId: string;
+      workspaceId: string;
+      connectorId: string;
+      subjectId: string;
+      scopes: string[];
+    }
+  | {
+      allowed: false;
+      status: 401 | 403;
+      errorCode: string;
+    };
+
+type WorkspaceMcpConnectionCredentialStore = {
+  validate: (input: {
+    credential: string;
+    workspaceId: string;
+    connectorId: string;
+    requiredScope: string;
+    now: string;
+  }) => Promise<WorkspaceMcpCredentialValidationResult>;
+};
+
+type WorkspaceMcpProviderNetworkPolicy = {
+  allowedCidrs: string[];
+  sourceIpHeader?: string;
+};
+
 type WorkspaceCloudflareEdgeRouterContract = {
   createWorkspaceCloudflareEdgeRouter: (input: {
     registry: WorkspaceCloudflareEdgeRouteRegistry;
     internalSigningSecret?: string;
     fetchUpstream?: (request: Request) => Promise<Response>;
     siteSnapshots?: WorkspaceSitesSnapshotStore;
+    mcpConnectionCredentials?: WorkspaceMcpConnectionCredentialStore;
+    mcpProviderNetwork?: WorkspaceMcpProviderNetworkPolicy;
   }) => WorkspaceCloudflareEdgeRouter;
 };
 
@@ -101,6 +133,56 @@ async function loadWorkspaceCloudflareEdgeRouterContract(): Promise<WorkspaceClo
   }
 
   return module as WorkspaceCloudflareEdgeRouterContract;
+}
+
+function createFixtureMcpCredentialStore(records: Record<string, {
+  credentialId: string;
+  workspaceId: string;
+  connectorId: string;
+  subjectId: string;
+  scopes: string[];
+  status: 'active' | 'rotated' | 'revoked';
+}>): WorkspaceMcpConnectionCredentialStore & { seen: Array<{ credential: string; workspaceId: string; connectorId: string; requiredScope: string }> } {
+  const seen: Array<{ credential: string; workspaceId: string; connectorId: string; requiredScope: string }> = [];
+
+  return {
+    seen,
+    async validate(input) {
+      seen.push({
+        credential: input.credential,
+        workspaceId: input.workspaceId,
+        connectorId: input.connectorId,
+        requiredScope: input.requiredScope,
+      });
+      const record = records[input.credential];
+      if (!record) {
+        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_INVALID' };
+      }
+      if (record.status === 'rotated') {
+        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_ROTATED' };
+      }
+      if (record.status === 'revoked') {
+        return { allowed: false, status: 401, errorCode: 'WORKSPACE_MCP_CREDENTIAL_REVOKED' };
+      }
+      if (record.workspaceId !== input.workspaceId) {
+        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_WORKSPACE_MISMATCH' };
+      }
+      if (record.connectorId !== input.connectorId) {
+        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_CONNECTOR_MISMATCH' };
+      }
+      if (!record.scopes.includes(input.requiredScope)) {
+        return { allowed: false, status: 403, errorCode: 'WORKSPACE_MCP_CREDENTIAL_MISSING_SCOPE' };
+      }
+      return {
+        allowed: true,
+        credentialId: record.credentialId,
+        workspaceId: record.workspaceId,
+        connectorId: record.connectorId,
+        subjectId: record.subjectId,
+        scopes: [...record.scopes],
+      };
+    },
+  };
 }
 
 contractDescribe('workspace Cloudflare edge router contract', () => {
@@ -335,7 +417,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
   });
 
 
-  it('should proxy POST request bodies without failing under Node-compatible fetch', async () => {
+  it('should reject MCP connector routes before proxying when credential validation is missing', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     const upstreamRequests: Request[] = [];
@@ -364,6 +446,64 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       internalSigningSecret: 'edge-test-secret',
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
+        return new Response('unexpected proxy', { status: 200 });
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/mcp/tools/call', {
+        headers: { authorization: 'Bearer mcp_live_credential' },
+        method: 'POST',
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_EDGE_AUTH_REQUIRED' },
+    });
+    expect(upstreamRequests).toHaveLength(0);
+  });
+
+  it('should validate persistent MCP credentials before proxying request bodies', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const credentials = createFixtureMcpCredentialStore({
+      mcp_live_credential: {
+        credentialId: 'mcpcred_123',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'active',
+      },
+    });
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      mcpConnectionCredentials: credentials,
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
         return new Response('post ok', { status: 200 });
       },
     });
@@ -371,7 +511,12 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     const response = await router.fetch(
       new Request('https://kokayi.consuelohq.com/mcp/tools/call', {
         body: JSON.stringify({ tool: 'list' }),
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          authorization: 'Bearer mcp_live_credential',
+          'content-type': 'application/json',
+          'x-consuelo-signature': 'caller-controlled-signature',
+          'x-consuelo-token-id': 'caller-controlled-token',
+        },
         method: 'POST',
       }),
     );
@@ -381,6 +526,217 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests).toHaveLength(1);
     expect(upstreamRequests[0].method).toBe('POST');
     expect(await upstreamRequests[0].text()).toBe('{"tool":"list"}');
+    expect(credentials.seen).toEqual([
+      {
+        credential: 'mcp_live_credential',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        requiredScope: 'route:/mcp:access',
+      },
+    ]);
+    expect(upstreamRequests[0].headers.get('authorization')).toBeNull();
+    expect(upstreamRequests[0].headers.get('x-consuelo-signature')).not.toBe('caller-controlled-signature');
+    expect(upstreamRequests[0].headers.get('x-consuelo-token-id')).toBeNull();
+  });
+
+  it('should allow persistent MCP credentials across requests and fail rotated, revoked, or unscoped credentials', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const credentials = createFixtureMcpCredentialStore({
+      mcp_active: {
+        credentialId: 'mcpcred_active',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'active',
+      },
+      mcp_rotated: {
+        credentialId: 'mcpcred_rotated',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'rotated',
+      },
+      mcp_revoked: {
+        credentialId: 'mcpcred_revoked',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'revoked',
+      },
+      mcp_missing_scope: {
+        credentialId: 'mcpcred_missing_scope',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/traces:read'],
+        status: 'active',
+      },
+      mcp_wrong_workspace: {
+        credentialId: 'mcpcred_wrong_workspace',
+        workspaceId: 'workspace_other',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'active',
+      },
+    });
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      mcpConnectionCredentials: credentials,
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('ok', { status: 200 });
+      },
+    });
+    const call = (credential: string) => router.fetch(new Request('https://kokayi.consuelohq.com/mcp/tools/call', {
+      headers: { authorization: `Bearer ${credential}` },
+      method: 'POST',
+    }));
+
+    await expect(call('mcp_active')).resolves.toMatchObject({ status: 200 });
+    await expect(call('mcp_active')).resolves.toMatchObject({ status: 200 });
+    await expect((await call('mcp_rotated')).json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_MCP_CREDENTIAL_ROTATED' } });
+    await expect((await call('mcp_revoked')).json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_MCP_CREDENTIAL_REVOKED' } });
+    await expect((await call('mcp_missing_scope')).json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_MCP_CREDENTIAL_MISSING_SCOPE' } });
+    await expect((await call('mcp_wrong_workspace')).json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_MCP_CREDENTIAL_WORKSPACE_MISMATCH' } });
+    expect(upstreamRequests).toHaveLength(2);
+  });
+
+  it('should apply MCP provider egress IP allowlists as CIDR-only network guardrails', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const credentials = createFixtureMcpCredentialStore({
+      mcp_live_credential: {
+        credentialId: 'mcpcred_123',
+        workspaceId: 'workspace_123',
+        connectorId: 'connector_123',
+        subjectId: 'google:sub_123',
+        scopes: ['route:/mcp:access'],
+        status: 'active',
+      },
+    });
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      mcpConnectionCredentials: credentials,
+      mcpProviderNetwork: { allowedCidrs: ['203.0.113.0/24', '2001:db8:1234::/48'] },
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('ok', { status: 200 });
+      },
+    });
+
+    const blocked = await router.fetch(new Request('https://kokayi.consuelohq.com/mcp/tools/list', {
+      headers: {
+        accept: 'text/html',
+        authorization: 'Bearer mcp_live_credential',
+        'cf-connecting-ip': '198.51.100.8',
+      },
+    }));
+    expect(blocked.status).toBe(403);
+    await expect(blocked.text()).resolves.toContain('This workspace is protected');
+
+    const allowed = await router.fetch(new Request('https://kokayi.consuelohq.com/mcp/tools/list', {
+      headers: {
+        authorization: 'Bearer mcp_live_credential',
+        'cf-connecting-ip': '203.0.113.42',
+      },
+    }));
+    expect(allowed.status).toBe(200);
+    expect(upstreamRequests).toHaveLength(1);
+  });
+
+  it('should fail closed when MCP provider network policy contains credentials instead of IP ranges', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const upstreamRequests: Request[] = [];
+    const registry: WorkspaceCloudflareEdgeRouteRegistry = {
+      async resolve() {
+        return {
+          allowed: true,
+          workspaceId: 'workspace_123',
+          hostname: 'kokayi.consuelohq.com',
+          route: '/mcp',
+          surface: 'os',
+          auth: 'required',
+          auditEvent: 'workspace.hostname.route.allowed',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_123',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+          },
+        };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry,
+      internalSigningSecret: 'edge-test-secret',
+      mcpConnectionCredentials: createFixtureMcpCredentialStore({}),
+      mcpProviderNetwork: { allowedCidrs: ['api-key-value-not-an-ip-range'] },
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('unexpected proxy', { status: 200 });
+      },
+    });
+
+    const response = await router.fetch(new Request('https://kokayi.consuelohq.com/mcp/tools/list', {
+      headers: {
+        authorization: 'Bearer mcp_live_credential',
+        'cf-connecting-ip': '203.0.113.42',
+      },
+    }));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_MCP_PROVIDER_POLICY_INVALID' },
+    });
+    expect(upstreamRequests).toHaveLength(0);
   });
 
   it('should fail closed when an OS connector route is offline', async () => {

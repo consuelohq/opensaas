@@ -226,9 +226,14 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
 
     expect(caddyfile).toContain('acme.consuelohq.com');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850');
+    expect(caddyfile).toContain('request_body');
+    expect(caddyfile).toContain('max_size 10MB');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Connector-Id');
     expect(caddyfile).toContain('client_auth');
     expect(caddyfile).toContain('require_and_verify');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Signature');
   });
 });

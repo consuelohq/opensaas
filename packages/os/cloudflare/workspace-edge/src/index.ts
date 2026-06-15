@@ -3,7 +3,9 @@ import {
   type WorkspaceRouteD1Database,
 } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import {
+  createWorkspaceMcpConnectionCredentialStore,
   createWorkspaceCloudflareEdgeRouter,
+  type WorkspaceMcpConnectionCredentialKv,
   type WorkspaceSitesEdgeR2Bucket,
 } from '../../../scripts/lib/workspace-cloudflare-edge-router';
 
@@ -22,6 +24,8 @@ type WorkspaceEdgeLogger = {
 type WorkspaceEdgeEnvironment = {
   WORKSPACE_ROUTE_REGISTRY: WorkspaceRouteD1Database;
   CONSUELO_EDGE_SIGNING_SECRET: string;
+  MCP_CONNECTION_CREDENTIALS?: WorkspaceMcpConnectionCredentialKv;
+  MCP_ALLOWED_PROVIDER_CIDRS?: string;
   SITES_SNAPSHOTS?: WorkspaceSitesEdgeR2Bucket;
   WORKSPACE_EDGE_LOGGER?: WorkspaceEdgeLogger;
 };
@@ -48,6 +52,12 @@ const reportWorkspaceEdgeError = (input: {
   });
 };
 
+const cidrsFromEnv = (value: string | undefined): string[] =>
+  (value ?? '')
+    .split(/[\s,]+/)
+    .map((cidr) => cidr.trim())
+    .filter((cidr) => cidr.length > 0);
+
 export async function fetch(
   request: Request,
   env: WorkspaceEdgeEnvironment,
@@ -59,6 +69,16 @@ export async function fetch(
     const router = createWorkspaceCloudflareEdgeRouter({
       registry,
       internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
+      ...(env.MCP_CONNECTION_CREDENTIALS
+        ? {
+            mcpConnectionCredentials: createWorkspaceMcpConnectionCredentialStore({
+              kv: env.MCP_CONNECTION_CREDENTIALS,
+            }),
+          }
+        : {}),
+      ...(env.MCP_ALLOWED_PROVIDER_CIDRS
+        ? { mcpProviderNetwork: { allowedCidrs: cidrsFromEnv(env.MCP_ALLOWED_PROVIDER_CIDRS) } }
+        : {}),
       siteSnapshots: { r2: env.SITES_SNAPSHOTS },
     });
 
