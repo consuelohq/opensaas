@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts"
+  ],
+  "updatedAt": "2026-06-15T06:43:43.047Z"
+}

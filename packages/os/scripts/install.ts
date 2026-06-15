@@ -20,7 +20,6 @@ import {
   printEnd,
   printOsBanner,
   spinner,
-  stepComplete,
   success,
 } from './lib/cli-ui';
 import {
@@ -563,10 +562,6 @@ async function main(): Promise<void> {
     }
 
     if (!options.quiet) {
-      stepComplete('home');
-      stepComplete('skills');
-      stepComplete('artifacts');
-      if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
       info(summarizeActions(result));
       if (!suppressFinalSummary) {
@@ -591,3 +586,4 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
+

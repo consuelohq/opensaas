@@ -34,6 +34,19 @@ describe('hosted Clack install TTY wiring', () => {
 });
 
 describe('install.ts Clack prompt preflight', () => {
+  test('local install completion keeps final output compact', () => {
+    const completionStart = install.indexOf("local OS saved");
+    const configurationSaved = install.indexOf("configuration saved", completionStart);
+    const completionBlock = install.slice(completionStart, configurationSaved);
+
+    expect(completionStart).toBeGreaterThanOrEqual(0);
+    expect(configurationSaved).toBeGreaterThan(completionStart);
+    expect(completionBlock).not.toContain("stepComplete('home')");
+    expect(completionBlock).not.toContain("stepComplete('skills')");
+    expect(completionBlock).not.toContain("stepComplete('artifacts')");
+    expect(completionBlock).not.toContain("stepComplete('agents')");
+  });
+
   test('install.ts accepts a --check-tty diagnostic command', () => {
     expect(install).toContain('checkTty');
     expect(install).toContain("arg === '--check-tty'");
@@ -65,3 +78,4 @@ describe('install.ts Clack prompt preflight', () => {
     expect(install).toContain('process.stderr.isTTY');
   });
 });
+
