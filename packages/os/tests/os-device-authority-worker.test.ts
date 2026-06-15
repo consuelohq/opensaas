@@ -118,7 +118,7 @@ const googleFetch: typeof fetch = async (input) => {
 };
 
 describe('os device authority worker', () => {
-  it('approves a pending OS device through Cloudflare-native Google OAuth', async () => {
+  it('should approve a pending OS device when Google OAuth callback succeeds', async () => {
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
       origin,
@@ -161,6 +161,52 @@ describe('os device authority worker', () => {
       workspace_host: 'testing.consuelohq.com',
       device_public_key_bound: true,
     });
+  });
+
+  it('should reject Google OAuth callback when state is unknown', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const { codeJson, deviceKeyPair } = await startGrant(handler);
+
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=unknown-state`));
+    expect(callback.status).toBe(400);
+    await expect(callback.text()).resolves.toContain('Google approval session was not found.');
+
+    const stillPending = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(stillPending.status).toBe(400);
+    await expect(stillPending.json()).resolves.toMatchObject({ error: 'authorization_pending' });
+  });
+
+  it('should render the Google approval link with the configured origin when viewing the device page', async () => {
+    const customOrigin = 'https://preview-os.consuelohq.com';
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin: customOrigin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+    });
+
+    const response = await handler(new Request(`${customOrigin}/login/device?user_code=ABCD1234`));
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain(`${customOrigin}/login/google/start?user_code=ABCD1234`);
   });
 
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
