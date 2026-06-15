@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_109cad004e19",
+  "tmuxSession": "opensaas-os-add-os-source-envelopes-109cad00",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-source-envelopes",
+  "branch": "task/os/add-os-source-envelopes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-source-envelopes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-source-envelopes",
+  "prNumber": 1069,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1069",
+  "createdAt": "2026-06-15T07:57:14.358Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-source-envelopes/.task/os/add-os-source-envelopes/session.json"
+}

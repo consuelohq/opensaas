@@ -9,6 +9,21 @@ export type ErrorCode =
   | "NOT_FOUND"
   | "DRY_RUN";
 
+export type SourceEnvelope = {
+  id: string;
+  title: string;
+  kind: "steering" | "file" | "search" | "trace" | "review" | "verify" | "pr" | "commit" | "tool" | "audit";
+  uri: string;
+  summary: string;
+  toolName?: string;
+  traceId?: string;
+  url?: string;
+  lineStart?: number;
+  lineEnd?: number;
+  lines?: Array<{ line: number; text: string }>;
+  metadata?: Record<string, unknown>;
+};
+
 export type ToolResult<TData = unknown> = {
   ok: boolean;
   code: ErrorCode;
@@ -19,6 +34,7 @@ export type ToolResult<TData = unknown> = {
   durationMs: number;
   traceId: string;
   requestId?: string;
+  sources?: SourceEnvelope[];
   apiVersion: "1.0.0";
 };
 

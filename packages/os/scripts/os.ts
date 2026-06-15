@@ -31,6 +31,7 @@ import {
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
+import { createSteeringSourceEnvelope, wrapCallOutputWithSources } from './lib/source-envelope';
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
@@ -598,6 +599,7 @@ function finishSteeringExecution(args: {
       traceId: args.traceId,
       durationMs,
       result,
+      sources: [createSteeringSourceEnvelope(args.steering, args.traceId)],
       code: args.code,
     },
     durationMs,
@@ -1043,13 +1045,14 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
     });
     output.traceId = traceId;
     output.durationMs = Date.now() - started;
+    const wrappedOutput = wrapCallOutputWithSources(output, { input: callInput.input });
     recordExecutionFinished({
       traceId,
-      status: output.ok ? 'succeeded' : 'failed',
-      output,
-      durationMs: output.durationMs,
+      status: wrappedOutput.ok ? 'succeeded' : 'failed',
+      output: wrappedOutput,
+      durationMs: wrappedOutput.durationMs,
     });
-    return output;
+    return wrappedOutput;
   } catch (error: unknown) {
     const output: CallOutput = {
       ok: false,
@@ -1065,13 +1068,14 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
             : 'OS call failed.',
       },
     };
+    const wrappedOutput = wrapCallOutputWithSources(output, { input: callInput.input });
     recordExecutionFinished({
       traceId,
       status: 'failed',
-      output,
-      durationMs: output.durationMs ?? Date.now() - started,
+      output: wrappedOutput,
+      durationMs: wrappedOutput.durationMs ?? Date.now() - started,
     });
-    return output;
+    return wrappedOutput;
   }
 }
 
@@ -1162,4 +1166,5 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
+
 
