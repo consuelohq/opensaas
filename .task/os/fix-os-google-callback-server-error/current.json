@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-callback-server-error",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1053,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1053",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1053",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1053/fix-os-google-callback-server-error",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1053",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1053/fix-os-google-callback-server-error",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-server-error",
+  "taskSession": "tsk_172ca7fbd57e",
+  "tmuxSession": "opensaas-os-fix-os-google-callback-server-error-172ca7fb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-server-error/.task/os/fix-os-google-callback-server-error/session.json",
+  "createdAt": "2026-06-15T00:55:17.989Z"
+}

@@ -48,6 +48,15 @@ type Env = {
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
 };
 
+type GoogleIdentityErrorKind = 'token_exchange' | 'identity_verification' | 'audience_mismatch' | 'email_not_verified';
+
+class GoogleIdentityError extends Error {
+  constructor(public kind: GoogleIdentityErrorKind, message: string) {
+    super(message);
+    this.name = 'GoogleIdentityError';
+  }
+}
+
 const ORIGIN = 'https://os.consuelohq.com';
 const TTL_MS = 15 * 60 * 1000;
 const BOOTSTRAP_TTL_MS = 10 * 60 * 1000;
@@ -150,6 +159,12 @@ function googleConfigured(input: { clientId?: string; clientSecret?: string }): 
   return Boolean(input.clientId?.trim() && input.clientSecret?.trim());
 }
 
+function googleConfig(input: { clientId?: string; clientSecret?: string }): { clientId: string; clientSecret: string } | undefined {
+  const clientId = input.clientId?.trim() ?? '';
+  const clientSecret = input.clientSecret?.trim() ?? '';
+  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+}
+
 function redirectUri(origin: string): string {
   return new URL('/login/google/callback', origin).toString();
 }
@@ -168,34 +183,49 @@ function googleAuthRedirect(input: { origin: string; clientId: string; state: st
 
 async function googleIdentity(input: { code: string; origin: string; clientId: string; clientSecret: string; fetchImpl: typeof fetch }): Promise<{ sub: string; email: string; emailVerified: boolean }> {
   try {
+    const clientId = input.clientId.trim();
+    const clientSecret = input.clientSecret.trim();
     const tokenResponse = await input.fetchImpl(GOOGLE_TOKEN_URL, {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
       body: new URLSearchParams({
         code: input.code,
-        client_id: input.clientId,
-        client_secret: input.clientSecret,
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri(input.origin),
         grant_type: 'authorization_code',
-      }),
+      }).toString(),
     });
     const tokenJson = await tokenResponse.json() as Record<string, unknown>;
-    if (!tokenResponse.ok || typeof tokenJson.id_token !== 'string') throw new Error('google_token_exchange_failed');
+    if (!tokenResponse.ok || typeof tokenJson.id_token !== 'string') {
+      throw new GoogleIdentityError('token_exchange', String(tokenJson.error || tokenJson.error_description || 'google_token_exchange_failed'));
+    }
 
     const infoUrl = new URL(GOOGLE_TOKENINFO_URL);
     infoUrl.searchParams.set('id_token', tokenJson.id_token);
     const infoResponse = await input.fetchImpl(infoUrl.toString(), { headers: { accept: 'application/json' } });
     const infoJson = await infoResponse.json() as Record<string, unknown>;
-    if (!infoResponse.ok) throw new Error('google_identity_verification_failed');
-    if (infoJson.aud !== input.clientId) throw new Error('google_audience_mismatch');
+    if (!infoResponse.ok) throw new GoogleIdentityError('identity_verification', String(infoJson.error_description || infoJson.error || 'google_identity_verification_failed'));
+    if (infoJson.aud !== clientId) throw new GoogleIdentityError('audience_mismatch', 'google_audience_mismatch');
     const email = typeof infoJson.email === 'string' ? infoJson.email : '';
     const sub = typeof infoJson.sub === 'string' ? infoJson.sub : '';
     const emailVerified = infoJson.email_verified === true || infoJson.email_verified === 'true';
-    if (!sub || !email || !emailVerified) throw new Error('google_email_not_verified');
+    if (!sub || !email || !emailVerified) throw new GoogleIdentityError('email_not_verified', 'google_email_not_verified');
     return { sub, email, emailVerified };
   } catch (error: unknown) {
+    if (error instanceof GoogleIdentityError) throw error;
     throw new Error(`google identity failed: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+function googleApprovalErrorMessage(error: unknown): string {
+  if (error instanceof GoogleIdentityError) {
+    if (error.kind === 'token_exchange') return `Google approval failed during token exchange (${error.message}). Check the Cloudflare GOOGLE_OAUTH_CLIENT_SECRET and Google redirect URI, then try this device code again.`;
+    if (error.kind === 'identity_verification') return `Google approval failed during identity verification (${error.message}). Try again with a verified Google account.`;
+    if (error.kind === 'audience_mismatch') return 'Google approval failed because the returned Google identity was issued for a different OAuth client.';
+    return 'Google approval failed because this Google account does not have a verified email address.';
+  }
+  return `Google approval failed (${error instanceof Error ? error.message : String(error)}). Try this device code again.`;
 }
 
 async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
@@ -247,7 +277,8 @@ export function createOsDeviceAuthorityHandler(input: {
       if (url.pathname === '/login/device' && request.method === 'GET') return text(page({ code: url.searchParams.get('user_code') ?? '', origin }));
       if (url.pathname === '/login/google/start') {
         if (request.method !== 'GET') return methodNotAllowed('GET');
-        if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
+        const google = googleConfig({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret });
+        if (!google) {
           return text(page({ code: url.searchParams.get('user_code') ?? '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
         }
         const code = url.searchParams.get('user_code') ?? '';
@@ -256,23 +287,29 @@ export function createOsDeviceAuthorityHandler(input: {
         if (now() >= g.expiresAt) { await input.store.del(g.hash); return text(page({ code, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
         const state = rand('state', 24);
         await input.store.putOAuthState({ state, userCode: g.userCode, expiresAt: now() + TTL_MS });
-        return Response.redirect(googleAuthRedirect({ origin, clientId: input.googleOAuthClientId!, state }), 302);
+        return Response.redirect(googleAuthRedirect({ origin, clientId: google.clientId, state }), 302);
       }
       if (url.pathname === '/login/google/callback') {
         if (request.method !== 'GET') return methodNotAllowed('GET');
-        if (!googleConfigured({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret })) {
+        const google = googleConfig({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret });
+        if (!google) {
           return text(page({ code: '', origin, error: 'Google approval is not configured yet.' }), { status: 503 });
         }
         const stateValue = url.searchParams.get('state') ?? '';
         const authCode = url.searchParams.get('code') ?? '';
         const oauthState = await input.store.byOAuthState(stateValue);
         if (!stateValue || !authCode || !oauthState) return text(page({ code: '', origin, error: 'Google approval session was not found.' }), { status: 400 });
-        await input.store.delOAuthState(stateValue);
         if (now() >= oauthState.expiresAt) return text(page({ code: oauthState.userCode, origin, error: 'Google approval session expired. Restart the installer.' }), { status: 410 });
         const grant = await input.store.byUserCode(oauthState.userCode);
         if (!grant) return text(page({ code: oauthState.userCode, origin, error: 'Device code not found.' }), { status: 404 });
         if (now() >= grant.expiresAt) { await input.store.del(grant.hash); return text(page({ code: oauthState.userCode, origin, error: 'Device code expired. Restart the installer.' }), { status: 410 }); }
-        const identity = await googleIdentity({ code: authCode, origin, clientId: input.googleOAuthClientId!, clientSecret: input.googleOAuthClientSecret!, fetchImpl });
+        let identity: { sub: string; email: string; emailVerified: boolean };
+        try {
+          identity = await googleIdentity({ code: authCode, origin, clientId: google.clientId, clientSecret: google.clientSecret, fetchImpl });
+        } catch (error: unknown) {
+          return text(page({ code: oauthState.userCode, origin, error: googleApprovalErrorMessage(error) }), { status: 502 });
+        }
+        await input.store.delOAuthState(stateValue);
         await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
         return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
       }
