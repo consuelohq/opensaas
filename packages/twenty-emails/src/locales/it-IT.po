@@ -24,6 +24,17 @@ msgid "Test email"
 msgstr "Email di prova"
 
 #. js-lingui-explicit-id
+#: src/emails/validate-approved-access-domain.email.tsx
+#: src/emails/validate-approved-access-domain.email.tsx
+msgid "Validate domain"
+msgstr "Convalida dominio"
+
+#. js-lingui-explicit-id
+#: src/emails/validate-approved-access-domain.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow users with <1>@{domain}</1> email addresses to join your workspace without requiring an invitation."
+msgstr "{senderName} (<0>{senderEmail}</0>): Si prega di convalidare questo dominio per consentire agli utenti con indirizzi email <1>@{domain}</1> di unirsi al tuo spazio di lavoro senza richiedere un invito."
+
+#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Workspace sospeso"
@@ -63,17 +74,6 @@ msgid "Update your subscription"
 msgstr "Aggiorna il tuo abbonamento"
 
 #. js-lingui-explicit-id
-#: src/emails/validate-approved-access-domain.email.tsx
-#: src/emails/validate-approved-access-domain.email.tsx
-msgid "Validate domain"
-msgstr "Convalida dominio"
-
-#. js-lingui-explicit-id
-#: src/emails/validate-approved-access-domain.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow users with <1>@{domain}</1> email addresses to join your workspace without requiring an invitation."
-msgstr "{senderName} (<0>{senderEmail}</0>): Si prega di convalidare questo dominio per consentire agli utenti con indirizzi email <1>@{domain}</1> di unirsi al tuo spazio di lavoro senza richiedere un invito."
-
-#. js-lingui-explicit-id
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Confirm your new email address"
 msgstr ""
@@ -109,6 +109,26 @@ msgid "Accept invite"
 msgstr "Accetta l'invito"
 
 #. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Password aggiornata"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Questa è la conferma che la password del tuo account ({email}) è stata modificata con successo in data {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Se non hai avviato questa modifica, contatta immediatamente il proprietario dello spazio di lavoro."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "Workspace eliminato"
@@ -134,23 +154,13 @@ msgid "Create a new workspace"
 msgstr "Crea un nuovo spazio di lavoro"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Password aggiornata"
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Questa è la conferma che la password del tuo account ({email}) è stata modificata con successo in data {formattedDate}."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Se non hai avviato questa modifica, contatta immediatamente il proprietario dello spazio di lavoro."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
 msgstr ""
 
 #. js-lingui-explicit-id
@@ -177,16 +187,6 @@ msgstr "Imposta"
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
 msgstr "Questo link è valido solo per i prossimi {duration}. Se il link non funziona, puoi utilizzare direttamente il link di verifica del login:"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
