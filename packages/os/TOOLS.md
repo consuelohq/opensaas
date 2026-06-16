@@ -2492,12 +2492,12 @@ await workspace.call({
 
 ### workspace.fs.search
 
-search files with ripgrep through the workspace script
+search file contents with ripgrep and return structured bounded matches for agent-safe discovery
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>` |
+| Signature | `workspace.fs.search({ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } &#124; { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs search, or task:fs search when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -2508,11 +2508,9 @@ search files with ripgrep through the workspace script
 await workspace.call({
   "tool": "fs.search",
   "input": {
-    "branch": "task/workspace-agents/example",
+    "branch": "task/os/example",
     "pattern": "task:fs",
-    "paths": [
-      "packages/os/SCRIPTS.md"
-    ]
+    "path": "packages/os/SCRIPTS.md"
   }
 });
 ```

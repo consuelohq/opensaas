@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b897d82ab9cf",
+  "tmuxSession": "opensaas-os-refactor-fs-search-into-structured-ripgrep-servi-b897d82a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refactor-fs-search-into-structured-ripgrep-service",
+  "branch": "task/os/refactor-fs-search-into-structured-ripgrep-service",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-fs-search-into-structured-ripgrep-service",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-fs-search-into-structured-ripgrep-service",
+  "prNumber": 1090,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1090",
+  "createdAt": "2026-06-16T20:14:59.972Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-fs-search-into-structured-ripgrep-service/.task/os/refactor-fs-search-into-structured-ripgrep-service/session.json"
+}

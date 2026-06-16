@@ -609,6 +609,10 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, method: "get" };
   }
 
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    return { ...input, paths: [input.path] };
+  }
+
   if (toolName === "fs.read" && Array.isArray(input.files)) {
     return { ...input, filesJson: JSON.stringify(input.files) };
   }
