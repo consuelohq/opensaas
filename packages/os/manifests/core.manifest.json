@@ -1145,7 +1145,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "search files with ripgrep through the workspace script",
+      "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
       "core": true,
       "definition": {
         "name": "fs.search",
@@ -1153,7 +1153,7 @@
           "fs",
           "search"
         ],
-        "description": "search files with ripgrep through the workspace script",
+        "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
         "category": "filesystem",
         "underlying": "workspace fs search, or task:fs search when a branch is resolved",
         "capabilities": {
@@ -1199,13 +1199,33 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/workspace-agents/example",
+          "branch": "task/os/example",
           "pattern": "task:fs",
-          "paths": [
-            "packages/os/SCRIPTS.md"
-          ]
+          "path": "packages/os/SCRIPTS.md"
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "examples": [
+          {
+            "label": "search a directory",
+            "input": {
+              "pattern": "Effect.gen",
+              "path": "packages/os/scripts",
+              "include": "*.ts",
+              "maxResults": 20
+            }
+          },
+          {
+            "label": "search multiple paths",
+            "input": {
+              "pattern": "task:fs",
+              "paths": [
+                "packages/os/SCRIPTS.md",
+                "packages/os/TOOLS.md"
+              ],
+              "maxResults": 10
+            }
+          }
+        ]
       }
     },
     {

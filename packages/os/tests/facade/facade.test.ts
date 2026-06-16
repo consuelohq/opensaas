@@ -247,6 +247,37 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_search_path');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/os/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/os/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('plans fs.read multi-file input through files-json', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-read-multi-'));
     try {
