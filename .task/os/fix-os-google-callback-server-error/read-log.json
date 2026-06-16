@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts"
+  ],
+  "updatedAt": "2026-06-15T00:59:05.745Z"
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-os-google-callback-server-error",
+  "events": [
+    {
+      "id": "3922284f-897c-45af-bca0-a0a46d33e2b9",
+      "occurred_at": "2026-06-15T00:55:31.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-google-callback-server-error",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-google-callback-server-error"
+      }
+    },
+    {
+      "id": "3421aa1f-000a-4c54-8f3b-348e07fac2b0",
+      "occurred_at": "2026-06-15T00:59:05.826Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-google-callback-server-error",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-google-callback-server-error"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-15T00:59:05.903Z"
+}

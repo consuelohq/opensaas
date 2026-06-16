@@ -48,6 +48,43 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
+const PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
+const LEGACY_STEERING_FILE = 'steering.md';
+
+function localSteeringDir(home: string): string {
+  return path.join(home, 'steering');
+}
+
+function isSupportedSteeringMarkdown(fileName: string): boolean {
+  return fileName.endsWith('.md') && fileName.toLowerCase() !== LEGACY_STEERING_FILE;
+}
+
+function readSteeringMarkdownFiles(steeringDir: string): Array<{ name: string; content: string }> {
+  const sections: Array<{ name: string; content: string }> = [];
+  const seen = new Set<string>();
+
+  for (const fileName of PRIMARY_STEERING_FILES) {
+    const content = readIfExists(path.join(steeringDir, fileName));
+    seen.add(fileName);
+    if (content) sections.push({ name: fileName, content });
+  }
+
+  if (!fs.existsSync(steeringDir)) return sections;
+
+  const additionalFiles = fs.readdirSync(steeringDir)
+    .filter((fileName) => !seen.has(fileName) && isSupportedSteeringMarkdown(fileName))
+    .sort((left, right) => left.localeCompare(right));
+
+  for (const fileName of additionalFiles) {
+    const filePath = path.join(steeringDir, fileName);
+    if (!fs.statSync(filePath).isFile()) continue;
+    const content = readIfExists(filePath);
+    if (content) sections.push({ name: fileName, content });
+  }
+
+  return sections;
+}
+
 function createTraceId(): string {
   return `trc_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
 }
@@ -460,16 +497,7 @@ function renderOfficeCommandResult(result: OfficeCommandResult): string {
   return renderSitesCommandResult(result);
 }
 export function getSteering(): string {
-  ensureRuntimePaths();
-  const packageRoot = getPackageRoot();
-  const files = [
-    'STEERING.md',
-    'business-context.md',
-    'data-model.md',
-    'permissions.md',
-    'integrations.md',
-    'skills.md',
-  ];
+  const runtimePaths = ensureRuntimePaths();
   const sections = [
     '# Consuelo OS runtime context',
     '',
@@ -480,9 +508,8 @@ export function getSteering(): string {
     '```',
   ];
 
-  for (const file of files) {
-    const content = readIfExists(path.join(packageRoot, file));
-    if (content) sections.push('', `# ${file}`, '', content);
+  for (const file of readSteeringMarkdownFiles(localSteeringDir(runtimePaths.home))) {
+    sections.push('', `# ${file.name}`, '', file.content);
   }
 
   sections.push(
@@ -641,9 +668,9 @@ You already received full OS steering very recently in this pre-task bootstrap c
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Read only the specific file you need:
-- packages/os/STEERING.md
+- $CONSUELO_HOME/steering/system_prompt.md
+- $CONSUELO_HOME/steering/decision.md
 - packages/os/manifests/core.manifest.json
-- packages/workspace/STEERING.md
 
 Useful alternatives:
 - fs.read for exact files
@@ -811,12 +838,12 @@ export function getRawSteering(): string {
     'Use this context for landing pages, Office, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
-  const devSteering = readIfExists(path.join(packageRoot, 'dev-steering.md'));
+  const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
   if (devSteering)
-    sections.push('# original workspace STEERING.md', '', devSteering);
-  const decision = readIfExists(path.join(packageRoot, 'decision.md'));
+    sections.push('# bundled OS system_prompt.md', '', devSteering);
+  const decision = readIfExists(path.join(packageRoot, 'steering', 'decision.md'));
   if (decision)
-    sections.push('', '# original workspace decision.md', '', decision);
+    sections.push('', '# bundled OS decision.md', '', decision);
   const manifest = readIfExists(
     path.join(packageRoot, 'manifests', 'tool.manifest.json'),
   );

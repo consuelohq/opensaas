@@ -2337,7 +2337,7 @@ apply an anchored patch file with embedded task-worktree-relative paths
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.apply_patch(Record&lt;string, unknown&gt;) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} &#124; null&gt;&gt;` |
+| Signature | `workspace.fs.apply_patch(\{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} &#124; null&gt;&gt;` |
 | Runtime | `workspace fs.apply_patch` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 30000ms |

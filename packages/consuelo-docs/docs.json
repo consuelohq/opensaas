@@ -441,7 +441,8 @@
                   "os/agent-context/steering",
                   "os/agent-context/decision",
                   "os/agent-context/tools",
-                  "os/agent-context/scripts"
+                  "os/agent-context/scripts",
+                  "os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -1078,7 +1079,8 @@
                   "l/fr/os/agent-context/steering",
                   "l/fr/os/agent-context/decision",
                   "l/fr/os/agent-context/tools",
-                  "l/fr/os/agent-context/scripts"
+                  "l/fr/os/agent-context/scripts",
+                  "l/fr/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -1715,7 +1717,8 @@
                   "l/ar/os/agent-context/steering",
                   "l/ar/os/agent-context/decision",
                   "l/ar/os/agent-context/tools",
-                  "l/ar/os/agent-context/scripts"
+                  "l/ar/os/agent-context/scripts",
+                  "l/ar/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -2352,7 +2355,8 @@
                   "l/cs/os/agent-context/steering",
                   "l/cs/os/agent-context/decision",
                   "l/cs/os/agent-context/tools",
-                  "l/cs/os/agent-context/scripts"
+                  "l/cs/os/agent-context/scripts",
+                  "l/cs/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -2989,7 +2993,8 @@
                   "l/de/os/agent-context/steering",
                   "l/de/os/agent-context/decision",
                   "l/de/os/agent-context/tools",
-                  "l/de/os/agent-context/scripts"
+                  "l/de/os/agent-context/scripts",
+                  "l/de/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -3626,7 +3631,8 @@
                   "l/es/os/agent-context/steering",
                   "l/es/os/agent-context/decision",
                   "l/es/os/agent-context/tools",
-                  "l/es/os/agent-context/scripts"
+                  "l/es/os/agent-context/scripts",
+                  "l/es/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -4263,7 +4269,8 @@
                   "l/it/os/agent-context/steering",
                   "l/it/os/agent-context/decision",
                   "l/it/os/agent-context/tools",
-                  "l/it/os/agent-context/scripts"
+                  "l/it/os/agent-context/scripts",
+                  "l/it/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -4900,7 +4907,8 @@
                   "l/ja/os/agent-context/steering",
                   "l/ja/os/agent-context/decision",
                   "l/ja/os/agent-context/tools",
-                  "l/ja/os/agent-context/scripts"
+                  "l/ja/os/agent-context/scripts",
+                  "l/ja/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -5537,7 +5545,8 @@
                   "l/ko/os/agent-context/steering",
                   "l/ko/os/agent-context/decision",
                   "l/ko/os/agent-context/tools",
-                  "l/ko/os/agent-context/scripts"
+                  "l/ko/os/agent-context/scripts",
+                  "l/ko/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -6174,7 +6183,8 @@
                   "l/pt/os/agent-context/steering",
                   "l/pt/os/agent-context/decision",
                   "l/pt/os/agent-context/tools",
-                  "l/pt/os/agent-context/scripts"
+                  "l/pt/os/agent-context/scripts",
+                  "l/pt/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -6811,7 +6821,8 @@
                   "l/ro/os/agent-context/steering",
                   "l/ro/os/agent-context/decision",
                   "l/ro/os/agent-context/tools",
-                  "l/ro/os/agent-context/scripts"
+                  "l/ro/os/agent-context/scripts",
+                  "l/ro/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -7448,7 +7459,8 @@
                   "l/ru/os/agent-context/steering",
                   "l/ru/os/agent-context/decision",
                   "l/ru/os/agent-context/tools",
-                  "l/ru/os/agent-context/scripts"
+                  "l/ru/os/agent-context/scripts",
+                  "l/ru/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -8085,7 +8097,8 @@
                   "l/tr/os/agent-context/steering",
                   "l/tr/os/agent-context/decision",
                   "l/tr/os/agent-context/tools",
-                  "l/tr/os/agent-context/scripts"
+                  "l/tr/os/agent-context/scripts",
+                  "l/tr/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -8722,7 +8735,8 @@
                   "l/zh/os/agent-context/steering",
                   "l/zh/os/agent-context/decision",
                   "l/zh/os/agent-context/tools",
-                  "l/zh/os/agent-context/scripts"
+                  "l/zh/os/agent-context/scripts",
+                  "l/zh/os/agent-context/test-driven-agent-work"
                 ]
               },
               {

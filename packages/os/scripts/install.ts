@@ -83,7 +83,7 @@ function writeStdout(value: string): void {
 const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
 const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
 const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
-const DEVICE_LOGIN_POLL_TIMEOUT_MS = 45_000;
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();

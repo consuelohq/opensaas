@@ -56,7 +56,7 @@ if [ -z "$stage_port" ]; then
   echo "unable to find a free stage port" >&2
   exit 1
 fi
-local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8850/health}"
+local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8960/health}"
 uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
 

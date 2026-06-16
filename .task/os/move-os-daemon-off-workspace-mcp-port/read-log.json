@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/scripts/server.ts",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/scripts/workspace-watchdog.sh",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "updatedAt": "2026-06-15T02:15:55.991Z"
+}
