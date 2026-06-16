@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-06-16T07:28:41.395Z"
+}

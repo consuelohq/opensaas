@@ -28,18 +28,21 @@ function which(bin) {
 // ── helpers shown contextually ──
 
 function readHelp() {
-  out('usage: bun run fs -- read <path> [--from N] [--to M] [path2 --from N --to M ...]');
+  out('usage: bun run fs -- read <path> [--offset N] [--limit M] [path2 --offset N --limit M ...]');
   out('');
-  out('read files with line numbers. wraps bat.');
+  out('read a bounded structured view of text or supported media for agent-safe ingestion.');
   out('');
   out('options:');
-  out('  --from N       start line (1-based)');
-  out('  --to M         end line (1-based)');
-  out('  --plain        no line numbers or decoration');
-  out('  --json         json output: { path, from, to, lines: [...] }');
+  out('  --offset N       start line (1-based, preferred)');
+  out('  --limit M        max lines to return, capped at 2000');
+  out('  --from N         alias for --offset');
+  out('  --to M           alias that derives --limit from offset');
+  out('  --files-json J   JSON array of { path, offset?, limit? } entries');
+  out('  --plain          no line numbers for human text output');
+  out('  --json           structured JSON output');
   out('');
-  out('multi-file: each path starts a new segment with its own --from/--to');
-  out('  bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150');
+  out('multi-file: each path starts a new segment with its own page options');
+  out('  bun run fs -- read src/a.ts --offset 1 --limit 50 src/b.ts --offset 100 --limit 60 --json');
 }
 
 function searchHelp() {
@@ -122,62 +125,87 @@ function parseReadSegments(argv) {
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
+    if (a === '--files-json') {
+      let files;
+      try {
+        files = JSON.parse(argv[++i]);
+      } catch {
+        err('error: --files-json must be valid JSON');
+        process.exitCode = 1;
+        return null;
+      }
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (file && typeof file.path === 'string') segments.push(file);
+        }
+      }
+      current = null;
+    }
+    else if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
     else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
+    else if (a === '--offset') { if (current) current.offset = parseInt(argv[++i], 10); }
+    else if (a === '--limit') { if (current) current.limit = parseInt(argv[++i], 10); }
     else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
     else if (!a.startsWith('--')) {
-      current = { path: a, from: null, to: null };
+      current = { path: a };
       segments.push(current);
     }
   }
   return segments;
 }
 
-function cmdRead(argv) {
+function renderTextPage(page, plain) {
+  const lines = String(page.content || '').split('\n');
+  if (page.content === '') return;
+  lines.forEach((line, idx) => {
+    const lineNum = page.offset + idx;
+    out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
+  });
+  if (page.truncated && page.next) out(`... truncated; next offset ${page.next}`);
+}
+
+async function cmdRead(argv) {
   if (argv.includes('--help') || argv.length === 0) { readHelp(); return; }
 
   const plain = argv.includes('--plain');
   const json = argv.includes('--json');
-  const all = argv.includes('--all');
   const segments = parseReadSegments(argv);
 
+  if (!segments) return;
   if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
 
-  const results = [];
-
-  for (const seg of segments) {
-    const fp = resolve(seg.path);
-    if (!fs.existsSync(fp)) { err(`error: ${seg.path} not found`); continue; }
-
-    const content = fs.readFileSync(fp, 'utf8');
-    const allLines = content.split('\n');
-    const from = seg.from || 1;
-    const to = seg.to || allLines.length;
-    const slice = allLines.slice(from - 1, to);
-
-    if (json) {
-      results.push({ path: seg.path, from, to, total: allLines.length, lines: slice });
-      continue;
-    }
-
-    // try bat for pretty output
-    if (!plain && which('bat')) {
-      const batArgs = ['bat', '--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp];
-      const r = spawnSync('bat', ['--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp], {
-        encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      out(r.stdout.trimEnd());
-    } else {
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      slice.forEach((line, idx) => {
-        const lineNum = from + idx;
-        out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
-      });
-    }
+  let result;
+  try {
+    const { readManyForCli } = await import('./lib/fs/read.ts');
+    result = await readManyForCli(segments, { root: process.cwd() });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    err(`error: failed to read file: ${message}`);
+    process.exitCode = 1;
+    return;
   }
 
-  if (json) out(JSON.stringify(results, null, 2));
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (result && Array.isArray(result.results)) {
+    for (const item of result.results) {
+      out(`── ${item.path} ──`);
+      if (!item.ok) {
+        err(`${item.error.code}: ${item.error.message}`);
+        continue;
+      }
+      if (item.page.type === 'text-page') renderTextPage(item.page, plain);
+      else out(`${item.page.type}: ${item.page.message || item.page.mime || item.path}`);
+    }
+    return;
+  }
+
+  if (result.type === 'text-page') renderTextPage(result, plain);
+  else if (result.type === 'error') err(`${result.code}: ${result.message}`);
+  else out(`${result.type}: ${result.message || result.mime || result.path}`);
 }
 
 // ── search ──
@@ -841,15 +869,6 @@ function logToWorkpad(filePath, action) {
   }
 }
 
-// ── main ──
-
-function main() {
-  const argv = process.argv.slice(2);
-  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
-
-  const command = argv[0];
-  const rest = argv.slice(1);
-
 // ── http ──
 
 function cmdHttp(argv) {
@@ -901,10 +920,18 @@ function cmdTrash(argv) {
   }
 }
 
+
 // ── main ──
 
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
+
+  const command = argv[0];
+  const rest = argv.slice(1);
+
   switch (command) {
-    case 'read': cmdRead(rest); break;
+    case 'read': await cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
@@ -919,4 +946,7 @@ function cmdTrash(argv) {
   }
 }
 
-main();
+main().catch((error) => {
+  err(error && error.message ? error.message : String(error));
+});
+

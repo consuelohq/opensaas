@@ -383,7 +383,7 @@ describe('Trace Sites gateway resilience and dashboard contracts', () => {
         idempotencyKey: 'wrk:trc_local_1:1',
         sourceMode: 'local-networked',
         branch: 'task/sites/trace-live-system-design-alignment',
-        tool: 'task.call',
+        tool: 'code.call',
         inputTokens: 100,
         outputTokens: 300,
         costUsd: 0.01,
@@ -426,7 +426,7 @@ describe('Trace Sites gateway resilience and dashboard contracts', () => {
     });
     expect(summary.topBranches).toEqual([{ branch: 'task/sites/trace-live-system-design-alignment', tokens: 600 }]);
     expect(summary.topTools).toEqual([
-      { tool: 'task.call', tokens: 400 },
+      { tool: 'code.call', tokens: 400 },
       { tool: 'runner.exec', tokens: 200 },
     ]);
     expect(summary.failureCauses).toEqual([{ cause: 'RUNNER_SATURATED', count: 1 }]);

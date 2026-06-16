@@ -35,8 +35,8 @@
       "risk": "high"
     },
     "scripts/check-files.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "OS check-files intentionally routes validation through code.call after public task execution removal."
     },
     "scripts/check-syntax.js": {
       "status": "same",
@@ -136,7 +136,7 @@
     },
     "scripts/fs.js": {
       "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "reason": "OS fs CLI now intentionally diverges to expose Effect-backed bounded read pagination, media metadata, and structured safety behavior."
     },
     "scripts/generate-docs.ts": {
       "status": "changed-needs-review",
@@ -168,8 +168,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/github.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/install-system-daemons.sh": {
       "status": "changed-needs-review",
@@ -208,8 +208,8 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/code-call/runtime.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/types.ts": {
       "status": "same",
@@ -246,6 +246,26 @@
     "scripts/lib/codemode/types.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/consuelo-sites-gateway-policy.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/consuelo-sites-gateway-registry.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/consuelo-sites-gateway-types.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/consuelo-sites-gateway.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/consuelo-sites-trace-adapter.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
     },
     "scripts/lib/consuelo-workspace-client.ts": {
       "status": "os-only-intentional",
@@ -287,6 +307,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/fs/read.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only helper implements Effect-backed bounded fs.read behavior for the package runtime and generated public tool surface."
+    },
     "scripts/lib/git.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -326,6 +350,10 @@
     "scripts/lib/index/store.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/install-edge-site-publisher.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
     },
     "scripts/lib/install-state.ts": {
       "status": "os-only-intentional",
@@ -413,6 +441,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/task-node-modules.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
+    },
     "scripts/lib/task-selection.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -424,6 +456,22 @@
     "scripts/lib/task-workpad.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/trace-sites-gateway-contract.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/trace-sites-gateway-live-endpoints.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/trace-sites-gateway-read-layer.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
+    "scripts/lib/trace-sites-local-read-backend.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
     },
     "scripts/lib/types.ts": {
       "status": "os-only-intentional",
@@ -465,6 +513,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/workspace-device-login-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only script is intentionally part of the OS package inventory."
+    },
     "scripts/lib/workspace-edge-beta-smoke.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -493,10 +545,18 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/os-release-device-auth.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
+    },
     "scripts/os-release-install.ts": {
       "status": "workspace-only-needs-port",
       "reason": "High-risk workspace-only script: hosted OS release publishing remains outside OS scripts and needs a follow-up portability decision.",
       "risk": "high"
+    },
+    "scripts/os-release.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
     },
     "scripts/os.ts": {
       "status": "os-only-intentional",
@@ -591,8 +651,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/task-exec.js": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "workspace-only-needs-port",
+      "reason": "Workspace retains a legacy private script, while the OS public execution surface intentionally uses code.call instead."
     },
     "scripts/task-finish.js": {
       "status": "changed-needs-review",
