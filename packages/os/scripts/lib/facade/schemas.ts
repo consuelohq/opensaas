@@ -212,9 +212,23 @@ export const FsWriteInput = z.object({
   force: z.boolean().optional(),
   append: z.boolean().optional(),
   mkdirs: z.boolean().optional(),
-}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
-  message: 'provide exactly one of content or contentFile',
-  path: ['content'],
+}).superRefine((input, context) => {
+  const hasContent = Object.prototype.hasOwnProperty.call(input, 'content') && input.content !== undefined;
+  const hasContentFile = input.contentFile !== undefined;
+  if (hasContent === hasContentFile) {
+    context.addIssue({
+      code: 'custom',
+      message: 'provide exactly one of content or contentFile',
+      path: ['content'],
+    });
+  }
+  if (input.force === true && input.append === true) {
+    context.addIssue({
+      code: 'custom',
+      message: 'force and append are conflicting write modes',
+      path: ['force'],
+    });
+  }
 });
 
 

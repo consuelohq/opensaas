@@ -413,94 +413,124 @@ function cmdList(argv) {
 
 // ── write ──
 
-function readFilePayload({ inlineContent, contentFile }) {
+async function readFilePayload({ inlineContent, contentFile }) {
   if (inlineContent !== null && contentFile !== null) {
-    err('error: use exactly one of --content or --content-file');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'use exactly one of --content or --content-file',
+    };
   }
 
   if (contentFile !== null) {
-    const contentPath = path.resolve(process.cwd(), contentFile);
     try {
-      const contentFileStats = fs.statSync(contentPath);
-      fs.accessSync(contentPath, fs.constants.R_OK);
-      if (!contentFileStats.isFile()) {
-        err(`error: content file must be a regular file: ${contentFile}`);
-        return null;
-      }
-    } catch {
-      err(`error: content file not found or not readable: ${contentFile}`);
-      return null;
+      const { readContentFileForCli } = await import('./lib/fs/write.ts');
+      const result = await readContentFileForCli(contentFile, { cwd: process.cwd() });
+      if (result && typeof result === 'object' && result.ok === false) return result;
+      return { ok: true, content: result };
+    } catch (error) {
+      return {
+        ok: false,
+        type: 'error',
+        code: 'CONTENT_FILE_NOT_READABLE',
+        path: contentFile,
+        message: `failed to read content file: ${error && error.message ? error.message : String(error)}`,
+      };
     }
-    return fs.readFileSync(contentPath, 'utf8');
   }
 
-  if (inlineContent !== null) return inlineContent;
+  if (inlineContent !== null) return { ok: true, content: inlineContent };
 
   if (process.stdin.isTTY) {
-    err('error: no content (pipe via stdin, use --content, or use --content-file)');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content (pipe via stdin, use --content, or use --content-file)',
+    };
   }
 
   const stdinContent = readStdin();
   if (stdinContent === '') {
-    err('error: no content received on stdin');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content received on stdin',
+    };
   }
-  return stdinContent;
+  return { ok: true, content: stdinContent };
 }
 
-function cmdWrite(argv) {
+function renderWriteError(result, json) {
+  process.exitCode = 1;
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  err(`${result.code || 'WRITE_FAILED'}: ${result.message || 'write failed'}`);
+}
+
+function renderWriteSuccess(result, json) {
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  if (result.operation === 'append') out(`appended to ${result.path}`);
+  else out(`wrote ${result.path} (${result.lines} lines)`);
+}
+
+async function cmdWrite(argv) {
   if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
 
   const force = argv.includes('--force');
   const append = argv.includes('--append');
   const mkdirs = argv.includes('--mkdirs');
+  const json = argv.includes('--json');
 
-  let inlineContent = null;
-  let contentFile = null;
-  let filePath = null;
+  try {
 
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
-    else if (!a.startsWith('--') && !filePath) { filePath = a; }
-  }
+    let inlineContent = null;
+    let contentFile = null;
+    let filePath = null;
 
-  if (!filePath) { err('error: file path required'); writeHelp(); return; }
+    for (let i = 0; i < argv.length; i++) {
+      const a = argv[i];
+      if (a === '--content') { inlineContent = argv[++i]; }
+      else if (a === '--content-file') { contentFile = argv[++i]; }
+      else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin' || a === '--json') { /* skip */ }
+      else if (!a.startsWith('--') && !filePath) { filePath = a; }
+    }
 
-  const fp = resolve(filePath);
-  const content = readFilePayload({ inlineContent, contentFile });
+    if (!filePath) { err('error: file path required'); writeHelp(); return; }
 
-  if (content === null) return;
+    const payload = await readFilePayload({ inlineContent, contentFile });
 
-  if (fs.existsSync(fp) && !force && !append) {
-    err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
-    return;
-  }
-
-  const dir = path.dirname(fp);
-  if (!fs.existsSync(dir)) {
-    if (mkdirs) {
-      fs.mkdirSync(dir, { recursive: true });
-    } else {
-      err(`error: directory ${path.dirname(filePath)} does not exist. use --mkdirs to create.`);
+    if (!payload.ok) {
+      renderWriteError(payload, json);
       return;
     }
-  }
 
-  if (append) {
-    fs.appendFileSync(fp, content);
-    out(`appended to ${filePath}`);
-  } else {
-    fs.writeFileSync(fp, content);
-    out(`wrote ${filePath} (${content.split('\n').length} lines)`);
-  }
+    const { writeFileForCli } = await import('./lib/fs/write.ts');
+    const result = await writeFileForCli({ path: filePath, content: payload.content, force, append, mkdirs }, { root: process.cwd() });
+    if (!result.ok) {
+      renderWriteError(result, json);
+      return;
+    }
 
-  // log to workpad if it exists
-  logToWorkpad(filePath, append ? 'append' : 'write');
+    renderWriteSuccess(result, json);
+
+    // log to workpad if it exists
+    logToWorkpad(result.path, result.operation === 'append' ? 'append' : 'write');
+  } catch (error) {
+    renderWriteError({
+      ok: false,
+      type: 'error',
+      code: 'WRITE_FAILED',
+      message: `write command failed: ${error && error.message ? error.message : String(error)}`,
+    }, json);
+  }
 }
 
 // ── removed patch command ──
@@ -934,7 +964,7 @@ async function main() {
     case 'read': await cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
-    case 'write': cmdWrite(rest); break;
+    case 'write': await cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
     case 'apply-patch': cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;
