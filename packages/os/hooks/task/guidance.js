@@ -114,8 +114,9 @@ function buildBeforeProductionEdit(options) {
         content: '## Test-first contract\n\nBehavior under test:\n- ...\n',
       }, options.taskSession),
       osCall('code.call', {
-        command: ['bun', '--cwd', 'packages/os', 'test', '<focused-test-file>'],
-        tddPhase: 'red',
+        language: 'bash',
+        mode: 'verify',
+        code: 'bun --cwd packages/os test <focused-test-file>',
         timeout: 300000,
       }, options.taskSession),
     ],

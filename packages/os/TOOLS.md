@@ -2435,7 +2435,7 @@ read bounded text or supported media from files with pagination, MIME metadata, 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.read({ path?: string; files?: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<FsReadTextPage &#124; FsReadBinary &#124; FsReadMedia &#124; FsReadError &#124; { results: Array<{ path: string; ok: true; page: FsReadTextPage &#124; FsReadBinary &#124; FsReadMedia } &#124; { path: string; ok: false; error: FsReadError }> }>>` |
+| Signature | `workspace.fs.read((({ path: string; files?: never } &#124; { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never }) & { offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) &#124; { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } &#124; { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } &#124; { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -7697,7 +7697,7 @@ start a workflow intent or dispatch a scoped workflow hook event and return the 
 | Field | Value |
 | --- | --- |
 | Category | workflow |
-| Signature | `workspace.intent(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace intent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |

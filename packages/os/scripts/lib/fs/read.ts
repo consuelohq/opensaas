@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 
 export const MAX_READ_LINES = 2_000;
 export const MAX_READ_BYTES = 50 * 1024;
@@ -66,12 +66,20 @@ function normalizePositiveInt(value: unknown, fallback: number): number {
   return Math.max(1, Math.floor(value));
 }
 
-function pageFromInput(input: FsReadFileInput): { offset: number; limit: number } {
+function pageFromInput(input: FsReadFileInput): { offset: number; limit: number } | FsReadError {
   const offset = normalizePositiveInt(input.offset ?? input.from, 1);
   if (input.limit !== undefined) return { offset, limit: Math.min(normalizePositiveInt(input.limit, MAX_READ_LINES), MAX_READ_LINES) };
   if (input.to !== undefined) {
     const to = normalizePositiveInt(input.to, offset);
-    return { offset, limit: Math.min(Math.max(1, to - offset + 1), MAX_READ_LINES) };
+    if (to < offset) {
+      return {
+        type: 'error',
+        code: 'INVALID_RANGE',
+        path: input.path,
+        message: '--to (' + to + ') must be greater than or equal to start offset (' + offset + ') for ' + input.path,
+      };
+    }
+    return { offset, limit: Math.min(to - offset + 1, MAX_READ_LINES) };
   }
   return { offset, limit: MAX_READ_LINES };
 }
@@ -178,7 +186,9 @@ function consumeTextChunk(decoder: TextDecoder, bytes: Uint8Array, mutable: { pe
 
 const readTextPageEffect = (resolved: ResolvedPath, input: FsReadFileInput, sizeBytes: number) => Effect.try({
   try: (): FsReadTextPage | FsReadError => {
-    const { offset, limit } = pageFromInput(input);
+    const page = pageFromInput(input);
+    if ('type' in page) return page;
+    const { offset, limit } = page;
     const fd = fs.openSync(resolved.realPath, 'r');
     const decoder = new TextDecoder('utf-8', { fatal: true });
     const state = { lines: [] as string[], bytes: 0, line: 1, found: false, truncated: false, next: undefined as number | undefined };
@@ -241,3 +251,4 @@ export function readFileForCli(input: FsReadFileInput, options: { root?: string 
 export function readManyForCli(inputs: FsReadFileInput[], options: { root?: string } = {}): Promise<FsReadManyResult> {
   return Effect.runPromise(readManyEffect(inputs, options));
 }
+

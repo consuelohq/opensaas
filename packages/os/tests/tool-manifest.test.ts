@@ -268,11 +268,13 @@ describe('tool manifest generator', () => {
 
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
+    const workflows = JSON.parse(readFileSync(join(packageRoot, 'manifests/workflow-bundles.json'), 'utf8')) as { sourceManifest: string };
 
     expect(full.tools.length).toBeGreaterThan(0);
     expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
+    expect(workflows.sourceManifest).toBe('packages/os/manifests/tool.manifest.json');
   });
 
   it('fails when source manifests contain duplicate names', () => {
