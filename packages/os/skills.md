@@ -4,6 +4,12 @@ Skills are the capabilities behind `call`.
 
 The canonical full manifest at `manifests/tool.manifest.json` is the source of truth for what OS tools and skills exist. Default steering includes the generated core subset at `manifests/core.manifest.json`; use `tools.search` for extended tools. Bun scripts under `scripts/` are the runtime implementations.
 
+## Tool recovery
+
+Unknown tool calls return `NOT_FOUND` with structured recovery metadata instead of a bare failure. The recovery payload names the requested tool, the recommended manifest tool when confidence is high, candidate tools when the request is ambiguous, and a copy-safe `tools.search` call for follow-up discovery.
+
+The OS facade does not auto-route invalid tool names. Agents should use the recommended tool for high-confidence aliases such as `mac.run` to `mac.call`, and should run `tools.search` when the payload returns multiple candidates for short aliases such as `run`, `exec`, `shell`, `read`, or `write`.
+
 ## Current skill
 
 ### daily-revenue-brief

@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import manifestJson from '../../../manifests/tool.manifest.json';
 
+import { runToolSearch } from '../../tools-search';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
@@ -55,6 +56,149 @@ type TaskSessionResolution =
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
 const MAX_LOG_COMMAND_CHARS = 4000;
+
+type UnknownToolRecovery = {
+  requestedTool: string;
+  recommendedTool?: string;
+  candidates?: string[];
+  confidence: 'high' | 'medium' | 'low';
+  source: 'alias' | 'tools.search';
+  autoRetry: false;
+  reason: string;
+  repair: {
+    workspaceCall?: string;
+    toolsSearchCall: string;
+  };
+  search?: {
+    query: string;
+    totalMatches?: number;
+    matches?: string[];
+  };
+};
+
+const SAFE_TOOL_ALIASES = new Map<string, string>([
+  ['mac.run', 'mac.call'],
+  ['mac.shell', 'mac.call'],
+]);
+
+const AMBIGUOUS_TOOL_ALIASES = new Map<string, string[]>([
+  ['run', ['task.call', 'mac.call', 'code.run']],
+  ['exec', ['task.call', 'mac.call', 'code.run']],
+  ['shell', ['task.call', 'mac.call']],
+  ['read', ['fs.read', 'mac.read']],
+  ['write', ['fs.write', 'mac.write']],
+  ['patch', ['fs.patch']],
+  ['mac.patch', ['fs.patch', 'fs.write']],
+]);
+
+function hasManifestTool(toolName: string): boolean {
+  return manifestEntries.some((entry) => entry.name === toolName);
+}
+
+function unknownToolSearchQuery(toolName: string): string {
+  return toolName.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim() || toolName;
+}
+
+function toolsSearchCallSnippet(query: string): string {
+  return `await workspace.call({ tool: "tools.search", input: ${JSON.stringify({ query, limit: 5, noDocs: true })} })`;
+}
+
+function workspaceCallSnippetForTool(toolName: string): string | undefined {
+  const entry = getToolManifestEntry(toolName);
+  if (!entry) return undefined;
+
+  const fields = [`tool: ${JSON.stringify(entry.name)}`, `input: ${JSON.stringify(entry.exampleInput || {})}`];
+  if (entry.sessionRequired === true) fields.push('taskSession: "<taskSession>"');
+  return `await workspace.call({ ${fields.join(', ')} })`;
+}
+
+function searchMatches(search: Record<string, unknown>): string[] {
+  const matches = search.matches;
+  if (!Array.isArray(matches)) return [];
+
+  return matches
+    .map((match) => {
+      if (!match || typeof match !== 'object' || !('name' in match)) return null;
+      const name = (match as { name?: unknown }).name;
+      return typeof name === 'string' ? name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+}
+
+function searchConfidence(search: Record<string, unknown>): 'high' | 'medium' | 'low' {
+  return search.confidence === 'high' || search.confidence === 'medium' ? search.confidence : 'low';
+}
+
+async function buildUnknownToolRecovery(toolName: string): Promise<UnknownToolRecovery> {
+  const exactAlias = SAFE_TOOL_ALIASES.get(toolName);
+  if (exactAlias && hasManifestTool(exactAlias)) {
+    const query = unknownToolSearchQuery(exactAlias);
+    return {
+      requestedTool: toolName,
+      recommendedTool: exactAlias,
+      confidence: 'high',
+      source: 'alias',
+      autoRetry: false,
+      reason: `${toolName} is a common alias for ${exactAlias}. The facade does not auto-route aliases.`,
+      repair: {
+        workspaceCall: workspaceCallSnippetForTool(exactAlias),
+        toolsSearchCall: toolsSearchCallSnippet(query),
+      },
+    };
+  }
+
+  const aliasCandidates = (AMBIGUOUS_TOOL_ALIASES.get(toolName) || []).filter(hasManifestTool);
+  if (aliasCandidates.length > 0) {
+    const query = unknownToolSearchQuery(toolName);
+    return {
+      requestedTool: toolName,
+      candidates: aliasCandidates,
+      confidence: 'low',
+      source: 'alias',
+      autoRetry: false,
+      reason: `${toolName} is ambiguous across repo, task, and machine tool families.`,
+      repair: {
+        toolsSearchCall: toolsSearchCallSnippet(query),
+      },
+    };
+  }
+
+  const query = unknownToolSearchQuery(toolName);
+  const search = await runToolSearch({ query, limit: 5, includeDocs: false, includeEmbeddings: false });
+  const recommended = typeof search.recommended === 'string' && hasManifestTool(search.recommended)
+    ? search.recommended
+    : undefined;
+  const matches = searchMatches(search);
+
+  return {
+    requestedTool: toolName,
+    ...(recommended ? { recommendedTool: recommended } : {}),
+    ...(matches.length > 0 ? { candidates: matches.slice(0, 5) } : {}),
+    confidence: searchConfidence(search),
+    source: 'tools.search',
+    autoRetry: false,
+    reason: recommended
+      ? `tools.search ranked ${recommended} as the closest manifest tool.`
+      : 'tools.search did not find a confident manifest tool.',
+    repair: {
+      ...(recommended ? { workspaceCall: workspaceCallSnippetForTool(recommended) } : {}),
+      toolsSearchCall: toolsSearchCallSnippet(query),
+    },
+    search: {
+      query,
+      ...(typeof search.totalMatches === 'number' ? { totalMatches: search.totalMatches } : {}),
+      ...(matches.length > 0 ? { matches: matches.slice(0, 5) } : {}),
+    },
+  };
+}
+
+function unknownToolMessage(toolName: string, recovery: UnknownToolRecovery): string {
+  if (recovery.recommendedTool) return `unknown tool: ${toolName}; use ${recovery.recommendedTool}`;
+  if (recovery.candidates && recovery.candidates.length > 0) {
+    return `unknown tool: ${toolName}; run tools.search to choose between ${recovery.candidates.join(', ')}`;
+  }
+  return `unknown tool: ${toolName}; run tools.search with query ${JSON.stringify(unknownToolSearchQuery(toolName))}`;
+}
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
@@ -114,11 +258,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const recovery = await buildUnknownToolRecovery(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: unknownToolMessage(toolName, recovery),
+        data: recovery,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
