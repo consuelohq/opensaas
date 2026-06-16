@@ -439,7 +439,7 @@ When raw shell is necessary, keep it minimal and classify it as a tooling gap:
 - return bounded output
 - explain the tooling gap
 
-`code.call` is the preferred command tool for running real package commands, focused tests, build checks, and validation commands when no more specific typed validation tool exists. `code.call` remains a legacy alias for compatibility. It is not acceptable for GitHub state, repo file reads, grep/search, heredocs, or compound git recovery when a typed workspace tool can express the same intent.
+`code.call` is the preferred command tool for running repo-scoped package commands, focused tests, build checks, typechecks, syntax checks, and validation commands when no more specific typed validation tool exists. Use `code.call` with `taskSession`, `language: "bash"`, and `mode: "verify"` for focused commands such as `bun --cwd packages/os test tests/tool-manifest.test.ts`. Do not use `mac.call` for repo-scoped tests or validation when a task branch/session exists. `mac.call` is an emergency host escape hatch for non-repo machine inspection or recovery when task worktree routing is broken.
 
 After using raw shell for a repeated need, propose the missing workspace tool so the workflow becomes typed next time.
 
@@ -453,8 +453,8 @@ Use this recovery order:
 2. One programmable workspace workflow: `code.run` over typed workspace APIs.
 3. Multiple independent read-only operations: `batch`.
 4. Large or multiline payload: `tmp`, `contentFile`, `--input-file`, or explicit `--stdin`.
-5. Focused package/test/build command: `code.call` with a short argv array. Legacy `code.call` remains supported.
-6. Non-repo machine inspection: `mac.*`.
+5. Focused package/test/build/typecheck command: task-scoped `code.call` with `language: "bash"`, `mode: "verify"`, and a short command body.
+6. Non-repo machine inspection or emergency recovery only: `mac.*`; do not use `mac.call` for repo-scoped tests.
 7. Missing typed operation: state the tooling gap and use the smallest safe fallback.
 
 Avoid these payload shapes:
@@ -1509,7 +1509,7 @@ for command construction:
 
 ## shell command construction with base64 + JSON escaping
 
-Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When raw shell is necessary inside `code.call`, keep the command as a command array and avoid nested JSON/string quoting.
+Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When a focused repo command is necessary, use task-scoped `code.call` rather than `mac.call`; keep Bash code short, direct, and free of `bash -lc` wrappers or nested JSON/string quoting.
 
 If a command must decode base64 through Python, keep the encoded payload as a positional argument:
 
@@ -1596,3 +1596,10 @@ If a tool represents a user-runnable operation, provide a Bun script entrypoint 
 
 Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
 
+
+
+## code.call versus mac.call
+
+`code.call` is the normal repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python/Bun/Bash programs. Pass `taskSession` so the facade routes execution to the task worktree, use `mode: "verify"` for validation commands, and keep output bounded with `maxResultChars`.
+
+Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation when a task branch/session exists. `mac.call` is an emergency host escape hatch for non-repo Mac inspection or recovery when task worktree routing is unavailable or broken.

@@ -54,7 +54,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime
+preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists
 
 | Field | Value |
 | --- | --- |
@@ -70,9 +70,9 @@ run short language-specific code through staged Python, Bun, or Bash backends in
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
-    "mode": "read",
-    "code": "print(\"hello\")",
+    "language": "bash",
+    "mode": "verify",
+    "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
     "maxResultChars": 20000
   }
 });
@@ -3531,7 +3531,7 @@ await workspace.call({
 
 ### workspace.mac.call
 
-run a non-repo shell command on the Mac
+emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3547,7 +3547,7 @@ run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.call",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });
@@ -3591,7 +3591,7 @@ await workspace.call({
 
 ### workspace.mac.exec
 
-legacy alias for mac.call; run a non-repo shell command on the Mac
+legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3607,7 +3607,7 @@ legacy alias for mac.call; run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.exec",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });

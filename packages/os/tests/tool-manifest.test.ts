@@ -163,6 +163,8 @@ describe('tool manifest generator', () => {
     expect(coreNames).toContain('github');
     expect(coreNames).toContain('gh');
     expect(coreNames).toContain('mac.read');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
     expect(coreNames).toContain('tools.search');
     expect(coreNames).toContain('status');
     expect(coreNames).toContain('doctor');
@@ -192,9 +194,13 @@ describe('tool manifest generator', () => {
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
     const lifecycleTools = ['task.start', 'task.current', 'task.push', 'task.pr', 'task.finish'];
+    const codeCallEntry = registry.core.tools.find((entry) => entry.name === 'code.call');
+    const macCallEntry = registry.full.tools.find((entry) => entry.name === 'mac.call');
 
     expect(fullNames).toContain('code.call');
     expect(coreNames).toContain('code.call');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
     for (const toolName of lifecycleTools) {
       expect(fullNames).toContain(toolName);
       expect(coreNames).toContain(toolName);
@@ -209,6 +215,14 @@ describe('tool manifest generator', () => {
     expect(publicText).not.toContain('task.exec');
     expect(publicText).not.toContain('task:exec');
     expect(publicText).toContain('code.call');
+    expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
+
+    expect(codeCallEntry?.description).toContain('preferred repo-scoped execution tool');
+    expect(codeCallEntry?.description).toContain('tests');
+    expect(codeCallEntry?.description).toContain('package scripts');
+    expect(JSON.stringify(codeCallEntry?.definition)).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
+    expect(macCallEntry?.description).toContain('emergency host escape hatch');
+    expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 
     const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
     const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
