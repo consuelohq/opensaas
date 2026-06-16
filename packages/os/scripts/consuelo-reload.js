@@ -13,6 +13,7 @@ const OS_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-brain.sh');
 const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Library', 'Logs', 'Consuelo', 'system.log');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
+const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
@@ -23,6 +24,17 @@ function run(command, args = []) {
   } catch (error) {
     return error.stdout?.trim() || error.message;
   }
+}
+
+function sleep(seconds) {
+  run('sleep', [String(seconds)]);
+}
+
+function parsePids(output) {
+  return output
+    .split(/\s+/)
+    .map((pid) => pid.trim())
+    .filter((pid) => /^\d+$/.test(pid));
 }
 
 function health() {
@@ -40,25 +52,31 @@ function isLaunchdLoaded() {
 }
 
 function findServerPid() {
-  const pid = run('pgrep', ['-f', 'packages/os/scripts/server.ts|scripts/server.ts']);
-  return pid && /^\d+$/.test(pid) ? pid : null;
+  return findServerPids()[0] || null;
 }
 
-function findPortPid() {
-  const pid = run('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']);
-  return pid && /^\d+$/.test(pid) ? pid : null;
+function findServerPids() {
+  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server.ts|scripts/server.ts']));
+}
+
+function findPortPids() {
+  return parsePids(run('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']));
+}
+
+function findRunningPids() {
+  return [...new Set([...findServerPids(), ...findPortPids()])];
 }
 
 function killServer() {
-  const pids = new Set([findServerPid(), findPortPid()].filter(Boolean));
+  const pids = findRunningPids();
 
   for (const pid of pids) run('kill', [pid]);
   for (let index = 0; index < 10; index += 1) {
-    if (!findServerPid() && !findPortPid()) return true;
-    run('sleep', ['0.3']);
+    if (findRunningPids().length === 0) return true;
+    sleep(0.3);
   }
   for (const pid of pids) run('kill', ['-9', pid]);
-  return !findServerPid() && !findPortPid();
+  return findRunningPids().length === 0;
 }
 
 function startDirect() {
@@ -70,16 +88,17 @@ function startDirect() {
   }).unref();
 }
 
-function waitForHealth(label) {
-  for (let index = 0; index < 15; index += 1) {
+function waitForHealth(label, attempts = RELOAD_WAIT_ATTEMPTS) {
+  for (let index = 0; index < attempts; index += 1) {
     const result = health();
     if (result) {
       writeStdout(`${label}: healthy`);
-      const pid = findServerPid() || findPortPid();
-      if (pid) writeStdout(`  pid: ${pid}`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
+      writeStdout(`  health: ${HEALTH}`);
       return true;
     }
-    run('sleep', ['0.5']);
+    sleep(0.5);
   }
   writeStdout(`${label}: health check pending`);
   return false;
@@ -97,13 +116,14 @@ function bootstrapLaunchAgent() {
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
     bootoutLaunchAgent();
-    run('sleep', ['1']);
+    sleep(1);
     bootstrapLaunchAgent();
   } else {
     killServer();
-    run('sleep', ['1']);
+    sleep(1);
     startDirect();
   }
+  waitForHealth('reloaded');
 }
 
 function scheduleReload({ useLaunchd }) {
@@ -134,16 +154,18 @@ const useLaunchd = isLaunchdLoaded();
 
 switch (command) {
   case 'status': {
-    const result = health();
+    const shouldWaitForLaunchd = useLaunchd && existsSync(PLIST);
+    const result = health() || (findRunningPids().length || shouldWaitForLaunchd ? (waitForHealth('server starting', 20) ? health() : null) : null);
     if (result) {
       writeStdout('server running');
-      const pid = findServerPid() || findPortPid();
-      if (pid) writeStdout(`  pid: ${pid}`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
       writeStdout(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
+      writeStdout(`  health: ${HEALTH}`);
     } else {
       writeStdout('server not responding');
-      const pid = findServerPid() || findPortPid();
-      if (pid) writeStdout(`  process exists (pid ${pid}) but is not healthy`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  process exists (pid ${pids.join(', ')}) but is not healthy`);
     }
     break;
   }
@@ -155,7 +177,7 @@ switch (command) {
     break;
 
   case 'start':
-    if (findServerPid() || findPortPid()) {
+    if (findRunningPids().length) {
       writeStdout('server already running');
       break;
     }
@@ -172,9 +194,8 @@ switch (command) {
 
   case 'reload-now':
   case 'restart-now':
-    run('sleep', ['0.5']);
+    sleep(0.5);
     runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || useLaunchd });
-    if (!process.env.CONSUELO_OS_RELOAD_CHILD) waitForHealth('reloaded');
     break;
 
   case 'logs':
