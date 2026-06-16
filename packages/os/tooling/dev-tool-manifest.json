@@ -4711,7 +4711,7 @@
       "mac",
       "call"
     ],
-    "description": "run a non-repo shell command on the Mac",
+    "description": "emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.call",
     "capabilities": {
@@ -4747,7 +4747,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -4758,7 +4758,7 @@
       "mac",
       "exec"
     ],
-    "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
+    "description": "legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.exec",
     "capabilities": {
@@ -4794,7 +4794,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -5129,7 +5129,7 @@
       "code",
       "call"
     ],
-    "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+    "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
     "category": "codemode",
     "underlying": "os code.call",
     "capabilities": {
@@ -5149,13 +5149,33 @@
       "arguments": []
     },
     "exampleInput": {
-      "language": "python",
-      "mode": "read",
-      "code": "print(\"hello\")",
+      "language": "bash",
+      "mode": "verify",
+      "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
       "maxResultChars": 20000
     },
     "sessionRequired": false,
-    "workflowRole": "test.run"
+    "workflowRole": "test.run",
+    "examples": [
+      {
+        "label": "task-scoped focused OS test",
+        "input": {
+          "language": "bash",
+          "mode": "verify",
+          "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+          "maxResultChars": 20000
+        }
+      },
+      {
+        "label": "short Python inspection",
+        "input": {
+          "language": "python",
+          "mode": "read",
+          "code": "print(\"hello\")",
+          "maxResultChars": 20000
+        }
+      }
+    ]
   },
   {
     "name": "tools.search",
