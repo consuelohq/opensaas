@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "effect": "^3.21.3",
     "execa": "^9.6.1",
     "node-llama-cpp": "^3.18.1",
     "sqlite-vec": "^0.1.9",

@@ -228,6 +228,40 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
+  it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
+    const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toContain('fs.patch is not a workspace tool');
+    expect(result.message).toContain('fs.apply_patch');
+
+    const data = result.data as {
+      requestedTool?: string;
+      replacementTool?: string;
+      manifestEntry?: {
+        name?: string;
+        inputSchema?: string;
+        command?: { subcommand?: string };
+      };
+    };
+
+    expect(data.requestedTool).toBe('fs.patch');
+    expect(data.replacementTool).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.name).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.inputSchema).toBe('FsApplyPatchInput');
+    expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
+  });
+
+  it('keeps generic unknown tool messages compact', async () => {
+    const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toBe('unknown tool: missing.tool');
+    expect(result.data).toBeNull();
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
@@ -352,6 +386,98 @@ describe('typed facade executor', () => {
     }, stableOptions(successfulRunner()));
     expect(result.requestId).toBe('req_123');
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
+  });
+
+  it('passes fs read page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_page');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_page',
+        path: 'packages/workspace/scripts/fs.js',
+        offset: 10,
+        limit: 5,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'packages/workspace/scripts/fs.js',
+        '--offset',
+        '10',
+        '--limit',
+        '5',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes fs read multi-file page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_files');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_files',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 2 },
+          { path: 'src/b.ts', offset: 10, limit: 3 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        '--files-json',
+        '[{"path":"src/a.ts","offset":1,"limit":2},{"path":"src/b.ts","offset":10,"limit":3}]',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mixed fs read pagination modes', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-mixed-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_mixed_page');
+    const plans: CommandPlan[] = [];
+    try {
+      for (const topLevelPage of [{ offset: 10 }, { limit: 5 }, { from: 2 }, { to: 4 }]) {
+        const result = await executeTool('fs.read', {
+          taskSession: 'tsk_fs_read_mixed_page',
+          files: [{ path: 'src/a.ts', offset: 1, limit: 2 }],
+          ...topLevelPage,
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.code).toBe('VALIDATION_ERROR');
+        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+      }
+
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('runs http without taskSession', async () => {
