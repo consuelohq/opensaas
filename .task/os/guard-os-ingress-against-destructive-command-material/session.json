@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_82b31259580c",
+  "tmuxSession": "opensaas-os-guard-os-ingress-against-destructive-command-mat-82b31259",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guard-os-ingress-against-destructive-command-material",
+  "branch": "task/os/guard-os-ingress-against-destructive-command-material",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-os-ingress-against-destructive-command-material",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-os-ingress-against-destructive-command-material",
+  "prNumber": 1095,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1095",
+  "createdAt": "2026-06-16T21:23:33.839Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-os-ingress-against-destructive-command-material/.task/os/guard-os-ingress-against-destructive-command-material/session.json"
+}

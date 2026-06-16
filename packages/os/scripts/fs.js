@@ -210,17 +210,14 @@ async function cmdRead(argv) {
 
 // ── search ──
 
-function cmdSearch(argv) {
-  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
-
+function parseSearchArgs(argv) {
   const json = argv.includes('--json');
   const filesOnly = argv.includes('--files');
   const thenRead = argv.includes('--then-read');
-  let context = DEFAULT_CONTEXT;
+  let context = null;
   let maxResults = null;
   let include = null;
 
-  // extract flags
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -231,87 +228,38 @@ function cmdSearch(argv) {
     else { positional.push(a); }
   }
 
-  const pattern = positional[0];
-  const paths = positional.slice(1);
-  if (!pattern) { err('error: search pattern required'); searchHelp(); return; }
+  return { json, filesOnly, thenRead, context, maxResults, include, pattern: positional[0], paths: positional.slice(1) };
+}
 
-  // build rg args
-  const rgArgs = ['--color=always', '--line-number'];
-  SEARCH_EXCLUDES.forEach((e) => rgArgs.push(`--glob=!${e}`));
-  if (filesOnly) rgArgs.push('--files-with-matches');
-  else rgArgs.push(`--context=${context}`);
-  if (maxResults) rgArgs.push(`--max-count=${maxResults}`);
-  if (include) rgArgs.push(`--glob=${include}`);
-  rgArgs.push(pattern);
-  if (paths.length > 0) rgArgs.push(...paths);
+async function cmdSearch(argv) {
+  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
+  const parsed = parseSearchArgs(argv);
+  if (!parsed.pattern) { err('error: search pattern required'); searchHelp(); return; }
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-  const output = (r.stdout || '').trimEnd();
-
-  if (!output) { out('no matches'); return; }
-
-  if (json && !thenRead) {
-    // parse rg output into structured format
-    const matches = [];
-    output.split('\n').forEach((line) => {
-      const m = line.replace(/\x1b\[[0-9;]*m/g, '').match(/^(.+?):(\d+):(.*)/);
-      if (m) matches.push({ file: m[1], line: parseInt(m[2], 10), text: m[3].trim() });
+  const { runSearchForCli, formatSearchOutput } = await import('./lib/fs/search.ts');
+  let result;
+  try {
+    result = await runSearchForCli({
+      pattern: parsed.pattern,
+      paths: parsed.paths,
+      include: parsed.include || undefined,
+      context: parsed.context ?? (parsed.json ? 0 : DEFAULT_CONTEXT),
+      maxResults: parsed.maxResults || undefined,
+      filesOnly: parsed.filesOnly,
+      thenRead: parsed.thenRead,
+      root: process.cwd(),
     });
-    out(JSON.stringify(matches, null, 2));
+  } catch (cause) {
+    err('error: search failed: ' + (cause && cause.message ? cause.message : String(cause)));
     return;
   }
 
-  out(output);
-
-  if (thenRead) {
-    // re-run rg without color and with filename for reliable parsing
-    const parseArgs = ['--color=never', '--line-number', '--with-filename'];
-    SEARCH_EXCLUDES.forEach((e) => parseArgs.push(`--glob=!${e}`));
-    if (maxResults) parseArgs.push(`--max-count=${maxResults}`);
-    if (include) parseArgs.push(`--glob=${include}`);
-    parseArgs.push(pattern);
-    if (paths.length > 0) parseArgs.push(...paths);
-
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-    const parseOutput = (pr.stdout || '').trimEnd();
-
-    const seen = new Map();
-    parseOutput.split('\n').forEach((line) => {
-      const m = line.match(/^(.+?):(\d+):/);
-      if (m) {
-        const f = m[1];
-        const n = parseInt(m[2], 10);
-        if (!seen.has(f)) seen.set(f, []);
-        seen.get(f).push(n);
-      }
-    });
-
-    out('');
-    out('── then-read ──');
-    for (const [file, lines] of seen) {
-      const fp = resolve(file);
-      if (!fs.existsSync(fp)) continue;
-      const content = fs.readFileSync(fp, 'utf8').split('\n');
-      // merge nearby ranges
-      const sorted = [...new Set(lines)].sort((a, b) => a - b);
-      const ranges = [];
-      for (const n of sorted) {
-        const from = Math.max(1, n - context);
-        const to = Math.min(content.length, n + context);
-        if (ranges.length > 0 && from <= ranges[ranges.length - 1].to + 2) {
-          ranges[ranges.length - 1].to = to;
-        } else {
-          ranges.push({ from, to });
-        }
-      }
-      for (const range of ranges) {
-        out(`\n── ${file}:${range.from}-${range.to} ──`);
-        for (let i = range.from; i <= range.to; i++) {
-          out(`${String(i).padStart(4)}: ${content[i - 1]}`);
-        }
-      }
-    }
+  if (parsed.json) {
+    out(JSON.stringify(result, null, 2));
+    return;
   }
+
+  out(formatSearchOutput(result));
 }
 
 // ── list ──
@@ -413,94 +361,124 @@ function cmdList(argv) {
 
 // ── write ──
 
-function readFilePayload({ inlineContent, contentFile }) {
+async function readFilePayload({ inlineContent, contentFile }) {
   if (inlineContent !== null && contentFile !== null) {
-    err('error: use exactly one of --content or --content-file');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'use exactly one of --content or --content-file',
+    };
   }
 
   if (contentFile !== null) {
-    const contentPath = path.resolve(process.cwd(), contentFile);
     try {
-      const contentFileStats = fs.statSync(contentPath);
-      fs.accessSync(contentPath, fs.constants.R_OK);
-      if (!contentFileStats.isFile()) {
-        err(`error: content file must be a regular file: ${contentFile}`);
-        return null;
-      }
-    } catch {
-      err(`error: content file not found or not readable: ${contentFile}`);
-      return null;
+      const { readContentFileForCli } = await import('./lib/fs/write.ts');
+      const result = await readContentFileForCli(contentFile, { cwd: process.cwd() });
+      if (result && typeof result === 'object' && result.ok === false) return result;
+      return { ok: true, content: result };
+    } catch (error) {
+      return {
+        ok: false,
+        type: 'error',
+        code: 'CONTENT_FILE_NOT_READABLE',
+        path: contentFile,
+        message: `failed to read content file: ${error && error.message ? error.message : String(error)}`,
+      };
     }
-    return fs.readFileSync(contentPath, 'utf8');
   }
 
-  if (inlineContent !== null) return inlineContent;
+  if (inlineContent !== null) return { ok: true, content: inlineContent };
 
   if (process.stdin.isTTY) {
-    err('error: no content (pipe via stdin, use --content, or use --content-file)');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content (pipe via stdin, use --content, or use --content-file)',
+    };
   }
 
   const stdinContent = readStdin();
   if (stdinContent === '') {
-    err('error: no content received on stdin');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content received on stdin',
+    };
   }
-  return stdinContent;
+  return { ok: true, content: stdinContent };
 }
 
-function cmdWrite(argv) {
+function renderWriteError(result, json) {
+  process.exitCode = 1;
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  err(`${result.code || 'WRITE_FAILED'}: ${result.message || 'write failed'}`);
+}
+
+function renderWriteSuccess(result, json) {
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  if (result.operation === 'append') out(`appended to ${result.path}`);
+  else out(`wrote ${result.path} (${result.lines} lines)`);
+}
+
+async function cmdWrite(argv) {
   if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
 
   const force = argv.includes('--force');
   const append = argv.includes('--append');
   const mkdirs = argv.includes('--mkdirs');
+  const json = argv.includes('--json');
 
-  let inlineContent = null;
-  let contentFile = null;
-  let filePath = null;
+  try {
 
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
-    else if (!a.startsWith('--') && !filePath) { filePath = a; }
-  }
+    let inlineContent = null;
+    let contentFile = null;
+    let filePath = null;
 
-  if (!filePath) { err('error: file path required'); writeHelp(); return; }
+    for (let i = 0; i < argv.length; i++) {
+      const a = argv[i];
+      if (a === '--content') { inlineContent = argv[++i]; }
+      else if (a === '--content-file') { contentFile = argv[++i]; }
+      else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin' || a === '--json') { /* skip */ }
+      else if (!a.startsWith('--') && !filePath) { filePath = a; }
+    }
 
-  const fp = resolve(filePath);
-  const content = readFilePayload({ inlineContent, contentFile });
+    if (!filePath) { err('error: file path required'); writeHelp(); return; }
 
-  if (content === null) return;
+    const payload = await readFilePayload({ inlineContent, contentFile });
 
-  if (fs.existsSync(fp) && !force && !append) {
-    err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
-    return;
-  }
-
-  const dir = path.dirname(fp);
-  if (!fs.existsSync(dir)) {
-    if (mkdirs) {
-      fs.mkdirSync(dir, { recursive: true });
-    } else {
-      err(`error: directory ${path.dirname(filePath)} does not exist. use --mkdirs to create.`);
+    if (!payload.ok) {
+      renderWriteError(payload, json);
       return;
     }
-  }
 
-  if (append) {
-    fs.appendFileSync(fp, content);
-    out(`appended to ${filePath}`);
-  } else {
-    fs.writeFileSync(fp, content);
-    out(`wrote ${filePath} (${content.split('\n').length} lines)`);
-  }
+    const { writeFileForCli } = await import('./lib/fs/write.ts');
+    const result = await writeFileForCli({ path: filePath, content: payload.content, force, append, mkdirs }, { root: process.cwd() });
+    if (!result.ok) {
+      renderWriteError(result, json);
+      return;
+    }
 
-  // log to workpad if it exists
-  logToWorkpad(filePath, append ? 'append' : 'write');
+    renderWriteSuccess(result, json);
+
+    // log to workpad if it exists
+    logToWorkpad(result.path, result.operation === 'append' ? 'append' : 'write');
+  } catch (error) {
+    renderWriteError({
+      ok: false,
+      type: 'error',
+      code: 'WRITE_FAILED',
+      message: `write command failed: ${error && error.message ? error.message : String(error)}`,
+    }, json);
+  }
 }
 
 // ── removed patch command ──
@@ -932,9 +910,9 @@ async function main() {
 
   switch (command) {
     case 'read': await cmdRead(rest); break;
-    case 'search': cmdSearch(rest); break;
+    case 'search': await cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
-    case 'write': cmdWrite(rest); break;
+    case 'write': await cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
     case 'apply-patch': cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;

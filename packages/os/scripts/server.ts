@@ -9,6 +9,11 @@ import {
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
+import {
+  assessDangerousMaterial,
+  dangerousMaterialError,
+  type DangerousMaterialDecision,
+} from './lib/dangerous-material-policy';
 import type { CallInput } from './lib/types';
 import {
   createTraceSitesGatewayLiveEndpoints,
@@ -172,6 +177,30 @@ function invalidRequest(error: unknown): Response {
   }, 400);
 }
 
+function dangerousMaterialResponse(decision: Exclude<DangerousMaterialDecision, { allowed: true }>): Response {
+  return jsonResponse({
+    ok: false,
+    error: dangerousMaterialError(decision),
+    securityEvent: decision.securityEvent,
+  }, 400);
+}
+
+function admitRawCallBody(body: string): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server call raw-body',
+    rawBody: body,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
+function admitDecodedCallBody(input: CallInput): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server call decoded-json',
+    value: input,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
 function resolveTraceDbPath(): string {
   if (TRACE_DB_ENV) return TRACE_DB_ENV;
   const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
@@ -247,8 +276,8 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/call' && request.method === 'POST') {
     const body = await request.clone().text();
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
+    const rawMaterialDenied = admitRawCallBody(body);
+    if (rawMaterialDenied) return rawMaterialDenied;
 
     let input: CallInput;
     try {
@@ -256,6 +285,12 @@ async function handleRequest(request: Request): Promise<Response> {
     } catch (error: unknown) {
       return invalidRequest(error);
     }
+
+    const decodedMaterialDenied = admitDecodedCallBody(input);
+    if (decodedMaterialDenied) return decodedMaterialDenied;
+
+    const preflightDenied = authPreflight(request);
+    if (preflightDenied) return preflightDenied;
 
     const denied = await authorizeSignedRequest({
       request,

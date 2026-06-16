@@ -12,6 +12,10 @@ import {
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
+  assessDangerousMaterial,
+  dangerousMaterialError,
+} from './lib/dangerous-material-policy';
+import {
   ensureRuntimePaths,
   getRuntimePaths,
   readSteeringGuardDecisions,
@@ -1025,6 +1029,21 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
   const workspaceId =
     callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
   const userId = callInput.userId ?? process.env.CONSUELO_USER_ID;
+
+  const materialDecision = assessDangerousMaterial({
+    source: 'executeCall decoded-input',
+    value: callInput,
+  });
+  if (!materialDecision.allowed) {
+    return {
+      ok: false,
+      name: callInput.name,
+      permission: 'admin',
+      traceId,
+      durationMs: Date.now() - started,
+      error: dangerousMaterialError(materialDecision),
+    };
+  }
 
   recordExecutionStarted({
     traceId,

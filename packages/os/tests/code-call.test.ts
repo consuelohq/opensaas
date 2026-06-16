@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -12,6 +12,12 @@ const TEST_UUID = 'abc123def4567890abc123def4567890';
 
 function tempRoot(prefix = 'os-code-call-'): string {
   return mkdtempSync(join(tmpdir(), prefix));
+}
+
+function tempTaskWorktree(): string {
+  const worktreeRoot = join(tmpdir(), 'opensaas-worktrees');
+  mkdirSync(worktreeRoot, { recursive: true });
+  return mkdtempSync(join(worktreeRoot, 'task-os-code-call-'));
 }
 
 function scriptPath(): string {
@@ -170,6 +176,29 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('allows edit mode when the facade has already routed cwd to a managed task worktree', async () => {
+    const root = tempTaskWorktree();
+    try {
+      const result = await executeCodeCall({
+        language: 'bash',
+        mode: 'edit',
+        code: 'printf changed > edited.txt',
+      }, {
+        cwd: root,
+        now: () => 1000,
+        randomUUID: () => TEST_UUID,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data.cwd).toBe(realpathSync(root));
+      expect(result.data.filesChanged).toContain('edited.txt');
+      expect(readFileSync(join(root, 'edited.txt'), 'utf8')).toBe('changed');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('truncates oversized output deterministically', async () => {
     const root = tempRoot();
     try {
@@ -291,6 +320,6 @@ describe('code.call OS integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('staged Python, Bun, or Bash');
+    expect(docs).toContain('preferred repo-scoped execution tool');
   });
 });

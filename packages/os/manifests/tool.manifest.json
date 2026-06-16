@@ -1558,7 +1558,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+      "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -1566,7 +1566,7 @@
           "code",
           "call"
         ],
-        "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+        "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -1586,13 +1586,33 @@
           "arguments": []
         },
         "exampleInput": {
-          "language": "python",
-          "mode": "read",
-          "code": "print(\"hello\")",
+          "language": "bash",
+          "mode": "verify",
+          "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
           "maxResultChars": 20000
         },
         "sessionRequired": false,
-        "workflowRole": "test.run"
+        "workflowRole": "test.run",
+        "examples": [
+          {
+            "label": "task-scoped focused OS test",
+            "input": {
+              "language": "bash",
+              "mode": "verify",
+              "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+              "maxResultChars": 20000
+            }
+          },
+          {
+            "label": "short Python inspection",
+            "input": {
+              "language": "python",
+              "mode": "read",
+              "code": "print(\"hello\")",
+              "maxResultChars": 20000
+            }
+          }
+        ]
       }
     },
     {
@@ -3959,7 +3979,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "search files with ripgrep through the workspace script",
+      "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
       "core": true,
       "definition": {
         "name": "fs.search",
@@ -3967,7 +3987,7 @@
           "fs",
           "search"
         ],
-        "description": "search files with ripgrep through the workspace script",
+        "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
         "category": "filesystem",
         "underlying": "workspace fs search, or task:fs search when a branch is resolved",
         "capabilities": {
@@ -4013,13 +4033,33 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/workspace-agents/example",
+          "branch": "task/os/example",
           "pattern": "task:fs",
-          "paths": [
-            "packages/os/SCRIPTS.md"
-          ]
+          "path": "packages/os/SCRIPTS.md"
         },
-        "sessionRequired": true
+        "sessionRequired": true,
+        "examples": [
+          {
+            "label": "search a directory",
+            "input": {
+              "pattern": "Effect.gen",
+              "path": "packages/os/scripts",
+              "include": "*.ts",
+              "maxResults": 20
+            }
+          },
+          {
+            "label": "search multiple paths",
+            "input": {
+              "pattern": "task:fs",
+              "paths": [
+                "packages/os/SCRIPTS.md",
+                "packages/os/TOOLS.md"
+              ],
+              "maxResults": 10
+            }
+          }
+        ]
       }
     },
     {
@@ -5194,15 +5234,15 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
-      "description": "run a non-repo shell command on the Mac",
-      "core": true,
+      "description": "emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
+      "core": false,
       "definition": {
         "name": "mac.call",
         "methodPath": [
           "mac",
           "call"
         ],
-        "description": "run a non-repo shell command on the Mac",
+        "description": "emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
         "category": "mac",
         "underlying": "workspace mac.call",
         "capabilities": {
@@ -5238,7 +5278,7 @@
           ]
         },
         "exampleInput": {
-          "command": "pwd",
+          "command": "sw_vers",
           "dryRun": true
         },
         "sessionRequired": false
@@ -5250,15 +5290,15 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
-      "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
-      "core": true,
+      "description": "legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
+      "core": false,
       "definition": {
         "name": "mac.exec",
         "methodPath": [
           "mac",
           "exec"
         ],
-        "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
+        "description": "legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
         "category": "mac",
         "underlying": "workspace mac.exec",
         "capabilities": {
@@ -5294,7 +5334,7 @@
           ]
         },
         "exampleInput": {
-          "command": "pwd",
+          "command": "sw_vers",
           "dryRun": true
         },
         "sessionRequired": false

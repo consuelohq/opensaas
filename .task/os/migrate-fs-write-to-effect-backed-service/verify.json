@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/migrate-fs-write-to-effect-backed-service",
+  "base": "origin/stream/os",
+  "headSha": "68987b7b301028426917269428b7d85e5fc64b0d",
+  "changeHash": "5978c338b55dbd114d306c87915a08ab6cf3272174a789733c38cb29c60489c1",
+  "changedFiles": [
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/write.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-write.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T20:36:21.053Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/migrate-fs-write-to-effect-backed-service/current.json",
+        ".task/os/migrate-fs-write-to-effect-backed-service/evidence-log.json",
+        ".task/os/migrate-fs-write-to-effect-backed-service/read-log.json",
+        ".task/os/migrate-fs-write-to-effect-backed-service/session.json",
+        ".task/os/migrate-fs-write-to-effect-backed-service/workpad.md",
+        ".task/tasks/os/migrate-fs-write-to-effect-backed-service.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/fs/write.ts",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/fs-write.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

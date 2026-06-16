@@ -54,7 +54,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime
+preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists
 
 | Field | Value |
 | --- | --- |
@@ -70,9 +70,9 @@ run short language-specific code through staged Python, Bun, or Bash backends in
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
-    "mode": "read",
-    "code": "print(\"hello\")",
+    "language": "bash",
+    "mode": "verify",
+    "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
     "maxResultChars": 20000
   }
 });
@@ -2492,12 +2492,12 @@ await workspace.call({
 
 ### workspace.fs.search
 
-search files with ripgrep through the workspace script
+search file contents with ripgrep and return structured bounded matches for agent-safe discovery
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>` |
+| Signature | `workspace.fs.search({ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } &#124; { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs search, or task:fs search when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -2508,11 +2508,9 @@ search files with ripgrep through the workspace script
 await workspace.call({
   "tool": "fs.search",
   "input": {
-    "branch": "task/workspace-agents/example",
+    "branch": "task/os/example",
     "pattern": "task:fs",
-    "paths": [
-      "packages/os/SCRIPTS.md"
-    ]
+    "path": "packages/os/SCRIPTS.md"
   }
 });
 ```
@@ -3533,7 +3531,7 @@ await workspace.call({
 
 ### workspace.mac.call
 
-run a non-repo shell command on the Mac
+emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3549,7 +3547,7 @@ run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.call",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });
@@ -3593,7 +3591,7 @@ await workspace.call({
 
 ### workspace.mac.exec
 
-legacy alias for mac.call; run a non-repo shell command on the Mac
+legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3609,7 +3607,7 @@ legacy alias for mac.call; run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.exec",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });
