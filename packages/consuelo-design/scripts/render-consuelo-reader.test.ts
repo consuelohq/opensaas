@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { renderConsueloReader } from './render-consuelo-reader';
+import { READER_SHELL_VERSION, renderConsueloReader } from './render-consuelo-reader';
 import { validateConsueloReaderHtml } from './validate-consuelo-reader';
 
 const specContent = {
@@ -360,6 +360,25 @@ describe('reader nav display title', () => {
     });
 
     expect(html).toContain('class="reader-brand" href="/design-wiki" aria-label="How To Speak - Communication Field Guide" title="How To Speak - Communication Field Guide">How To Speak</a>');
+    expect(validateConsueloReaderHtml(html).ok).toBe(true);
+  });
+});
+
+describe('reader shell version contract', () => {
+  test('advertises the current canonical shell version in html and footer', () => {
+    const html = renderConsueloReader({
+      template: 'guide',
+      title: 'Version Fixture',
+      thesis: 'The shell version is part of the artifact contract for downstream agents.',
+      sections: [{ id: 'summary', title: 'Summary', body: ['Version markers must stay explicit.'] }],
+      ledgerTitle: 'Task',
+      ledger: [{ title: 'Checklist', items: [{ status: 'current', text: 'Check shell version.' }] }],
+    });
+
+    expect(READER_SHELL_VERSION).toBe('1.3.0');
+    expect(html).toContain('data-reader-shell-version="1.3.0"');
+    expect(html).toContain('version:"1.3.0"');
+    expect(html).toContain('canonical Consuelo reader shell 1.3.0');
     expect(validateConsueloReaderHtml(html).ok).toBe(true);
   });
 });

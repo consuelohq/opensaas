@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-design/.gitignore",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "updatedAt": "2026-06-16T23:10:37.430Z"
+}

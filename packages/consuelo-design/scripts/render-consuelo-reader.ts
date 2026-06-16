@@ -12,7 +12,7 @@ function writeStderr(value: string): void {
   process.stderr.write(`${value}\n`);
 }
 
-export const READER_SHELL_VERSION = '1.2.0';
+export const READER_SHELL_VERSION = '1.3.0';
 export const READER_SHELL_TEMPLATES = ['spec', 'plan', 'guide'] as const;
 export type ReaderTemplate = typeof READER_SHELL_TEMPLATES[number];
 export type LedgerStatus = 'done' | 'current' | 'todo' | 'blocked';
