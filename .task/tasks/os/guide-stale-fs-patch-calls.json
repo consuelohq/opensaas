@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guide-stale-fs-patch-calls",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1081,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1081",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1081",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1081/guide-stale-fs-patch-calls",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1081",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1081/guide-stale-fs-patch-calls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-stale-fs-patch-calls",
+  "taskSession": "tsk_4abb35b87491",
+  "tmuxSession": "opensaas-os-guide-stale-fs-patch-calls-4abb35b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-stale-fs-patch-calls/.task/os/guide-stale-fs-patch-calls/session.json",
+  "createdAt": "2026-06-16T07:54:56.969Z"
+}

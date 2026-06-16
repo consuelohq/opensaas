@@ -64,6 +64,36 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
+function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
+  if (toolName !== 'fs.patch') {
+    return { message: `unknown tool: ${toolName}`, data: null };
+  }
+
+  const manifestEntry = getToolManifestEntry('fs.apply_patch');
+  return {
+    message: [
+      'unknown tool: fs.patch.',
+      'fs.patch is not an OS tool; use fs.apply_patch instead.',
+      'Call it with exactly one of patchText or patchFile.',
+      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+    ].join(' '),
+    data: {
+      requestedTool: 'fs.patch',
+      replacementTool: 'fs.apply_patch',
+      action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
+      exampleCall: {
+        tool: 'fs.apply_patch',
+        input: {
+          taskSession: '<taskSession>',
+          patchFile: '/tmp/change.patch',
+          dryRun: true,
+        },
+      },
+      manifestEntry,
+    },
+  };
+}
+
 
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
@@ -114,11 +144,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const guidance = buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: guidance.message,
+        data: guidance.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
