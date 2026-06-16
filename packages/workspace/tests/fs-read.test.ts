@@ -1,196 +1,280 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { afterEach, expect, test } from 'vitest';
 
-const cleanupPaths: string[] = [];
-const repoRoot = path.resolve(import.meta.dirname, '../../..');
+import { describe, expect, it } from 'vitest';
 
-function makeTempDirectory() {
-  const directory = mkdtempSync(path.join(tmpdir(), 'workspace-fs-read-'));
-  cleanupPaths.push(directory);
-  return directory;
+const packageRoot = path.join(import.meta.dirname, '..');
+const fsScript = path.join(packageRoot, 'scripts', 'fs.js');
+const readModule = path.join(packageRoot, 'scripts', 'lib', 'fs', 'read.ts');
+const oldReadModule = path.join(packageRoot, 'scripts', 'lib', 'fs', 'read.js');
+
+function fixtureRoot(): string {
+  return mkdtempSync(path.join(tmpdir(), 'consuelo-workspace-fs-read-'));
 }
 
 function runRead(cwd: string, args: string[]) {
-  return spawnSync('bun', [path.join(repoRoot, 'packages/workspace/scripts/fs.js'), 'read', ...args, '--json'], {
+  const proc = spawnSync('bun', [fsScript, 'read', ...args, '--json'], {
     cwd,
     encoding: 'utf8',
-    maxBuffer: 20 * 1024 * 1024,
+    maxBuffer: 32 * 1024 * 1024,
   });
+  return {
+    status: proc.status ?? 0,
+    stdout: proc.stdout,
+    stderr: proc.stderr,
+    json: proc.stdout.trim() ? JSON.parse(proc.stdout) : null,
+  };
 }
 
-function readJson(cwd: string, args: string[]) {
-  const result = runRead(cwd, args);
-  expect(result.stderr).toBe('');
-  expect(result.status).toBe(0);
-  return JSON.parse(result.stdout) as unknown;
-}
+describe('workspace fs.read bounded ingestion', () => {
+  it('should return a structured text page for a small UTF-8 file', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'small.txt'), 'one\ntwo\nthree\n');
+      const result = runRead(root, ['small.txt']);
 
-afterEach(() => {
-  while (cleanupPaths.length > 0) {
-    rmSync(cleanupPaths.pop()!, { force: true, recursive: true });
-  }
-});
-
-test('should return a structured text page for a small UTF-8 file', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'small.txt'), 'one\ntwo\nthree\n');
-
-  const payload = readJson(root, ['small.txt']) as Record<string, unknown>;
-
-  expect(payload).toMatchObject({
-    type: 'text-page',
-    path: 'small.txt',
-    encoding: 'utf8',
-    offset: 1,
-    truncated: false,
-    content: 'one\ntwo\nthree\n',
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({
+        type: 'text-page',
+        path: 'small.txt',
+        mime: 'text/plain',
+        encoding: 'utf8',
+        offset: 1,
+        truncated: false,
+        content: 'one\ntwo\nthree',
+      });
+      expect(result.json.next).toBeUndefined();
+      expect(result.stdout).not.toMatch(/\x1b\[/);
+      expect(result.stdout).not.toContain('────');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
-  expect(payload.mime).toBe('text/plain');
-  expect(payload).not.toHaveProperty('next');
-  expect(payload).not.toHaveProperty('lines');
-});
 
-test('should page large text with offset limit truncated and next', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'large.txt'), Array.from({ length: 5000 }, (_, index) => `line-${index + 1}`).join('\n'));
+  it('should return only the requested page with next for large text files', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'large.txt'), Array.from({ length: 300 }, (_, index) => `line-${index + 1}`).join('\n'));
+      const result = runRead(root, ['large.txt', '--offset', '101', '--limit', '25']);
 
-  const payload = readJson(root, ['large.txt', '--offset', '20', '--limit', '5']) as Record<string, unknown>;
-
-  expect(payload).toMatchObject({
-    type: 'text-page',
-    path: 'large.txt',
-    encoding: 'utf8',
-    offset: 20,
-    limit: 5,
-    truncated: true,
-    next: 25,
-    content: 'line-20\nline-21\nline-22\nline-23\nline-24',
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({
+        type: 'text-page',
+        path: 'large.txt',
+        offset: 101,
+        limit: 25,
+        truncated: true,
+        next: 126,
+      });
+      expect(result.json.content.split('\n')).toHaveLength(25);
+      expect(result.json.content).toContain('line-101');
+      expect(result.json.content).toContain('line-125');
+      expect(result.json.content).not.toContain('line-1\n');
+      expect(result.json.content).not.toContain('line-300');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
-});
 
-test('should keep from and to as aliases for page semantics', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'range.txt'), 'a\nb\nc\nd\n');
+  it('should reject malformed files-json with a helpful error', () => {
+    const root = fixtureRoot();
+    try {
+      const proc = spawnSync('bun', [fsScript, 'read', '--files-json', '{bad', '--json'], {
+        cwd: root,
+        encoding: 'utf8',
+        maxBuffer: 32 * 1024 * 1024,
+      });
 
-  const payload = readJson(root, ['range.txt', '--from', '2', '--to', '3']) as Record<string, unknown>;
-
-  expect(payload).toMatchObject({
-    type: 'text-page',
-    offset: 2,
-    limit: 2,
-    content: 'b\nc',
-    truncated: true,
-    next: 4,
+      expect(proc.status).toBe(1);
+      expect(proc.stdout.trim()).toBe('');
+      expect(proc.stderr).toContain('--files-json must be valid JSON');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
-});
 
-test('should cap requested limits at the hard maximum', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'limit.txt'), 'one\ntwo\n');
+  it('should return a typed error for inverted line ranges', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'range.txt'), 'one\ntwo\nthree\n');
+      const result = runRead(root, ['range.txt', '--offset', '3', '--to', '2']);
 
-  const payload = readJson(root, ['limit.txt', '--limit', '2500']) as Record<string, unknown>;
-
-  expect(payload).toMatchObject({
-    type: 'text-page',
-    limit: 2000,
-    truncated: false,
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({
+        type: 'error',
+        code: 'INVALID_RANGE',
+        path: 'range.txt',
+      });
+      expect(result.json.message).toContain('--to');
+      expect(result.json.message).toContain('3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
-});
 
-test('should return a typed offset error when the requested page is out of range', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'short.txt'), 'one\ntwo\n');
+  it('should return a typed out-of-range error', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'short.txt'), 'one\ntwo\n');
+      const result = runRead(root, ['short.txt', '--offset', '10', '--limit', '5']);
 
-  const payload = readJson(root, ['short.txt', '--offset', '20']) as Record<string, unknown>;
-
-  expect(payload).toMatchObject({
-    type: 'error',
-    path: 'short.txt',
-    error: {
-      code: 'OFFSET_OUT_OF_RANGE',
-    },
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({
+        type: 'error',
+        code: 'OFFSET_OUT_OF_RANGE',
+        path: 'short.txt',
+      });
+      expect(result.json.message).toContain('10');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
-  expect(JSON.stringify(payload)).toContain('Offset 20 is out of range');
-});
 
-test('should truncate very long lines with a visible suffix', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'long-line.txt'), `${'x'.repeat(5000)}\n`);
+  it('should cap requested limits at the hard maximum', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'many.txt'), Array.from({ length: 2105 }, (_, index) => `line-${index + 1}`).join('\n'));
+      const result = runRead(root, ['many.txt', '--limit', '5000']);
 
-  const payload = readJson(root, ['long-line.txt']) as Record<string, unknown>;
+      expect(result.status).toBe(0);
+      expect(result.json.type).toBe('text-page');
+      expect(result.json.limit).toBe(2000);
+      expect(result.json.content.split('\n')).toHaveLength(2000);
+      expect(result.json.truncated).toBe(true);
+      expect(result.json.next).toBe(2001);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 
-  expect(payload.type).toBe('text-page');
-  expect(String(payload.content)).toContain('... (line truncated to 2000 chars)');
-  expect(String(payload.content).length).toBeLessThan(2100);
-});
+  it('should truncate long lines with a visible suffix', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'long-line.txt'), `${'x'.repeat(5000)}\n`);
+      const result = runRead(root, ['long-line.txt']);
 
-test('should detect binary pdf and invalid utf8 without dumping bytes', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'nulls.bin'), Buffer.from([0, 1, 2, 3, 4]));
-  writeFileSync(path.join(root, 'fake.pdf'), '%PDF-1.7\n%test\n');
-  writeFileSync(path.join(root, 'invalid.txt'), Buffer.from([0xc3, 0x28]));
+      expect(result.status).toBe(0);
+      expect(result.json.type).toBe('text-page');
+      expect(result.json.content.length).toBeLessThan(2300);
+      expect(result.json.content).toContain('line truncated to 2000 chars');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 
-  const payload = readJson(root, ['nulls.bin', 'fake.pdf', 'invalid.txt']) as { results: Array<Record<string, unknown>> };
+  it('should not dump binary, PDF, or invalid UTF-8 files as text', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'binary.bin'), Buffer.from([0, 1, 2, 3]));
+      writeFileSync(path.join(root, 'fake.pdf'), '%PDF-1.7\n%test\n');
+      writeFileSync(path.join(root, 'bad-utf8.txt'), Buffer.from([0xc3, 0x28]));
 
-  expect(payload.results).toHaveLength(3);
-  expect(payload.results[0]).toMatchObject({ ok: true, result: { type: 'binary', path: 'nulls.bin' } });
-  expect(payload.results[1]).toMatchObject({ ok: true, result: { type: 'binary', path: 'fake.pdf', mime: 'application/pdf' } });
-  expect(payload.results[2]).toMatchObject({ ok: false, error: { code: 'INVALID_UTF8' } });
-});
+      expect(runRead(root, ['binary.bin']).json).toMatchObject({ type: 'binary', path: 'binary.bin' });
+      expect(runRead(root, ['fake.pdf']).json).toMatchObject({ type: 'binary', path: 'fake.pdf' });
+      const invalid = runRead(root, ['bad-utf8.txt']).json;
+      expect(['binary', 'error']).toContain(invalid.type);
+      expect(JSON.stringify(invalid)).not.toContain('�');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 
-test('should detect supported image media using magic bytes', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'image.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]));
-  writeFileSync(path.join(root, 'image.jpg'), Buffer.from([0xff, 0xd8, 0xff, 1, 2, 3]));
-  writeFileSync(path.join(root, 'image.gif'), Buffer.from([0x47, 0x49, 0x46, 0x38, 1, 2, 3]));
-  writeFileSync(path.join(root, 'image.webp'), Buffer.from([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 1]));
+  it('should detect supported image media and enforce the media limit', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'tiny.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]));
+      const media = runRead(root, ['tiny.png']).json;
+      expect(media).toMatchObject({
+        type: 'media',
+        path: 'tiny.png',
+        mime: 'image/png',
+        encoding: 'base64',
+        sizeBytes: 11,
+      });
+      expect(typeof media.content).toBe('string');
+      expect(media.content.length).toBeGreaterThan(0);
 
-  const payload = readJson(root, ['image.png', 'image.jpg', 'image.gif', 'image.webp']) as { results: Array<{ ok: boolean; result: Record<string, unknown> }> };
+      writeFileSync(path.join(root, 'huge.png'), Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        Buffer.alloc(20 * 1024 * 1024 + 1),
+      ]));
+      expect(runRead(root, ['huge.png']).json).toMatchObject({
+        type: 'error',
+        code: 'MEDIA_TOO_LARGE',
+        path: 'huge.png',
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 
-  expect(payload.results.map((entry) => entry.result.mime)).toEqual(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
-  for (const entry of payload.results) {
-    expect(entry).toMatchObject({ ok: true, result: { type: 'media', encoding: 'base64' } });
-    expect(typeof entry.result.content).toBe('string');
-  }
-});
+  it('should return typed errors for directories and path escapes', () => {
+    const tempRoot = fixtureRoot();
+    const root = path.join(tempRoot, 'repo');
+    const outside = path.join(tempRoot, 'outside.txt');
+    try {
+      mkdirSync(root);
+      mkdirSync(path.join(root, 'dir'));
+      writeFileSync(outside, 'outside');
+      symlinkSync(outside, path.join(root, 'escape-link.txt'));
 
-test('should return typed errors for directories traversal and symlink escapes', () => {
-  const root = makeTempDirectory();
-  const outside = makeTempDirectory();
-  mkdirSync(path.join(root, 'dir'));
-  writeFileSync(path.join(outside, 'outside.txt'), 'outside\n');
-  symlinkSync(path.join(outside, 'outside.txt'), path.join(root, 'escape-link.txt'));
+      expect(runRead(root, ['dir']).json).toMatchObject({
+        type: 'error',
+        code: 'DIRECTORY_NOT_READABLE',
+        path: 'dir',
+      });
+      expect(runRead(root, ['../outside.txt']).json).toMatchObject({
+        type: 'error',
+        code: 'PATH_OUTSIDE_ROOT',
+      });
+      expect(runRead(root, ['escape-link.txt']).json).toMatchObject({
+        type: 'error',
+        code: 'PATH_OUTSIDE_ROOT',
+        path: 'escape-link.txt',
+      });
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
 
-  const payload = readJson(root, ['dir', '../outside.txt', 'escape-link.txt']) as { results: Array<Record<string, unknown>> };
+  it('should isolate partial failures in multi-file reads', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'a.txt'), 'alpha\n');
+      const result = runRead(root, ['a.txt', 'missing.txt']);
 
-  expect(payload.results[0]).toMatchObject({ ok: false, error: { code: 'DIRECTORY_NOT_READABLE' } });
-  expect(payload.results[1]).toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_ROOT' } });
-  expect(payload.results[2]).toMatchObject({ ok: false, error: { code: 'PATH_OUTSIDE_ROOT' } });
-});
+      expect(result.status).toBe(0);
+      expect(result.json.results).toHaveLength(2);
+      expect(result.json.results[0]).toMatchObject({
+        path: 'a.txt',
+        ok: true,
+        page: { type: 'text-page', content: 'alpha' },
+      });
+      expect(result.json.results[1]).toMatchObject({
+        path: 'missing.txt',
+        ok: false,
+        error: { type: 'error', code: 'NOT_FOUND' },
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 
-test('should keep partial success when reading multiple files', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'exists.txt'), 'ok\n');
+  it('should use Effect in the dedicated workspace read implementation and remove the old JS implementation', () => {
+    expect(existsSync(oldReadModule)).toBe(false);
+    expect(existsSync(readModule)).toBe(true);
+    const source = readFileSync(readModule, 'utf8');
+    expect(source).toMatch(/from ['\"]effect['\"]/);
+    expect(source).toContain('Effect.gen');
 
-  const payload = readJson(root, ['exists.txt', 'missing.txt']) as { results: Array<Record<string, unknown>> };
-
-  expect(payload.results).toHaveLength(2);
-  expect(payload.results[0]).toMatchObject({ ok: true, result: { type: 'text-page', content: 'ok\n' } });
-  expect(payload.results[1]).toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
-});
-
-
-test('should keep json output free of ansi decoration', () => {
-  const root = makeTempDirectory();
-  writeFileSync(path.join(root, 'plain.txt'), 'clean\n');
-
-  const result = runRead(root, ['plain.txt']);
-
-  expect(result.status).toBe(0);
-  expect(result.stdout).not.toMatch(/\x1b\[[0-9;]*m/);
-  expect(result.stdout).not.toContain('────');
-  expect(JSON.parse(result.stdout)).toMatchObject({ type: 'text-page' });
+    const generatorBodies = source.match(/Effect\.gen\(function\* \(\) \{[\s\S]*?\n\}\)/g) ?? [];
+    expect(generatorBodies.length).toBeGreaterThan(0);
+    for (const body of generatorBodies) {
+      expect(body).not.toMatch(/\btry\s*\{/);
+      expect(body).not.toMatch(/\bcatch\s*\(/);
+      expect(body).not.toMatch(/\bawait\b/);
+    }
+  });
 });

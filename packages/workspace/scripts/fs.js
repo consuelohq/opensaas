@@ -8,7 +8,6 @@ const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { findTaskMeta, getTaskWorkpadPath } = require('./lib/task-meta');
-const ReadFs = require('./lib/fs/read');
 
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
@@ -119,53 +118,93 @@ function mainHelp() {
 
 // ── read ──
 
-function readPayloadHasErrors(payload) {
-  if (!payload) return false;
-  if (payload.type === 'error') return true;
-  if (Array.isArray(payload.results)) return payload.results.some((entry) => entry && entry.ok === false);
-  return false;
+function parseReadSegments(argv) {
+  const segments = [];
+  let current = null;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--files-json') {
+      let files;
+      try {
+        files = JSON.parse(argv[++i]);
+      } catch {
+        err('error: --files-json must be valid JSON');
+        process.exitCode = 1;
+        return null;
+      }
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (file && typeof file.path === 'string') segments.push(file);
+        }
+      }
+      current = null;
+    }
+    else if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
+    else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
+    else if (a === '--offset') { if (current) current.offset = parseInt(argv[++i], 10); }
+    else if (a === '--limit') { if (current) current.limit = parseInt(argv[++i], 10); }
+    else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
+    else if (!a.startsWith('--')) {
+      current = { path: a };
+      segments.push(current);
+    }
+  }
+  return segments;
 }
 
-function cmdRead(argv) {
+function renderTextPage(page, plain) {
+  const lines = String(page.content || '').split('\n');
+  if (page.content === '') return;
+  lines.forEach((line, idx) => {
+    const lineNum = page.offset + idx;
+    out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
+  });
+  if (page.truncated && page.next) out(`... truncated; next offset ${page.next}`);
+}
+
+async function cmdRead(argv) {
   if (argv.includes('--help') || argv.length === 0) { readHelp(); return; }
 
   const plain = argv.includes('--plain');
   const json = argv.includes('--json');
-  let segments;
+  const segments = parseReadSegments(argv);
+
+  if (!segments) return;
+  if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
+
+  let result;
   try {
-    segments = ReadFs.parseReadSegments(argv);
-  } catch (error) {
-    const readError = error instanceof ReadFs.ReadError
-      ? error
-      : new ReadFs.ReadError('INVALID_ARGUMENT', error instanceof Error ? error.message : String(error));
-    if (json) {
-      out(JSON.stringify({ type: 'error', path: '', error: { code: readError.code, message: readError.message } }, null, 2));
-      return;
-    }
-    err(`${readError.code}: ${readError.message}`);
-    readHelp();
+    const { readManyForCli } = await import('./lib/fs/read.ts');
+    result = await readManyForCli(segments, { root: process.cwd() });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    err(`error: failed to read file: ${message}`);
+    process.exitCode = 1;
     return;
   }
 
-  if (segments.length === 0) {
-    if (json) {
-      out(JSON.stringify({ type: 'error', path: '', error: { code: 'INVALID_ARGUMENT', message: 'no file path given' } }, null, 2));
-      return;
-    }
-    err('error: no file path given');
-    readHelp();
-    return;
-  }
-
-  const payload = ReadFs.readResources({ root: process.cwd(), requests: segments });
   if (json) {
-    out(JSON.stringify(payload, null, 2));
+    out(JSON.stringify(result, null, 2));
     return;
   }
 
-  const rendered = ReadFs.renderReadHuman(payload, plain);
-  if (rendered) out(rendered);
-  if (readPayloadHasErrors(payload)) process.exitCode = 1;
+  if (result && Array.isArray(result.results)) {
+    for (const item of result.results) {
+      out(`── ${item.path} ──`);
+      if (!item.ok) {
+        err(`${item.error.code}: ${item.error.message}`);
+        continue;
+      }
+      if (item.page.type === 'text-page') renderTextPage(item.page, plain);
+      else out(`${item.page.type}: ${item.page.message || item.page.mime || item.path}`);
+    }
+    return;
+  }
+
+  if (result.type === 'text-page') renderTextPage(result, plain);
+  else if (result.type === 'error') err(`${result.code}: ${result.message}`);
+  else out(`${result.type}: ${result.message || result.mime || result.path}`);
 }
 
 // ── search ──
@@ -831,7 +870,7 @@ function logToWorkpad(filePath, action) {
 
 // ── main ──
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2);
   if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
 
@@ -892,7 +931,7 @@ function cmdTrash(argv) {
 // ── main ──
 
   switch (command) {
-    case 'read': cmdRead(rest); break;
+    case 'read': await cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
@@ -907,4 +946,8 @@ function cmdTrash(argv) {
   }
 }
 
-main();
+main().catch((cause) => {
+  const message = cause instanceof Error ? cause.message : String(cause);
+  err(`fatal: ${message}`);
+  process.exitCode = 1;
+});
