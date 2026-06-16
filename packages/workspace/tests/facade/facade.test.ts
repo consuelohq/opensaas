@@ -452,6 +452,34 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('rejects mixed fs read pagination modes', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-mixed-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_mixed_page');
+    const plans: CommandPlan[] = [];
+    try {
+      for (const topLevelPage of [{ offset: 10 }, { limit: 5 }, { from: 2 }, { to: 4 }]) {
+        const result = await executeTool('fs.read', {
+          taskSession: 'tsk_fs_read_mixed_page',
+          files: [{ path: 'src/a.ts', offset: 1, limit: 2 }],
+          ...topLevelPage,
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.code).toBe('VALIDATION_ERROR');
+        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+      }
+
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {
