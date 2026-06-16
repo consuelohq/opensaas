@@ -29,6 +29,11 @@
           "kind": "value"
         },
         {
+          "source": "filesJson",
+          "flag": "--files-json",
+          "kind": "value"
+        },
+        {
           "source": "offset",
           "flag": "--offset",
           "kind": "value"
@@ -47,10 +52,6 @@
           "source": "to",
           "flag": "--to",
           "kind": "value"
-        },
-        {
-          "source": "files",
-          "kind": "readFileArray"
         }
       ]
     },
@@ -60,7 +61,34 @@
       "offset": 1,
       "limit": 120
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "examples": [
+      {
+        "label": "single paged file",
+        "input": {
+          "path": "packages/workspace/scripts/fs.js",
+          "offset": 1,
+          "limit": 120
+        }
+      },
+      {
+        "label": "multiple paged files",
+        "input": {
+          "files": [
+            {
+              "path": "packages/workspace/scripts/fs.js",
+              "offset": 1,
+              "limit": 80
+            },
+            {
+              "path": "packages/workspace/tooling/tool-manifest.json",
+              "offset": 1,
+              "limit": 120
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "name": "fs.search",

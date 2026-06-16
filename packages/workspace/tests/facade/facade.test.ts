@@ -409,16 +409,8 @@ describe('typed facade executor', () => {
       expect(plans).toHaveLength(1);
       expect(plans[0].args).toEqual(expect.arrayContaining([
         'read',
-        'src/a.ts',
-        '--offset',
-        '1',
-        '--limit',
-        '2',
-        'src/b.ts',
-        '--offset',
-        '10',
-        '--limit',
-        '3',
+        '--files-json',
+        '[{"path":"src/a.ts","offset":1,"limit":2},{"path":"src/b.ts","offset":10,"limit":3}]',
         '--json',
       ]));
     } finally {
