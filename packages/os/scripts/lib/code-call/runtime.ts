@@ -82,6 +82,13 @@ function isInsidePath(candidate: string, root: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
+function isManagedTaskWorktreePath(candidate: string): boolean {
+  const resolved = realpathIfExists(candidate);
+  const worktreeRoot = path.basename(path.dirname(resolved));
+  const worktreeName = path.basename(resolved);
+  return worktreeRoot === 'opensaas-worktrees' && worktreeName.startsWith('task-');
+}
+
 function findGitRoot(cwd: string): string | null {
   try {
     return execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -180,7 +187,9 @@ function validateSourceInputs(input: CodeCallInput): ValidationFailure | null {
 function validateEditScope(input: CodeCallInput, resolvedCwd: string): ValidationFailure | null {
   const taskWorktree = typeof input.taskWorktree === 'string' && input.taskWorktree.trim().length > 0
     ? input.taskWorktree
-    : undefined;
+    : isManagedTaskWorktreePath(resolvedCwd)
+      ? resolvedCwd
+      : undefined;
   if (!taskWorktree) {
     return {
       message: 'mode=edit requires taskSession or an explicit taskWorktree.',
