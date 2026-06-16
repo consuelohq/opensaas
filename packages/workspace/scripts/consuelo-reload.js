@@ -17,6 +17,8 @@ const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
+const EXPECTED_SERVER_NAME = 'openworkspace';
+const CONFLICTING_LABELS = ['com.consuelo.system'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
@@ -47,6 +49,10 @@ function health() {
   } catch { return null; }
 }
 
+function isExpectedHealth(result) {
+  return result?.name === EXPECTED_SERVER_NAME;
+}
+
 function isLaunchdLoaded() {
   const output = run('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
   return output.includes(LABEL) || output.includes('state = running');
@@ -66,6 +72,16 @@ function findServerPid() {
 
 function findRunningPids() {
   return [...new Set([...findServerPids(), ...findPortPids()])];
+}
+
+function bootoutLaunchLabel(label) {
+  run('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
+}
+
+function stopConflictingLaunchAgents() {
+  for (const label of CONFLICTING_LABELS) {
+    bootoutLaunchLabel(label);
+  }
 }
 
 function killServer() {
@@ -114,23 +130,28 @@ function startDirect() {
 }
 
 function waitForHealth(label, attempts = RELOAD_WAIT_ATTEMPTS) {
+  let wrongServerName = null;
   for (let i = 0; i < attempts; i++) {
     const h = health();
-    if (h) {
+    if (isExpectedHealth(h)) {
       writeStdout(`✓ ${label} — ${h.tools} tools, name: ${h.name}`);
       const pids = findRunningPids();
       if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
       writeStdout(`  health: ${HEALTH}`);
       return true;
     }
+    if (h?.name && h.name !== EXPECTED_SERVER_NAME) wrongServerName = h.name;
     sleep(0.5);
+  }
+  if (wrongServerName) {
+    writeStdout(`${label} (wrong server "${wrongServerName}" is answering ${HEALTH}; expected ${EXPECTED_SERVER_NAME})`);
   }
   writeStdout(`${label} (health check pending — server may still be starting)`);
   return false;
 }
 
 function bootoutLaunchAgent() {
-  run('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${LABEL}`]);
+  bootoutLaunchLabel(LABEL);
 }
 
 function bootstrapLaunchAgent() {
@@ -141,9 +162,12 @@ function bootstrapLaunchAgent() {
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
     bootoutLaunchAgent();
+    stopConflictingLaunchAgents();
+    killServer();
     sleep(1);
     bootstrapLaunchAgent();
   } else {
+    stopConflictingLaunchAgents();
     killServer();
     sleep(1);
     startDirect();
@@ -194,7 +218,7 @@ switch (cmd) {
   case 'status': {
     const shouldWaitForLaunchd = useLaunchd && existsSync(PLIST);
     const h = health() || (findRunningPids().length || shouldWaitForLaunchd ? (waitForHealth('server starting', 20) ? health() : null) : null);
-    if (h) {
+    if (isExpectedHealth(h)) {
       writeStdout(`✓ server running — ${h.tools} tools, name: ${h.name}`);
       const pids = findRunningPids();
       if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
@@ -202,6 +226,7 @@ switch (cmd) {
       writeStdout(`  health: ${HEALTH}`);
     } else {
       writeStdout('✗ server not responding');
+      if (h?.name) writeStdout(`  wrong server responding: ${h.name} (expected ${EXPECTED_SERVER_NAME})`);
       const pids = findRunningPids();
       if (pids.length) writeStdout(`  process exists (pid ${pids.join(', ')}) but not healthy`);
     }
