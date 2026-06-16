@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bd5844185b1e",
+  "tmuxSession": "opensaas-workspace-agents-add-effect-backed-workspace-fs-read-bd584418",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-effect-backed-workspace-fs-read",
+  "branch": "task/workspace-agents/add-effect-backed-workspace-fs-read",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-effect-backed-workspace-fs-read",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-effect-backed-workspace-fs-read",
+  "prNumber": 1075,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1075",
+  "createdAt": "2026-06-16T04:11:49.288Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-effect-backed-workspace-fs-read/.task/workspace-agents/add-effect-backed-workspace-fs-read/session.json"
+}

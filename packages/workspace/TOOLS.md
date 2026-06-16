@@ -1205,12 +1205,12 @@ await workspace.call({
 
 ### workspace.fs.read
 
-read file contents with an optional line range
+read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>` |
+| Signature | `workspace.fs.read(({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } &#124; { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) &#124; { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } &#124; { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } &#124; { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -1222,7 +1222,9 @@ await workspace.call({
   "tool": "fs.read",
   "input": {
     "branch": "task/workspace-agents/example",
-    "path": "packages/workspace/package.json"
+    "path": "packages/workspace/scripts/fs.js",
+    "offset": 1,
+    "limit": 120
   }
 });
 ```

@@ -27,17 +27,11 @@ PORT = int(os.environ.get('CONSUELO_OS_PORT') or os.environ.get('PORT', 8850))
 SERVER_NAME = os.environ.get('CONSUELO_OS_SERVER_NAME') or os.environ.get('MCP_SERVER_NAME', 'consuelo-os')
 BUN_BIN = os.environ.get('BUN_BIN', 'bun')
 
-STEERING_FILES = [
-    APP_DIR / 'STEERING.md',
-    APP_DIR / 'business-context.md',
-    APP_DIR / 'data-model.md',
-    APP_DIR / 'permissions.md',
-    APP_DIR / 'integrations.md',
-    APP_DIR / 'skills.md',
-]
+PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md']
+LEGACY_STEERING_FILE = 'steering.md'
 MANIFEST_FILE = APP_DIR / 'manifests' / 'core.manifest.json'
-DEV_STEERING_FILE = APP_DIR / 'dev-steering.md'
-DEV_DECISION_FILE = APP_DIR / 'decision.md'
+DEV_STEERING_FILE = APP_DIR / 'steering' / 'system_prompt.md'
+DEV_DECISION_FILE = APP_DIR / 'steering' / 'decision.md'
 DEV_MANIFEST_FILE = APP_DIR / 'manifests' / 'tool.manifest.json'
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
@@ -83,6 +77,33 @@ def _env_presence() -> dict[str, Any]:
     }
 
 
+def _supported_steering_markdown(path: Path) -> bool:
+    return path.suffix == '.md' and path.name.lower() != LEGACY_STEERING_FILE
+
+
+def _read_steering_files() -> list[tuple[str, str]]:
+    steering_dir = _consuelo_home() / 'steering'
+    sections: list[tuple[str, str]] = []
+    seen = set(PRIMARY_STEERING_FILES)
+
+    for file_name in PRIMARY_STEERING_FILES:
+        content = _read_file(steering_dir / file_name)
+        if content:
+            sections.append((file_name, content))
+
+    if not steering_dir.exists():
+        return sections
+
+    for file_path in sorted(steering_dir.iterdir(), key=lambda entry: entry.name):
+        if file_path.name in seen or not file_path.is_file() or not _supported_steering_markdown(file_path):
+            continue
+        content = _read_file(file_path)
+        if content:
+            sections.append((file_path.name, content))
+
+    return sections
+
+
 def _build_steering() -> str:
     sections = [
         '# Consuelo OS runtime context',
@@ -94,10 +115,9 @@ def _build_steering() -> str:
         '```',
     ]
 
-    for file_path in STEERING_FILES:
-        content = _read_file(file_path)
+    for file_name, content in _read_steering_files():
         if content:
-            sections.extend(['', f'# {file_path.name}', '', content])
+            sections.extend(['', f'# {file_name}', '', content])
 
     manifest = _read_file(MANIFEST_FILE)
     if manifest:
@@ -245,9 +265,9 @@ def _steering_guard_message(decision: str, attempt: int) -> str:
             'You already received full OS steering very recently in this pre-task bootstrap context.\n'
             'Do not call get_steering again unless you are intentionally refreshing bootstrap context.\n\n'
             'Read only the specific file you need:\n'
-            '- packages/os/STEERING.md\n'
-            '- packages/os/manifests/core.manifest.json\n'
-            '- packages/workspace/STEERING.md\n\n'
+            '- $CONSUELO_HOME/steering/system_prompt.md\n'
+            '- $CONSUELO_HOME/steering/decision.md\n'
+            '- packages/os/manifests/core.manifest.json\n\n'
             'Useful alternatives:\n'
             '- fs.read for exact files\n'
             '- context.search for repo/project context\n'
