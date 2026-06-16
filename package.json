@@ -275,7 +275,7 @@
     "generate-types": "bun packages/workspace/scripts/generate-types.ts",
     "server": "bun packages/workspace/scripts/consuelo-reload.js",
     "consuelo-reload": "bun packages/workspace/scripts/consuelo-reload.js",
-    "consuelo-design": "bun packages/workspace/scripts/consuelo-design.ts",
+    "consuelo-design": "bun packages/workspace/scripts/office.ts",
     "code-run": "bun packages/workspace/scripts/code-run.ts",
     "github": "bun packages/workspace/scripts/github.js",
     "diff_cockpit": "bun packages/workspace/scripts/diff_cockpit.ts",

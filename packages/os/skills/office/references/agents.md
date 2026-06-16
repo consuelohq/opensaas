@@ -1,4 +1,4 @@
-# AGENTS.md — consuelo-design
+# AGENTS.md — office
 
 ## core idea
 
@@ -17,7 +17,7 @@ brief
   -> create/edit local artifact source
   -> validate in browser
   -> publish with design.publish
-  -> verify /design-wiki
+  -> verify /office
 ```
 
 Use the Open Design UI only when Ko explicitly wants live visual collaboration, project inspection, manual iteration, or a visible preview workspace.
@@ -35,10 +35,10 @@ This file owns Consuelo visual language: Geist typography, black/white precision
 For digital e-guides, also read:
 
 ```text
-packages/consuelo-design/templates/digital-eguides/research.md
-packages/consuelo-design/templates/digital-eguides/spec.md
-packages/consuelo-design/templates/digital-eguides/plan.md
-packages/consuelo-design/templates/digital-eguides/reader-shell.md
+packages/office/templates/digital-eguides/research.md
+packages/office/templates/digital-eguides/spec.md
+packages/office/templates/digital-eguides/plan.md
+packages/office/templates/digital-eguides/reader-shell.md
 ```
 
 Read only the template needed for the artifact type unless the task requires comparison.
@@ -83,7 +83,7 @@ Do:
 6. Create or update the local artifact source directly.
 7. Validate with browser tools.
 8. Publish durable links through `design.publish`.
-9. Verify the artifact route and `/design-wiki`.
+9. Verify the artifact route and `/office`.
 10. Report the source path, durable links, validation, and remaining decisions.
 
 Do not:
@@ -103,17 +103,17 @@ Common calls:
 ```ts
 await workspace.get_steering()
 
-await workspace.call({ tool: "consueloDesign.check", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.listSkills", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.listDesignSystems", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.uiStatus", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.check", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.listSkills", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.listDesignSystems", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.uiStatus", input: {}, timeout: 120 })
 ```
 
 Use dry run to inspect the generated headless work order before creating files:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: {
     dryRun: true,
     name: "example-artifact",
@@ -128,7 +128,7 @@ Dry-run output should return `mode: "headless-work-order"` and a `workOrder` fie
 
 ## current tool contract
 
-Default `consueloDesign.generate*` behavior:
+Default `office.generate*` behavior:
 
 ```json
 {
@@ -155,19 +155,19 @@ Choose the closest workflow:
 
 | User wants                                                                    | Tool                                   | Notes                                                           |
 | ----------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------- |
-| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `consueloDesign.generateDigitalEguide` | Use `template` when applicable.                                 |
-| website section or landing page                                               | `consueloDesign.generateWebsite`       | Use for site layout and source handoff.                         |
-| demo or prototype                                                             | `consueloDesign.generateDemo`          | Use for multi-screen or product story work.                     |
-| image/media direction                                                         | `consueloDesign.generateImageBrief`    | Use for briefs and direction, not final source unless extended. |
-| HTML email                                                                    | `consueloDesign.generateEmail`         | Use for email source and preview.                               |
-| motion frame                                                                  | `consueloDesign.generateMotionFrame`   | Use for motion concepts and still frames.                       |
-| HTML-to-video / HyperFrames                                                   | `consueloDesign.renderHyperframes`     | Use for render/video work.                                      |
+| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `office.generateDigitalEguide` | Use `template` when applicable.                                 |
+| website section or landing page                                               | `office.generateWebsite`       | Use for site layout and source handoff.                         |
+| demo or prototype                                                             | `office.generateDemo`          | Use for multi-screen or product story work.                     |
+| image/media direction                                                         | `office.generateImageBrief`    | Use for briefs and direction, not final source unless extended. |
+| HTML email                                                                    | `office.generateEmail`         | Use for email source and preview.                               |
+| motion frame                                                                  | `office.generateMotionFrame`   | Use for motion concepts and still frames.                       |
+| HTML-to-video / HyperFrames                                                   | `office.renderHyperframes`     | Use for render/video work.                                      |
 
-If no workflow fits, call `consueloDesign.listSkills`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
+If no workflow fits, call `office.listSkills`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
 
 ## digital e-guide templates
 
-For `consueloDesign.generateDigitalEguide`, use:
+For `office.generateDigitalEguide`, use:
 
 | Template   | Use for                                                                             |
 | ---------- | ----------------------------------------------------------------------------------- |
@@ -179,7 +179,7 @@ Do not create a standalone `decision` template. Decisions belong inside `spec` a
 
 All three templates — `research`, `spec`, and `plan` — are reader-shell templates. When building any of them, read and apply:
 
-packages/consuelo-design/templates/digital-eguides/reader-shell.md
+packages/office/templates/digital-eguides/reader-shell.md
 
 Do not build a research/spec/plan guide as plain HTML, plain Markdown, or a shell-less page.
 
@@ -187,7 +187,7 @@ Example:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: {
     name: "daily-deep-idea-2026-05-12-example",
     template: "research",
@@ -209,7 +209,7 @@ Do you want this as a Canvas living plan or as an Open Design plan guide?
 
 Use Canvas living plan for fast alignment, copy/paste execution, working checklists, Linear handoff, and active planning in chat.
 
-Use Open Design plan guide when Ko wants a polished, durable, Tailnet-readable artifact with reader shell, `/design-wiki`, metadata footer, designed hierarchy, and easy navigation.
+Use Open Design plan guide when Ko wants a polished, durable, Tailnet-readable artifact with reader shell, `/office`, metadata footer, designed hierarchy, and easy navigation.
 
 For Open Design plan mode, first run this exact batch read so the full source files are loaded into context:
 
@@ -226,13 +226,13 @@ await workspace.call({
     {
       tool: "mac.read",
       input: {
-        path: "/Users/kokayi/Dev/opensaas/packages/consuelo-design/templates/digital-eguides/plan.md"
+        path: "/Users/kokayi/Dev/opensaas/packages/office/templates/digital-eguides/plan.md"
       }
     },
     {
       tool: "mac.read",
       input: {
-        path: "/Users/kokayi/Dev/opensaas/packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+        path: "/Users/kokayi/Dev/opensaas/packages/office/templates/digital-eguides/reader-shell.md"
       }
     }
   ],
@@ -247,7 +247,7 @@ then
 2. generate/build with `template: "plan"`
 3. apply the shared reader shell
 4. publish with `design.publish`
-5. verify the artifact route, `/design-wiki`, and reader shell behavior
+5. verify the artifact route, `/office`, and reader shell behavior
 
 ## specs
 
@@ -284,13 +284,13 @@ await workspace.call({
     {
       tool: "mac.read",
       input: {
-        path: "/Users/kokayi/Dev/opensaas/packages/consuelo-design/templates/digital-eguides/spec.md"
+        path: "/Users/kokayi/Dev/opensaas/packages/office/templates/digital-eguides/spec.md"
       }
     },
     {
       tool: "mac.read",
       input: {
-        path: "/Users/kokayi/Dev/opensaas/packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+        path: "/Users/kokayi/Dev/opensaas/packages/office/templates/digital-eguides/reader-shell.md"
       }
     }
   ],
@@ -305,7 +305,7 @@ then
 2. generate/build with `template: "spec"`
 3. apply the shared reader shell
 4. publish with `design.publish`
-5. verify the artifact route, `/design-wiki`, and reader shell behavior
+5. verify the artifact route, `/office`, and reader shell behavior
 
 ## research guides and Daily Deep Idea
 
@@ -335,7 +335,7 @@ This is not optional for readable guide artifacts.
 
 Required reader shell features:
 
-* fixed header with `/design-wiki`
+* fixed header with `/office`
 * `#smooth-wrapper`
 * `#smooth-content`
 * GSAP ScrollSmoother
@@ -364,7 +364,7 @@ local artifact file/directory
   -> materialized archive copy
   -> managed archive server
   -> Tailscale Serve route
-  -> /design-wiki entry
+  -> /office entry
 ```
 
 Do not publish important artifacts through throwaway local HTTP servers.
@@ -387,13 +387,13 @@ await workspace.call({
 
 Use the direct Tailnet HTTP link when Ko is reading on iPhone or HTTPS Tailscale has secure-connection issues.
 
-`design.publish` should update `/design-wiki` automatically.
+`design.publish` should update `/office` automatically.
 
 Verify:
 
 * artifact URL returns `200`
 * page title or h1 matches the artifact
-* `/design-wiki` includes the artifact
+* `/office` includes the artifact
 * wiki entry opens the artifact
 * reader shell markers exist for e-guides
 * tap-to-read and back-to-top work when applicable
@@ -452,7 +452,7 @@ ScrollSmoother is loaded
 window.__readerShell exists when implemented
 tap-to-read moves the page
 back-to-top appears after scroll and returns to top
-/design-wiki links back to the archive
+/office links back to the archive
 ```
 
 ## PDFs
@@ -493,7 +493,7 @@ For completed artifacts, report:
 * what was created
 * source file or project path
 * durable Tailnet URL
-* `/design-wiki` URL
+* `/office` URL
 * exported/downloadable files when relevant
 * validation performed
 * assumptions made
@@ -517,33 +517,33 @@ Do not:
 * inspect the whole repo for a simple design/export task
 * invent research claims or remove citations
 * publish durable artifacts through temporary local HTTP servers
-* forget `/design-wiki` verification
+* forget `/office` verification
 * let Open Design or design assets enter Railway deploy paths
 
 
 
 
 
-`consuelo-design` is Consuelo's Bun-first design tooling facade over the vendored Open Design project. It is a tooling package, not a deployed product package.
+`office` is Consuelo's Bun-first design tooling facade over the vendored Open Design project. It is a tooling package, not a deployed product package.
 
 ## core decisions
 
-- The canonical Consuelo facade lives in `packages/workspace/scripts/consuelo-design.ts`.
-- The package-local script at `packages/consuelo-design/scripts/consuelo-design.ts` is only a thin Bun passthrough.
-- Human commands start from the repo root with `bun run consuelo-design ...`.
-- Tool calls go through the typed workspace facade as `workspace consueloDesign.*`.
-- Open Design upstream remains vendored at `packages/consuelo-design/upstream/open-design`.
+- The canonical Consuelo facade lives in `packages/workspace/scripts/office.ts`.
+- The package-local script at `packages/office/scripts/office.ts` is only a thin Bun passthrough.
+- Human commands start from the repo root with `bun run office ...`.
+- Tool calls go through the typed workspace facade as `workspace office.*`.
+- Open Design upstream remains vendored at `packages/office/upstream/open-design`.
 - `pnpm` is not a Consuelo-facing workflow tool. It is used only behind the Bun facade because upstream Open Design pins `pnpm@10.33.2`.
 - `generate <workflow>` means start/create/open a live Open Design working session. It must not degrade into a dead-end prompt/spec generator.
 - Open Design bundled design systems are reference skins only. Consuelo truth comes from our repo.
-- `consuelo-design` must remain outside Railway deployment graphs.
+- `office` must remain outside Railway deployment graphs.
 
 ## source of truth for design context
 
 Base Consuelo design system context is exactly:
 
 - `packages/consuelo-website/DESIGN.md`
-- `areas/consuelo-design/AGENTS.md`
+- `areas/office/AGENTS.md`
 
 `get-design-system` must return only those files.
 
@@ -578,17 +578,17 @@ The Consuelo facade should preserve that loop. If a command says `generate websi
 Use these from the repo root:
 
 ```bash
-bun run consuelo-design run
-bun run consuelo-design generate website
-bun run consuelo-design generate demo
-bun run consuelo-design generate image-brief
-bun run consuelo-design generate digital-eguide
-bun run consuelo-design generate email
-bun run consuelo-design generate motion-frame
-bun run consuelo-design render hyperframes
-bun run consuelo-design list-skills
-bun run consuelo-design list-design-systems
-bun run consuelo-design check
+bun run office run
+bun run office generate website
+bun run office generate demo
+bun run office generate image-brief
+bun run office generate digital-eguide
+bun run office generate email
+bun run office generate motion-frame
+bun run office render hyperframes
+bun run office list-skills
+bun run office list-design-systems
+bun run office check
 ```
 
 `run` starts the Open Design UI in the foreground. `generate ...` and `render hyperframes` should be smart enough to start the background web runtime and open the correct project URL.
@@ -600,28 +600,28 @@ Every important operator command must have a typed workspace tool entry.
 Expected tool names:
 
 ```text
-consueloDesign.run
-consueloDesign.getDesignSystem
-consueloDesign.listSkills
-consueloDesign.listDesignSystems
-consueloDesign.check
-consueloDesign.railwayCheck
-consueloDesign.generateWebsite
-consueloDesign.generateDemo
-consueloDesign.generateImageBrief
-consueloDesign.generateDigitalEguide
-consueloDesign.generateEmail
-consueloDesign.generateMotionFrame
-consueloDesign.renderHyperframes
-consueloDesign.uiStatus
-consueloDesign.uiLogs
-consueloDesign.uiStop
-consueloDesign.odBuild
+office.run
+office.getDesignSystem
+office.listSkills
+office.listDesignSystems
+office.check
+office.railwayCheck
+office.generateWebsite
+office.generateDemo
+office.generateImageBrief
+office.generateDigitalEguide
+office.generateEmail
+office.generateMotionFrame
+office.renderHyperframes
+office.uiStatus
+office.uiLogs
+office.uiStop
+office.odBuild
 ```
 
 When adding commands, update:
 
-- `packages/workspace/scripts/consuelo-design.ts`
+- `packages/workspace/scripts/office.ts`
 - `packages/workspace/tooling/tool-manifest.json`
 - `packages/workspace/scripts/lib/facade/schemas.ts`
 - generated `packages/workspace/TOOLS.md`
@@ -637,7 +637,7 @@ Use this mapping unless Ko changes it:
 
 | Consuelo command | Primary Open Design skill | Notes |
 | --- | --- | --- |
-| `generate website` | `saas-landing` | Include `DESIGN.md`, `consuelo-design/AGENTS.md`, website `animations.md`, and website `AGENTS.md`. |
+| `generate website` | `saas-landing` | Include `DESIGN.md`, `office/AGENTS.md`, website `animations.md`, and website `AGENTS.md`. |
 | `generate demo` | `web-prototype` | Use base Consuelo design context. |
 | `generate image-brief` | `image-poster` | Use image/media surfaces when available; fall back to magazine/social/video prototype skills. |
 | `generate digital-eguide` | `digital-eguide` | Use base Consuelo design context. |
@@ -655,17 +655,17 @@ Template meanings:
 - `spec`: product specs, engineering specs, RFCs, design docs, architecture proposals. Decisions are baked into the spec.
 - `plan`: execution plans, implementation plans, rollout plans, operating plans. Decisions are an ongoing section inside the plan.
 
-Templates live in `packages/consuelo-design/templates/digital-eguides/`. Do not add new facade commands for these variants. Pass a template hint when the artifact type is known; otherwise let the operator choose from the brief.
+Templates live in `packages/office/templates/digital-eguides/`. Do not add new facade commands for these variants. Pass a template hint when the artifact type is known; otherwise let the operator choose from the brief.
 
 A prepared prompt in the Open Design UI is the operator handoff. Continue from that prompt, use the selected template, build or hydrate the editable artifact, verify the Design Files pane, preview, and publish only after the final URL renders the artifact.
 
 ## Railway boundary
 
-No Railway-deployed package should depend on `consuelo-design`.
+No Railway-deployed package should depend on `office`.
 
-`bun run consuelo-design check` should include Railway exclusion. `railway:check` may exist as a lower-level command, but it is not a normal design operator command.
+`bun run office check` should include Railway exclusion. `railway:check` may exist as a lower-level command, but it is not a normal design operator command.
 
-Keep `packages/consuelo-design` absent from Railway Dockerfile COPY lists unless Ko explicitly approves a deployment boundary change.
+Keep `packages/office` absent from Railway Dockerfile COPY lists unless Ko explicitly approves a deployment boundary change.
 
 ## upstream boundary
 
@@ -679,12 +679,12 @@ Generated Open Design state belongs under ignored runtime paths such as `.od/`, 
 For facade changes, run at minimum:
 
 ```bash
-bun run consuelo-design check
-bun run consuelo-design list-skills --json
-bun run consuelo-design list-design-systems --json
-bun run consuelo-design generate website --dry-run --json
-bun run consuelo-design render hyperframes --dry-run --json
-bun run --cwd packages/workspace workspace consueloDesign.generateWebsite '{"dryRun":true}'
+bun run office check
+bun run office list-skills --json
+bun run office list-design-systems --json
+bun run office generate website --dry-run --json
+bun run office render hyperframes --dry-run --json
+bun run --cwd packages/workspace workspace office.generateWebsite '{"dryRun":true}'
 bun run --cwd packages/workspace generate-docs
 bun run --cwd packages/workspace generate-types
 ```
@@ -694,7 +694,7 @@ Also run branch-local review before publishing.
 
 ## Consuelo Wiki archive
 
-Every `design.publish` call records the published artifact in the private Consuelo Wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Wiki can filter it correctly. The Consuelo Wiki is automatically regenerated and published at `/design-wiki`.
+Every `design.publish` call records the published artifact in the private Consuelo Wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Wiki can filter it correctly. The Consuelo Wiki is automatically regenerated and published at `/office`.
 
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 

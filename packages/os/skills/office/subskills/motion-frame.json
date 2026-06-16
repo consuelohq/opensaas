@@ -2,10 +2,10 @@
   "id": "motion-frame",
   "title": "Motion Frame",
   "uses": [
-    "consuelo-design"
+    "office"
   ],
   "workflow": "motion-frame",
-  "defaultTool": "consueloDesign.generateMotionFrame",
+  "defaultTool": "office.generateMotionFrame",
   "primaryOpenDesignSkill": "motion-frames",
   "fallbackOpenDesignSkills": [
     "hyperframes",

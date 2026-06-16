@@ -2,10 +2,10 @@
   "id": "html-email",
   "title": "HTML Email",
   "uses": [
-    "consuelo-design"
+    "office"
   ],
   "workflow": "email",
-  "defaultTool": "consueloDesign.generateEmail",
+  "defaultTool": "office.generateEmail",
   "primaryOpenDesignSkill": "email-marketing",
   "templates": [
     "email"

@@ -58,7 +58,7 @@
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/consuelo-design.ts",
+    "consuelo-design": "bun ./scripts/os.ts office",
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",

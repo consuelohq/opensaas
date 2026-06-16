@@ -1110,10 +1110,10 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
-### consuelo-design — run local design tooling
+### office — run local design tooling
 
 ```bash
-bun run consuelo-design -- --help
+bun run office -- --help
 ```
 
 ---

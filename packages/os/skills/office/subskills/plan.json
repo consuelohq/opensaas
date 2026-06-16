@@ -2,10 +2,10 @@
   "id": "plan",
   "title": "Plan",
   "uses": [
-    "consuelo-design"
+    "office"
   ],
   "workflow": "digital-eguide",
-  "defaultTool": "consueloDesign.generateDigitalEguide",
+  "defaultTool": "office.generateDigitalEguide",
   "primaryOpenDesignSkill": "digital-eguide",
   "templates": [
     "plan"

@@ -6,33 +6,33 @@ function runBunEval(code: string): string {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      CONSUELO_HOME: '/tmp/consuelo-design-skill-test-home',
+      CONSUELO_HOME: '/tmp/office-skill-test-home',
     },
     encoding: 'utf8',
   });
 }
 
-describe('consuelo-design skill', () => {
+describe('office skill', () => {
   it('loads the orchestration guide and subskill presets', () => {
     const result = JSON.parse(runBunEval(`
       const { executeCall } = await import('./scripts/os.ts');
       const result = await executeCall({
-        name: 'consuelo-design',
-        traceId: 'trc_consuelo_design_guide_test',
+        name: 'office',
+        traceId: 'trc_office_guide_test_' + Date.now() + '_' + process.pid,
         input: { subskill: 'landing-page' },
       });
       process.stdout.write(JSON.stringify(result));
     `));
 
     expect(result.ok).toBe(true);
-    expect(result.name).toBe('consuelo-design');
+    expect(result.name).toBe('office');
     expect(result.permission).toBe('draft');
     expect(result.result).toMatchObject({
-      skill: 'consuelo-design',
+      skill: 'office',
       selectedSubskill: {
         id: 'landing-page',
         workflow: 'website',
-        defaultTool: 'consueloDesign.generateWebsite',
+        defaultTool: 'office.generateWebsite',
         primaryOpenDesignSkill: 'saas-landing',
       },
       references: {
@@ -42,5 +42,6 @@ describe('consuelo-design skill', () => {
     });
     expect(result.result.subskills.map((subskill: { id: string }) => subskill.id)).toContain('spec');
     expect(result.result.guide).toContain('source-first');
+    expect(JSON.stringify(result.result)).not.toContain('consuelo' + 'Design.');
   });
 });

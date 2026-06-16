@@ -95,18 +95,18 @@
     }
   },
   {
-    "name": "consuelo-design",
-    "title": "Consuelo Design",
-    "description": "Top-level orchestration skill for Consuelo Design artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+    "name": "office",
+    "title": "Office",
+    "description": "Top-level orchestration skill for Office artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
     "permission": "draft",
     "requiresApproval": false,
     "writesRecords": false,
     "externalSideEffects": false,
     "requiredIntegrations": [
-      "consuelo-design"
+      "office"
     ],
     "implementation": {
-      "script": "scripts/design/consuelo-design.ts"
+      "script": "scripts/design/office.ts"
     },
     "inputSchema": {
       "type": "object",
@@ -132,18 +132,18 @@
     }
   },
   {
-    "name": "consuelo-design-landing-page",
-    "title": "Consuelo Design Landing Page (compatibility alias)",
-    "description": "Deprecated compatibility alias for the landing-page subskill under the top-level consuelo-design skill. Prefer consuelo-design with subskill=landing-page for new design work.",
+    "name": "office-landing-page",
+    "title": "Office Landing Page (compatibility alias)",
+    "description": "Deprecated compatibility alias for the landing-page subskill under the top-level office skill. Prefer office with subskill=landing-page for new design work.",
     "permission": "draft",
     "requiresApproval": false,
     "writesRecords": false,
     "externalSideEffects": false,
     "requiredIntegrations": [
-      "consuelo-design"
+      "office"
     ],
     "implementation": {
-      "script": "scripts/design/consuelo-design-landing-page.ts"
+      "script": "scripts/design/office-landing-page.ts"
     },
     "inputSchema": {
       "type": "object",
@@ -185,6 +185,6 @@
       ]
     },
     "deprecated": true,
-    "supersededBy": "consuelo-design#landing-page"
+    "supersededBy": "office#landing-page"
   }
 ]

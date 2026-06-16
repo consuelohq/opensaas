@@ -40,7 +40,7 @@
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/consuelo-design.ts",
+    "consuelo-design": "bun ./scripts/office.ts",
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
@@ -49,7 +49,8 @@
     "git:diff": "bun ./scripts/git-diff.js",
     "worker": "bun ./scripts/worker.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
-    "os:release-device-auth": "wrangler deploy --config ../os/cloudflare/os-device-authority/wrangler.toml"
+    "os:release-device-auth": "wrangler deploy --config ../os/cloudflare/os-device-authority/wrangler.toml",
+    "office": "bun ./scripts/office.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

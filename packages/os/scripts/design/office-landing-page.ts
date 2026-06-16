@@ -55,7 +55,7 @@ function buildArtifactTitle(input: LandingPageInput): string {
   if (explicitTitle.length > 0) return explicitTitle;
   const offer = typeof input.campaign?.offer === 'string' ? sanitizeTitle(input.campaign.offer) : '';
   if (offer.length > 0) return `${offer} Landing Page Draft`;
-  return 'Consuelo Design Landing Page Draft';
+  return 'Office Landing Page Draft';
 }
 
 function buildPrompt(input: LandingPageInput, artifactTitle: string): string {
@@ -72,13 +72,13 @@ function buildPrompt(input: LandingPageInput, artifactTitle: string): string {
     input.sourceContext?.workspaceSnapshotArtifactId ? `Workspace snapshot artifact: ${input.sourceContext.workspaceSnapshotArtifactId}` : null,
     input.sourceContext?.briefArtifactId ? `Brief artifact: ${input.sourceContext.briefArtifactId}` : null,
     input.sourceContext?.notes ? `Context notes: ${input.sourceContext.notes}` : null,
-    'Use the existing Consuelo Design system and website workflow. Produce a draft artifact only; do not publish or replace a customer-facing page without approval.',
+    'Use the existing Office system and website workflow. Produce a draft artifact only; do not publish or replace a customer-facing page without approval.',
   ].filter((line): line is string => Boolean(line)).join('\n');
 }
 
 function slugify(value: string): string {
   const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
-  return slug.length > 0 ? slug : 'consuelo-design-landing-page';
+  return slug.length > 0 ? slug : 'office-landing-page';
 }
 
 async function runDesignDryRun(name: string, prompt: string): Promise<SpawnResult> {
@@ -86,7 +86,7 @@ async function runDesignDryRun(name: string, prompt: string): Promise<SpawnResul
     const packageRoot = getPackageRoot();
     const child = Bun.spawn([
       'bun',
-      './scripts/consuelo-design.ts',
+      './scripts/office.ts',
       'generate',
       'website',
       '--dry-run',
@@ -117,9 +117,9 @@ async function runDesignDryRun(name: string, prompt: string): Promise<SpawnResul
 
 function parseDesignPlan(stdout: string): DesignPlan {
   const trimmed = stdout.trim();
-  if (!trimmed) throw new Error('Consuelo Design returned an empty dry-run plan.');
+  if (!trimmed) throw new Error('Office returned an empty dry-run plan.');
   const parsed = JSON.parse(trimmed) as unknown;
-  if (!isRecord(parsed)) throw new Error('Consuelo Design dry-run plan was not an object.');
+  if (!isRecord(parsed)) throw new Error('Office dry-run plan was not an object.');
   return parsed as DesignPlan;
 }
 
@@ -135,7 +135,7 @@ function approvalOutput(input: LandingPageInput, context: SkillContext): CallOut
     permission: context.manifestEntry.permission,
     requiresApproval: true,
     proposedWrites: [{
-      type: 'consuelo-design-publish-request',
+      type: 'office-publish-request',
       actions: blockedActions,
       approvalRequired: true,
     }],
@@ -146,7 +146,7 @@ function approvalOutput(input: LandingPageInput, context: SkillContext): CallOut
   };
 }
 
-export async function runConsueloDesignLandingPage(input: unknown, context: SkillContext): Promise<CallOutput> {
+export async function runOfficeLandingPage(input: unknown, context: SkillContext): Promise<CallOutput> {
   const normalizedInput = normalizeInput(input);
   const approval = approvalOutput(normalizedInput, context);
   if (approval) return approval;
@@ -164,8 +164,8 @@ export async function runConsueloDesignLandingPage(input: unknown, context: Skil
       permission: context.manifestEntry.permission,
       requiresApproval: context.manifestEntry.requiresApproval,
       error: {
-        code: 'CONSUelo_DESIGN_DRY_RUN_FAILED'.toUpperCase(),
-        message: (dryRun.stderr || dryRun.stdout || `Consuelo Design exited ${dryRun.exitCode}`).slice(0, 240),
+        code: 'OFFICE_DRY_RUN_FAILED',
+        message: (dryRun.stderr || dryRun.stdout || `Office exited ${dryRun.exitCode}`).slice(0, 240),
       },
     };
   }
@@ -180,14 +180,14 @@ export async function runConsueloDesignLandingPage(input: unknown, context: Skil
       permission: context.manifestEntry.permission,
       requiresApproval: context.manifestEntry.requiresApproval,
       error: {
-        code: 'CONSUelo_DESIGN_PLAN_PARSE_FAILED'.toUpperCase(),
-        message: error instanceof Error ? error.message.slice(0, 240) : 'Could not parse Consuelo Design dry-run plan.',
+        code: 'OFFICE_PLAN_PARSE_FAILED',
+        message: error instanceof Error ? error.message.slice(0, 240) : 'Could not parse Office dry-run plan.',
       },
     };
   }
 
   const result = {
-    summary: 'Consuelo Design landing page draft prepared.',
+    summary: 'Office landing page draft prepared.',
     workflow: 'website',
     designSystem: 'consuelo',
     primaryDesignSkill: designPlan.project?.skillId ?? 'saas-landing',
@@ -205,7 +205,7 @@ export async function runConsueloDesignLandingPage(input: unknown, context: Skil
     prompt,
     nextActions: [
       'Review the draft work order artifact.',
-      'Open Consuelo Design with the generated project plan when ready to iterate visually.',
+      'Open Office with the generated project plan when ready to iterate visually.',
       'Request explicit approval before publishing or replacing a customer-facing page.',
     ],
   };
