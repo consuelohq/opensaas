@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/expand-how-to-speak-guide",
+  "base": "origin/task/design/expand-how-to-speak-guide",
+  "headSha": "4f71700163700e38f6a566b00d695795c06c683d",
+  "changeHash": "bc0d47f3eb8a8436083ddcdcfa24a954eb55d84ef0cac112b07de0431adff56d",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "verifiedAt": "2026-06-16T23:15:11.411Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/expand-how-to-speak-guide/current.json",
+        ".task/design/expand-how-to-speak-guide/evidence-log.json",
+        ".task/design/expand-how-to-speak-guide/read-log.json",
+        ".task/design/expand-how-to-speak-guide/session.json",
+        ".task/design/expand-how-to-speak-guide/workpad.md",
+        ".task/tasks/design/expand-how-to-speak-guide.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/workspace/scripts/consuelo-design.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

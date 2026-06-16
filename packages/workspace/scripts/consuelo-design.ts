@@ -1802,6 +1802,10 @@ function writeArchiveIndex(payload: DesignArchivePayload): void {
   writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
 }
 
+function renderArchiveRootRedirect(): string {
+  return '<!doctype html>\n<html lang="en"><head><meta charset="utf-8" /><title>Consuelo Sites</title></head><body><main><h1>Consuelo Sites</h1><p><a href="' + DESIGN_ARCHIVE_OFFICE_PATH + '">Open Office</a></p></main></body></html>\n';
+}
+
 async function runPagefindIndex(): Promise<void> {
   rmSync(DESIGN_ARCHIVE_PAGEFIND_ROOT, { recursive: true, force: true });
   const result = await runCommand(['bunx', '--bun', 'pagefind', '--site', DESIGN_ARCHIVE_ROOT, '--output-subdir', 'pagefind'], REPO_ROOT);

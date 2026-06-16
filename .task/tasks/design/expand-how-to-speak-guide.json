@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/expand-how-to-speak-guide",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 1099,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1099",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1099",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1099/expand-how-to-speak-guide",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1099",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1099/expand-how-to-speak-guide",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-expand-how-to-speak-guide",
+  "taskSession": "tsk_a12ac31a671e",
+  "tmuxSession": "opensaas-design-expand-how-to-speak-guide-a12ac31a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-expand-how-to-speak-guide/.task/design/expand-how-to-speak-guide/session.json",
+  "createdAt": "2026-06-16T22:56:32.990Z"
+}
