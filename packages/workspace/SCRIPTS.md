@@ -365,14 +365,14 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 **tips**
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
-- before `write --force` or `patch`, always read the target first
+- before `write --force` or `apply-patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
 - `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
-- `patch --from N --to N` replaces line N. always read the range first
+- `fs.patch` is not a workspace tool. use `fs.apply_patch` / `bun run fs -- apply-patch` with `--patch-file` or stdin
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
-- write and patch log touched files to `.task/<area>/<slug>/workpad.md`
-- after any write or patch, immediately verify: read the changed range, `node --check`, `git status`
+- write and apply-patch log touched files to `.task/<area>/<slug>/workpad.md`
+- after any write or apply-patch, immediately verify: read the changed range, `node --check`, `git status`
 
 ---
 

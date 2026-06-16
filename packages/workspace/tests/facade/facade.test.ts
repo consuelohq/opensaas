@@ -228,6 +228,40 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
+  it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
+    const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toContain('fs.patch is not a workspace tool');
+    expect(result.message).toContain('fs.apply_patch');
+
+    const data = result.data as {
+      requestedTool?: string;
+      replacementTool?: string;
+      manifestEntry?: {
+        name?: string;
+        inputSchema?: string;
+        command?: { subcommand?: string };
+      };
+    };
+
+    expect(data.requestedTool).toBe('fs.patch');
+    expect(data.replacementTool).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.name).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.inputSchema).toBe('FsApplyPatchInput');
+    expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
+  });
+
+  it('keeps generic unknown tool messages compact', async () => {
+    const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toBe('unknown tool: missing.tool');
+    expect(result.data).toBeNull();
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
