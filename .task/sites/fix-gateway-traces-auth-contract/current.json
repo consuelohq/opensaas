@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/fix-gateway-traces-auth-contract",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1085,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1085",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1085",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1085/fix-gateway-traces-auth-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1085",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1085/fix-gateway-traces-auth-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-fix-gateway-traces-auth-contract",
+  "taskSession": "tsk_ff9165024895",
+  "tmuxSession": "opensaas-sites-fix-gateway-traces-auth-contract-ff916502",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-fix-gateway-traces-auth-contract/.task/sites/fix-gateway-traces-auth-contract/session.json",
+  "createdAt": "2026-06-16T17:25:03.268Z"
+}
