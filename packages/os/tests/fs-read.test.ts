@@ -77,6 +77,42 @@ describe('OS fs.read bounded ingestion', () => {
     }
   });
 
+  it('should reject malformed files-json with a helpful error', () => {
+    const root = fixtureRoot();
+    try {
+      const proc = spawnSync('bun', [fsScript, 'read', '--files-json', '{bad', '--json'], {
+        cwd: root,
+        encoding: 'utf8',
+        maxBuffer: 32 * 1024 * 1024,
+      });
+
+      expect(proc.status).toBe(1);
+      expect(proc.stdout.trim()).toBe('');
+      expect(proc.stderr).toContain('--files-json must be valid JSON');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should return a typed error for inverted line ranges', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'range.txt'), 'one\ntwo\nthree\n');
+      const result = runRead(root, ['range.txt', '--offset', '3', '--to', '2']);
+
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({
+        type: 'error',
+        code: 'INVALID_RANGE',
+        path: 'range.txt',
+      });
+      expect(result.json.message).toContain('--to');
+      expect(result.json.message).toContain('3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('should return a typed out-of-range error', () => {
     const root = fixtureRoot();
     try {
@@ -228,7 +264,7 @@ describe('OS fs.read bounded ingestion', () => {
   it('should use Effect in the dedicated OS read implementation', () => {
     expect(existsSync(readModule)).toBe(true);
     const source = readFileSync(readModule, 'utf8');
-    expect(source).toContain('from "effect"');
+    expect(source).toMatch(/from ['\"]effect['\"]/);
     expect(source).toContain('Effect.gen');
 
     const generatorBodies = source.match(/Effect\.gen\(function\* \(\) \{[\s\S]*?\n\}\)/g) ?? [];
@@ -240,3 +276,4 @@ describe('OS fs.read bounded ingestion', () => {
     }
   });
 });
+

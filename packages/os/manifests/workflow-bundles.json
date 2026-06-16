@@ -1,7 +1,7 @@
 {
   "version": 1,
   "kind": "consuelo-os-workflow-bundles",
-  "sourceManifest": "../../../../../../../../var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-os-tool-manifest-wRycJr/tool.manifest.json",
+  "sourceManifest": "packages/os/manifests/tool.manifest.json",
   "config": "packages/os/manifests/manifest.config.json",
   "source": "packages/os/tooling/workflows.json",
   "workflows": [

@@ -197,6 +197,21 @@ export async function executeTool<TData = unknown>(
       taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
     } : normalizedInput;
 
+    if (entry.capabilities.mutating && scopedInput.dryRun === true && !entry.command.dryRunFlag) {
+      const result = createToolResult({
+        ok: true,
+        code: 'DRY_RUN',
+        message: 'dry run: command was validated but not executed',
+        data: { command: `workspace ${toolName}`, resolvedArgs: scopedInput },
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      return result as ToolResult<TData>;
+    }
+
     const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
       cwd,
       env,
@@ -233,21 +248,6 @@ export async function executeTool<TData = unknown>(
     const plannedCommandForLog = formatCommandForLog(plan);
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
-
-    if (entry.capabilities.mutating && commandInput.dryRun === true && !entry.command.dryRunFlag) {
-      const result = createToolResult({
-        ok: true,
-        code: 'DRY_RUN',
-        message: 'dry run: command was validated but not executed',
-        data: { command: plannedCommand, resolvedArgs: commandInput },
-        durationMs: elapsedMs(startedAt, options.now),
-        traceId,
-        requestId,
-        now: options.now,
-      });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result as ToolResult<TData>;
-    }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
     const runResult = await runWithRetry(entry, plan, timeoutMs, runner);

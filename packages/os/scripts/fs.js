@@ -126,7 +126,14 @@ function parseReadSegments(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--files-json') {
-      const files = JSON.parse(argv[++i]);
+      let files;
+      try {
+        files = JSON.parse(argv[++i]);
+      } catch {
+        err('error: --files-json must be valid JSON');
+        process.exitCode = 1;
+        return null;
+      }
       if (Array.isArray(files)) {
         for (const file of files) {
           if (file && typeof file.path === 'string') segments.push(file);
@@ -164,6 +171,7 @@ async function cmdRead(argv) {
   const json = argv.includes('--json');
   const segments = parseReadSegments(argv);
 
+  if (!segments) return;
   if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
 
   let result;
@@ -861,15 +869,6 @@ function logToWorkpad(filePath, action) {
   }
 }
 
-// ── main ──
-
-async function main() {
-  const argv = process.argv.slice(2);
-  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
-
-  const command = argv[0];
-  const rest = argv.slice(1);
-
 // ── http ──
 
 function cmdHttp(argv) {
@@ -921,7 +920,15 @@ function cmdTrash(argv) {
   }
 }
 
+
 // ── main ──
+
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
+
+  const command = argv[0];
+  const rest = argv.slice(1);
 
   switch (command) {
     case 'read': await cmdRead(rest); break;
@@ -942,3 +949,4 @@ function cmdTrash(argv) {
 main().catch((error) => {
   err(error && error.message ? error.message : String(error));
 });
+
