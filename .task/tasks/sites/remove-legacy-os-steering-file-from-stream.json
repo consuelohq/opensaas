@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/remove-legacy-os-steering-file-from-stream",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1087,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1087",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1087",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1087/remove-legacy-os-steering-file-from-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1087",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1087/remove-legacy-os-steering-file-from-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-legacy-os-steering-file-from-stream",
+  "taskSession": "tsk_77d8192e8170",
+  "tmuxSession": "opensaas-sites-remove-legacy-os-steering-file-from-stream-77d8192e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-legacy-os-steering-file-from-stream/.task/sites/remove-legacy-os-steering-file-from-stream/session.json",
+  "createdAt": "2026-06-16T17:42:58.214Z"
+}

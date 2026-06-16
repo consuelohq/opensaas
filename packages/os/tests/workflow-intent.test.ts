@@ -72,7 +72,7 @@ describe('OS workflow intent bundles', () => {
 
     expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
     expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'consueloDesign.generateWebsite']));
+    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
   });
 
   test('intent.start returns a task workflow manifest bundle and first scoped hook result', () => {
@@ -115,7 +115,7 @@ describe('OS workflow intent bundles', () => {
     expect(sites.workflow).toBe('office');
     expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
     expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'consueloDesign.generateWebsite']),
+      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
     );
   });
 

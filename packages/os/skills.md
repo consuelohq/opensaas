@@ -21,9 +21,9 @@ Permission: `read`
 This skill does not implement the full revenue brief. It reports scaffold status, GraphQL connectivity status, and next wiring steps.
 
 
-## Consuelo Design
+## Office
 
-`consuelo-design` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `consueloDesign.*` tools, template rules, browser validation, `design.publish`, and `/design-wiki` verification.
+`office` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `office.*` tools, template rules, browser validation, `design.publish`, and `/office` verification.
 
 
 ## Consuelo Workspace Snapshot

@@ -61,12 +61,12 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const ConsueloDesignInput = z.object({
+export const OfficeInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const ConsueloDesignUiInput = z.object({
+export const OfficeUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
@@ -78,7 +78,7 @@ export const DesignArchiveRefreshInput = z.object({
   tailscaleBin: optionalString,
 });
 
-export const ConsueloDesignSessionInput = z.object({
+export const OfficeSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -86,7 +86,7 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const ConsueloDesignDigitalEguideInput = z.object({
+export const OfficeDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -919,10 +919,10 @@ export const schemaRegistry = {
   BranchInput,
   DesignPublishInput,
   DesignArchiveRefreshInput,
-  ConsueloDesignInput,
-  ConsueloDesignUiInput,
-  ConsueloDesignSessionInput,
-  ConsueloDesignDigitalEguideInput,
+  OfficeInput,
+  OfficeUiInput,
+  OfficeSessionInput,
+  OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
   ToolsSearchInput,
@@ -1023,10 +1023,10 @@ export const schemaTypeSignatures: Record<string, string> = {
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
