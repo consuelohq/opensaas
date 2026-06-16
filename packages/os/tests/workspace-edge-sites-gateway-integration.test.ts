@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path, { join } from 'node:path';
@@ -146,6 +147,22 @@ async function importModule<T>(relativePath: string): Promise<T> {
   const href = pathToFileURL(join(process.cwd(), relativePath)).href;
   return (await import(href)) as T;
 }
+function signInternalEdgeRequest(input: {
+  secret: string;
+  method: string;
+  pathWithSearch: string;
+  workspaceId: string;
+  surface: string;
+}): string {
+  const canonical = [
+    input.method.toUpperCase(),
+    input.pathWithSearch,
+    input.workspaceId,
+    input.surface,
+  ].join('\n');
+
+  return `sha256=${createHmac('sha256', input.secret).update(canonical).digest('hex')}`;
+}
 
 function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>') {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-edge-sites-gateway-'));
@@ -285,7 +302,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(`${body}\n${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should resolve GET /gateway/traces/* to a Consuelo Gateway service descriptor without exposing backend implementation targets', async () => {
+  it('should reject unauthenticated GET /gateway/traces/* requests before returning Gateway service descriptors', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -302,8 +319,59 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     const readResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/traces/recent?cursor=00000000'));
-    const readBody = (await readResponse.json()) as Record<string, unknown>;
+    const readBody = (await readResponse.json()) as { error: { code: string } };
     const liveResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/traces/events?cursor=00000000'));
+    const liveBody = (await liveResponse.json()) as { error: { code: string } };
+
+    expect(readResponse.status).toBe(503);
+    expect(readBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    expect(liveResponse.status).toBe(503);
+    expect(liveBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    expect(upstreamRequests).toHaveLength(0);
+    expect(JSON.stringify([readBody, liveBody])).not.toMatch(forbiddenBrowserLeakPattern);
+  });
+
+  it('should resolve internally signed GET /gateway/traces/* requests to Gateway service descriptors without exposing backend targets', async () => {
+    const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
+    const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
+    const db = d1.createInMemoryWorkspaceRouteD1();
+    await d1.migrateWorkspaceRouteD1(db);
+    await d1.upsertWorkspaceHostnameInD1(db, integratedRouteRecord());
+    const upstreamRequests: Request[] = [];
+    const router = edge.createWorkspaceCloudflareEdgeRouter({
+      registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
+      internalSigningSecret: 'edge-test-secret',
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('unexpected raw service route', { status: 599 });
+      },
+    });
+
+    const readPath = '/gateway/traces/recent?cursor=00000000';
+    const livePath = '/gateway/traces/events?cursor=00000000';
+    const readResponse = await router.fetch(new Request(`https://internal.consuelohq.com${readPath}`, {
+      headers: {
+        'x-consuelo-edge-signature': signInternalEdgeRequest({
+          secret: 'edge-test-secret',
+          method: 'GET',
+          pathWithSearch: readPath,
+          workspaceId: 'workspace_internal',
+          surface: 'sites',
+        }),
+      },
+    }));
+    const readBody = (await readResponse.json()) as Record<string, unknown>;
+    const liveResponse = await router.fetch(new Request(`https://internal.consuelohq.com${livePath}`, {
+      headers: {
+        'x-consuelo-edge-signature': signInternalEdgeRequest({
+          secret: 'edge-test-secret',
+          method: 'GET',
+          pathWithSearch: livePath,
+          workspaceId: 'workspace_internal',
+          surface: 'sites',
+        }),
+      },
+    }));
     const liveBody = (await liveResponse.json()) as Record<string, unknown>;
 
     expect(readResponse.status).toBe(200);

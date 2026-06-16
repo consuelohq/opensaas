@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -274,6 +274,32 @@ const signEdgeRequest = (input: {
   return `sha256=${createHmac('sha256', input.secret)
     .update(canonical)
     .digest('hex')}`;
+};
+const signatureMatches = (left: string, right: string): boolean => {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const isSignedInternalEdgeRequest = (input: {
+  request: Request;
+  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
+  internalSigningSecret: string;
+}): boolean => {
+  const inboundUrl = new URL(input.request.url);
+  const signature = input.request.headers.get('x-consuelo-edge-signature')?.trim();
+  if (!signature) return false;
+
+  const expectedSignature = signEdgeRequest({
+    secret: input.internalSigningSecret,
+    method: input.request.method,
+    pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
+    workspaceId: input.resolution.workspaceId,
+    surface: input.resolution.surface,
+  });
+
+  return signatureMatches(signature, expectedSignature);
 };
 
 const buildProxyRequest = (input: {
@@ -557,6 +583,24 @@ export const createWorkspaceCloudflareEdgeRouter = (
         }
 
         if (resolution.target.kind === 'consuelo-gateway-service') {
+          const internalSigningSecret = input.internalSigningSecret?.trim();
+
+          if (
+            resolution.auth !== 'public' &&
+            (!internalSigningSecret ||
+              !isSignedInternalEdgeRequest({
+                request,
+                resolution,
+                internalSigningSecret,
+              }))
+          ) {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+              request,
+            });
+          }
+
           return createConsueloGatewayServiceResponse({
             resolution: resolution as Extract<
               WorkspaceCloudflareEdgeRouteResolution,
