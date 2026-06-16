@@ -2,10 +2,10 @@
   "id": "hyperframes",
   "title": "HyperFrames Render",
   "uses": [
-    "consuelo-design"
+    "office"
   ],
   "workflow": "hyperframes",
-  "defaultTool": "consueloDesign.renderHyperframes",
+  "defaultTool": "office.renderHyperframes",
   "primaryOpenDesignSkill": "hyperframes",
   "fallbackOpenDesignSkills": [
     "motion-frames"

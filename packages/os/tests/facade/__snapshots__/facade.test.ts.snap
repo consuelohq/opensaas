@@ -493,7 +493,7 @@ exports[`typed facade executor > returns a failure envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.check 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.check 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -510,7 +510,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.c
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateDemo 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateDemo 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -527,7 +527,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateDigitalEguide 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateDigitalEguide 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -544,7 +544,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateEmail 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateEmail 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -561,7 +561,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateImageBrief 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateImageBrief 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -578,7 +578,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateMotionFrame 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateMotionFrame 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -595,7 +595,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.generateWebsite 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.generateWebsite 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -612,7 +612,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.getDesignSystem 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.getDesignSystem 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -629,7 +629,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.listDesignSystems 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.listDesignSystems 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -646,7 +646,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.l
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.listSkills 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.listSkills 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -663,7 +663,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.l
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.odBuild 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.odBuild 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -680,7 +680,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.o
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.railwayCheck 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.railwayCheck 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -697,7 +697,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.renderHyperframes 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.renderHyperframes 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -714,7 +714,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.run 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.run 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -731,7 +731,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.uiBg 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.uiBg 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -748,7 +748,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.uiLogs 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.uiLogs 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -765,7 +765,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.uiStatus 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.uiStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -782,7 +782,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.uiStop 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.uiStop 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -799,7 +799,7 @@ exports[`typed facade executor > returns a failure envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for consueloDesign.upstreamStatus 1`] = `
+exports[`typed facade executor > returns a failure envelope for office.upstreamStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -2329,7 +2329,7 @@ exports[`typed facade executor > returns a success envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.check 1`] = `
+exports[`typed facade executor > returns a success envelope for office.check 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2346,7 +2346,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.c
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateDemo 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateDemo 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2363,7 +2363,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateDigitalEguide 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateDigitalEguide 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2380,7 +2380,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateEmail 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateEmail 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2397,7 +2397,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateImageBrief 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateImageBrief 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2414,7 +2414,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateMotionFrame 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateMotionFrame 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2431,7 +2431,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.generateWebsite 1`] = `
+exports[`typed facade executor > returns a success envelope for office.generateWebsite 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2448,7 +2448,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.getDesignSystem 1`] = `
+exports[`typed facade executor > returns a success envelope for office.getDesignSystem 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2465,7 +2465,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.g
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.listDesignSystems 1`] = `
+exports[`typed facade executor > returns a success envelope for office.listDesignSystems 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2482,7 +2482,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.l
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.listSkills 1`] = `
+exports[`typed facade executor > returns a success envelope for office.listSkills 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2499,7 +2499,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.l
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.odBuild 1`] = `
+exports[`typed facade executor > returns a success envelope for office.odBuild 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2516,7 +2516,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.o
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.railwayCheck 1`] = `
+exports[`typed facade executor > returns a success envelope for office.railwayCheck 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2533,7 +2533,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.renderHyperframes 1`] = `
+exports[`typed facade executor > returns a success envelope for office.renderHyperframes 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2550,7 +2550,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.run 1`] = `
+exports[`typed facade executor > returns a success envelope for office.run 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2567,7 +2567,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.r
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.uiBg 1`] = `
+exports[`typed facade executor > returns a success envelope for office.uiBg 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2584,7 +2584,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.uiLogs 1`] = `
+exports[`typed facade executor > returns a success envelope for office.uiLogs 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2601,7 +2601,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.uiStatus 1`] = `
+exports[`typed facade executor > returns a success envelope for office.uiStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2618,7 +2618,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.uiStop 1`] = `
+exports[`typed facade executor > returns a success envelope for office.uiStop 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -2635,7 +2635,7 @@ exports[`typed facade executor > returns a success envelope for consueloDesign.u
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for consueloDesign.upstreamStatus 1`] = `
+exports[`typed facade executor > returns a success envelope for office.upstreamStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",

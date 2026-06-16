@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 let tempHome: string;
 
 beforeEach(() => {
-  tempHome = mkdtempSync(join(tmpdir(), 'consuelo-design-skill-'));
+  tempHome = mkdtempSync(join(tmpdir(), 'office-skill-'));
 });
 
 afterEach(() => {
@@ -25,13 +25,13 @@ function runBunEval(code: string): string {
   });
 }
 
-describe('consuelo-design-landing-page skill', () => {
-  it('creates a draft artifact from the existing Consuelo Design website workflow', () => {
+describe('office-landing-page skill', () => {
+  it('creates a draft artifact from the existing Office website workflow', () => {
     const result = JSON.parse(runBunEval(`
       const { executeCall } = await import('./scripts/os.ts');
       const result = await executeCall({
-        name: 'consuelo-design-landing-page',
-        traceId: 'trc_design_landing_page_test',
+        name: 'office-landing-page',
+        traceId: 'trc_office_landing_page_test_' + Date.now() + '_' + process.pid,
         workspaceId: 'workspace-id',
         userId: 'user-id',
         input: {
@@ -65,8 +65,8 @@ describe('consuelo-design-landing-page skill', () => {
       type: 'draft',
       format: 'json',
       storageMode: 'local',
-      traceId: 'trc_design_landing_page_test',
-      skillName: 'consuelo-design-landing-page',
+      traceId: result.traceId,
+      skillName: 'office-landing-page',
     });
     expect(existsSync(artifact.localPath)).toBe(true);
 
@@ -85,7 +85,7 @@ describe('consuelo-design-landing-page skill', () => {
     const result = JSON.parse(runBunEval(`
       const { executeCall } = await import('./scripts/os.ts');
       const result = await executeCall({
-        name: 'consuelo-design-landing-page',
+        name: 'office-landing-page',
         traceId: 'trc_design_publish_gate_test',
         input: { publish: true, replaceCustomerFacingPage: true },
       });
@@ -96,7 +96,7 @@ describe('consuelo-design-landing-page skill', () => {
     expect(result.requiresApproval).toBe(true);
     expect(result.error).toMatchObject({ code: 'APPROVAL_REQUIRED' });
     expect(result.proposedWrites[0]).toMatchObject({
-      type: 'consuelo-design-publish-request',
+      type: 'office-publish-request',
       approvalRequired: true,
     });
   });

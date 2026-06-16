@@ -55,7 +55,7 @@ The agent should avoid development-workspace assumptions:
 - raw core tool manifest
 - docs pointers
 
-`get_dev_steering` gives build, design, deployment, debugging, and internal operator agents the original proven workspace steering pattern with an OS preface. Use it for landing pages, Consuelo Design, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.
+`get_dev_steering` gives build, design, deployment, debugging, and internal operator agents the original proven workspace steering pattern with an OS preface. Use it for landing pages, Office, GitHub, Supabase/auth, deployment, file workflows, and operator/debug tasks.
 
 `call` executes exactly one named skill:
 

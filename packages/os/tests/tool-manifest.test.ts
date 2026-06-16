@@ -165,7 +165,7 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
-    expect(coreNames).not.toContain('consueloDesign.generateWebsite');
+    expect(coreNames).not.toContain('office.generateWebsite');
     expect(coreNames).not.toContain('daily-revenue-brief');
     expect(coreNames).not.toContain('get_raw_steering');
   });

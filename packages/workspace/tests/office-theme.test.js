@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 
-const source = readFileSync(new URL('../scripts/consuelo-design.ts', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../scripts/office.ts', import.meta.url), 'utf8');
 
 test('keeps the generated sites archive theme and search surfaces styled', () => {
   for (const marker of [
