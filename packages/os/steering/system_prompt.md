@@ -1182,6 +1182,8 @@ never send secrets, api keys, tokens, credentials, full phone numbers, or custom
 
 dangerous safety validation must run as unit tests or dry-run/mocked execution only. human review should inspect test output, not run destructive smoke examples manually.
 
+agents must not execute broad test files or scripts that contain catastrophic command literals, even when those files appear to test guardrails. preflight the target source first. if a target contains machine-destructive command-shaped material, switch to static validation, pure classifier tests, mocked/trapped executor tests, or an explicit sandbox harness with opt-in. never prove a guardrail by betting the host machine on that guardrail working.
+
 ---
 
 ## 9. response contracts
