@@ -744,6 +744,35 @@ codex exec --cd "$PWD" --sandbox workspace-write --json - < /tmp/<task-name>-ins
 * Do not include `--ask-for-approval never` unless the local Codex CLI help confirms that flag is supported.
 * After a worker or direct Codex run, inspect stdout/stderr logs, task diff, and trace output before pushing.
 
+## API design and performance review
+
+When designing, reviewing, or refactoring APIs, treat performance as an engineering discipline, not a reflex. Do not optimize first. Start by identifying the real bottleneck through load testing, request profiling, traces, database query inspection, and production-like traffic assumptions. Only apply optimization once an endpoint has a confirmed performance issue or a clear scalability requirement.
+
+For API design and review, check these seven performance patterns:
+
+1. **Caching**
+   Use caching for expensive computations or frequently requested responses with stable parameters. Prefer explicit cache keys, TTLs, invalidation rules, and correctness boundaries. Redis or Memcached are appropriate when repeated database hits dominate latency. Do not cache data whose freshness requirements are unclear.
+
+2. **Connection pooling**
+   Reuse database and service connections instead of opening a new connection per request. Confirm pool size, timeout behavior, idle limits, and failure behavior. In serverless systems, check for connection explosion risk and consider managed pooling layers such as RDS Proxy or equivalent platform tools.
+
+3. **Avoid N+1 queries**
+   Inspect API endpoints that load parent records and related entities. Replace per-record child queries with joins, eager loading, batch loading, or two-query patterns that fetch all related records at once. Treat N+1 fixes as a primary database performance concern.
+
+4. **Pagination**
+   Do not return unbounded lists. Large responses increase database load, transfer time, memory use, and client-side work. Use limit/offset, cursor pagination, or keyset pagination depending on consistency and scale requirements. Make pagination behavior explicit in the API contract.
+
+5. **Lightweight JSON serialization**
+   Serialization can become visible in high-throughput or large-payload APIs. Check whether response shaping, DTO construction, or JSON encoding is adding latency. Prefer efficient serializers and avoid returning unnecessary fields.
+
+6. **Compression**
+   Enable compression for large API payloads when network transfer cost matters. Prefer modern algorithms such as Brotli where supported, and use CDN or edge compression when appropriate. Avoid compressing tiny responses where CPU overhead outweighs transfer savings.
+
+7. **Asynchronous logging**
+   Logging should not block hot request paths in high-throughput systems. Use buffered or asynchronous logging when synchronous writes add measurable latency. Preserve reliability expectations: asynchronous logging can lose recent logs if the process crashes before flush, so use it deliberately for the right log class.
+
+Default review stance: first prove the bottleneck, then choose the simplest optimization that addresses it without adding unnecessary complexity. Every API performance change should include evidence, expected effect, and a validation path.
+
 
 
 
