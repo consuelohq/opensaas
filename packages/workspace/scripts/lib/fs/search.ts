@@ -79,9 +79,9 @@ function buildRipgrepArgs(input: Required<Pick<FsSearchInput, 'pattern'>> & FsSe
   if (!input.filesOnly && context > 0) args.push('--context', String(context));
   if (input.include) args.push('--glob', input.include);
   if (input.filesOnly) args.push('--files-with-matches');
-  args.push(input.pattern);
+  args.push('-e', input.pattern);
   const targets = input.paths && input.paths.length > 0 ? input.paths : ['.'];
-  args.push(...targets);
+  args.push('--', ...targets);
   return args;
 }
 
@@ -171,7 +171,9 @@ const runRipgrepEffect = (input: FsSearchInput, root: string) => Effect.try({
       stdio: ['pipe', 'pipe', 'pipe'],
       maxBuffer: 32 * 1024 * 1024,
     });
-    return { status: proc.status ?? 0, stdout: proc.stdout || '', stderr: proc.stderr || '' };
+    if (proc.error) throw proc.error;
+    if (proc.status === null) throw new Error('ripgrep exited without a status');
+    return { status: proc.status, stdout: proc.stdout || '', stderr: proc.stderr || '' };
   },
   catch: (cause) => new Error('Unable to run ripgrep: ' + String((cause as Error).message || cause)),
 });
