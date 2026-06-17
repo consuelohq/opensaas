@@ -102,8 +102,10 @@ function writeTaskSession(tempRoot: string, taskSession: string, branch: string 
   }, null, 2));
 }
 
+const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search']);
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
 describe('typed facade executor', () => {
@@ -467,38 +469,44 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
+  it('runs read-only fs tools without taskSession', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
+
+    const readResult = await executeTool('fs.read', {
       path: 'AGENTS.md',
     }, {
       ...stableOptions(successfulRunner(), plans),
       branchResolver: () => ({
         ok: false,
         code: 'WORKTREE_NOT_FOUND',
-        message: 'no active task worktree found; run task:start first or pass branch',
+        message: 'no active task worktree found',
         candidates: [],
       }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect(plans).toHaveLength(0);
-  });
-
-  it('requires taskSession for sessionRequired tools', async () => {
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
     }, {
-      ...stableOptions(successfulRunner()),
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found',
+        candidates: [],
+      }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(plans).toHaveLength(2);
+    expect(plans[0].args).not.toContain('--branch');
+    expect(plans[1].args).not.toContain('--branch');
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {

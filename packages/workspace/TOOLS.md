@@ -1222,7 +1222,6 @@ read bounded text or supported media from files with pagination, MIME metadata, 
 await workspace.call({
   "tool": "fs.read",
   "input": {
-    "branch": "task/workspace-agents/example",
     "path": "packages/workspace/scripts/fs.js",
     "offset": 1,
     "limit": 120
@@ -1284,7 +1283,6 @@ search file contents with ripgrep and return structured bounded matches for agen
 await workspace.call({
   "tool": "fs.search",
   "input": {
-    "branch": "task/workspace-agents/example",
     "pattern": "task:fs",
     "path": "packages/workspace/SCRIPTS.md"
   }

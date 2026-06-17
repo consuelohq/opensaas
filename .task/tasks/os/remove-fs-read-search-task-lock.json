@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-fs-read-search-task-lock",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1108,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1108",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1108",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1108/remove-fs-read-search-task-lock",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1108",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1108/remove-fs-read-search-task-lock",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-fs-read-search-task-lock",
+  "taskSession": "tsk_a051c54274f8",
+  "tmuxSession": "opensaas-os-remove-fs-read-search-task-lock-a051c542",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-fs-read-search-task-lock/.task/os/remove-fs-read-search-task-lock/session.json",
+  "createdAt": "2026-06-17T05:06:04.644Z"
+}
