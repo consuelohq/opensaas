@@ -44,8 +44,7 @@
       "context.",
       "fs.",
       "mac.",
-      "stream.",
-      "task."
+      "stream."
     ],
     "includeCategories": [],
     "excludeNames": [
@@ -59,6 +58,7 @@
       "linear.",
       "railway.",
       "sentry.",
+      "task.",
       "website."
     ],
     "excludeCategories": [

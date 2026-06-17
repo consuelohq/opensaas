@@ -521,7 +521,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "finish a task branch after merge",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.finish",
             "methodPath": [
@@ -578,7 +578,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "merge task to stream and create or refresh the stream review PR",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.pr",
             "methodPath": [
@@ -656,7 +656,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "push changed task files to the task branch through GitHub API",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.push",
             "methodPath": [
@@ -746,7 +746,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "create a task branch, worktree, and draft PR",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.start",
             "methodPath": [
