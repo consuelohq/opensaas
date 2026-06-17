@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts"
+  ],
+  "updatedAt": "2026-06-14T04:54:33.436Z"
+}

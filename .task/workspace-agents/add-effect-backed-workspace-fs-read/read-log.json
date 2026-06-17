@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/fs-read.test.ts"
+  ],
+  "updatedAt": "2026-06-16T04:25:52.396Z"
+}

@@ -36,7 +36,7 @@ load_env_file() {
 load_env_file "$env_file"
 
 export PATH="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
-export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-8850}}}"
+export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-8960}}}"
 export PORT="$CONSUELO_OS_PORT"
 export CONSUELO_HOME="${WORKSPACE_DAEMON_CONSUELO_HOME:-${CONSUELO_HOME:-${HOME:-/tmp}/.consuelo/os}}"
 

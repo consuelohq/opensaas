@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-hosted-installer-workspace-prompts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 992,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/992",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/992",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/992/polish-hosted-installer-workspace-prompts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/992",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/992/polish-hosted-installer-workspace-prompts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-hosted-installer-workspace-prompts",
+  "taskSession": "tsk_f211d6bfd414",
+  "tmuxSession": "opensaas-os-polish-hosted-installer-workspace-prompts-f211d6bf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-hosted-installer-workspace-prompts/.task/os/polish-hosted-installer-workspace-prompts/session.json",
+  "createdAt": "2026-06-13T05:13:42.835Z"
+}

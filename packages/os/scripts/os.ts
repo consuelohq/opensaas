@@ -12,6 +12,10 @@ import {
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
+  assessDangerousMaterial,
+  dangerousMaterialError,
+} from './lib/dangerous-material-policy';
+import {
   ensureRuntimePaths,
   getRuntimePaths,
   readSteeringGuardDecisions,
@@ -48,6 +52,43 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
+const PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
+const LEGACY_STEERING_FILE = 'steering.md';
+
+function localSteeringDir(home: string): string {
+  return path.join(home, 'steering');
+}
+
+function isSupportedSteeringMarkdown(fileName: string): boolean {
+  return fileName.endsWith('.md') && fileName.toLowerCase() !== LEGACY_STEERING_FILE;
+}
+
+function readSteeringMarkdownFiles(steeringDir: string): Array<{ name: string; content: string }> {
+  const sections: Array<{ name: string; content: string }> = [];
+  const seen = new Set<string>();
+
+  for (const fileName of PRIMARY_STEERING_FILES) {
+    const content = readIfExists(path.join(steeringDir, fileName));
+    seen.add(fileName);
+    if (content) sections.push({ name: fileName, content });
+  }
+
+  if (!fs.existsSync(steeringDir)) return sections;
+
+  const additionalFiles = fs.readdirSync(steeringDir)
+    .filter((fileName) => !seen.has(fileName) && isSupportedSteeringMarkdown(fileName))
+    .sort((left, right) => left.localeCompare(right));
+
+  for (const fileName of additionalFiles) {
+    const filePath = path.join(steeringDir, fileName);
+    if (!fs.statSync(filePath).isFile()) continue;
+    const content = readIfExists(filePath);
+    if (content) sections.push({ name: fileName, content });
+  }
+
+  return sections;
+}
+
 function createTraceId(): string {
   return `trc_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
 }
@@ -77,6 +118,7 @@ export type SitesCommandResult = {
   officeAssetsDir: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
+  docsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -85,6 +127,7 @@ export type SitesCommandResult = {
   officeDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
+  docsIndexExists: boolean;
   message: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
@@ -206,6 +249,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeAssetsDir: sitesPaths.officeAssetsDir,
     tracesIndexPath: sitesPaths.tracesIndexPath,
     diffsIndexPath: sitesPaths.diffsIndexPath,
+    docsIndexPath: sitesPaths.docsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
     generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
@@ -214,6 +258,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     officeDataExists: fs.existsSync(sitesPaths.officeDataPath),
     tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
     diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
+    docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }
@@ -456,16 +501,7 @@ function renderOfficeCommandResult(result: OfficeCommandResult): string {
   return renderSitesCommandResult(result);
 }
 export function getSteering(): string {
-  ensureRuntimePaths();
-  const packageRoot = getPackageRoot();
-  const files = [
-    'STEERING.md',
-    'business-context.md',
-    'data-model.md',
-    'permissions.md',
-    'integrations.md',
-    'skills.md',
-  ];
+  const runtimePaths = ensureRuntimePaths();
   const sections = [
     '# Consuelo OS runtime context',
     '',
@@ -476,9 +512,8 @@ export function getSteering(): string {
     '```',
   ];
 
-  for (const file of files) {
-    const content = readIfExists(path.join(packageRoot, file));
-    if (content) sections.push('', `# ${file}`, '', content);
+  for (const file of readSteeringMarkdownFiles(localSteeringDir(runtimePaths.home))) {
+    sections.push('', `# ${file.name}`, '', file.content);
   }
 
   sections.push(
@@ -637,9 +672,9 @@ You already received full OS steering very recently in this pre-task bootstrap c
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Read only the specific file you need:
-- packages/os/STEERING.md
+- $CONSUELO_HOME/steering/system_prompt.md
+- $CONSUELO_HOME/steering/decision.md
 - packages/os/manifests/core.manifest.json
-- packages/workspace/STEERING.md
 
 Useful alternatives:
 - fs.read for exact files
@@ -804,15 +839,15 @@ export function getRawSteering(): string {
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-    'Use this context for landing pages, Consuelo Design, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
+    'Use this context for landing pages, Office, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
-  const devSteering = readIfExists(path.join(packageRoot, 'dev-steering.md'));
+  const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
   if (devSteering)
-    sections.push('# original workspace STEERING.md', '', devSteering);
-  const decision = readIfExists(path.join(packageRoot, 'decision.md'));
+    sections.push('# bundled OS system_prompt.md', '', devSteering);
+  const decision = readIfExists(path.join(packageRoot, 'steering', 'decision.md'));
   if (decision)
-    sections.push('', '# original workspace decision.md', '', decision);
+    sections.push('', '# bundled OS decision.md', '', decision);
   const manifest = readIfExists(
     path.join(packageRoot, 'manifests', 'tool.manifest.json'),
   );
@@ -932,10 +967,10 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
       };
     }
   }
-  if (entry.name === 'consuelo-design') {
+  if (entry.name === 'office') {
     try {
-      const { runConsueloDesign } = await import('./design/consuelo-design');
-      return await runConsueloDesign(callInput.input ?? {}, context);
+      const { runOffice } = await import('./design/office');
+      return await runOffice(callInput.input ?? {}, context);
     } catch (error: unknown) {
       return {
         ok: false,
@@ -952,11 +987,11 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
       };
     }
   }
-  if (entry.name === 'consuelo-design-landing-page') {
+  if (entry.name === 'office-landing-page') {
     try {
-      const { runConsueloDesignLandingPage } =
-        await import('./design/consuelo-design-landing-page');
-      return await runConsueloDesignLandingPage(callInput.input ?? {}, context);
+      const { runOfficeLandingPage } =
+        await import('./design/office-landing-page');
+      return await runOfficeLandingPage(callInput.input ?? {}, context);
     } catch (error: unknown) {
       return {
         ok: false,
@@ -994,6 +1029,21 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
   const workspaceId =
     callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
   const userId = callInput.userId ?? process.env.CONSUELO_USER_ID;
+
+  const materialDecision = assessDangerousMaterial({
+    source: 'executeCall decoded-input',
+    value: callInput,
+  });
+  if (!materialDecision.allowed) {
+    return {
+      ok: false,
+      name: callInput.name,
+      permission: 'admin',
+      traceId,
+      durationMs: Date.now() - started,
+      error: dangerousMaterialError(materialDecision),
+    };
+  }
 
   recordExecutionStarted({
     traceId,
@@ -1086,7 +1136,6 @@ async function main(): Promise<void> {
     const result = command === 'office'
       ? await runOfficeCommand(args)
       : await runSitesCommand(args);
-    if (command === 'office') writeStderr('Deprecated: use `sites` instead of `office`.');
     if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
 `);
     else writeStdout(`${renderSitesCommandResult(result)}

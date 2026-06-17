@@ -14,14 +14,15 @@
   ],
   "outputs": {
     "full": "packages/os/manifests/tool.manifest.json",
-    "core": "packages/os/manifests/core.manifest.json"
+    "core": "packages/os/manifests/core.manifest.json",
+    "workflows": "packages/os/manifests/workflow-bundles.json"
   },
   "core": {
     "includeNames": [
       "audit",
       "checkFiles",
-      "code.run",
       "code.call",
+      "code.run",
       "confidenceScore",
       "confirm",
       "decideNext",
@@ -32,6 +33,7 @@
       "git.diff",
       "git.status",
       "github",
+      "intent",
       "review.run",
       "status",
       "tmp",
@@ -46,10 +48,13 @@
       "task."
     ],
     "includeCategories": [],
-    "excludeNames": [],
+    "excludeNames": [
+      "mac.call",
+      "mac.exec"
+    ],
     "excludePrefixes": [
       "browser.",
-      "consueloDesign.",
+      "office.",
       "design.",
       "linear.",
       "railway.",
@@ -63,5 +68,8 @@
       "railway",
       "sentry"
     ]
+  },
+  "workflows": {
+    "path": "packages/os/tooling/workflows.json"
   }
 }

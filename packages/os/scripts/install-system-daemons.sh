@@ -33,7 +33,7 @@ if ! id -u "$daemon_user" >/dev/null 2>&1; then
 fi
 daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$daemon_home/Library/Logs/Consuelo}"
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
@@ -56,7 +56,7 @@ if [ -z "$stage_port" ]; then
   echo "unable to find a free stage port" >&2
   exit 1
 fi
-local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8850/health}"
+local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8960/health}"
 uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
 

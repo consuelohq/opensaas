@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-current-os-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 967,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/967",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/967",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/967/fix-current-os-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/967",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/967/fix-current-os-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-os-review-findings",
+  "taskSession": "tsk_51ed2bf15f23",
+  "tmuxSession": "opensaas-os-fix-current-os-review-findings-51ed2bf1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-os-review-findings/.task/os/fix-current-os-review-findings/session.json",
+  "createdAt": "2026-06-11T17:35:04.635Z"
+}

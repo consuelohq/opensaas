@@ -1,0 +1,9 @@
+{
+  "files": [
+    "package.json",
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/workspace/SCRIPTS.md"
+  ],
+  "updatedAt": "2026-06-14T23:52:21.789Z"
+}

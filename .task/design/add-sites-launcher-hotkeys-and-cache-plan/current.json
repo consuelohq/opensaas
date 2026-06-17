@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-sites-launcher-hotkeys-and-cache-plan",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1017,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1017",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1017",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1017/add-sites-launcher-hotkeys-and-cache-plan",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1017",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1017/add-sites-launcher-hotkeys-and-cache-plan",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-sites-launcher-hotkeys-and-cache-plan",
+  "taskSession": "tsk_7d03a36536c8",
+  "tmuxSession": "opensaas-design-add-sites-launcher-hotkeys-and-cache-plan-7d03a365",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-sites-launcher-hotkeys-and-cache-plan/.task/design/add-sites-launcher-hotkeys-and-cache-plan/session.json",
+  "createdAt": "2026-06-13T15:13:47.834Z"
+}

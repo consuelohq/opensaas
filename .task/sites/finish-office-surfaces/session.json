@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c37df820c048",
+  "tmuxSession": "opensaas-sites-finish-office-surfaces-c37df820",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/finish-office-surfaces",
+  "branch": "task/sites/finish-office-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-finish-office-surfaces",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-finish-office-surfaces",
+  "prNumber": 1060,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1060",
+  "createdAt": "2026-06-16T08:16:02.789Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-finish-office-surfaces/.task/sites/finish-office-surfaces/session.json"
+}

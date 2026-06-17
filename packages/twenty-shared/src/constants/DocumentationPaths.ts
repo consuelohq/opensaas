@@ -136,9 +136,9 @@ export const DOCUMENTATION_PATHS = {
   OS_HOW_IT_WORKS: '/os/how-it-works',
   OS_OVERVIEW: '/os/overview',
   OS_SKILLS_BROWSER: '/os/skills/browser',
-  OS_SKILLS_CONSUELO_DESIGN: '/os/skills/consuelo-design',
-  OS_SKILLS_CONSUELO_DESIGN_LANDING_PAGE:
-    '/os/skills/consuelo-design-landing-page',
+  OS_SKILLS_OFFICE: '/os/skills/office',
+  OS_SKILLS_OFFICE_LANDING_PAGE:
+    '/os/skills/office-landing-page',
   OS_SKILLS_CONSUELO_WORKSPACE_SNAPSHOT:
     '/os/skills/consuelo-workspace-snapshot',
   OS_SKILLS_DAILY_REVENUE_BRIEF: '/os/skills/daily-revenue-brief',
@@ -158,8 +158,10 @@ export const DOCUMENTATION_PATHS = {
     '/os/skills/planned/weekly-manager-report',
   OS_SKILLS_RESEARCH_INGEST: '/os/skills/research-ingest',
   OS_SKILLS_SENIOR_ENGINEER: '/os/skills/senior-engineer',
+  OS_SKILLS_SITES: '/os/skills/sites',
   OS_SKILLS_SKILL_CREATOR: '/os/skills/skill-creator',
   OS_SKILLS_TASK: '/os/skills/task',
+  OS_SKILLS_TEACH: '/os/skills/teach',
   OS_TOOLS_BROWSER_TOOLS: '/os/tools/browser-tools',
   OS_TOOLS_EXPLORATION_TOOLS: '/os/tools/exploration-tools',
   OS_TOOLS_FILESYSTEM_TOOLS: '/os/tools/filesystem-tools',

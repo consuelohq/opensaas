@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bound-os-github-response-packets",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1042,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1042",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1042",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1042/bound-os-github-response-packets",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1042",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1042/bound-os-github-response-packets",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bound-os-github-response-packets",
+  "taskSession": "tsk_f8f304a2adec",
+  "tmuxSession": "opensaas-os-bound-os-github-response-packets-f8f304a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bound-os-github-response-packets/.task/os/bound-os-github-response-packets/session.json",
+  "createdAt": "2026-06-14T21:07:27.902Z"
+}

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -104,6 +105,21 @@ function writeFixtureConfig(regularManifestPath: string, devToolManifestPath: st
   return configPath;
 }
 
+function publicSurfaceText(): string {
+  const publicFiles = [
+    'manifests/tool.manifest.json',
+    'manifests/core.manifest.json',
+    'manifests/workflow-bundles.json',
+    'TOOLS.md',
+    'src/generated/workspace.d.ts',
+    'src/generated/tool-client.ts',
+    'package.json',
+  ];
+  return publicFiles
+    .map((relativePath) => readFileSync(join(packageRoot, relativePath), 'utf8'))
+    .join('\n');
+}
+
 describe('tool manifest generator', () => {
   it('preserves every regular and dev manifest entry in the generated full manifest', () => {
     const regularEntries = readJsonArray('tooling/tool-manifest.json');
@@ -147,6 +163,8 @@ describe('tool manifest generator', () => {
     expect(coreNames).toContain('github');
     expect(coreNames).toContain('gh');
     expect(coreNames).toContain('mac.read');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
     expect(coreNames).toContain('tools.search');
     expect(coreNames).toContain('status');
     expect(coreNames).toContain('doctor');
@@ -164,9 +182,96 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
-    expect(coreNames).not.toContain('consueloDesign.generateWebsite');
+    expect(coreNames).not.toContain('office.generateWebsite');
     expect(coreNames).not.toContain('daily-revenue-brief');
     expect(coreNames).not.toContain('get_raw_steering');
+  });
+
+
+
+  it('keeps public execution surface on code.call and lifecycle task tools only', async () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const lifecycleTools = ['task.start', 'task.current', 'task.push', 'task.pr', 'task.finish'];
+    const codeCallEntry = registry.core.tools.find((entry) => entry.name === 'code.call');
+    const macCallEntry = registry.full.tools.find((entry) => entry.name === 'mac.call');
+
+    expect(fullNames).toContain('code.call');
+    expect(coreNames).toContain('code.call');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
+    for (const toolName of lifecycleTools) {
+      expect(fullNames).toContain(toolName);
+      expect(coreNames).toContain(toolName);
+    }
+    expect(fullNames).not.toContain('task.call');
+    expect(fullNames).not.toContain('task.exec');
+    expect(coreNames).not.toContain('task.call');
+    expect(coreNames).not.toContain('task.exec');
+
+    const publicText = publicSurfaceText();
+    expect(publicText).not.toContain('task.call');
+    expect(publicText).not.toContain('task.exec');
+    expect(publicText).not.toContain('task:exec');
+    expect(publicText).toContain('code.call');
+    expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
+
+    expect(codeCallEntry?.description).toContain('preferred repo-scoped execution tool');
+    expect(codeCallEntry?.description).toContain('tests');
+    expect(codeCallEntry?.description).toContain('package scripts');
+    expect(JSON.stringify(codeCallEntry?.definition)).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
+    expect(macCallEntry?.description).toContain('emergency host escape hatch');
+    expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
+
+    const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+
+    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
+    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+  });
+
+  it('should expose fs.apply_patch only when building OS manifest surfaces', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
+    const devNames = devEntries.map((entry) => String(entry.name));
+    const fullEntry = registry.full.tools.find((entry) => entry.name === 'fs.apply_patch');
+    const coreEntry = registry.core.tools.find((entry) => entry.name === 'fs.apply_patch');
+    const devEntry = devEntries.find((entry) => entry.name === 'fs.apply_patch');
+
+    expect(fullNames).toContain('fs.apply_patch');
+    expect(coreNames).toContain('fs.apply_patch');
+    expect(devNames).toContain('fs.apply_patch');
+    expect(fullNames).not.toContain('fs.patch');
+    expect(coreNames).not.toContain('fs.patch');
+    expect(devNames).not.toContain('fs.patch');
+    expect((fullEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
+    expect((coreEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
+    expect(devEntry?.inputSchema).toBe('FsApplyPatchInput');
+  });
+
+  it('should validate fs.apply_patch input when exactly one patch transport is provided', () => {
+    const schema = getInputSchema('FsApplyPatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({ patchText: '*** Begin Patch\n*** End Patch' }).success).toBe(true);
+    expect(schema?.safeParse({ patchFile: '/tmp/change.patch' }).success).toBe(true);
+    expect(schema?.safeParse({ patchText: '*** Begin Patch\n*** End Patch', patchFile: '/tmp/change.patch' }).success).toBe(false);
+    expect(schema?.safeParse({}).success).toBe(false);
+    expect(schemaTypeSignatures.FsApplyPatchInput).toContain('patchText?: string');
+    expect(schemaTypeSignatures.FsApplyPatchInput).toContain('patchFile?: string');
+  });
+
+  it('should expose fs.apply_patch when generating OS TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const generatedClient = readFileSync(join(packageRoot, 'src/generated/tool-client.ts'), 'utf8');
+
+    expect(generatedWorkspace).toContain('apply_patch');
+    expect(generatedWorkspace).toContain('patchText?: string');
+    expect(generatedWorkspace).not.toContain('fs.patch');
+    expect(generatedClient).toContain('createWorkspaceClient');
   });
 
   it('writes full and core manifests to override output paths', () => {
@@ -177,11 +282,13 @@ describe('tool manifest generator', () => {
 
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
+    const workflows = JSON.parse(readFileSync(join(packageRoot, 'manifests/workflow-bundles.json'), 'utf8')) as { sourceManifest: string };
 
     expect(full.tools.length).toBeGreaterThan(0);
     expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
+    expect(workflows.sourceManifest).toBe('packages/os/manifests/tool.manifest.json');
   });
 
   it('fails when source manifests contain duplicate names', () => {
@@ -203,7 +310,7 @@ describe('tool manifest generator', () => {
     }) as SearchResult;
 
     expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBeGreaterThan(133);
+    expect(result.catalog?.toolCount).toBeGreaterThan(120);
     expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
   });
 

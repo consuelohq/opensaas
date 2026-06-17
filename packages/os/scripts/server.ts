@@ -9,12 +9,26 @@ import {
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
+import {
+  assessDangerousMaterial,
+  dangerousMaterialError,
+  type DangerousMaterialDecision,
+} from './lib/dangerous-material-policy';
 import type { CallInput } from './lib/types';
+import {
+  createTraceSitesGatewayLiveEndpoints,
+  traceGatewayScopeFromHeaders,
+  type TraceSitesGatewayLiveEndpoints,
+} from './lib/trace-sites-gateway-live-endpoints';
+import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
 
-const DEFAULT_PORT = 8850;
+const DEFAULT_PORT = 8960;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
 const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
+const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
+
+let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
 
 type JsonObject = Record<string, unknown>;
 type ToolCategory = 'read' | 'write' | 'dangerous';
@@ -163,6 +177,63 @@ function invalidRequest(error: unknown): Response {
   }, 400);
 }
 
+function dangerousMaterialResponse(decision: Exclude<DangerousMaterialDecision, { allowed: true }>): Response {
+  return jsonResponse({
+    ok: false,
+    error: dangerousMaterialError(decision),
+    securityEvent: decision.securityEvent,
+  }, 400);
+}
+
+function admitRawCallBody(body: string): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server call raw-body',
+    rawBody: body,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
+function admitDecodedCallBody(input: CallInput): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server call decoded-json',
+    value: input,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
+function resolveTraceDbPath(): string {
+  if (TRACE_DB_ENV) return TRACE_DB_ENV;
+  const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
+  if (home) return path.join(home, 'traces', 'traces.db');
+  if (process.platform === 'darwin') return path.join(process.env.HOME ?? '', 'Library', 'Application Support', 'OpenWorkspace', 'traces', 'traces.db');
+  if (process.platform === 'win32') return path.join(process.env.APPDATA ?? process.env.HOME ?? '', 'OpenWorkspace', 'traces', 'traces.db');
+  const dataHome = process.env.XDG_DATA_HOME ?? path.join(process.env.HOME ?? '', '.local', 'share');
+  return path.join(dataHome, 'OpenWorkspace', 'traces', 'traces.db');
+}
+
+function isTraceGatewayReadRoute(pathname: string): boolean {
+  return pathname === '/gateway/traces/recent' ||
+    pathname === '/gateway/traces/summary' ||
+    pathname === '/gateway/traces/aggregates' ||
+    pathname === '/gateway/traces/events';
+}
+
+function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
+  traceGatewayEndpointCache ??= createTraceSitesGatewayLiveEndpoints({
+    backend: createLocalTraceSitesReadBackend({ dbPath: resolveTraceDbPath() }),
+    resolveScope: (traceRequest) => {
+      const scope = traceGatewayScopeFromHeaders(traceRequest);
+      const config = loadAuthConfigForRequest();
+      return {
+        ...scope,
+        workspaceId: scope.workspaceId === 'workspace-unknown' ? config.workspaceId : scope.workspaceId,
+        workspaceHost: scope.workspaceHost === '127.0.0.1:8960' ? config.workspaceHost : scope.workspaceHost,
+      };
+    },
+  });
+  return traceGatewayEndpointCache;
+}
+
 function healthResponse(): Response {
   return jsonResponse({
     status: 'ok',
@@ -179,6 +250,18 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/health') return healthResponse();
 
+  if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
+    const denied = await authorizeSignedRequest({
+      request,
+      path: url.pathname,
+      body: '',
+      requiredScope: 'route:/gateway/traces:read',
+    });
+    if (denied) return denied;
+
+    return traceGatewayEndpoints().handle(request);
+  }
+
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
     const body = request.method === 'GET' ? '' : await request.clone().text();
     const denied = await authorizeSignedRequest({
@@ -193,8 +276,8 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === '/call' && request.method === 'POST') {
     const body = await request.clone().text();
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
+    const rawMaterialDenied = admitRawCallBody(body);
+    if (rawMaterialDenied) return rawMaterialDenied;
 
     let input: CallInput;
     try {
@@ -202,6 +285,12 @@ async function handleRequest(request: Request): Promise<Response> {
     } catch (error: unknown) {
       return invalidRequest(error);
     }
+
+    const decodedMaterialDenied = admitDecodedCallBody(input);
+    if (decodedMaterialDenied) return decodedMaterialDenied;
+
+    const preflightDenied = authPreflight(request);
+    if (preflightDenied) return preflightDenied;
 
     const denied = await authorizeSignedRequest({
       request,

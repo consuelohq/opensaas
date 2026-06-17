@@ -61,12 +61,12 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const ConsueloDesignInput = z.object({
+export const OfficeInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const ConsueloDesignUiInput = z.object({
+export const OfficeUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
@@ -78,7 +78,7 @@ export const DesignArchiveRefreshInput = z.object({
   tailscaleBin: optionalString,
 });
 
-export const ConsueloDesignSessionInput = z.object({
+export const OfficeSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -86,7 +86,7 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const ConsueloDesignDigitalEguideInput = z.object({
+export const OfficeDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -139,12 +139,30 @@ export const ToolsSearchInput = z.object({
   message: 'readOnly and mutating cannot both be true',
   path: ['mutating'],
 });
+const fsReadPageFields = {
+  offset: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
+  from: z.number().int().positive().optional(),
+  to: z.number().int().positive().optional(),
+};
+
+const FsReadFileInput = z.object({
+  path: z.string().min(1),
+  ...fsReadPageFields,
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive().optional(),
-  to: z.number().int().positive().optional(),
+  path: optionalString,
+  files: z.array(FsReadFileInput).min(1).optional(),
+  ...fsReadPageFields,
+}).refine((input) => Boolean(input.path || input.files?.length), {
+  message: 'provide either path or files',
+  path: ['path'],
+}).refine((input) => !input.files?.length || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined), {
+  message: 'top-level pagination fields cannot be used with files; put offset, limit, from, or to on each file entry instead',
+  path: ['files'],
 });
 
 export const FsSearchInput = z.object({
@@ -183,18 +201,16 @@ export const FsWriteInput = z.object({
   path: ['content'],
 });
 
-export const FsPatchInput = z.object({
+
+export const FsApplyPatchInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  content: z.string().optional(),
-  contentFile: optionalString,
-}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
-  message: 'provide exactly one of content or contentFile',
-  path: ['content'],
+  patchText: z.string().optional(),
+  patchFile: optionalString,
+}).refine((input) => Boolean(input.patchText) !== Boolean(input.patchFile), {
+  message: 'provide exactly one of patchText or patchFile',
+  path: ['patchText'],
 });
 
 export const FsHttpInput = z.object({
@@ -903,10 +919,10 @@ export const schemaRegistry = {
   BranchInput,
   DesignPublishInput,
   DesignArchiveRefreshInput,
-  ConsueloDesignInput,
-  ConsueloDesignUiInput,
-  ConsueloDesignSessionInput,
-  ConsueloDesignDigitalEguideInput,
+  OfficeInput,
+  OfficeUiInput,
+  OfficeSessionInput,
+  OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
   ToolsSearchInput,
@@ -914,7 +930,7 @@ export const schemaRegistry = {
   FsSearchInput,
   FsListInput,
   FsWriteInput,
-  FsPatchInput,
+  FsApplyPatchInput,
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
@@ -1007,18 +1023,18 @@ export const schemaTypeSignatures: Record<string, string> = {
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
-  FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
+  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1102,7 +1118,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
-  FsReadOutput: 'Array<{ path: string; from: number; to: number; total: number; lines: string[] }>',
+  FsReadOutput: '({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
   FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',

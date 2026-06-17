@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-reader-shell-rail-drawer-labels",
+  "base": "origin/task/workspace-agents/fix-reader-shell-rail-drawer-labels",
+  "headSha": "021c3655ac73dd486e894574a7c8d7ef7031e053",
+  "changeHash": "61fcfed6f8821f841f669e95a28ef8d0be6c69c600cce5dd691f32282232f422",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/os/skills/consuelo-design/references/agents.md"
+  ],
+  "verifiedAt": "2026-06-10T06:07:22.349Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-reader-shell-rail-drawer-labels.json",
+        ".task/workspace-agents/fix-reader-shell-rail-drawer-labels/current.json",
+        ".task/workspace-agents/fix-reader-shell-rail-drawer-labels/evidence-log.json",
+        ".task/workspace-agents/fix-reader-shell-rail-drawer-labels/read-log.json",
+        ".task/workspace-agents/fix-reader-shell-rail-drawer-labels/session.json",
+        ".task/workspace-agents/fix-reader-shell-rail-drawer-labels/workpad.md",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+        "packages/os/skills/consuelo-design/references/agents.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -228,6 +228,40 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
+  it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
+    const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toContain('fs.patch is not a workspace tool');
+    expect(result.message).toContain('fs.apply_patch');
+
+    const data = result.data as {
+      requestedTool?: string;
+      replacementTool?: string;
+      manifestEntry?: {
+        name?: string;
+        inputSchema?: string;
+        command?: { subcommand?: string };
+      };
+    };
+
+    expect(data.requestedTool).toBe('fs.patch');
+    expect(data.replacementTool).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.name).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.inputSchema).toBe('FsApplyPatchInput');
+    expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
+  });
+
+  it('keeps generic unknown tool messages compact', async () => {
+    const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toBe('unknown tool: missing.tool');
+    expect(result.data).toBeNull();
+  });
+
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(successfulRunner()));
     expect(result).toMatchSnapshot();
@@ -302,14 +336,12 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+  it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
     const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
-    const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
-      writeFileSync(patchPayload, 'patched one\npatched two\n');
 
       const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
         cwd: tempRoot,
@@ -318,19 +350,14 @@ describe('typed facade executor', () => {
       expect(writeResult.status).toBe(0);
       expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
 
-      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+      const stalePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad'], {
         cwd: tempRoot,
         encoding: 'utf8',
       });
-      expect(inlinePatchResult.status).toBe(1);
-      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
-
-      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
-        cwd: tempRoot,
-        encoding: 'utf8',
-      });
-      expect(patchResult.status).toBe(0);
-      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+      expect(stalePatchResult.status).toBe(1);
+      expect(stalePatchResult.stderr).toContain('fs.patch has been removed');
+      expect(stalePatchResult.stderr).toContain('apply-patch');
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -359,6 +386,98 @@ describe('typed facade executor', () => {
     }, stableOptions(successfulRunner()));
     expect(result.requestId).toBe('req_123');
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
+  });
+
+  it('passes fs read page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_page');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_page',
+        path: 'packages/workspace/scripts/fs.js',
+        offset: 10,
+        limit: 5,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'packages/workspace/scripts/fs.js',
+        '--offset',
+        '10',
+        '--limit',
+        '5',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes fs read multi-file page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_files');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_files',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 2 },
+          { path: 'src/b.ts', offset: 10, limit: 3 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        '--files-json',
+        '[{"path":"src/a.ts","offset":1,"limit":2},{"path":"src/b.ts","offset":10,"limit":3}]',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mixed fs read pagination modes', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-mixed-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_mixed_page');
+    const plans: CommandPlan[] = [];
+    try {
+      for (const topLevelPage of [{ offset: 10 }, { limit: 5 }, { from: 2 }, { to: 4 }]) {
+        const result = await executeTool('fs.read', {
+          taskSession: 'tsk_fs_read_mixed_page',
+          files: [{ path: 'src/a.ts', offset: 1, limit: 2 }],
+          ...topLevelPage,
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.code).toBe('VALIDATION_ERROR');
+        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+      }
+
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('runs http without taskSession', async () => {
@@ -719,15 +838,72 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('should accept taskSession when explicit branch matches session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-match-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_match',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const plans: CommandPlan[] = [];
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_match',
+        branch: TEST_BRANCH,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--branch');
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject taskSession when explicit branch conflicts with session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-conflict-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_conflict',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {

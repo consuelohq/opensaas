@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-apply-patch-facade-parity",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1040,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1040",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1040",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1040/fix-os-apply-patch-facade-parity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1040",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1040/fix-os-apply-patch-facade-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-apply-patch-facade-parity",
+  "taskSession": "tsk_726dc49b8659",
+  "tmuxSession": "opensaas-os-fix-os-apply-patch-facade-parity-726dc49b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-apply-patch-facade-parity/.task/os/fix-os-apply-patch-facade-parity/session.json",
+  "createdAt": "2026-06-14T19:08:59.428Z"
+}

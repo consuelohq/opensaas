@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { createGatewaySecurityConfig } from './security-gateway';
+import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
@@ -101,8 +102,10 @@ export type ProvisionAction = {
     | 'preserve_file'
     | 'connect_agent'
     | 'skip_agent'
+    | 'seed_steering'
     | 'seed_skill'
-    | 'seed_tool';
+    | 'seed_tool'
+    | 'seed_operator';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'skipped';
   message: string;
@@ -136,13 +139,16 @@ const REQUIRED_DIRS = [
   'src',
   'tooling',
   'manifests',
+  'hooks',
   'artifacts',
   'pages',
+  'sites',
   'logs',
   'runs',
   'cache',
   'runtime',
   'security',
+  'steering',
   'bin',
   'tmp',
 ] as const;
@@ -151,19 +157,30 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
   'security/generated/auth.json',
   'security/generated/Caddyfile',
 ] as const;
-const DEFAULT_PORT = 8850;
+const DEFAULT_PORT = 8960;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
+
+function resolveBundledOperatorRoot(): string {
+  const packageOperatorRoot = path.join(PACKAGE_ROOT, 'operator');
+  if (fs.existsSync(packageOperatorRoot)) return packageOperatorRoot;
+  return path.join(REPO_ROOT, 'operator');
+}
+
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
+const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
+const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests'] as const;
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
 const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
+const DEFAULT_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -301,6 +318,52 @@ function materializeProductPackageRoot(home: string, dryRun: boolean): Provision
     });
 
     if (dryRun || installedInPlace) continue;
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+
+  return actions;
+}
+
+function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
+  const targetPath = path.join(home, 'operator');
+  const installedInPlace = samePath(BUNDLED_OPERATOR_ROOT, targetPath);
+  if (!fs.existsSync(BUNDLED_OPERATOR_ROOT)) {
+    throw new Error(`${BUNDLED_OPERATOR_ROOT}: required operator directory is missing`);
+  }
+
+  const targetExists = fs.existsSync(targetPath);
+  const actions: ProvisionAction[] = [{
+    type: 'seed_operator',
+    path: targetPath,
+    status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+    message: installedInPlace ? 'operator directory already at OS root' : 'operator prompts materialized',
+  }];
+
+  if (!dryRun && !installedInPlace && !targetExists) {
+    fs.cpSync(BUNDLED_OPERATOR_ROOT, targetPath, { recursive: true, force: true });
+  }
+
+  return actions;
+}
+
+function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
+  const targetRoot = path.join(home, 'steering');
+  const installedInPlace = samePath(BUNDLED_STEERING_ROOT, targetRoot);
+  const actions: ProvisionAction[] = [];
+
+  for (const fileName of DEFAULT_STEERING_FILES) {
+    const sourcePath = path.join(BUNDLED_STEERING_ROOT, fileName);
+    const targetPath = path.join(targetRoot, fileName);
+    if (!fs.existsSync(sourcePath)) throw new Error(`${sourcePath}: required steering file is missing`);
+    const targetExists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'seed_steering',
+      path: targetPath,
+      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: targetExists || installedInPlace ? 'local steering file preserved' : 'default steering file installed',
+    });
+    if (dryRun || targetExists || installedInPlace) continue;
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     fs.copyFileSync(sourcePath, targetPath);
   }
 
@@ -455,67 +518,8 @@ function materializeSites(input: {
   dbPath: string;
   dryRun: boolean;
 }): { actions: ProvisionAction[] } {
-  void input.dbPath;
-  const paths = getInstalledSitesPaths(input.home);
-  const actions: ProvisionAction[] = [];
-
-  for (const dirPath of [
-    paths.sitesDir,
-    paths.pagesDir,
-    paths.pagesDataDir,
-    paths.officeDir,
-    paths.officeDataDir,
-    paths.officeAssetsDir,
-    paths.tracesDir,
-    paths.diffsDir,
-  ]) {
-    addProvisionDirectoryAction(actions, dirPath, input.dryRun);
-  }
-
-  const officeData: InstalledOfficeSiteData = {
-    version: 1,
-    generatedAt: nowIso(),
-    artifacts: [],
-  };
-  const registry = { version: 1, generatedAt: nowIso(), pages: {} };
-  const leases = { version: 1, generatedAt: nowIso(), leases: {} };
-  const files = [
-    { path: paths.indexPath, content: buildInstalledSitesIndex(), message: 'Sites index generated' },
-    { path: path.join(paths.pagesDir, 'index.html'), content: buildInstalledPagesIndex(), message: 'Pages site generated' },
-    { path: paths.pagesRegistryPath, content: `${JSON.stringify(registry, null, 2)}
-`, message: 'Pages registry generated' },
-    { path: paths.pagesLeasesPath, content: `${JSON.stringify(leases, null, 2)}
-`, message: 'Pages leases registry generated' },
-    { path: paths.officeDataPath, content: `${JSON.stringify(officeData, null, 2)}
-`, message: 'Office site artifact data generated' },
-    { path: paths.officeIndexPath, content: buildInstalledOfficeIndex(officeData), message: 'Office site generated' },
-    {
-      path: paths.tracesIndexPath,
-      content: buildInstalledReservedSiteIndex({
-        title: 'Traces',
-        description: 'Execution traces will show how Sites work was produced.',
-      }),
-      message: 'Traces site generated',
-    },
-    {
-      path: paths.diffsIndexPath,
-      content: buildInstalledReservedSiteIndex({
-        title: 'Diffs',
-        description: 'Diff pages will show generated changes and review context.',
-      }),
-      message: 'Diffs site generated',
-    },
-  ];
-
-  for (const file of files) {
-    addProvisionFileAction(actions, file.path, input.dryRun, file.message);
-    if (!input.dryRun) {
-      fs.mkdirSync(path.dirname(file.path), { recursive: true });
-      fs.writeFileSync(file.path, file.content, { mode: 0o600 });
-    }
-  }
-
-  return { actions };
+  const result = materializeRuntimeSites(input);
+  return { actions: result.actions };
 }
 
 const escapeXml = (value: string): string =>
@@ -1265,6 +1269,8 @@ export function provisionLocalOs(
   }
 
   actions.push(...materializeProductPackageRoot(home, dryRun));
+  actions.push(...materializeOperator(home, dryRun));
+  actions.push(...seedBundledSteering(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1308,6 +1314,15 @@ export function provisionLocalOs(
     }
   }
 
+  const generatedSecurityDir = path.join(home, 'security', 'generated');
+  const securityOverridesDir = path.join(home, 'security', 'overrides');
+  const generatedAuthPath = path.join(home, 'security', 'generated', 'auth.json');
+  const generatedCaddyfilePath = path.join(home, 'security', 'generated', 'Caddyfile');
+  const generatedSecurityDirExists = fs.existsSync(generatedSecurityDir);
+  const securityOverridesDirExists = fs.existsSync(securityOverridesDir);
+  const generatedAuthPathExists = fs.existsSync(generatedAuthPath);
+  const generatedCaddyfilePathExists = fs.existsSync(generatedCaddyfilePath);
+  const securityStatus = (exists: boolean): ProvisionAction['status'] => exists ? 'preserved' : dryRun ? 'planned' : 'created';
 
   const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
   const workspaceBootstrap = options.workspaceBootstrap;
@@ -1361,26 +1376,26 @@ export function provisionLocalOs(
   }
   actions.push({
     type: 'create_dir',
-    path: path.join(home, 'security', 'generated'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedSecurityDir,
+    status: securityStatus(generatedSecurityDirExists),
     message: 'generated security directory configured',
   });
   actions.push({
     type: 'create_dir',
-    path: path.join(home, 'security', 'overrides'),
-    status: dryRun ? 'planned' : 'created',
+    path: securityOverridesDir,
+    status: securityStatus(securityOverridesDirExists),
     message: 'security overrides directory configured',
   });
   actions.push({
     type: 'create_file',
-    path: path.join(home, 'security', 'generated', 'auth.json'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedAuthPath,
+    status: securityStatus(generatedAuthPathExists),
     message: 'generated Consuelo auth config written',
   });
   actions.push({
     type: 'create_file',
-    path: path.join(home, 'security', 'generated', 'Caddyfile'),
-    status: dryRun ? 'planned' : 'created',
+    path: generatedCaddyfilePath,
+    status: securityStatus(generatedCaddyfilePathExists),
     message: 'generated Caddy gateway config written',
   });
   if (workspaceBootstrap?.cloudflareTunnelToken) {
@@ -1452,6 +1467,38 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
       message: fs.existsSync(requiredPath)
         ? `${requiredPath} exists`
         : `${requiredPath} is missing`,
+    });
+  }
+
+  const runtimeModuleGroups = [
+    {
+      name: 'runtime:intent',
+      files: [
+        'scripts/intent.js',
+        'hooks/intent.js',
+        'hooks/dispatcher.js',
+        'manifests/workflow-bundles.json',
+      ],
+    },
+    {
+      name: 'runtime:task-hook',
+      files: [
+        'scripts/task-hook.js',
+        'hooks/task/guidance.js',
+        'hooks/task/workflow.js',
+        'hooks/dispatcher.js',
+      ],
+    },
+  ] as const;
+
+  for (const group of runtimeModuleGroups) {
+    const missing = group.files.filter((file) => !fs.existsSync(path.join(resolvedHome, file)));
+    checks.push({
+      name: group.name,
+      status: missing.length === 0 ? 'connected' : 'unhealthy',
+      message: missing.length === 0
+        ? `${group.files.join(', ')} exist`
+        : `missing ${missing.join(', ')}`,
     });
   }
   try {
@@ -1558,5 +1605,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
+
 
 

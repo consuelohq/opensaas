@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/move-os-daemon-off-workspace-mcp-port",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1058,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1058",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1058",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1058/move-os-daemon-off-workspace-mcp-port",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1058",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1058/move-os-daemon-off-workspace-mcp-port",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-os-daemon-off-workspace-mcp-port",
+  "taskSession": "tsk_70e5e43dc9e4",
+  "tmuxSession": "opensaas-os-move-os-daemon-off-workspace-mcp-port-70e5e43d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-os-daemon-off-workspace-mcp-port/.task/os/move-os-daemon-off-workspace-mcp-port/session.json",
+  "createdAt": "2026-06-15T02:14:01.678Z"
+}

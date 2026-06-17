@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_66755a6476ce",
+  "tmuxSession": "opensaas-os-fix-device-approval-review-comments-66755a64",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-device-approval-review-comments",
+  "branch": "task/os/fix-device-approval-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-approval-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-approval-review-comments",
+  "prNumber": 1016,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1016",
+  "createdAt": "2026-06-13T15:12:15.254Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-approval-review-comments/.task/os/fix-device-approval-review-comments/session.json"
+}

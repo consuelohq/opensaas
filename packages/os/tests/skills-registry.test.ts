@@ -50,7 +50,7 @@ describe('skills registry generator', () => {
     const names = registry.skills.map((skill) => skill.name);
 
     expect(names).toContain('task');
-    expect(names).toContain('consuelo-design');
+    expect(names).toContain('office');
     expect(names).toContain('consuelo-workspace-snapshot');
     expect(names).toContain('daily-revenue-brief');
   });
@@ -120,7 +120,7 @@ describe('skills registry generator', () => {
     const sitesSkill = bundledRegistry.skills.find((skill) => skill.name === 'sites');
 
     expect(skillNames).toContain('sites');
-    expect(skillNames).not.toContain('office');
+    expect(skillNames).toContain('office');
     expect(sitesSkill).toMatchObject({
       name: 'sites',
       title: 'Sites',

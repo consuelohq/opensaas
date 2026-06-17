@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/workspace-hostname-edge-routing",
+  "base": "origin/task/sites/workspace-hostname-edge-routing",
+  "headSha": "d59e00bbedb71d21d1afe4ee37598d88b70070c2",
+  "changeHash": "c6ff3935c1b7ce2f96dd85978b1bd037212abc09c09bdcb01285a2f585f86842",
+  "changedFiles": [
+    "packages/os/cloudflare/workspace-edge/README.md",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T01:04:54.893Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/workspace-hostname-edge-routing/current.json",
+        ".task/sites/workspace-hostname-edge-routing/evidence-log.json",
+        ".task/sites/workspace-hostname-edge-routing/read-log.json",
+        ".task/sites/workspace-hostname-edge-routing/session.json",
+        ".task/sites/workspace-hostname-edge-routing/workpad.md",
+        ".task/tasks/sites/workspace-hostname-edge-routing.json",
+        "packages/os/cloudflare/workspace-edge/README.md",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/tests/cloudflare-edge-router.test.ts",
+        "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+        "packages/os/tests/workspace-hostname-edge-router.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -60,7 +60,7 @@ these three rules apply to every script, every task, every session. read them fi
 
 ### rule 0 -- where to run
 
-always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start` and accessed through `task:fs` and `task:exec`.
+always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start` and accessed through `task:fs` and `code-call`.
 
 ```bash
 bad: cd /private/tmp/opensaas-worktrees/task-dialer-queue && bun run fs -- read src/foo.ts
@@ -82,6 +82,22 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ---
 
+## github -- typed GitHub facade
+
+Preferred GitHub tool for agents. Use semantic operations and presets instead of constructing raw `gh` CLI arguments.
+
+```bash
+bun --cwd packages/os ./scripts/github.js pr.view --pr 436 --preset review
+bun --cwd packages/os ./scripts/github.js pr.checks --pr 436
+bun --cwd packages/os ./scripts/github.js branch.compare --base main --head stream/os
+```
+
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the OS response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
+Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
+
+---
+
 ## the task lifecycle
 
 every change — even tiny ones — follows this flow. no exceptions.
@@ -90,7 +106,7 @@ every change — even tiny ones — follows this flow. no exceptions.
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
  3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
- 4. (make changes via task:fs and task:exec)
+ 4. (make changes via task:fs and code-call)
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
@@ -121,7 +137,7 @@ bun run task:init -- --area <area> --branch <branch> --pr <N>
 
 do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
-**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
+**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `code-call` from repo root.
 
 **when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
@@ -148,7 +164,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
-| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
+| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `code-call` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
@@ -168,7 +184,7 @@ check for:
 - verbose variable names that don't match the codebase conventions
 
 ```bash
-bun run task:exec -- --branch <task-branch> git diff   # review your changes
+bun run code-call -- --branch <task-branch> git diff   # review your changes
 ```
 
 if you see slop, fix it before pushing. a clean diff is a fast review.
@@ -233,19 +249,20 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -264,11 +281,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content "..."
  → error: directory does not exist
@@ -285,13 +302,13 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 **tips**
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
-- before `write --force` or `patch`, always read the target first
+- before `write --force` or `apply-patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
 - `write --append` is exact — include `\n` yourself
-- `patch --from N --to N` replaces line N. always read the range first
+- `fs.patch` is not an OS tool. use `fs.apply_patch` / `bun run fs -- apply-patch` with `--patch-file` or stdin
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
-- write and patch log touched files to `.task/workpad.md`
-- after any write or patch, immediately verify: read the changed range, `node --check`, `git status`
+- write and apply-patch log touched files to `.task/workpad.md`
+- after any write or apply-patch, immediately verify: read the changed range, `node --check`, `git status`
 
 ---
 
@@ -306,7 +323,7 @@ bun run task:fs -- --pr 210 search "TODO" packages/ --files
 bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
 bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
-bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
+bun run task:fs -- --branch task/dialer/fix-thing apply-patch --patch-file /tmp/change.patch
 ```
 
 **common task:fs patterns**
@@ -339,30 +356,30 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ---
 
-### task:exec — run commands inside the task worktree
+### code-call — run commands inside the task worktree
 
 runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
 
 ```bash
-bun run task:exec -- --area dialer git diff
-bun run task:exec -- --branch task/dialer/fix-thing git status --short
-bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
-bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
-bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
-bun run task:exec -- --branch task/dialer/fix-thing bun run review
-bun run task:exec -- --branch task/dialer/fix-thing git diff --check
+bun run code-call -- --area dialer git diff
+bun run code-call -- --branch task/dialer/fix-thing git status --short
+bun run code-call -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run code-call -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
+bun run code-call -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
+bun run code-call -- --branch task/dialer/fix-thing bun run review
+bun run code-call -- --branch task/dialer/fix-thing git diff --check
 ```
 
-**task:exec failure modes**
+**code-call failure modes**
 ```bash
-bad: bun run task:exec -- --area workspace-agents git status
+bad: bun run code-call -- --area workspace-agents git status
  → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
  (always use --branch or --pr when the same area has multiple active tasks)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
  → works but you left the repo root. now bun run <anything> will fail.
- (use: bun run task:exec -- --branch task/dialer/fix-thing git diff)
+ (use: bun run code-call -- --branch task/dialer/fix-thing git diff)
 ```
 
 ---
@@ -431,12 +448,20 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
 
-`packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
+The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
 
 ```bash
-cd packages/workspace && bun install
+CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
+```
+
+Gateway and advanced provider overrides:
+
+```bash
+bun run semantic:embeddings -- doctor --json
+CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-embeddings bun run explore -- "query"
+CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
 ```bash
@@ -451,15 +476,18 @@ bun run explore -- "refresh everything" --reindex
 bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
+bad: embedding gateway failed
+ → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+
 bad: embedding model not found
- → the expected cached model is missing at ~/.cache/qmd/models/Qwen3-Embedding-4B-Q8_0.gguf.
+ → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
 ```
 
 ---
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next
@@ -552,7 +580,7 @@ Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--g
 
 ```bash
 bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
-bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run code-call -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 ```
 
@@ -1024,7 +1052,7 @@ bun run generate-types
 
 ### check-files — batch syntax check
 
-runs `node --check` for each provided file through `task:exec`, returning structured per-file results.
+runs `node --check` for each provided file through `code-call`, returning structured per-file results.
 
 ```bash
 bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/fs.js --json
@@ -1082,10 +1110,10 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
-### consuelo-design — run local design tooling
+### office — run local design tooling
 
 ```bash
-bun run consuelo-design -- --help
+bun run office -- --help
 ```
 
 ---
@@ -1205,7 +1233,7 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
 - treat sub-agent output as a draft until verified against files, tests, or logs
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
-- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `task:exec`) and verify after writes
+- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `code-call`) and verify after writes
 
 **good vs bad**
 
@@ -1223,7 +1251,7 @@ bad: bun run agent -- "here is the production api key: ... now debug this"
 -> never send secrets to a model
 
 bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
--> sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+-> sub-agent output is text only. use task:fs/code-call for repo mutations and verify the diff
 ```
 
 **failure modes**
@@ -1283,7 +1311,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 **when raw CLI tools are not acceptable:**
 - reading, searching, or listing repo files (use `fs`)
 - reading or writing worktree files (use `task:fs`)
-- running commands in a worktree (use `task:exec`)
+- running commands in a worktree (use `code-call`)
 - github operations (use `gh` script or `pr-review`)
 
 ```text
@@ -1421,4 +1449,6 @@ bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section
 ```
 
 Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
+
+
 

@@ -1,0 +1,154 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/align-apply-patch-filesystem-tool",
+  "base": "origin/task/os/align-apply-patch-filesystem-tool",
+  "headSha": "f263126930c3e78e6ceb3477fd695c80d646ab54",
+  "changeHash": "7367d0f9d69ea0c5808cd8866e90f7c230f2106fb3789af2b261459325738114",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/fs-apply-patch.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-14T05:28:04.478Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/align-apply-patch-filesystem-tool/current.json",
+        ".task/os/align-apply-patch-filesystem-tool/evidence-log.json",
+        ".task/os/align-apply-patch-filesystem-tool/read-log.json",
+        ".task/os/align-apply-patch-filesystem-tool/session.json",
+        ".task/os/align-apply-patch-filesystem-tool/workpad.md",
+        ".task/tasks/os/align-apply-patch-filesystem-tool.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/fs-apply-patch.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 174,
+          "outputTail": "typed facade executor > validates input for mac.list [0.12ms]\n{\"level\":\"error\",\"tool\":\"mac.process\",\"command\":\"workspace mac.process\",\"implementationCommand\":\"workspace mac.process\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-14T05:28:03.804Z\"}\n(pass) typed facade executor > validates input for mac.process [0.28ms]\n{\"level\":\"error\",\"tool\":\"mac.port\",\"command\":\"workspace mac.port\",\"implementationCommand\":\"workspace mac.port\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-14T05:28:03.804Z\"}\n(pass) typed facade executor > validates input for mac.port [0.33ms]\n{\"level\":\"error\",\"tool\":\"code.run\",\"command\":\"workspace code.run\",\"implementationCommand\":\"workspace code.run\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-14T05:28:03.804Z\"}\n(pass) typed facade executor > validates input for code.run [0.37ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-14T05:28:03.805Z\"}\n(pass) typed facade executor > validates input for tools.search [0.53ms]\n(pass) typed facade executor > validates input for generate.docs\n(pass) typed facade executor > validates input for generate.types [0.01ms]\n{\"level\":\"error\",\"tool\":\"design.publish\",\"command\":\"workspace design.publish\",\"implementationCommand\":\"workspace consuelo-design publish\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-14T05:28:03.806Z\"}\n(pass) typed facade executor > validates input for design.publish [0.61ms]\n(pass) typed facade executor > validates input for design.refresh [0.12ms]\n(pass) typed facade executor > validates input for consueloDesign.run [0.07ms]\n(pass) typed facade executor > validates input for consueloDesign.getDesignSystem [0.02ms]\n(pass) typed facade executor > validates input for consueloDesign.listSkills\n(pass) typed facade executor > validates input for consueloDesign.listDesignSystems\n(pass) typed facade executor > validates input for consueloDesign.upstreamStatus\n(pass) typed facade executor > validates input for consueloDesign.railwayCheck\n(pass) typed facade executor > validates input for consueloDesign.check\n(pass) typed facade executor > validates input for consueloDesign.generateWebsite [0.11ms]\n(pass) typed facade executor > validates input for consueloDesign.generateDemo\n(pass) typed facade executor > validates input for consueloDesign.generateImageBrief\n(pass) typed facade executor > validates input for consueloDesign.generateDigitalEguide [0.11ms]\n(pass) typed facade executor > validates input for consueloDesign.generateEmail\n(pass) typed facade executor > validates input for consueloDesign.generateMotionFrame\n(pass) typed facade executor > validates input for consueloDesign.renderHyperframes\n(pass) typed facade executor > validates input for consueloDesign.uiBg\n(pass) typed facade executor > validates input for consueloDesign.uiStop\n(pass) typed facade executor > validates input for consueloDesign.uiStatus\n(pass) typed facade executor > validates input for consueloDesign.uiLogs\n(pass) typed facade executor > validates input for consueloDesign.odBuild\n\n 130 pass\n 431 filtered out\n 0 fail\n 60 expect() calls\nRan 130 tests across 1 file. [167.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 451,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 112\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:28:04\n\u001b[2m   Duration \u001b[22m 197ms\u001b[2m (transform 18ms, setup 0ms, import 24ms, tests 112ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

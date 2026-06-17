@@ -1,0 +1,376 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+  "events": [
+    {
+      "id": "0f176b55-26ff-4a1d-a7ae-faec84ba7940",
+      "occurred_at": "2026-06-11T18:34:08.232Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/workflow.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "f1341166-de75-4826-8698-cfacc242a8df",
+      "occurred_at": "2026-06-11T18:34:08.537Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "58b356cb-b387-4300-b60b-e684eedcc945",
+      "occurred_at": "2026-06-11T18:34:08.844Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-hook.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "76bdd406-bb39-4a6b-80a5-05b71469c4f5",
+      "occurred_at": "2026-06-11T18:34:09.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "06430f01-6d2e-4d6b-8e47-c092d6a8c193",
+      "occurred_at": "2026-06-11T18:34:09.470Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "050591b2-c5c1-4604-a02b-45ce0d6f7220",
+      "occurred_at": "2026-06-11T18:34:09.773Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "56bf547b-877c-4d0c-801f-a02a959ecdd1",
+      "occurred_at": "2026-06-11T18:34:10.106Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "79381e88-fc2b-42da-918e-cb4076479472",
+      "occurred_at": "2026-06-11T18:34:10.410Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "5cba56af-282d-4355-ab0e-c2a27b4cdc66",
+      "occurred_at": "2026-06-11T18:34:14.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-hook.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "899d35e0-11c1-4c52-aebf-d00cf9e8f433",
+      "occurred_at": "2026-06-11T18:34:26.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "326242e8-db74-4a0f-93b3-37e224052c99",
+      "occurred_at": "2026-06-11T18:34:32.457Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "bdf02dc8-bd2a-4533-997f-520129f93827",
+      "occurred_at": "2026-06-11T18:34:46.307Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "27dda3c8-ad8b-4344-9f68-dbffceb2a635",
+      "occurred_at": "2026-06-11T18:35:02.066Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "600a6d31-a4f7-4902-99dc-a3803141e1c6",
+      "occurred_at": "2026-06-11T18:35:11.256Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "4b2334f8-0788-4e2f-a94d-6c3d7f1870d8",
+      "occurred_at": "2026-06-11T18:36:43.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "5cb6d9fa-4b6b-4e43-ae3e-743322cd971b",
+      "occurred_at": "2026-06-11T18:36:49.633Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "b3464f18-9631-4e97-8669-4ff51bdc4c32",
+      "occurred_at": "2026-06-11T18:37:05.522Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "28bc76b2-3799-421b-bff1-16fadfab7c0d",
+      "occurred_at": "2026-06-11T18:37:16.587Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "64fc4ce0-3ba0-4e02-a9e6-3cc1e439793a",
+      "occurred_at": "2026-06-11T18:37:40.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "a2b8aaf8-9ddd-4935-9a5c-efd8663f4c6c",
+      "occurred_at": "2026-06-11T18:37:40.676Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "c3fadca2-af08-4584-b96b-d011cc04e147",
+      "occurred_at": "2026-06-11T18:37:48.239Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "1ca0f8a6-fbb2-43c7-926c-5ffe5f431741",
+      "occurred_at": "2026-06-11T18:37:48.738Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    },
+    {
+      "id": "c7182dc0-98c0-4245-a710-01446720d1cb",
+      "occurred_at": "2026-06-11T18:38:10.043Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-dispatcher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-task-workflow-hook-dispatcher",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-task-workflow-hook-dispatcher"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T18:38:10.100Z"
+}

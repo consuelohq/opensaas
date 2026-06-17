@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3b2558deef37",
+  "tmuxSession": "opensaas-os-operator-artifact-commands-3b2558de",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/operator-artifact-commands",
+  "branch": "task/os/operator-artifact-commands",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-operator-artifact-commands",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-operator-artifact-commands",
+  "prNumber": 960,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/960",
+  "createdAt": "2026-06-11T07:17:58.069Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-operator-artifact-commands/.task/os/operator-artifact-commands/session.json"
+}

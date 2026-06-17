@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/guide-stale-fs-patch-calls",
+  "events": [
+    {
+      "id": "67ac733d-dda3-48a4-8dad-0025ba5885bc",
+      "occurred_at": "2026-06-16T07:55:19.055Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guide-stale-fs-patch-calls",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guide-stale-fs-patch-calls"
+      }
+    },
+    {
+      "id": "1a404453-8063-40ba-97ad-96f1e7314061",
+      "occurred_at": "2026-06-16T07:58:15.676Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guide-stale-fs-patch-calls",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guide-stale-fs-patch-calls"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-16T07:58:15.745Z"
+}

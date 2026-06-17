@@ -64,6 +64,36 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
+function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
+  if (toolName !== 'fs.patch') {
+    return { message: `unknown tool: ${toolName}`, data: null };
+  }
+
+  const manifestEntry = getToolManifestEntry('fs.apply_patch');
+  return {
+    message: [
+      'unknown tool: fs.patch.',
+      'fs.patch is not an OS tool; use fs.apply_patch instead.',
+      'Call it with exactly one of patchText or patchFile.',
+      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+    ].join(' '),
+    data: {
+      requestedTool: 'fs.patch',
+      replacementTool: 'fs.apply_patch',
+      action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
+      exampleCall: {
+        tool: 'fs.apply_patch',
+        input: {
+          taskSession: '<taskSession>',
+          patchFile: '/tmp/change.patch',
+          dryRun: true,
+        },
+      },
+      manifestEntry,
+    },
+  };
+}
+
 
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
@@ -114,11 +144,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const guidance = buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: guidance.message,
+        data: guidance.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
@@ -197,6 +228,21 @@ export async function executeTool<TData = unknown>(
       taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
     } : normalizedInput;
 
+    if (entry.capabilities.mutating && scopedInput.dryRun === true && !entry.command.dryRunFlag) {
+      const result = createToolResult({
+        ok: true,
+        code: 'DRY_RUN',
+        message: 'dry run: command was validated but not executed',
+        data: { command: `workspace ${toolName}`, resolvedArgs: scopedInput },
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      return result as ToolResult<TData>;
+    }
+
     const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
       cwd,
       env,
@@ -233,21 +279,6 @@ export async function executeTool<TData = unknown>(
     const plannedCommandForLog = formatCommandForLog(plan);
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
-
-    if (entry.capabilities.mutating && commandInput.dryRun === true && !entry.command.dryRunFlag) {
-      const result = createToolResult({
-        ok: true,
-        code: 'DRY_RUN',
-        message: 'dry run: command was validated but not executed',
-        data: { command: plannedCommand, resolvedArgs: commandInput },
-        durationMs: elapsedMs(startedAt, options.now),
-        traceId,
-        requestId,
-        now: options.now,
-      });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
-      return result as ToolResult<TData>;
-    }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
     const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
@@ -533,7 +564,7 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'office.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
@@ -576,6 +607,14 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
   }
   if (toolName === "fs.http" && !input.method) {
     return { ...input, method: "get" };
+  }
+
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    return { ...input, paths: [input.path] };
+  }
+
+  if (toolName === "fs.read" && Array.isArray(input.files)) {
+    return { ...input, filesJson: JSON.stringify(input.files) };
   }
 
   if (toolName === "review.run") {
@@ -708,11 +747,6 @@ async function executeInternalTool<TData>(
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
-  if (typeof input.branch === 'string') return {
-    ok: false,
-    code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
-  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
@@ -721,7 +755,14 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
     message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
   };
 
-  const branch = metadata.branch || metadata.taskBranch;
+  const branch = metadata.branch || metadata.taskBranch || '';
+  const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
+  if (explicitBranch && explicitBranch !== branch) return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'input.branch does not match taskSession branch. Pass the taskSession returned by task.start and do not override its branch.',
+  };
+
   return { ok: true, branch, metadata };
 }
 
@@ -1045,3 +1086,4 @@ function logResult(
     },
   });
 }
+

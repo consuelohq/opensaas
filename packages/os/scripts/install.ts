@@ -29,11 +29,18 @@ import {
   resolveOsHome,
   type AgentName,
   type OsMode,
+  type WorkspaceBootstrap,
 } from './lib/install-state';
-
+import {
+  pollWorkspaceDeviceAccessToken,
+  requestWorkspaceDeviceCode,
+} from './lib/workspace-device-login-client';
+import {
+  publishWorkspaceEdgeSnapshot,
+  type WorkspaceEdgePublishResult,
+} from './lib/install-edge-site-publisher';
 type ArtifactMode = 'local';
 type SkillName = string;
-
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -44,10 +51,23 @@ type InstallOptions = {
   skipDaemons: boolean;
   home?: string;
   mode?: OsMode;
+  workspaceName?: string;
+  workspaceHost?: string;
+  workspaceSlug?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  deviceLoginStatus?: 'approved' | 'fallback' | 'skipped';
+  deviceLoginUrl?: string;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
+type InstallEdgePublishPayload =
+  | WorkspaceEdgePublishResult
+  | {
+      status: 'planned';
+      workspaceHost?: string;
+      message: string;
+    };
 
 const AGENT_NAMES = new Set<AgentName>([
   'codex',
@@ -58,6 +78,73 @@ const AGENT_NAMES = new Set<AgentName>([
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
+}
+
+const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
+const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
+const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+function normalizeWorkspaceHost(value: string): string {
+  const raw = value.trim();
+  const withProtocol = raw.includes('://') ? raw : `https://${raw}`;
+  const url = new URL(withProtocol);
+  const hostname = url.hostname.toLowerCase();
+
+  if (hostname.length === 0 || !hostname.includes('.')) {
+    throw new Error('workspace host must include a valid hostname');
+  }
+
+  return hostname;
+}
+
+function normalizeWorkspaceName(value: string): string {
+  const workspaceName = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  if (workspaceName.length === 0) {
+    throw new Error('workspace name is required');
+  }
+
+  return workspaceName;
+}
+
+function workspaceHostFromSlug(workspaceSlug: string): string {
+  return `${workspaceSlug}.${WORKSPACE_BASE_DOMAIN}`;
+}
+
+function normalizeWorkspaceSlug(value: string): string {
+  return normalizeWorkspaceName(value);
+}
+
+function createManualWorkspaceBootstrap(input: {
+  workspaceSlug: string;
+  workspaceHost: string;
+}): WorkspaceBootstrap {
+  const workspaceSlug = normalizeWorkspaceSlug(input.workspaceSlug);
+  const workspaceHost = normalizeWorkspaceHost(input.workspaceHost);
+  const safeIdSegment = workspaceSlug.replace(/-/g, '_');
+
+  return {
+    workspaceId: `workspace_${safeIdSegment}`,
+    workspaceSlug,
+    workspaceHost,
+    connectorId: `connector_${safeIdSegment}`,
+    connectorTransport: 'websocket-relay',
+  };
+}
+
+function maybeCreateWorkspaceBootstrap(options: InstallOptions): WorkspaceBootstrap | undefined {
+  if (options.workspaceBootstrap) return options.workspaceBootstrap;
+  if (!options.workspaceHost || !options.workspaceSlug) return undefined;
+
+  return createManualWorkspaceBootstrap({
+    workspaceHost: options.workspaceHost,
+    workspaceSlug: options.workspaceSlug,
+  });
 }
 
 function parseArgs(argv: string[]): InstallOptions {
@@ -100,6 +187,19 @@ function parseArgs(argv: string[]): InstallOptions {
       if (mode !== 'local' && mode !== 'cloud')
         throw new Error('--mode must be local or cloud');
       options.mode = mode;
+    } else if (arg === '--workspace-name') {
+      const workspaceName = normalizeWorkspaceName(readValue('--workspace-name', index));
+      index += 1;
+      options.workspaceName = workspaceName;
+      options.workspaceSlug = workspaceName;
+      options.workspaceHost = workspaceHostFromSlug(workspaceName);
+    } else if (arg === '--workspace-url') {
+      options.workspaceHost = normalizeWorkspaceHost(readValue('--workspace-url', index));
+      index += 1;
+    } else if (arg === '--workspace-slug') {
+      options.workspaceSlug = normalizeWorkspaceSlug(readValue('--workspace-slug', index));
+      options.workspaceName = options.workspaceSlug;
+      index += 1;
     } else if (arg === '--connect-agent') {
       const agent = readValue('--connect-agent', index) as AgentName;
       index += 1;
@@ -122,6 +222,7 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --dry-run             print planned writes without writing',
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
+          '  --workspace-name <name> workspace name',
           '  --connect-agent <id>  connect codex, claude, opencode, or factory',
           '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
           '  --json                machine-readable output',
@@ -195,25 +296,162 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
   return `saved to ${result.home}`;
 }
 
+
+type DeviceLoginAttemptResult = {
+  status: 'approved' | 'fallback' | 'skipped';
+  verificationUrl?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+};
+
+function workspaceBootstrapFromApprovedDeviceGrant(input: {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  connectorId: string;
+  connectorBootstrapToken: string;
+}): WorkspaceBootstrap {
+  return {
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    connectorId: input.connectorId,
+    connectorTransport: 'websocket-relay',
+    connectorBootstrapToken: input.connectorBootstrapToken,
+  };
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function openDeviceVerificationUrl(url: string): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+
+  try {
+    const proc = Bun.spawn(['open', url], {
+      stdout: 'ignore',
+      stderr: 'ignore',
+    });
+    const exitCode = await proc.exited;
+    return exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function attemptWorkspaceDeviceLogin(input: {
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  dryRun: boolean;
+}): Promise<DeviceLoginAttemptResult> {
+  if (input.dryRun) return { status: 'skipped' };
+
+  try {
+    const liveDeviceCode = await requestWorkspaceDeviceCode({
+      clientId: DEVICE_LOGIN_CLIENT_ID,
+      scope: DEVICE_LOGIN_SCOPE,
+      workspaceName: input.workspaceName,
+      workspaceSlug: input.workspaceSlug,
+      workspaceHost: input.workspaceHost,
+    });
+    if (liveDeviceCode.status !== 'started') {
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback' };
+    }
+
+    const session = liveDeviceCode.session;
+    info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
+    await openDeviceVerificationUrl(session.verificationUriComplete);
+
+    const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
+    let intervalSeconds = session.intervalSeconds;
+
+    while (Date.now() < deadlineMs) {
+      await sleep(Math.min(intervalSeconds, 5) * 1000);
+      const pollResult = await pollWorkspaceDeviceAccessToken({
+        clientId: DEVICE_LOGIN_CLIENT_ID,
+        deviceCode: liveDeviceCode.session.deviceCode,
+        intervalSeconds,
+        deviceKeyPair: liveDeviceCode.deviceKeyPair,
+      });
+
+      if (pollResult.status === 'approved') {
+        info('Consuelo OS authorization approved.');
+        return {
+          status: 'approved',
+          verificationUrl: session.verificationUriComplete,
+          workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(pollResult),
+        };
+      }
+
+      if (pollResult.status === 'pending' || pollResult.status === 'slow_down') {
+        intervalSeconds = pollResult.intervalSeconds;
+        continue;
+      }
+
+      info('Device login unavailable; continuing with local workspace bootstrap.');
+      return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+    }
+
+    info('Device login was not approved before timeout; continuing with local workspace bootstrap.');
+    return { status: 'fallback', verificationUrl: session.verificationUriComplete };
+  } catch {
+    info('Device login unavailable; continuing with local workspace bootstrap.');
+    return { status: 'fallback' };
+  }
+}
+
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['home', 'skills', 'artifacts', 'agents', 'health']);
-    info('finish home, skills, artifacts, agents, and health before the final background service step.');
+    printOsBanner(['workspace', 'home', 'skills', 'artifacts', 'agents', 'health']);
+    info('finish workspace identity, home, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
-    const mode = await select({
+    let mode: OsMode = options.mode ?? 'local';
+    if (!options.mode) {
+      const selectedMode = await select({
+        ...clackIo,
+        message: 'choose an OS mode',
+        initialValue: 'local',
+        options: [
+          { value: 'local' as const, label: 'local' },
+          { value: 'cloud' as const, label: 'cloud' },
+        ],
+      });
+      if (isCancel(selectedMode)) { cancel('setup cancelled.'); process.exit(0); }
+      mode = selectedMode;
+    }
+
+    if (mode === 'cloud') {
+      info('Cloud setup is handled by Consuelo. Open https://consuelohq.com/contact/ to get started.');
+      process.exit(0);
+    }
+
+    const workspaceNameInput = await text({
       ...clackIo,
-      message: 'choose an OS mode',
-      initialValue: options.mode ?? 'local',
-      options: [
-        { value: 'local' as const, label: 'local OS', hint: 'runs on this machine' },
-        { value: 'cloud' as const, label: 'connect to cloud OS', hint: 'uses hosted workspace services later' },
-      ],
+      message: 'enter workspace name',
+      initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
+      validate: (value) => {
+        try {
+          normalizeWorkspaceName(value);
+          return undefined;
+        } catch (error: unknown) {
+          return error instanceof Error ? error.message : String(error);
+        }
+      },
     });
-    if (isCancel(mode)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
+    const workspaceName = normalizeWorkspaceName(workspaceNameInput);
+    const workspaceSlug = workspaceName;
+    const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    const deviceLogin = await attemptWorkspaceDeviceLogin({
+      workspaceName,
+      workspaceSlug,
+      workspaceHost,
+      dryRun: options.dryRun,
+    });
 
     const home = await text({
       ...clackIo,
@@ -226,7 +464,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
       ...clackIo,
-      message: 'select skills to enable',
+      message: 'select skills to enable — Use Space to select skills, press Enter to continue',
       options: skillPrompt.options,
       initialValues: skillPrompt.initialValues,
       cursorAt: skillPrompt.cursorAt,
@@ -236,13 +474,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
 
-    const artifactMode = await select({
-      ...clackIo,
-      message: 'choose artifact storage',
-      initialValue: options.artifactMode,
-      options: [{ value: 'local' as const, label: 'local artifacts', hint: 'save generated files under OS home' }],
-    });
-    if (isCancel(artifactMode)) { cancel('setup cancelled.'); process.exit(0); }
+    const artifactMode = options.artifactMode;
 
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
@@ -263,7 +495,21 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (isCancel(installDaemons)) { cancel('setup cancelled.'); process.exit(0); }
     info('background service is the final setup step; tokens and secrets stay local and are not printed.');
 
-    return { ...options, mode, home, selectedSkills: selectedSkills as SkillName[], artifactMode, connectAgents, installDaemons };
+    return {
+      ...options,
+      mode,
+      home,
+      workspaceName,
+      workspaceHost,
+      workspaceSlug,
+      workspaceBootstrap: deviceLogin.workspaceBootstrap,
+      deviceLoginStatus: deviceLogin.status,
+      deviceLoginUrl: deviceLogin.verificationUrl,
+      selectedSkills: selectedSkills as SkillName[],
+      artifactMode,
+      connectAgents,
+      installDaemons,
+    };
   } catch (error: unknown) {
     throw new Error(`install prompt failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -286,6 +532,7 @@ async function main(): Promise<void> {
               ? 'planning local OS install...'
               : 'installing local OS...',
           ).start();
+    const workspaceBootstrap = maybeCreateWorkspaceBootstrap(options);
     const result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
@@ -293,12 +540,46 @@ async function main(): Promise<void> {
       connectAgents: options.connectAgents,
       selectedSkills: options.selectedSkills,
       artifactStorage: options.artifactMode,
+      workspaceBootstrap,
     });
+    let edgePublish: InstallEdgePublishPayload;
+    if (options.dryRun) {
+      edgePublish = {
+        status: 'planned',
+        workspaceHost: workspaceBootstrap?.workspaceHost,
+        message: 'workspace edge site snapshot publish planned',
+      };
+    } else {
+      const approvedWorkspaceBootstrap = options.workspaceBootstrap;
+      if (!approvedWorkspaceBootstrap) {
+        info('Device approval not completed; skipping workspace edge snapshot publish.');
+        edgePublish = {
+          status: 'planned',
+          workspaceHost: workspaceBootstrap?.workspaceHost,
+          message:
+            'workspace edge site snapshot publish skipped: approved device login not available',
+        };
+      } else {
+        info('publishing workspace site to edge...');
+        edgePublish = await publishWorkspaceEdgeSnapshot({
+          home: result.home,
+          workspaceId: approvedWorkspaceBootstrap.workspaceId,
+          workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
+          workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
+        });
+      }
+    }
     const payload = {
       ...result,
+      edgePublish,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
+        workspaceName: options.workspaceName,
+        workspaceHost: options.workspaceHost,
+        workspaceSlug: options.workspaceSlug,
+        deviceLoginStatus: options.deviceLoginStatus,
+        deviceLoginUrl: options.deviceLoginUrl,
         connectAgents: options.connectAgents,
         installDaemons: options.installDaemons,
       },
@@ -328,7 +609,7 @@ async function main(): Promise<void> {
       info(summarizeActions(result));
       if (!suppressFinalSummary) {
         info(
-          `next: CONSUELO_HOME=${result.home} bun --cwd ${result.home} run doctor`,
+          `next: CONSUELO_HOME=${result.home} bun run --cwd ${result.home} doctor`,
         );
         printEnd('OS ready');
       }

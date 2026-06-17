@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/resolve-stream-sites-merge-conflicts",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1086,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1086",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1086",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1086/resolve-stream-sites-merge-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1086",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1086/resolve-stream-sites-merge-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-resolve-stream-sites-merge-conflicts",
+  "taskSession": "tsk_27cae83382a4",
+  "tmuxSession": "opensaas-sites-resolve-stream-sites-merge-conflicts-27cae833",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-resolve-stream-sites-merge-conflicts/.task/sites/resolve-stream-sites-merge-conflicts/session.json",
+  "createdAt": "2026-06-16T17:36:46.608Z"
+}

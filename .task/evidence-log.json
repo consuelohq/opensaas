@@ -14166,8 +14166,992 @@
           "chunks_embedded": 387
         }
       }
+    },
+    {
+      "id": "4e934be8-c33a-44c6-8861-5d8fc3bb7c91",
+      "occurred_at": "2026-06-16T08:42:54.469Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 662,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "69c0dffd-1375-412d-ad21-f9ed982628f7",
+      "occurred_at": "2026-06-16T08:43:31.194Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 663,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "fa9a0415-b313-4ebd-856c-f3a25a52d801",
+      "occurred_at": "2026-06-16T08:44:32.034Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 664,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "f8990a4b-caff-4b86-866b-f6c98d24fead",
+      "occurred_at": "2026-06-16T08:45:31.261Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 665,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "dbecfb37-3ddd-4aa5-9711-59e25515c830",
+      "occurred_at": "2026-06-16T08:48:48.840Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 666,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "c34f014d-0dde-4ddd-843f-5528f8c13d25",
+      "occurred_at": "2026-06-16T08:49:10.539Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 667,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "4f16b710-d805-4957-b606-0e137d03a5eb",
+      "occurred_at": "2026-06-16T08:50:07.970Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 668,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "af31b989-683b-43ce-abed-7b9b444ac9bc",
+      "occurred_at": "2026-06-16T08:51:06.222Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 669,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "bc0b7f98-d758-4d4c-81d8-621e7f28d058",
+      "occurred_at": "2026-06-16T08:54:30.098Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 670,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "31f1ec42-10e4-434f-b573-439600eae05e",
+      "occurred_at": "2026-06-16T08:54:54.548Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 671,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "1225e90f-b505-4015-a55f-5db5eef2f6da",
+      "occurred_at": "2026-06-16T08:55:44.679Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 672,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "6b7d0bd2-6bb1-4f08-8288-138bc398750c",
+      "occurred_at": "2026-06-16T08:56:41.202Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 673,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "dfd0cb69-4899-4cb3-a1e3-2cebb42d7e89",
+      "occurred_at": "2026-06-16T09:00:09.535Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 674,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "474bbda5-2394-4310-a3ad-814c57f69eec",
+      "occurred_at": "2026-06-16T09:00:35.562Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 675,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "4b827590-1260-448e-95ae-61e9918d626a",
+      "occurred_at": "2026-06-16T09:01:22.906Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 676,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "892fe543-b564-4111-95fa-f676c16927b3",
+      "occurred_at": "2026-06-16T09:02:22.190Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 677,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "16063f89-29e9-4b7d-bc68-2a8332f0d0dc",
+      "occurred_at": "2026-06-16T09:06:01.191Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 678,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "29363ed7-5400-407d-943b-d879930446e8",
+      "occurred_at": "2026-06-16T09:06:39.237Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 679,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "541d574a-1b42-4480-9d2e-5dd68bc2877d",
+      "occurred_at": "2026-06-16T09:07:01.162Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 680,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "025a1204-fd0b-4ffb-a913-1877cb03e1c8",
+      "occurred_at": "2026-06-16T09:08:22.626Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 681,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "90e212ea-b69c-4fc0-a30f-d1d0eba79588",
+      "occurred_at": "2026-06-16T09:12:08.361Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 682,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "d826f790-4218-4075-acae-adfd67e66774",
+      "occurred_at": "2026-06-16T09:12:20.193Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 683,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "7ea7d8cd-f8d3-4efc-bdf5-74d9f05c5534",
+      "occurred_at": "2026-06-16T09:12:48.755Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 684,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
+    },
+    {
+      "id": "760c14bd-66a7-4324-8e89-791d5859eac7",
+      "occurred_at": "2026-06-16T09:13:57.893Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "codemode workspace facade implementation",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "strengthened",
+      "confidence_delta": 0,
+      "worktree_id": "task/sites/finish-office-surfaces",
+      "details": {
+        "score": 0.6,
+        "starting_state": [
+          "Qwen prior found 8 candidate files",
+          "graph expansion found 19 connected files",
+          "top posterior belief 0.99",
+          "connected tests found (8)"
+        ],
+        "evidence_for": [
+          "read 3/5 top files",
+          "visited 9/19 graph-connected files",
+          "read 1 connected test file(s)",
+          "verify passed"
+        ],
+        "evidence_against": [
+          "a result was deleted or moved since last index"
+        ],
+        "uncertainties": [],
+        "evidence_counts": {
+          "events": 685,
+          "top_files": 5,
+          "read_top_files": 3,
+          "graph_files": 19,
+          "read_graph_files": 9,
+          "belief_observations": 67,
+          "top_posterior": 0.99
+        },
+        "recommendation": "read one more connected file before exploiting"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-06-09T21:24:19.062Z"
+  "updated_at": "2026-06-16T09:13:57.909Z"
 }
