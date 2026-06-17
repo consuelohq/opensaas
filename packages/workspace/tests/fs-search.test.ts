@@ -11,7 +11,7 @@ const searchModule = path.join(packageRoot, 'scripts', 'lib', 'fs', 'search.ts')
 const bunExecutable = spawnSync('which', ['bun'], { encoding: 'utf8' }).stdout.trim() || 'bun';
 
 function fixtureRoot(): string {
-  return mkdtempSync(path.join(tmpdir(), 'consuelo-os-fs-search-'));
+  return mkdtempSync(path.join(tmpdir(), 'consuelo-workspace-fs-search-'));
 }
 
 function runSearch(cwd: string, args: string[], env: NodeJS.ProcessEnv = process.env) {
@@ -21,6 +21,7 @@ function runSearch(cwd: string, args: string[], env: NodeJS.ProcessEnv = process
     env,
     maxBuffer: 32 * 1024 * 1024,
   });
+
   return {
     status: proc.status ?? 0,
     stdout: proc.stdout,
@@ -29,9 +30,10 @@ function runSearch(cwd: string, args: string[], env: NodeJS.ProcessEnv = process
   };
 }
 
-describe('OS fs.search structured ripgrep service', () => {
+describe('workspace fs.search structured ripgrep service', () => {
   it('returns structured ANSI-free JSON search results', () => {
     const root = fixtureRoot();
+
     try {
       writeFileSync(path.join(root, 'a.ts'), 'alpha one\nbeta\nalpha two\n');
       writeFileSync(path.join(root, 'b.ts'), 'gamma\n');
@@ -59,8 +61,10 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('returns an empty structured result for no matches', () => {
     const root = fixtureRoot();
+
     try {
       writeFileSync(path.join(root, 'a.ts'), 'alpha\n');
+
       const result = runSearch(root, ['missing', '.', '--json']);
 
       expect(result.status).toBe(0);
@@ -78,6 +82,7 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('treats dash-leading patterns as literals', () => {
     const root = fixtureRoot();
+
     try {
       writeFileSync(path.join(root, 'a.ts'), '-literal-pattern\n');
 
@@ -99,6 +104,7 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('treats dash-leading paths as targets', () => {
     const root = fixtureRoot();
+
     try {
       writeFileSync(path.join(root, '-target.ts'), 'needle\n');
 
@@ -116,6 +122,7 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('propagates ripgrep transport errors', () => {
     const root = fixtureRoot();
+
     try {
       mkdirSync(path.join(root, 'missing-bin'));
       writeFileSync(path.join(root, 'a.ts'), 'needle\n');
@@ -135,12 +142,14 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('supports include filters, file targets, and max result truncation', () => {
     const root = fixtureRoot();
+
     try {
       mkdirSync(path.join(root, 'src'));
       writeFileSync(path.join(root, 'src', 'a.ts'), 'needle one\nneedle two\n');
       writeFileSync(path.join(root, 'src', 'b.md'), 'needle markdown\n');
 
       const filtered = runSearch(root, ['needle', 'src', '--include', '*.ts', '--max-results', '1', '--json']);
+
       expect(filtered.status).toBe(0);
       expect(filtered.json).toMatchObject({
         type: 'search-results',
@@ -153,6 +162,7 @@ describe('OS fs.search structured ripgrep service', () => {
       ]);
 
       const fileTarget = runSearch(root, ['needle', path.join('src', 'a.ts'), '--json']);
+
       expect(fileTarget.status).toBe(0);
       expect(fileTarget.json.matches.map((match: { path: string }) => match.path)).toEqual([
         path.join('src', 'a.ts'),
@@ -165,8 +175,10 @@ describe('OS fs.search structured ripgrep service', () => {
 
   it('composes then-read JSON with bounded fs.read pages', () => {
     const root = fixtureRoot();
+
     try {
       writeFileSync(path.join(root, 'a.ts'), 'zero\none alpha\ntwo\nthree alpha\nfour\n');
+
       const result = runSearch(root, ['alpha', 'a.ts', '--context', '1', '--then-read', '--json']);
 
       expect(result.status).toBe(0);
