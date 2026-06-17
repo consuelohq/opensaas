@@ -26,11 +26,11 @@ type WorkflowBundle = {
 
 type WorkflowBundlesFile = {
   version: 1;
-  kind: 'consuelo-os-workflow-bundles';
+  kind: 'consuelo-workspace-workflow-bundles';
   workflows: WorkflowBundle[];
 };
 
-const manifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
+const manifestPath = resolve(import.meta.dirname, '../tooling/tool-manifest.json');
 const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
 const intentScript = resolve(import.meta.dirname, '../scripts/intent.js');
@@ -47,7 +47,7 @@ function readManifest(): ManifestToolDefinition[] {
 
 function readBundles(): WorkflowBundlesFile {
   const value = readJson(bundlesPath) as WorkflowBundlesFile;
-  if (value.kind !== 'consuelo-os-workflow-bundles') throw new Error('expected workflow bundle manifest');
+  if (value.kind !== 'consuelo-workspace-workflow-bundles') throw new Error('expected workflow bundle manifest');
   return value;
 }
 
@@ -61,7 +61,7 @@ function toolNames(bundle: WorkflowBundle): string[] {
   return bundle.tools.map((tool) => tool.name).sort();
 }
 
-describe('OS workflow intent bundles', () => {
+describe('Workspace workflow intent bundles', () => {
   test('generated workflow bundles include task and office without changing get_steering profiles', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
@@ -87,7 +87,7 @@ describe('OS workflow intent bundles', () => {
     const result = runtime.start({
       workflow: 'task',
       taskSession: 'tsk_intent_task',
-      area: 'os',
+      area: 'workspace-agents',
       title: 'intent architecture',
     });
 
@@ -135,8 +135,8 @@ describe('OS workflow intent bundles', () => {
   test('intent.dispatch keeps concurrent task sessions isolated by taskSession and worktree', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
-    runtime.start({ workflow: 'task', taskSession: 'tsk_a', area: 'os', title: 'agent a' });
-    runtime.start({ workflow: 'task', taskSession: 'tsk_b', area: 'os', title: 'agent b' });
+    runtime.start({ workflow: 'task', taskSession: 'tsk_a', area: 'workspace-agents', title: 'agent a' });
+    runtime.start({ workflow: 'task', taskSession: 'tsk_b', area: 'workspace-agents', title: 'agent b' });
 
     const a = runtime.dispatch({
       taskSession: 'tsk_a',
@@ -146,8 +146,8 @@ describe('OS workflow intent bundles', () => {
         tool: 'task.start',
         result: {
           taskSession: 'tsk_a',
-          area: 'os',
-          branch: 'task/os/agent-a',
+          area: 'workspace-agents',
+          branch: 'task/workspace-agents/agent-a',
           worktreePath: '/tmp/worktree-a',
         },
       },
@@ -161,8 +161,8 @@ describe('OS workflow intent bundles', () => {
         tool: 'task.start',
         result: {
           taskSession: 'tsk_b',
-          area: 'os',
-          branch: 'task/os/agent-b',
+          area: 'workspace-agents',
+          branch: 'task/workspace-agents/agent-b',
           worktreePath: '/tmp/worktree-b',
         },
       },
@@ -174,8 +174,8 @@ describe('OS workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-a/workpad.md');
-    expect(b.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-b/workpad.md');
+    expect(a.hookResult?.requiredNextAction.input.path).toBe('.task/workspace-agents/agent-a/workpad.md');
+    expect(b.hookResult?.requiredNextAction.input.path).toBe('.task/workspace-agents/agent-b/workpad.md');
   });
 
   test('intent CLI rejects unknown actions', () => {

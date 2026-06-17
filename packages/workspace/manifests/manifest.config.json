@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "label": "workspace-tooling",
+      "kind": "facade-tool",
+      "path": "packages/workspace/tooling/tool-manifest.json"
+    }
+  ],
+  "outputs": {
+    "full": "packages/workspace/manifests/tool-manifest.json",
+    "core": "packages/workspace/manifests/core-manifest.json",
+    "workflows": "packages/workspace/manifests/workflow-bundles.json"
+  },
+  "core": {
+    "includeNames": [
+      "audit",
+      "checkFiles",
+      "code.call",
+      "code.run",
+      "confidenceScore",
+      "confirm",
+      "decideNext",
+      "doctor",
+      "exploit",
+      "explore",
+      "gh",
+      "git.diff",
+      "git.status",
+      "github",
+      "intent",
+      "review.run",
+      "status",
+      "tmp",
+      "tools.search",
+      "verify"
+    ],
+    "includePrefixes": [
+      "context.",
+      "fs.",
+      "mac.",
+      "stream.",
+      "task."
+    ],
+    "includeCategories": [],
+    "excludeNames": [
+      "mac.call",
+      "mac.exec",
+      "task.call",
+      "task.exec"
+    ],
+    "excludePrefixes": [
+      "browser.",
+      "office.",
+      "design.",
+      "linear.",
+      "railway.",
+      "sentry.",
+      "website."
+    ],
+    "excludeCategories": [
+      "browser",
+      "consuelo design",
+      "linear",
+      "railway",
+      "sentry"
+    ]
+  },
+  "workflows": {
+    "path": "packages/workspace/tooling/workflows.json"
+  }
+}

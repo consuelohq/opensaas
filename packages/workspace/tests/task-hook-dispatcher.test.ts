@@ -5,16 +5,16 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import {
-  createOsHookDispatcher,
+  createWorkspaceHookDispatcher,
   dispatchHookEvent,
   renderHookResult,
 } from '../hooks/dispatcher.js';
 
-const actualManifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
+const actualManifestPath = resolve(import.meta.dirname, '../tooling/tool-manifest.json');
 const taskHookScript = resolve(import.meta.dirname, '../scripts/task-hook.js');
 const taskStartScript = resolve(import.meta.dirname, '../scripts/task-start.js');
 
-describe('OS hook dispatcher', () => {
+describe('Workspace hook dispatcher', () => {
   test('dispatches task workflow events using the current manifest without hard-coded action output', () => {
     const result = dispatchHookEvent({
       manifestPath: actualManifestPath,
@@ -24,8 +24,8 @@ describe('OS hook dispatcher', () => {
         workflow: 'task',
         result: {
           taskSession: 'tsk_dispatch',
-          area: 'os',
-          branch: 'task/os/dispatcher-example',
+          area: 'workspace-agents',
+          branch: 'task/workspace-agents/dispatcher-example',
           worktreePath: '/tmp/dispatcher-example',
         },
       },
@@ -45,12 +45,12 @@ describe('OS hook dispatcher', () => {
         }),
       }),
     );
-    expect(result.requiredNextAction.input.path).toBe('.task/os/dispatcher-example/workpad.md');
+    expect(result.requiredNextAction.input.path).toBe('.task/workspace-agents/dispatcher-example/workpad.md');
     expect(JSON.stringify(result)).not.toContain('fs.put');
   });
 
   test('returns null for unrelated events before scripts inject task guidance', () => {
-    const dispatcher = createOsHookDispatcher({ manifestPath: actualManifestPath });
+    const dispatcher = createWorkspaceHookDispatcher({ manifestPath: actualManifestPath });
 
     expect(
       dispatcher.dispatch({
@@ -70,7 +70,7 @@ describe('OS hook dispatcher', () => {
         tool: 'stream.context',
         inputSchema: 'StreamInput',
         source: 'manifest',
-        input: { area: 'os' },
+        input: { area: 'workspace-agents' },
       },
       notes: ['This hook is event scoped.'],
     });
@@ -103,7 +103,7 @@ describe('OS hook dispatcher', () => {
         event: 'tool.preInvoke',
         tool: 'task.start',
         workflow: 'task',
-        state: { area: 'os', hasStreamContext: false },
+        state: { area: 'workspace-agents', hasStreamContext: false },
       }),
       'utf8',
     );

@@ -55,7 +55,7 @@ export type GeneratedToolManifestEntry = {
 
 export type GeneratedToolManifest = {
   version: 1;
-  kind: 'consuelo-os-tool-manifest';
+  kind: 'consuelo-workspace-tool-manifest';
   generatedFrom: Array<{
     label: string;
     kind: ManifestSourceKind;
@@ -67,7 +67,7 @@ export type GeneratedToolManifest = {
 
 export type GeneratedCoreManifest = {
   version: 1;
-  kind: 'consuelo-os-core-manifest';
+  kind: 'consuelo-workspace-core-manifest';
   sourceManifest: string;
   config: string;
   tools: GeneratedToolManifestEntry[];
@@ -92,7 +92,7 @@ export type GeneratedWorkflowBundleEntry = {
 
 export type GeneratedWorkflowBundles = {
   version: 1;
-  kind: 'consuelo-os-workflow-bundles';
+  kind: 'consuelo-workspace-workflow-bundles';
   sourceManifest: string;
   config: string;
   source: string;
@@ -100,13 +100,13 @@ export type GeneratedWorkflowBundles = {
 };
 
 export type ToolManifestReport = {
-  oldRegularToolCount: number;
-  oldDevToolCount: number;
+  oldSourceToolCount: number;
+  oldFacadeToolCount: number;
   fullToolCount: number;
   coreToolCount: number;
   duplicateNames: string[];
-  regularToolNames: string[];
-  devToolNames: string[];
+  sourceToolNames: string[];
+  facadeToolNames: string[];
   fullToolNames: string[];
   coreToolNames: string[];
 };
@@ -240,13 +240,13 @@ function coreMatches(entry: GeneratedToolManifestEntry, coreConfig: CoreManifest
 function buildEntries(config: ToolManifestConfig, configDir: string): {
   entries: GeneratedToolManifestEntry[];
   generatedFrom: GeneratedToolManifest['generatedFrom'];
-  regularToolNames: string[];
-  devToolNames: string[];
+  sourceToolNames: string[];
+  facadeToolNames: string[];
 } {
   const entries: GeneratedToolManifestEntry[] = [];
   const generatedFrom: GeneratedToolManifest['generatedFrom'] = [];
-  const regularToolNames: string[] = [];
-  const devToolNames: string[] = [];
+  const sourceToolNames: string[] = [];
+  const facadeToolNames: string[] = [];
 
   for (const source of config.sources) {
     const sourcePath = resolvePath(source.path, configDir);
@@ -261,12 +261,12 @@ function buildEntries(config: ToolManifestConfig, configDir: string): {
     for (const definition of sourceEntries) {
       const entry = normalizeEntry(source, sourcePath, definition);
       entries.push(entry);
-      if (source.kind === 'os-skill') regularToolNames.push(entry.name);
-      if (source.kind === 'facade-tool') devToolNames.push(entry.name);
+      if (source.kind === 'os-skill') sourceToolNames.push(entry.name);
+      if (source.kind === 'facade-tool') facadeToolNames.push(entry.name);
     }
   }
 
-  return { entries, generatedFrom, regularToolNames, devToolNames };
+  return { entries, generatedFrom, sourceToolNames, facadeToolNames };
 }
 
 function assertUnique(entries: GeneratedToolManifestEntry[]): void {
@@ -351,7 +351,7 @@ function buildWorkflowBundles(
 
   return {
     version: 1,
-    kind: 'consuelo-os-workflow-bundles',
+    kind: 'consuelo-workspace-workflow-bundles',
     sourceManifest: relativeToRepo(fullOutputPath),
     config: relativeToRepo(configPath),
     source: workflowConfig.sourcePath ? relativeToRepo(workflowConfig.sourcePath) : '',
@@ -365,22 +365,22 @@ function outputPathFromConfig(config: ToolManifestConfig, configDir: string, key
   return configured ? resolvePath(configured, configDir) : fallback;
 }
 
-export function buildToolManifest(options: BuildToolManifestOptions = {}): BuildToolManifestResult {
+export function buildWorkspaceToolManifest(options: BuildToolManifestOptions = {}): BuildToolManifestResult {
   const configPath = options.configPath ?? DEFAULT_CONFIG_PATH;
   const configDir = path.dirname(configPath);
   const config = readConfig(configPath);
   const coreConfig = normalizeCoreConfig(config.core);
-  const { entries, generatedFrom, regularToolNames, devToolNames } = buildEntries(config, configDir);
+  const { entries, generatedFrom, sourceToolNames, facadeToolNames } = buildEntries(config, configDir);
 
   assertUnique(entries);
 
-  const defaultFullOutputPath = outputPathFromConfig(config, configDir, 'full', path.join(packageRoot, 'manifests', 'tool.manifest.json'));
+  const defaultFullOutputPath = outputPathFromConfig(config, configDir, 'full', path.join(packageRoot, 'manifests', 'tool-manifest.json'));
   const fullOutputPath = options.fullOutputPath
     ? path.resolve(options.fullOutputPath)
     : defaultFullOutputPath;
   const coreOutputPath = options.coreOutputPath
     ? path.resolve(options.coreOutputPath)
-    : outputPathFromConfig(config, configDir, 'core', path.join(packageRoot, 'manifests', 'core.manifest.json'));
+    : outputPathFromConfig(config, configDir, 'core', path.join(packageRoot, 'manifests', 'core-manifest.json'));
   const workflowsOutputPath = options.workflowsOutputPath
     ? path.resolve(options.workflowsOutputPath)
     : outputPathFromConfig(config, configDir, 'workflows', path.join(packageRoot, 'manifests', 'workflow-bundles.json'));
@@ -393,13 +393,13 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
 
   const full: GeneratedToolManifest = {
     version: 1,
-    kind: 'consuelo-os-tool-manifest',
+    kind: 'consuelo-workspace-tool-manifest',
     generatedFrom,
     tools: fullTools,
   };
   const core: GeneratedCoreManifest = {
     version: 1,
-    kind: 'consuelo-os-core-manifest',
+    kind: 'consuelo-workspace-core-manifest',
     sourceManifest: relativeToRepo(fullOutputPath),
     config: relativeToRepo(configPath),
     tools: coreTools,
@@ -415,21 +415,21 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
     coreOutputPath,
     workflowsOutputPath,
     report: {
-      oldRegularToolCount: regularToolNames.length,
-      oldDevToolCount: devToolNames.length,
+      oldSourceToolCount: sourceToolNames.length,
+      oldFacadeToolCount: facadeToolNames.length,
       fullToolCount: fullTools.length,
       coreToolCount: coreTools.length,
       duplicateNames: [],
-      regularToolNames: regularToolNames.sort(),
-      devToolNames: devToolNames.sort(),
+      sourceToolNames: sourceToolNames.sort(),
+      facadeToolNames: facadeToolNames.sort(),
       fullToolNames,
       coreToolNames,
     },
   };
 }
 
-export function generateToolManifest(options: BuildToolManifestOptions = {}): BuildToolManifestResult {
-  const result = buildToolManifest(options);
+export function generateWorkspaceToolManifest(options: BuildToolManifestOptions = {}): BuildToolManifestResult {
+  const result = buildWorkspaceToolManifest(options);
   fs.mkdirSync(path.dirname(result.fullOutputPath), { recursive: true });
   fs.mkdirSync(path.dirname(result.coreOutputPath), { recursive: true });
   fs.mkdirSync(path.dirname(result.workflowsOutputPath), { recursive: true });
@@ -441,7 +441,7 @@ export function generateToolManifest(options: BuildToolManifestOptions = {}): Bu
 
 if (import.meta.main) {
   try {
-    const result = generateToolManifest();
+    const result = generateWorkspaceToolManifest();
     process.stdout.write(`wrote ${relativeToRepo(result.fullOutputPath)} (${result.report.fullToolCount} tools)\n`);
     process.stdout.write(`wrote ${relativeToRepo(result.coreOutputPath)} (${result.report.coreToolCount} tools)\n`);
     process.stdout.write(`wrote ${relativeToRepo(result.workflowsOutputPath)} (${result.workflows.workflows.length} workflows)\n`);

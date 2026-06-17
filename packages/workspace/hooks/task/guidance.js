@@ -1,6 +1,6 @@
 const TASK_FLOW_ANCHOR = 'stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish';
 const TASK_SESSION_ANCHOR = 'For task-scoped work, `task.start` returns `data.taskSession`.';
-const TOP_LEVEL_SESSION_ANCHOR = 'Pass `taskSession` at the top level of every task-scoped `os.call`:';
+const TOP_LEVEL_SESSION_ANCHOR = 'Pass `taskSession` at the top level of every task-scoped `workspace.call`:';
 const TEST_FIRST_ANCHOR = 'For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:';
 const FOCUSED_RED_ANCHOR = 'a focused test has been written or updated and run red, or';
 const NO_TEST_WAIVER_ANCHOR = 'a no-test waiver explains why no test is appropriate and what validation replaces it.';
@@ -46,8 +46,8 @@ function buildBeforeTaskStart(options) {
       TASK_FLOW_ANCHOR,
     ],
     actions: [
-      osCall('stream.context', { area }),
-      osCall('task.start', {
+      workspaceCall('stream.context', { area }),
+      workspaceCall('task.start', {
         area,
         title: options.title || '<task title>',
         startFrom: options.startFrom || 'main',
@@ -76,9 +76,9 @@ function buildAfterTaskStart(options) {
       '1. Immediately after `task.start`',
     ],
     actions: [
-      osCall('fs.read', { path: 'AGENTS.md' }, taskSession),
-      osCall('status', {}, taskSession),
-      osCall('code.run', {
+      workspaceCall('fs.read', { path: 'AGENTS.md' }, taskSession),
+      workspaceCall('status', {}, taskSession),
+      workspaceCall('code.run', {
         mode: 'read',
         code: 'return await workspace.explore({ query: "task implementation path", limit: 8 });',
       }, taskSession),
@@ -108,15 +108,15 @@ function buildBeforeProductionEdit(options) {
       '- expected red failure',
     ],
     actions: [
-      osCall('fs.write', {
+      workspaceCall('fs.write', {
         path: `.task/${options.area || '<area>'}/<task-slug>/workpad.md`,
         append: true,
         content: '## Test-first contract\n\nBehavior under test:\n- ...\n',
       }, options.taskSession),
-      osCall('code.call', {
+      workspaceCall('code.call', {
         language: 'bash',
         mode: 'verify',
-        code: 'bun --cwd packages/os test <focused-test-file>',
+        code: 'bun --cwd packages/workspace test <focused-test-file>',
         timeout: 300000,
       }, options.taskSession),
     ],
@@ -143,11 +143,11 @@ function buildBeforePublish(options) {
       '`task.pr` must promote the task into the stream and return the stream review PR unless Ko explicitly asks for task-only mode.',
     ],
     actions: [
-      osCall('git.diff', { stat: true, files: true, hunks: true, maxBytes: 20000 }, options.taskSession),
-      osCall('review.run', { base: options.base || 'origin/main', noTests: Boolean(options.noTests) }, options.taskSession),
-      osCall('verify', { base: options.base || 'origin/main', noDb: true }, options.taskSession),
-      osCall('task.push', { message: options.message || 'type(os): description', changed: true }, options.taskSession),
-      osCall('task.pr', { ready: true }, options.taskSession),
+      workspaceCall('git.diff', { stat: true, files: true, hunks: true, maxBytes: 20000 }, options.taskSession),
+      workspaceCall('review.run', { base: options.base || 'origin/main', noTests: Boolean(options.noTests) }, options.taskSession),
+      workspaceCall('verify', { base: options.base || 'origin/main', noDb: true }, options.taskSession),
+      workspaceCall('task.push', { message: options.message || 'type(workspace-agents): description', changed: true }, options.taskSession),
+      workspaceCall('task.pr', { ready: true }, options.taskSession),
     ],
     notes: [
       'Report the stream review PR, not only the intermediate task PR.',
@@ -167,7 +167,7 @@ function buildUnknownTaskTool(options) {
       TOP_LEVEL_SESSION_ANCHOR,
     ],
     actions: [
-      osCall('tools.search', { query: requestedTool }),
+      workspaceCall('tools.search', { query: requestedTool }),
     ],
     notes: [
       `Requested tool: ${requestedTool}`,
@@ -176,9 +176,9 @@ function buildUnknownTaskTool(options) {
   };
 }
 
-function osCall(tool, input, taskSession) {
+function workspaceCall(tool, input, taskSession) {
   const call = {
-    command: 'os.call',
+    command: 'workspace.call',
     input: {
       tool,
       input,

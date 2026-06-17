@@ -48,6 +48,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | tooling | 1 |
 | utilities | 34 |
 | worker | 1 |
+| workflow | 1 |
 
 ## Tools by category
 
@@ -7843,6 +7844,70 @@ await workspace.call({
     "policy": "edit",
     "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
     "workspaceOnly": "preferred"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## workflow
+
+### workspace.intent
+
+start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle
+
+| Field | Value |
+| --- | --- |
+| Category | workflow |
+| Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace intent` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "intent",
+  "input": {
+    "action": "start",
+    "workflow": "task",
+    "area": "workspace-agents",
+    "title": "example task intent"
   }
 });
 ```

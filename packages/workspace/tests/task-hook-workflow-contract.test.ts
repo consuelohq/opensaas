@@ -4,7 +4,7 @@ const TASK_SKILL_EXCERPT = `
 stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 
 For task-scoped work, task.start returns data.taskSession.
-Pass taskSession at the top level of every task-scoped os.call.
+Pass taskSession at the top level of every task-scoped workspace.call.
 Every task must keep its task-local scoped workpad current enough for another agent to continue without chat history.
 For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either a focused test has been written or updated and run red, or a no-test waiver explains why no test is appropriate and what validation replaces it.
 task.pr must promote the task into the stream and return the stream review PR unless Ko explicitly asks for task-only mode.
@@ -50,12 +50,12 @@ async function loadWorkflowModule() {
     return await import('../hooks/task/workflow.js');
   } catch (error: unknown) {
     throw new Error(
-      `Expected packages/os/hooks/task/workflow.js to export the manifest-driven task hook workflow contract. Original import error: ${String(error)}`,
+      `Expected packages/workspace/hooks/task/workflow.js to export the manifest-driven task hook workflow contract. Original import error: ${String(error)}`,
     );
   }
 }
 
-describe('OS manifest-driven task workflow hooks contract', () => {
+describe('Workspace manifest-driven task workflow hooks contract', () => {
   test('exposes the complete task workflow as ordered subscribable stages from the skill text', async () => {
     const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
     const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
@@ -116,7 +116,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
         event: 'tool.preInvoke',
         tool: 'fs.read',
         workflow: 'general',
-        state: { area: 'os' },
+        state: { area: 'workspace-agents' },
       }),
     ).toBeNull();
 
@@ -137,7 +137,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       event: 'tool.preInvoke',
       tool: 'task.start',
       workflow: 'task',
-      state: { area: 'os', title: 'implement later', hasStreamContext: false },
+      state: { area: 'workspace-agents', title: 'implement later', hasStreamContext: false },
     });
 
     expect(guidance).toEqual(
@@ -151,7 +151,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
           tool: 'stream.inspect',
           inputSchema: 'StreamContextInput',
           source: 'manifest',
-          input: { area: 'os' },
+          input: { area: 'workspace-agents' },
         }),
       }),
     );
@@ -170,8 +170,8 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       workflow: 'task',
       result: {
         taskSession: 'tsk_abc123',
-        area: 'os',
-        branch: 'task/os/example',
+        area: 'workspace-agents',
+        branch: 'task/workspace-agents/example',
         worktreePath: '/tmp/example',
       },
     });
@@ -195,7 +195,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       }),
     );
 
-    expect(guidance.requiredNextAction.input.path).toBe('.task/os/example/workpad.md');
+    expect(guidance.requiredNextAction.input.path).toBe('.task/workspace-agents/example/workpad.md');
     expect(guidance.requiredNextAction.input.content).toContain('Test-first contract');
   });
 
@@ -208,10 +208,10 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       workflow: 'task',
       stage: 'validation',
       state: {
-        area: 'os',
+        area: 'workspace-agents',
         taskSession: 'tsk_publish',
-        base: 'origin/stream/os',
-        changedFiles: ['packages/os/tests/task-hook-workflow-contract.test.ts'],
+        base: 'origin/stream/workspace-agents',
+        changedFiles: ['packages/workspace/tests/task-hook-workflow-contract.test.ts'],
       },
     });
 
@@ -247,9 +247,9 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       workflow: 'task',
       stage: 'validation',
       state: {
-        area: 'os',
+        area: 'workspace-agents',
         taskSession: 'tsk_publish',
-        changedFiles: 'packages/os/tests/task-hook-workflow-contract.test.ts',
+        changedFiles: 'packages/workspace/tests/task-hook-workflow-contract.test.ts',
       },
     });
 

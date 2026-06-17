@@ -5,10 +5,10 @@ import {
   renderTaskHookGuidance,
 } from '../hooks/task/guidance.js';
 
-describe('OS task hook guidance', () => {
-  test('after-task-start preserves task skill wording and gives concrete OS calls', () => {
+describe('Workspace task hook guidance', () => {
+  test('after-task-start preserves task skill wording and gives concrete Workspace calls', () => {
     const guidance = getTaskHookGuidance('after-task-start', {
-      area: 'os',
+      area: 'workspace-agents',
       taskSession: 'tsk_example',
       worktreePath: '/tmp/example-worktree',
     });
@@ -21,19 +21,19 @@ describe('OS task hook guidance', () => {
       'For task-scoped work, `task.start` returns `data.taskSession`.',
     );
     expect(guidance.skillAnchors).toContain(
-      'Pass `taskSession` at the top level of every task-scoped `os.call`:',
+      'Pass `taskSession` at the top level of every task-scoped `workspace.call`:',
     );
     expect(guidance.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          command: 'os.call',
+          command: 'workspace.call',
           input: expect.objectContaining({
             tool: 'fs.read',
             taskSession: 'tsk_example',
           }),
         }),
         expect.objectContaining({
-          command: 'os.call',
+          command: 'workspace.call',
           input: expect.objectContaining({
             tool: 'code.run',
             taskSession: 'tsk_example',
@@ -46,7 +46,7 @@ describe('OS task hook guidance', () => {
 
   test('before-production-edit forces test-first or waiver guidance', () => {
     const rendered = renderTaskHookGuidance(
-      getTaskHookGuidance('before-production-edit', { area: 'os' }),
+      getTaskHookGuidance('before-production-edit', { area: 'workspace-agents' }),
     );
 
     expect(rendered).toContain('For non-trivial code changes, implementation must not begin');
@@ -62,7 +62,7 @@ describe('OS task hook guidance', () => {
 
     expect(guidance.actions).toContainEqual(
       expect.objectContaining({
-        command: 'os.call',
+        command: 'workspace.call',
         input: expect.objectContaining({
           tool: 'tools.search',
           input: { query: 'task.finish' },
@@ -72,9 +72,9 @@ describe('OS task hook guidance', () => {
     expect(renderTaskHookGuidance(guidance)).toContain('task.finish');
   });
 
-  test('uses millisecond timeouts for generated OS calls', () => {
+  test('uses millisecond timeouts for generated workspace calls', () => {
     const guidance = getTaskHookGuidance('before-task-start', {
-      area: 'os',
+      area: 'workspace-agents',
       title: 'timeout units',
     });
 

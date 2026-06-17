@@ -33,7 +33,7 @@ const SUBSCRIPTIONS = [
 const DEFAULT_SKILL_ANCHORS = {
   flow: 'stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
   taskSession: 'For task-scoped work, task.start returns data.taskSession.',
-  topLevelSession: 'Pass taskSession at the top level of every task-scoped os.call.',
+  topLevelSession: 'Pass taskSession at the top level of every task-scoped workspace.call.',
   workpad: 'Every task must keep its task-local scoped workpad current enough for another agent to continue without chat history.',
   testFirst: 'Test-first contract requires a focused test or no-test waiver before implementation.',
   streamReview: 'task.pr must promote the task into the stream and return the stream review PR unless Ko explicitly asks for task-only mode.',
@@ -194,7 +194,7 @@ function handleValidationReady(event, resolver) {
       }),
       resolver.action('task.push', {
         taskSession,
-        input: { message: 'type(os): description', changed: true },
+        input: { message: 'type(workspace-agents): description', changed: true },
       }),
       resolver.action('task.pr', {
         taskSession,
