@@ -105,6 +105,21 @@ function writeFixtureConfig(regularManifestPath: string, devToolManifestPath: st
   return configPath;
 }
 
+function publicSurfaceText(): string {
+  const publicFiles = [
+    'manifests/tool.manifest.json',
+    'manifests/core.manifest.json',
+    'manifests/workflow-bundles.json',
+    'TOOLS.md',
+    'src/generated/workspace.d.ts',
+    'src/generated/tool-client.ts',
+    'package.json',
+  ];
+  return publicFiles
+    .map((relativePath) => readFileSync(join(packageRoot, relativePath), 'utf8'))
+    .join('\n');
+}
+
 describe('tool manifest generator', () => {
   it('preserves every regular and dev manifest entry in the generated full manifest', () => {
     const regularEntries = readJsonArray('tooling/tool-manifest.json');
@@ -148,6 +163,8 @@ describe('tool manifest generator', () => {
     expect(coreNames).toContain('github');
     expect(coreNames).toContain('gh');
     expect(coreNames).toContain('mac.read');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
     expect(coreNames).toContain('tools.search');
     expect(coreNames).toContain('status');
     expect(coreNames).toContain('doctor');
@@ -165,11 +182,54 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
-    expect(coreNames).not.toContain('consueloDesign.generateWebsite');
+    expect(coreNames).not.toContain('office.generateWebsite');
     expect(coreNames).not.toContain('daily-revenue-brief');
     expect(coreNames).not.toContain('get_raw_steering');
   });
 
+
+
+  it('keeps public execution surface on code.call and lifecycle task tools only', async () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const lifecycleTools = ['task.start', 'task.current', 'task.push', 'task.pr', 'task.finish'];
+    const codeCallEntry = registry.core.tools.find((entry) => entry.name === 'code.call');
+    const macCallEntry = registry.full.tools.find((entry) => entry.name === 'mac.call');
+
+    expect(fullNames).toContain('code.call');
+    expect(coreNames).toContain('code.call');
+    expect(coreNames).not.toContain('mac.call');
+    expect(coreNames).not.toContain('mac.exec');
+    for (const toolName of lifecycleTools) {
+      expect(fullNames).toContain(toolName);
+      expect(coreNames).toContain(toolName);
+    }
+    expect(fullNames).not.toContain('task.call');
+    expect(fullNames).not.toContain('task.exec');
+    expect(coreNames).not.toContain('task.call');
+    expect(coreNames).not.toContain('task.exec');
+
+    const publicText = publicSurfaceText();
+    expect(publicText).not.toContain('task.call');
+    expect(publicText).not.toContain('task.exec');
+    expect(publicText).not.toContain('task:exec');
+    expect(publicText).toContain('code.call');
+    expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
+
+    expect(codeCallEntry?.description).toContain('preferred repo-scoped execution tool');
+    expect(codeCallEntry?.description).toContain('tests');
+    expect(codeCallEntry?.description).toContain('package scripts');
+    expect(JSON.stringify(codeCallEntry?.definition)).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
+    expect(macCallEntry?.description).toContain('emergency host escape hatch');
+    expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
+
+    const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+
+    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
+    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+  });
 
   it('should expose fs.apply_patch only when building OS manifest surfaces', () => {
     const registry = buildToolManifest({ write: false });
@@ -222,11 +282,13 @@ describe('tool manifest generator', () => {
 
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
+    const workflows = JSON.parse(readFileSync(join(packageRoot, 'manifests/workflow-bundles.json'), 'utf8')) as { sourceManifest: string };
 
     expect(full.tools.length).toBeGreaterThan(0);
     expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
+    expect(workflows.sourceManifest).toBe('packages/os/manifests/tool.manifest.json');
   });
 
   it('fails when source manifests contain duplicate names', () => {
@@ -248,7 +310,7 @@ describe('tool manifest generator', () => {
     }) as SearchResult;
 
     expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBeGreaterThan(133);
+    expect(result.catalog?.toolCount).toBeGreaterThan(120);
     expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
   });
 

@@ -28,18 +28,21 @@ function which(bin) {
 // ── helpers shown contextually ──
 
 function readHelp() {
-  out('usage: bun run fs -- read <path> [--from N] [--to M] [path2 --from N --to M ...]');
+  out('usage: bun run fs -- read <path> [--offset N] [--limit M] [path2 --offset N --limit M ...]');
   out('');
-  out('read files with line numbers. wraps bat.');
+  out('read a bounded structured view of text or supported media for agent-safe ingestion.');
   out('');
   out('options:');
-  out('  --from N       start line (1-based)');
-  out('  --to M         end line (1-based)');
-  out('  --plain        no line numbers or decoration');
-  out('  --json         json output: { path, from, to, lines: [...] }');
+  out('  --offset N       start line (1-based, preferred)');
+  out('  --limit M        max lines to return, capped at 2000');
+  out('  --from N         alias for --offset');
+  out('  --to M           alias that derives --limit from offset');
+  out('  --files-json J   JSON array of { path, offset?, limit? } entries');
+  out('  --plain          no line numbers for human text output');
+  out('  --json           structured JSON output');
   out('');
-  out('multi-file: each path starts a new segment with its own --from/--to');
-  out('  bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150');
+  out('multi-file: each path starts a new segment with its own page options');
+  out('  bun run fs -- read src/a.ts --offset 1 --limit 50 src/b.ts --offset 100 --limit 60 --json');
 }
 
 function searchHelp() {
@@ -122,77 +125,99 @@ function parseReadSegments(argv) {
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
+    if (a === '--files-json') {
+      let files;
+      try {
+        files = JSON.parse(argv[++i]);
+      } catch {
+        err('error: --files-json must be valid JSON');
+        process.exitCode = 1;
+        return null;
+      }
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (file && typeof file.path === 'string') segments.push(file);
+        }
+      }
+      current = null;
+    }
+    else if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
     else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
+    else if (a === '--offset') { if (current) current.offset = parseInt(argv[++i], 10); }
+    else if (a === '--limit') { if (current) current.limit = parseInt(argv[++i], 10); }
     else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
     else if (!a.startsWith('--')) {
-      current = { path: a, from: null, to: null };
+      current = { path: a };
       segments.push(current);
     }
   }
   return segments;
 }
 
-function cmdRead(argv) {
+function renderTextPage(page, plain) {
+  const lines = String(page.content || '').split('\n');
+  if (page.content === '') return;
+  lines.forEach((line, idx) => {
+    const lineNum = page.offset + idx;
+    out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
+  });
+  if (page.truncated && page.next) out(`... truncated; next offset ${page.next}`);
+}
+
+async function cmdRead(argv) {
   if (argv.includes('--help') || argv.length === 0) { readHelp(); return; }
 
   const plain = argv.includes('--plain');
   const json = argv.includes('--json');
-  const all = argv.includes('--all');
   const segments = parseReadSegments(argv);
 
+  if (!segments) return;
   if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
 
-  const results = [];
-
-  for (const seg of segments) {
-    const fp = resolve(seg.path);
-    if (!fs.existsSync(fp)) { err(`error: ${seg.path} not found`); continue; }
-
-    const content = fs.readFileSync(fp, 'utf8');
-    const allLines = content.split('\n');
-    const from = seg.from || 1;
-    const to = seg.to || allLines.length;
-    const slice = allLines.slice(from - 1, to);
-
-    if (json) {
-      results.push({ path: seg.path, from, to, total: allLines.length, lines: slice });
-      continue;
-    }
-
-    // try bat for pretty output
-    if (!plain && which('bat')) {
-      const batArgs = ['bat', '--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp];
-      const r = spawnSync('bat', ['--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp], {
-        encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      out(r.stdout.trimEnd());
-    } else {
-      if (segments.length > 1) out(`── ${seg.path} ──`);
-      slice.forEach((line, idx) => {
-        const lineNum = from + idx;
-        out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
-      });
-    }
+  let result;
+  try {
+    const { readManyForCli } = await import('./lib/fs/read.ts');
+    result = await readManyForCli(segments, { root: process.cwd() });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    err(`error: failed to read file: ${message}`);
+    process.exitCode = 1;
+    return;
   }
 
-  if (json) out(JSON.stringify(results, null, 2));
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (result && Array.isArray(result.results)) {
+    for (const item of result.results) {
+      out(`── ${item.path} ──`);
+      if (!item.ok) {
+        err(`${item.error.code}: ${item.error.message}`);
+        continue;
+      }
+      if (item.page.type === 'text-page') renderTextPage(item.page, plain);
+      else out(`${item.page.type}: ${item.page.message || item.page.mime || item.path}`);
+    }
+    return;
+  }
+
+  if (result.type === 'text-page') renderTextPage(result, plain);
+  else if (result.type === 'error') err(`${result.code}: ${result.message}`);
+  else out(`${result.type}: ${result.message || result.mime || result.path}`);
 }
 
 // ── search ──
 
-function cmdSearch(argv) {
-  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
-
+function parseSearchArgs(argv) {
   const json = argv.includes('--json');
   const filesOnly = argv.includes('--files');
   const thenRead = argv.includes('--then-read');
-  let context = DEFAULT_CONTEXT;
+  let context = null;
   let maxResults = null;
   let include = null;
 
-  // extract flags
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -203,87 +228,38 @@ function cmdSearch(argv) {
     else { positional.push(a); }
   }
 
-  const pattern = positional[0];
-  const paths = positional.slice(1);
-  if (!pattern) { err('error: search pattern required'); searchHelp(); return; }
+  return { json, filesOnly, thenRead, context, maxResults, include, pattern: positional[0], paths: positional.slice(1) };
+}
 
-  // build rg args
-  const rgArgs = ['--color=always', '--line-number'];
-  SEARCH_EXCLUDES.forEach((e) => rgArgs.push(`--glob=!${e}`));
-  if (filesOnly) rgArgs.push('--files-with-matches');
-  else rgArgs.push(`--context=${context}`);
-  if (maxResults) rgArgs.push(`--max-count=${maxResults}`);
-  if (include) rgArgs.push(`--glob=${include}`);
-  rgArgs.push(pattern);
-  if (paths.length > 0) rgArgs.push(...paths);
+async function cmdSearch(argv) {
+  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
+  const parsed = parseSearchArgs(argv);
+  if (!parsed.pattern) { err('error: search pattern required'); searchHelp(); return; }
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-  const output = (r.stdout || '').trimEnd();
-
-  if (!output) { out('no matches'); return; }
-
-  if (json && !thenRead) {
-    // parse rg output into structured format
-    const matches = [];
-    output.split('\n').forEach((line) => {
-      const m = line.replace(/\x1b\[[0-9;]*m/g, '').match(/^(.+?):(\d+):(.*)/);
-      if (m) matches.push({ file: m[1], line: parseInt(m[2], 10), text: m[3].trim() });
+  const { runSearchForCli, formatSearchOutput } = await import('./lib/fs/search.ts');
+  let result;
+  try {
+    result = await runSearchForCli({
+      pattern: parsed.pattern,
+      paths: parsed.paths,
+      include: parsed.include || undefined,
+      context: parsed.context ?? (parsed.json ? 0 : DEFAULT_CONTEXT),
+      maxResults: parsed.maxResults || undefined,
+      filesOnly: parsed.filesOnly,
+      thenRead: parsed.thenRead,
+      root: process.cwd(),
     });
-    out(JSON.stringify(matches, null, 2));
+  } catch (cause) {
+    err('error: search failed: ' + (cause && cause.message ? cause.message : String(cause)));
     return;
   }
 
-  out(output);
-
-  if (thenRead) {
-    // re-run rg without color and with filename for reliable parsing
-    const parseArgs = ['--color=never', '--line-number', '--with-filename'];
-    SEARCH_EXCLUDES.forEach((e) => parseArgs.push(`--glob=!${e}`));
-    if (maxResults) parseArgs.push(`--max-count=${maxResults}`);
-    if (include) parseArgs.push(`--glob=${include}`);
-    parseArgs.push(pattern);
-    if (paths.length > 0) parseArgs.push(...paths);
-
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-    const parseOutput = (pr.stdout || '').trimEnd();
-
-    const seen = new Map();
-    parseOutput.split('\n').forEach((line) => {
-      const m = line.match(/^(.+?):(\d+):/);
-      if (m) {
-        const f = m[1];
-        const n = parseInt(m[2], 10);
-        if (!seen.has(f)) seen.set(f, []);
-        seen.get(f).push(n);
-      }
-    });
-
-    out('');
-    out('── then-read ──');
-    for (const [file, lines] of seen) {
-      const fp = resolve(file);
-      if (!fs.existsSync(fp)) continue;
-      const content = fs.readFileSync(fp, 'utf8').split('\n');
-      // merge nearby ranges
-      const sorted = [...new Set(lines)].sort((a, b) => a - b);
-      const ranges = [];
-      for (const n of sorted) {
-        const from = Math.max(1, n - context);
-        const to = Math.min(content.length, n + context);
-        if (ranges.length > 0 && from <= ranges[ranges.length - 1].to + 2) {
-          ranges[ranges.length - 1].to = to;
-        } else {
-          ranges.push({ from, to });
-        }
-      }
-      for (const range of ranges) {
-        out(`\n── ${file}:${range.from}-${range.to} ──`);
-        for (let i = range.from; i <= range.to; i++) {
-          out(`${String(i).padStart(4)}: ${content[i - 1]}`);
-        }
-      }
-    }
+  if (parsed.json) {
+    out(JSON.stringify(result, null, 2));
+    return;
   }
+
+  out(formatSearchOutput(result));
 }
 
 // ── list ──
@@ -385,94 +361,124 @@ function cmdList(argv) {
 
 // ── write ──
 
-function readFilePayload({ inlineContent, contentFile }) {
+async function readFilePayload({ inlineContent, contentFile }) {
   if (inlineContent !== null && contentFile !== null) {
-    err('error: use exactly one of --content or --content-file');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'use exactly one of --content or --content-file',
+    };
   }
 
   if (contentFile !== null) {
-    const contentPath = path.resolve(process.cwd(), contentFile);
     try {
-      const contentFileStats = fs.statSync(contentPath);
-      fs.accessSync(contentPath, fs.constants.R_OK);
-      if (!contentFileStats.isFile()) {
-        err(`error: content file must be a regular file: ${contentFile}`);
-        return null;
-      }
-    } catch {
-      err(`error: content file not found or not readable: ${contentFile}`);
-      return null;
+      const { readContentFileForCli } = await import('./lib/fs/write.ts');
+      const result = await readContentFileForCli(contentFile, { cwd: process.cwd() });
+      if (result && typeof result === 'object' && result.ok === false) return result;
+      return { ok: true, content: result };
+    } catch (error) {
+      return {
+        ok: false,
+        type: 'error',
+        code: 'CONTENT_FILE_NOT_READABLE',
+        path: contentFile,
+        message: `failed to read content file: ${error && error.message ? error.message : String(error)}`,
+      };
     }
-    return fs.readFileSync(contentPath, 'utf8');
   }
 
-  if (inlineContent !== null) return inlineContent;
+  if (inlineContent !== null) return { ok: true, content: inlineContent };
 
   if (process.stdin.isTTY) {
-    err('error: no content (pipe via stdin, use --content, or use --content-file)');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content (pipe via stdin, use --content, or use --content-file)',
+    };
   }
 
   const stdinContent = readStdin();
   if (stdinContent === '') {
-    err('error: no content received on stdin');
-    return null;
+    return {
+      ok: false,
+      type: 'error',
+      code: 'INVALID_CONTENT_SOURCE',
+      message: 'no content received on stdin',
+    };
   }
-  return stdinContent;
+  return { ok: true, content: stdinContent };
 }
 
-function cmdWrite(argv) {
+function renderWriteError(result, json) {
+  process.exitCode = 1;
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  err(`${result.code || 'WRITE_FAILED'}: ${result.message || 'write failed'}`);
+}
+
+function renderWriteSuccess(result, json) {
+  if (json) {
+    out(JSON.stringify(result, null, 2));
+    return;
+  }
+  if (result.operation === 'append') out(`appended to ${result.path}`);
+  else out(`wrote ${result.path} (${result.lines} lines)`);
+}
+
+async function cmdWrite(argv) {
   if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
 
   const force = argv.includes('--force');
   const append = argv.includes('--append');
   const mkdirs = argv.includes('--mkdirs');
+  const json = argv.includes('--json');
 
-  let inlineContent = null;
-  let contentFile = null;
-  let filePath = null;
+  try {
 
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--content-file') { contentFile = argv[++i]; }
-    else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
-    else if (!a.startsWith('--') && !filePath) { filePath = a; }
-  }
+    let inlineContent = null;
+    let contentFile = null;
+    let filePath = null;
 
-  if (!filePath) { err('error: file path required'); writeHelp(); return; }
+    for (let i = 0; i < argv.length; i++) {
+      const a = argv[i];
+      if (a === '--content') { inlineContent = argv[++i]; }
+      else if (a === '--content-file') { contentFile = argv[++i]; }
+      else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin' || a === '--json') { /* skip */ }
+      else if (!a.startsWith('--') && !filePath) { filePath = a; }
+    }
 
-  const fp = resolve(filePath);
-  const content = readFilePayload({ inlineContent, contentFile });
+    if (!filePath) { err('error: file path required'); writeHelp(); return; }
 
-  if (content === null) return;
+    const payload = await readFilePayload({ inlineContent, contentFile });
 
-  if (fs.existsSync(fp) && !force && !append) {
-    err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
-    return;
-  }
-
-  const dir = path.dirname(fp);
-  if (!fs.existsSync(dir)) {
-    if (mkdirs) {
-      fs.mkdirSync(dir, { recursive: true });
-    } else {
-      err(`error: directory ${path.dirname(filePath)} does not exist. use --mkdirs to create.`);
+    if (!payload.ok) {
+      renderWriteError(payload, json);
       return;
     }
-  }
 
-  if (append) {
-    fs.appendFileSync(fp, content);
-    out(`appended to ${filePath}`);
-  } else {
-    fs.writeFileSync(fp, content);
-    out(`wrote ${filePath} (${content.split('\n').length} lines)`);
-  }
+    const { writeFileForCli } = await import('./lib/fs/write.ts');
+    const result = await writeFileForCli({ path: filePath, content: payload.content, force, append, mkdirs }, { root: process.cwd() });
+    if (!result.ok) {
+      renderWriteError(result, json);
+      return;
+    }
 
-  // log to workpad if it exists
-  logToWorkpad(filePath, append ? 'append' : 'write');
+    renderWriteSuccess(result, json);
+
+    // log to workpad if it exists
+    logToWorkpad(result.path, result.operation === 'append' ? 'append' : 'write');
+  } catch (error) {
+    renderWriteError({
+      ok: false,
+      type: 'error',
+      code: 'WRITE_FAILED',
+      message: `write command failed: ${error && error.message ? error.message : String(error)}`,
+    }, json);
+  }
 }
 
 // ── removed patch command ──
@@ -841,15 +847,6 @@ function logToWorkpad(filePath, action) {
   }
 }
 
-// ── main ──
-
-function main() {
-  const argv = process.argv.slice(2);
-  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
-
-  const command = argv[0];
-  const rest = argv.slice(1);
-
 // ── http ──
 
 function cmdHttp(argv) {
@@ -901,13 +898,21 @@ function cmdTrash(argv) {
   }
 }
 
+
 // ── main ──
 
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
+
+  const command = argv[0];
+  const rest = argv.slice(1);
+
   switch (command) {
-    case 'read': cmdRead(rest); break;
-    case 'search': cmdSearch(rest); break;
+    case 'read': await cmdRead(rest); break;
+    case 'search': await cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
-    case 'write': cmdWrite(rest); break;
+    case 'write': await cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
     case 'apply-patch': cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;
@@ -919,4 +924,7 @@ function cmdTrash(argv) {
   }
 }
 
-main();
+main().catch((error) => {
+  err(error && error.message ? error.message : String(error));
+});
+

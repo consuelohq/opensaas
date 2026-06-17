@@ -18,12 +18,18 @@ export type WorkspaceRouteD1RouteTarget =
       htmlKey?: string;
       contentType?: string;
       cachePolicy: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
+    }
+  | {
+      kind: 'consuelo-gateway-service';
+      serviceName: 'trace-sites-read-layer' | 'trace-sites-live-endpoints' | (string & {});
+      gatewayRouteFamily: string;
+      publicSiteRouteFamily: string;
     };
 
 export type WorkspaceRouteD1Route = {
   surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
   pathPrefix: string;
-  auth: 'required';
+  auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
   status: 'active' | 'disabled';
   target: WorkspaceRouteD1RouteTarget;
 };
@@ -68,7 +74,7 @@ export type WorkspaceRouteD1Resolution =
       hostname: string;
       route: string;
       surface: WorkspaceRouteD1Route['surface'];
-      auth: 'required';
+      auth: WorkspaceRouteD1Route['auth'];
       auditEvent: 'workspace.hostname.route.allowed';
       target: WorkspaceRouteD1RouteTarget;
     }

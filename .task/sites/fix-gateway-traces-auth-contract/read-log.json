@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/tests/workspace-cloudflare-gateway-contract.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "updatedAt": "2026-06-16T17:25:51.507Z"
+}

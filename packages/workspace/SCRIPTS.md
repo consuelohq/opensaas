@@ -1314,15 +1314,15 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
-### consuelo-design — run local design tooling
+### office — run local design tooling
 
 Publishes design artifacts into the generated Consuelo Wiki archive and manages the archive server used by the private tailnet and wiki tunnel.
 
 The archive server serves the wiki index, generated search assets, and published artifact pages from the same origin. Keep this route contract aligned with design.publish and design.refresh.
 
 ```bash
-bun run consuelo-design -- --help
-bun run consuelo-design -- refresh --json
+bun run office -- --help
+bun run office -- refresh --json
 ```
 
 ---
@@ -1502,10 +1502,10 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 Recommended Open Design target name: `design.localhost`.
 
 ```bash
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
-bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
-bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
+bun run office publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
+bun run office publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
+bun run office publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
+bun run office publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
 ```
 
 Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
@@ -1590,30 +1590,30 @@ workspace linear.projects '{"first":50}'
 
 ## consuelo design e-guide templates
 
-Use `consueloDesign.generateDigitalEguide` or `bun run consuelo-design generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
+Use `office.generateDigitalEguide` or `bun run office generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
 
 ```bash
-bun run consuelo-design generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
-bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
-bun run consuelo-design generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
+bun run office generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
+bun run office generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
+bun run office generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
 ```
 
 Typed facade equivalent:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
   timeout: 600,
 })
 ```
 
-Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
+Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/office/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
 
 
 ## Design wiki archive
 
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/design-wiki`, sorted by `updatedAt` so republished artifacts return to the top.
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/office`, sorted by `updatedAt` so republished artifacts return to the top.
 
 `design.publish` also rebuilds the Pagefind search bundle for the managed archive. Search stays inside the same text-card wiki UI: the top search control reveals an inline search input, results update as Ko types, and matching cards keep the same title/date/path presentation as the normal archive list.
 

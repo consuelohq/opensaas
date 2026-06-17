@@ -404,12 +404,12 @@ describe('local OS install state', () => {
 
     expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'consuelo-design-landing-page', 'skill.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'office-landing-page', 'skill.json'))).toBe(false);
 
     const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
     expect(config.selectedSkills).toContain('senior-engineer');
     expect(config.selectedSkills).toContain('research-ingest');
-    expect(config.selectedSkills).not.toContain('consuelo-design-landing-page');
+    expect(config.selectedSkills).not.toContain('office-landing-page');
   });
 
   it('records detected agent connections without editing unknown config files', () => {

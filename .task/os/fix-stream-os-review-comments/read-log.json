@@ -1,10 +1,25 @@
 {
   "files": [
+    ".task/os/fix-stream-os-review-comments/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/hooks/task/guidance.js",
     "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/intent.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/read.ts",
     "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-read.test.ts",
     "packages/os/tests/install-edge-site-publisher.test.ts",
     "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
     "packages/os/tests/workspace-hostname-edge-router.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
     "packages/workspace/scripts/fs.js",
     "packages/workspace/scripts/generate-docs.ts",
     "packages/workspace/scripts/lib/task-node-modules.js",
@@ -13,5 +28,5 @@
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/server_call_test.py"
   ],
-  "updatedAt": "2026-06-14T13:39:29.406Z"
+  "updatedAt": "2026-06-16T03:44:10.110Z"
 }

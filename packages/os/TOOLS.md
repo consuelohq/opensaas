@@ -29,7 +29,6 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | --- | ---: |
 | codemode | 2 |
 | composed | 2 |
-| consuelo design | 21 |
 | context | 7 |
 | decision engine | 6 |
 | filesystem | 6 |
@@ -39,10 +38,11 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
+| office | 21 |
 | review | 4 |
 | sentry | 7 |
 | stream | 3 |
-| task lifecycle | 13 |
+| task lifecycle | 11 |
 | tooling | 1 |
 | utilities | 34 |
 | worker | 1 |
@@ -54,12 +54,12 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime
+preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists
 
 | Field | Value |
 | --- | --- |
 | Category | codemode |
-| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os code.call` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -70,9 +70,9 @@ run short language-specific code through staged Python, Bun, or Bash backends in
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
-    "mode": "read",
-    "code": "print(\"hello\")",
+    "language": "bash",
+    "mode": "verify",
+    "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
     "maxResultChars": 20000
   }
 });
@@ -179,7 +179,7 @@ await workspace.call({
 
 ### workspace.checkFiles
 
-run syntax checks over a set of files through task:exec
+run syntax checks over a set of files through code.call in the task worktree
 
 | Field | Value |
 | --- | --- |
@@ -266,1232 +266,6 @@ await workspace.call({
     "from": 1,
     "to": 1,
     "contentFile": "/tmp/new.ts",
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-## consuelo design
-
-### workspace.consueloDesign.check
-
-run consuelo-design package boundary and Railway checks
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.check({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design check` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.check",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateDemo
-
-create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-demo` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateDemo",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateDigitalEguide
-
-create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" &#124; "spec" &#124; "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-digital-eguide` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateDigitalEguide",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateEmail
-
-create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-email` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateEmail",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateImageBrief
-
-create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-image-brief` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateImageBrief",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateMotionFrame
-
-create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-motion-frame` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateMotionFrame",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.generateWebsite
-
-create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design generate-website` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.generateWebsite",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.getDesignSystem
-
-return base Consuelo DESIGN.md and consuelo-design AGENTS.md only
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.getDesignSystem({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design get-design-system` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.getDesignSystem",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.listDesignSystems
-
-list Consuelo default design system and upstream reference systems
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.listDesignSystems({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design list-design-systems` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.listDesignSystems",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.listSkills
-
-list upstream Open Design skills and Consuelo workflow mappings
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.listSkills({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design list-skills` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.listSkills",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.odBuild
-
-build the vendored Open Design daemon CLI through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.odBuild({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design od:build` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.odBuild",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.railwayCheck
-
-verify consuelo-design is excluded from Railway deploy paths
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.railwayCheck({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design railway:check` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.railwayCheck",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.renderHyperframes
-
-create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design render-hyperframes` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.renderHyperframes",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.run
-
-start Open Design daemon and web UI in the foreground through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.run({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design run` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.run",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.uiBg
-
-start Open Design managed runtimes in the background through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiBg({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design ui:bg` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.uiBg",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.uiLogs
-
-show Open Design managed runtime logs through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiLogs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design ui:logs` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.uiLogs",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.uiStatus
-
-show Open Design managed runtime status through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design ui:status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.uiStatus",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.uiStop
-
-stop Open Design managed runtimes through the Bun facade
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.uiStop({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design ui:stop` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.uiStop",
-  "input": {
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.consueloDesign.upstreamStatus
-
-show vendored Open Design metadata and runtime requirements
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.consueloDesign.upstreamStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design upstream-status` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 30000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "consueloDesign.upstreamStatus",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.design.publish
-
-publish a design artifact through private Tailscale Serve and update the design wiki archive
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.design.publish({ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" &#124; "spec" &#124; "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design publish` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "design.publish",
-  "input": {
-    "portlessName": "design.localhost",
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.design.refresh
-
-regenerate and publish the existing Consuelo Wiki archive without adding an artifact
-
-| Field | Value |
-| --- | --- |
-| Category | consuelo design |
-| Signature | `workspace.design.refresh({ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace consuelo-design refresh` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "design.refresh",
-  "input": {
     "dryRun": true
   }
 });
@@ -2430,12 +1204,12 @@ await workspace.call({
 
 ### workspace.fs.read
 
-read file contents with an optional line range
+read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>` |
+| Signature | `workspace.fs.read(({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } &#124; { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) &#124; { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } &#124; { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } &#124; { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" &#124; "IS_DIRECTORY" &#124; "PATH_OUTSIDE_ROOT" &#124; "SYMLINK_OUTSIDE_ROOT" &#124; "OFFSET_OUT_OF_RANGE" &#124; "INVALID_RANGE" &#124; "INVALID_UTF8" &#124; "MEDIA_TOO_LARGE" &#124; "READ_FAILED"; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -2446,8 +1220,10 @@ read file contents with an optional line range
 await workspace.call({
   "tool": "fs.read",
   "input": {
-    "branch": "task/workspace-agents/example",
-    "path": "packages/os/package.json"
+    "branch": "task/os/example",
+    "path": "packages/os/scripts/fs.js",
+    "offset": 1,
+    "limit": 120
   }
 });
 ```
@@ -2490,12 +1266,12 @@ await workspace.call({
 
 ### workspace.fs.search
 
-search files with ripgrep through the workspace script
+search file contents with ripgrep and return structured bounded matches for agent-safe discovery
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>` |
+| Signature | `workspace.fs.search({ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } &#124; { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs search, or task:fs search when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -2506,11 +1282,9 @@ search files with ripgrep through the workspace script
 await workspace.call({
   "tool": "fs.search",
   "input": {
-    "branch": "task/workspace-agents/example",
+    "branch": "task/os/example",
     "pattern": "task:fs",
-    "paths": [
-      "packages/os/SCRIPTS.md"
-    ]
+    "path": "packages/os/SCRIPTS.md"
   }
 });
 ```
@@ -3531,7 +2305,7 @@ await workspace.call({
 
 ### workspace.mac.call
 
-run a non-repo shell command on the Mac
+emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3547,7 +2321,7 @@ run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.call",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });
@@ -3591,7 +2365,7 @@ await workspace.call({
 
 ### workspace.mac.exec
 
-legacy alias for mac.call; run a non-repo shell command on the Mac
+legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
 
 | Field | Value |
 | --- | --- |
@@ -3607,7 +2381,7 @@ legacy alias for mac.call; run a non-repo shell command on the Mac
 await workspace.call({
   "tool": "mac.exec",
   "input": {
-    "command": "pwd",
+    "command": "sw_vers",
     "dryRun": true
   }
 });
@@ -3968,6 +2742,1232 @@ await workspace.call({
     "content": "hello",
     "dryRun": true
   }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## office
+
+### workspace.design.publish
+
+publish a design artifact through private Tailscale Serve and update the design wiki archive
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.design.publish({ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" &#124; "spec" &#124; "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office publish` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "design.publish",
+  "input": {
+    "portlessName": "design.localhost",
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.design.refresh
+
+regenerate and publish the existing Consuelo Wiki archive without adding an artifact
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.design.refresh({ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office refresh` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "design.refresh",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.check
+
+run office package boundary and Railway checks
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.check({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office check` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.check",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateDemo
+
+create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-demo` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateDemo",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateDigitalEguide
+
+create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" &#124; "spec" &#124; "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-digital-eguide` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateDigitalEguide",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateEmail
+
+create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-email` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateEmail",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateImageBrief
+
+create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-image-brief` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateImageBrief",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateMotionFrame
+
+create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-motion-frame` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateMotionFrame",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.generateWebsite
+
+create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office generate-website` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.generateWebsite",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.getDesignSystem
+
+return base Consuelo DESIGN.md and office AGENTS.md only
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.getDesignSystem({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office get-design-system` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.getDesignSystem",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.listDesignSystems
+
+list Consuelo default design system and upstream reference systems
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.listDesignSystems({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office list-design-systems` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.listDesignSystems",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.listSkills
+
+list upstream Open Design skills and Consuelo workflow mappings
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.listSkills({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office list-skills` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.listSkills",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.odBuild
+
+build the vendored Open Design daemon CLI through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.odBuild({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office od:build` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.odBuild",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.railwayCheck
+
+verify office is excluded from Railway deploy paths
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.railwayCheck({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office railway:check` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.railwayCheck",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.renderHyperframes
+
+create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office render-hyperframes` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.renderHyperframes",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.run
+
+start Open Design daemon and web UI in the foreground through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.run({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office run` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 600000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.run",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.uiBg
+
+start Open Design managed runtimes in the background through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.uiBg({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office ui:bg` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.uiBg",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.uiLogs
+
+show Open Design managed runtime logs through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.uiLogs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office ui:logs` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.uiLogs",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.uiStatus
+
+show Open Design managed runtime status through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.uiStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office ui:status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.uiStatus",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.uiStop
+
+stop Open Design managed runtimes through the Bun facade
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.uiStop({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office ui:stop` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.uiStop",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.office.upstreamStatus
+
+show vendored Open Design metadata and runtime requirements
+
+| Field | Value |
+| --- | --- |
+| Category | office |
+| Signature | `workspace.office.upstreamStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace office upstream-status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "office.upstreamStatus",
+  "input": {}
 });
 ```
 
@@ -4849,71 +4849,6 @@ await workspace.call({
 
 ## task lifecycle
 
-### workspace.task.call
-
-run a command inside a task worktree
-
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.call({ branch?: string; command: string[]; tddPhase?: "red" &#124; "green" &#124; "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace task.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "task.call",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### workspace.task.cleanup
 
 preview or remove stale task worktrees and branches
@@ -5051,71 +4986,6 @@ await workspace.call({
   "tool": "task.ensureSynced",
   "input": {
     "branch": "task/workspace-agents/example"
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.task.exec
-
-legacy alias for task.call; run a command inside a task worktree
-
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.exec({ branch?: string; command: string[]; tddPhase?: "red" &#124; "green" &#124; "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace task.exec` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "task.exec",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
   }
 });
 ```
@@ -7825,7 +7695,7 @@ start a workflow intent or dispatch a scoped workflow hook event and return the 
 | Field | Value |
 | --- | --- |
 | Category | workflow |
-| Signature | `workspace.intent(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace intent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |

@@ -12,6 +12,10 @@ import {
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
+  assessDangerousMaterial,
+  dangerousMaterialError,
+} from './lib/dangerous-material-policy';
+import {
   ensureRuntimePaths,
   getRuntimePaths,
   readSteeringGuardDecisions,
@@ -835,7 +839,7 @@ export function getRawSteering(): string {
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-    'Use this context for landing pages, Consuelo Design, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
+    'Use this context for landing pages, Office, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
   const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
@@ -963,10 +967,10 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
       };
     }
   }
-  if (entry.name === 'consuelo-design') {
+  if (entry.name === 'office') {
     try {
-      const { runConsueloDesign } = await import('./design/consuelo-design');
-      return await runConsueloDesign(callInput.input ?? {}, context);
+      const { runOffice } = await import('./design/office');
+      return await runOffice(callInput.input ?? {}, context);
     } catch (error: unknown) {
       return {
         ok: false,
@@ -983,11 +987,11 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
       };
     }
   }
-  if (entry.name === 'consuelo-design-landing-page') {
+  if (entry.name === 'office-landing-page') {
     try {
-      const { runConsueloDesignLandingPage } =
-        await import('./design/consuelo-design-landing-page');
-      return await runConsueloDesignLandingPage(callInput.input ?? {}, context);
+      const { runOfficeLandingPage } =
+        await import('./design/office-landing-page');
+      return await runOfficeLandingPage(callInput.input ?? {}, context);
     } catch (error: unknown) {
       return {
         ok: false,
@@ -1025,6 +1029,21 @@ export async function executeCall(callInput: CallInput): Promise<CallOutput> {
   const workspaceId =
     callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID;
   const userId = callInput.userId ?? process.env.CONSUELO_USER_ID;
+
+  const materialDecision = assessDangerousMaterial({
+    source: 'executeCall decoded-input',
+    value: callInput,
+  });
+  if (!materialDecision.allowed) {
+    return {
+      ok: false,
+      name: callInput.name,
+      permission: 'admin',
+      traceId,
+      durationMs: Date.now() - started,
+      error: dangerousMaterialError(materialDecision),
+    };
+  }
 
   recordExecutionStarted({
     traceId,
@@ -1117,7 +1136,6 @@ async function main(): Promise<void> {
     const result = command === 'office'
       ? await runOfficeCommand(args)
       : await runSitesCommand(args);
-    if (command === 'office') writeStderr('Deprecated: use `sites` instead of `office`.');
     if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
 `);
     else writeStdout(`${renderSitesCommandResult(result)}
@@ -1162,4 +1180,3 @@ if (import.meta.main) {
     process.exit(1);
   });
 }
-

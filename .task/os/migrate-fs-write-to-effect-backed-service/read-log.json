@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/migrate-fs-write-to-effect-backed-service/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/write.ts",
+    "packages/os/tests/fs-read.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-16T20:30:46.484Z"
+}

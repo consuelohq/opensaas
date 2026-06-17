@@ -43,7 +43,7 @@ function showHelp() {
   writeStdout('');
   writeStdout('examples:');
   writeStdout('  bun run task:fs -- --branch task/workspace-agents/tighten-exact-task-command-selection read packages/workspace/SCRIPTS.md');
-  writeStdout('  bun run task:fs -- --pr 210 search "task:exec" packages/workspace/scripts');
+  writeStdout('  bun run task:fs -- --pr 210 search "code.call" packages/workspace/scripts');
 }
 
 function main() {

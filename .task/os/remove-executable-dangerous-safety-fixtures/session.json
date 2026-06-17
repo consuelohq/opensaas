@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9c4fffae4dd2",
+  "tmuxSession": "opensaas-os-remove-executable-dangerous-safety-fixtures-9c4fffae",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-executable-dangerous-safety-fixtures",
+  "branch": "task/os/remove-executable-dangerous-safety-fixtures",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-executable-dangerous-safety-fixtures",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-executable-dangerous-safety-fixtures",
+  "prNumber": 1071,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1071",
+  "createdAt": "2026-06-15T08:38:58.314Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-executable-dangerous-safety-fixtures/.task/os/remove-executable-dangerous-safety-fixtures/session.json"
+}
