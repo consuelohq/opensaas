@@ -1,6 +1,6 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -42,6 +42,10 @@ function readJsonArray(relativePath: string): JsonObject[] {
 
 function writeJson(filePath: string, value: unknown): void {
   writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function repoRelative(filePath: string): string {
+  return relative(join(packageRoot, '..', '..'), filePath).split(/[/\\]/).join('/');
 }
 
 function osSkillEntry(name: string): JsonObject {
@@ -277,18 +281,23 @@ describe('tool manifest generator', () => {
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool.manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core.manifest.json');
+    const workflowsOutputPath = join(fixtureRoot, 'workflow-bundles.json');
+    const expectedSourceManifest = repoRelative(fullOutputPath);
 
-    generateToolManifest({ fullOutputPath, coreOutputPath });
+    const built = buildToolManifest({ fullOutputPath, coreOutputPath });
+    expect(built.workflows.sourceManifest).toBe(expectedSourceManifest);
+
+    generateToolManifest({ fullOutputPath, coreOutputPath, workflowsOutputPath });
 
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
-    const workflows = JSON.parse(readFileSync(join(packageRoot, 'manifests/workflow-bundles.json'), 'utf8')) as { sourceManifest: string };
+    const workflows = JSON.parse(readFileSync(workflowsOutputPath, 'utf8')) as { sourceManifest: string };
 
     expect(full.tools.length).toBeGreaterThan(0);
     expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
-    expect(workflows.sourceManifest).toBe('packages/os/manifests/tool.manifest.json');
+    expect(workflows.sourceManifest).toBe(expectedSourceManifest);
   });
 
   it('fails when source manifests contain duplicate names', () => {

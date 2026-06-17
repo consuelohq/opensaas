@@ -71,4 +71,17 @@ describe('Workspace task hook guidance', () => {
     );
     expect(renderTaskHookGuidance(guidance)).toContain('task.finish');
   });
+
+  test('uses millisecond timeouts for generated workspace calls', () => {
+    const guidance = getTaskHookGuidance('before-task-start', {
+      area: 'workspace-agents',
+      title: 'timeout units',
+    });
+
+    const streamContextAction = guidance.actions.find(
+      (action) => action.input.tool === 'stream.context',
+    );
+
+    expect(streamContextAction?.input.timeout).toBe(120000);
+  });
 });

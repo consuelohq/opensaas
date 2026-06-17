@@ -238,6 +238,24 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
     expect(guidance.notes.join('\n')).toContain('stream review PR');
   });
 
+  test('publish guidance tolerates malformed changedFiles state', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    const guidance = registry.handle({
+      event: 'workflow.stage.ready',
+      workflow: 'task',
+      stage: 'validation',
+      state: {
+        area: 'workspace-agents',
+        taskSession: 'tsk_publish',
+        changedFiles: 'packages/workspace/tests/task-hook-workflow-contract.test.ts',
+      },
+    });
+
+    expect(guidance.notes.join('\n')).toContain('Changed files: <unknown>');
+  });
+
   test('falls back to the manifest-provided tool search capability when a gated task capability is missing', async () => {
     const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
     const manifestWithoutFinish = manifestFixture.filter((entry) => entry.workflowRole !== 'task.finish');

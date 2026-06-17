@@ -71,4 +71,17 @@ describe('OS task hook guidance', () => {
     );
     expect(renderTaskHookGuidance(guidance)).toContain('task.finish');
   });
+
+  test('uses millisecond timeouts for generated OS calls', () => {
+    const guidance = getTaskHookGuidance('before-task-start', {
+      area: 'os',
+      title: 'timeout units',
+    });
+
+    const streamContextAction = guidance.actions.find(
+      (action) => action.input.tool === 'stream.context',
+    );
+
+    expect(streamContextAction?.input.timeout).toBe(120000);
+  });
 });
