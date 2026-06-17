@@ -7688,7 +7688,7 @@ await workspace.call({
 
 ### workspace.intent
 
-start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle
+Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.
 
 | Field | Value |
 | --- | --- |
