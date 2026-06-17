@@ -25,9 +25,9 @@ function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
 function run(command, args = []) {
   try {
-    return execFileSync(command, args, { encoding: 'utf8', timeout: 10000 }).trim();
+    return execFileSync(command, args, { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   } catch (error) {
-    return error.stdout?.trim() || error.message;
+    return error.stdout?.trim() || '';
   }
 }
 
@@ -66,6 +66,12 @@ function findPortPids() {
   return parsePids(run('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']));
 }
 
+function findLaunchLabelPid(label) {
+  const output = run('launchctl', ['print', `${LAUNCH_DOMAIN}/${label}`]);
+  const match = output.match(/\bpid\s*=\s*(\d+)/);
+  return match?.[1] || null;
+}
+
 function findServerPid() {
   return findServerPids()[0] || null;
 }
@@ -79,8 +85,12 @@ function bootoutLaunchLabel(label) {
 }
 
 function stopConflictingLaunchAgents() {
+  const portPids = new Set(findPortPids());
   for (const label of CONFLICTING_LABELS) {
-    bootoutLaunchLabel(label);
+    const pid = findLaunchLabelPid(label);
+    if (pid && portPids.has(pid)) {
+      bootoutLaunchLabel(label);
+    }
   }
 }
 

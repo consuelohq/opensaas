@@ -10,7 +10,7 @@ import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
-import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -478,6 +478,82 @@ describe('typed facade executor', () => {
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
+  });
+
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/workspace/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes fs.search path alias without retaining path for downstream serialization', async () => {
+    const entry = manifestEntries.find((item) => item.name === 'fs.search');
+    if (!entry) throw new Error('missing fs.search manifest entry');
+    const originalArguments = entry.command.arguments;
+    const pathArgument: CommandArgument = { source: 'path', kind: 'value' };
+    entry.command.arguments = [...originalArguments, pathArgument];
+
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-canonical-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_canonical_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_canonical_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args.filter((arg) => arg === 'packages/workspace/scripts')).toHaveLength(1);
+    } finally {
+      entry.command.arguments = originalArguments;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.search input with both path and paths', async () => {
+    const result = await executeTool('fs.search', {
+      taskSession: 'tsk_search_path_conflict',
+      pattern: 'needle',
+      path: 'packages/workspace/scripts',
+      paths: ['packages/workspace/tests'],
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('provide either path or paths, not both');
   });
 
   it('runs http without taskSession', async () => {
@@ -1414,6 +1490,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
-
 
 

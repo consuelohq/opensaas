@@ -82,6 +82,14 @@ function isInsidePath(candidate: string, root: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
+function isManagedTaskWorktreePath(candidate: string): boolean {
+  const resolved = realpathIfExists(candidate);
+  const worktreeRoot = path.basename(path.dirname(resolved));
+  const worktreeName = path.basename(resolved);
+
+  return worktreeRoot === 'opensaas-worktrees' && worktreeName.startsWith('task-');
+}
+
 function findGitRoot(cwd: string): string | null {
   try {
     return execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -171,6 +179,41 @@ function validateSourceInputs(input: CodeCallInput): ValidationFailure | null {
     return {
       message: 'provide at most one of stdin or stdinFile',
       detectedMistakeClass: 'invalid_source',
+    };
+  }
+
+  return null;
+}
+
+function validateEditScope(input: CodeCallInput, resolvedCwd: string): ValidationFailure | null {
+  const taskWorktree = typeof input.taskWorktree === 'string' && input.taskWorktree.trim().length > 0
+    ? input.taskWorktree
+    : isManagedTaskWorktreePath(resolvedCwd)
+      ? resolvedCwd
+      : undefined;
+
+  if (!taskWorktree) {
+    return {
+      message: 'mode=edit requires taskSession or an explicit taskWorktree.',
+      detectedMistakeClass: 'edit_without_task',
+    };
+  }
+
+  const resolvedTaskWorktree = realpathIfExists(taskWorktree);
+
+  if (!isInsidePath(resolvedCwd, resolvedTaskWorktree)) {
+    return {
+      message: 'mode=edit cwd must be inside the explicit taskWorktree.',
+      detectedMistakeClass: 'edit_mode_gated',
+    };
+  }
+
+  const branch = typeof input.branch === 'string' ? input.branch : '';
+
+  if (branch && !branch.startsWith('task/')) {
+    return {
+      message: 'mode=edit refuses non-task branches. Pass a taskSession or task worktree for isolated edits.',
+      detectedMistakeClass: 'edit_mode_gated',
     };
   }
 
@@ -366,6 +409,14 @@ function truncateOutput(stageDir: string, stdout: string, stderr: string, maxRes
   return result;
 }
 
+function runtimeEnv(input: CodeCallInput, baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return {
+    ...baseEnv,
+    ...(typeof input.branch === 'string' && input.branch ? { TASK_BRANCH: input.branch } : {}),
+    ...(typeof input.taskWorktree === 'string' && input.taskWorktree ? { TASK_WORKTREE: input.taskWorktree } : {}),
+  };
+}
+
 function buildData(input: {
   ok: boolean;
   exitCode: number;
@@ -510,11 +561,30 @@ export async function executeCodeCall(input: CodeCallInput, context: CodeCallCon
   }
 
   if (mode === 'edit') {
-    const detectedMistakeClass = input.taskSession ? 'edit_mode_gated' : 'edit_without_task';
+    const editScopeFailure = validateEditScope(input, cwdResolution.cwd);
+    if (editScopeFailure) {
+      return failureResult({
+        envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+        message: editScopeFailure.message,
+        detectedMistakeClass: editScopeFailure.detectedMistakeClass,
+        language,
+        requestedLanguage,
+        runtime,
+        mode,
+        cwd: cwdResolution.cwd,
+        startedAt,
+        traceId,
+        requestId,
+        now: context.now,
+      });
+    }
+  }
+
+  if (mode === 'edit' && input.dryRun === true) {
     return failureResult({
       envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
-      message: 'mode=edit requires a taskSession and is intentionally gated until task-worktree mutation enforcement is implemented.',
-      detectedMistakeClass,
+      message: 'mode=edit does not support dryRun. Use mode=verify for non-mutating validation.',
+      detectedMistakeClass: 'edit_mode_gated',
       language,
       requestedLanguage,
       runtime,
@@ -612,7 +682,7 @@ export async function executeCodeCall(input: CodeCallInput, context: CodeCallCon
     const timeoutMs = input.timeout ?? DEFAULT_TIMEOUT_MS;
     const run = await runRuntime(runtime, [staged.sourcePath], {
       cwd: cwdResolution.cwd,
-      env: context.env || process.env,
+      env: runtimeEnv(input, context.env || process.env),
       stdin,
       timeoutMs,
     });
@@ -669,7 +739,7 @@ export async function executeCodeCall(input: CodeCallInput, context: CodeCallCon
       });
     }
 
-    if (filesChanged.length > 0) {
+    if (filesChanged.length > 0 && mode !== 'edit') {
       return failureResult({
         envelopeCode: 'COMMAND_FAILED',
         message: `${mode} mode changed files; use an edit-capable task workflow for mutations.`,

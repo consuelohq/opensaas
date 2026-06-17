@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -12,6 +12,12 @@ const TEST_UUID = 'abc123def4567890abc123def4567890';
 
 function tempRoot(prefix = 'workspace-code-call-'): string {
   return mkdtempSync(join(tmpdir(), prefix));
+}
+
+function tempTaskWorktree(): string {
+  const worktreeRoot = join(tmpdir(), 'opensaas-worktrees');
+  mkdirSync(worktreeRoot, { recursive: true });
+  return mkdtempSync(join(worktreeRoot, 'task-workspace-code-call-'));
 }
 
 function scriptPath(): string {
@@ -148,7 +154,7 @@ describe('code.call runtime', () => {
     }
   });
 
-  it('blocks edit mode in the first implementation slice', async () => {
+  it('rejects edit mode without task worktree context', async () => {
     const root = tempRoot();
     try {
       const result = await runCodeCall({
@@ -161,6 +167,67 @@ describe('code.call runtime', () => {
       expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
       expect(result.data.detectedMistakeClass).toBe('edit_without_task');
       expect(result.data.message).toContain('mode=edit');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('allows edit mode inside a managed task worktree', async () => {
+    const root = tempTaskWorktree();
+    try {
+      initGitRepo(root);
+
+      const result = await runCodeCall({
+        language: 'bash',
+        mode: 'edit',
+        code: 'printf changed > edited.txt',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.cwd).toBe(realpathSync(root));
+      expect(result.data.filesChanged).toEqual(['edited.txt']);
+      expect(readFileSync(join(root, 'edited.txt'), 'utf8')).toBe('changed');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('passes task branch and worktree to the runtime environment', async () => {
+    const root = tempTaskWorktree();
+    try {
+      const result = await runCodeCall({
+        language: 'bun',
+        mode: 'edit',
+        taskWorktree: root,
+        branch: 'task/workspace-agents/example',
+        code: 'process.stdout.write(JSON.stringify({ branch: process.env.TASK_BRANCH, worktree: process.env.TASK_WORKTREE }))',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(JSON.parse(result.data.stdout)).toEqual({
+        branch: 'task/workspace-agents/example',
+        worktree: root,
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects edit mode on non-task branches', async () => {
+    const root = tempTaskWorktree();
+    try {
+      const result = await runCodeCall({
+        language: 'bash',
+        mode: 'edit',
+        taskWorktree: root,
+        branch: 'main',
+        code: 'printf blocked',
+      }, root);
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(result.data.detectedMistakeClass).toBe('edit_mode_gated');
+      expect(result.data.message).toContain('refuses non-task branches');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
