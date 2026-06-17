@@ -277,7 +277,7 @@ Default choice:
 | Fixed independent read-only calls | `batch` |
 | Programmable workspace API workflow with control flow or output reduction | `code.run` |
 | Large/multiline payload | `tmp` / `contentFile` / `--input-file` / `--stdin` |
-| Focused package/test/build command | `task.call` |
+| Focused package/test/build command | `code.call` |
 | Final push / PR / merge / deploy / publish | direct outer `workspace.call` |
 | No typed tool exists | report a tooling gap and use the smallest safe fallback |
 
@@ -386,7 +386,7 @@ await workspace.call({
     taskSession,
     mode: "verify",
     code: `
-      const test = await workspace.task.call({
+      const test = await workspace.code.call({
         command: ["bun", "test", "packages/workspace/tests/codemode.test.ts"],
         timeout: 120000
       });
@@ -405,7 +405,7 @@ Bad:
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bash", "-lc", "cat > file.ts <<'EOF'\n...huge source...\nEOF"]
@@ -439,7 +439,7 @@ When raw shell is necessary, keep it minimal and classify it as a tooling gap:
 - return bounded output
 - explain the tooling gap
 
-`task.call` is the preferred command tool for running real package commands, focused tests, build checks, and validation commands when no more specific typed validation tool exists. `task.exec` remains a legacy alias for compatibility. It is not acceptable for GitHub state, repo file reads, grep/search, heredocs, or compound git recovery when a typed workspace tool can express the same intent.
+`code.call` is the preferred command tool for running repo-scoped package commands, focused tests, build checks, typechecks, syntax checks, and validation commands when no more specific typed validation tool exists. Use `code.call` with `taskSession`, `language: "bash"`, and `mode: "verify"` for focused commands such as `bun --cwd packages/os test tests/tool-manifest.test.ts`. Do not use `mac.call` for repo-scoped tests or validation when a task branch/session exists. `mac.call` is an emergency host escape hatch for non-repo machine inspection or recovery when task worktree routing is broken.
 
 After using raw shell for a repeated need, propose the missing workspace tool so the workflow becomes typed next time.
 
@@ -453,8 +453,8 @@ Use this recovery order:
 2. One programmable workspace workflow: `code.run` over typed workspace APIs.
 3. Multiple independent read-only operations: `batch`.
 4. Large or multiline payload: `tmp`, `contentFile`, `--input-file`, or explicit `--stdin`.
-5. Focused package/test/build command: `task.call` with a short argv array. Legacy `task.exec` remains supported.
-6. Non-repo machine inspection: `mac.*`.
+5. Focused package/test/build/typecheck command: task-scoped `code.call` with `language: "bash"`, `mode: "verify"`, and a short command body.
+6. Non-repo machine inspection or emergency recovery only: `mac.*`; do not use `mac.call` for repo-scoped tests.
 7. Missing typed operation: state the tooling gap and use the smallest safe fallback.
 
 Avoid these payload shapes:
@@ -488,14 +488,14 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | `git clean -fd`, `git clean -fdx` | Stop and ask Ko; use `fs.trash` for known files or `task.cleanup` for stale task worktrees | Git clean can delete untracked work. |
 | `git checkout -- <file>`, `git restore <file>` | Typed `git.restorePaths` when available; otherwise ask or use smallest task-scoped fallback with exact paths | Restore can discard edits. Needs path-level intent. |
 | `git merge <branch>` | `stream.sync`, `task.pr`, `task.merge`, or future `stream.mergeIntoTask` | Stream/task merges need metadata handling, conflict reporting, and branch guarantees. |
-| `gh pr view`, `gh pr checks`, `gh api` through `task.call` or legacy `task.exec` | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree shell work. |
+| `gh pr view`, `gh pr checks`, `gh api` through `code.call` or legacy `code.call` | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree shell work. |
 | `cat > file <<EOF ... EOF` | `tmp` + `fs.write` with `contentFile` or `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
-| `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | temp script/input file + `task.call` argv; or `code.run` | Large inline scripts cross too many parsing layers. |
+| `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | temp script/input file + `code.call` argv; or `code.run` | Large inline scripts cross too many parsing layers. |
 | giant `bash -lc "..."` strings | typed tool, `code.run`, or short argv array | Shell strings hide intent and trigger safety filters. |
 | multiple operations joined with `&&` | `code.run` for dependent steps; `batch` for independent read-only steps | Chained shell hides which step failed. |
 | `grep`, `rg`, `find` for repo files | `fs.search` / `fs.list` | Workspace file tools are branch-aware and structured. |
 | `cat`, `sed`, `head`, `tail` for repo files | `fs.read` with line ranges | Line-range reads are structured and avoid shell output shaping. |
-| `cd <path> && <command>` | task-scoped `task.call` with argv or tool cwd support; prefer `bun --cwd` when needed | `taskSession` should route the worktree. |
+| `cd <path> && <command>` | task-scoped `code.call` with argv or tool cwd support; prefer `bun --cwd` when needed | `taskSession` should route the worktree. |
 | absolute worktree paths like `/Users/.../opensaas-task-*` | task-scoped workspace tools with `taskSession` | Absolute paths bypass task-session routing. |
 | writing JSON/Markdown/source as inline command args | `tmp`, `contentFile`, `--input-file`, or `--stdin` | Structured payloads should travel as files. |
 | `kill`, `kill -9`, `pkill` | `mac.process` with explicit action/name/pid; no broad kills | Process cleanup needs scope and confirmation. |
@@ -514,7 +514,7 @@ Preferred mental model:
 2. Use `code.run` when the intent needs several related tool calls.
 3. Use `batch` for independent read-only calls.
 4. Use `tmp`, `contentFile`, `--input-file`, or `--stdin` for large payloads.
-5. Use `task.call` for focused package/test/build commands. Legacy `task.exec` remains supported for existing prompts and tools.
+5. Use `code.call` for focused package/test/build commands. Legacy `code.call` remains supported for existing prompts and tools.
 6. Treat raw shell as a missing-tool signal.
 
 
@@ -540,15 +540,15 @@ Before running any legacy command example, translate it into the current typed w
 
 If a legacy command cannot be translated, state the missing typed operation and use the smallest safe fallback.
 
-## GitHub and PR state must not use task.call or task.exec
+## GitHub and PR state must not use code.call or code.call
 
-Do not use `task.call` or legacy `task.exec` to run GitHub CLI commands for PR state.
+Do not use `code.call` or legacy `code.call` to run GitHub CLI commands for PR state.
 
 Bad:
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bash", "-lc", "gh pr view 436 --json number,title,url,statusCheckRollup"]
@@ -570,7 +570,7 @@ await workspace.call({
 })
 ```
 
-Until the typed `github` tool exists, use the existing `gh` workspace tool only as a compatibility fallback, never through `task.call` or legacy `task.exec`.
+Until the typed `github` tool exists, use the existing `gh` workspace tool only as a compatibility fallback, never through `code.call` or legacy `code.call`.
 
 If the desired GitHub action is not supported by a typed tool, report it as a tooling gap.
 
@@ -578,7 +578,7 @@ If the desired GitHub action is not supported by a typed tool, report it as a to
 
 Raw shell usage should be observable and reducible over time.
 
-When an agent uses `task.call`, legacy `task.exec`, `mac.call`, or legacy `mac.exec` with shell-shaped commands, classify the command afterward:
+When an agent uses `code.call`, legacy `code.call`, `mac.call`, or legacy `mac.exec` with shell-shaped commands, classify the command afterward:
 
 | Raw pattern | Classification |
 |---|---|
@@ -765,7 +765,7 @@ Recommended defaults:
 | `task.pr` | 300s | p99 is under 10s; stream promotion can still hit GitHub delay. |
 | `task.merge` | 300s | Usually fast; wait/merge state may need follow-up verification. |
 | `task.finish` | 180s | Usually fast; cleanup should still get enough room. |
-| `task.call` simple command | 300s | p99 can spike; package scripts vary. |
+| `code.call` simple command | 300s | p99 can spike; package scripts vary. |
 | docs/type generation | 300s | Generation is bounded but can hit repo/tool startup latency. |
 | focused tests | 600s | Test startup and package-level tests can vary. |
 | full package tests | 900s | Use for broad package test runs. |
@@ -935,7 +935,7 @@ the workspace app exposes exactly two MCP entrypoints:
 - `workspace.get_steering()`
 - `workspace.call({ tool, input, taskSession, timeout })`
 
-All workspace operations, including tools with names like `fs.read`, `task.call`, `mac.read`, or `railway.logs`, are invoked through `workspace.call`.
+All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, or `railway.logs`, are invoked through `workspace.call`.
 
 `get_steering` is the single bootstrap call. After ONE successful call in a conversation, treat steering as loaded, do not call it again unless ko ask, and use `workspace.call` for workspace operations. If you are reading this, then the single bootstrap call was successful. Congratulations. 
 
@@ -1114,7 +1114,7 @@ File edit primitive routing:
 - Use `fs.apply_patch` for anchored marker/diff patches, especially multi-file edits and add/move/delete operations.
 - Use `fs.write` for new files, whole-file replacement, or exact appends.
 - Use `contentFile` or `patchFile` for multiline or large payloads. Inline `content` and `patchText` are only for short scalar text.
-- Use `task.call` to run commands inside the task worktree. Do not use `task.call` or legacy `task.exec` to transport source code, scripts, or patches through a giant shell argument.
+- Use `code.call` to run commands inside the task worktree. Do not use `code.call` or legacy `code.call` to transport source code, scripts, or patches through a giant shell argument.
 - Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
 
 
@@ -1181,6 +1181,8 @@ private things stay private.
 never send secrets, api keys, tokens, credentials, full phone numbers, or customer pii to external models or untrusted surfaces.
 
 dangerous safety validation must run as unit tests or dry-run/mocked execution only. human review should inspect test output, not run destructive smoke examples manually.
+
+agents must not execute broad test files or scripts that contain catastrophic command literals, even when those files appear to test guardrails. preflight the target source first. if a target contains machine-destructive command-shaped material, switch to static validation, pure classifier tests, mocked/trapped executor tests, or an explicit sandbox harness with opt-in. never prove a guardrail by betting the host machine on that guardrail working.
 
 ---
 
@@ -1448,11 +1450,11 @@ For typed facade changes, follow the validation path documented in `packages/wor
 
 ```ts
 
-await workspace.call({ tool: "task.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 300 })
 
-await workspace.call({ tool: "task.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 300 })
 
-await workspace.call({ tool: "task.call", taskSession, input: { command: ["bun", "--cwd", "packages/workspace", "run", "test", "tests/facade/facade.test.ts"] }, timeout: 600 })
+await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "--cwd", "packages/workspace", "run", "test", "tests/facade/facade.test.ts"] }, timeout: 600 })
 
 await workspace.call({ tool: "audit", taskSession, input: { scripts: true }, timeout: 300 })
 
@@ -1507,13 +1509,13 @@ for command construction:
 
 ## shell command construction with base64 + JSON escaping
 
-Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When raw shell is necessary inside `task.call`, keep the command as a command array and avoid nested JSON/string quoting.
+Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When a focused repo command is necessary, use task-scoped `code.call` rather than `mac.call`; keep Bash code short, direct, and free of `bash -lc` wrappers or nested JSON/string quoting.
 
 If a command must decode base64 through Python, keep the encoded payload as a positional argument:
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["python3", "-c", "import base64,sys;print(base64.b64decode(sys.argv[1]).decode())", "BASE64_STRING"],
@@ -1570,7 +1572,7 @@ For repo changes, exploration should include the nearest existing implementation
 
 Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
 
-Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.call`. If raw shell is used, explain why the workspace facade was not sufficient.
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace code.call`. If raw shell is used, explain why the workspace facade was not sufficient.
 
 
 ## Task-session final validation flow
@@ -1594,3 +1596,10 @@ If a tool represents a user-runnable operation, provide a Bun script entrypoint 
 
 Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
 
+
+
+## code.call versus mac.call
+
+`code.call` is the normal repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python/Bun/Bash programs. Pass `taskSession` so the facade routes execution to the task worktree, use `mode: "verify"` for validation commands, and keep output bounded with `maxResultChars`.
+
+Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation when a task branch/session exists. `mac.call` is an emergency host escape hatch for non-repo Mac inspection or recovery when task worktree routing is unavailable or broken.

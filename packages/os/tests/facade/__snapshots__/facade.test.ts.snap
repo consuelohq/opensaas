@@ -493,329 +493,6 @@ exports[`typed facade executor > returns a failure envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for office.check 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateDemo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateDigitalEguide 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateEmail 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateImageBrief 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateMotionFrame 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.generateWebsite 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.getDesignSystem 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.listDesignSystems 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.listSkills 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.odBuild 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.railwayCheck 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.renderHyperframes 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.run 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.uiBg 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.uiLogs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.uiStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.uiStop 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for office.upstreamStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a failure envelope for context.categories 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1139,6 +816,23 @@ exports[`typed facade executor > returns a failure envelope for http 1`] = `
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for intent 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for linear.createIssue 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1395,6 +1089,329 @@ exports[`typed facade executor > returns a failure envelope for mac.search 1`] =
 `;
 
 exports[`typed facade executor > returns a failure envelope for mac.write 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateDemo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateDigitalEguide 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateEmail 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateImageBrief 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateMotionFrame 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.generateWebsite 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.listDesignSystems 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.listSkills 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.renderHyperframes 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for office.upstreamStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -2329,329 +2346,6 @@ exports[`typed facade executor > returns a success envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for office.check 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateDemo 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateDigitalEguide 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateEmail 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateImageBrief 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateMotionFrame 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.generateWebsite 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.getDesignSystem 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.listDesignSystems 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.listSkills 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.odBuild 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.railwayCheck 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.renderHyperframes 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.run 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.uiBg 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.uiLogs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.uiStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.uiStop 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for office.upstreamStatus 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a success envelope for context.categories 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -2975,6 +2669,23 @@ exports[`typed facade executor > returns a success envelope for http 1`] = `
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for intent 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for linear.createIssue 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -3231,6 +2942,329 @@ exports[`typed facade executor > returns a success envelope for mac.search 1`] =
 `;
 
 exports[`typed facade executor > returns a success envelope for mac.write 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateDemo 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateDigitalEguide 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateEmail 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateImageBrief 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateMotionFrame 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.generateWebsite 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.listDesignSystems 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.listSkills 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.renderHyperframes 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.run 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for office.upstreamStatus 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",

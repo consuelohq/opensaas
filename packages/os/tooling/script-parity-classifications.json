@@ -35,8 +35,8 @@
       "risk": "high"
     },
     "scripts/check-files.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/check-syntax.js": {
       "status": "same",
@@ -130,8 +130,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/fs.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "OS fs CLI now intentionally diverges to expose Effect-backed bounded read pagination, media metadata, and structured safety behavior."
     },
     "scripts/generate-docs.ts": {
       "status": "changed-needs-review",
@@ -203,8 +203,8 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/code-call/runtime.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/types.ts": {
       "status": "same",
@@ -266,6 +266,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/dangerous-material-policy.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only safety policy helper protects OS ingress command review behavior."
+    },
     "scripts/lib/db-guards.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -301,6 +305,18 @@
     "scripts/lib/facade/types.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/fs/read.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/fs/search.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only helper implements structured ripgrep-backed fs.search behavior for the package runtime and generated public tool surface."
+    },
+    "scripts/lib/fs/write.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only helper implements Effect-backed fs.write behavior for the package runtime and generated public tool surface."
     },
     "scripts/lib/git.js": {
       "status": "same",
@@ -647,8 +663,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/task-exec.js": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/task-finish.js": {
       "status": "changed-needs-review",

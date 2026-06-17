@@ -172,7 +172,7 @@ Use GitHub or `task.pr` results to inspect PR state.
 
 Use `task.prs` only if that tool is present in the current manifest.
 
-For diffs, use the workspace/GitHub tool surface where available. Only fall back to `task.exec` for `git diff` when there is not yet a typed tool that exposes the exact local diff you need.
+For diffs, use the workspace/GitHub tool surface where available. Only fall back to `code.call` for `git diff` when there is not yet a typed tool that exposes the exact local diff you need.
 
 ## Task Session Handling — Canonical Task Context
 
@@ -203,7 +203,7 @@ Correct:
 
 ```ts
 await workspace.call({
-  tool: "task.exec",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "test"],
@@ -217,7 +217,7 @@ Avoid this unless testing fallback compatibility:
 
 ```ts
 await workspace.call({
-  tool: "task.exec",
+  tool: "code.call",
   input: {
     taskSession,
     command: ["bun", "--cwd", "packages/workspace", "test"],
@@ -735,7 +735,7 @@ Tool preference order:
 5. `git.diff` for structured diff inspection after edits.
 6. `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, and `task.merge` for known workflows.
 7. `github` for GitHub/PR state; current `gh` only as a temporary fallback.
-8. `task.exec` only for focused package/test/build commands with no typed equivalent.
+8. `code.call` only for focused package/test/build commands with no typed equivalent.
 
 Keep the scoped workpad current:
 
@@ -811,7 +811,7 @@ await workspace.call({
 })
 ```
 
-Do not use raw `git diff` through `task.exec` unless `git.diff` cannot express the needed view. Repeated fallback diff usage is a tooling gap.
+Do not use raw `git diff` through `code.call` unless `git.diff` cannot express the needed view. Repeated fallback diff usage is a tooling gap.
 
 For detailed diff review, prefer bounded output. Do not return giant diffs into chat.
 
@@ -861,7 +861,7 @@ For Python changes:
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["python3", "-m", "py_compile", "<file.py>"],
@@ -874,7 +874,7 @@ For focused tests, prefer explicit TDD phase markers so the workpad can auto-pop
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
@@ -889,7 +889,7 @@ After implementation:
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],

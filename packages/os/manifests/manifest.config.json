@@ -48,7 +48,10 @@
       "task."
     ],
     "includeCategories": [],
-    "excludeNames": [],
+    "excludeNames": [
+      "mac.call",
+      "mac.exec"
+    ],
     "excludePrefixes": [
       "browser.",
       "office.",

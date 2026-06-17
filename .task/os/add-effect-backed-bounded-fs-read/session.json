@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2960ef310873",
+  "tmuxSession": "opensaas-os-add-effect-backed-bounded-fs-read-2960ef31",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-effect-backed-bounded-fs-read",
+  "branch": "task/os/add-effect-backed-bounded-fs-read",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-effect-backed-bounded-fs-read",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-effect-backed-bounded-fs-read",
+  "prNumber": 1070,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1070",
+  "createdAt": "2026-06-15T08:15:46.537Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-effect-backed-bounded-fs-read/.task/os/add-effect-backed-bounded-fs-read/session.json"
+}

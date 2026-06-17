@@ -5,7 +5,7 @@
       "fs",
       "read"
     ],
-    "description": "read file contents with an optional line range",
+    "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
     "category": "filesystem",
     "underlying": "workspace fs read, or task:fs read when a branch is resolved",
     "capabilities": {
@@ -26,8 +26,22 @@
       "arguments": [
         {
           "source": "path",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "filesJson",
+          "flag": "--files-json",
+          "kind": "value"
+        },
+        {
+          "source": "offset",
+          "flag": "--offset",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
         },
         {
           "source": "from",
@@ -42,10 +56,39 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "path": "packages/os/package.json"
+      "branch": "task/os/example",
+      "path": "packages/os/scripts/fs.js",
+      "offset": 1,
+      "limit": 120
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "examples": [
+      {
+        "label": "single paged file",
+        "input": {
+          "path": "packages/os/scripts/fs.js",
+          "offset": 1,
+          "limit": 120
+        }
+      },
+      {
+        "label": "multiple paged files",
+        "input": {
+          "files": [
+            {
+              "path": "packages/os/scripts/fs.js",
+              "offset": 1,
+              "limit": 80
+            },
+            {
+              "path": "packages/os/tooling/dev-tool-manifest.json",
+              "offset": 1,
+              "limit": 120
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "name": "fs.search",
@@ -53,7 +96,7 @@
       "fs",
       "search"
     ],
-    "description": "search files with ripgrep through the workspace script",
+    "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
     "category": "filesystem",
     "underlying": "workspace fs search, or task:fs search when a branch is resolved",
     "capabilities": {
@@ -99,13 +142,33 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
+      "branch": "task/os/example",
       "pattern": "task:fs",
-      "paths": [
-        "packages/os/SCRIPTS.md"
-      ]
+      "path": "packages/os/SCRIPTS.md"
     },
-    "sessionRequired": true
+    "sessionRequired": true,
+    "examples": [
+      {
+        "label": "search a directory",
+        "input": {
+          "pattern": "Effect.gen",
+          "path": "packages/os/scripts",
+          "include": "*.ts",
+          "maxResults": 20
+        }
+      },
+      {
+        "label": "search multiple paths",
+        "input": {
+          "pattern": "task:fs",
+          "paths": [
+            "packages/os/SCRIPTS.md",
+            "packages/os/TOOLS.md"
+          ],
+          "maxResults": 10
+        }
+      }
+    ]
   },
   {
     "name": "fs.list",
@@ -299,7 +362,7 @@
     "command": {
       "script": "fs",
       "subcommand": "http",
-      "branchMode": "optional",
+      "branchMode": "none",
       "arguments": [
         {
           "source": "method",
@@ -843,99 +906,6 @@
       "dryRun": true
     },
     "sessionRequired": false
-  },
-  {
-    "name": "task.call",
-    "methodPath": [
-      "task",
-      "call"
-    ],
-    "description": "run a command inside a task worktree",
-    "category": "task lifecycle",
-    "underlying": "workspace task.call",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "TaskExecInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "task:exec",
-      "branchMode": "required",
-      "branchArgumentStyle": "prefix",
-      "arguments": [
-        {
-          "source": "command",
-          "kind": "commandArray",
-          "required": true
-        }
-      ]
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "command": [
-        "git",
-        "status",
-        "--short"
-      ],
-      "dryRun": true
-    },
-    "sessionRequired": true
-  },
-  {
-    "name": "task.exec",
-    "methodPath": [
-      "task",
-      "exec"
-    ],
-    "description": "legacy alias for task.call; run a command inside a task worktree",
-    "category": "task lifecycle",
-    "underlying": "workspace task.exec",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "TaskExecInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "task:exec",
-      "branchMode": "required",
-      "branchArgumentStyle": "prefix",
-      "arguments": [
-        {
-          "source": "command",
-          "kind": "commandArray",
-          "required": true
-        },
-        {
-          "source": "pr",
-          "flag": "--pr",
-          "kind": "value"
-        },
-        {
-          "source": "github",
-          "flag": "--github",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "command": [
-        "git",
-        "status",
-        "--short"
-      ],
-      "dryRun": true
-    },
-    "sessionRequired": true,
-    "workflowRole": "test.run"
   },
   {
     "name": "task.current",
@@ -4616,7 +4586,7 @@
     "methodPath": [
       "checkFiles"
     ],
-    "description": "run syntax checks over a set of files through task:exec",
+    "description": "run syntax checks over a set of files through code.call in the task worktree",
     "category": "composed",
     "underlying": "workspace checkFiles",
     "capabilities": {
@@ -4741,7 +4711,7 @@
       "mac",
       "call"
     ],
-    "description": "run a non-repo shell command on the Mac",
+    "description": "emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.call",
     "capabilities": {
@@ -4777,7 +4747,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -4788,7 +4758,7 @@
       "mac",
       "exec"
     ],
-    "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
+    "description": "legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.exec",
     "capabilities": {
@@ -4824,7 +4794,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -5159,7 +5129,7 @@
       "code",
       "call"
     ],
-    "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+    "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
     "category": "codemode",
     "underlying": "os code.call",
     "capabilities": {
@@ -5179,12 +5149,33 @@
       "arguments": []
     },
     "exampleInput": {
-      "language": "python",
-      "mode": "read",
-      "code": "print(\"hello\")",
+      "language": "bash",
+      "mode": "verify",
+      "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
       "maxResultChars": 20000
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "test.run",
+    "examples": [
+      {
+        "label": "task-scoped focused OS test",
+        "input": {
+          "language": "bash",
+          "mode": "verify",
+          "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+          "maxResultChars": 20000
+        }
+      },
+      {
+        "label": "short Python inspection",
+        "input": {
+          "language": "python",
+          "mode": "read",
+          "code": "print(\"hello\")",
+          "maxResultChars": 20000
+        }
+      }
+    ]
   },
   {
     "name": "tools.search",

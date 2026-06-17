@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/guard-os-ingress-against-destructive-command-material",
+  "base": "origin/stream/os",
+  "headSha": "5afff976867479c0f59e9f3a5c126325e17f01cc",
+  "changeHash": "b67a20505e90215914a245c6aee8cc1a6498df25e376a9d570c08da36cbded16",
+  "changedFiles": [
+    "packages/os/scripts/lib/dangerous-material-policy.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/steering/system_prompt.md",
+    "packages/os/tests/dangerous-material-policy.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T21:40:49.774Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/guard-os-ingress-against-destructive-command-material/current.json",
+        ".task/os/guard-os-ingress-against-destructive-command-material/evidence-log.json",
+        ".task/os/guard-os-ingress-against-destructive-command-material/read-log.json",
+        ".task/os/guard-os-ingress-against-destructive-command-material/session.json",
+        ".task/os/guard-os-ingress-against-destructive-command-material/workpad.md",
+        ".task/tasks/os/guard-os-ingress-against-destructive-command-material.json",
+        "packages/os/scripts/lib/dangerous-material-policy.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/scripts/server.ts",
+        "packages/os/steering/system_prompt.md",
+        "packages/os/tests/dangerous-material-policy.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
