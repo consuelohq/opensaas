@@ -636,3 +636,125 @@ Rules:
 - Use `--force-publish` only when Ko explicitly asks for an intentional overwrite or recovery publish.
 - If publish reports `stale design wiki publish rejected`, re-read the current page and rebase your typed changes before publishing.
 - Prefer section/component-level typed changes so non-overlapping agent work can be recovered or merged from page versions.
+
+### Context-Free Instruction Voice
+
+Write every durable instruction as if the reader has no access to the conversation that produced it.
+
+A good instruction should stand alone inside the artifact. It should name the rule, the standard, the failure mode, and the replacement behavior. The agent reading it should not need chat history, surrounding commentary, screenshots, or the author’s intent to know what to do.
+
+#### Core Rule
+
+Use **artifact voice**, not **patch voice**.
+
+Artifact voice states the final rule.
+
+Patch voice describes the editing operation that created the rule.
+
+| ❌ Patch voice                                                        | ✅ Artifact voice                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Replace the stale tooling section with this                          | Tooling Preference Order                                     |
+| Add this snippet under communication style                           | Context-Free Instruction Voice                               |
+| In our conversation, we decided agents should avoid vague references | Durable instructions must avoid vague references             |
+| For this example, use `code.call` instead of `task.call`             | Use `code.call` for focused command and runtime evidence     |
+| The thing above should be rewritten as a standalone rule             | Rewrite every durable rule so it stands without chat context |
+
+The first line of a durable snippet should be the title or rule name, not an instruction to the human editor.
+
+#### Required Shape
+
+When writing a durable rule, use this shape:
+
+```text
+Rule: what to do.
+Standard: what good behavior looks like.
+Failure mode: what goes wrong.
+Replacement behavior: what the agent should do instead.
+```
+
+Example:
+
+```text
+Rule: Durable instructions must be context-free.
+Standard: The instruction names the subject, action, boundary, and expected behavior directly.
+Failure mode: The instruction depends on phrases like “this,” “above,” “as discussed,” or “the current example.”
+Replacement behavior: Rewrite the instruction with explicit nouns, stable labels, and final artifact prose.
+```
+
+#### Forbidden Context Phrases
+
+Avoid phrases that point back to the conversation, editing session, or local screen state:
+
+* “in our conversation”
+* “like we talked about”
+* “for this example”
+* “the thing above”
+* “this situation”
+* “the current issue”
+* “the previous section”
+* “as mentioned earlier”
+* “here”
+* “above”
+* “below”
+* vague pronouns without explicit referents: “this,” “that,” “it,” “they,” “those”
+
+Use explicit referents instead.
+
+| ❌ Weak                                  | ✅ Strong                                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| This should use the new tool            | Repo validation should use `code.call` for focused command evidence                             |
+| That section teaches the wrong behavior | The tooling section incorrectly teaches `task.call` as the command runner                       |
+| It should be more direct                | The rule should state the required behavior in the first sentence                               |
+| The above example is bad                | The patch-voice example is bad because it describes an edit operation instead of the final rule |
+
+#### Prefer Stable Labels
+
+Give every durable concept a stable name.
+
+Use:
+
+* rule names
+* section titles
+* tool names
+* file paths
+* command names
+* trace IDs
+* URLs
+* exact failure labels
+* explicit actor names: “agent,” “reviewer,” “reader,” “operator”
+
+Avoid:
+
+* “this”
+* “that”
+* “the thing”
+* “the stuff”
+* “the earlier point”
+* “what we just said”
+
+Stable labels let future agents inherit the instruction without reconstructing the original context.
+
+#### Replacement Behavior
+
+When an agent catches itself writing patch voice, convert it before presenting the snippet.
+
+Use this conversion:
+
+```text
+Patch voice: what the editor should change.
+Artifact voice: the final rule the artifact should contain.
+```
+
+Example:
+
+```text
+Patch voice: Replace the validation section with this.
+Artifact voice: Validation Evidence Standard
+
+Rule: Validation claims require command, output, and location evidence.
+Standard: The agent reports the exact validation command, the result, and the trace or file path that proves it.
+Failure mode: The agent says “validated” without evidence.
+Replacement behavior: Report the validation packet: command, result, evidence, remaining risk.
+```
+
+The durable artifact should receive the artifact voice only.
