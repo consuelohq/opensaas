@@ -56,12 +56,11 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/os/example",
       "path": "packages/os/scripts/fs.js",
       "offset": 1,
       "limit": 120
     },
-    "sessionRequired": true,
+    "sessionRequired": false,
     "examples": [
       {
         "label": "single paged file",
@@ -142,11 +141,10 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/os/example",
       "pattern": "task:fs",
       "path": "packages/os/SCRIPTS.md"
     },
-    "sessionRequired": true,
+    "sessionRequired": false,
     "examples": [
       {
         "label": "search a directory",
