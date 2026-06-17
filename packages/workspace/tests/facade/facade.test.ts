@@ -480,6 +480,51 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/workspace/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.search input with both path and paths', async () => {
+    const result = await executeTool('fs.search', {
+      taskSession: 'tsk_search_path_conflict',
+      pattern: 'needle',
+      path: 'packages/workspace/scripts',
+      paths: ['packages/workspace/tests'],
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('provide either path or paths, not both');
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {
@@ -1414,6 +1459,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
-
 
 
