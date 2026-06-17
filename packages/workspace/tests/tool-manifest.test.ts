@@ -63,7 +63,7 @@ describe('workspace tool manifest generator', () => {
     expect(coreNames).toContain('stream.context');
     expect(coreNames).toContain('tools.search');
     expect(coreNames).toContain('code.call');
-    expect(coreNames).not.toContain('intent');
+    expect(coreNames).toContain('intent');
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
   });

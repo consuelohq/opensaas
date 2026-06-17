@@ -129,6 +129,17 @@ export const CodeCallInput = z.object({
   path: ['stdin'],
 });
 
+
+export const WorkflowIntentInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['start', 'dispatch']),
+  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  area: optionalString,
+  title: optionalString,
+  eventFile: optionalString,
+});
+
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -931,6 +942,7 @@ export const schemaRegistry = {
   OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
+  WorkflowIntentInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -1035,6 +1047,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
