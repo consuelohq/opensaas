@@ -189,6 +189,21 @@ describe('tool manifest generator', () => {
 
 
 
+  it('models read-only fs read and search as session-optional', () => {
+    const registry = buildToolManifest({ write: false });
+    const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
+
+    for (const toolName of ['fs.read', 'fs.search']) {
+      const entry = byName.get(toolName);
+      expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
+      expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
+      expect(entry?.definition.sessionRequired).toBe(false);
+    }
+
+    expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
+    expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
+  });
+
   it('keeps public execution surface on code.call and lifecycle task tools only', async () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);

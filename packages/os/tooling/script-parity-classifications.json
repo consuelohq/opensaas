@@ -464,6 +464,10 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/lib/trace-sites-browser-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned browser client contract helper for gateway-only Trace Sites reads and live state."
+    },
     "scripts/lib/trace-sites-gateway-contract.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -472,13 +476,29 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/trace-sites-gateway-live-stream.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Trace Sites gateway SSE helper used by contract tests; it is library code, not a workspace script port."
+    },
     "scripts/lib/trace-sites-gateway-read-layer.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/trace-sites-live-smoke.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Trace Sites smoke-plan helper for product-path validation without direct browser-local calls."
+    },
     "scripts/lib/trace-sites-local-read-backend.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/trace-sites-reporting.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Trace Sites reporting reducers and gateway endpoint helpers for browser-safe reports."
+    },
+    "scripts/lib/trace-store.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Trace Sites canonical trace store boundary for normalized observations, retention, and browser-safe reads."
     },
     "scripts/lib/types.ts": {
       "status": "os-only-intentional",
