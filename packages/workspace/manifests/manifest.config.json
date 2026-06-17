@@ -65,5 +65,8 @@
       "railway",
       "sentry"
     ]
+  },
+  "workflows": {
+    "path": "packages/workspace/tooling/workflows.json"
   }
 }
