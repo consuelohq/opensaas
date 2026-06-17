@@ -1,6 +1,6 @@
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -29,6 +29,10 @@ function readJsonArray(relativePath: string): JsonObject[] {
 
 function names(entries: Array<{ name: string }>): string[] {
   return entries.map((entry) => entry.name).sort();
+}
+
+function repoRelative(filePath: string): string {
+  return relative(join(packageRoot, '..', '..'), filePath).split(/[/\\]/).join('/');
 }
 
 describe('workspace tool manifest generator', () => {
@@ -71,16 +75,23 @@ describe('workspace tool manifest generator', () => {
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');
+    const workflowsOutputPath = join(fixtureRoot, 'workflow-bundles.json');
+    const expectedSourceManifest = repoRelative(fullOutputPath);
 
-    generateWorkspaceToolManifest({ fullOutputPath, coreOutputPath });
+    const built = buildWorkspaceToolManifest({ fullOutputPath, coreOutputPath });
+    expect(built.workflows.sourceManifest).toBe(expectedSourceManifest);
+
+    generateWorkspaceToolManifest({ fullOutputPath, coreOutputPath, workflowsOutputPath });
 
     const full = JSON.parse(readFileSync(fullOutputPath, 'utf8')) as { tools: JsonObject[] };
     const core = JSON.parse(readFileSync(coreOutputPath, 'utf8')) as { tools: JsonObject[] };
+    const workflows = JSON.parse(readFileSync(workflowsOutputPath, 'utf8')) as { sourceManifest: string };
 
     expect(full.tools.length).toBeGreaterThan(0);
     expect(full.tools.map((tool) => tool.name)).toContain('code.call');
     expect(core.tools.length).toBeGreaterThan(0);
     expect(core.tools.length).toBeLessThan(full.tools.length);
     expect(core.tools.map((tool) => tool.name)).toContain('tools.search');
+    expect(workflows.sourceManifest).toBe(expectedSourceManifest);
   });
 });

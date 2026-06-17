@@ -404,7 +404,7 @@ export function buildWorkspaceToolManifest(options: BuildToolManifestOptions = {
     config: relativeToRepo(configPath),
     tools: coreTools,
   };
-  const workflowSourceManifestPath = options.workflowsOutputPath ? fullOutputPath : defaultFullOutputPath;
+  const workflowSourceManifestPath = fullOutputPath;
   const workflows = buildWorkflowBundles(config, configDir, configPath, workflowSourceManifestPath, fullTools);
 
   return {

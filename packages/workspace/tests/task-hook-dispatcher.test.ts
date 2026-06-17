@@ -89,6 +89,7 @@ describe('Workspace hook dispatcher', () => {
     expect(source).toContain("event: 'tool.postInvoke'");
     expect(source).toContain("tool: 'task.start'");
     expect(source).toContain("workflow: 'task'");
+    expect(source).toContain('task hook guidance failed');
     expect(source).toContain('renderHookResult(guidance)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
@@ -110,6 +111,7 @@ describe('Workspace hook dispatcher', () => {
     const eventResult = spawnSync(process.execPath, [taskHookScript, '--event-json', eventPath, '--json'], {
       cwd: resolve(import.meta.dirname, '..'),
       encoding: 'utf8',
+      timeout: 10_000,
     });
 
     expect(eventResult.status).toBe(0);
@@ -126,6 +128,7 @@ describe('Workspace hook dispatcher', () => {
     const legacyResult = spawnSync(process.execPath, [taskHookScript, 'unknown-task-tool', '--requested-tool', 'task.finish', '--json'], {
       cwd: resolve(import.meta.dirname, '..'),
       encoding: 'utf8',
+      timeout: 10_000,
     });
 
     expect(legacyResult.status).toBe(0);

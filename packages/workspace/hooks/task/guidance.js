@@ -193,7 +193,7 @@ function workspaceCall(tool, input, taskSession) {
 
 function defaultTimeoutForTool(tool) {
   if (tool === 'code.call' || tool === 'verify' || tool === 'review.run') return 300000;
-  return 120;
+  return 120000;
 }
 
 function renderTaskHookGuidance(guidance) {

@@ -498,7 +498,7 @@ def _run_get_steering() -> str:
 
 @mcp.tool(annotations=RO)
 async def get_steering() -> str:
-    """return current workspace steering and tool manifest."""
+    """return current workspace steering with the core manifest payload."""
     return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _run_get_steering)
 
 

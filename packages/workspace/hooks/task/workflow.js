@@ -173,6 +173,7 @@ function handleValidationReady(event, resolver) {
   const taskSession = state.taskSession || '<taskSession>';
   const base = state.base || `origin/stream/${state.area || '<area>'}`;
   const noTests = Boolean(state.noTests);
+  const changedFiles = Array.isArray(state.changedFiles) ? state.changedFiles : [];
 
   return {
     workflow: TASK_WORKFLOW_ID,
@@ -203,7 +204,7 @@ function handleValidationReady(event, resolver) {
     notes: [
       'Validation must be recorded in the scoped workpad before task.push or task.pr.',
       'task.pr must promote into the stream and return the stream review PR, not only the intermediate task PR.',
-      `Changed files: ${(state.changedFiles || []).join(', ') || '<unknown>'}`,
+      `Changed files: ${changedFiles.join(', ') || '<unknown>'}`,
     ],
   };
 }

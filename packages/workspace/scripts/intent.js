@@ -38,6 +38,10 @@ function parseArgs(argv) {
     index = 1;
   }
 
+  if (args.action !== 'start' && args.action !== 'dispatch') {
+    throw new Error(`unknown action: ${args.action}`);
+  }
+
   for (; index < argv.length; index += 1) {
     const rawArgument = argv[index];
     if (!rawArgument.startsWith('--')) throw new Error(`unexpected argument: ${rawArgument}`);
