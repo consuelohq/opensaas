@@ -36,6 +36,7 @@
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",
+    "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
