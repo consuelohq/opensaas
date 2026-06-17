@@ -8,7 +8,7 @@ import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/bran
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
-import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -375,6 +375,36 @@ describe('typed facade executor', () => {
       expect(plans[0].args).toContain('20');
       expect(plans[0].args).toContain('--json');
     } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes fs.search path alias without retaining path for downstream serialization', async () => {
+    const entry = manifestEntries.find((item) => item.name === 'fs.search');
+    if (!entry) throw new Error('missing fs.search manifest entry');
+    const originalArguments = entry.command.arguments;
+    const pathArgument: CommandArgument = { source: 'path', kind: 'value' };
+    entry.command.arguments = [...originalArguments, pathArgument];
+
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-canonical-path-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_search_canonical_path');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_canonical_path',
+        pattern: 'needle',
+        path: 'packages/os/scripts',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args.filter((arg) => arg === 'packages/os/scripts')).toHaveLength(1);
+    } finally {
+      entry.command.arguments = originalArguments;
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });
