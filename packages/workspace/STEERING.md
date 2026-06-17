@@ -1845,7 +1845,7 @@ All workspace operations, including tools with names like `fs.read`, `code.call`
 
 ## Steering bootstrap rule
 
-`workspace.get_steering()` is a one-time conversation bootstrap. It loads steering and the current manifest into context.
+`workspace.get_steering()` is a one-time conversation bootstrap. It loads steering and the current core manifest into context.
 
 After one successful `workspace.get_steering()` call in a conversation, treat steering as loaded. Continue with direct `workspace.call` operations.
 
@@ -1895,7 +1895,7 @@ Do not use `tools.search` when the exact tool is already known from steering, th
 
 ## Manifest source of truth
 
-The tool manifest at:
+The full tool manifest at:
 
 ```text
 packages/workspace/tooling/tool-manifest.json
@@ -1911,7 +1911,13 @@ defines every workspace operation:
 * `command` — the underlying command mapping
 * `sessionRequired` — whether agent-mode calls must include `taskSession`
 
-The manifest is loaded by `get_steering`. Use `tools.search` to discover tools from the manifest when needed. Do not read or reload the full manifest, use tool search if you need just to find one tool.
+The core manifest loaded by the bootstrap call is generated at:
+
+```text
+packages/workspace/manifests/core-manifest.json
+```
+
+Use `tools.search` to discover tools from the full manifest when needed. Avoid reading or reloading the full manifest just to find one tool.
 
 ## Workspace tool-surface recovery
 

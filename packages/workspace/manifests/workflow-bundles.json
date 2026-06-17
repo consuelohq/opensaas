@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "kind": "consuelo-workspace-workflow-bundles",
+  "sourceManifest": "packages/workspace/manifests/tool-manifest.json",
+  "config": "packages/workspace/manifests/manifest.config.json",
+  "source": "",
+  "workflows": []
+}
