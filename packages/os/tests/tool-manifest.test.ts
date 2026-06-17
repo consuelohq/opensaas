@@ -23,6 +23,7 @@ type SearchResult = {
 };
 
 const packageRoot = join(import.meta.dirname, '..');
+const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
 
 let fixtureRoot: string;
 
@@ -160,7 +161,6 @@ describe('tool manifest generator', () => {
     const coreNames = registry.core.tools.map((entry) => entry.name).sort();
 
     expect(coreNames).toContain('fs.read');
-    expect(coreNames).toContain('task.start');
     expect(coreNames).toContain('stream.context');
     expect(coreNames).toContain('review.run');
     expect(coreNames).toContain('verify');
@@ -179,6 +179,7 @@ describe('tool manifest generator', () => {
     expect(coreNames).toContain('context.get');
     expect(coreNames).toContain('context.list');
     expect(coreNames).toContain('context.trace');
+    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
 
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
@@ -208,7 +209,7 @@ describe('tool manifest generator', () => {
     expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
   });
 
-  it('keeps public execution surface on code.call and lifecycle task tools only', async () => {
+  it('keeps public execution surface on code.call while task lifecycle stays full-manifest only', async () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
@@ -222,8 +223,9 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('mac.exec');
     for (const toolName of lifecycleTools) {
       expect(fullNames).toContain(toolName);
-      expect(coreNames).toContain(toolName);
+      expect(coreNames).not.toContain(toolName);
     }
+    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
     expect(fullNames).not.toContain('task.call');
     expect(fullNames).not.toContain('task.exec');
     expect(coreNames).not.toContain('task.call');
@@ -248,6 +250,17 @@ describe('tool manifest generator', () => {
 
     expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+  });
+
+  it('uses the scoped workflow description for the intent tool', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullIntent = registry.full.tools.find((entry) => entry.name === 'intent');
+    const coreIntent = registry.core.tools.find((entry) => entry.name === 'intent');
+
+    expect(fullIntent?.description).toBe(intentDescription);
+    expect(fullIntent?.definition.description).toBe(intentDescription);
+    expect(coreIntent?.description).toBe(intentDescription);
+    expect(coreIntent?.definition.description).toBe(intentDescription);
   });
 
   it('should expose fs.apply_patch only when building OS manifest surfaces', () => {

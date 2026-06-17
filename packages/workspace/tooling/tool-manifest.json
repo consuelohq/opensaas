@@ -2921,7 +2921,7 @@
     "methodPath": [
       "intent"
     ],
-    "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+    "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
     "category": "workflow",
     "underlying": "workspace intent",
     "capabilities": {

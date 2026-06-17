@@ -10,6 +10,7 @@ type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
 
 let fixtureRoot: string;
 
@@ -63,13 +64,24 @@ describe('workspace tool manifest generator', () => {
     expect(registry.coreOutputPath.endsWith('packages/workspace/manifests/core-manifest.json')).toBe(true);
     expect(coreNames).toEqual(expectedCoreNames);
     expect(coreNames).toContain('fs.read');
-    expect(coreNames).toContain('task.start');
     expect(coreNames).toContain('stream.context');
     expect(coreNames).toContain('tools.search');
     expect(coreNames).toContain('code.call');
     expect(coreNames).toContain('intent');
+    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
+  });
+
+  it('uses the scoped workflow description for the intent tool', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const fullIntent = registry.full.tools.find((entry) => entry.name === 'intent');
+    const coreIntent = registry.core.tools.find((entry) => entry.name === 'intent');
+
+    expect(fullIntent?.description).toBe(intentDescription);
+    expect(fullIntent?.definition.description).toBe(intentDescription);
+    expect(coreIntent?.description).toBe(intentDescription);
+    expect(coreIntent?.definition.description).toBe(intentDescription);
   });
 
   it('writes full and core manifests to override output paths', () => {

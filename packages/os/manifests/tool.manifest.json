@@ -3604,14 +3604,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "workflow",
-      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
       "core": true,
       "definition": {
         "name": "intent",
         "methodPath": [
           "intent"
         ],
-        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
         "category": "workflow",
         "underlying": "workspace intent",
         "capabilities": {
@@ -6663,7 +6663,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "preview or remove stale task worktrees and branches",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.cleanup",
         "methodPath": [
@@ -6734,7 +6734,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "resolve the current task branch without running a mutating command",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.current",
         "methodPath": [
@@ -6769,7 +6769,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "check whether the task stream appears synced",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.ensureSynced",
         "methodPath": [
@@ -6806,7 +6806,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "finish a task branch after merge",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.finish",
         "methodPath": [
@@ -6863,7 +6863,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "write task metadata for an existing worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.init",
         "methodPath": [
@@ -6931,7 +6931,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "merge a pull request through the workspace task merge script",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.merge",
         "methodPath": [
@@ -6991,7 +6991,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "merge task to stream and create or refresh the stream review PR",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.pr",
         "methodPath": [
@@ -7069,7 +7069,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "show task and review PR links",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.prs",
         "methodPath": [
@@ -7124,7 +7124,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "push changed task files to the task branch through GitHub API",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.push",
         "methodPath": [
@@ -7214,7 +7214,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "create a task branch, worktree, and draft PR",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.start",
         "methodPath": [

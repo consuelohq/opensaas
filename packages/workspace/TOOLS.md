@@ -1222,6 +1222,7 @@ read bounded text or supported media from files with pagination, MIME metadata, 
 await workspace.call({
   "tool": "fs.read",
   "input": {
+    "branch": "task/workspace-agents/example",
     "path": "packages/workspace/scripts/fs.js",
     "offset": 1,
     "limit": 120
@@ -1283,6 +1284,7 @@ search file contents with ripgrep and return structured bounded matches for agen
 await workspace.call({
   "tool": "fs.search",
   "input": {
+    "branch": "task/workspace-agents/example",
     "pattern": "task:fs",
     "path": "packages/workspace/SCRIPTS.md"
   }
@@ -7888,7 +7890,7 @@ await workspace.call({
 
 ### workspace.intent
 
-start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle
+Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.
 
 | Field | Value |
 | --- | --- |
