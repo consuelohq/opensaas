@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_81e24e7a3795",
+  "tmuxSession": "opensaas-os-guide-agents-toward-code-call-for-repo-scoped-ex-81e24e7a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution",
+  "branch": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-agents-toward-code-call-for-repo-scoped-execution",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-agents-toward-code-call-for-repo-scoped-execution",
+  "prNumber": 1096,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1096",
+  "createdAt": "2026-06-16T21:50:10.176Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-agents-toward-code-call-for-repo-scoped-execution/.task/os/guide-agents-toward-code-call-for-repo-scoped-execution/session.json"
+}

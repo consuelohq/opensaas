@@ -36,7 +36,7 @@
     },
     "scripts/check-files.js": {
       "status": "changed-needs-review",
-      "reason": "OS check-files intentionally routes validation through code.call after public task execution removal."
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/check-syntax.js": {
       "status": "same",
@@ -62,11 +62,6 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/consuelo-design.ts": {
-      "status": "changed-needs-review",
-      "reason": "High-risk changed script: design orchestration owns publishing and package-boundary behavior, so later PRs must review drift before syncing bodies.",
-      "risk": "high"
-    },
     "scripts/consuelo-reload.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -84,17 +79,17 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/design/consuelo-design-landing-page.ts": {
+    "scripts/design/office-landing-page.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/design/consuelo-design.ts": {
+    "scripts/design/office.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/diff_cockpit.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "High-risk workspace-only script: diff cockpit review tooling is not yet represented in OS and must stay visible for a follow-up parity PR.",
+      "reason": "High-risk workspace-only diff cockpit entrypoint is not part of the OS runtime yet; porting needs focused review of branch and patch semantics.",
       "risk": "high"
     },
     "scripts/doctor-analytics.ts": {
@@ -249,27 +244,31 @@
     },
     "scripts/lib/consuelo-sites-gateway-policy.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/consuelo-sites-gateway-registry.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/consuelo-sites-gateway-types.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/consuelo-sites-gateway.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/consuelo-sites-trace-adapter.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/consuelo-workspace-client.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/dangerous-material-policy.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only safety policy helper protects OS ingress command review behavior."
     },
     "scripts/lib/db-guards.js": {
       "status": "same",
@@ -308,8 +307,16 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/fs/read.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/fs/search.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only helper implements Effect-backed bounded fs.read behavior for the package runtime and generated public tool surface."
+      "reason": "OS-only helper implements structured ripgrep-backed fs.search behavior for the package runtime and generated public tool surface."
+    },
+    "scripts/lib/fs/write.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only helper implements Effect-backed fs.write behavior for the package runtime and generated public tool surface."
     },
     "scripts/lib/git.js": {
       "status": "same",
@@ -353,7 +360,7 @@
     },
     "scripts/lib/install-edge-site-publisher.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/install-state.ts": {
       "status": "os-only-intentional",
@@ -389,7 +396,7 @@
     },
     "scripts/lib/pr-ref.js": {
       "status": "workspace-only-needs-port",
-      "reason": "High-risk workspace-only script: PR reference formatting is still absent from OS and needs a later port or intentional replacement decision.",
+      "reason": "High-risk workspace-only PR reference helper affects review and handoff links; OS parity should wait for explicit GitHub workflow review.",
       "risk": "high"
     },
     "scripts/lib/redaction.ts": {
@@ -434,7 +441,7 @@
     },
     "scripts/lib/stream-workpads.js": {
       "status": "workspace-only-needs-port",
-      "reason": "High-risk workspace-only script: stream workpad handling affects recoverability and needs a later OS port or explicit deprecation decision.",
+      "reason": "High-risk workspace-only stream workpad helper affects task memory and stream coordination; OS parity should be reviewed separately.",
       "risk": "high"
     },
     "scripts/lib/task-meta.js": {
@@ -443,7 +450,7 @@
     },
     "scripts/lib/task-node-modules.js": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/lib/task-selection.js": {
       "status": "changed-needs-review",
@@ -459,19 +466,19 @@
     },
     "scripts/lib/trace-sites-gateway-contract.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/trace-sites-gateway-live-endpoints.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/trace-sites-gateway-read-layer.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/trace-sites-local-read-backend.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/types.ts": {
       "status": "os-only-intentional",
@@ -515,7 +522,7 @@
     },
     "scripts/lib/workspace-device-login-client.ts": {
       "status": "os-only-intentional",
-      "reason": "OS-only script is intentionally part of the OS package inventory."
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/workspace-edge-beta-smoke.ts": {
       "status": "os-only-intentional",
@@ -537,6 +544,11 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/office.ts": {
+      "status": "changed-needs-review",
+      "reason": "High-risk changed script: design orchestration owns publishing and package-boundary behavior, so later PRs must review drift before syncing bodies.",
+      "risk": "high"
+    },
     "scripts/onboarding-flow.test.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -547,16 +559,16 @@
     },
     "scripts/os-release-device-auth.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/os-release-install.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "High-risk workspace-only script: hosted OS release publishing remains outside OS scripts and needs a follow-up portability decision.",
+      "reason": "High-risk workspace-only OS release installer affects local installation behavior; port only through the release workflow with install validation.",
       "risk": "high"
     },
     "scripts/os-release.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace-only script is tracked as not yet ported into the OS package."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/os.ts": {
       "status": "os-only-intentional",
@@ -652,7 +664,7 @@
     },
     "scripts/task-exec.js": {
       "status": "workspace-only-needs-port",
-      "reason": "Workspace retains a legacy private script, while the OS public execution surface intentionally uses code.call instead."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/task-finish.js": {
       "status": "changed-needs-review",
@@ -716,79 +728,79 @@
     },
     "scripts/trace-home/cli.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/command-quality.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/db.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/model.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/sanitize.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/text-renderer.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/app.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/keymap.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/layout.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/header.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/inspect-panel.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/json-panel.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/keybar.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/sidebar.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/trace-table.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/panels/tree-panel.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/state.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/tui/theme.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/trace-home/types.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; later parity work must decide whether to port, rename, deprecate, or document exclusion."
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
     "scripts/uninstall-system-daemons.sh": {
       "status": "os-only-intentional",
@@ -824,7 +836,7 @@
     }
   },
   "highRiskScripts": [
-    "scripts/consuelo-design.ts",
+    "scripts/office.ts",
     "scripts/context.js",
     "scripts/browser.js",
     "scripts/explore.js",

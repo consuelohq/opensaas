@@ -209,6 +209,107 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('validates fs.write content sources without rejecting empty strings', () => {
+    const schema = getInputSchema('FsWriteInput');
+    expect(schema).not.toBeNull();
+
+    expect(schema?.safeParse({
+      path: 'tmp/empty.txt',
+      content: '',
+    }).success).toBe(true);
+
+    const both = schema?.safeParse({
+      path: 'tmp/example.txt',
+      content: 'inline',
+      contentFile: '/tmp/payload.txt',
+    });
+    expect(both?.success).toBe(false);
+
+    const neither = schema?.safeParse({
+      path: 'tmp/example.txt',
+    });
+    expect(neither?.success).toBe(false);
+
+    const conflictingModes = schema?.safeParse({
+      path: 'tmp/example.txt',
+      content: 'payload',
+      force: true,
+      append: true,
+    });
+    expect(conflictingModes?.success).toBe(false);
+  });
+
+  it('routes fs.write content-file and mutation flags through task fs', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'consuelo-os-write-facade-'));
+    const taskSession = 'tsk_fs_write_test';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('fs.write', {
+        taskSession,
+        path: 'tmp/example.txt',
+        contentFile: '/tmp/payload.txt',
+        force: true,
+        mkdirs: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'task:fs',
+        '--branch',
+        TEST_BRANCH,
+        'write',
+        'tmp/example.txt',
+        '--content-file',
+        '/tmp/payload.txt',
+        '--force',
+        '--mkdirs',
+      ]));
+      expect(plans[0].args).not.toContain('--append');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('routes fs.write append as an explicit mutation mode', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'consuelo-os-write-append-facade-'));
+    const taskSession = 'tsk_fs_write_append_test';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('fs.write', {
+        taskSession,
+        path: 'tmp/example.txt',
+        content: 'payload',
+        append: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'write',
+        'tmp/example.txt',
+        '--content',
+        'payload',
+        '--append',
+      ]));
+      expect(plans[0].args).not.toContain('--force');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
 
   it('passes request ids through the envelope', async () => {
     const result = await executeTool('fs.read', {
@@ -240,6 +341,37 @@ describe('typed facade executor', () => {
       expect(plans[0].args).toContain('--offset');
       expect(plans[0].args).toContain('5');
       expect(plans[0].args).toContain('--limit');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_search_path');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/os/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/os/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
       expect(plans[0].args).toContain('20');
       expect(plans[0].args).toContain('--json');
     } finally {

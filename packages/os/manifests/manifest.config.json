@@ -48,10 +48,13 @@
       "task."
     ],
     "includeCategories": [],
-    "excludeNames": [],
+    "excludeNames": [
+      "mac.call",
+      "mac.exec"
+    ],
     "excludePrefixes": [
       "browser.",
-      "consueloDesign.",
+      "office.",
       "design.",
       "linear.",
       "railway.",

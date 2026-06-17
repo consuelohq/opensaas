@@ -64,12 +64,12 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const ConsueloDesignInput = z.object({
+export const OfficeInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const ConsueloDesignUiInput = z.object({
+export const OfficeUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
@@ -81,7 +81,7 @@ export const DesignArchiveRefreshInput = z.object({
   tailscaleBin: optionalString,
 });
 
-export const ConsueloDesignSessionInput = z.object({
+export const OfficeSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -89,7 +89,7 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const ConsueloDesignDigitalEguideInput = z.object({
+export const OfficeDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -185,10 +185,14 @@ export const FsSearchInput = z.object({
   ...requestFields,
   ...branchField,
   pattern: z.string().min(1),
+  path: optionalString,
   paths: stringArray,
   include: optionalString,
   context: z.number().int().nonnegative().optional(),
-  maxResults: z.number().int().positive().optional(),
+  maxResults: z.number().int().positive().max(200).optional(),
+}).refine((input) => !(input.path && input.paths), {
+  message: 'provide either path or paths, not both',
+  path: ['path'],
 });
 
 export const FsListInput = z.object({
@@ -212,9 +216,23 @@ export const FsWriteInput = z.object({
   force: z.boolean().optional(),
   append: z.boolean().optional(),
   mkdirs: z.boolean().optional(),
-}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
-  message: 'provide exactly one of content or contentFile',
-  path: ['content'],
+}).superRefine((input, context) => {
+  const hasContent = Object.prototype.hasOwnProperty.call(input, 'content') && input.content !== undefined;
+  const hasContentFile = input.contentFile !== undefined;
+  if (hasContent === hasContentFile) {
+    context.addIssue({
+      code: 'custom',
+      message: 'provide exactly one of content or contentFile',
+      path: ['content'],
+    });
+  }
+  if (input.force === true && input.append === true) {
+    context.addIssue({
+      code: 'custom',
+      message: 'force and append are conflicting write modes',
+      path: ['force'],
+    });
+  }
 });
 
 
@@ -945,10 +963,10 @@ export const schemaRegistry = {
   BranchInput,
   DesignPublishInput,
   DesignArchiveRefreshInput,
-  ConsueloDesignInput,
-  ConsueloDesignUiInput,
-  ConsueloDesignSessionInput,
-  ConsueloDesignDigitalEguideInput,
+  OfficeInput,
+  OfficeUiInput,
+  OfficeSessionInput,
+  OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
   WorkflowIntentInput,
@@ -1050,16 +1068,16 @@ export const schemaTypeSignatures: Record<string, string> = {
   BranchInput: '{ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
-  FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
+  FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1146,7 +1164,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
-  FsReadOutput: '({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
+  FsReadOutput: 'Array<{ path: string; from: number; to: number; total: number; lines: string[] }>',
   FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',

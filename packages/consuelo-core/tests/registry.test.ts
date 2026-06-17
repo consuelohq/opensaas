@@ -88,7 +88,7 @@ describe('Consuelo core registry', () => {
       expect.arrayContaining(['task.start', 'review.run', 'verify', 'os.call']),
     );
     expect(registry.skills.map((entry) => entry.id)).toEqual(
-      expect.arrayContaining(['task', 'consuelo-design', 'daily-revenue-brief']),
+      expect.arrayContaining(['task', 'office', 'daily-revenue-brief']),
     );
 
     for (const scriptEntry of registry.scripts) {

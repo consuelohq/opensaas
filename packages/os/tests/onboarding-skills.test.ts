@@ -27,7 +27,7 @@ describe('onboarding skill choices', () => {
 
     expect(selected).toEqual(getCoreSelectedSkillNames());
     expect(selected).toContain('browser');
-    expect(selected).toContain('consuelo-design');
+    expect(selected).toContain('office');
     expect(selected).toContain('debugger');
     expect(selected).toContain('handoff');
     expect(selected).toContain('research-ingest');
@@ -36,7 +36,7 @@ describe('onboarding skill choices', () => {
     expect(selected).toContain('task');
     expect(selected).not.toContain('consuelo-workspace-snapshot');
     expect(selected).not.toContain('daily-revenue-brief');
-    expect(selected).not.toContain('consuelo-design-landing-page');
+    expect(selected).not.toContain('office-landing-page');
   });
 
   it('groups the interactive prompt with core first, optional second, title-only rows', () => {

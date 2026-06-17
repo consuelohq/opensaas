@@ -65,7 +65,7 @@ type ScriptInventory = {
 };
 
 const highRiskScripts = [
-  'scripts/consuelo-design.ts',
+  'scripts/office.ts',
   'scripts/context.js',
   'scripts/browser.js',
   'scripts/explore.js',

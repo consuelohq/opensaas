@@ -25,6 +25,10 @@ const DEFAULT_HOSTNAME = 'internal.consuelohq.com';
 const DEFAULT_BASE_DOMAIN = 'consuelohq.com';
 const DEFAULT_APP_UPSTREAM_URL = 'https://app.consuelohq.com';
 const DEFAULT_LOCAL_SERVICE_URL = 'http://127.0.0.1:8787';
+const DEFAULT_SITE_ID = 'launcher';
+const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
+const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
+const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase();
 
@@ -53,6 +57,24 @@ const sqlText = (value: string): string => `'${escapeSqlText(value)}'`;
 const sqlNullableText = (value: string | null): string =>
   value === null ? 'NULL' : sqlText(value);
 
+const buildSiteSnapshotRoute = (input: {
+  pathPrefix: '/' | '/traces';
+  workspaceId: string;
+}): WorkspaceRouteD1Route => ({
+  surface: 'sites',
+  pathPrefix: input.pathPrefix,
+  auth: 'public',
+  status: 'active',
+  target: {
+    kind: 'site-snapshot',
+    siteId: DEFAULT_SITE_ID,
+    versionId: DEFAULT_SITE_VERSION_ID,
+    manifestKey: DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
+    contentType: DEFAULT_SITE_CONTENT_TYPE,
+    cachePolicy: 'static-shell',
+  },
+});
+
 const buildAppRoute = (input: {
   appUpstreamUrl: string;
 }): WorkspaceRouteD1Route => ({
@@ -70,19 +92,45 @@ const buildAppRoute = (input: {
 const buildOsRoutes = (input: {
   connectorId: string;
   tunnelOriginUrl: string;
-}): WorkspaceRouteD1Route[] =>
-  ['/mcp', '/traces'].map((pathPrefix) => ({
-    surface: 'os' as const,
-    pathPrefix,
-    auth: 'required' as const,
-    status: 'active' as const,
+}): WorkspaceRouteD1Route[] => [{
+  surface: 'os',
+  pathPrefix: '/mcp',
+  auth: 'required',
+  status: 'active',
+  target: {
+    kind: 'os-connector',
+    connectorId: input.connectorId,
+    connectorStatus: 'connected',
+    tunnelOriginUrl: input.tunnelOriginUrl,
+  },
+}];
+
+const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/traces/events',
+    auth: 'required',
+    status: 'active',
     target: {
-      kind: 'os-connector' as const,
-      connectorId: input.connectorId,
-      connectorStatus: 'connected' as const,
-      tunnelOriginUrl: input.tunnelOriginUrl,
+      kind: 'consuelo-gateway-service',
+      serviceName: 'trace-sites-live-endpoints',
+      gatewayRouteFamily: '/gateway/traces/*',
+      publicSiteRouteFamily: '/traces/*',
     },
-  }));
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/traces',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'trace-sites-read-layer',
+      gatewayRouteFamily: '/gateway/traces/*',
+      publicSiteRouteFamily: '/traces/*',
+    },
+  },
+];
 
 const getPrimaryRoute = (
   record: WorkspaceEdgeSeedRecord,
@@ -96,8 +144,12 @@ const getPrimaryRoute = (
   return route;
 };
 
-const getTargetOriginUrl = (target: WorkspaceRouteD1RouteTarget): string =>
-  target.kind === 'service-upstream' ? target.upstreamUrl : target.tunnelOriginUrl;
+const getTargetOriginUrl = (target: WorkspaceRouteD1RouteTarget): string => {
+  if (target.kind === 'service-upstream') return target.upstreamUrl;
+  if (target.kind === 'os-connector') return target.tunnelOriginUrl;
+  if (target.kind === 'site-snapshot') return `r2://consuelo-sites-snapshots/${target.manifestKey}`;
+  return `consuelo-gateway://${target.serviceName}`;
+};
 
 const getConnectorTarget = (
   record: WorkspaceEdgeSeedRecord,
@@ -119,11 +171,16 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   );
   const hostname = trimmedOrDefault(input.hostname, DEFAULT_HOSTNAME);
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
-  const appUpstreamUrl = trimmedOrDefault(
-    input.appUpstreamUrl,
-    DEFAULT_APP_UPSTREAM_URL,
-  );
-  const routes: WorkspaceRouteD1Route[] = [buildAppRoute({ appUpstreamUrl })];
+  const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
+  const routes: WorkspaceRouteD1Route[] = [
+    buildSiteSnapshotRoute({ pathPrefix: '/', workspaceId }),
+    buildSiteSnapshotRoute({ pathPrefix: '/traces', workspaceId }),
+    ...buildTraceGatewayRoutes(),
+  ];
+
+  if (trimmedValue(input.appUpstreamUrl) !== undefined) {
+    routes.push(buildAppRoute({ appUpstreamUrl }));
+  }
 
   if (hasOsConnectorInput(input)) {
     const connectorId = trimmedValue(input.connectorId);

@@ -1,60 +1,103 @@
 #!/usr/bin/env node
 // consuelo-reload.js — manage the workspace MCP server reload path
 // supports both launchd and direct process modes
-const { execSync, spawn } = require('child_process');
+const { execFileSync, spawn } = require('child_process');
 const { existsSync } = require('fs');
+const os = require('os');
 const path = require('path');
 
 const LABEL = 'com.consuelo.workspace';
-const PLIST = `${process.env.HOME}/Library/LaunchAgents/${LABEL}.plist`;
-const HEALTH = 'http://localhost:8850/health';
+const HOME = process.env.HOME || os.homedir();
+const PLIST = path.join(HOME, 'Library', 'LaunchAgents', `${LABEL}.plist`);
+const PORT = process.env.WORKSPACE_DAEMON_PORT || process.env.PORT || '8850';
+const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(WORKSPACE_DIR, 'scripts', 'start-brain.sh');
 const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
+const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
+const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
+const EXPECTED_SERVER_NAME = 'openworkspace';
+const CONFLICTING_LABELS = ['com.consuelo.system'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
-function run(cmd) {
-  try { return execSync(cmd, { encoding: 'utf8', timeout: 10000 }).trim(); }
-  catch (e) { return e.stdout?.trim() || e.message; }
+function run(command, args = []) {
+  try {
+    return execFileSync(command, args, { encoding: 'utf8', timeout: 10000 }).trim();
+  } catch (error) {
+    return error.stdout?.trim() || error.message;
+  }
+}
+
+function sleep(seconds) {
+  run('sleep', [String(seconds)]);
+}
+
+function parsePids(output) {
+  return output
+    .split(/\s+/)
+    .map((pid) => pid.trim())
+    .filter((pid) => /^\d+$/.test(pid));
 }
 
 function health() {
   try {
-    const r = run(`curl -sf ${HEALTH}`);
+    const r = run('curl', ['-sf', HEALTH]);
     return JSON.parse(r);
   } catch { return null; }
 }
 
+function isExpectedHealth(result) {
+  return result?.name === EXPECTED_SERVER_NAME;
+}
+
 function isLaunchdLoaded() {
-  const out = run(`launchctl list ${LABEL} 2>/dev/null`);
-  return out.includes('PID') || out.includes(LABEL);
+  const output = run('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
+  return output.includes(LABEL) || output.includes('state = running');
+}
+
+function findServerPids() {
+  return parsePids(run('pgrep', ['-f', 'packages/workspace/server.py|workspace/server.py']));
+}
+
+function findPortPids() {
+  return parsePids(run('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']));
 }
 
 function findServerPid() {
-  const pid = run('pgrep -f "workspace/server.py"');
-  return pid && /^\d+$/.test(pid) ? pid : null;
+  return findServerPids()[0] || null;
+}
+
+function findRunningPids() {
+  return [...new Set([...findServerPids(), ...findPortPids()])];
+}
+
+function bootoutLaunchLabel(label) {
+  run('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
+}
+
+function stopConflictingLaunchAgents() {
+  for (const label of CONFLICTING_LABELS) {
+    bootoutLaunchLabel(label);
+  }
 }
 
 function killServer() {
-  // kill by pid AND by port to catch stale processes
-  const pid = findServerPid();
-  const portPid = run('lsof -iTCP:8850 -sTCP:LISTEN -t 2>/dev/null');
-  const pids = new Set([pid, portPid].filter(p => p && /^\d+$/.test(p)));
+  const pids = findRunningPids();
 
   for (const p of pids) {
-    run(`kill ${p}`);
+    run('kill', [p]);
   }
   for (let i = 0; i < 10; i++) {
-    if (!findServerPid() && !run('lsof -iTCP:8850 -sTCP:LISTEN -t 2>/dev/null').match(/^\d+$/)) return true;
-    run('sleep 0.3');
+    if (findRunningPids().length === 0) return true;
+    sleep(0.3);
   }
   for (const p of pids) {
-    run(`kill -9 ${p}`);
+    run('kill', ['-9', p]);
   }
-  return !findServerPid();
+  return findRunningPids().length === 0;
 }
 
 function startDirect() {
@@ -86,31 +129,50 @@ function startDirect() {
   }
 }
 
-function waitForHealth(label) {
-  for (let i = 0; i < 15; i++) {
+function waitForHealth(label, attempts = RELOAD_WAIT_ATTEMPTS) {
+  let wrongServerName = null;
+  for (let i = 0; i < attempts; i++) {
     const h = health();
-    if (h) {
+    if (isExpectedHealth(h)) {
       writeStdout(`✓ ${label} — ${h.tools} tools, name: ${h.name}`);
-      const pid = findServerPid();
-      if (pid) writeStdout(`  pid: ${pid}`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
+      writeStdout(`  health: ${HEALTH}`);
       return true;
     }
-    run('sleep 0.5');
+    if (h?.name && h.name !== EXPECTED_SERVER_NAME) wrongServerName = h.name;
+    sleep(0.5);
+  }
+  if (wrongServerName) {
+    writeStdout(`${label} (wrong server "${wrongServerName}" is answering ${HEALTH}; expected ${EXPECTED_SERVER_NAME})`);
   }
   writeStdout(`${label} (health check pending — server may still be starting)`);
   return false;
 }
 
+function bootoutLaunchAgent() {
+  bootoutLaunchLabel(LABEL);
+}
+
+function bootstrapLaunchAgent() {
+  run('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST]);
+  run('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`]);
+}
+
 function runReload({ useLaunchd }) {
-  if (useLaunchd) {
-    run(`launchctl unload ${PLIST} 2>/dev/null`);
-    run('sleep 1');
-    run(`launchctl load ${PLIST} 2>/dev/null`);
-  } else {
+  if (useLaunchd && existsSync(PLIST)) {
+    bootoutLaunchAgent();
+    stopConflictingLaunchAgents();
     killServer();
-    run('sleep 1');
+    sleep(1);
+    bootstrapLaunchAgent();
+  } else {
+    stopConflictingLaunchAgents();
+    killServer();
+    sleep(1);
     startDirect();
   }
+  waitForHealth('reloaded');
 }
 
 function scheduleReload({ useLaunchd }) {
@@ -154,38 +216,41 @@ const cmd = args[0] || 'consuelo-reload';
 const useLaunchd = isLaunchdLoaded();
 switch (cmd) {
   case 'status': {
-    const h = health();
-    if (h) {
+    const shouldWaitForLaunchd = useLaunchd && existsSync(PLIST);
+    const h = health() || (findRunningPids().length || shouldWaitForLaunchd ? (waitForHealth('server starting', 20) ? health() : null) : null);
+    if (isExpectedHealth(h)) {
       writeStdout(`✓ server running — ${h.tools} tools, name: ${h.name}`);
-      const pid = findServerPid();
-      if (pid) writeStdout(`  pid: ${pid}`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
       writeStdout(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
+      writeStdout(`  health: ${HEALTH}`);
     } else {
       writeStdout('✗ server not responding');
-      const pid = findServerPid();
-      if (pid) writeStdout(`  process exists (pid ${pid}) but not healthy`);
+      if (h?.name) writeStdout(`  wrong server responding: ${h.name} (expected ${EXPECTED_SERVER_NAME})`);
+      const pids = findRunningPids();
+      if (pids.length) writeStdout(`  process exists (pid ${pids.join(', ')}) but not healthy`);
     }
     break;
   }
 
   case 'stop':
     if (useLaunchd) {
-      run(`launchctl unload ${PLIST} 2>/dev/null`);
+      bootoutLaunchAgent();
     }
     killServer();
     writeStdout('stopped');
     break;
 
   case 'start':
-    if (findServerPid()) {
+    if (findRunningPids().length) {
       writeStdout('server already running');
       const h = health();
       if (h) writeStdout(`  ✓ healthy — ${h.tools} tools`);
       else writeStdout('  ✗ process exists but not healthy');
       break;
     }
-    if (useLaunchd) {
-      run(`launchctl load ${PLIST} 2>/dev/null`);
+    if (useLaunchd && existsSync(PLIST)) {
+      bootstrapLaunchAgent();
     } else {
       startDirect();
     }
@@ -200,19 +265,16 @@ switch (cmd) {
 
   case 'reload-now':
   case 'restart-now':
-    run('sleep 0.5');
+    sleep(0.5);
     runReload({ useLaunchd: process.env.WORKSPACE_SERVER_RELOAD_LAUNCHD === '1' || useLaunchd });
-    if (!process.env.WORKSPACE_SERVER_RELOAD_CHILD) waitForHealth('reloaded');
     break;
 
   case 'logs':
-    try {
-      execSync(`tail -50 ${LOG_FILE}`, { stdio: 'inherit' });
-    } catch { writeStdout(`no logs at ${LOG_FILE}`); }
+    if (existsSync(LOG_FILE)) spawn('tail', ['-50', LOG_FILE], { stdio: 'inherit' });
+    else writeStdout(`no logs at ${LOG_FILE}`);
     break;
 
   default:
     writeStderr(`unknown command: ${cmd}`);
     process.exit(1);
 }
-

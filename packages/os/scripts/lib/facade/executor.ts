@@ -564,7 +564,7 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'office.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
@@ -607,6 +607,10 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
   }
   if (toolName === "fs.http" && !input.method) {
     return { ...input, method: "get" };
+  }
+
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    return { ...input, paths: [input.path] };
   }
 
   if (toolName === "fs.read" && Array.isArray(input.files)) {

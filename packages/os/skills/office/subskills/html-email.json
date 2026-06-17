@@ -1,0 +1,18 @@
+{
+  "id": "html-email",
+  "title": "HTML Email",
+  "uses": [
+    "office"
+  ],
+  "workflow": "email",
+  "defaultTool": "office.generateEmail",
+  "primaryOpenDesignSkill": "email-marketing",
+  "templates": [
+    "email"
+  ],
+  "extraRules": [
+    "Use email-safe layout and inline-compatible CSS expectations.",
+    "Validate rendered output before publishing or handoff.",
+    "Do not send or schedule email without explicit approval."
+  ]
+}
