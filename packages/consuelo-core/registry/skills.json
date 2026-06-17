@@ -2,17 +2,17 @@
   "version": 1,
   "skills": [
     {
-      "id": "consuelo-design",
+      "id": "office",
       "ownerPackage": "os",
-      "skillName": "consuelo-design",
-      "path": "packages/os/skills/consuelo-design",
+      "skillName": "office",
+      "path": "packages/os/skills/office",
       "placeholder": true,
       "exposure": "public",
       "migrationStatus": "os-owned",
       "sourceOfTruth": {
         "ref": "origin/stream/os",
         "commit": "b6233b465e",
-        "path": "packages/os/skills/consuelo-design/skill.json",
+        "path": "packages/os/skills/office/skill.json",
         "reason": "OS skills registry owns compact skill metadata; this core entry only records ownership."
       },
       "validation": ["packages/os/tests/skills-registry.test.ts", "packages/consuelo-core/tests/registry.test.ts"]

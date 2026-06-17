@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -24,6 +24,15 @@ export type WorkspaceCloudflareEdgeRouteTarget =
         | 'versioned-asset'
         | 'mutable-artifact'
         | 'private-preview';
+    }
+  | {
+      kind: 'consuelo-gateway-service';
+      serviceName:
+        | 'trace-sites-read-layer'
+        | 'trace-sites-live-endpoints'
+        | (string & {});
+      gatewayRouteFamily: string;
+      publicSiteRouteFamily: string;
     };
 
 export type WorkspaceSitesEdgeCache = {
@@ -266,6 +275,32 @@ const signEdgeRequest = (input: {
     .update(canonical)
     .digest('hex')}`;
 };
+const signatureMatches = (left: string, right: string): boolean => {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const isSignedInternalEdgeRequest = (input: {
+  request: Request;
+  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
+  internalSigningSecret: string;
+}): boolean => {
+  const inboundUrl = new URL(input.request.url);
+  const signature = input.request.headers.get('x-consuelo-edge-signature')?.trim();
+  if (!signature) return false;
+
+  const expectedSignature = signEdgeRequest({
+    secret: input.internalSigningSecret,
+    method: input.request.method,
+    pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
+    workspaceId: input.resolution.workspaceId,
+    surface: input.resolution.surface,
+  });
+
+  return signatureMatches(signature, expectedSignature);
+};
 
 const buildProxyRequest = (input: {
   request: Request;
@@ -410,6 +445,34 @@ const createSiteSnapshotResponse = (input: {
     },
   });
 
+const createConsueloGatewayServiceResponse = (input: {
+  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
+    target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'consuelo-gateway-service' }>;
+  };
+}): Response => Response.json(
+  {
+    ok: true,
+    publicBoundary: 'consuelo-gateway',
+    workspace: {
+      workspaceId: input.resolution.workspaceId,
+      workspaceHost: input.resolution.hostname,
+    },
+    route: {
+      serviceName: input.resolution.target.serviceName,
+      gatewayServiceName: input.resolution.target.serviceName,
+      gatewayRouteFamily: input.resolution.target.gatewayRouteFamily,
+      publicSiteRouteFamily: input.resolution.target.publicSiteRouteFamily,
+    },
+  },
+  {
+    status: 200,
+    headers: {
+      'cache-control': 'no-store',
+      'x-consuelo-edge-route-authority': 'consuelo-gateway-service',
+    },
+  },
+);
+
 const serveSiteSnapshot = async (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
@@ -516,6 +579,38 @@ export const createWorkspaceCloudflareEdgeRouter = (
               >;
             },
             store: input.siteSnapshots,
+          });
+        }
+
+        if (resolution.target.kind === 'consuelo-gateway-service') {
+          const internalSigningSecret = input.internalSigningSecret?.trim();
+
+          if (
+            resolution.auth !== 'public' &&
+            (!internalSigningSecret ||
+              !isSignedInternalEdgeRequest({
+                request,
+                resolution,
+                internalSigningSecret,
+              }))
+          ) {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+              request,
+            });
+          }
+
+          return createConsueloGatewayServiceResponse({
+            resolution: resolution as Extract<
+              WorkspaceCloudflareEdgeRouteResolution,
+              { allowed: true }
+            > & {
+              target: Extract<
+                WorkspaceCloudflareEdgeRouteTarget,
+                { kind: 'consuelo-gateway-service' }
+              >;
+            },
           });
         }
 

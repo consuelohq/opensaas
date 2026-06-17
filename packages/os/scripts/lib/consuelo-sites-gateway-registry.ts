@@ -72,9 +72,9 @@ function assertGatewayServiceRegistration(registration: ConsueloGatewayServiceRe
     registration.gatewayAdapterName,
     registration.publicSiteRouteFamily,
     registration.gatewayRouteFamily,
-  ].join(' ');
+  ].join(' ').toLowerCase();
 
-  if (IMPLEMENTATION_TARGET_LABELS.some((label) => descriptor.includes(label))) {
+  if (IMPLEMENTATION_TARGET_LABELS.some((label) => descriptor.includes(label.toLowerCase()))) {
     throw new Error('implementation targets cannot be registered as Consuelo Gateway services');
   }
 }

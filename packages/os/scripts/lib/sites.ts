@@ -1,31 +1,8 @@
+import { Database } from 'bun:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-type BunDb = {
-  query: (sql: string) => {
-    get: () => unknown;
-    all: () => unknown[];
-  };
-  close: () => void;
-};
-
-type BunDbConstructor = new (
-  path: string,
-  options: { readonly: boolean },
-) => BunDb;
-
-function loadBunDb(): BunDbConstructor | null {
-  if (!('bun' in process.versions)) return null;
-
-  const load = Function(
-    'return typeof require === "function" ? require : undefined',
-  )() as ((specifier: string) => unknown) | undefined;
-  if (!load) return null;
-
-  const module = load('bun:sqlite') as { Database?: BunDbConstructor };
-  return module.Database ?? null;
-}
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -299,9 +276,6 @@ function hasArtifactsTable(db: BunDb): boolean {
 
 function readArtifactRows(dbPath: string): ArtifactRow[] {
   if (!fs.existsSync(dbPath)) return [];
-  const Database = loadBunDb();
-  if (!Database) return [];
-
   const db = new Database(dbPath, { readonly: true });
   try {
     if (!hasArtifactsTable(db)) return [];
