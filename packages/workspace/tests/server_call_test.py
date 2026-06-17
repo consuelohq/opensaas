@@ -359,6 +359,46 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 self.assertFalse(result['ok'])
                 self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
 
+    def test_read_only_fs_tools_do_not_require_task_session(self):
+        manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
+        by_name = {entry['name']: entry for entry in manifest}
+        for tool in ['fs.read', 'fs.search']:
+            with self.subTest(tool=tool):
+                self.assertIn(tool, by_name)
+                self.assertFalse(by_name[tool].get('sessionRequired'), tool)
+                self.assertEqual(by_name[tool].get('command', {}).get('branchMode'), 'optional')
+
+        captured = []
+
+        def fake_run(args, **kwargs):
+            captured.append(args)
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            read_result = self.module._run_workspace_call('fs.read', tool_input={'path': 'AGENTS.md'})
+            search_result = self.module._run_workspace_call('fs.search', tool_input={'pattern': 'workspace', 'paths': ['AGENTS.md']})
+
+        self.assert_standard_envelope(read_result)
+        self.assert_standard_envelope(search_result)
+        self.assertTrue(read_result['ok'])
+        self.assertTrue(search_result['ok'])
+        self.assertEqual(len(captured), 2)
+        for args in captured:
+            resolved_input = json.loads(args[3])
+            self.assertNotIn('taskSession', resolved_input)
+            self.assertNotIn('branch', resolved_input)
+
     def test_session_optional_tools_with_optional_branch_mode_do_not_require_task_session(self):
         captured = {}
         manifest_entry = {

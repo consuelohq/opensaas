@@ -161,8 +161,10 @@ function writeFakePi(tempRoot: string): string {
   return binDir;
 }
 
+const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search', 'tools.search']);
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
 describe('typed facade executor', () => {
@@ -572,48 +574,44 @@ describe('typed facade executor', () => {
     expect(plans[0].args).toContain('https://example.com');
   });
 
-  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
+  it('runs read-only fs tools without taskSession', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
+
+    const readResult = await executeTool('fs.read', {
       path: 'AGENTS.md',
     }, {
       ...stableOptions(successfulRunner(), plans),
       branchResolver: () => ({
         ok: false,
         code: 'WORKTREE_NOT_FOUND',
-        message: 'no active task worktree found; run task:start first or pass branch',
+        message: 'no active task worktree found',
         candidates: [],
       }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect(plans).toHaveLength(0);
-    expect(result.data).toMatchObject({
-      tool: 'fs.read',
-      repoStateBound: true,
-      originalCall: {
-        tool: 'fs.read',
-        input: { path: 'AGENTS.md' },
-      },
-      recovery: { action: 'start_task_session_then_retry' },
-    });
-  });
-
-  it('requires taskSession for sessionRequired tools', async () => {
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
     }, {
-      ...stableOptions(successfulRunner()),
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found',
+        candidates: [],
+      }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect((result.data as { reason?: string }).reason).toContain('branch-aware and fresh');
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(plans).toHaveLength(2);
+    expect(plans[0].args).not.toContain('--branch');
+    expect(plans[1].args).not.toContain('--branch');
   });
 
   it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
