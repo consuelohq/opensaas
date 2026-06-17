@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-trace-sites-observability-tests-green",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1101,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1101",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1101",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1101/make-trace-sites-observability-tests-green",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1101",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1101/make-trace-sites-observability-tests-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-trace-sites-observability-tests-green",
+  "taskSession": "tsk_bef3bcd7e8d5",
+  "tmuxSession": "opensaas-os-make-trace-sites-observability-tests-green-bef3bcd7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-trace-sites-observability-tests-green/.task/os/make-trace-sites-observability-tests-green/session.json",
+  "createdAt": "2026-06-17T03:23:59.344Z"
+}
