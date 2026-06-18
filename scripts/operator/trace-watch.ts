@@ -288,10 +288,11 @@ function fmtTokenCount(value: unknown): string {
 
 function operationTokenTotal(operation: NestedOperation): number | undefined {
   const explicitTotal = optionalNumber(operation.totalTokens);
+  const input = optionalNumber(operation.inputTokens);
+  const output = optionalNumber(operation.outputTokens);
+  if (explicitTotal !== undefined && explicitTotal > 0) return explicitTotal;
+  if (input !== undefined || output !== undefined) return (input || 0) + (output || 0);
   if (explicitTotal !== undefined) return explicitTotal;
-  const input = optionalNumber(operation.inputTokens) || 0;
-  const output = optionalNumber(operation.outputTokens) || 0;
-  if (operation.inputTokens !== undefined || operation.outputTokens !== undefined) return input + output;
   return undefined;
 }
 
@@ -717,11 +718,57 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
-function nestedOperationFromResult(result: unknown, toolFallback: string): NestedOperation | null {
-  if (!isRecord(result)) return null;
+function jsonString(value: unknown): string {
+  try { return JSON.stringify(value ?? {}); } catch { return '{}'; }
+}
+
+function codeCallRowFromResult(result: Record<string, unknown>, input: unknown): Row {
+  const data = dataRecordFromResult(result);
   const ok = result.ok === true || (result.code === 'OK' && result.ok !== false);
   return {
-    tool: cleanText(result.tool || toolFallback || 'unknown') || 'unknown',
+    tool: 'code.call',
+    status: ok ? 'ok' : 'error',
+    code: cleanText(result.code || (ok ? 'OK' : 'ERR')),
+    exit_code: numericValue(result.exitCode ?? result.exit_code ?? data.exitCode ?? data.exit_code, ok ? 0 : 1),
+    duration_ms: numericValue(result.durationMs ?? result.duration_ms ?? data.durationMs ?? data.duration_ms, 0),
+    input_tokens: optionalNumber(result.inputTokens ?? result.input_tokens),
+    output_tokens: optionalNumber(result.outputTokens ?? result.output_tokens),
+    total_tokens: optionalNumber(result.totalTokens ?? result.total_tokens),
+    input_json: jsonString(input),
+    resolved_input_json: jsonString(input),
+    result_json: jsonString(result),
+    stderr: cleanText(result.stderr || data.stderr),
+  };
+}
+
+function codeCallNestedOperationFromResult(result: Record<string, unknown>, input: unknown): NestedOperation {
+  const row = codeCallRowFromResult(result, input);
+  const ok = String(row.status || '') === 'ok' && String(row.code || '') === 'OK' && Number(row.exit_code || 0) === 0;
+  const failureCode = codeCallFailureCode(row);
+  const summaryDetail = codeCallDetail(row);
+  return {
+    tool: 'code.call',
+    helper: cleanText(result.helper),
+    ok,
+    code: failureCode || cleanText(result.code || (ok ? 'OK' : 'ERR')),
+    message: cleanText(result.message),
+    traceId: cleanText(result.traceId),
+    durationMs: numericValue(result.durationMs ?? result.duration_ms, 0),
+    inputTokens: optionalNumber(result.inputTokens ?? result.input_tokens),
+    outputTokens: optionalNumber(result.outputTokens ?? result.output_tokens),
+    totalTokens: optionalNumber(result.totalTokens ?? result.total_tokens),
+    detail: failureCode === 'TESTS_FAILED' ? ['tests failed', summaryDetail].filter(Boolean).join(' · ') : summaryDetail || cleanText(result.detail || result.message),
+    changed: false,
+  };
+}
+
+function nestedOperationFromResult(result: unknown, toolFallback: string, input?: unknown): NestedOperation | null {
+  if (!isRecord(result)) return null;
+  const tool = cleanText(result.tool || toolFallback || 'unknown') || 'unknown';
+  if (tool === 'code.call') return codeCallNestedOperationFromResult(result, input || {});
+  const ok = result.ok === true || (result.code === 'OK' && result.ok !== false);
+  return {
+    tool,
     helper: cleanText(result.helper),
     ok,
     code: cleanText(result.code || (ok ? 'OK' : 'ERR')),
@@ -755,7 +802,8 @@ function batchOperations(row: Row): NestedOperation[] {
     .map((batchResult, index) => {
       const step = steps[index];
       const tool = isRecord(step) ? cleanText(step.tool) : 'unknown';
-      return nestedOperationFromResult(batchResult, tool || 'unknown');
+      const input = isRecord(step) ? step.input ?? step.args ?? {} : {};
+      return nestedOperationFromResult(batchResult, tool || 'unknown', input);
     })
     .filter((operation): operation is NestedOperation => operation !== null);
 }
