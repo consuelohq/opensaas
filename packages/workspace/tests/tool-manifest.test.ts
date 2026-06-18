@@ -11,6 +11,7 @@ type JsonObject = Record<string, unknown>;
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
 const expectedDescriptions = {
+  'code.call': 'Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.',
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
   intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',

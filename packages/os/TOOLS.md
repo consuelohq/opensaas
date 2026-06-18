@@ -54,7 +54,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |

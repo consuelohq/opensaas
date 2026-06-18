@@ -56,7 +56,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
