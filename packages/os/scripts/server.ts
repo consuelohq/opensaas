@@ -235,7 +235,8 @@ function healthResponse(): Response {
 }
 
 async function handleRequest(request: Request): Promise<Response> {
-  const url = new URL(request.url);
+  try {
+    const url = new URL(request.url);
 
   if (url.pathname === '/health') return healthResponse();
 
@@ -306,12 +307,15 @@ async function handleRequest(request: Request): Promise<Response> {
     return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
   }
 
-  return jsonResponse({
-    error: {
-      code: 'NOT_FOUND',
-      message: 'Route not found',
-    },
-  }, 404);
+    return jsonResponse({
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Route not found',
+      },
+    }, 404);
+  } catch (error: unknown) {
+    return internalError(error);
+  }
 }
 
 if (import.meta.main) {

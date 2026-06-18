@@ -1,10 +1,20 @@
-import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createPrivateKey,
+  createPublicKey,
+  generateKeyPairSync,
+  randomUUID,
+  sign as cryptoSign,
+  verify as cryptoVerify,
+} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import { readFullToolManifest } from './manifest';
 
 type JsonObject = Record<string, unknown>;
+type SignatureAlgorithm = 'ed25519';
+
+const SIGNATURE_ALGORITHM: SignatureAlgorithm = 'ed25519';
 
 type PublicGatewayMetadata = {
   provider: 'cloudflare';
@@ -130,7 +140,8 @@ type OutboundConnectorConfig = {
 
 type StoredToken = Omit<AgentAppToken, 'secret'> & {
   status: 'active' | 'rotated' | 'revoked';
-  credentialHash: string;
+  signatureAlgorithm: SignatureAlgorithm;
+  publicKey: string;
   createdAt: string;
   updatedAt: string;
   rotatedAt?: string;
@@ -177,12 +188,12 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-function randomSecret(): string {
-  return randomBytes(32).toString('base64url');
-}
-
-function hashCredentialSecret(secret: string): string {
-  return `sha256:${createHash('sha256').update(secret).digest('base64url')}`;
+function generateCredentialKeyPair(): { privateKey: string; publicKey: string } {
+  const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+  return {
+    privateKey: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
+    publicKey: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+  };
 }
 
 function publicTokenFromStored(token: StoredToken, secret: string): AgentAppToken {
@@ -286,22 +297,18 @@ function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Recor
 
   for (const [tokenId, record] of Object.entries(value as Record<string, unknown>)) {
     if (!record || typeof record !== 'object' || Array.isArray(record)) continue;
-    const candidate = record as Partial<StoredToken> & { secret?: unknown };
+    const candidate = record as Partial<StoredToken> & { credentialHash?: unknown; secret?: unknown };
     if (
       typeof candidate.workspaceId !== 'string' ||
       typeof candidate.callerId !== 'string' ||
       typeof candidate.appId !== 'string' ||
       !Array.isArray(candidate.scopes) ||
-      typeof candidate.expiresAt !== 'string'
+      typeof candidate.expiresAt !== 'string' ||
+      candidate.signatureAlgorithm !== SIGNATURE_ALGORITHM ||
+      typeof candidate.publicKey !== 'string'
     ) {
       continue;
     }
-    const credentialHash = typeof candidate.credentialHash === 'string'
-      ? candidate.credentialHash
-      : typeof candidate.secret === 'string'
-        ? hashCredentialSecret(candidate.secret)
-        : null;
-    if (!credentialHash) continue;
     const status = candidate.status === 'rotated' || candidate.status === 'revoked'
       ? candidate.status
       : 'active';
@@ -315,7 +322,8 @@ function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Recor
       appId: candidate.appId,
       scopes: candidate.scopes.filter((scope): scope is string => typeof scope === 'string'),
       expiresAt: candidate.expiresAt,
-      credentialHash,
+      signatureAlgorithm: SIGNATURE_ALGORITHM,
+      publicKey: candidate.publicKey,
       status,
       createdAt,
       updatedAt,
@@ -490,14 +498,16 @@ function canonicalRequest(input: {
   ].join('\n');
 }
 
-function sign(secret: string, payload: string): string {
-  return createHmac('sha256', secret).update(payload).digest('base64url');
+function sign(privateKey: string, payload: string): string {
+  return cryptoSign(null, Buffer.from(payload), createPrivateKey(privateKey)).toString('base64url');
 }
 
-function signatureMatches(left: string, right: string): boolean {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+function verifySignature(publicKey: string, payload: string, signature: string): boolean {
+  try {
+    return cryptoVerify(null, Buffer.from(payload), createPublicKey(publicKey), Buffer.from(signature, 'base64url'));
+  } catch {
+    return false;
+  }
 }
 
 function requirePrivateUpstream(upstream: { host: string; port: number }): void {
@@ -589,7 +599,7 @@ export function issueAgentAppToken(input: {
   expiresInSeconds: number;
 }): AgentAppToken {
   const stored = readStoredAuth(input.config);
-  const secret = randomSecret();
+  const keyPair = generateCredentialKeyPair();
   const timestamp = nowIso();
   const token: StoredToken = {
     tokenId: `tok_${randomUUID()}`,
@@ -598,15 +608,16 @@ export function issueAgentAppToken(input: {
     appId: input.appId,
     scopes: [...input.scopes],
     expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
-    credentialHash: hashCredentialSecret(secret),
+    signatureAlgorithm: SIGNATURE_ALGORITHM,
+    publicKey: keyPair.publicKey,
     status: 'active',
     createdAt: timestamp,
     updatedAt: timestamp,
   };
+  recordCredentialAuditEvent(input.config, token, 'gateway.credential.issued', 'issued');
   stored.tokens[token.tokenId] = token;
   writeStoredAuth(input.config, stored);
-  recordCredentialAuditEvent(input.config, token, 'gateway.credential.issued', 'issued');
-  return publicTokenFromStored(token, secret);
+  return publicTokenFromStored(token, keyPair.privateKey);
 }
 
 export function rotateAgentAppToken(input: {
@@ -619,35 +630,33 @@ export function rotateAgentAppToken(input: {
     throw new Error('gateway token is not recognized');
   }
   const timestamp = nowIso();
-  const secret = randomSecret();
-  existing.status = 'rotated';
-  existing.rotatedAt = timestamp;
-  existing.updatedAt = timestamp;
-  const {
-    rotatedAt: _rotatedAt,
-    revokedAt: _revokedAt,
-    lastUsedAt: _lastUsedAt,
-    rotationOfTokenId: _rotationOfTokenId,
-    ...rotatedClaims
-  } = existing;
-  void _rotatedAt;
-  void _revokedAt;
-  void _lastUsedAt;
-  void _rotationOfTokenId;
+  const keyPair = generateCredentialKeyPair();
+  const rotatedExisting: StoredToken = {
+    ...existing,
+    status: 'rotated',
+    rotatedAt: timestamp,
+    updatedAt: timestamp,
+  };
   const rotated: StoredToken = {
-    ...rotatedClaims,
     tokenId: `tok_${randomUUID()}`,
-    credentialHash: hashCredentialSecret(secret),
+    workspaceId: existing.workspaceId,
+    callerId: existing.callerId,
+    appId: existing.appId,
+    scopes: [...existing.scopes],
+    expiresAt: existing.expiresAt,
+    signatureAlgorithm: SIGNATURE_ALGORITHM,
+    publicKey: keyPair.publicKey,
     status: 'active',
     createdAt: timestamp,
     updatedAt: timestamp,
     rotationOfTokenId: existing.tokenId,
   };
+  recordCredentialAuditEvent(input.config, rotatedExisting, 'gateway.credential.rotated', 'rotated');
+  recordCredentialAuditEvent(input.config, rotated, 'gateway.credential.issued', 'issued');
+  stored.tokens[rotatedExisting.tokenId] = rotatedExisting;
   stored.tokens[rotated.tokenId] = rotated;
   writeStoredAuth(input.config, stored);
-  recordCredentialAuditEvent(input.config, existing, 'gateway.credential.rotated', 'rotated');
-  recordCredentialAuditEvent(input.config, rotated, 'gateway.credential.issued', 'issued');
-  return publicTokenFromStored(rotated, secret);
+  return publicTokenFromStored(rotated, keyPair.privateKey);
 }
 
 export function revokeAgentAppToken(input: {
@@ -704,7 +713,7 @@ export function signMachineRequest(input: {
     timestamp: input.timestamp,
     nonce: input.nonce,
   });
-  const signature = sign(hashCredentialSecret(input.token.secret), payload);
+  const signature = sign(input.token.secret, payload);
   return {
     body: input.body,
     nonce: input.nonce,
@@ -779,7 +788,11 @@ export function verifyMachineRequest(input: {
     return safeError(401, 'REPLAYED_NONCE', 'Gateway nonce has already been used.');
   }
 
-  const expected = sign(token.credentialHash, canonicalRequest({
+  if (token.signatureAlgorithm !== SIGNATURE_ALGORITHM) {
+    return safeError(401, 'BAD_SIGNATURE', 'Gateway signature could not be verified.');
+  }
+
+  const payload = canonicalRequest({
     tokenId,
     workspaceId: input.config.workspaceId,
     callerId: token.callerId,
@@ -789,8 +802,8 @@ export function verifyMachineRequest(input: {
     body: input.body,
     timestamp,
     nonce,
-  }));
-  if (!signatureMatches(signature, expected)) {
+  });
+  if (!verifySignature(token.publicKey, payload, signature)) {
     return safeError(401, 'BAD_SIGNATURE', 'Gateway signature could not be verified.');
   }
 

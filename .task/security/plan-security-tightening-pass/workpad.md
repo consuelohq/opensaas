@@ -112,3 +112,11 @@ bun run task:finish
 - 2026-06-18 00:00:22 apply-patch: `packages/os/tests/cloudflare-edge-router.test.ts`
 - 2026-06-18 00:00:40 apply-patch: `packages/os/scripts/lib/security-gateway.ts`
 - 2026-06-18 00:01:36 apply-patch: `packages/os/scripts/server.ts`
+
+## Review comment resolution — 2026-06-17
+
+State: Codex P2 findings on PR #1115 were accepted and resolved.
+Delta: `security-gateway.ts` now stores Ed25519 public verifier material instead of a reusable HMAC key/hash, signs requests with the returned private key, verifies with the stored public key, and appends credential audit events before persisting issued or rotated credentials. `server.ts` now wraps `handleRequest` in a top-level `try/catch` to satisfy the review gate.
+Evidence: Red focused test `bun --cwd packages/os test tests/security-gateway.test.ts` failed 4 expected assertions on stored verifier shape and audit atomicity before implementation. Green focused test passed 23/23 after implementation. Touched-test bundle `bun --cwd packages/os test tests/security-gateway.test.ts tests/cloudflare-edge-router.test.ts tests/dangerous-material-policy.test.ts tests/local-guardrails.test.ts` passed 32 tests with 10 skips. Review command `bun run review -- --base stream/security --no-tests` passed all checks.
+Risk: Existing hash-only persisted credentials from the intermediate PR shape fail closed because they cannot be converted into public/private keypairs. Reissue/rotation is required for those credentials.
+Tooling gap: The reattached existing PR worktree had no usable `taskSession`, so validation used `code.call` with explicit `taskWorktree`, and publish uses a temporary git index on top of the remote PR branch rather than `task.push`.

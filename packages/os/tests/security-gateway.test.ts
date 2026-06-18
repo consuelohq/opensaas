@@ -5,6 +5,7 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -370,9 +371,16 @@ describe('Consuelo OS public gateway security contract', () => {
       expiresInSeconds: 300,
     });
     const storedAfterIssue = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
-      tokens: Record<string, { credentialHash?: string; secret?: string }>;
+      tokens: Record<string, {
+        credentialHash?: string;
+        publicKey?: string;
+        secret?: string;
+        signatureAlgorithm?: string;
+      }>;
     };
-    expect(storedAfterIssue.tokens[token.tokenId]?.credentialHash).toMatch(/^sha256:/);
+    expect(storedAfterIssue.tokens[token.tokenId]?.signatureAlgorithm).toBe('ed25519');
+    expect(storedAfterIssue.tokens[token.tokenId]?.publicKey).toContain('BEGIN PUBLIC KEY');
+    expect(storedAfterIssue.tokens[token.tokenId]?.credentialHash).toBeUndefined();
     expect(storedAfterIssue.tokens[token.tokenId]?.secret).toBeUndefined();
     expect(JSON.stringify(storedAfterIssue)).not.toContain(token.secret);
     const body = JSON.stringify({ name: 'status', input: {} });
@@ -521,6 +529,114 @@ describe('Consuelo OS public gateway security contract', () => {
     });
     expect(appMismatch).toMatchObject({ ok: false, status: 403, error: { code: 'APP_MISMATCH' } });
     expect(JSON.stringify([replay, expired, tampered, wrongWorkspace, callerMismatch, appMismatch])).not.toContain(token.secret);
+  });
+
+  it('stores only public verifier material and rejects verifier-only forgeries', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'public-verifier-forgery-nonce',
+    });
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
+      tokens: Record<string, {
+        credentialHash?: string;
+        publicKey?: string;
+        secret?: string;
+        signatureAlgorithm?: string;
+      }>;
+    };
+    const storedToken = stored.tokens[token.tokenId];
+
+    expect(storedToken?.signatureAlgorithm).toBe('ed25519');
+    expect(storedToken?.publicKey).toContain('BEGIN PUBLIC KEY');
+    expect(storedToken?.credentialHash).toBeUndefined();
+    expect(storedToken?.secret).toBeUndefined();
+
+    const forged = await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-signature': storedToken?.publicKey ?? '',
+      },
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:01.000Z',
+    });
+
+    expect(forged).toMatchObject({ ok: false, status: 401, error: { code: 'BAD_SIGNATURE' } });
+  });
+
+  it('does not persist issued credentials when audit logging fails', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    rmSync(join(tempHome, 'logs'), { recursive: true, force: true });
+    writeFileSync(join(tempHome, 'logs'), 'audit path blocked');
+
+    expect(() => gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    })).toThrow();
+
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
+      tokens: Record<string, unknown>;
+    };
+    expect(Object.keys(stored.tokens)).toEqual([]);
+  });
+
+  it('does not partially rotate credentials when audit logging fails', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    rmSync(join(tempHome, 'logs'), { recursive: true, force: true });
+    writeFileSync(join(tempHome, 'logs'), 'audit path blocked');
+
+    expect(() => gateway.rotateAgentAppToken({ config, token })).toThrow();
+
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
+      tokens: Record<string, { status?: string }>;
+    };
+    expect(Object.keys(stored.tokens)).toEqual([token.tokenId]);
+    expect(stored.tokens[token.tokenId]?.status).toBe('active');
   });
 
   it('rotates and revokes scoped app tokens without preserving old credentials', async () => {
