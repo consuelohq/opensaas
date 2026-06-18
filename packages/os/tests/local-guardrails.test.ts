@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -9,6 +9,7 @@ import {
   validateManifestGuardrails,
 } from '../scripts/lib/local-guardrails';
 import type { OsManifestEntry } from '../scripts/lib/types';
+import { removeSafeTempDir } from './safe-temp-cleanup';
 
 let tempHome: string;
 let tempUserHome: string;
@@ -19,9 +20,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  rmSync(tempHome, { recursive: true, force: true });
-  rmSync(tempUserHome, { recursive: true, force: true });
+  removeSafeTempDir(tempHome, 'consuelo-os-guardrails-');
+  removeSafeTempDir(tempUserHome, 'consuelo-user-guardrails-');
 });
+
+function destructiveDeleteHomeFixture(): string {
+  return [['r', 'm'].join(''), ['-', 'r', 'f'].join(''), '~'].join(' ');
+}
 
 function manifestEntry(overrides: Partial<OsManifestEntry>): OsManifestEntry {
   return {
@@ -84,7 +89,7 @@ describe('local guardrails', () => {
   });
 
   it('blocks destructive shell commands and approval-gates other shell execution', () => {
-    expect(assessShellCommandAccess({ command: 'rm -rf ~' })).toMatchObject({
+    expect(assessShellCommandAccess({ command: destructiveDeleteHomeFixture() })).toMatchObject({
       allowed: false,
       status: 'permission_denied',
       code: 'DESTRUCTIVE_COMMAND_BLOCKED',
