@@ -54,7 +54,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
@@ -70,9 +70,9 @@ preferred repo-scoped execution tool for focused tests, package scripts, typeche
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "bash",
-    "mode": "verify",
-    "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+    "language": "bun",
+    "mode": "read",
+    "code": "const path = \"packages/os/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
     "maxResultChars": 20000
   }
 });
@@ -7404,7 +7404,7 @@ Start a task workflow for scoped write access. It dispatches progressively discl
 | --- | --- |
 | Category | workflow |
 | Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace intent` |
+| Runtime | `os intent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
 
