@@ -212,6 +212,35 @@ SELECT
   CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.language') ELSE NULL END AS code_call_language,
   CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.mode') ELSE NULL END AS code_call_mode,
   CASE WHEN tool = 'code.call' THEN substr(coalesce(json_extract(result_json, '$.data.stdout'), ''), 1, 12000) ELSE NULL END AS code_call_stdout,
+  CASE
+    WHEN tool = 'code.call' AND json_valid(json_extract(result_json, '$.data.stdout')) THEN (
+      SELECT json_group_array(json_object(
+        'command', CASE
+          WHEN json_type(step.value, '$.command') = 'array' THEN (
+            SELECT group_concat(command_part.value, ' ')
+            FROM json_each(step.value, '$.command') AS command_part
+          )
+          ELSE json_extract(step.value, '$.command')
+        END,
+        'ok', json_extract(step.value, '$.ok'),
+        'exitCode', coalesce(json_extract(step.value, '$.exitCode'), json_extract(step.value, '$.exit_code')),
+        'durationMs', coalesce(json_extract(step.value, '$.durationMs'), json_extract(step.value, '$.duration_ms')),
+        'code', json_extract(step.value, '$.code'),
+        'message', json_extract(step.value, '$.message'),
+        'detail', json_extract(step.value, '$.detail'),
+        'changed', json_extract(step.value, '$.changed'),
+        'stdoutChars', length(coalesce(json_extract(step.value, '$.stdout'), '')),
+        'stderrChars', length(coalesce(json_extract(step.value, '$.stderr'), ''))
+      ))
+      FROM json_each(
+        CASE
+          WHEN json_type(json_extract(result_json, '$.data.stdout')) = 'array' THEN json_extract(result_json, '$.data.stdout')
+          ELSE coalesce(json_extract(json_extract(result_json, '$.data.stdout'), '$.results'), '[]')
+        END
+      ) AS step
+    )
+    ELSE NULL
+  END AS code_call_results_json,
   CASE WHEN tool = 'code.call' THEN substr(coalesce(json_extract(result_json, '$.data.stderr'), ''), 1, 4000) ELSE NULL END AS code_call_stderr,
   CASE WHEN tool = 'code.call' THEN json_array_length(json_extract(result_json, '$.data.filesChanged')) ELSE NULL END AS code_call_files_changed_count,
   CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.truncated') ELSE NULL END AS code_call_truncated,
@@ -365,6 +394,8 @@ function outputShape(value: unknown): CodeCallOutputShape {
 }
 
 function codeCallResults(row: Row): unknown[] {
+  const compactResults = parseJson(row.code_call_results_json);
+  if (Array.isArray(compactResults)) return compactResults;
   const data = codeCallData(row);
   const payload = parseStdoutPayload(data.stdout);
   if (Array.isArray(payload)) return payload;
@@ -444,7 +475,7 @@ export function summarizeCodeCallForTraceWatch(row: Row): CodeCallTraceSummary {
   const sourceLines = source.text ? source.text.split('\n').length : 0;
   const results = codeCallResults(row);
   const commandTexts = results.map(commandTextFromCodeCallResult).filter(Boolean);
-  const stdoutShape = outputShape(data.stdout);
+  const stdoutShape = results.length > 0 ? 'json' : outputShape(data.stdout);
   const intent = classifyCodeCallIntent(language, mode, source.text, commandTexts);
   const quality = classifyCodeCallQuality(language, source.text, stdoutShape, results);
   return {

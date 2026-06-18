@@ -246,4 +246,45 @@ describe('trace:watch code.call telemetry', () => {
       'bun --cwd packages/workspace test tests/trace-watch.test.ts',
     ]);
   });
+
+  test('uses compact SQL-derived code.call results when stdout JSON is sliced', () => {
+    const compactResults = [
+      { command: 'fake alpha', ok: true, exitCode: 0, durationMs: 12, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake beta', ok: true, exitCode: 0, durationMs: 13, stdoutChars: 9505, stderrChars: 0 },
+      { command: 'fake gamma', ok: true, exitCode: 0, durationMs: 14, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake delta', ok: true, exitCode: 0, durationMs: 15, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake epsilon', ok: true, exitCode: 0, durationMs: 16, stdoutChars: 9508, stderrChars: 0 },
+    ];
+    const slicedStdout = JSON.stringify({ ok: true, results: compactResults.map((result) => ({
+      ...result,
+      stdout: 'x'.repeat(result.stdoutChars),
+      stderr: '',
+    })) }).slice(0, 12000);
+    const row = codeCallRow({
+      result_json: '{"ok":true',
+      code_call_language: 'bun',
+      code_call_mode: 'read',
+      code_call_stdout: slicedStdout,
+      code_call_results_json: JSON.stringify(compactResults),
+      code_call_files_changed_count: 0,
+      code_call_truncated: 0,
+    });
+
+    expect(summarizeCodeCallForTraceWatch(row)).toMatchObject({
+      language: 'bun',
+      mode: 'read',
+      stdoutShape: 'json',
+      quality: 'good',
+      changedCount: 0,
+      truncated: false,
+    });
+    expect(nestedOperationsForRow(row).map((operation) => operation.detail)).toEqual([
+      'fake alpha',
+      'fake beta',
+      'fake gamma',
+      'fake delta',
+      'fake epsilon',
+    ]);
+    expect(captureRow(row)).toContain('code.call step');
+  });
 });
