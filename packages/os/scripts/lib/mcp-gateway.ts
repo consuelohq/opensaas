@@ -11,6 +11,8 @@ type ParsedJsonRpcRequest = {
   params?: unknown;
 };
 
+type ToolManifestEntry = ReturnType<typeof readFullToolManifest>['tools'][number];
+
 export type McpGatewayScopeResolution =
   | {
       ok: true;
@@ -95,8 +97,12 @@ function outputTextFromCall(output: CallOutput): string {
   return JSON.stringify(visibleOutput, null, 2);
 }
 
+function findCallableMcpTool(toolName: string): ToolManifestEntry | null {
+  return readFullToolManifest().tools.find((entry) => entry.name === toolName && entry.kind === 'os-skill') ?? null;
+}
+
 function listMcpTools(): JsonObject[] {
-  return readFullToolManifest().tools.map((entry) => {
+  return readFullToolManifest().tools.filter((entry) => entry.kind === 'os-skill').map((entry) => {
     const definition = entry.definition;
     const title = typeof definition.title === 'string' ? definition.title : entry.name;
     const description = typeof definition.description === 'string' ? definition.description : '';
@@ -132,6 +138,19 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
         ok: false,
         status: 400,
         error: { code: 'INVALID_MCP_TOOL_CALL', message: 'MCP tools/call requires a tool name.' },
+      };
+    }
+
+    const callableTool = findCallableMcpTool(toolName);
+    if (!callableTool) {
+      const toolScope = resolveToolScope(toolName);
+      if (!toolScope.ok) {
+        return { ok: false, status: toolScope.status, error: toolScope.error };
+      }
+      return {
+        ok: false,
+        status: 403,
+        error: { code: 'UNSUPPORTED_MCP_TOOL', message: 'MCP gateway only supports callable OS skills.' },
       };
     }
 

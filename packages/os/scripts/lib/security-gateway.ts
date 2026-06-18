@@ -321,6 +321,15 @@ function normalizeSeenNonces(value: unknown, fallbackSeenAt: string): Record<str
   return normalized;
 }
 
+function isLegacySecretToken(candidate: Partial<StoredToken> & { secret?: unknown }): boolean {
+  return typeof candidate.secret === 'string'
+    && typeof candidate.workspaceId === 'string'
+    && typeof candidate.callerId === 'string'
+    && typeof candidate.appId === 'string'
+    && Array.isArray(candidate.scopes)
+    && typeof candidate.expiresAt === 'string';
+}
+
 function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Record<string, StoredToken> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const normalized: Record<string, StoredToken> = {};
@@ -337,6 +346,9 @@ function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Recor
       candidate.signatureAlgorithm !== SIGNATURE_ALGORITHM ||
       typeof candidate.publicKey !== 'string'
     ) {
+      if (isLegacySecretToken(candidate)) {
+        throw new Error(`Legacy gateway token ${tokenId} requires credential rotation before generated auth can be upgraded.`);
+      }
       continue;
     }
     const status = candidate.status === 'rotated' || candidate.status === 'revoked'
