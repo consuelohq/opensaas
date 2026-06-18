@@ -1293,6 +1293,43 @@
     "sessionRequired": true
   },
   {
+    "name": "batch",
+    "methodPath": [
+      "batch"
+    ],
+    "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+    "category": "composed",
+    "underlying": "workspace batch",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BatchInput",
+    "outputSchema": "BatchOutput",
+    "command": {
+      "script": "batch",
+      "branchMode": "none",
+      "internal": "batch",
+      "arguments": []
+    },
+    "exampleInput": {
+      "steps": [
+        {
+          "tool": "context.find",
+          "input": {
+            "keyword": "workspace",
+            "limit": 1
+          }
+        }
+      ]
+    },
+    "sessionRequired": false,
+    "workflowRole": "tool.batch"
+  },
+  {
     "name": "code.call",
     "methodPath": [
       "code",

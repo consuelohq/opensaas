@@ -11,6 +11,54 @@ type JsonObject = Record<string, unknown>;
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
 const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
+const removedCoreToolNames = [
+  'fs.list',
+  'fs.write',
+  'gh',
+  'decideNext',
+  'exploit',
+  'confidenceScore',
+  'confirm',
+  'context.list',
+  'context.categories',
+  'audit',
+  'doctor',
+  'status',
+  'mac.read',
+  'mac.write',
+  'mac.search',
+  'mac.list',
+  'mac.port',
+  'mac.process',
+  'fs.read',
+  'fs.search',
+  'tmp',
+  'git.diff',
+  'git.status',
+  'stream.list',
+  'checkFiles',
+  'verify',
+] as const;
+
+const retainedCoreToolNames = [
+  'batch',
+  'code.call',
+  'code.run',
+  'context.find',
+  'context.get',
+  'context.save',
+  'context.search',
+  'context.trace',
+  'explore',
+  'fs.apply_patch',
+  'fs.trash',
+  'github',
+  'intent',
+  'review.run',
+  'stream.context',
+  'stream.sync',
+  'tools.search',
+] as const;
 
 let fixtureRoot: string;
 
@@ -44,6 +92,7 @@ describe('workspace tool manifest generator', () => {
     expect(registry.full.kind).toBe('consuelo-workspace-tool-manifest');
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
+    expect(names(registry.full.tools)).toContain('batch');
     expect(registry.report.fullToolCount).toBe(sourceEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
   });
@@ -63,11 +112,13 @@ describe('workspace tool manifest generator', () => {
     expect(registry.core.kind).toBe('consuelo-workspace-core-manifest');
     expect(registry.coreOutputPath.endsWith('packages/workspace/manifests/core-manifest.json')).toBe(true);
     expect(coreNames).toEqual(expectedCoreNames);
-    expect(coreNames).toContain('fs.read');
-    expect(coreNames).toContain('stream.context');
-    expect(coreNames).toContain('tools.search');
-    expect(coreNames).toContain('code.call');
-    expect(coreNames).toContain('intent');
+    expect(coreNames).toHaveLength(retainedCoreToolNames.length);
+    for (const toolName of retainedCoreToolNames) {
+      expect(coreNames).toContain(toolName);
+    }
+    for (const toolName of removedCoreToolNames) {
+      expect(coreNames).not.toContain(toolName);
+    }
     expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
