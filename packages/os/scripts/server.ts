@@ -6,6 +6,7 @@ import path from 'node:path';
 import { executeCall, getSteering } from './os';
 import {
   loadGatewaySecurityConfig,
+  resolveToolScope,
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
@@ -31,7 +32,6 @@ const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? ''
 let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
 
 type JsonObject = Record<string, unknown>;
-type ToolCategory = 'read' | 'write' | 'dangerous';
 
 function jsonResponse(body: JsonObject, status = 200): Response {
   return new Response(JSON.stringify(body, null, 2), {
@@ -110,17 +110,6 @@ function loadAuthConfigForRequest(): ReturnType<typeof loadGatewaySecurityConfig
     throw new Error('Generated Consuelo OS auth config is required.');
   }
   return loadGatewaySecurityConfig({ authConfigPath });
-}
-
-function toolCategory(toolName: string): ToolCategory {
-  if (/^(task\.merge|task\.finish|task\.pr|task\.push|delete|trash)/.test(toolName)) return 'dangerous';
-  if (/(write|patch|create|update|start|apply|modify|archive|send|forward|run|call)$/.test(toolName)) return 'write';
-  if (/(^|\.)(write|patch|trash|delete|create|update|send|archive|forward)(\.|$)/.test(toolName)) return 'write';
-  return 'read';
-}
-
-function requiredToolScope(toolName: string): string {
-  return `tool:${toolName}:${toolCategory(toolName)}`;
 }
 
 async function authorizeSignedRequest(input: {
@@ -279,6 +268,9 @@ async function handleRequest(request: Request): Promise<Response> {
     const rawMaterialDenied = admitRawCallBody(body);
     if (rawMaterialDenied) return rawMaterialDenied;
 
+    const preflightDenied = authPreflight(request);
+    if (preflightDenied) return preflightDenied;
+
     let input: CallInput;
     try {
       input = parseCallInput(body);
@@ -289,14 +281,16 @@ async function handleRequest(request: Request): Promise<Response> {
     const decodedMaterialDenied = admitDecodedCallBody(input);
     if (decodedMaterialDenied) return decodedMaterialDenied;
 
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
+    const toolScope = resolveToolScope(input.name);
+    if (!toolScope.ok) {
+      return jsonResponse({ ok: false, error: toolScope.error }, toolScope.status);
+    }
 
     const denied = await authorizeSignedRequest({
       request,
       path: '/call',
       body,
-      requiredScope: requiredToolScope(input.name),
+      requiredScope: toolScope.requiredScope,
     });
     if (denied) return denied;
 
