@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/improve-code-call-trace-watch-telemetry-and-examples",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1129,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1129",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1129",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1129/improve-code-call-trace-watch-telemetry-and-examples",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1129",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1129/improve-code-call-trace-watch-telemetry-and-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-code-call-trace-watch-telemetry-and-examples",
+  "taskSession": "tsk_4e30f8674251",
+  "tmuxSession": "opensaas-workspace-agents-improve-code-call-trace-watch-telemetry-and-exam-4e30f867",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-code-call-trace-watch-telemetry-and-examples/.task/workspace-agents/improve-code-call-trace-watch-telemetry-and-examples/session.json",
+  "createdAt": "2026-06-18T05:04:13.562Z"
+}

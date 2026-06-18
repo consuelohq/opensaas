@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 type Row = Record<string, unknown>;
-type Args = {
+export type Args = {
   db?: string;
   task?: string;
   branch?: string;
@@ -24,7 +24,7 @@ type Args = {
   since?: string;
 };
 
-type NestedOperation = {
+export type NestedOperation = {
   tool: string;
   helper?: string;
   ok: boolean;
@@ -37,6 +37,38 @@ type NestedOperation = {
   totalTokens?: number;
   detail?: string;
   changed?: boolean;
+};
+type CodeCallLanguage = 'python' | 'bun' | 'bash' | 'unknown';
+type CodeCallMode = 'read' | 'edit' | 'verify' | 'unknown';
+type CodeCallSourceKind = 'inline' | 'codeFile' | 'unknown';
+type CodeCallOutputShape = 'json' | 'json-lines' | 'text' | 'empty';
+type CodeCallIntent =
+  | 'focused-test'
+  | 'multi-command-verification'
+  | 'package-script-orchestration'
+  | 'codegen'
+  | 'structured-repo-inspection'
+  | 'structured-repo-edit'
+  | 'exact-cli-reproduction'
+  | 'syntax-or-typecheck'
+  | 'small-diagnostic'
+  | 'shell-specific'
+  | 'unknown';
+
+export type CodeCallTraceSummary = {
+  language: CodeCallLanguage;
+  mode: CodeCallMode;
+  sourceKind: CodeCallSourceKind;
+  sourceLines: number;
+  sourceChars: number;
+  stdoutShape: CodeCallOutputShape;
+  stderrShape: 'text' | 'empty';
+  changedCount: number;
+  truncated: boolean;
+  intent: CodeCallIntent;
+  quality: 'good' | 'suspect' | 'bad';
+  reason: string;
+  replacement?: string;
 };
 
 const defaultTraceDb = join(
@@ -177,6 +209,12 @@ SELECT
   ${resultJson},
   CASE WHEN tool = 'code.run' THEN coalesce(json_extract(result_json, '$.data.operations'), json_extract(result_json, '$.data.data.operations')) ELSE NULL END AS nested_operations_json,
   CASE WHEN tool = 'batch' THEN coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) ELSE NULL END AS batch_results_json,
+  CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.language') ELSE NULL END AS code_call_language,
+  CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.mode') ELSE NULL END AS code_call_mode,
+  CASE WHEN tool = 'code.call' THEN substr(coalesce(json_extract(result_json, '$.data.stdout'), ''), 1, 12000) ELSE NULL END AS code_call_stdout,
+  CASE WHEN tool = 'code.call' THEN substr(coalesce(json_extract(result_json, '$.data.stderr'), ''), 1, 4000) ELSE NULL END AS code_call_stderr,
+  CASE WHEN tool = 'code.call' THEN json_array_length(json_extract(result_json, '$.data.filesChanged')) ELSE NULL END AS code_call_files_changed_count,
+  CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.truncated') ELSE NULL END AS code_call_truncated,
   length(coalesce(result_json, '')) AS result_json_chars,
   ${stderr},
   length(coalesce(stderr, '')) AS stderr_chars
@@ -256,6 +294,211 @@ function numericValue(value: unknown, fallback = 0): number {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+function dataRecordFromResult(result: unknown): Record<string, unknown> {
+  if (!isRecord(result)) return {};
+  return isRecord(result.data) ? result.data : result;
+}
+
+function codeCallInput(row: Row): Record<string, unknown> {
+  const resolved = parseJson(row.resolved_input_json);
+  if (isRecord(resolved)) return resolved;
+  const input = parseJson(row.input_json);
+  return isRecord(input) ? input : {};
+}
+
+function booleanValue(value: unknown): boolean {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
+function codeCallData(row: Row): Record<string, unknown> {
+  const data = dataRecordFromResult(parseJson(row.result_json));
+  return {
+    ...data,
+    language: data.language ?? row.code_call_language,
+    mode: data.mode ?? row.code_call_mode,
+    stdout: data.stdout ?? row.code_call_stdout,
+    stderr: data.stderr ?? row.code_call_stderr,
+    filesChangedCount: data.filesChangedCount ?? row.code_call_files_changed_count,
+    truncated: data.truncated ?? row.code_call_truncated,
+  };
+}
+
+function normalizeCodeCallLanguage(value: unknown): CodeCallLanguage {
+  const language = cleanText(value).toLowerCase();
+  if (['python', 'py', 'python3'].includes(language)) return 'python';
+  if (['bun', 'node', 'javascript', 'typescript', 'js', 'ts'].includes(language)) return 'bun';
+  if (['bash', 'shell', 'sh', 'zsh'].includes(language)) return 'bash';
+  return 'unknown';
+}
+
+function normalizeCodeCallMode(value: unknown): CodeCallMode {
+  const mode = cleanText(value).toLowerCase();
+  if (mode === 'read' || mode === 'edit' || mode === 'verify') return mode;
+  return 'unknown';
+}
+
+function codeCallSource(input: Record<string, unknown>): { kind: CodeCallSourceKind; text: string } {
+  const inlineCode = stringValue(input.code);
+  if (inlineCode) return { kind: 'inline', text: inlineCode };
+  const codeFile = stringValue(input.codeFile);
+  if (codeFile) return { kind: 'codeFile', text: codeFile };
+  return { kind: 'unknown', text: '' };
+}
+
+function parseStdoutPayload(stdout: unknown): unknown {
+  const stdoutText = stringValue(stdout).trim();
+  if (!stdoutText) return null;
+  return parseJson(stdoutText);
+}
+
+function outputShape(value: unknown): CodeCallOutputShape {
+  const text = stringValue(value).trim();
+  if (!text) return 'empty';
+  if (parseJson(text) !== null) return 'json';
+  const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+  if (lines.length > 1 && lines.every((line) => parseJson(line) !== null)) return 'json-lines';
+  return 'text';
+}
+
+function codeCallResults(row: Row): unknown[] {
+  const data = codeCallData(row);
+  const payload = parseStdoutPayload(data.stdout);
+  if (Array.isArray(payload)) return payload;
+  if (isRecord(payload) && Array.isArray(payload.results)) return payload.results;
+  return [];
+}
+
+function commandTextFromCodeCallResult(result: unknown): string {
+  if (!isRecord(result)) return '';
+  if (Array.isArray(result.command)) return result.command.map(String).join(' ');
+  const command = cleanText(result.command);
+  if (command) return command;
+  return cleanText(result.detail || result.message || result.tool);
+}
+
+function codeCallChangedCount(data: Record<string, unknown>): number {
+  const extractedCount = numericValue(data.filesChangedCount, -1);
+  if (extractedCount >= 0) return extractedCount;
+  if (Array.isArray(data.filesChanged)) return data.filesChanged.length;
+  if (Array.isArray(data.changedFiles)) return data.changedFiles.length;
+  if (Array.isArray(data.changed)) return data.changed.length;
+  return data.changed === true ? 1 : 0;
+}
+
+function classifyCodeCallIntent(language: CodeCallLanguage, mode: CodeCallMode, sourceText: string, commandTexts: string[]): CodeCallIntent {
+  const combined = cleanText([sourceText, ...commandTexts].join(' ')).toLowerCase();
+  if (/generate-tool-manifest|generate-types|generate-docs|codegen/.test(combined)) return 'codegen';
+  if (/tsc|typecheck|check-files|syntax/.test(combined)) return 'syntax-or-typecheck';
+  if (language === 'bash' && /^(bun|python|python3|node)\b/.test(combined)) return 'package-script-orchestration';
+  if (mode === 'verify' && commandTexts.length > 1) return 'multi-command-verification';
+  if (mode === 'verify' && /\b(test|vitest|jest|lint|build)\b/.test(combined)) return 'focused-test';
+  if (mode === 'edit') return 'structured-repo-edit';
+  if (mode === 'read' && /bun\.file|git show|readfile|read_text|lineSpans|snippets/.test(combined)) return 'structured-repo-inspection';
+  if (/--help|repro|smoke|argv|exitcode/.test(combined)) return 'exact-cli-reproduction';
+  if (language === 'bash') return 'shell-specific';
+  if (mode === 'read') return 'small-diagnostic';
+  return 'unknown';
+}
+
+function isBashTransportOnly(sourceText: string): 'bun' | 'python' | 'node' | undefined {
+  const body = sourceText.trim();
+  const firstWord = body.match(/^([a-zA-Z0-9_-]+)/)?.[1];
+  if (!firstWord) return undefined;
+  if (!['bun', 'python', 'python3', 'node'].includes(firstWord)) return undefined;
+  if (/[|<>;&]/.test(body) || /\bset\s+-[a-z]/.test(body)) return undefined;
+  if (firstWord === 'python3') return 'python';
+  return firstWord as 'bun' | 'python' | 'node';
+}
+
+function classifyCodeCallQuality(language: CodeCallLanguage, sourceText: string, stdoutShape: CodeCallOutputShape, results: unknown[]): Pick<CodeCallTraceSummary, 'quality' | 'reason' | 'replacement'> {
+  if (language === 'bash') {
+    const transport = isBashTransportOnly(sourceText);
+    if (transport) {
+      const runtime = transport === 'node' ? 'bun' : transport;
+      const helper = runtime === 'bun' ? 'Bun.spawnSync(...)' : 'a Python script';
+      const runtimeName = transport === 'bun' ? 'Bun' : transport === 'python' ? 'Python' : 'Node';
+      return {
+        quality: 'suspect',
+        reason: 'Bash used only to invoke ' + runtimeName + '.',
+        replacement: 'use language="' + runtime + '" and ' + helper,
+      };
+    }
+    return { quality: 'good', reason: 'Bash is used for shell-specific execution.' };
+  }
+  if (results.length > 1 && stdoutShape !== 'json') {
+    return { quality: 'suspect', reason: 'Multi-step code.call output should be a compact JSON packet.' };
+  }
+  return { quality: 'good', reason: 'code.call uses a native runtime with compact evidence.' };
+}
+
+export function summarizeCodeCallForTraceWatch(row: Row): CodeCallTraceSummary {
+  const input = codeCallInput(row);
+  const data = codeCallData(row);
+  const language = normalizeCodeCallLanguage(data.language || input.language || input.requestedLanguage);
+  const mode = normalizeCodeCallMode(data.mode || input.mode);
+  const source = codeCallSource(input);
+  const sourceLines = source.text ? source.text.split('\n').length : 0;
+  const results = codeCallResults(row);
+  const commandTexts = results.map(commandTextFromCodeCallResult).filter(Boolean);
+  const stdoutShape = outputShape(data.stdout);
+  const intent = classifyCodeCallIntent(language, mode, source.text, commandTexts);
+  const quality = classifyCodeCallQuality(language, source.text, stdoutShape, results);
+  return {
+    language,
+    mode,
+    sourceKind: source.kind,
+    sourceLines,
+    sourceChars: source.text.length,
+    stdoutShape,
+    stderrShape: stringValue(data.stderr).trim() ? 'text' : 'empty',
+    changedCount: codeCallChangedCount(data),
+    truncated: booleanValue(data.truncated),
+    intent,
+    ...quality,
+  };
+}
+
+function codeCallDetail(row: Row): string {
+  const summary = summarizeCodeCallForTraceWatch(row);
+  const parts = [
+    summary.language + '/' + summary.mode,
+    summary.intent,
+    summary.quality,
+    'changed ' + summary.changedCount,
+    summary.truncated ? 'truncated' : '',
+    summary.quality !== 'good' ? summary.reason : '',
+    summary.replacement || '',
+  ].filter(Boolean);
+  return parts.join(' · ').slice(0, 180);
+}
+
+function codeCallOperations(row: Row): NestedOperation[] {
+  return codeCallResults(row)
+    .map((result) => {
+      if (!isRecord(result)) return null;
+      const exitCode = numericValue(result.exitCode ?? result.exit_code, 0);
+      const ok = result.ok === true || (result.ok !== false && exitCode === 0);
+      const command = commandTextFromCodeCallResult(result);
+      return {
+        tool: 'code.call step',
+        ok,
+        code: cleanText(result.code || (ok ? 'OK' : 'EXIT_' + exitCode)),
+        message: cleanText(result.message),
+        durationMs: numericValue(result.durationMs ?? result.duration_ms, 0),
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        detail: command || cleanText(result.detail || result.message),
+        changed: result.changed === true,
+      } satisfies NestedOperation;
+    })
+    .filter((operation): operation is NestedOperation => operation !== null);
+}
+
 function compactJsonValue(value: unknown, limit = 1200): unknown {
   if (typeof value !== 'string') return value;
   const cleaned = cleanText(value);
@@ -286,6 +529,7 @@ function compactTraceRow(row: Row): Row {
     input_json: compactJsonValue(row.input_json, 800),
     resolved_input_json: compactJsonValue(row.resolved_input_json, 800),
     result: summarizeResultForTrace(result, String(row.tool || '')),
+    code_call: String(row.tool || '') === 'code.call' ? summarizeCodeCallForTraceWatch(row) : undefined,
     nested_operations: nestedOperationsForRow(row),
     result_json_chars: numericValue(row.result_json_chars, textSize(row.result_json)),
     stderr: compactJsonValue(stderr, 1200),
@@ -297,6 +541,21 @@ function summarizeResultForTrace(result: unknown, tool?: string): unknown {
   if (!isRecord(result)) return result;
   const data = isRecord(result.data) ? result.data : result;
   const schema = data.schema || result.schema;
+  if (tool === 'code.call' && isRecord(data)) {
+    return {
+      ok: result.ok,
+      code: result.code,
+      message: result.message,
+      language: data.language,
+      mode: data.mode,
+      runtime: data.runtime,
+      exitCode: data.exitCode,
+      stdoutShape: outputShape(data.stdout),
+      stderrShape: stringValue(data.stderr).trim() ? 'text' : 'empty',
+      changedCount: codeCallChangedCount(data),
+      truncated: booleanValue(data.truncated),
+    };
+  }
   if (tool === 'verify' && isRecord(data)) {
     return {
       ok: result.ok,
@@ -340,7 +599,8 @@ function summarizeResultForTrace(result: unknown, tool?: string): unknown {
   return compactJsonValue(JSON.stringify(result), 1200);
 }
 
-function compactSuccessDetail(row: Row): string {
+export function compactSuccessDetail(row: Row): string {
+  if (String(row.tool || '') === 'code.call') return codeCallDetail(row);
   const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
   const result = parseJson(row.result_json) || {};
   const candidates: string[] = [];
@@ -431,10 +691,11 @@ function batchOperations(row: Row): NestedOperation[] {
     .filter((operation): operation is NestedOperation => operation !== null);
 }
 
-function nestedOperationsForRow(row: Row): NestedOperation[] {
+export function nestedOperationsForRow(row: Row): NestedOperation[] {
   const tool = String(row.tool || '');
   if (tool === 'code.run') return codeRunOperations(row);
   if (tool === 'batch') return batchOperations(row);
+  if (tool === 'code.call') return codeCallOperations(row);
   return [];
 }
 
@@ -501,7 +762,7 @@ function renderStartup(args: Args, db: string) {
   console.log(divider(args));
 }
 
-function renderRow(args: Args, row: Row) {
+export function renderRow(args: Args, row: Row) {
   if (args.json) {
     console.log(JSON.stringify(args.rawJson ? row : compactTraceRow(row)));
     return;
@@ -534,7 +795,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function main() {
+export async function main() {
   let args: Args;
   try { args = parseArgs(Bun.argv.slice(2)); }
   catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exit(2); }
@@ -580,8 +841,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
 
