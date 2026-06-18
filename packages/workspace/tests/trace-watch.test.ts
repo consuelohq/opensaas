@@ -75,6 +75,38 @@ function codeCallRow(overrides: Partial<TraceWatchRow> = {}): TraceWatchRow {
   };
 }
 
+function batchRow(childResult: Record<string, unknown>, stepInput: Record<string, unknown>): TraceWatchRow {
+  const ok = childResult.ok === true;
+  return {
+    rownum: 2,
+    record_id: 'batch-1',
+    ts: '2026-06-18T06:12:42.000Z',
+    trace_id: 'trc_batch',
+    tool: 'batch',
+    task_session: 'tsk_1',
+    branch: 'task/workspace-agents/strengthen-code-call-examples',
+    worktree: '.task/workspace-agents/strengthen-code-call-examples',
+    status: ok ? 'ok' : 'error',
+    code: ok ? 'OK' : 'COMMAND_FAILED',
+    exit_code: ok ? 0 : 1,
+    duration_ms: 1400,
+    input_tokens: 0,
+    output_tokens: 0,
+    total_tokens: 0,
+    input_json: '{}',
+    resolved_input_json: JSON.stringify({ steps: [{ tool: 'code.call', input: stepInput }] }),
+    result_json: JSON.stringify({
+      ok,
+      code: ok ? 'OK' : 'COMMAND_FAILED',
+      message: ok ? 'batch completed' : 'batch stopped after a failed step',
+      data: { results: [childResult], completed: 1 },
+    }),
+    stderr: '',
+    result_json_chars: 0,
+    stderr_chars: 0,
+  };
+}
+
 function captureRow(row: TraceWatchRow): string {
   const lines: string[] = [];
   const originalLog = console.log;
@@ -335,6 +367,118 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain('code.call cmd');
     expect(rendered).not.toContain('COMMAND_FAILED');
     const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+    expect(nestedLines).not.toContain('0 tokens');
+  });
+
+  test('renders batch code.call children with code.call summaries and nested token totals', () => {
+    const stepInput = {
+      language: 'bun',
+      mode: 'verify',
+      codeFile: 'scripts/code-call-examples/multi-package-focused-tests.ts',
+      maxResultChars: 60000,
+    };
+    const row = batchRow({
+      ok: true,
+      code: 'OK',
+      message: 'code.call completed',
+      durationMs: 340,
+      inputTokens: 700,
+      outputTokens: 400,
+      totalTokens: 0,
+      detail: '',
+      changed: true,
+      data: {
+        ok: true,
+        exitCode: 0,
+        language: 'bun',
+        runtime: 'bun',
+        mode: 'verify',
+        stdout: JSON.stringify({
+          ok: true,
+          results: [
+            { command: 'bun --cwd packages/workspace test tests/workflow-intent.test.ts tests/tool-manifest.test.ts', ok: true, exitCode: 0 },
+            { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: true, exitCode: 0 },
+          ],
+        }),
+        stderr: '',
+        filesChanged: [],
+        truncated: false,
+      },
+    }, stepInput);
+
+    const operations = nestedOperationsForRow(row);
+    const rendered = captureRow(row);
+
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({
+      tool: 'code.call',
+      ok: true,
+      code: 'OK',
+      inputTokens: 700,
+      outputTokens: 400,
+      totalTokens: 0,
+      changed: false,
+    });
+    expect(operations[0].detail).toContain('bun/verify');
+    expect(operations[0].detail).toContain('multi-command-verification');
+    expect(operations[0].detail).toContain('changed 0');
+    expect(rendered).toContain('1.1k tokens');
+    expect(rendered).toContain('bun/verify');
+    expect(rendered).toContain('multi-command-verification');
+    expect(rendered).not.toContain('code.call completed');
+    const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+    expect(nestedLines).not.toContain('0 tokens');
+    expect(nestedLines).not.toContain('| changed |');
+  });
+
+  test('labels failed test code.call children inside batch rows as tests failed', () => {
+    const stepInput = {
+      language: 'bun',
+      mode: 'verify',
+      code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/tool-manifest.test.ts"] })',
+      maxResultChars: 20000,
+    };
+    const row = batchRow({
+      ok: false,
+      code: 'COMMAND_FAILED',
+      message: 'code.call command failed',
+      durationMs: 670,
+      inputTokens: 900,
+      outputTokens: 1100,
+      totalTokens: 2000,
+      data: {
+        ok: false,
+        exitCode: 1,
+        language: 'bun',
+        runtime: 'bun',
+        mode: 'verify',
+        stdout: JSON.stringify({
+          ok: false,
+          results: [
+            { command: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
+          ],
+        }),
+        stderr: '',
+        filesChanged: [],
+        truncated: false,
+      },
+    }, stepInput);
+
+    const operations = nestedOperationsForRow(row);
+    const rendered = captureRow(row);
+    const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({
+      tool: 'code.call',
+      ok: false,
+      code: 'TESTS_FAILED',
+      totalTokens: 2000,
+    });
+    expect(operations[0].detail).toContain('tests failed');
+    expect(rendered).toContain('TESTS_FAILED');
+    expect(nestedLines).toContain('2.0k tokens');
+    expect(nestedLines).not.toContain('COMMAND_FAILED');
     expect(nestedLines).not.toContain('0 tokens');
   });
 

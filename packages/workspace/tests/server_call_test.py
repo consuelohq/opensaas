@@ -297,6 +297,35 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertNotIn('# tool manifest', content)
         self.assertNotIn('linear.issue', content)
 
+    def test_read_steering_expands_code_file_examples_in_core_manifest(self):
+        steering_path = Path(self.tempdir.name) / 'STEERING.md'
+        core_manifest_path = Path(self.tempdir.name) / 'core-manifest.json'
+        steering_path.write_text('base steering', encoding='utf-8')
+        core_manifest_path.write_text(json.dumps({
+            'kind': 'consuelo-workspace-core-manifest',
+            'tools': [{
+                'name': 'code.call',
+                'definition': {
+                    'exampleInput': {
+                        'language': 'python',
+                        'mode': 'edit',
+                        'codeFile': 'scripts/code-call-examples/python-semantic-test-mutation.py',
+                    },
+                },
+            }],
+        }), encoding='utf-8')
+
+        self.module.STEERING_FILE = str(steering_path)
+        self.module.CORE_MANIFEST_FILE = str(core_manifest_path)
+
+        content = self.module._read_steering()
+
+        self.assertIn('base steering', content)
+        self.assertIn('codeFile', content)
+        self.assertIn('codeFileSource', content)
+        self.assertIn('from pathlib import Path', content)
+        self.assertIn('signatureAlgorithm', content)
+
     def test_get_steering_allows_full_body_again_after_guard_window(self):
         now = [2000.0]
         calls = []
