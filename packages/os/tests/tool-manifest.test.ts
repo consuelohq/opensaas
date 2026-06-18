@@ -43,10 +43,18 @@ const removedCoreToolNames = [
   'mac.list',
   'mac.port',
   'mac.process',
+  'fs.read',
+  'fs.search',
+  'tmp',
+  'git.diff',
+  'git.status',
+  'stream.list',
+  'checkFiles',
+  'verify',
 ] as const;
 
 const retainedCoreToolNames = [
-  'checkFiles',
+  'batch',
   'code.call',
   'code.run',
   'context.find',
@@ -56,20 +64,13 @@ const retainedCoreToolNames = [
   'context.trace',
   'explore',
   'fs.apply_patch',
-  'fs.read',
-  'fs.search',
   'fs.trash',
-  'git.diff',
-  'git.status',
   'github',
   'intent',
   'review.run',
   'stream.context',
-  'stream.list',
   'stream.sync',
-  'tmp',
   'tools.search',
-  'verify',
 ] as const;
 
 let fixtureRoot: string;
@@ -185,6 +186,7 @@ describe('tool manifest generator', () => {
     ])).sort();
 
     expect(generatedNames).toEqual(expectedNames);
+    expect(generatedNames).toContain('batch');
     expect(registry.full.tools).toHaveLength(expectedNames.length);
     expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
     expect(registry.report.oldDevToolCount).toBe(devEntries.length);
@@ -207,6 +209,7 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const coreNames = registry.core.tools.map((entry) => entry.name).sort();
 
+    expect(coreNames).toHaveLength(retainedCoreToolNames.length);
     for (const toolName of retainedCoreToolNames) {
       expect(coreNames).toContain(toolName);
     }

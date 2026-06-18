@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6bf2739ca56",
+  "tmuxSession": "opensaas-workspace-agents-add-batch-trim-core-manifest-d6bf2739",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-batch-trim-core-manifest",
+  "branch": "task/workspace-agents/add-batch-trim-core-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-batch-trim-core-manifest",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-batch-trim-core-manifest",
+  "prNumber": 1118,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1118",
+  "createdAt": "2026-06-18T00:51:31.141Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-batch-trim-core-manifest/.task/workspace-agents/add-batch-trim-core-manifest/session.json"
+}

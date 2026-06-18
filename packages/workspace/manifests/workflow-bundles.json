@@ -273,7 +273,7 @@
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "git",
           "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "git.diff",
             "methodPath": [
@@ -825,7 +825,7 @@
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "review",
           "description": "run the full task safety gate",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "verify",
             "methodPath": [

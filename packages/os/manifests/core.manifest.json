@@ -5,62 +5,49 @@
   "config": "packages/os/manifests/manifest.config.json",
   "tools": [
     {
-      "name": "checkFiles",
+      "name": "batch",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "composed",
-      "description": "run syntax checks over a set of files through code.call in the task worktree",
+      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
       "core": true,
       "definition": {
-        "name": "checkFiles",
+        "name": "batch",
         "methodPath": [
-          "checkFiles"
+          "batch"
         ],
-        "description": "run syntax checks over a set of files through code.call in the task worktree",
+        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
         "category": "composed",
-        "underlying": "workspace checkFiles",
+        "underlying": "workspace batch",
         "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
           "safeToRetry": false
         },
         "defaultTimeout": 300000,
-        "inputSchema": "CheckFilesInput",
-        "outputSchema": "RawOutput",
+        "inputSchema": "BatchInput",
+        "outputSchema": "BatchOutput",
         "command": {
-          "script": "check-files",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "jsonFlag": "--json",
-          "arguments": [
+          "script": "batch",
+          "branchMode": "none",
+          "internal": "batch",
+          "arguments": []
+        },
+        "exampleInput": {
+          "steps": [
             {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "array",
-              "required": true
-            },
-            {
-              "source": "stopOnFirstError",
-              "flag": "--stop-on-first-error",
-              "kind": "boolean"
+              "tool": "context.find",
+              "input": {
+                "keyword": "workspace",
+                "limit": 1
+              }
             }
           ]
         },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "files": [
-            "packages/os/scripts/fs.js"
-          ],
-          "stopOnFirstError": true
-        },
-        "sessionRequired": true
+        "sessionRequired": false,
+        "workflowRole": "tool.batch"
       }
     },
     {
@@ -625,193 +612,6 @@
       }
     },
     {
-      "name": "fs.read",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
-      "core": true,
-      "definition": {
-        "name": "fs.read",
-        "methodPath": [
-          "fs",
-          "read"
-        ],
-        "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
-        "category": "filesystem",
-        "underlying": "workspace fs read, or task:fs read when a branch is resolved",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsReadInput",
-        "outputSchema": "FsReadOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "read",
-          "branchMode": "optional",
-          "branchArgumentStyle": "prefix",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value"
-            },
-            {
-              "source": "filesJson",
-              "flag": "--files-json",
-              "kind": "value"
-            },
-            {
-              "source": "offset",
-              "flag": "--offset",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            },
-            {
-              "source": "from",
-              "flag": "--from",
-              "kind": "value"
-            },
-            {
-              "source": "to",
-              "flag": "--to",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "path": "packages/os/scripts/fs.js",
-          "offset": 1,
-          "limit": 120
-        },
-        "sessionRequired": false,
-        "examples": [
-          {
-            "label": "single paged file",
-            "input": {
-              "path": "packages/os/scripts/fs.js",
-              "offset": 1,
-              "limit": 120
-            }
-          },
-          {
-            "label": "multiple paged files",
-            "input": {
-              "files": [
-                {
-                  "path": "packages/os/scripts/fs.js",
-                  "offset": 1,
-                  "limit": 80
-                },
-                {
-                  "path": "packages/os/tooling/dev-tool-manifest.json",
-                  "offset": 1,
-                  "limit": 120
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "fs.search",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
-      "core": true,
-      "definition": {
-        "name": "fs.search",
-        "methodPath": [
-          "fs",
-          "search"
-        ],
-        "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
-        "category": "filesystem",
-        "underlying": "workspace fs search, or task:fs search when a branch is resolved",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsSearchInput",
-        "outputSchema": "FsSearchOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "search",
-          "branchMode": "optional",
-          "branchArgumentStyle": "prefix",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "pattern",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "paths",
-              "kind": "array"
-            },
-            {
-              "source": "include",
-              "flag": "--include",
-              "kind": "value"
-            },
-            {
-              "source": "context",
-              "flag": "--context",
-              "kind": "value"
-            },
-            {
-              "source": "maxResults",
-              "flag": "--max-results",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "pattern": "task:fs",
-          "path": "packages/os/SCRIPTS.md"
-        },
-        "sessionRequired": false,
-        "examples": [
-          {
-            "label": "search a directory",
-            "input": {
-              "pattern": "Effect.gen",
-              "path": "packages/os/scripts",
-              "include": "*.ts",
-              "maxResults": 20
-            }
-          },
-          {
-            "label": "search multiple paths",
-            "input": {
-              "pattern": "task:fs",
-              "paths": [
-                "packages/os/SCRIPTS.md",
-                "packages/os/TOOLS.md"
-              ],
-              "maxResults": 10
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "fs.trash",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -856,143 +656,6 @@
           "dryRun": true
         },
         "sessionRequired": true
-      }
-    },
-    {
-      "name": "git.diff",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "git",
-      "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-      "core": true,
-      "definition": {
-        "name": "git.diff",
-        "methodPath": [
-          "git",
-          "diff"
-        ],
-        "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-        "category": "git",
-        "underlying": "workspace git:diff",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "GitDiffInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "git:diff",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "base",
-              "flag": "--base",
-              "kind": "value"
-            },
-            {
-              "source": "head",
-              "flag": "--head",
-              "kind": "value"
-            },
-            {
-              "source": "paths",
-              "flag": "--paths",
-              "kind": "array"
-            },
-            {
-              "source": "stat",
-              "flag": "--stat",
-              "kind": "boolean"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "boolean"
-            },
-            {
-              "source": "hunks",
-              "flag": "--hunks",
-              "kind": "boolean"
-            },
-            {
-              "source": "patch",
-              "flag": "--patch",
-              "kind": "boolean"
-            },
-            {
-              "source": "nameOnly",
-              "flag": "--name-only",
-              "kind": "boolean"
-            },
-            {
-              "source": "context",
-              "flag": "--context",
-              "kind": "value"
-            },
-            {
-              "source": "maxBytes",
-              "flag": "--max-bytes",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "base": "origin/main",
-          "stat": true,
-          "files": true,
-          "hunks": true,
-          "maxBytes": 20000
-        },
-        "sessionRequired": true,
-        "workflowRole": "diff.inspect"
-      }
-    },
-    {
-      "name": "git.status",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "alias for status; use status directly in new code",
-      "core": true,
-      "definition": {
-        "name": "git.status",
-        "methodPath": [
-          "git",
-          "status"
-        ],
-        "description": "alias for status; use status directly in new code",
-        "category": "utilities",
-        "underlying": "workspace status",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "status",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
       }
     },
     {
@@ -1330,48 +993,6 @@
       }
     },
     {
-      "name": "stream.list",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "stream",
-      "description": "list stream branches",
-      "core": true,
-      "definition": {
-        "name": "stream.list",
-        "methodPath": [
-          "stream",
-          "list"
-        ],
-        "description": "list stream branches",
-        "category": "stream",
-        "underlying": "workspace stream.list",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "StreamListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "stream:list",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "repo",
-              "flag": "--repo",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
       "name": "stream.sync",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -1422,64 +1043,6 @@
         },
         "exampleInput": {
           "area": "workspace-agents",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "tmp",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "run the workspace temp-file helper",
-      "core": true,
-      "definition": {
-        "name": "tmp",
-        "methodPath": [
-          "tmp"
-        ],
-        "description": "run the workspace temp-file helper",
-        "category": "utilities",
-        "underlying": "workspace tmp",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "TmpInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "tmp",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "name",
-              "kind": "value"
-            },
-            {
-              "source": "content",
-              "kind": "value"
-            },
-            {
-              "source": "ext",
-              "flag": "--ext",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "write",
-          "name": "example",
-          "content": "hello",
           "dryRun": true
         },
         "sessionRequired": false
@@ -1553,57 +1116,6 @@
           "limit": 5
         },
         "workflowRole": "tool.search"
-      }
-    },
-    {
-      "name": "verify",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "review",
-      "description": "run the full task safety gate",
-      "core": true,
-      "definition": {
-        "name": "verify",
-        "methodPath": [
-          "verify"
-        ],
-        "description": "run the full task safety gate",
-        "category": "review",
-        "underlying": "workspace verify",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "VerifyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "verify",
-          "branchMode": "optional",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "base",
-              "flag": "--base",
-              "kind": "value"
-            },
-            {
-              "source": "noStamp",
-              "flag": "--no-stamp",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "noStamp": true,
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "validation.verify"
       }
     }
   ]

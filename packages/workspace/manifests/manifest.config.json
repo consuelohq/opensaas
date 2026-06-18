@@ -14,18 +14,14 @@
   },
   "core": {
     "includeNames": [
-      "checkFiles",
+      "batch",
       "code.call",
       "code.run",
       "explore",
-      "git.diff",
-      "git.status",
       "github",
       "intent",
       "review.run",
-      "tmp",
-      "tools.search",
-      "verify"
+      "tools.search"
     ],
     "includePrefixes": [
       "context.",
@@ -55,7 +51,15 @@
       "mac.search",
       "mac.list",
       "mac.port",
-      "mac.process"
+      "mac.process",
+      "fs.read",
+      "fs.search",
+      "tmp",
+      "git.diff",
+      "git.status",
+      "stream.list",
+      "checkFiles",
+      "verify"
     ],
     "excludePrefixes": [
       "browser.",
