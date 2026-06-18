@@ -732,7 +732,7 @@ await workspace.call({
 
 ### workspace.explore
 
-run repository exploration retrieval
+a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.
 
 | Field | Value |
 | --- | --- |
@@ -1039,7 +1039,7 @@ await workspace.call({
 
 ### workspace.fs.trash
 
-move a task worktree file to trash
+An agent safe file deletion path. Prefered over rm rf
 
 | Field | Value |
 | --- | --- |
@@ -7600,7 +7600,7 @@ await workspace.call({
 
 ### workspace.intent
 
-Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.
+Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.
 
 | Field | Value |
 | --- | --- |

@@ -306,14 +306,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
-      "description": "run repository exploration retrieval",
+      "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
       "core": true,
       "definition": {
         "name": "explore",
         "methodPath": [
           "explore"
         ],
-        "description": "run repository exploration retrieval",
+        "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
         "category": "decision engine",
         "underlying": "workspace explore",
         "capabilities": {
@@ -418,7 +418,7 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "filesystem",
-      "description": "move a task worktree file to trash",
+      "description": "An agent safe file deletion path. Prefered over rm rf",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -426,7 +426,7 @@
           "fs",
           "trash"
         ],
-        "description": "move a task worktree file to trash",
+        "description": "An agent safe file deletion path. Prefered over rm rf",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -601,14 +601,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "workflow",
-      "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
+      "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
       "core": true,
       "definition": {
         "name": "intent",
         "methodPath": [
           "intent"
         ],
-        "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
+        "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
         "category": "workflow",
         "underlying": "workspace intent",
         "capabilities": {
@@ -844,6 +844,64 @@
         },
         "exampleInput": {
           "area": "workspace-agents",
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "tmp",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "utilities",
+      "description": "run the workspace temp-file helper",
+      "core": true,
+      "definition": {
+        "name": "tmp",
+        "methodPath": [
+          "tmp"
+        ],
+        "description": "run the workspace temp-file helper",
+        "category": "utilities",
+        "underlying": "workspace tmp",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "TmpInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "tmp",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "name",
+              "kind": "value"
+            },
+            {
+              "source": "content",
+              "kind": "value"
+            },
+            {
+              "source": "ext",
+              "flag": "--ext",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "write",
+          "name": "example",
+          "content": "hello",
           "dryRun": true
         },
         "sessionRequired": false

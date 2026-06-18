@@ -27,7 +27,8 @@
       "github",
       "intent",
       "review.run",
-      "tools.search"
+      "tools.search",
+      "tmp"
     ],
     "includePrefixes": [
       "fs.",
@@ -55,7 +56,6 @@
       "mac.process",
       "fs.read",
       "fs.search",
-      "tmp",
       "git.diff",
       "git.status",
       "stream.list",
