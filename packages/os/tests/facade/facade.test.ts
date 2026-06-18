@@ -899,6 +899,33 @@ describe('branch resolver', () => {
   });
 });
 
+describe('batch facade tool', () => {
+  it('routes batch through the internal executor', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('batch', {
+      steps: [
+        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+      ],
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(result.data.completed).toBe(1);
+    expect(plans).toHaveLength(1);
+  });
+
+  it('validates BatchInput step shape', () => {
+    const schema = getInputSchema('BatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+    }).success).toBe(true);
+    expect(schema?.safeParse({ steps: [] }).success).toBe(false);
+    expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);
+  });
+});
+
 describe('batch executor', () => {
   it('runs successful chains', async () => {
     const result = await runBatch([

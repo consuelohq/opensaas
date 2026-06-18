@@ -30,10 +30,18 @@ const removedCoreToolNames = [
   'mac.list',
   'mac.port',
   'mac.process',
+  'fs.read',
+  'fs.search',
+  'tmp',
+  'git.diff',
+  'git.status',
+  'stream.list',
+  'checkFiles',
+  'verify',
 ] as const;
 
 const retainedCoreToolNames = [
-  'checkFiles',
+  'batch',
   'code.call',
   'code.run',
   'context.find',
@@ -43,20 +51,13 @@ const retainedCoreToolNames = [
   'context.trace',
   'explore',
   'fs.apply_patch',
-  'fs.read',
-  'fs.search',
   'fs.trash',
-  'git.diff',
-  'git.status',
   'github',
   'intent',
   'review.run',
   'stream.context',
-  'stream.list',
   'stream.sync',
-  'tmp',
   'tools.search',
-  'verify',
 ] as const;
 
 let fixtureRoot: string;
@@ -91,6 +92,7 @@ describe('workspace tool manifest generator', () => {
     expect(registry.full.kind).toBe('consuelo-workspace-tool-manifest');
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
+    expect(names(registry.full.tools)).toContain('batch');
     expect(registry.report.fullToolCount).toBe(sourceEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
   });
@@ -110,6 +112,7 @@ describe('workspace tool manifest generator', () => {
     expect(registry.core.kind).toBe('consuelo-workspace-core-manifest');
     expect(registry.coreOutputPath.endsWith('packages/workspace/manifests/core-manifest.json')).toBe(true);
     expect(coreNames).toEqual(expectedCoreNames);
+    expect(coreNames).toHaveLength(retainedCoreToolNames.length);
     for (const toolName of retainedCoreToolNames) {
       expect(coreNames).toContain(toolName);
     }

@@ -12,7 +12,7 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 128
+      "entryCount": 129
     }
   ],
   "tools": [
@@ -115,6 +115,52 @@
           "scripts": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "batch",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "composed",
+      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+      "core": true,
+      "definition": {
+        "name": "batch",
+        "methodPath": [
+          "batch"
+        ],
+        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+        "category": "composed",
+        "underlying": "workspace batch",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "BatchInput",
+        "outputSchema": "BatchOutput",
+        "command": {
+          "script": "batch",
+          "branchMode": "none",
+          "internal": "batch",
+          "arguments": []
+        },
+        "exampleInput": {
+          "steps": [
+            {
+              "tool": "context.find",
+              "input": {
+                "keyword": "workspace",
+                "limit": 1
+              }
+            }
+          ]
+        },
+        "sessionRequired": false,
+        "workflowRole": "tool.batch"
       }
     },
     {
@@ -1500,7 +1546,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "composed",
       "description": "run syntax checks over a set of files through code.call in the task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "checkFiles",
         "methodPath": [
@@ -2811,7 +2857,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.read",
         "methodPath": [
@@ -2910,7 +2956,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.search",
         "methodPath": [
@@ -3274,7 +3320,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "git",
       "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "git.diff",
         "methodPath": [
@@ -3375,7 +3421,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
       "description": "alias for status; use status directly in new code",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "git.status",
         "methodPath": [
@@ -6565,7 +6611,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "stream",
       "description": "list stream branches",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "stream.list",
         "methodPath": [
@@ -7321,7 +7367,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
       "description": "run the workspace temp-file helper",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "tmp",
         "methodPath": [
@@ -7449,7 +7495,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "review",
       "description": "run the full task safety gate",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "verify",
         "methodPath": [

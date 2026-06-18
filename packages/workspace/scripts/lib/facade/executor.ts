@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
 
+import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
@@ -629,6 +630,11 @@ async function executeInternalTool<TData>(
 ): Promise<ToolResult<TData> | null> {
   const internal = entry.command.internal;
   if (!internal) return null;
+
+  if (internal === 'batch') {
+    const steps = Array.isArray(input.steps) ? input.steps : [];
+    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+  }
 
   if (internal === 'code.call') {
     return executeCodeCall(input as CodeCallInput, {

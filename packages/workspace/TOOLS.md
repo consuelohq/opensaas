@@ -30,7 +30,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | Category | Tools |
 | --- | ---: |
 | codemode | 2 |
-| composed | 2 |
+| composed | 3 |
 | context | 7 |
 | decision engine | 6 |
 | filesystem | 6 |
@@ -178,6 +178,73 @@ await workspace.call({
 ```
 
 ## composed
+
+### workspace.batch
+
+run multiple workspace tools sequentially or in parallel with compact per-step results
+
+| Field | Value |
+| --- | --- |
+| Category | composed |
+| Signature | `workspace.batch({ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ results: Array<ToolResult<unknown>>; completed: number }>>` |
+| Runtime | `workspace batch` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "batch",
+  "input": {
+    "steps": [
+      {
+        "tool": "context.find",
+        "input": {
+          "keyword": "workspace",
+          "limit": 1
+        }
+      }
+    ]
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
 
 ### workspace.checkFiles
 
