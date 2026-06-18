@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/port-code-call-into-workspace",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1124,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1124",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1124",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1124/port-code-call-into-workspace",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1124",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1124/port-code-call-into-workspace",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-code-call-into-workspace",
+  "taskSession": "tsk_4158be27ef81",
+  "tmuxSession": "opensaas-workspace-agents-port-code-call-into-workspace-4158be27",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-code-call-into-workspace/.task/workspace-agents/port-code-call-into-workspace/session.json",
+  "createdAt": "2026-06-18T03:40:49.185Z"
+}
