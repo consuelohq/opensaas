@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os/serve-trace-cockpit-live-at-traces",
   "base": "origin/main",
-  "headSha": "27d408e39790cf39423c98797c2ee0412971fa62",
-  "changeHash": "fe604fbe11c23f660fa1a3ea26f724f73e4913bf8594c5dc873b0700b26b0f45",
+  "headSha": "8690e15ad76b87071619c0d929e0c1b88e7da58e",
+  "changeHash": "0e1ebd23728c90bd68a47e273d6ccc5b32eca13f19b5da0f991342794c274136",
   "changedFiles": [
     "packages/os/scripts/lib/sites.ts",
     "packages/os/tests/sites-trace-cockpit.test.ts"
   ],
-  "verifiedAt": "2026-06-18T16:17:11.298Z",
+  "verifiedAt": "2026-06-18T16:22:00.456Z",
   "review": {
     "skipped": false,
     "passed": true,

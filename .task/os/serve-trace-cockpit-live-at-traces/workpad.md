@@ -37,6 +37,7 @@ Validation: pending.
 - 2026-06-18 16:10:25 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
 - 2026-06-18 16:13:33 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
 - 2026-06-18 16:16:01 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+- 2026-06-18 16:21:14 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -44,6 +45,7 @@ Validation: pending.
 - 2026-06-18 16:07:56 `review.run`: passed — OK
 - 2026-06-18 16:09:04 `verify`: passed — OK
 - 2026-06-18 16:17:11 `verify`: passed — OK
+- 2026-06-18 16:22:00 `verify`: passed — OK
 
 ## workspace-owned: files read
 
@@ -112,3 +114,9 @@ Follow-ups:
 - 2026-06-18 16:13:33 append: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
 
 - 2026-06-18 16:16:01 write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+
+## implementation checkpoint
+
+The task replaces the generated `/traces` placeholder with the approved Trace cockpit shell, keeps the work in OS Sites generation, and preserves gateway-only browser data access. Validation passed for the focused cockpit test, Sites CLI coverage, Trace gateway read-layer coverage, workspace edge Sites gateway integration, package syntax/typecheck, review, and verify. Follow-up remains backend data depth: richer report endpoints and fuller live stream data can be wired into this shell separately.
+
+- 2026-06-18 16:21:14 append: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
