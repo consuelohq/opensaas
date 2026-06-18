@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os/serve-trace-cockpit-live-at-traces",
   "base": "origin/main",
-  "headSha": "ff7b80b0741f328a6d1965a2bf8616599a8b2d48",
-  "changeHash": "126242f2e0c4bf3854fdca978476939aeccb4398fb15cdbf444501301f2c94f7",
+  "headSha": "27d408e39790cf39423c98797c2ee0412971fa62",
+  "changeHash": "fe604fbe11c23f660fa1a3ea26f724f73e4913bf8594c5dc873b0700b26b0f45",
   "changedFiles": [
     "packages/os/scripts/lib/sites.ts",
     "packages/os/tests/sites-trace-cockpit.test.ts"
   ],
-  "verifiedAt": "2026-06-18T16:09:04.227Z",
+  "verifiedAt": "2026-06-18T16:17:11.298Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -28,6 +28,7 @@
         ".task/os/serve-trace-cockpit-live-at-traces/evidence-log.json",
         ".task/os/serve-trace-cockpit-live-at-traces/read-log.json",
         ".task/os/serve-trace-cockpit-live-at-traces/session.json",
+        ".task/os/serve-trace-cockpit-live-at-traces/verify.json",
         ".task/os/serve-trace-cockpit-live-at-traces/workpad.md",
         ".task/tasks/os/serve-trace-cockpit-live-at-traces.json",
         "packages/os/scripts/lib/sites.ts",

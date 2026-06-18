@@ -34,12 +34,16 @@ Validation: pending.
 - 2026-06-18 16:02:50 write: `packages/os/scripts/lib/sites.ts`
 - 2026-06-18 16:02:50 fs.write: `packages/os/scripts/lib/sites.ts`
 - 2026-06-18 16:08:39 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+- 2026-06-18 16:10:25 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+- 2026-06-18 16:13:33 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+- 2026-06-18 16:16:01 fs.write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-06-18 16:04:36 `review.run`: passed — OK
 - 2026-06-18 16:07:56 `review.run`: passed — OK
 - 2026-06-18 16:09:04 `verify`: passed — OK
+- 2026-06-18 16:17:11 `verify`: passed — OK
 
 ## workspace-owned: files read
 
@@ -69,9 +73,42 @@ Validation: pending.
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/serve-trace-cockpit-live-at-traces/current.json`, `.task/os/serve-trace-cockpit-live-at-traces/evidence-log.json`, `.task/os/serve-trace-cockpit-live-at-traces/read-log.json`, `.task/os/serve-trace-cockpit-live-at-traces/session.json`, `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`, `.task/tasks/os/serve-trace-cockpit-live-at-traces.json`, `packages/os/scripts/lib/sites.ts`, `packages/os/tests/sites-trace-cockpit.test.ts`
+- changed files: `.task/os/serve-trace-cockpit-live-at-traces/current.json`, `.task/os/serve-trace-cockpit-live-at-traces/evidence-log.json`, `.task/os/serve-trace-cockpit-live-at-traces/read-log.json`, `.task/os/serve-trace-cockpit-live-at-traces/session.json`, `.task/os/serve-trace-cockpit-live-at-traces/verify.json`, `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`, `.task/tasks/os/serve-trace-cockpit-live-at-traces.json`, `packages/os/scripts/lib/sites.ts`, `packages/os/tests/sites-trace-cockpit.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## publish update
+
+- Final push created commit `27d408e39790cf39423c98797c2ee0412971fa62` with message `feat(os): serve trace cockpit shell`.
+- The published task changes are intentionally narrow: `packages/os/scripts/lib/sites.ts` and `packages/os/tests/sites-trace-cockpit.test.ts`, plus task metadata.
+- This preserves the approved cockpit UI direction in the downloaded OS `/traces` shell without adding Astro or changing gateway service ownership.
+
+- 2026-06-18 16:10:25 append: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+
+## final agent-authored workpad update
+
+What changed:
+- Replaced only the generated `sites/traces/index.html` path with the approved Trace cockpit shell.
+- Added a focused test that fails on the old placeholder shell and passes only when the cockpit shell, gateway routes, data hooks, and leak guards are present.
+
+Why it changed:
+- Ko confirmed the existing cockpit UI/UX should be preserved; the repo was still generating a generic reserved placeholder for `/traces`.
+- This task captures that cockpit as the downloaded OS source-of-truth without adding Astro or redesigning the Site.
+
+Validation run:
+- Red: `tests/sites-trace-cockpit.test.ts` failed on the reserved placeholder.
+- Green: `sites-trace-cockpit`, `sites-cli`, `trace-sites-gateway-read-layer`, `workspace-edge-sites-gateway-integration`, package typecheck, review, and verify passed.
+
+Issues:
+- `trace-sites-gateway-live-endpoints.test.ts` still has an unrelated Vitest `bun:sqlite` import issue when run under Vitest.
+
+Follow-ups:
+- Wire richer reports and live stream data into the cockpit as a separate backend/data task.
+- Consider Astro only as a parity-preserving shell extraction task, not as part of this shell wiring commit.
+
+- 2026-06-18 16:13:33 append: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
+
+- 2026-06-18 16:16:01 write: `.task/os/serve-trace-cockpit-live-at-traces/workpad.md`
