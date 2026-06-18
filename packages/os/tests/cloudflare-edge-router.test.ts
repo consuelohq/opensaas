@@ -411,7 +411,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body.error.code).toBe('WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE');
     expect(JSON.stringify(body)).not.toMatch(/tunnel|token|secret/i);
   });
-  it('should serve public site snapshots from edge cache before D1 resolution', async () => {
+  it('should resolve D1 route policy before serving public site snapshots from edge cache', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     let resolveCount = 0;
@@ -435,7 +435,23 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       registry: {
         async resolve() {
           resolveCount += 1;
-          throw new Error('D1 should not be consulted for a public cache hit');
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_1',
+              manifestKey: 'sites/workspace_123/launcher/version_1/index.html',
+              contentType: 'text/html; charset=utf-8',
+              cachePolicy: 'static-shell',
+            },
+          };
         },
       },
       siteSnapshots: { cache: siteCache },
@@ -450,7 +466,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('cached launcher');
     expect(response.headers.get('x-consuelo-sites-cache')).toBe('hit');
-    expect(resolveCount).toBe(0);
+    expect(resolveCount).toBe(1);
     expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
   });
 
