@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
 
+import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
@@ -599,6 +600,11 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, method: "get" };
   }
 
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    const { path: searchPath, ...rest } = input;
+    return { ...rest, paths: [searchPath] };
+  }
+
   if (toolName === "fs.read" && Array.isArray(input.files)) {
     return { ...input, filesJson: JSON.stringify(input.files) };
   }
@@ -624,6 +630,11 @@ async function executeInternalTool<TData>(
 ): Promise<ToolResult<TData> | null> {
   const internal = entry.command.internal;
   if (!internal) return null;
+
+  if (internal === 'batch') {
+    const steps = Array.isArray(input.steps) ? input.steps : [];
+    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+  }
 
   if (internal === 'code.call') {
     return executeCodeCall(input as CodeCallInput, {

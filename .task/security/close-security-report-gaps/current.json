@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/close-security-report-gaps",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1141,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1141",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1141",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1141/close-security-report-gaps",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1141",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1141/close-security-report-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-security-report-gaps",
+  "taskSession": "tsk_6960cbb95962",
+  "tmuxSession": "opensaas-security-close-security-report-gaps-6960cbb9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-security-report-gaps/.task/security/close-security-report-gaps/session.json",
+  "createdAt": "2026-06-18T13:55:40.649Z"
+}

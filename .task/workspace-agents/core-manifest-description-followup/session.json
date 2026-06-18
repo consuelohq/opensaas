@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_eb548ca66aca",
+  "tmuxSession": "opensaas-workspace-agents-core-manifest-description-followup-eb548ca6",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/core-manifest-description-followup",
+  "branch": "task/workspace-agents/core-manifest-description-followup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-core-manifest-description-followup",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-core-manifest-description-followup",
+  "prNumber": 1120,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1120",
+  "createdAt": "2026-06-18T01:45:58.774Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-core-manifest-description-followup/.task/workspace-agents/core-manifest-description-followup/session.json"
+}

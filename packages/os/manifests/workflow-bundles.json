@@ -79,7 +79,7 @@
           "source": "dev-tooling",
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "codemode",
-          "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
+          "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
           "core": true,
           "definition": {
             "name": "code.call",
@@ -87,7 +87,7 @@
               "code",
               "call"
             ],
-            "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
+            "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
             "category": "codemode",
             "underlying": "os code.call",
             "capabilities": {
@@ -107,30 +107,75 @@
               "arguments": []
             },
             "exampleInput": {
-              "language": "bash",
-              "mode": "verify",
-              "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+              "language": "bun",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
               "maxResultChars": 20000
             },
             "sessionRequired": false,
             "workflowRole": "test.run",
             "examples": [
               {
-                "label": "task-scoped focused OS test",
+                "label": "multi-package focused test packet",
                 "input": {
-                  "language": "bash",
+                  "language": "bun",
                   "mode": "verify",
-                  "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+                  "codeFile": "scripts/code-call-examples/multi-package-focused-tests.ts",
+                  "maxResultChars": 60000
+                }
+              },
+              {
+                "label": "repository impact analysis packet",
+                "input": {
+                  "language": "bun",
+                  "mode": "read",
+                  "codeFile": "scripts/code-call-examples/repository-impact-analysis.ts",
+                  "maxResultChars": 50000
+                }
+              },
+              {
+                "label": "exact manifest description verification",
+                "input": {
+                  "language": "bun",
+                  "mode": "verify",
+                  "codeFile": "scripts/code-call-examples/exact-manifest-description-verification.ts",
+                  "maxResultChars": 30000
+                }
+              },
+              {
+                "label": "structured repo read and compare packet",
+                "input": {
+                  "language": "bun",
+                  "mode": "read",
+                  "codeFile": "scripts/code-call-examples/structured-repo-read-compare.ts",
+                  "maxResultChars": 30000
+                }
+              },
+              {
+                "label": "task-scoped structured file rewrite",
+                "input": {
+                  "language": "bun",
+                  "mode": "edit",
+                  "codeFile": "scripts/code-call-examples/task-scoped-structured-file-rewrite.ts",
+                  "maxResultChars": 30000
+                }
+              },
+              {
+                "label": "Python AST/string-heavy test insertion",
+                "input": {
+                  "language": "python",
+                  "mode": "edit",
+                  "codeFile": "scripts/code-call-examples/python-semantic-test-mutation.py",
                   "maxResultChars": 20000
                 }
               },
               {
-                "label": "short Python inspection",
+                "label": "Python test assertion audit packet",
                 "input": {
                   "language": "python",
                   "mode": "read",
-                  "code": "print(\"hello\")",
-                  "maxResultChars": 20000
+                  "codeFile": "scripts/code-call-examples/python-test-assertion-audit.py",
+                  "maxResultChars": 30000
                 }
               }
             ]
@@ -219,7 +264,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "filesystem",
           "description": "write a file in a task worktree",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "fs.write",
             "methodPath": [
@@ -293,7 +338,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "git",
           "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "git.diff",
             "methodPath": [
@@ -521,7 +566,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "finish a task branch after merge",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.finish",
             "methodPath": [
@@ -578,7 +623,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "merge task to stream and create or refresh the stream review PR",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.pr",
             "methodPath": [
@@ -656,7 +701,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "push changed task files to the task branch through GitHub API",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.push",
             "methodPath": [
@@ -746,7 +791,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "task lifecycle",
           "description": "create a task branch, worktree, and draft PR",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "task.start",
             "methodPath": [
@@ -888,7 +933,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "review",
           "description": "run the full task safety gate",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "verify",
             "methodPath": [

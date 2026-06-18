@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_61c04ed00a11",
+  "tmuxSession": "opensaas-workspace-agents-fix-ripgrep-option-boundaries-and-spawn-errors-61c04ed0",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors",
+  "branch": "task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-ripgrep-option-boundaries-and-spawn-errors",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-ripgrep-option-boundaries-and-spawn-errors",
+  "prNumber": 1107,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1107",
+  "createdAt": "2026-06-17T04:14:58.509Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-ripgrep-option-boundaries-and-spawn-errors/.task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/session.json"
+}

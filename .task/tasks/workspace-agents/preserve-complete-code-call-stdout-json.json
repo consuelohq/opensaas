@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1131,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1131",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1131",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1131/preserve-complete-code-call-stdout-json",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1131",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1131/preserve-complete-code-call-stdout-json",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preserve-complete-code-call-stdout-json",
+  "taskSession": "tsk_9b6bec5a6e32",
+  "tmuxSession": "opensaas-workspace-agents-preserve-complete-code-call-stdout-json-9b6bec5a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preserve-complete-code-call-stdout-json/.task/workspace-agents/preserve-complete-code-call-stdout-json/session.json",
+  "createdAt": "2026-06-18T05:34:47.143Z"
+}

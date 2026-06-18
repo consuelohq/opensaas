@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ce4d6f10abe",
+  "tmuxSession": "opensaas-workspace-agents-clone-os-core-manifest-for-workspace-steering-0ce4d6f1",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/clone-os-core-manifest-for-workspace-steering",
+  "branch": "task/workspace-agents/clone-os-core-manifest-for-workspace-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clone-os-core-manifest-for-workspace-steering",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clone-os-core-manifest-for-workspace-steering",
+  "prNumber": 1109,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1109",
+  "createdAt": "2026-06-17T05:45:41.000Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clone-os-core-manifest-for-workspace-steering/.task/workspace-agents/clone-os-core-manifest-for-workspace-steering/session.json"
+}

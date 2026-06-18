@@ -143,6 +143,23 @@ export const WorkflowIntentInput = z.object({
   eventFile: optionalString,
 });
 
+
+const BatchStepInput = z.object({
+  tool: z.string().min(1),
+  input: z.record(z.string(), z.unknown()).optional(),
+  args: z.record(z.string(), z.unknown()).optional(),
+  parallel: z.boolean().optional(),
+}).refine((step) => !(step.input && step.args), {
+  message: 'provide either input or args, not both',
+  path: ['input'],
+});
+
+export const BatchInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  steps: z.array(BatchStepInput).min(1),
+});
+
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -390,6 +407,48 @@ export const ContextTraceInput = z.object({
   limit: z.number().int().positive().optional(),
   raw: z.boolean().optional(),
   db: optionalString,
+});
+
+export const ContextInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
+  keyword: optionalString,
+  index: z.number().int().positive().optional(),
+  category: optionalString,
+  limit: z.number().int().positive().optional(),
+  title: optionalString,
+  file: optionalString,
+  text: z.boolean().optional(),
+  byTitle: z.boolean().optional(),
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  contextTaskSession: optionalString,
+  branch: optionalString,
+  raw: z.boolean().optional(),
+  db: optionalString,
+}).superRefine((input, ctx) => {
+  const issue = (path: string, message: string) => ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: [path],
+    message,
+  });
+
+  if ((input.operation === 'search' || input.operation === 'find') && !input.keyword) {
+    issue('keyword', `operation "${input.operation}" requires keyword`);
+  }
+  if (input.operation === 'get') {
+    if (input.index === undefined) issue('index', 'operation "get" requires index');
+    if (!input.keyword) issue('keyword', 'operation "get" requires keyword');
+  }
+  if (input.operation === 'save') {
+    if (!input.title) issue('title', 'operation "save" requires title');
+    if (!input.file && input.text !== true) issue('file', 'operation "save" requires file or text');
+  }
 });
 
 export const ExploreInput = z.object({
@@ -970,6 +1029,7 @@ export const schemaRegistry = {
   CodeRunInput,
   CodeCallInput,
   WorkflowIntentInput,
+  BatchInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -986,6 +1046,7 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
+  ContextInput,
   ContextSearchInput,
   ContextFindInput,
   ContextGetInput,
@@ -1075,6 +1136,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
@@ -1091,6 +1153,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskMergeInput: '{ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
@@ -1164,6 +1227,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: 'Array<{ path: string; from: number; to: number; total: number; lines: string[] }>',
   FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',

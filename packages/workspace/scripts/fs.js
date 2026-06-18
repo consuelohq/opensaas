@@ -4,13 +4,12 @@
 // provides bounded file reads, search, list, write/apply-patch, http, and trash operations
 // usage: bun run fs -- <read|search|write|apply-patch> [options]
 
-const { execSync, execFileSync, spawnSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { findTaskMeta, getTaskWorkpadPath } = require('./lib/task-meta');
 
 const DEFAULT_CONTEXT = 3;
-const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
 
 function out(s = '') { process.stdout.write(s + '\n'); }
 function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
@@ -209,17 +208,14 @@ async function cmdRead(argv) {
 
 // ── search ──
 
-function cmdSearch(argv) {
-  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
-
+function parseSearchArgs(argv) {
   const json = argv.includes('--json');
   const filesOnly = argv.includes('--files');
   const thenRead = argv.includes('--then-read');
-  let context = DEFAULT_CONTEXT;
+  let context = null;
   let maxResults = null;
   let include = null;
 
-  // extract flags
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -230,87 +226,38 @@ function cmdSearch(argv) {
     else { positional.push(a); }
   }
 
-  const pattern = positional[0];
-  const paths = positional.slice(1);
-  if (!pattern) { err('error: search pattern required'); searchHelp(); return; }
+  return { json, filesOnly, thenRead, context, maxResults, include, pattern: positional[0], paths: positional.slice(1) };
+}
 
-  // build rg args
-  const rgArgs = ['--color=always', '--line-number'];
-  SEARCH_EXCLUDES.forEach((e) => rgArgs.push(`--glob=!${e}`));
-  if (filesOnly) rgArgs.push('--files-with-matches');
-  else rgArgs.push(`--context=${context}`);
-  if (maxResults) rgArgs.push(`--max-count=${maxResults}`);
-  if (include) rgArgs.push(`--glob=${include}`);
-  rgArgs.push(pattern);
-  if (paths.length > 0) rgArgs.push(...paths);
+async function cmdSearch(argv) {
+  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
+  const parsed = parseSearchArgs(argv);
+  if (!parsed.pattern) { err('error: search pattern required'); searchHelp(); return; }
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-  const output = (r.stdout || '').trimEnd();
-
-  if (!output) { out('no matches'); return; }
-
-  if (json && !thenRead) {
-    // parse rg output into structured format
-    const matches = [];
-    output.split('\n').forEach((line) => {
-      const m = line.replace(/\x1b\[[0-9;]*m/g, '').match(/^(.+?):(\d+):(.*)/);
-      if (m) matches.push({ file: m[1], line: parseInt(m[2], 10), text: m[3].trim() });
+  const { runSearchForCli, formatSearchOutput } = await import('./lib/fs/search.ts');
+  let result;
+  try {
+    result = await runSearchForCli({
+      pattern: parsed.pattern,
+      paths: parsed.paths,
+      include: parsed.include || undefined,
+      context: parsed.context ?? (parsed.json ? 0 : DEFAULT_CONTEXT),
+      maxResults: parsed.maxResults || undefined,
+      filesOnly: parsed.filesOnly,
+      thenRead: parsed.thenRead,
+      root: process.cwd(),
     });
-    out(JSON.stringify(matches, null, 2));
+  } catch (cause) {
+    err('error: search failed: ' + (cause && cause.message ? cause.message : String(cause)));
     return;
   }
 
-  out(output);
-
-  if (thenRead) {
-    // re-run rg without color and with filename for reliable parsing
-    const parseArgs = ['--color=never', '--line-number', '--with-filename'];
-    SEARCH_EXCLUDES.forEach((e) => parseArgs.push(`--glob=!${e}`));
-    if (maxResults) parseArgs.push(`--max-count=${maxResults}`);
-    if (include) parseArgs.push(`--glob=${include}`);
-    parseArgs.push(pattern);
-    if (paths.length > 0) parseArgs.push(...paths);
-
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-    const parseOutput = (pr.stdout || '').trimEnd();
-
-    const seen = new Map();
-    parseOutput.split('\n').forEach((line) => {
-      const m = line.match(/^(.+?):(\d+):/);
-      if (m) {
-        const f = m[1];
-        const n = parseInt(m[2], 10);
-        if (!seen.has(f)) seen.set(f, []);
-        seen.get(f).push(n);
-      }
-    });
-
-    out('');
-    out('── then-read ──');
-    for (const [file, lines] of seen) {
-      const fp = resolve(file);
-      if (!fs.existsSync(fp)) continue;
-      const content = fs.readFileSync(fp, 'utf8').split('\n');
-      // merge nearby ranges
-      const sorted = [...new Set(lines)].sort((a, b) => a - b);
-      const ranges = [];
-      for (const n of sorted) {
-        const from = Math.max(1, n - context);
-        const to = Math.min(content.length, n + context);
-        if (ranges.length > 0 && from <= ranges[ranges.length - 1].to + 2) {
-          ranges[ranges.length - 1].to = to;
-        } else {
-          ranges.push({ from, to });
-        }
-      }
-      for (const range of ranges) {
-        out(`\n── ${file}:${range.from}-${range.to} ──`);
-        for (let i = range.from; i <= range.to; i++) {
-          out(`${String(i).padStart(4)}: ${content[i - 1]}`);
-        }
-      }
-    }
+  if (parsed.json) {
+    out(JSON.stringify(result, null, 2));
+    return;
   }
+
+  out(formatSearchOutput(result));
 }
 
 // ── list ──
@@ -932,7 +879,7 @@ function cmdTrash(argv) {
 
   switch (command) {
     case 'read': await cmdRead(rest); break;
-    case 'search': cmdSearch(rest); break;
+    case 'search': await cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
