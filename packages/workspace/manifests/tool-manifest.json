@@ -65,7 +65,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
       "description": "audit workspace scripts, docs, or index freshness",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "audit",
         "methodPath": [
@@ -1672,7 +1672,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
       "description": "score confidence from evidence state",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "confidenceScore",
         "methodPath": [
@@ -1707,7 +1707,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
       "description": "run verification or targeted validation through confirm",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "confirm",
         "methodPath": [
@@ -1760,7 +1760,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "context",
       "description": "list project memory categories",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "context.categories",
         "methodPath": [
@@ -1899,7 +1899,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "context",
       "description": "list recent project memories",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "context.list",
         "methodPath": [
@@ -2157,7 +2157,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
       "description": "recommend the next action from evidence state",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "decideNext",
         "methodPath": [
@@ -2346,7 +2346,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "utilities",
       "description": "run workspace diagnostics",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "doctor",
         "methodPath": [
@@ -2464,7 +2464,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "decision engine",
       "description": "select the highest-confidence editing target",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "exploit",
         "methodPath": [
@@ -2621,7 +2621,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "filesystem",
       "description": "list or find files in the repo root or a resolved task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.list",
         "methodPath": [
@@ -2928,7 +2928,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "filesystem",
       "description": "write a file in a task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.write",
         "methodPath": [
@@ -3076,7 +3076,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "github",
       "description": "run the workspace GitHub helper with an explicit action",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "gh",
         "methodPath": [
@@ -4127,7 +4127,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "list non-repo files on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.list",
         "methodPath": [
@@ -4177,7 +4177,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "check or find a local port",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.port",
         "methodPath": [
@@ -4226,7 +4226,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "list or kill local Mac processes",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.process",
         "methodPath": [
@@ -4281,7 +4281,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "read a non-repo file on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.read",
         "methodPath": [
@@ -4326,7 +4326,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "search non-repo files on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.search",
         "methodPath": [
@@ -4381,7 +4381,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "mac",
       "description": "write a non-repo file on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.write",
         "methodPath": [
@@ -6167,7 +6167,7 @@
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "utilities",
       "description": "show compact workspace status",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "status",
         "methodPath": [

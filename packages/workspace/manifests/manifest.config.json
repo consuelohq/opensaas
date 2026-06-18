@@ -14,23 +14,15 @@
   },
   "core": {
     "includeNames": [
-      "audit",
       "checkFiles",
       "code.call",
       "code.run",
-      "confidenceScore",
-      "confirm",
-      "decideNext",
-      "doctor",
-      "exploit",
       "explore",
-      "gh",
       "git.diff",
       "git.status",
       "github",
       "intent",
       "review.run",
-      "status",
       "tmp",
       "tools.search",
       "verify"
@@ -38,7 +30,6 @@
     "includePrefixes": [
       "context.",
       "fs.",
-      "mac.",
       "stream."
     ],
     "includeCategories": [],
@@ -46,7 +37,25 @@
       "mac.call",
       "mac.exec",
       "task.call",
-      "task.exec"
+      "task.exec",
+      "fs.list",
+      "fs.write",
+      "gh",
+      "decideNext",
+      "exploit",
+      "confidenceScore",
+      "confirm",
+      "context.list",
+      "context.categories",
+      "audit",
+      "doctor",
+      "status",
+      "mac.read",
+      "mac.write",
+      "mac.search",
+      "mac.list",
+      "mac.port",
+      "mac.process"
     ],
     "excludePrefixes": [
       "browser.",
@@ -56,7 +65,8 @@
       "railway.",
       "sentry.",
       "task.",
-      "website."
+      "website.",
+      "mac."
     ],
     "excludeCategories": [
       "browser",

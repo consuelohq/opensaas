@@ -219,7 +219,7 @@
           "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
           "category": "filesystem",
           "description": "write a file in a task worktree",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "fs.write",
             "methodPath": [

@@ -24,6 +24,53 @@ type SearchResult = {
 
 const packageRoot = join(import.meta.dirname, '..');
 const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
+const removedCoreToolNames = [
+  'fs.list',
+  'fs.write',
+  'gh',
+  'decideNext',
+  'exploit',
+  'confidenceScore',
+  'confirm',
+  'context.list',
+  'context.categories',
+  'audit',
+  'doctor',
+  'status',
+  'mac.read',
+  'mac.write',
+  'mac.search',
+  'mac.list',
+  'mac.port',
+  'mac.process',
+] as const;
+
+const retainedCoreToolNames = [
+  'checkFiles',
+  'code.call',
+  'code.run',
+  'context.find',
+  'context.get',
+  'context.save',
+  'context.search',
+  'context.trace',
+  'explore',
+  'fs.apply_patch',
+  'fs.read',
+  'fs.search',
+  'fs.trash',
+  'git.diff',
+  'git.status',
+  'github',
+  'intent',
+  'review.run',
+  'stream.context',
+  'stream.list',
+  'stream.sync',
+  'tmp',
+  'tools.search',
+  'verify',
+] as const;
 
 let fixtureRoot: string;
 
@@ -160,25 +207,14 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const coreNames = registry.core.tools.map((entry) => entry.name).sort();
 
-    expect(coreNames).toContain('fs.read');
-    expect(coreNames).toContain('stream.context');
-    expect(coreNames).toContain('review.run');
-    expect(coreNames).toContain('verify');
-    expect(coreNames).toContain('github');
-    expect(coreNames).toContain('gh');
-    expect(coreNames).toContain('mac.read');
+    for (const toolName of retainedCoreToolNames) {
+      expect(coreNames).toContain(toolName);
+    }
+    for (const toolName of removedCoreToolNames) {
+      expect(coreNames).not.toContain(toolName);
+    }
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
-    expect(coreNames).toContain('tools.search');
-    expect(coreNames).toContain('status');
-    expect(coreNames).toContain('doctor');
-    expect(coreNames).toContain('tmp');
-    expect(coreNames).toContain('code.run');
-    expect(coreNames).toContain('code.call');
-    expect(coreNames).toContain('context.search');
-    expect(coreNames).toContain('context.get');
-    expect(coreNames).toContain('context.list');
-    expect(coreNames).toContain('context.trace');
     expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
 
     expect(coreNames).not.toContain('linear.issue');
