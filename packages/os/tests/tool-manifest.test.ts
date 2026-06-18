@@ -53,15 +53,21 @@ const removedCoreToolNames = [
   'verify',
 ] as const;
 
+const oldContextToolNames = [
+  'context.categories',
+  'context.find',
+  'context.get',
+  'context.list',
+  'context.save',
+  'context.search',
+  'context.trace',
+] as const;
+
 const retainedCoreToolNames = [
   'batch',
   'code.call',
   'code.run',
-  'context.find',
-  'context.get',
-  'context.save',
-  'context.search',
-  'context.trace',
+  'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
@@ -220,6 +226,9 @@ describe('tool manifest generator', () => {
     expect(coreNames).not.toContain('mac.exec');
     expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
 
+    for (const toolName of oldContextToolNames) {
+      expect(coreNames).not.toContain(toolName);
+    }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
     expect(coreNames).not.toContain('railway.logs');

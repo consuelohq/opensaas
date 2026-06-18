@@ -40,15 +40,21 @@ const removedCoreToolNames = [
   'verify',
 ] as const;
 
+const oldContextToolNames = [
+  'context.categories',
+  'context.find',
+  'context.get',
+  'context.list',
+  'context.save',
+  'context.search',
+  'context.trace',
+] as const;
+
 const retainedCoreToolNames = [
   'batch',
   'code.call',
   'code.run',
-  'context.find',
-  'context.get',
-  'context.save',
-  'context.search',
-  'context.trace',
+  'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
@@ -93,6 +99,10 @@ describe('workspace tool manifest generator', () => {
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
     expect(names(registry.full.tools)).toContain('batch');
+    expect(names(registry.full.tools)).toContain('context');
+    for (const toolName of oldContextToolNames) {
+      expect(names(registry.full.tools)).not.toContain(toolName);
+    }
     expect(registry.report.fullToolCount).toBe(sourceEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
   });
@@ -120,6 +130,9 @@ describe('workspace tool manifest generator', () => {
       expect(coreNames).not.toContain(toolName);
     }
     expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    for (const toolName of oldContextToolNames) {
+      expect(coreNames).not.toContain(toolName);
+    }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
   });

@@ -17,6 +17,7 @@
       "batch",
       "code.call",
       "code.run",
+      "context",
       "explore",
       "github",
       "intent",
@@ -24,7 +25,6 @@
       "tools.search"
     ],
     "includePrefixes": [
-      "context.",
       "fs.",
       "stream."
     ],
@@ -41,8 +41,6 @@
       "exploit",
       "confidenceScore",
       "confirm",
-      "context.list",
-      "context.categories",
       "audit",
       "doctor",
       "status",
