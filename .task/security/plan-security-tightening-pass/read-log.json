@@ -1,0 +1,29 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/code-call.ts",
+    "packages/os/scripts/lib/code-call/runtime.ts",
+    "packages/os/scripts/lib/code-call/types.ts",
+    "packages/os/scripts/lib/dangerous-material-policy.ts",
+    "packages/os/scripts/lib/local-guardrails.ts",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/scripts/lib/worker/runtime.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/code-call.test.ts",
+    "packages/os/tests/dangerous-material-policy.test.ts",
+    "packages/os/tests/fixtures/skills/senior-engineer-workspace.SKILL.md",
+    "packages/os/tests/fixtures/skills/task-workspace.SKILL.md",
+    "packages/os/tests/local-guardrails.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/safe-temp-cleanup.ts",
+    "packages/os/tests/security-gateway.test.ts",
+    "packages/twenty-server/src/engine/api/mcp/controllers/__tests__/mcp-core.controller.spec.ts",
+    "packages/twenty-server/src/engine/api/mcp/controllers/mcp-core.controller.ts",
+    "packages/twenty-server/src/engine/api/mcp/mcp.module.ts",
+    "packages/twenty-server/src/engine/api/mcp/services/mcp-protocol.service.ts"
+  ],
+  "updatedAt": "2026-06-17T23:51:31.446Z"
+}
