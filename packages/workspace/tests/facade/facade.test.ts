@@ -187,9 +187,11 @@ describe('typed facade executor', () => {
   });
 
   it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const toolsSearchScript = join(import.meta.dirname, '..', '..', 'scripts', 'tools-search.ts');
+    const packageRoot = join(import.meta.dirname, '..', '..');
     const runSearch = (query: string, limit = 5) => {
-      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
-        cwd: process.cwd(),
+      const result = spawnSync('bun', [toolsSearchScript, query, '--limit', String(limit), '--json'], {
+        cwd: packageRoot,
         encoding: 'utf8',
       });
       expect(result.status).toBe(0);

@@ -56,7 +56,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
@@ -72,9 +72,9 @@ run short language-specific code through staged Python, Bun, or Bash backends
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
+    "language": "bun",
     "mode": "read",
-    "code": "print(\"hello\")",
+    "code": "const path = \"packages/workspace/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
     "maxResultChars": 20000
   }
 });

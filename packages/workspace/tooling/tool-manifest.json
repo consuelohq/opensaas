@@ -1335,7 +1335,7 @@
       "code",
       "call"
     ],
-    "description": "run short language-specific code through staged Python, Bun, or Bash backends",
+    "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
     "category": "codemode",
     "underlying": "workspace code.call",
     "capabilities": {
@@ -1355,9 +1355,9 @@
       "arguments": []
     },
     "exampleInput": {
-      "language": "python",
+      "language": "bun",
       "mode": "read",
-      "code": "print(\"hello\")",
+      "code": "const path = \"packages/workspace/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
       "maxResultChars": 20000
     },
     "sessionRequired": false,

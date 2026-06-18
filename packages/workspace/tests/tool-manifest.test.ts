@@ -10,7 +10,10 @@ type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
+
 const expectedDescriptions = {
+  'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
   intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
@@ -153,6 +156,14 @@ describe('workspace tool manifest generator', () => {
       expect(coreTool?.description).toBe(description);
       expect(coreTool?.definition.description).toBe(description);
     }
+  });
+
+  it('keeps code.call compact packet example in generated source surfaces', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const codeCall = registry.core.tools.find((entry) => entry.name === 'code.call');
+
+    expect(JSON.stringify(codeCall?.definition.exampleInput)).toContain('snippets');
+    expect(JSON.stringify(codeCall?.definition.exampleInput)).toContain('lineSpans');
   });
 
   it('writes full and core manifests to override output paths', () => {
