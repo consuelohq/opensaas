@@ -97,6 +97,41 @@ function repoRelative(filePath: string): string {
   return relative(join(packageRoot, '..', '..'), filePath).split(/[/\\]/).join('/');
 }
 
+
+function assertStrongCodeCallExamples(codeCall: JsonObject | undefined): void {
+  const definition = codeCall?.definition as JsonObject | undefined;
+  const exampleInput = definition?.exampleInput as JsonObject | undefined;
+  const examples = definition?.examples;
+  const exampleArray = Array.isArray(examples) ? examples as JsonObject[] : [];
+  const labels = exampleArray.map((example) => String(example.label));
+  const inputs = [exampleInput, ...exampleArray.map((example) => example.input as JsonObject | undefined)].filter(Boolean) as JsonObject[];
+  const inputText = JSON.stringify(inputs);
+
+  expect(labels).toEqual([
+    'multi-package focused test packet',
+    'manifest docs and types generation packet',
+    'exact manifest description verification',
+    'structured repo read and compare packet',
+    'task-scoped structured file rewrite',
+    'targeted Python file transformation',
+  ]);
+  expect(inputs.map((input) => input.language)).toEqual(expect.arrayContaining(['bun', 'python']));
+  expect(inputs.map((input) => input.mode)).toEqual(expect.arrayContaining(['read', 'edit', 'verify']));
+  expect(inputText).toContain('results');
+  expect(inputText).toContain('Bun.spawnSync');
+  expect(inputText).toContain('lineSpans');
+  expect(inputText).toContain('snippets');
+  expect(inputText).toContain('generate-tool-manifest');
+  expect(inputText).toContain('await Bun.write');
+  expect(inputText).toContain('from pathlib import Path');
+  expect(inputText).not.toContain('print(\"hello\")');
+  for (const input of inputs) {
+    if (input.language === 'bash') {
+      expect(String(input.code)).not.toMatch(/\bbun\b|\bpython\b|\bnode\b/);
+    }
+  }
+}
+
 describe('workspace tool manifest generator', () => {
   it('preserves every workspace tool in the generated full manifest', () => {
     const sourceEntries = readJsonArray('tooling/tool-manifest.json');
@@ -164,6 +199,12 @@ describe('workspace tool manifest generator', () => {
 
     expect(JSON.stringify(codeCall?.definition.exampleInput)).toContain('snippets');
     expect(JSON.stringify(codeCall?.definition.exampleInput)).toContain('lineSpans');
+  });
+
+  it('keeps code.call examples strong and aligned', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const codeCall = registry.core.tools.find((entry) => entry.name === 'code.call');
+    assertStrongCodeCallExamples(codeCall as JsonObject | undefined);
   });
 
   it('writes full and core manifests to override output paths', () => {
