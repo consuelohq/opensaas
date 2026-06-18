@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/serve-trace-cockpit-live-at-traces",
+  "base": "origin/main",
+  "headSha": "ff7b80b0741f328a6d1965a2bf8616599a8b2d48",
+  "changeHash": "126242f2e0c4bf3854fdca978476939aeccb4398fb15cdbf444501301f2c94f7",
+  "changedFiles": [
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/sites-trace-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-18T16:09:04.227Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/serve-trace-cockpit-live-at-traces/current.json",
+        ".task/os/serve-trace-cockpit-live-at-traces/evidence-log.json",
+        ".task/os/serve-trace-cockpit-live-at-traces/read-log.json",
+        ".task/os/serve-trace-cockpit-live-at-traces/session.json",
+        ".task/os/serve-trace-cockpit-live-at-traces/workpad.md",
+        ".task/tasks/os/serve-trace-cockpit-live-at-traces.json",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/tests/sites-trace-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -650,6 +650,139 @@ function buildOfficeSite(data: OfficeSiteData): string {
 `;
 }
 
+
+function buildTraceCockpitSite(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trace Burn Intelligence - Consuelo OS Sites</title>
+<style>
+:root{color-scheme:dark;--bg:#100f0b;--panel:#171610;--panel-2:#11100c;--line:rgba(239,231,212,.16);--text:#efe7d4;--muted:#aaa196;--gold:#c5a36c;--good:#9caf91;--bad:#c36f61;--shadow:rgba(0,0,0,.46);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;}
+*{box-sizing:border-box}html,body{min-height:100%;}body{margin:0;background:radial-gradient(circle at 60% 8%,rgba(122,100,63,.18),transparent 34%),var(--bg);color:var(--text);font-size:14px;line-height:1.3;letter-spacing:.01em;}button,input,select{font:inherit;color:inherit}main[data-trace-cockpit-root]{width:min(100%,880px);margin:0 auto;padding:28px 26px 60px;}.eyebrow{color:var(--gold);letter-spacing:.22em;text-transform:uppercase;font-size:13px}.hero h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(48px,10vw,82px);line-height:.88;margin:20px 0 14px;letter-spacing:-.055em}.hero p{max-width:760px;margin:0;color:var(--muted);font-size:clamp(18px,3.8vw,24px)}.toolbar{display:flex;flex-wrap:wrap;gap:14px 16px;margin:30px 0}.pill{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);padding:13px 20px;color:var(--muted);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}.pill strong{color:var(--text);font-weight:700}.pill.live::before,.pill.health::before{content:"";display:inline-block;width:10px;height:10px;border-radius:99px;background:var(--good);margin-right:10px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));box-shadow:0 18px 44px var(--shadow);padding:22px;min-height:160px}.label{color:var(--muted);letter-spacing:.18em;text-transform:uppercase;font-size:13px}.metric{font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,7vw,58px);line-height:1;margin:18px 0 8px}.metric-note{color:var(--muted);font-size:16px}.metric-note.bad{color:var(--bad)}.spark{height:38px;margin-top:18px}.spark path{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;opacity:.88}.spark.neutral path{stroke:var(--muted);opacity:.42}.spark.bad path{stroke:var(--bad)}.wide{grid-column:1/-1}.heatmap{display:grid;grid-template-columns:52px repeat(24,1fr);gap:6px;align-items:center;margin-top:20px;color:var(--muted)}.cell{aspect-ratio:1;border-radius:7px;background:rgba(239,231,212,.1);border:1px solid rgba(239,231,212,.06)}.level-1{background:rgba(239,231,212,.14)}.level-2{background:rgba(239,231,212,.22)}.level-3{background:rgba(197,163,108,.42)}.level-4{background:rgba(197,163,108,.62)}.inspect-title,.section-title{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:0 0 14px}.inspect-branch{font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,8vw,68px);line-height:.9;letter-spacing:-.055em}.bar-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;margin:18px 0 8px}.bar{height:14px;border-radius:99px;background:rgba(239,231,212,.1);overflow:hidden}.bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,rgba(197,163,108,.72),rgba(239,231,212,.62))}.trace-panel{padding:0;overflow:hidden}.trace-head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}.window-dots{display:flex;gap:8px}.window-dots span{width:12px;height:12px;border-radius:99px;background:var(--good)}.window-dots span:first-child{background:var(--bad)}.search-row{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}.search-row input,.search-row select{width:100%;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.18);padding:12px 14px}.trace-table{width:100%;border-collapse:collapse}.trace-table th,.trace-table td{padding:14px 20px;border-bottom:1px solid rgba(239,231,212,.1);text-align:left;white-space:nowrap}.trace-table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.12em}.tool{color:#d4b772}.status-ok{color:var(--good)}.status-error{color:var(--bad)}.footer-note{color:var(--muted);font-size:12px;margin-top:24px}@media(max-width:720px){main[data-trace-cockpit-root]{padding:26px 26px 48px}.grid{grid-template-columns:1fr}.hero h1{font-size:54px}.card{min-height:0}.heatmap{grid-template-columns:42px repeat(12,1fr);overflow:hidden}.heatmap .hour-extra,.heatmap .extra{display:none}.search-row{grid-template-columns:1fr}.trace-table{min-width:650px}.trace-scroll{overflow-x:auto}.inspect-branch{font-size:46px}}
+</style>
+</head>
+<body>
+<main data-trace-cockpit-root data-gateway-recent="/gateway/traces/recent" data-gateway-summary="/gateway/traces/summary" data-gateway-events="/gateway/traces/events">
+  <section class="hero" aria-labelledby="trace-title">
+    <div class="eyebrow">EXECUTIVE COCKPIT / TOP SCREEN</div>
+    <h1 id="trace-title">Trace Burn Intelligence</h1>
+    <p>Operational view of what the workspace agents burned, where it happened, why it happened, and what Ko should inspect next. Trace attribution first; generic SaaS analytics second.</p>
+  </section>
+  <nav class="toolbar" aria-label="Trace controls">
+    <button class="pill" type="button" data-window-control>Past 24 hours</button>
+    <button class="pill" type="button">Menu <strong>/</strong></button>
+    <span class="pill live" data-live-state>Live traces</span>
+    <span class="pill health" data-workspace-health>Workspace healthy</span>
+  </nav>
+  <section class="grid" aria-label="Trace metrics">
+    <article class="card" data-kpi="total-burn"><div class="label">Total Trace Burn</div><div class="metric" data-total-trace-burn>--</div><div class="metric-note">tracked tokens / <span data-total-calls>--</span> calls</div><svg class="spark" viewBox="0 0 120 32"><path d="M2 24 L20 22 L38 19 L52 20 L66 16 L82 18 L98 12 L116 10"/></svg></article>
+    <article class="card" data-kpi="total-cost"><div class="label">Total Cost</div><div class="metric" data-total-cost>$--</div><div class="metric-note">open cost ledger ↗</div><svg class="spark neutral" viewBox="0 0 120 32"><path d="M2 19 L22 18 L42 20 L62 17 L82 16 L102 19 L118 16"/></svg></article>
+    <article class="card" data-kpi="output-tokens"><div class="label">Output Tokens</div><div class="metric" data-output-tokens>--</div><div class="metric-note"><span data-output-ratio>--</span> of burn · tap for input</div><svg class="spark neutral" viewBox="0 0 120 32"><path d="M2 25 L20 21 L38 20 L54 22 L72 17 L90 19 L106 12 L118 10"/></svg></article>
+    <article class="card" data-kpi="error-pressure"><div class="label">Error Pressure</div><div class="metric" data-error-count>--</div><div class="metric-note bad"><span data-error-rate>--</span> of traced calls · past 24h</div><svg class="spark bad" viewBox="0 0 120 32"><path d="M2 24 L18 21 L34 25 L50 16 L66 22 L82 13 L98 21 L114 16"/></svg></article>
+    <article class="card" data-kpi="avg-call"><div class="label">Avg Burn / Call</div><div class="metric" data-avg-burn>--</div><div class="metric-note">tokens per trace call</div><svg class="spark neutral" viewBox="0 0 120 32"><path d="M2 22 L24 20 L44 23 L68 21 L88 18 L116 19"/></svg></article>
+    <article class="card" data-kpi="script-cost"><div class="label">Analytics Script Cost</div><div class="metric">New</div><div class="metric-note">track scripts separately</div><svg class="spark" viewBox="0 0 120 32"><path d="M2 24 L28 24 L54 23 L82 19 L116 16"/></svg></article>
+  </section>
+  <section class="card wide" aria-labelledby="hour-title">
+    <h2 class="section-title" id="hour-title">Token Burn by Hour (24h)</h2>
+    <p class="metric-note">Heat map replaces the line chart as the primary screen. The brightest cells show output-heavy trace sessions; scan by day and hour first, then inspect branch/tool context.</p>
+    <div class="heatmap" data-trace-heatmap aria-label="Token burn heatmap"></div>
+    <p class="metric-note">Peak cluster: 12 PM-8 PM, especially review/generation output bursts.</p>
+  </section>
+  <section class="card wide" data-inspect-next>
+    <h2 class="inspect-title">Inspect next</h2>
+    <div class="inspect-branch" data-inspect-branch>Waiting for traces</div>
+    <p class="metric-note" data-inspect-reason>Once gateway data arrives, this highlights the branch where token burn and failure pressure overlap.</p>
+  </section>
+  <section class="card wide" aria-labelledby="workspace-title">
+    <h2 class="section-title" id="workspace-title">Top workspace burn</h2>
+    <p class="metric-note">Branches ranked by tracked token burn.</p>
+    <div data-top-workspace-burn></div>
+  </section>
+  <section class="card wide trace-panel" aria-labelledby="traces-table-title">
+    <div class="trace-head"><div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div><h2 class="section-title" id="traces-table-title">Traces</h2><button class="pill" type="button">filters</button></div>
+    <div class="search-row"><input type="search" placeholder="Search traces..." aria-label="Search traces"><select aria-label="Trace window"><option>1 day</option><option>7 days</option></select></div>
+    <div class="trace-scroll"><table class="trace-table" data-trace-table><thead><tr><th>Start Time</th><th>Type</th><th>Tool name</th><th>Status</th></tr></thead><tbody data-trace-rows><tr><td colspan="4">Waiting for gateway traces…</td></tr></tbody></table></div>
+  </section>
+  <p class="footer-note">Data boundary: browser reads only Consuelo Gateway trace routes.</p>
+</main>
+<script>
+(() => {
+  const root = document.querySelector('[data-trace-cockpit-root]');
+  if (!root) return;
+  const routes = { recent: root.dataset.gatewayRecent, summary: root.dataset.gatewaySummary, events: root.dataset.gatewayEvents };
+  const safeRoute = (value) => typeof value === 'string' && value.startsWith('/gateway/traces');
+  const text = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
+  const compact = (value) => value >= 1000000 ? (value / 1000000).toFixed(2) + 'M' : value >= 1000 ? (value / 1000).toFixed(2) + 'K' : String(value);
+  const renderHeatmap = () => {
+    const heatmap = document.querySelector('[data-trace-heatmap]');
+    if (!heatmap) return;
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const cells = [];
+    cells.push('<span>Hour</span>');
+    for (let hour = 0; hour < 24; hour += 1) cells.push('<span class="' + (hour > 11 ? 'hour-extra' : '') + '">' + (hour % 12 || 12) + '</span>');
+    for (const day of days) {
+      cells.push('<span>' + day + '</span>');
+      for (let hour = 0; hour < 24; hour += 1) {
+        const level = ((hour + day.charCodeAt(0)) % 5);
+        cells.push('<span class="cell level-' + level + (hour > 11 ? ' extra' : '') + '"></span>');
+      }
+    }
+    heatmap.innerHTML = cells.join('');
+  };
+  const renderRows = (events) => {
+    const body = document.querySelector('[data-trace-rows]');
+    if (!body) return;
+    const rows = events.slice(0, 18).map((event) => '<tr><td>' + (event.startedAt || event.cursor || 'recent') + '</td><td>' + (event.sourceMode || '✣') + '</td><td class="tool">' + (event.tool || event.toolName || 'unknown') + '</td><td class="' + (event.success === false || event.status === 'failed' ? 'status-error' : 'status-ok') + '">' + (event.success === false || event.status === 'failed' ? 'error' : 'ok') + '</td></tr>');
+    body.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="4">No gateway traces yet.</td></tr>';
+  };
+  const renderTopBranches = (summary) => {
+    const target = document.querySelector('[data-top-workspace-burn]');
+    if (!target) return;
+    const branches = summary?.topBranches || [];
+    target.innerHTML = branches.slice(0, 4).map((item, index) => '<div class="bar-row"><span>' + item.branch + '</span><span>' + compact(item.tokens || 0) + '</span></div><div class="bar"><span style="width:' + Math.max(8, 100 - index * 22) + '%"></span></div>').join('') || '<p class="metric-note">Waiting for branch attribution.</p>';
+  };
+  const applySummary = (summary) => {
+    if (!summary) return;
+    text('[data-total-trace-burn]', compact(summary.totalTraceBurn || 0));
+    text('[data-total-calls]', String(summary.calls || 0));
+    text('[data-output-tokens]', compact(summary.outputTokens || 0));
+    text('[data-total-cost]', '$' + Number(summary.totalCostUsd || 0).toFixed(2));
+    text('[data-error-count]', String(Math.round((summary.errorPressure || 0) * (summary.calls || 0))));
+    text('[data-error-rate]', ((summary.errorPressure || 0) * 100).toFixed(1) + '%');
+    text('[data-avg-burn]', compact(summary.calls ? Math.round((summary.totalTraceBurn || 0) / summary.calls) : 0));
+    text('[data-output-ratio]', summary.totalTraceBurn ? ((summary.outputTokens || 0) / summary.totalTraceBurn * 100).toFixed(1) + '%' : '--');
+    const top = summary.topBranches?.[0];
+    if (top) { text('[data-inspect-branch]', top.branch); text('[data-inspect-reason]', 'Largest branch burn: ' + compact(top.tokens || 0) + ' tokens. Inspect branch/tool context next.'); }
+    renderTopBranches(summary);
+  };
+  const load = async () => {
+    renderHeatmap();
+    if (!safeRoute(routes.recent) || !safeRoute(routes.summary) || !safeRoute(routes.events)) return;
+    const loaded = await Promise.all([fetch(routes.recent).then((r) => r.json()), fetch(routes.summary).then((r) => r.json())]).catch(() => null);
+    if (!loaded) { text('[data-live-state]', 'Live traces stale'); return; }
+    const [recent, summary] = loaded;
+    const data = recent.data || recent;
+    const summaryData = (summary.data && summary.data.summary) || summary.summary || data.summary;
+    applySummary(summaryData);
+    renderRows(data.recentEvents || data.events || []);
+    if (window.EventSource) {
+      const source = new EventSource(routes.events + '?cursor=' + encodeURIComponent(data.cursor || '000000000000'));
+      source.addEventListener('trace-sites-snapshot', (event) => {
+        Promise.resolve(event.data).then((raw) => JSON.parse(raw)).then((payload) => { applySummary(payload.data?.summary); renderRows(payload.data?.recentEvents || []); }).catch(() => undefined);
+      });
+      source.onerror = () => { text('[data-live-state]', 'Live traces stale'); source.close(); };
+    }
+  };
+  load();
+})();
+</script>
+</body>
+</html>
+`;
+}
+
 function buildReservedSitePage(site: ReservedSite): string {
   return `<!doctype html>
 <html lang="en">
@@ -711,7 +844,10 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });
-    for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
+    for (const site of RESERVED_SITES) {
+      const siteHtml = site.slug === 'traces' ? buildTraceCockpitSite() : buildReservedSitePage(site);
+      fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), siteHtml, { mode: 0o600 });
+    }
   }
   return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, data, actions };
 }
