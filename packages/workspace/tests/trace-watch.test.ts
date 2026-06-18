@@ -86,7 +86,7 @@ function captureRow(row: TraceWatchRow): string {
   } finally {
     console.log = originalLog;
   }
-  return lines.join('\\n');
+  return lines.join('\n');
 }
 
 describe('trace:watch code.call telemetry', () => {
@@ -120,14 +120,17 @@ describe('trace:watch code.call telemetry', () => {
     const operations = nestedOperationsForRow(codeCallRow());
 
     expect(operations).toHaveLength(2);
-    expect(operations.map((operation) => operation.tool)).toEqual(['code.call step', 'code.call step']);
+    expect(operations.map((operation) => operation.tool)).toEqual(['code.call cmd', 'code.call cmd']);
+    expect(operations.every((operation) => operation.totalTokens === undefined)).toBe(true);
     expect(operations.map((operation) => operation.detail)).toEqual([
       'bun --cwd packages/workspace test tests/tool-manifest.test.ts',
       'bun --cwd packages/os test tests/tool-manifest.test.ts',
     ]);
 
     const rendered = captureRow(codeCallRow());
-    expect(rendered).toContain('code.call step');
+    expect(rendered).toContain('code.call cmd');
+    const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+    expect(nestedLines).not.toContain('0 tokens');
     expect(rendered).toContain('bun --cwd packages/workspace test tests/tool-manifest.test.ts');
     expect(rendered).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
   });
@@ -245,5 +248,139 @@ describe('trace:watch code.call telemetry', () => {
     expect(nestedOperationsForRow(row).map((operation) => operation.detail)).toEqual([
       'bun --cwd packages/workspace test tests/trace-watch.test.ts',
     ]);
+  });
+
+  test('uses compact SQL-derived code.call results when stdout JSON is sliced', () => {
+    const compactResults = [
+      { command: 'fake alpha', ok: true, exitCode: 0, durationMs: 12, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake beta', ok: true, exitCode: 0, durationMs: 13, stdoutChars: 9505, stderrChars: 0 },
+      { command: 'fake gamma', ok: true, exitCode: 0, durationMs: 14, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake delta', ok: true, exitCode: 0, durationMs: 15, stdoutChars: 9506, stderrChars: 0 },
+      { command: 'fake epsilon', ok: true, exitCode: 0, durationMs: 16, stdoutChars: 9508, stderrChars: 0 },
+    ];
+    const slicedStdout = JSON.stringify({ ok: true, results: compactResults.map((result) => ({
+      ...result,
+      stdout: 'x'.repeat(result.stdoutChars),
+      stderr: '',
+    })) }).slice(0, 12000);
+    const row = codeCallRow({
+      result_json: '{"ok":true',
+      code_call_language: 'bun',
+      code_call_mode: 'read',
+      code_call_stdout: slicedStdout,
+      code_call_results_json: JSON.stringify(compactResults),
+      code_call_files_changed_count: 0,
+      code_call_truncated: 0,
+    });
+
+    expect(summarizeCodeCallForTraceWatch(row)).toMatchObject({
+      language: 'bun',
+      mode: 'read',
+      stdoutShape: 'json',
+      quality: 'good',
+      changedCount: 0,
+      truncated: false,
+    });
+    expect(nestedOperationsForRow(row).map((operation) => operation.detail)).toEqual([
+      'fake alpha',
+      'fake beta',
+      'fake gamma',
+      'fake delta',
+      'fake epsilon',
+    ]);
+    expect(captureRow(row)).toContain('code.call cmd');
+  });
+
+  test('labels failed test command packets as test failures without invented zero token counts', () => {
+    const row = codeCallRow({
+      status: 'error',
+      code: 'COMMAND_FAILED',
+      exit_code: 1,
+      result_json: JSON.stringify({
+        ok: false,
+        code: 'COMMAND_FAILED',
+        message: 'code.call command failed',
+        data: {
+          ok: false,
+          exitCode: 1,
+          language: 'bun',
+          runtime: 'bun',
+          mode: 'verify',
+          stdout: JSON.stringify({
+            ok: false,
+            results: [
+              { command: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
+            ],
+          }),
+          stderr: '',
+          filesChanged: [],
+          truncated: false,
+        },
+      }),
+    });
+
+    const operations = nestedOperationsForRow(row);
+    const rendered = captureRow(row);
+
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({
+      tool: 'code.call cmd',
+      ok: false,
+      code: 'TESTS_FAILED',
+      detail: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts',
+    });
+    expect(operations[0].totalTokens).toBeUndefined();
+    expect(rendered).toContain('TESTS_FAILED');
+    expect(rendered).toContain('tests failed');
+    expect(rendered).toContain('code.call cmd');
+    expect(rendered).not.toContain('COMMAND_FAILED');
+    const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+    expect(nestedLines).not.toContain('0 tokens');
+  });
+
+  test('renders nested token counts when code.call result packets include token fields', () => {
+    const row = codeCallRow({
+      result_json: JSON.stringify({
+        ok: true,
+        code: 'OK',
+        message: 'code.call completed',
+        data: {
+          ok: true,
+          exitCode: 0,
+          language: 'bun',
+          runtime: 'bun',
+          mode: 'verify',
+          stdout: JSON.stringify({
+            ok: true,
+            results: [
+              {
+                command: 'workspace tool with model work',
+                ok: true,
+                exitCode: 0,
+                inputTokens: 1200,
+                outputTokens: 300,
+                totalTokens: 1500,
+              },
+            ],
+          }),
+          stderr: '',
+          filesChanged: [],
+          truncated: false,
+        },
+      }),
+    });
+
+    const operations = nestedOperationsForRow(row);
+    const rendered = captureRow(row);
+
+    expect(operations[0]).toMatchObject({
+      tool: 'code.call cmd',
+      inputTokens: 1200,
+      outputTokens: 300,
+      totalTokens: 1500,
+    });
+    expect(rendered).toContain('1.5k tokens');
+    const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
+    expect(nestedLines).not.toContain('0 tokens');
   });
 });

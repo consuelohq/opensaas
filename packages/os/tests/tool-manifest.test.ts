@@ -195,30 +195,47 @@ function assertStrongCodeCallExamples(codeCall: JsonObject | undefined): void {
   const labels = exampleArray.map((example) => String(example.label));
   const inputs = [exampleInput, ...exampleArray.map((example) => example.input as JsonObject | undefined)].filter(Boolean) as JsonObject[];
   const inputText = JSON.stringify(inputs);
+  const repoRoot = join(packageRoot, '..', '..');
+  const exampleSource = inputs
+    .map((input) => String(input.codeFile ?? ''))
+    .filter(Boolean)
+    .map((codeFile) => readFileSync(join(repoRoot, codeFile), 'utf8'))
+    .join('\n');
 
   expect(labels).toEqual([
     'multi-package focused test packet',
-    'manifest docs and types generation packet',
+    'repository impact analysis packet',
     'exact manifest description verification',
     'structured repo read and compare packet',
     'task-scoped structured file rewrite',
-    'targeted Python file transformation',
+    'Python AST/string-heavy test insertion',
+    'Python test assertion audit packet',
   ]);
   expect(inputs.map((input) => input.language)).toEqual(expect.arrayContaining(['bun', 'python']));
   expect(inputs.map((input) => input.mode)).toEqual(expect.arrayContaining(['read', 'edit', 'verify']));
-  expect(inputText).toContain('results');
-  expect(inputText).toContain('Bun.spawnSync');
-  expect(inputText).toContain('lineSpans');
-  expect(inputText).toContain('snippets');
-  expect(inputText).toContain('generate-tool-manifest');
-  expect(inputText).toContain('await Bun.write');
-  expect(inputText).toContain('from pathlib import Path');
-  expect(inputText).not.toContain('print(\"hello\")');
   for (const input of inputs) {
+    expect(input.code).toBeUndefined();
+    expect(String(input.codeFile)).toMatch(/^scripts\/code-call-examples\/.+\.(ts|py)$/);
     if (input.language === 'bash') {
-      expect(String(input.code)).not.toMatch(/\bbun\b|\bpython\b|\bnode\b/);
+      expect(String(input.codeFile)).not.toMatch(/\bbun\b|\bpython\b|\bnode\b/);
     }
   }
+  expect(inputText).not.toContain('manifest docs and types generation packet');
+  expect(exampleSource).toContain('tests/workflow-intent.test.ts');
+  expect(exampleSource).toContain('tests/facade/facade.test.ts');
+  expect(exampleSource).toContain('repositoryImpact');
+  expect(exampleSource).toContain('lineSpans');
+  expect(exampleSource).toContain('snippets');
+  expect(exampleSource).toContain('Bun.spawnSync');
+  expect(exampleSource).toContain('packages/os/tests/code-call-service-architecture.test.ts');
+  expect(exampleSource).toContain('await Bun.write');
+  expect(exampleSource).toContain('from pathlib import Path');
+  expect(exampleSource).toContain('signatureAlgorithm');
+  expect(exampleSource).toContain('assertionGroups');
+  expect(exampleSource).not.toContain('generate-tool-manifest');
+  expect(exampleSource).not.toContain('generate-types');
+  expect(exampleSource).not.toContain('generate-docs');
+  expect(exampleSource).not.toContain('print("hello")');
 }
 
 describe('tool manifest generator', () => {
@@ -331,8 +348,12 @@ describe('tool manifest generator', () => {
     expect(codeCallEntry?.description).toBe(expectedCodeCallDescription);
     expect(codeCallEntry?.description).toContain('runtime output is the evidence');
     expect(codeCallEntry?.description).toContain('compact packets');
-    expect(JSON.stringify(codeCallEntry?.definition.exampleInput)).toContain('snippets');
-    expect(JSON.stringify(codeCallEntry?.definition.exampleInput)).toContain('lineSpans');
+    const exampleInput = codeCallEntry?.definition.exampleInput as JsonObject | undefined;
+    const codeFile = String(exampleInput?.codeFile ?? '');
+    const source = readFileSync(join(packageRoot, '..', '..', codeFile), 'utf8');
+    expect(codeFile).toBe('scripts/code-call-examples/structured-snippet-read.ts');
+    expect(source).toContain('snippets');
+    expect(source).toContain('lineSpans');
     expect(macCallEntry?.description).toContain('emergency host escape hatch');
     expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 

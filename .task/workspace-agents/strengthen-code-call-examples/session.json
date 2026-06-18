@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_699522c27fd5",
+  "tmuxSession": "opensaas-workspace-agents-strengthen-code-call-examples-699522c2",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/strengthen-code-call-examples",
+  "branch": "task/workspace-agents/strengthen-code-call-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-strengthen-code-call-examples",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-strengthen-code-call-examples",
+  "prNumber": 1134,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1134",
+  "createdAt": "2026-06-18T05:56:45.697Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-strengthen-code-call-examples/.task/workspace-agents/strengthen-code-call-examples/session.json"
+}
