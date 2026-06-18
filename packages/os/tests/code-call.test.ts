@@ -20,6 +20,10 @@ function tempTaskWorktree(): string {
   return mkdtempSync(join(worktreeRoot, 'task-os-code-call-'));
 }
 
+function repoRoot(): string {
+  return join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+}
+
 function scriptPath(): string {
   return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'code-call.ts');
 }
@@ -254,6 +258,158 @@ describe('code.call runtime', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it('reports unsupported languages with the existing validation envelope', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'ruby',
+        mode: 'read',
+        code: 'puts 1',
+      }, root);
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(result.data.detectedMistakeClass).toBe('unsupported_language');
+      expect(result.data.requestedLanguage).toBe('ruby');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects invalid source and stdin shapes before execution', async () => {
+    const root = tempRoot();
+    try {
+      const duplicateSource = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'print("inline")',
+        codeFile: 'program.py',
+      }, root);
+      const duplicateStdin = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'import sys\nprint(sys.stdin.read())',
+        stdin: 'inline',
+        stdinFile: 'input.txt',
+      }, root);
+
+      expect(duplicateSource.ok).toBe(false);
+      expect(duplicateSource.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(duplicateSource.data.detectedMistakeClass).toBe('invalid_source');
+      expect(duplicateSource.data.message).toContain('exactly one of code or codeFile');
+      expect(duplicateStdin.ok).toBe(false);
+      expect(duplicateStdin.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(duplicateStdin.data.detectedMistakeClass).toBe('invalid_source');
+      expect(duplicateStdin.data.message).toContain('at most one of stdin or stdinFile');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects codeFile and stdinFile paths outside approved roots', async () => {
+    const root = tempRoot();
+    try {
+      const codeFileResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        codeFile: '/etc/hosts',
+      }, root);
+      const stdinFileResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'import sys\nprint(sys.stdin.read())',
+        stdinFile: '/etc/hosts',
+      }, root);
+
+      expect(codeFileResult.ok).toBe(false);
+      expect(codeFileResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(codeFileResult.data.detectedMistakeClass).toBe('cwd_out_of_scope');
+      expect(stdinFileResult.ok).toBe(false);
+      expect(stdinFileResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(stdinFileResult.data.detectedMistakeClass).toBe('cwd_out_of_scope');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('reports non-zero process exits through the command-failed envelope', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'import sys\nsys.stderr.write("bad exit")\nsys.exit(3)',
+      }, root);
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('COMMAND_FAILED');
+      expect(result.exitCode).toBe(3);
+      expect(result.data.exitCode).toBe(3);
+      expect(result.data.stderr).toContain('bad exit');
+      expect(result.data.message).toBe('runtime exited non-zero');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('reports missing runtimes as runtime_missing', async () => {
+    const root = tempRoot();
+    try {
+      const result = await executeCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'print("missing")',
+      }, {
+        cwd: root,
+        env: { PATH: join(root, 'missing-bin') },
+        now: () => 1000,
+        randomUUID: () => TEST_UUID,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('COMMAND_FAILED');
+      expect(result.data.detectedMistakeClass).toBe('runtime_missing');
+      expect(result.data.message).toContain('runtime is missing');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('blocks destructive bash patterns before process execution', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'bash',
+        mode: 'verify',
+        code: 'rm -rf /',
+      }, root);
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(result.data.detectedMistakeClass).toBe('unsafe_shell');
+      expect(result.data.message).toContain('destructive shell patterns');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('can invoke OS fs read through Bun from code.call', async () => {
+    const root = repoRoot();
+    const result = await runCodeCall({
+      language: 'bun',
+      mode: 'read',
+      cwd: root,
+      code: "const proc = Bun.spawnSync({\n  cmd: ['bun', 'packages/os/scripts/fs.js', 'read', 'packages/os/package.json', '--json'],\n  stdout: 'pipe',\n  stderr: 'pipe',\n});\nconst stdout = new TextDecoder().decode(proc.stdout);\nconst stderr = new TextDecoder().decode(proc.stderr);\nprocess.stdout.write(stdout);\nprocess.stderr.write(stderr);\nprocess.exit(proc.exitCode ?? 1);",
+      maxResultChars: 20_000,
+    }, root);
+
+    expect(result.ok).toBe(true);
+    const output = JSON.parse(result.data.stdout) as { type?: string; path?: string; content?: string };
+    expect(output.type).toBe('text-page');
+    expect(output.path).toBe('packages/os/package.json');
+    expect(output.content).toContain('"name": "@consuelo/os"');
   });
 });
 
