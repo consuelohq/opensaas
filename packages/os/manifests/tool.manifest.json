@@ -1641,20 +1641,56 @@
         "workflowRole": "test.run",
         "examples": [
           {
-            "label": "task-scoped focused OS test",
+            "label": "multi-package focused test packet",
             "input": {
-              "language": "bash",
+              "language": "bun",
               "mode": "verify",
-              "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
-              "maxResultChars": 20000
+              "code": "const commands = [\n  [\"bun\", \"--cwd\", \"packages/workspace\", \"test\", \"tests/tool-manifest.test.ts\"],\n  [\"bun\", \"--cwd\", \"packages/os\", \"test\", \"tests/tool-manifest.test.ts\"],\n]\nconst results = []\nfor (const cmd of commands) {\n  const proc = Bun.spawnSync({ cmd, stdout: \"pipe\", stderr: \"pipe\" })\n  const stdout = new TextDecoder().decode(proc.stdout)\n  const stderr = new TextDecoder().decode(proc.stderr)\n  const result = { command: cmd.join(\" \"), ok: proc.exitCode === 0, exitCode: proc.exitCode, stdout: stdout.slice(-12000), stderr: stderr.slice(-12000) }\n  results.push(result)\n  if (proc.exitCode !== 0) {\n    console.log(JSON.stringify({ ok: false, failed: result, results }, null, 2))\n    process.exit(proc.exitCode ?? 1)\n  }\n}\nconsole.log(JSON.stringify({ ok: true, results }, null, 2))",
+              "maxResultChars": 60000
             }
           },
           {
-            "label": "short Python inspection",
+            "label": "manifest docs and types generation packet",
+            "input": {
+              "language": "bun",
+              "mode": "edit",
+              "code": "const commands = [\n  [\"bun\", \"run\", \"--cwd\", \"packages/workspace\", \"generate-tool-manifest\"],\n  [\"bun\", \"run\", \"--cwd\", \"packages/workspace\", \"generate-types\"],\n  [\"bun\", \"run\", \"--cwd\", \"packages/workspace\", \"generate-docs\"],\n  [\"bun\", \"run\", \"--cwd\", \"packages/os\", \"generate-tool-manifest\"],\n  [\"bun\", \"run\", \"--cwd\", \"packages/os\", \"generate-types\"],\n  [\"bun\", \"run\", \"--cwd\", \"packages/os\", \"generate-docs\"],\n]\nconst results = []\nfor (const cmd of commands) {\n  const proc = Bun.spawnSync({ cmd, stdout: \"pipe\", stderr: \"pipe\" })\n  const stdout = new TextDecoder().decode(proc.stdout)\n  const stderr = new TextDecoder().decode(proc.stderr)\n  const result = { command: cmd.join(\" \"), ok: proc.exitCode === 0, exitCode: proc.exitCode, stdout: stdout.slice(-8000), stderr: stderr.slice(-8000) }\n  results.push(result)\n  if (proc.exitCode !== 0) {\n    console.log(JSON.stringify({ ok: false, failed: result, results }, null, 2))\n    process.exit(proc.exitCode ?? 1)\n  }\n}\nconsole.log(JSON.stringify({ ok: true, results }, null, 2))",
+              "maxResultChars": 50000
+            }
+          },
+          {
+            "label": "exact manifest description verification",
+            "input": {
+              "language": "bun",
+              "mode": "verify",
+              "code": "const expected = \"Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.\"\nconst files = [\n  \"packages/workspace/tooling/tool-manifest.json\",\n  \"packages/workspace/manifests/tool-manifest.json\",\n  \"packages/workspace/manifests/core-manifest.json\",\n  \"packages/os/tooling/dev-tool-manifest.json\",\n  \"packages/os/manifests/tool.manifest.json\",\n  \"packages/os/manifests/core.manifest.json\",\n]\nconst report = []\nfor (const file of files) {\n  const parsed = JSON.parse(await Bun.file(file).text())\n  const tools = Array.isArray(parsed) ? parsed : parsed.tools\n  const entry = tools.find((tool) => tool.name === \"code.call\")\n  report.push({ file, found: Boolean(entry), matches: entry?.description === expected })\n}\nconst ok = report.every((item) => item.found && item.matches)\nconsole.log(JSON.stringify({ ok, report }, null, 2))\nprocess.exit(ok ? 0 : 1)",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "structured repo read and compare packet",
+            "input": {
+              "language": "bun",
+              "mode": "read",
+              "code": "const files = [\"types.ts\", \"schema.ts\", \"service.ts\"]\nfunction gitShow(file) {\n  const sourcePath = \"origin/stream/os:packages/os/scripts/lib/code-call/\" + file\n  const proc = Bun.spawnSync({ cmd: [\"git\", \"show\", sourcePath], stdout: \"pipe\", stderr: \"pipe\" })\n  if (proc.exitCode !== 0) throw new Error(new TextDecoder().decode(proc.stderr))\n  return new TextDecoder().decode(proc.stdout)\n}\nconst results = []\nfor (const file of files) {\n  const source = gitShow(file)\n  const target = await Bun.file(\"packages/workspace/scripts/lib/code-call/\" + file).text()\n  results.push({ file, exactMatch: source === target, sourceChars: source.length, targetChars: target.length })\n}\nconst ok = results.every((result) => result.exactMatch)\nconsole.log(JSON.stringify({ ok, results, lineSpans: [{ from: 1, to: 12 }], snippets: results.slice(0, 3) }, null, 2))\nprocess.exit(ok ? 0 : 1)",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "task-scoped structured file rewrite",
+            "input": {
+              "language": "bun",
+              "mode": "edit",
+              "code": "const mappings = [\n  [\"packages/os/tests/code-call.test.ts\", \"packages/workspace/tests/code-call.test.ts\"],\n]\nfunction gitShow(path) {\n  const proc = Bun.spawnSync({ cmd: [\"git\", \"show\", \"origin/stream/os:\" + path], stdout: \"pipe\", stderr: \"pipe\" })\n  if (proc.exitCode !== 0) throw new Error(\"git show failed for \" + path + \": \" + new TextDecoder().decode(proc.stderr))\n  return new TextDecoder().decode(proc.stdout)\n}\nconst written = []\nfor (const [sourcePath, targetPath] of mappings) {\n  const text = gitShow(sourcePath)\n    .replaceAll(\"os-code-call-\", \"workspace-code-call-\")\n    .replaceAll(\"task-os-code-call-\", \"task-workspace-code-call-\")\n  await Bun.write(targetPath, text)\n  written.push({ sourcePath, targetPath, chars: text.length, lines: text.split(\"\\n\").length })\n}\nconsole.log(JSON.stringify({ ok: true, written }, null, 2))",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "targeted Python file transformation",
             "input": {
               "language": "python",
-              "mode": "read",
-              "code": "print(\"hello\")",
+              "mode": "edit",
+              "code": "from pathlib import Path\nimport json\n\npath = Path(\"packages/os/tests/security-gateway.test.ts\")\ntext = path.read_text()\nold = \"expect(storedAfterIssue.tokens[token.tokenId]?.credentialHash).toMatch(/^sha256:/);\"\nnew = \"expect(storedAfterIssue.tokens[token.tokenId]?.signatureAlgorithm).toBe('ed25519');\"\nif old not in text:\n    raise SystemExit(f\"expected snippet not found in {path}\")\npath.write_text(text.replace(old, new))\nprint(json.dumps({\"ok\": True, \"file\": str(path), \"replacement\": {\"from\": old, \"to\": new}}, indent=2))",
               "maxResultChars": 20000
             }
           }
