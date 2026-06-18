@@ -38,6 +38,10 @@ export type GatewaySecurityConfig = {
 export type AgentAppToken = {
   tokenId: string;
   workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
   callerId: string;
   appId: string;
   scopes: string[];
@@ -48,6 +52,10 @@ export type AgentAppToken = {
 export type AgentAppCredentialStatus = {
   tokenId: string;
   workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
   callerId: string;
   appId: string;
   scopes: string[];
@@ -69,7 +77,7 @@ type SignedGatewayRequest = {
 };
 
 export type VerificationResult =
-  | { ok: true; caller: { workspaceId: string; callerId: string; scopes: string[] } }
+  | { ok: true; caller: { workspaceId: string; subjectId: string; deviceId: string; connectorId: string; connectionId: string; callerId: string; appId: string; scopes: string[] } }
   | { ok: false; status: number; error: { code: string; message: string } };
 
 type PolicyDecision = {
@@ -99,6 +107,10 @@ type AuditEvent = {
   workspaceId: string;
   tokenId?: string;
   appId?: string;
+  subjectId?: string;
+  deviceId?: string;
+  connectorId?: string;
+  connectionId?: string;
   scopes?: string[];
   toolName?: string;
   route?: string;
@@ -183,9 +195,19 @@ const PUBLIC_ROUTES = [
 ] as const;
 
 const MAX_TIMESTAMP_SKEW_MS = 5 * 60 * 1000;
+const DEFAULT_DEVICE_ID = 'device:local-os';
+const DEFAULT_CONNECTOR_ID = 'connector:consuelo-os-gateway';
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function fallbackConnectionId(tokenId: string): string {
+  return `connection:${tokenId}`;
 }
 
 function generateCredentialKeyPair(): { privateKey: string; publicKey: string } {
@@ -200,6 +222,10 @@ function publicTokenFromStored(token: StoredToken, secret: string): AgentAppToke
   return {
     tokenId: token.tokenId,
     workspaceId: token.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
     callerId: token.callerId,
     appId: token.appId,
     scopes: [...token.scopes],
@@ -212,6 +238,10 @@ function credentialStatusFromStored(token: StoredToken): AgentAppCredentialStatu
   return {
     tokenId: token.tokenId,
     workspaceId: token.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
     callerId: token.callerId,
     appId: token.appId,
     scopes: [...token.scopes],
@@ -314,10 +344,18 @@ function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Recor
       : 'active';
     const createdAt = typeof candidate.createdAt === 'string' ? candidate.createdAt : fallbackTimestamp;
     const updatedAt = typeof candidate.updatedAt === 'string' ? candidate.updatedAt : fallbackTimestamp;
+    const subjectId = nonEmptyString(candidate.subjectId) ?? candidate.callerId;
+    const deviceId = nonEmptyString(candidate.deviceId) ?? DEFAULT_DEVICE_ID;
+    const connectorId = nonEmptyString(candidate.connectorId) ?? DEFAULT_CONNECTOR_ID;
+    const connectionId = nonEmptyString(candidate.connectionId) ?? fallbackConnectionId(tokenId);
 
     normalized[tokenId] = {
       tokenId,
       workspaceId: candidate.workspaceId,
+      subjectId,
+      deviceId,
+      connectorId,
+      connectionId,
       callerId: candidate.callerId,
       appId: candidate.appId,
       scopes: candidate.scopes.filter((scope): scope is string => typeof scope === 'string'),
@@ -359,6 +397,8 @@ function recordCredentialAuditEvent(
   token: StoredToken,
   event: string,
   decision: string,
+  status: 'allowed' | 'denied' = 'allowed',
+  route?: string,
 ): void {
   recordGatewayAuditEvent({
     home: homeFromGeneratedAuthPath(config.generatedAuthPath),
@@ -368,12 +408,37 @@ function recordCredentialAuditEvent(
       workspaceId: token.workspaceId,
       tokenId: token.tokenId,
       appId: token.appId,
+      subjectId: token.subjectId,
+      deviceId: token.deviceId,
+      connectorId: token.connectorId,
+      connectionId: token.connectionId,
       scopes: [...token.scopes],
+      ...(route ? { route } : {}),
       decision,
-      status: 'allowed',
+      status,
       timestamp: nowIso(),
     },
   });
+}
+
+function denyCredentialUse(input: {
+  config: GatewaySecurityConfig;
+  token: StoredToken;
+  status: number;
+  code: string;
+  message: string;
+  decision: string;
+  route: string;
+}): VerificationResult {
+  recordCredentialAuditEvent(
+    input.config,
+    input.token,
+    'gateway.credential.used',
+    input.decision,
+    'denied',
+    input.route,
+  );
+  return safeError(input.status, input.code, input.message);
 }
 
 function createPublicGatewayMetadata(input: {
@@ -477,6 +542,10 @@ export function resolveToolScope(toolName: string): ToolScopeResolution {
 function canonicalRequest(input: {
   tokenId: string;
   workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
   callerId: string;
   appId: string;
   method: string;
@@ -488,6 +557,10 @@ function canonicalRequest(input: {
   return [
     input.tokenId,
     input.workspaceId,
+    input.subjectId,
+    input.deviceId,
+    input.connectorId,
+    input.connectionId,
     input.callerId,
     input.appId,
     input.method.toUpperCase(),
@@ -595,15 +668,24 @@ export function issueAgentAppToken(input: {
   config: GatewaySecurityConfig;
   callerId: string;
   appId: string;
+  subjectId?: string;
+  deviceId?: string;
+  connectorId?: string;
+  connectionId?: string;
   scopes: string[];
   expiresInSeconds: number;
 }): AgentAppToken {
   const stored = readStoredAuth(input.config);
   const keyPair = generateCredentialKeyPair();
   const timestamp = nowIso();
+  const tokenId = `tok_${randomUUID()}`;
   const token: StoredToken = {
-    tokenId: `tok_${randomUUID()}`,
+    tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: nonEmptyString(input.subjectId) ?? input.callerId,
+    deviceId: nonEmptyString(input.deviceId) ?? DEFAULT_DEVICE_ID,
+    connectorId: nonEmptyString(input.connectorId) ?? DEFAULT_CONNECTOR_ID,
+    connectionId: nonEmptyString(input.connectionId) ?? `connection:${randomUUID()}`,
     callerId: input.callerId,
     appId: input.appId,
     scopes: [...input.scopes],
@@ -640,6 +722,10 @@ export function rotateAgentAppToken(input: {
   const rotated: StoredToken = {
     tokenId: `tok_${randomUUID()}`,
     workspaceId: existing.workspaceId,
+    subjectId: existing.subjectId,
+    deviceId: existing.deviceId,
+    connectorId: existing.connectorId,
+    connectionId: existing.connectionId,
     callerId: existing.callerId,
     appId: existing.appId,
     scopes: [...existing.scopes],
@@ -705,6 +791,10 @@ export function signMachineRequest(input: {
   const payload = canonicalRequest({
     tokenId: input.token.tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: input.token.subjectId,
+    deviceId: input.token.deviceId,
+    connectorId: input.token.connectorId,
+    connectionId: input.token.connectionId,
     callerId: input.token.callerId,
     appId: input.token.appId,
     method: input.method,
@@ -722,6 +812,10 @@ export function signMachineRequest(input: {
       authorization: `Bearer ${input.token.tokenId}`,
       'x-consuelo-token-id': input.token.tokenId,
       'x-consuelo-workspace-id': input.config.workspaceId,
+      'x-consuelo-subject-id': input.token.subjectId,
+      'x-consuelo-device-id': input.token.deviceId,
+      'x-consuelo-credential-connector-id': input.token.connectorId,
+      'x-consuelo-connection-id': input.token.connectionId,
       'x-consuelo-caller-id': input.token.callerId,
       'x-consuelo-app-id': input.token.appId,
       'x-consuelo-timestamp': input.timestamp,
@@ -747,10 +841,14 @@ export function verifyMachineRequest(input: {
   const timestamp = input.headers['x-consuelo-timestamp'];
   const nonce = input.headers['x-consuelo-nonce'];
   const signature = input.headers['x-consuelo-signature'];
+  const subjectId = input.headers['x-consuelo-subject-id'];
+  const deviceId = input.headers['x-consuelo-device-id'];
+  const connectorId = input.headers['x-consuelo-credential-connector-id'];
+  const connectionId = input.headers['x-consuelo-connection-id'];
   const callerId = input.headers['x-consuelo-caller-id'];
   const appId = input.headers['x-consuelo-app-id'];
 
-  if (!tokenId || !timestamp || !nonce || !signature || !callerId || !appId) {
+  if (!tokenId || !timestamp || !nonce || !signature || !subjectId || !deviceId || !connectorId || !connectionId || !callerId || !appId) {
     return safeError(401, 'MISSING_SIGNATURE', 'Signed gateway headers are required.');
   }
 
@@ -760,41 +858,176 @@ export function verifyMachineRequest(input: {
 
   const token = stored.tokens[tokenId];
   if (!token) return safeError(401, 'UNKNOWN_TOKEN', 'Gateway token is not recognized.');
-  if (token.status === 'rotated') return safeError(401, 'TOKEN_ROTATED', 'Gateway token has been rotated.');
-  if (token.status === 'revoked') return safeError(401, 'TOKEN_REVOKED', 'Gateway token has been revoked.');
+  if (token.status === 'rotated') {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_ROTATED',
+      message: 'Gateway token has been rotated.',
+      decision: 'token_rotated',
+      route: input.path,
+    });
+  }
+  if (token.status === 'revoked') {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_REVOKED',
+      message: 'Gateway token has been revoked.',
+      decision: 'token_revoked',
+      route: input.path,
+    });
+  }
+  if (token.workspaceId !== input.workspaceId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'WORKSPACE_MISMATCH',
+      message: 'Gateway token workspace does not match the signed request.',
+      decision: 'workspace_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.subjectId !== subjectId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'SUBJECT_MISMATCH',
+      message: 'Gateway subject identity does not match this token.',
+      decision: 'subject_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.deviceId !== deviceId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'DEVICE_MISMATCH',
+      message: 'Gateway device identity does not match this token.',
+      decision: 'device_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.connectorId !== connectorId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CONNECTOR_MISMATCH',
+      message: 'Gateway connector identity does not match this token.',
+      decision: 'connector_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.connectionId !== connectionId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CONNECTION_MISMATCH',
+      message: 'Gateway connection identity does not match this token.',
+      decision: 'connection_mismatch',
+      route: input.path,
+    });
+  }
   if (token.callerId !== callerId) {
-    return safeError(403, 'CALLER_MISMATCH', 'Gateway caller identity does not match this token.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CALLER_MISMATCH',
+      message: 'Gateway caller identity does not match this token.',
+      decision: 'caller_mismatch',
+      route: input.path,
+    });
   }
   if (token.appId !== appId) {
-    return safeError(403, 'APP_MISMATCH', 'Gateway app identity does not match this token.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'APP_MISMATCH',
+      message: 'Gateway app identity does not match this token.',
+      decision: 'app_mismatch',
+      route: input.path,
+    });
   }
 
   const requestTime = Date.parse(timestamp);
   const nowTime = Date.parse(input.now);
   if (!Number.isFinite(requestTime) || !Number.isFinite(nowTime)) {
-    return safeError(401, 'EXPIRED_TIMESTAMP', 'Gateway timestamp is invalid.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'EXPIRED_TIMESTAMP',
+      message: 'Gateway timestamp is invalid.',
+      decision: 'invalid_timestamp',
+      route: input.path,
+    });
   }
   if (Math.abs(nowTime - requestTime) > MAX_TIMESTAMP_SKEW_MS) {
-    return safeError(401, 'EXPIRED_TIMESTAMP', 'Gateway timestamp is outside the allowed window.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'EXPIRED_TIMESTAMP',
+      message: 'Gateway timestamp is outside the allowed window.',
+      decision: 'expired_timestamp',
+      route: input.path,
+    });
   }
 
   const expiresAt = Date.parse(token.expiresAt);
   if (!Number.isFinite(expiresAt) || expiresAt <= nowTime) {
-    return safeError(401, 'TOKEN_EXPIRED', 'Gateway token has expired.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_EXPIRED',
+      message: 'Gateway token has expired.',
+      decision: 'token_expired',
+      route: input.path,
+    });
   }
 
   pruneSeenNonces(stored, nowTime);
   if (stored.seenNonces[nonce]) {
-    return safeError(401, 'REPLAYED_NONCE', 'Gateway nonce has already been used.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'REPLAYED_NONCE',
+      message: 'Gateway nonce has already been used.',
+      decision: 'replayed_nonce',
+      route: input.path,
+    });
   }
 
   if (token.signatureAlgorithm !== SIGNATURE_ALGORITHM) {
-    return safeError(401, 'BAD_SIGNATURE', 'Gateway signature could not be verified.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'BAD_SIGNATURE',
+      message: 'Gateway signature could not be verified.',
+      decision: 'unsupported_signature_algorithm',
+      route: input.path,
+    });
   }
 
   const payload = canonicalRequest({
     tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
     callerId: token.callerId,
     appId: token.appId,
     method: input.method,
@@ -804,23 +1037,52 @@ export function verifyMachineRequest(input: {
     nonce,
   });
   if (!verifySignature(token.publicKey, payload, signature)) {
-    return safeError(401, 'BAD_SIGNATURE', 'Gateway signature could not be verified.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'BAD_SIGNATURE',
+      message: 'Gateway signature could not be verified.',
+      decision: 'bad_signature',
+      route: input.path,
+    });
   }
 
   if (!token.scopes.includes(input.requiredScope)) {
-    return safeError(403, 'MISSING_SCOPE', 'Gateway token does not grant the required scope.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'MISSING_SCOPE',
+      message: 'Gateway token does not grant the required scope.',
+      decision: 'missing_scope',
+      route: input.path,
+    });
   }
 
   const verifiedAt = new Date(nowTime).toISOString();
   stored.seenNonces[nonce] = { tokenId, seenAt: verifiedAt };
   token.lastUsedAt = verifiedAt;
   token.updatedAt = verifiedAt;
+  recordCredentialAuditEvent(
+    input.config,
+    token,
+    'gateway.credential.used',
+    'verified',
+    'allowed',
+    input.path,
+  );
   writeStoredAuth(input.config, stored);
   return {
     ok: true,
     caller: {
       workspaceId: token.workspaceId,
+      subjectId: token.subjectId,
+      deviceId: token.deviceId,
+      connectorId: token.connectorId,
+      connectionId: token.connectionId,
       callerId: token.callerId,
+      appId: token.appId,
       scopes: [...token.scopes],
     },
   };

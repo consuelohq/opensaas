@@ -3,7 +3,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { executeCall, getSteering } from './os';
 import {
   loadGatewaySecurityConfig,
   resolveToolScope,
@@ -22,14 +21,17 @@ import {
   type TraceSitesGatewayLiveEndpoints,
 } from './lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
+import {
+  handleMcpGatewayJsonRpc,
+  resolveMcpGatewayRequiredScope,
+} from './lib/mcp-gateway';
 
 const DEFAULT_PORT = 8960;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
-const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
-const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
 
 let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
+let osRuntimePromise: Promise<typeof import('./os')> | null = null;
 
 type JsonObject = Record<string, unknown>;
 
@@ -55,6 +57,11 @@ function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized'): Response
   return jsonResponse({ error: { code, message } }, 401);
 }
 
+function loadOsRuntime(): Promise<typeof import('./os')> {
+  osRuntimePromise ??= import('./os');
+  return osRuntimePromise;
+}
+
 function verificationResponse(result: Extract<VerificationResult, { ok: false }>): Response {
   return jsonResponse({ error: result.error }, result.status);
 }
@@ -70,7 +77,8 @@ function candidateHomeAuthPaths(): string[] {
 }
 
 function resolveAuthConfigPath(): string | null {
-  if (AUTH_CONFIG_ENV) return AUTH_CONFIG_ENV;
+  const authConfigEnv = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
+  if (authConfigEnv) return authConfigEnv;
   for (const candidate of candidateHomeAuthPaths()) {
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -182,6 +190,14 @@ function admitRawCallBody(body: string): Response | null {
   return decision.allowed ? null : dangerousMaterialResponse(decision);
 }
 
+function admitRawMcpBody(body: string): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server mcp raw-body',
+    rawBody: body,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
 function admitDecodedCallBody(input: CallInput): Response | null {
   const decision = assessDangerousMaterial({
     source: 'server call decoded-json',
@@ -190,8 +206,24 @@ function admitDecodedCallBody(input: CallInput): Response | null {
   return decision.allowed ? null : dangerousMaterialResponse(decision);
 }
 
+function admitDecodedMcpBody(body: string): Response | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body) as unknown;
+  } catch {
+    return null;
+  }
+
+  const decision = assessDangerousMaterial({
+    source: 'server mcp decoded-json',
+    value: parsed,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
 function resolveTraceDbPath(): string {
-  if (TRACE_DB_ENV) return TRACE_DB_ENV;
+  const traceDbEnv = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
+  if (traceDbEnv) return traceDbEnv;
   const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
   if (home) return path.join(home, 'traces', 'traces.db');
   if (process.platform === 'darwin') return path.join(process.env.HOME ?? '', 'Library', 'Application Support', 'OpenWorkspace', 'traces', 'traces.db');
@@ -228,8 +260,8 @@ function healthResponse(): Response {
     status: 'ok',
     name: SERVER_NAME,
     runtime: 'bun',
-    toolNames: ['get_steering', 'call'],
-    tools: 2,
+    toolNames: ['get_steering', 'call', 'mcp'],
+    tools: 3,
     port: PORT,
   });
 }
@@ -252,6 +284,51 @@ async function handleRequest(request: Request): Promise<Response> {
     return traceGatewayEndpoints().handle(request);
   }
 
+  if (url.pathname === '/mcp' && request.method === 'POST') {
+    const body = await request.clone().text();
+    const rawMaterialDenied = admitRawMcpBody(body);
+    if (rawMaterialDenied) return rawMaterialDenied;
+
+    const preflightDenied = authPreflight(request);
+    if (preflightDenied) return preflightDenied;
+
+    const decodedMaterialDenied = admitDecodedMcpBody(body);
+    if (decodedMaterialDenied) return decodedMaterialDenied;
+
+    const mcpScope = resolveMcpGatewayRequiredScope(body);
+    if (!mcpScope.ok) {
+      return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
+    }
+
+    const denied = await authorizeSignedRequest({
+      request,
+      path: '/mcp',
+      body,
+      requiredScope: mcpScope.requiredScope,
+    });
+    if (denied) return denied;
+
+    const result = await handleMcpGatewayJsonRpc(body, {
+      executeCall: async (input) => {
+        try {
+          const { executeCall } = await loadOsRuntime();
+          return await executeCall(input);
+        } catch {
+          return {
+            ok: false,
+            name: input.name,
+            permission: 'execute',
+            error: {
+              code: 'OS_EXECUTION_FAILED',
+              message: 'OS tool execution failed.',
+            },
+          };
+        }
+      },
+    });
+    return jsonResponse(result);
+  }
+
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
     const body = request.method === 'GET' ? '' : await request.clone().text();
     const denied = await authorizeSignedRequest({
@@ -261,6 +338,7 @@ async function handleRequest(request: Request): Promise<Response> {
       requiredScope: 'route:/get_steering:read',
     });
     if (denied) return denied;
+    const { getSteering } = await loadOsRuntime();
     return textResponse(getSteering());
   }
 
@@ -296,6 +374,7 @@ async function handleRequest(request: Request): Promise<Response> {
     if (denied) return denied;
 
     try {
+      const { executeCall } = await loadOsRuntime();
       const result = await executeCall(input);
       return jsonResponse(result, result.ok ? 200 : 400);
     } catch (error: unknown) {
