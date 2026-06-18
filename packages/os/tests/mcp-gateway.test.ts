@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -179,6 +179,48 @@ describe('MCP gateway credential lifecycle', () => {
     expect(auditLog).not.toContain('nonce-mcp-use');
     expect(auditLog).not.toContain(body);
   });
+
+  it('fails closed on legacy secret-backed auth without rewriting credentials', () => {
+    const generatedAuthPath = join(tempHome, 'security', 'generated', 'auth.json');
+    const legacyAuth = {
+      version: 1,
+      kind: 'consuelo-generated',
+      workspaceId: 'workspace_mcp_test',
+      workspaceSlug: 'mcp-test',
+      workspaceHost: 'mcp-test.consuelohq.com',
+      tokenIssuer: 'consuelo-os-gateway',
+      signingKeyId: 'csg_legacy',
+      publicRoutes: ['/mcp'],
+      publicGateway: {
+        provider: 'cloudflare',
+        routeMode: 'workspace-subdomain',
+        connectorMode: 'outbound-os-connector',
+        hostname: 'mcp-test.consuelohq.com',
+        upstream: { host: '127.0.0.1', port: 8960 },
+      },
+      tokens: {
+        tok_legacy: {
+          tokenId: 'tok_legacy',
+          workspaceId: 'workspace_mcp_test',
+          callerId: 'caller_mcp_test',
+          appId: 'app_mcp_test',
+          scopes: ['route:/mcp:read'],
+          expiresAt: new Date(Date.now() + 300_000).toISOString(),
+          secret: 'legacy-secret-material',
+          status: 'active',
+        },
+      },
+      seenNonces: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mkdirSync(dirname(generatedAuthPath), { recursive: true });
+    writeFileSync(generatedAuthPath, `${JSON.stringify(legacyAuth, null, 2)}\n`);
+
+    expect(() => createConfig()).toThrow(/requires credential rotation/);
+    expect(readFileSync(generatedAuthPath, 'utf8')).toContain('legacy-secret-material');
+  });
 });
 
 describe('MCP gateway adapter', () => {
@@ -211,6 +253,35 @@ describe('MCP gateway adapter', () => {
       ok: false,
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
+    });
+  });
+
+  it('filters non-callable facade tools out of the MCP surface', async () => {
+    const listResponse = await handleMcpGatewayJsonRpc(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    }), {
+      executeCall: async () => ({
+        ok: false,
+        name: 'unused',
+        permission: 'read',
+        error: { code: 'UNUSED', message: 'unused' },
+      }),
+    });
+    const facadeToolScope = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'code.call', arguments: {} },
+    }));
+
+    expect(JSON.stringify(listResponse)).toContain('get_raw_steering');
+    expect(JSON.stringify(listResponse)).not.toContain('code.call');
+    expect(facadeToolScope).toMatchObject({
+      ok: false,
+      status: 403,
+      error: { code: 'UNSUPPORTED_MCP_TOOL' },
     });
   });
 

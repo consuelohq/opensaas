@@ -270,121 +270,121 @@ async function handleRequest(request: Request): Promise<Response> {
   try {
     const url = new URL(request.url);
 
-  if (url.pathname === '/health') return healthResponse();
+    if (url.pathname === '/health') return healthResponse();
 
-  if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
-    const denied = await authorizeSignedRequest({
-      request,
-      path: url.pathname,
-      body: '',
-      requiredScope: 'route:/gateway/traces:read',
-    });
-    if (denied) return denied;
+    if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
+      const denied = await authorizeSignedRequest({
+        request,
+        path: url.pathname,
+        body: '',
+        requiredScope: 'route:/gateway/traces:read',
+      });
+      if (denied) return denied;
 
-    return traceGatewayEndpoints().handle(request);
-  }
-
-  if (url.pathname === '/mcp' && request.method === 'POST') {
-    const body = await request.clone().text();
-    const rawMaterialDenied = admitRawMcpBody(body);
-    if (rawMaterialDenied) return rawMaterialDenied;
-
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
-
-    const decodedMaterialDenied = admitDecodedMcpBody(body);
-    if (decodedMaterialDenied) return decodedMaterialDenied;
-
-    const mcpScope = resolveMcpGatewayRequiredScope(body);
-    if (!mcpScope.ok) {
-      return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
+      return traceGatewayEndpoints().handle(request);
     }
 
-    const denied = await authorizeSignedRequest({
-      request,
-      path: '/mcp',
-      body,
-      requiredScope: mcpScope.requiredScope,
-    });
-    if (denied) return denied;
+    if (url.pathname === '/mcp' && request.method === 'POST') {
+      const body = await request.clone().text();
+      const rawMaterialDenied = admitRawMcpBody(body);
+      if (rawMaterialDenied) return rawMaterialDenied;
 
-    const result = await handleMcpGatewayJsonRpc(body, {
-      executeCall: async (input) => {
-        try {
-          const { executeCall } = await loadOsRuntime();
-          return await executeCall(input);
-        } catch {
-          return {
-            ok: false,
-            name: input.name,
-            permission: 'execute',
-            error: {
-              code: 'OS_EXECUTION_FAILED',
-              message: 'OS tool execution failed.',
-            },
-          };
-        }
-      },
-    });
-    return jsonResponse(result);
-  }
+      const preflightDenied = authPreflight(request);
+      if (preflightDenied) return preflightDenied;
 
-  if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
-    const body = request.method === 'GET' ? '' : await request.clone().text();
-    const denied = await authorizeSignedRequest({
-      request,
-      path: '/get_steering',
-      body,
-      requiredScope: 'route:/get_steering:read',
-    });
-    if (denied) return denied;
-    const { getSteering } = await loadOsRuntime();
-    return textResponse(getSteering());
-  }
+      const decodedMaterialDenied = admitDecodedMcpBody(body);
+      if (decodedMaterialDenied) return decodedMaterialDenied;
 
-  if (url.pathname === '/call' && request.method === 'POST') {
-    const body = await request.clone().text();
-    const rawMaterialDenied = admitRawCallBody(body);
-    if (rawMaterialDenied) return rawMaterialDenied;
+      const mcpScope = resolveMcpGatewayRequiredScope(body);
+      if (!mcpScope.ok) {
+        return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
+      }
 
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
+      const denied = await authorizeSignedRequest({
+        request,
+        path: '/mcp',
+        body,
+        requiredScope: mcpScope.requiredScope,
+      });
+      if (denied) return denied;
 
-    let input: CallInput;
-    try {
-      input = parseCallInput(body);
-    } catch (error: unknown) {
-      return invalidRequest(error);
+      const result = await handleMcpGatewayJsonRpc(body, {
+        executeCall: async (input) => {
+          try {
+            const { executeCall } = await loadOsRuntime();
+            return await executeCall(input);
+          } catch {
+            return {
+              ok: false,
+              name: input.name,
+              permission: 'execute',
+              error: {
+                code: 'OS_EXECUTION_FAILED',
+                message: 'OS tool execution failed.',
+              },
+            };
+          }
+        },
+      });
+      return jsonResponse(result);
     }
 
-    const decodedMaterialDenied = admitDecodedCallBody(input);
-    if (decodedMaterialDenied) return decodedMaterialDenied;
-
-    const toolScope = resolveToolScope(input.name);
-    if (!toolScope.ok) {
-      return jsonResponse({ ok: false, error: toolScope.error }, toolScope.status);
+    if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
+      const body = request.method === 'GET' ? '' : await request.clone().text();
+      const denied = await authorizeSignedRequest({
+        request,
+        path: '/get_steering',
+        body,
+        requiredScope: 'route:/get_steering:read',
+      });
+      if (denied) return denied;
+      const { getSteering } = await loadOsRuntime();
+      return textResponse(getSteering());
     }
 
-    const denied = await authorizeSignedRequest({
-      request,
-      path: '/call',
-      body,
-      requiredScope: toolScope.requiredScope,
-    });
-    if (denied) return denied;
+    if (url.pathname === '/call' && request.method === 'POST') {
+      const body = await request.clone().text();
+      const rawMaterialDenied = admitRawCallBody(body);
+      if (rawMaterialDenied) return rawMaterialDenied;
 
-    try {
-      const { executeCall } = await loadOsRuntime();
-      const result = await executeCall(input);
-      return jsonResponse(result, result.ok ? 200 : 400);
-    } catch (error: unknown) {
-      return internalError(error);
+      const preflightDenied = authPreflight(request);
+      if (preflightDenied) return preflightDenied;
+
+      let input: CallInput;
+      try {
+        input = parseCallInput(body);
+      } catch (error: unknown) {
+        return invalidRequest(error);
+      }
+
+      const decodedMaterialDenied = admitDecodedCallBody(input);
+      if (decodedMaterialDenied) return decodedMaterialDenied;
+
+      const toolScope = resolveToolScope(input.name);
+      if (!toolScope.ok) {
+        return jsonResponse({ ok: false, error: toolScope.error }, toolScope.status);
+      }
+
+      const denied = await authorizeSignedRequest({
+        request,
+        path: '/call',
+        body,
+        requiredScope: toolScope.requiredScope,
+      });
+      if (denied) return denied;
+
+      try {
+        const { executeCall } = await loadOsRuntime();
+        const result = await executeCall(input);
+        return jsonResponse(result, result.ok ? 200 : 400);
+      } catch (error: unknown) {
+        return internalError(error);
+      }
     }
-  }
 
-  if (!hasGeneratedAuthConfig()) {
-    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
-  }
+    if (!hasGeneratedAuthConfig()) {
+      return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
+    }
 
     return jsonResponse({
       error: {
