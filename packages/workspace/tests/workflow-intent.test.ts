@@ -33,6 +33,7 @@ type WorkflowBundlesFile = {
 const manifestPath = resolve(import.meta.dirname, '../tooling/tool-manifest.json');
 const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
+const repoRoot = resolve(packageRoot, '..', '..');
 const intentScript = resolve(import.meta.dirname, '../scripts/intent.js');
 
 function readJson(path: string): unknown {
@@ -176,6 +177,42 @@ describe('Workspace workflow intent bundles', () => {
     );
     expect(a.hookResult?.requiredNextAction.input.path).toBe('.task/workspace-agents/agent-a/workpad.md');
     expect(b.hookResult?.requiredNextAction.input.path).toBe('.task/workspace-agents/agent-b/workpad.md');
+  });
+
+  test('repo root package script exposes workspace intent CLI help', () => {
+    const result = spawnSync('bun', ['run', 'intent', '--', '--help'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('usage: bun run intent -- <start|dispatch> [options]');
+  });
+
+  test('repo root package script starts the workspace task intent bundle', () => {
+    const result = spawnSync('bun', [
+      'run',
+      'intent',
+      '--',
+      'start',
+      '--workflow',
+      'task',
+      '--area',
+      'workspace-agents',
+      '--title',
+      'root intent smoke',
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
+
+    expect(result.status).toBe(0);
+    const envelope = JSON.parse(result.stdout) as { workflow: string; manifestBundle?: { tools?: Array<{ name: string }> } };
+    expect(envelope.workflow).toBe('task');
+    expect(envelope.manifestBundle?.tools?.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
   });
 
   test('intent CLI rejects unknown actions', () => {

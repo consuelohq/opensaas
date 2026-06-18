@@ -70,9 +70,9 @@ Run focused repo-scoped Python, Bun, or Bash programs where runtime output is th
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "bash",
-    "mode": "verify",
-    "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+    "language": "bun",
+    "mode": "read",
+    "code": "const path = \"packages/os/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
     "maxResultChars": 20000
   }
 });
@@ -7404,7 +7404,7 @@ Start a task workflow for scoped write access. It dispatches progressively discl
 | --- | --- |
 | Category | workflow |
 | Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace intent` |
+| Runtime | `os intent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
 

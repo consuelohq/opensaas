@@ -1632,9 +1632,9 @@
           "arguments": []
         },
         "exampleInput": {
-          "language": "bash",
-          "mode": "verify",
-          "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+          "language": "bun",
+          "mode": "read",
+          "code": "const path = \"packages/os/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
           "maxResultChars": 20000
         },
         "sessionRequired": false,
@@ -3393,7 +3393,7 @@
         ],
         "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
         "category": "workflow",
-        "underlying": "workspace intent",
+        "underlying": "os intent",
         "capabilities": {
           "readOnly": false,
           "mutating": true,

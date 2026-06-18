@@ -72,9 +72,9 @@ Run focused repo-scoped Python, Bun, or Bash programs where runtime output is th
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
+    "language": "bun",
     "mode": "read",
-    "code": "print(\"hello\")",
+    "code": "const path = \"packages/workspace/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
     "maxResultChars": 20000
   }
 });

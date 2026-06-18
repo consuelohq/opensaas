@@ -23,8 +23,10 @@ type SearchResult = {
 };
 
 const packageRoot = join(import.meta.dirname, '..');
+const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
+
 const expectedDescriptions = {
-  'code.call': 'Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.',
+  'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
   intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
@@ -291,11 +293,11 @@ describe('tool manifest generator', () => {
     expect(publicText).toContain('code.call');
     expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
 
+    expect(codeCallEntry?.description).toBe(expectedCodeCallDescription);
     expect(codeCallEntry?.description).toContain('runtime output is the evidence');
-    expect(codeCallEntry?.description).toContain('tests');
-    expect(codeCallEntry?.description).toContain('package scripts');
     expect(codeCallEntry?.description).toContain('compact packets');
-    expect(JSON.stringify(codeCallEntry?.definition)).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
+    expect(JSON.stringify(codeCallEntry?.definition.exampleInput)).toContain('snippets');
+    expect(JSON.stringify(codeCallEntry?.definition.exampleInput)).toContain('lineSpans');
     expect(macCallEntry?.description).toContain('emergency host escape hatch');
     expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 
@@ -304,6 +306,13 @@ describe('tool manifest generator', () => {
 
     expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+  });
+
+  it('keeps OS intent wired to the OS runtime surface', () => {
+    const registry = buildToolManifest({ write: false });
+    const intentEntry = registry.full.tools.find((entry) => entry.name === 'intent');
+
+    expect(intentEntry?.definition.underlying).toBe('os intent');
   });
 
   it("uses Ko's core tool descriptions in full and core manifests", () => {
