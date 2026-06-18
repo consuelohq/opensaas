@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/plan-security-tightening-pass",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1115,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1115",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1115",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1115/plan-security-tightening-pass",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1115",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1115/plan-security-tightening-pass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-plan-security-tightening-pass",
+  "taskSession": "tsk_16b64df99e83",
+  "tmuxSession": "opensaas-security-plan-security-tightening-pass-16b64df9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-plan-security-tightening-pass/.task/security/plan-security-tightening-pass/session.json",
+  "createdAt": "2026-06-17T23:32:32.860Z"
+}
