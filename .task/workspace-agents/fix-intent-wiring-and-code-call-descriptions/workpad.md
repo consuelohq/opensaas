@@ -144,10 +144,12 @@ bun run task:finish
 - In-scope facade regression fixed and passed: `tools.search ranks intent keywords...` plus `code.call` facade slice. Trace: `trc_d0cf2bedb2a8`.
 - 2026-06-18 04:22:54 `review.run`: passed — OK
 - 2026-06-18 04:23:22 `verify`: passed — OK
+- 2026-06-18 04:29:19 `review.run`: passed — OK
+- 2026-06-18 04:29:31 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/tasks/workspace-agents/fix-intent-wiring-and-code-call-descriptions.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/current.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/session.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/workpad.md`, `package.json`, `packages/os/TOOLS.md`, `packages/os/manifests/core.manifest.json`, `packages/os/manifests/tool.manifest.json`, `packages/os/manifests/workflow-bundles.json`, `packages/os/tests/tool-manifest.test.ts`, `packages/os/tooling/dev-tool-manifest.json`, `packages/workspace/TOOLS.md`, `packages/workspace/manifests/core-manifest.json`, `packages/workspace/manifests/tool-manifest.json`, `packages/workspace/manifests/workflow-bundles.json`, `packages/workspace/tests/facade/facade.test.ts`, `packages/workspace/tests/tool-manifest.test.ts`, `packages/workspace/tests/workflow-intent.test.ts`, `packages/workspace/tooling/tool-manifest.json`
+- changed files: `.task/tasks/workspace-agents/fix-intent-wiring-and-code-call-descriptions.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/current.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/session.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/verify.json`, `.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/workpad.md`, `package.json`, `packages/os/TOOLS.md`, `packages/os/manifests/core.manifest.json`, `packages/os/manifests/tool.manifest.json`, `packages/os/manifests/workflow-bundles.json`, `packages/os/tests/tool-manifest.test.ts`, `packages/os/tooling/dev-tool-manifest.json`, `packages/workspace/TOOLS.md`, `packages/workspace/manifests/core-manifest.json`, `packages/workspace/manifests/tool-manifest.json`, `packages/workspace/manifests/workflow-bundles.json`, `packages/workspace/tests/facade/facade.test.ts`, `packages/workspace/tests/tool-manifest.test.ts`, `packages/workspace/tests/workflow-intent.test.ts`, `packages/workspace/tooling/tool-manifest.json`
 - matched rules: `workspace-facade`, `workspace-audit-docs`
 - selected suites: `workspace facade input contracts`, `workspace audit tests`
 - run results: `workspace facade input contracts` passed, `workspace audit tests` passed
