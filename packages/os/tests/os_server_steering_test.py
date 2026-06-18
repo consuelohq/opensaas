@@ -116,6 +116,35 @@ class OsSteeringServerTest(unittest.TestCase):
         decisions = [json.loads(row[1])['result']['decision'] for row in rows]
         self.assertEqual(decisions, ['full', 'soft_guard', 'hard_guard', 'cooldown'])
 
+    def test_build_steering_expands_code_file_examples_in_core_manifest(self):
+        steering_dir = Path(os.environ['CONSUELO_HOME']) / 'steering'
+        steering_dir.mkdir(parents=True, exist_ok=True)
+        (steering_dir / 'system_prompt.md').write_text('base os steering', encoding='utf-8')
+        core_manifest_path = Path(self.tempdir.name) / 'core.manifest.json'
+        core_manifest_path.write_text(json.dumps({
+            'kind': 'consuelo-os-core-manifest',
+            'tools': [{
+                'name': 'code.call',
+                'definition': {
+                    'exampleInput': {
+                        'language': 'python',
+                        'mode': 'edit',
+                        'codeFile': 'scripts/code-call-examples/python-semantic-test-mutation.py',
+                    },
+                },
+            }],
+        }), encoding='utf-8')
+
+        self.module.MANIFEST_FILE = core_manifest_path
+
+        content = self.module._build_steering()
+
+        self.assertIn('base os steering', content)
+        self.assertIn('codeFile', content)
+        self.assertIn('codeFileSource', content)
+        self.assertIn('from pathlib import Path', content)
+        self.assertIn('signatureAlgorithm', content)
+
     def test_refresh_steering_requires_reason_and_rate_limits_break_glass(self):
         now = [2000.0]
         calls = []

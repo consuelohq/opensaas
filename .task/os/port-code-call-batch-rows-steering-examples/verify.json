@@ -1,0 +1,69 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/port-code-call-batch-rows-steering-examples",
+  "base": "origin/main",
+  "headSha": "e2852da3cde4660b89b1e6ad501915bd9aa3b65c",
+  "changeHash": "ad3c5d101b78c41b720b5c234995e58007103ce0ac8c710857e9384294d6651f",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/scripts/os.ts",
+    "packages/os/server.py",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/os_server_steering_test.py",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-18T06:55:19.050Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/port-code-call-batch-rows-steering-examples/current.json",
+        ".task/os/port-code-call-batch-rows-steering-examples/evidence-log.json",
+        ".task/os/port-code-call-batch-rows-steering-examples/read-log.json",
+        ".task/os/port-code-call-batch-rows-steering-examples/session.json",
+        ".task/os/port-code-call-batch-rows-steering-examples/workpad.md",
+        ".task/tasks/os/port-code-call-batch-rows-steering-examples.json",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/scripts/os.ts",
+        "packages/os/server.py",
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/tests/os-raw-steering.test.ts",
+        "packages/os/tests/os_server_steering_test.py",
+        "packages/os/tooling/dev-tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

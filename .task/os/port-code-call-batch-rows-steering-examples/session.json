@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b3c2b19f70cb",
+  "tmuxSession": "opensaas-os-port-code-call-batch-rows-steering-examples-b3c2b19f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/port-code-call-batch-rows-steering-examples",
+  "branch": "task/os/port-code-call-batch-rows-steering-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-port-code-call-batch-rows-steering-examples",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-port-code-call-batch-rows-steering-examples",
+  "prNumber": 1137,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1137",
+  "createdAt": "2026-06-18T06:42:32.418Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-port-code-call-batch-rows-steering-examples/.task/os/port-code-call-batch-rows-steering-examples/session.json"
+}
