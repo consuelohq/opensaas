@@ -1598,7 +1598,7 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "codemode",
-      "description": "run short language-specific code through staged Python, Bun, or Bash backends",
+      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -1606,7 +1606,7 @@
           "code",
           "call"
         ],
-        "description": "run short language-specific code through staged Python, Bun, or Bash backends",
+        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "workspace code.call",
         "capabilities": {
