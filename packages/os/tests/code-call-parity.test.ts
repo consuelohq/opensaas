@@ -48,11 +48,16 @@ describe('OS code.call parity with Workspace PR 846', () => {
   });
 
   it('keeps language aliases, modes, mistake classes, and defaults aligned', () => {
-    const runtimeSource = readOsSource('scripts/lib/code-call/runtime.ts');
+    const codeCallSource = [
+      'scripts/lib/code-call/runtime.ts',
+      'scripts/lib/code-call/schema.ts',
+      'scripts/lib/code-call/runtimes.ts',
+      'scripts/lib/code-call/types.ts',
+    ].map(readOsSource).join('\n');
     const typeSource = readOsSource('scripts/lib/code-call/types.ts');
 
     for (const alias of ['py', 'python', 'python3', 'bun', 'node', 'javascript', 'typescript', 'js', 'ts', 'bash', 'shell', 'sh']) {
-      expect(runtimeSource).toContain(`${alias}:`);
+      expect(codeCallSource).toContain(`${alias}:`);
     }
 
     for (const mode of ["'read'", "'edit'", "'verify'"]) {
@@ -63,7 +68,7 @@ describe('OS code.call parity with Workspace PR 846', () => {
       expect(typeSource).toContain(`'${mistakeClass}'`);
     }
 
-    expect(runtimeSource).toContain('const DEFAULT_TIMEOUT_MS = 30_000;');
-    expect(runtimeSource).toContain('const DEFAULT_MAX_RESULT_CHARS = 20_000;');
+    expect(codeCallSource).toContain('const DEFAULT_TIMEOUT_MS = 30_000;');
+    expect(codeCallSource).toContain('const DEFAULT_MAX_RESULT_CHARS = 20_000;');
   });
 });
