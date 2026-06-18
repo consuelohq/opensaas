@@ -50,7 +50,7 @@ type WorkspaceCloudflareEdgeRouteResolution =
       hostname: string;
       route: string;
       surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
-      auth: 'required';
+      auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
       auditEvent: 'workspace.hostname.route.allowed';
       target: WorkspaceCloudflareEdgeRouteTarget;
     }
@@ -81,6 +81,25 @@ type WorkspaceCloudflareEdgeRouterContract = {
     siteSnapshots?: WorkspaceSitesSnapshotStore;
   }) => WorkspaceCloudflareEdgeRouter;
 };
+
+const createAuthoritativeSiteSnapshotCache = (input?: {
+  onMatch?: (request: Request) => void;
+}): WorkspaceSitesEdgeCache => ({
+  async match(request) {
+    input?.onMatch?.(request);
+
+    return new Response('<!doctype html><title>cached launcher</title>', {
+      headers: {
+        'cache-control': 'public, max-age=60, s-maxage=2592000, stale-while-revalidate=604800',
+        'content-type': 'text/html; charset=utf-8',
+        'x-consuelo-edge-cache-authority': 'sites-snapshot',
+      },
+    });
+  },
+  async put() {
+    throw new Error('cache put should not run on a hit');
+  },
+});
 
 const runContract =
   process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
@@ -416,21 +435,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       await loadWorkspaceCloudflareEdgeRouterContract();
     let resolveCount = 0;
     const cacheKeys: string[] = [];
-    const siteCache: WorkspaceSitesEdgeCache = {
-      async match(request) {
-        cacheKeys.push(request.url);
-        return new Response('<!doctype html><title>cached launcher</title>', {
-          headers: {
-            'cache-control': 'public, max-age=60, s-maxage=2592000, stale-while-revalidate=604800',
-            'content-type': 'text/html; charset=utf-8',
-            'x-consuelo-edge-cache-authority': 'sites-snapshot',
-          },
-        });
-      },
-      async put() {
-        throw new Error('cache put should not run on a hit');
-      },
-    };
+    const siteCache = createAuthoritativeSiteSnapshotCache({
+      onMatch: (request) => cacheKeys.push(request.url),
+    });
     const router = createWorkspaceCloudflareEdgeRouter({
       registry: {
         async resolve() {
@@ -468,6 +475,104 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(response.headers.get('x-consuelo-sites-cache')).toBe('hit');
     expect(resolveCount).toBe(1);
     expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
+  });
+
+  it.each([
+    {
+      name: 'revoked hostname',
+      resolution: {
+        allowed: false,
+        status: 404,
+        errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+        auditEvent: 'workspace.hostname.route.denied',
+      },
+      expectedStatus: 404,
+      expectedErrorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+    },
+    {
+      name: 'disabled site route',
+      resolution: {
+        allowed: false,
+        status: 404,
+        errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+        auditEvent: 'workspace.hostname.route.denied',
+      },
+      expectedStatus: 404,
+      expectedErrorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+    },
+    {
+      name: 'missing route',
+      resolution: {
+        allowed: false,
+        status: 404,
+        errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+        auditEvent: 'workspace.hostname.route.denied',
+      },
+      expectedStatus: 404,
+      expectedErrorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+    },
+    {
+      name: 'private snapshot route',
+      resolution: {
+        allowed: true,
+        workspaceId: 'workspace_123',
+        hostname: 'kokayi.consuelohq.com',
+        route: '/',
+        surface: 'sites',
+        auth: 'required',
+        auditEvent: 'workspace.hostname.route.allowed',
+        target: {
+          kind: 'site-snapshot',
+          siteId: 'launcher',
+          versionId: 'version_1',
+          manifestKey: 'sites/workspace_123/launcher/version_1/index.html',
+          cachePolicy: 'private-preview',
+        },
+      },
+      expectedStatus: 503,
+      expectedErrorCode: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+    },
+  ] satisfies Array<{
+    name: string;
+    resolution: WorkspaceCloudflareEdgeRouteResolution;
+    expectedStatus: 404 | 503;
+    expectedErrorCode: string;
+  }>)('should not serve cached site snapshots when D1 policy returns $name', async ({
+    resolution,
+    expectedStatus,
+    expectedErrorCode,
+  }) => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    let resolveCount = 0;
+    const cacheKeys: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          resolveCount += 1;
+
+          return resolution;
+        },
+      },
+      siteSnapshots: {
+        cache: createAuthoritativeSiteSnapshotCache({
+          onMatch: (request) => cacheKeys.push(request.url),
+        }),
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/?utm_source=noise'),
+    );
+    const body = (await response.json()) as {
+      error: { code: string; message: string };
+    };
+
+    expect(response.status).toBe(expectedStatus);
+    expect(body.error.code).toBe(expectedErrorCode);
+    expect(JSON.stringify(body)).not.toMatch(/cached launcher|manifestKey|bucket|sites\/workspace_123|token|secret/i);
+    expect(resolveCount).toBe(1);
+    expect(cacheKeys).toEqual([]);
   });
 
   it('should serve D1 site snapshots from R2 and populate the edge cache', async () => {
