@@ -286,8 +286,17 @@ function fmtTokenCount(value: unknown): string {
   return `${total} tokens`;
 }
 
+function operationTokenTotal(operation: NestedOperation): number | undefined {
+  const explicitTotal = optionalNumber(operation.totalTokens);
+  if (explicitTotal !== undefined) return explicitTotal;
+  const input = optionalNumber(operation.inputTokens) || 0;
+  const output = optionalNumber(operation.outputTokens) || 0;
+  if (operation.inputTokens !== undefined || operation.outputTokens !== undefined) return input + output;
+  return undefined;
+}
+
 function fmtTokens(row: Row, nested?: NestedOperation[]): string {
-  const nestedTotal = nested?.reduce((sum, operation) => sum + Number(operation.totalTokens || 0), 0) || 0;
+  const nestedTotal = nested?.reduce((sum, operation) => sum + (operationTokenTotal(operation) || 0), 0) || 0;
   return fmtTokenCount(nestedTotal > 0 ? nestedTotal : row.total_tokens);
 }
 
@@ -321,6 +330,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function numericValue(value: unknown, fallback = 0): number {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
 }
 
 function stringValue(value: unknown): string {
@@ -409,6 +424,28 @@ function commandTextFromCodeCallResult(result: unknown): string {
   const command = cleanText(result.command);
   if (command) return command;
   return cleanText(result.detail || result.message || result.tool);
+}
+
+function isTestCommand(command: string): boolean {
+  return /(^|\s)(test|vitest|jest)(\s|$)/.test(command) || /\bbun\s+(?:--cwd\s+\S+\s+)?test\b/.test(command);
+}
+
+function codeCallResultCode(result: Record<string, unknown>, ok: boolean, exitCode: number, command: string): string {
+  if (ok) return cleanText(result.code || 'OK') || 'OK';
+  if (isTestCommand(command)) return 'TESTS_FAILED';
+  return cleanText(result.code || 'EXIT_' + exitCode) || 'ERR';
+}
+
+function codeCallFailureCode(row: Row): string | undefined {
+  for (const result of codeCallResults(row)) {
+    if (!isRecord(result)) continue;
+    const exitCode = numericValue(result.exitCode ?? result.exit_code, 0);
+    const ok = result.ok === true || (result.ok !== false && exitCode === 0);
+    if (ok) continue;
+    const command = commandTextFromCodeCallResult(result);
+    if (isTestCommand(command)) return 'TESTS_FAILED';
+  }
+  return undefined;
 }
 
 function codeCallChangedCount(data: Record<string, unknown>): number {
@@ -515,14 +552,14 @@ function codeCallOperations(row: Row): NestedOperation[] {
       const ok = result.ok === true || (result.ok !== false && exitCode === 0);
       const command = commandTextFromCodeCallResult(result);
       return {
-        tool: 'code.call step',
+        tool: 'code.call cmd',
         ok,
-        code: cleanText(result.code || (ok ? 'OK' : 'EXIT_' + exitCode)),
+        code: codeCallResultCode(result, ok, exitCode, command),
         message: cleanText(result.message),
         durationMs: numericValue(result.durationMs ?? result.duration_ms, 0),
-        inputTokens: 0,
-        outputTokens: 0,
-        totalTokens: 0,
+        inputTokens: optionalNumber(result.inputTokens ?? result.input_tokens),
+        outputTokens: optionalNumber(result.outputTokens ?? result.output_tokens),
+        totalTokens: optionalNumber(result.totalTokens ?? result.total_tokens),
         detail: command || cleanText(result.detail || result.message),
         changed: result.changed === true,
       } satisfies NestedOperation;
@@ -667,6 +704,7 @@ function renderVerifyBecause(args: Args, row: Row): void {
 }
 
 function compactErrorDetail(row: Row): string {
+  if (String(row.tool || '') === 'code.call' && codeCallFailureCode(row) === 'TESTS_FAILED') return 'tests failed';
   const result = parseJson(row.result_json) || {};
   const stderr = cleanText(row.stderr);
   const message = cleanText(result.message);
@@ -690,9 +728,9 @@ function nestedOperationFromResult(result: unknown, toolFallback: string): Neste
     message: cleanText(result.message),
     traceId: cleanText(result.traceId),
     durationMs: numericValue(result.durationMs, 0),
-    inputTokens: numericValue(result.inputTokens ?? result.input_tokens, 0),
-    outputTokens: numericValue(result.outputTokens ?? result.output_tokens, 0),
-    totalTokens: numericValue(result.totalTokens ?? result.total_tokens, 0),
+    inputTokens: optionalNumber(result.inputTokens ?? result.input_tokens),
+    outputTokens: optionalNumber(result.outputTokens ?? result.output_tokens),
+    totalTokens: optionalNumber(result.totalTokens ?? result.total_tokens),
     detail: cleanText(result.detail),
     changed: result.changed === true,
   };
@@ -735,7 +773,8 @@ function renderNestedOperation(args: Args, operation: NestedOperation): string {
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', operation.tool.padEnd(16).slice(0, 16));
   const code = ok ? c(args, '2', operation.code || 'OK') : c(args, '33', operation.code || 'ERR');
-  const tokens = fmtTokenCount(operation.totalTokens).padStart(10);
+  const tokenTotal = operationTokenTotal(operation);
+  const tokens = tokenTotal === undefined ? ''.padStart(10) : fmtTokenCount(tokenTotal).padStart(10);
   const marker = operation.changed ? c(args, '33', 'changed') : '';
   const detail = cleanText(operation.detail || operation.helper || operation.message || '').slice(0, 120);
   const suffixParts = [marker, detail ? c(args, '2', detail) : ''].filter(Boolean);
@@ -762,9 +801,9 @@ function enrichNestedOperationsWithTraceTokens(args: Args, operations: NestedOpe
     if (!row) return operation;
     return {
       ...operation,
-      inputTokens: numericValue(row.input_tokens, operation.inputTokens || 0),
-      outputTokens: numericValue(row.output_tokens, operation.outputTokens || 0),
-      totalTokens: numericValue(row.total_tokens, operation.totalTokens || 0),
+      inputTokens: optionalNumber(row.input_tokens) ?? operation.inputTokens,
+      outputTokens: optionalNumber(row.output_tokens) ?? operation.outputTokens,
+      totalTokens: optionalNumber(row.total_tokens) ?? operation.totalTokens,
     };
   });
 }
@@ -801,7 +840,8 @@ export function renderRow(args: Args, row: Row) {
   const ok = String(row.status || '') === 'ok' && String(row.code || '') === 'OK' && Number(row.exit_code || 0) === 0;
   const icon = ok ? c(args, '32', '✓') : c(args, '31', '✗');
   const tool = c(args, '36', String(row.tool || 'unknown').padEnd(16).slice(0, 16));
-  const code = ok ? c(args, '2', String(row.code || 'OK')) : c(args, '33', String(row.code || row.status || 'ERR'));
+  const displayCode = ok ? String(row.code || 'OK') : (codeCallFailureCode(row) || String(row.code || row.status || 'ERR'));
+  const code = ok ? c(args, '2', displayCode) : c(args, '33', displayCode);
   const nested = args.nested ? enrichNestedOperationsWithTraceTokens(args, nestedOperationsForRow(row)) : [];
   const time = fmtTraceTime(row.ts);
   const tokens = fmtTokens(row, nested).padStart(12);
