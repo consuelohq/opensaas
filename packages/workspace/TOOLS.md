@@ -74,7 +74,7 @@ await workspace.call({
   "input": {
     "language": "bun",
     "mode": "read",
-    "code": "const path = \"packages/workspace/tests/tool-manifest.test.ts\"\nconst text = await Bun.file(path).text()\nconst lines = text.split(\"\\n\")\nconsole.log(JSON.stringify({\n  path,\n  lineSpans: [{ from: 1, to: 12 }],\n  snippets: lines.slice(0, 12),\n}, null, 2))",
+    "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
     "maxResultChars": 20000
   }
 });
