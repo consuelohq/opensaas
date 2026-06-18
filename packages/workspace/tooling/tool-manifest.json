@@ -2137,7 +2137,7 @@
     "methodPath": [
       "explore"
     ],
-    "description": "run repository exploration retrieval",
+    "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
     "category": "decision engine",
     "underlying": "workspace explore",
     "capabilities": {
@@ -2465,7 +2465,7 @@
       "fs",
       "trash"
     ],
-    "description": "move a task worktree file to trash",
+    "description": "An agent safe file deletion path. Prefered over rm rf",
     "category": "filesystem",
     "underlying": "workspace fs.trash",
     "capabilities": {
@@ -2958,7 +2958,7 @@
     "methodPath": [
       "intent"
     ],
-    "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
+    "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
     "category": "workflow",
     "underlying": "workspace intent",
     "capabilities": {

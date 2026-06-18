@@ -10,7 +10,11 @@ type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
-const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
+const expectedDescriptions = {
+  explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
+  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
+  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+} as const;
 const removedCoreToolNames = [
   'fs.list',
   'fs.write',
@@ -32,7 +36,6 @@ const removedCoreToolNames = [
   'mac.process',
   'fs.read',
   'fs.search',
-  'tmp',
   'git.diff',
   'git.status',
   'stream.list',
@@ -57,6 +60,7 @@ const retainedCoreToolNames = [
   'review.run',
   'stream.context',
   'stream.sync',
+  'tmp',
   'tools.search',
 ] as const;
 
@@ -124,15 +128,18 @@ describe('workspace tool manifest generator', () => {
     expect(coreNames).not.toContain('sentry.issues');
   });
 
-  it('uses the scoped workflow description for the intent tool', () => {
+  it("uses Ko's core tool descriptions in full and core manifests", () => {
     const registry = buildWorkspaceToolManifest({ write: false });
-    const fullIntent = registry.full.tools.find((entry) => entry.name === 'intent');
-    const coreIntent = registry.core.tools.find((entry) => entry.name === 'intent');
 
-    expect(fullIntent?.description).toBe(intentDescription);
-    expect(fullIntent?.definition.description).toBe(intentDescription);
-    expect(coreIntent?.description).toBe(intentDescription);
-    expect(coreIntent?.definition.description).toBe(intentDescription);
+    for (const [toolName, description] of Object.entries(expectedDescriptions)) {
+      const fullTool = registry.full.tools.find((entry) => entry.name === toolName);
+      const coreTool = registry.core.tools.find((entry) => entry.name === toolName);
+
+      expect(fullTool?.description).toBe(description);
+      expect(fullTool?.definition.description).toBe(description);
+      expect(coreTool?.description).toBe(description);
+      expect(coreTool?.definition.description).toBe(description);
+    }
   });
 
   it('writes full and core manifests to override output paths', () => {
