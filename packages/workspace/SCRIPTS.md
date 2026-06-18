@@ -898,6 +898,7 @@ bun run context -- search dialer      # search memories by content
 bun run context -- search queue --category workpad  # filter by category
 bun run context -- find "queue handoff"  # search by title
 bun run context -- list workpad       # list recent workpad memories
+bun run context -- list --category workpad  # equivalent category flag form used by the facade
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories

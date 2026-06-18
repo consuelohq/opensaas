@@ -10,7 +10,11 @@ type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
 const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
-const intentDescription = 'Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.';
+const expectedDescriptions = {
+  explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
+  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
+  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+} as const;
 const removedCoreToolNames = [
   'fs.list',
   'fs.write',
@@ -32,7 +36,6 @@ const removedCoreToolNames = [
   'mac.process',
   'fs.read',
   'fs.search',
-  'tmp',
   'git.diff',
   'git.status',
   'stream.list',
@@ -40,15 +43,21 @@ const removedCoreToolNames = [
   'verify',
 ] as const;
 
+const oldContextToolNames = [
+  'context.categories',
+  'context.find',
+  'context.get',
+  'context.list',
+  'context.save',
+  'context.search',
+  'context.trace',
+] as const;
+
 const retainedCoreToolNames = [
   'batch',
   'code.call',
   'code.run',
-  'context.find',
-  'context.get',
-  'context.save',
-  'context.search',
-  'context.trace',
+  'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
@@ -57,6 +66,7 @@ const retainedCoreToolNames = [
   'review.run',
   'stream.context',
   'stream.sync',
+  'tmp',
   'tools.search',
 ] as const;
 
@@ -93,6 +103,10 @@ describe('workspace tool manifest generator', () => {
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
     expect(names(registry.full.tools)).toContain('batch');
+    expect(names(registry.full.tools)).toContain('context');
+    for (const toolName of oldContextToolNames) {
+      expect(names(registry.full.tools)).not.toContain(toolName);
+    }
     expect(registry.report.fullToolCount).toBe(sourceEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
   });
@@ -120,19 +134,25 @@ describe('workspace tool manifest generator', () => {
       expect(coreNames).not.toContain(toolName);
     }
     expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    for (const toolName of oldContextToolNames) {
+      expect(coreNames).not.toContain(toolName);
+    }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
   });
 
-  it('uses the scoped workflow description for the intent tool', () => {
+  it("uses Ko's core tool descriptions in full and core manifests", () => {
     const registry = buildWorkspaceToolManifest({ write: false });
-    const fullIntent = registry.full.tools.find((entry) => entry.name === 'intent');
-    const coreIntent = registry.core.tools.find((entry) => entry.name === 'intent');
 
-    expect(fullIntent?.description).toBe(intentDescription);
-    expect(fullIntent?.definition.description).toBe(intentDescription);
-    expect(coreIntent?.description).toBe(intentDescription);
-    expect(coreIntent?.definition.description).toBe(intentDescription);
+    for (const [toolName, description] of Object.entries(expectedDescriptions)) {
+      const fullTool = registry.full.tools.find((entry) => entry.name === toolName);
+      const coreTool = registry.core.tools.find((entry) => entry.name === toolName);
+
+      expect(fullTool?.description).toBe(description);
+      expect(fullTool?.definition.description).toBe(description);
+      expect(coreTool?.description).toBe(description);
+      expect(coreTool?.definition.description).toBe(description);
+    }
   });
 
   it('writes full and core manifests to override output paths', () => {

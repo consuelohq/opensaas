@@ -1501,167 +1501,13 @@
     "sessionRequired": false
   },
   {
-    "name": "context.categories",
+    "name": "context",
     "methodPath": [
-      "context",
-      "categories"
+      "context"
     ],
-    "description": "list project memory categories",
+    "description": "search, read, save, list, and inspect project context and local workspace traces",
     "category": "context",
-    "underlying": "workspace context.categories",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "EmptyInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "categories",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": []
-    },
-    "exampleInput": {},
-    "sessionRequired": false
-  },
-  {
-    "name": "context.find",
-    "methodPath": [
-      "context",
-      "find"
-    ],
-    "description": "search project memory by title",
-    "category": "context",
-    "underlying": "workspace context.find",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextFindInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "find",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "keyword": "handoff",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.get",
-    "methodPath": [
-      "context",
-      "get"
-    ],
-    "description": "read a full project memory search result",
-    "category": "context",
-    "underlying": "workspace context.get",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextGetInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "get",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "index",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
-        }
-      ]
-    },
-    "exampleInput": {
-      "index": 1,
-      "keyword": "workspace"
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.list",
-    "methodPath": [
-      "context",
-      "list"
-    ],
-    "description": "list recent project memories",
-    "category": "context",
-    "underlying": "workspace context.list",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextListInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "list",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "category",
-          "kind": "value"
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "category": "workpad",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.save",
-    "methodPath": [
-      "context",
-      "save"
-    ],
-    "description": "save a file or text into project memory",
-    "category": "context",
-    "underlying": "workspace context.save",
+    "underlying": "workspace context",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -1669,18 +1515,29 @@
       "safeToRetry": false
     },
     "defaultTimeout": 60000,
-    "inputSchema": "ContextSaveInput",
+    "inputSchema": "ContextInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "context",
-      "subcommand": "save",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {
-          "source": "title",
+          "source": "operation",
           "kind": "value",
           "required": true
+        },
+        {
+          "source": "index",
+          "kind": "value"
+        },
+        {
+          "source": "keyword",
+          "kind": "value"
+        },
+        {
+          "source": "title",
+          "kind": "value"
         },
         {
           "source": "file",
@@ -1690,44 +1547,6 @@
           "source": "category",
           "flag": "--category",
           "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "title": "example memory",
-      "file": "/tmp/example.md",
-      "dryRun": true
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.search",
-    "methodPath": [
-      "context",
-      "search"
-    ],
-    "description": "search project memory by content",
-    "category": "context",
-    "underlying": "workspace context.search",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextSearchInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "search",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
         },
         {
           "source": "limit",
@@ -1735,42 +1554,15 @@
           "kind": "value"
         },
         {
-          "source": "category",
-          "flag": "--category",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "keyword": "workspace",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.trace",
-    "methodPath": [
-      "context",
-      "trace"
-    ],
-    "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-    "category": "context",
-    "underlying": "workspace context.trace",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextTraceInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "trace",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
+          "source": "byTitle",
+          "flag": "--by-title",
+          "kind": "boolean"
+        },
+        {
+          "source": "text",
+          "flag": "--text",
+          "kind": "boolean"
+        },
         {
           "source": "traceId",
           "flag": "--trace-id",
@@ -1802,18 +1594,13 @@
           "kind": "value"
         },
         {
-          "source": "taskSession",
+          "source": "contextTaskSession",
           "flag": "--task-session",
           "kind": "value"
         },
         {
           "source": "branch",
           "flag": "--branch",
-          "kind": "value"
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
           "kind": "value"
         },
         {
@@ -1829,8 +1616,9 @@
       ]
     },
     "exampleInput": {
-      "status": "error",
-      "limit": 20
+      "operation": "search",
+      "keyword": "workspace",
+      "limit": 3
     },
     "sessionRequired": false
   },
@@ -2137,7 +1925,7 @@
     "methodPath": [
       "explore"
     ],
-    "description": "run repository exploration retrieval",
+    "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
     "category": "decision engine",
     "underlying": "workspace explore",
     "capabilities": {
@@ -2465,7 +2253,7 @@
       "fs",
       "trash"
     ],
-    "description": "move a task worktree file to trash",
+    "description": "An agent safe file deletion path. Prefered over rm rf",
     "category": "filesystem",
     "underlying": "workspace fs.trash",
     "capabilities": {
@@ -2958,7 +2746,7 @@
     "methodPath": [
       "intent"
     ],
-    "description": "Start a task workflow for scoped write access. It included progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
+    "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
     "category": "workflow",
     "underlying": "workspace intent",
     "capabilities": {

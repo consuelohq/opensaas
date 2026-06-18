@@ -17,14 +17,15 @@
       "batch",
       "code.call",
       "code.run",
+      "context",
       "explore",
       "github",
       "intent",
       "review.run",
-      "tools.search"
+      "tools.search",
+      "tmp"
     ],
     "includePrefixes": [
-      "context.",
       "fs.",
       "stream."
     ],
@@ -41,8 +42,6 @@
       "exploit",
       "confidenceScore",
       "confirm",
-      "context.list",
-      "context.categories",
       "audit",
       "doctor",
       "status",
@@ -54,7 +53,6 @@
       "mac.process",
       "fs.read",
       "fs.search",
-      "tmp",
       "git.diff",
       "git.status",
       "stream.list",

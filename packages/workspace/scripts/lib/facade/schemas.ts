@@ -384,6 +384,48 @@ export const ContextTraceInput = z.object({
   db: optionalString,
 });
 
+export const ContextInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
+  keyword: optionalString,
+  index: z.number().int().positive().optional(),
+  category: optionalString,
+  limit: z.number().int().positive().optional(),
+  title: optionalString,
+  file: optionalString,
+  text: z.boolean().optional(),
+  byTitle: z.boolean().optional(),
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  contextTaskSession: optionalString,
+  branch: optionalString,
+  raw: z.boolean().optional(),
+  db: optionalString,
+}).superRefine((input, ctx) => {
+  const issue = (path: string, message: string) => ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: [path],
+    message,
+  });
+
+  if ((input.operation === 'search' || input.operation === 'find') && !input.keyword) {
+    issue('keyword', `operation "${input.operation}" requires keyword`);
+  }
+  if (input.operation === 'get') {
+    if (input.index === undefined) issue('index', 'operation "get" requires index');
+    if (!input.keyword) issue('keyword', 'operation "get" requires keyword');
+  }
+  if (input.operation === 'save') {
+    if (!input.title) issue('title', 'operation "save" requires title');
+    if (!input.file && input.text !== true) issue('file', 'operation "save" requires file or text');
+  }
+});
+
 export const ExploreInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -977,6 +1019,7 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
+  ContextInput,
   ContextSearchInput,
   ContextFindInput,
   ContextGetInput,
@@ -1083,6 +1126,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
