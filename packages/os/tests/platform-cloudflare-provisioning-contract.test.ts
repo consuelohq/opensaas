@@ -1,6 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -50,36 +50,38 @@ type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
   }) => Promise<CloudflareRulesetRule>;
 };
 
-type InstallCloudflareProvisioningResult =
+type PlatformCloudflareProvisioningResult =
   | { status: 'skipped'; reason: string }
+  | { status: 'planned'; zoneId: string; allowedIpsListName: string }
   | { status: 'provisioned'; rulesetId: string; allowRule: { status: string }; blockRule: { status: string } };
 
-type InstallCloudflareProvisioningContract = {
-  provisionManagedOsMcpIngressPolicyFromEnv: (input: {
+type PlatformCloudflareProvisioningContract = {
+  provisionPlatformManagedOsMcpIngressPolicyFromEnv: (input: {
     env: Record<string, string | undefined>;
     baseDomain: string;
+    dryRun?: boolean;
     cloudflare?: WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
     fetchImpl?: typeof fetch;
-  }) => Promise<InstallCloudflareProvisioningResult>;
+  }) => Promise<PlatformCloudflareProvisioningResult>;
 };
 
 const runContract =
   process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
 const contractDescribe = runContract ? describe : describe.skip;
 
-async function loadInstallCloudflareProvisioningContract(): Promise<InstallCloudflareProvisioningContract> {
+async function loadPlatformCloudflareProvisioningContract(): Promise<PlatformCloudflareProvisioningContract> {
   const modulePath = pathToFileURL(
-    join(process.cwd(), 'scripts', 'lib', 'install-cloudflare-provisioning.ts'),
+    join(process.cwd(), 'scripts', 'lib', 'platform-cloudflare-provisioning.ts'),
   ).href;
-  const module = (await import(modulePath)) as Partial<InstallCloudflareProvisioningContract>;
+  const module = (await import(modulePath)) as Partial<PlatformCloudflareProvisioningContract>;
 
-  if (typeof module.provisionManagedOsMcpIngressPolicyFromEnv !== 'function') {
+  if (typeof module.provisionPlatformManagedOsMcpIngressPolicyFromEnv !== 'function') {
     throw new Error(
-      'install Cloudflare provisioning contract module is missing export: provisionManagedOsMcpIngressPolicyFromEnv',
+      'platform Cloudflare provisioning contract module is missing export: provisionPlatformManagedOsMcpIngressPolicyFromEnv',
     );
   }
 
-  return module as InstallCloudflareProvisioningContract;
+  return module as PlatformCloudflareProvisioningContract;
 }
 
 const createJsonResponse = (result: unknown): Response =>
@@ -88,38 +90,50 @@ const createJsonResponse = (result: unknown): Response =>
     headers: { 'content-type': 'application/json' },
   });
 
-contractDescribe('install Cloudflare provisioning contract', () => {
-  it('should invoke managed OS MCP ingress policy provisioning from the real install flow before success output', () => {
+contractDescribe('platform Cloudflare provisioning boundary', () => {
+  it('should keep public install out of Cloudflare account-admin provisioning', () => {
     const installSource = readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
     );
-
-    const policyImportIndex = installSource.indexOf(
-      'provisionManagedOsMcpIngressPolicyFromEnv',
-    );
     const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
-    const policyCallIndex = installSource.indexOf(
-      'await provisionManagedOsMcpIngressPolicyFromEnv',
-    );
-    const edgePublishIndex = installSource.indexOf('let edgePublish');
+    const platformPayloadIndex = installSource.indexOf('const platformProvisioning =');
     const payloadIndex = installSource.indexOf('const payload = {');
     const successIndex = installSource.indexOf('spin?.succeed');
 
-    expect(policyImportIndex).toBeGreaterThan(-1);
     expect(provisionIndex).toBeGreaterThan(-1);
-    expect(policyCallIndex).toBeGreaterThan(provisionIndex);
-    expect(edgePublishIndex).toBeGreaterThan(policyCallIndex);
-    expect(payloadIndex).toBeGreaterThan(policyCallIndex);
+    expect(platformPayloadIndex).toBeGreaterThan(provisionIndex);
+    expect(payloadIndex).toBeGreaterThan(platformPayloadIndex);
     expect(successIndex).toBeGreaterThan(payloadIndex);
-    expect(installSource).toContain('env: process.env');
-    expect(installSource).toContain('baseDomain: WORKSPACE_BASE_DOMAIN');
-    expect(installSource).toContain('cloudflareMcpIngress,');
+    expect(installSource).toContain('platformProvisioning,');
+    expect(installSource).toContain('Consuelo platform provisioning');
+    expect(installSource).not.toMatch(/install-cloudflare-provisioning|platform-cloudflare-provisioning/);
+    expect(installSource).not.toMatch(/provision(?:Platform)?ManagedOsMcpIngressPolicyFromEnv/);
+    expect(installSource).not.toMatch(/publishWorkspaceEdgeSnapshot|edgePublish|wrangler/);
+    expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
+  });
+
+  it('should expose managed OS MCP WAF provisioning only through an explicit platform script', () => {
+    const scriptSource = readFileSync(
+      join(process.cwd(), 'scripts', 'provision-managed-os-mcp-ingress-policy.ts'),
+      'utf8',
+    );
+    const packageJson = JSON.parse(
+      readFileSync(join(process.cwd(), 'package.json'), 'utf8'),
+    ) as { scripts?: Record<string, string> };
+
+    expect(scriptSource).toContain('platform-cloudflare-provisioning');
+    expect(scriptSource).toContain('provisionPlatformManagedOsMcpIngressPolicyFromEnv');
+    expect(scriptSource).toContain('env: process.env');
+    expect(scriptSource).toContain('Consuelo platform/admin script');
+    expect(packageJson.scripts?.['platform:managed-os-mcp-ingress:provision']).toBe(
+      'bun ./scripts/provision-managed-os-mcp-ingress-policy.ts',
+    );
   });
 
   it('should stay inert when managed OS MCP policy env is absent', async () => {
-    const { provisionManagedOsMcpIngressPolicyFromEnv } =
-      await loadInstallCloudflareProvisioningContract();
+    const { provisionPlatformManagedOsMcpIngressPolicyFromEnv } =
+      await loadPlatformCloudflareProvisioningContract();
     const cloudflare: WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
       async getAccountIpList() {
         throw new Error('Cloudflare should not be called without managed policy env');
@@ -139,7 +153,7 @@ contractDescribe('install Cloudflare provisioning contract', () => {
     };
 
     await expect(
-      provisionManagedOsMcpIngressPolicyFromEnv({
+      provisionPlatformManagedOsMcpIngressPolicyFromEnv({
         env: {},
         baseDomain: 'consuelohq.com',
         cloudflare,
@@ -151,11 +165,11 @@ contractDescribe('install Cloudflare provisioning contract', () => {
   });
 
   it('should fail closed when managed policy env is explicit but incomplete', async () => {
-    const { provisionManagedOsMcpIngressPolicyFromEnv } =
-      await loadInstallCloudflareProvisioningContract();
+    const { provisionPlatformManagedOsMcpIngressPolicyFromEnv } =
+      await loadPlatformCloudflareProvisioningContract();
 
     await expect(
-      provisionManagedOsMcpIngressPolicyFromEnv({
+      provisionPlatformManagedOsMcpIngressPolicyFromEnv({
         env: {
           CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
         },
@@ -164,7 +178,7 @@ contractDescribe('install Cloudflare provisioning contract', () => {
     ).rejects.toThrow(/CLOUDFLARE_ZONE_ID/);
 
     await expect(
-      provisionManagedOsMcpIngressPolicyFromEnv({
+      provisionPlatformManagedOsMcpIngressPolicyFromEnv({
         env: {
           CLOUDFLARE_ZONE_ID: 'zone_123',
           CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
@@ -174,7 +188,7 @@ contractDescribe('install Cloudflare provisioning contract', () => {
     ).rejects.toThrow(/CLOUDFLARE_ACCOUNT_ID/);
 
     await expect(
-      provisionManagedOsMcpIngressPolicyFromEnv({
+      provisionPlatformManagedOsMcpIngressPolicyFromEnv({
         env: {
           CLOUDFLARE_ZONE_ID: 'zone_123',
           CLOUDFLARE_ACCOUNT_ID: 'account_123',
@@ -185,9 +199,9 @@ contractDescribe('install Cloudflare provisioning contract', () => {
     ).rejects.toThrow(/CLOUDFLARE_API_TOKEN/);
   });
 
-  it('should use the real Cloudflare policy client from install env and preserve the exact skip phases', async () => {
-    const { provisionManagedOsMcpIngressPolicyFromEnv } =
-      await loadInstallCloudflareProvisioningContract();
+  it('should use the real Cloudflare policy client from platform env and preserve exact skip phases', async () => {
+    const { provisionPlatformManagedOsMcpIngressPolicyFromEnv } =
+      await loadPlatformCloudflareProvisioningContract();
     const calls: Array<{
       method: string;
       path: string;
@@ -235,7 +249,7 @@ contractDescribe('install Cloudflare provisioning contract', () => {
       return new Response(JSON.stringify({ success: false, errors: [{ message: 'unexpected request' }] }), { status: 500 });
     };
 
-    const result = await provisionManagedOsMcpIngressPolicyFromEnv({
+    const result = await provisionPlatformManagedOsMcpIngressPolicyFromEnv({
       env: {
         CLOUDFLARE_ZONE_ID: 'zone_123',
         CLOUDFLARE_ACCOUNT_ID: 'account_123',

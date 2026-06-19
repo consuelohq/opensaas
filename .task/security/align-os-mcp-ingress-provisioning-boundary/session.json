@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0a4c1eac740c",
+  "tmuxSession": "opensaas-security-align-os-mcp-ingress-provisioning-boundary-0a4c1eac",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/align-os-mcp-ingress-provisioning-boundary",
+  "branch": "task/security/align-os-mcp-ingress-provisioning-boundary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-mcp-ingress-provisioning-boundary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-mcp-ingress-provisioning-boundary",
+  "prNumber": 1153,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1153",
+  "createdAt": "2026-06-19T13:42:05.378Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-mcp-ingress-provisioning-boundary/.task/security/align-os-mcp-ingress-provisioning-boundary/session.json"
+}
