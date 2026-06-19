@@ -1,6 +1,6 @@
-import { Database } from 'bun:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 
@@ -210,6 +210,37 @@ type ArtifactRow = {
   updated_at: string;
 };
 
+type BunSqliteDatabase = {
+  query: (statement: string) => {
+    get: (...params: unknown[]) => unknown;
+    all: (...params: unknown[]) => unknown[];
+  };
+  close: () => void;
+};
+
+type BunSqliteDatabaseConstructor = new (
+  dbPath: string,
+  options?: { readonly?: boolean },
+) => BunSqliteDatabase;
+
+const BUN_SQLITE_SPECIFIER = `bun:${'sqlite'}`;
+const requireFromSites = createRequire(import.meta.url);
+
+function loadBunSqliteDatabase(): BunSqliteDatabaseConstructor {
+  try {
+    const module = requireFromSites(BUN_SQLITE_SPECIFIER) as {
+      Database?: BunSqliteDatabaseConstructor;
+    };
+    if (!module.Database) throw new Error('Database export is missing');
+    return module.Database;
+  } catch (error: unknown) {
+    throw new Error(
+      `Sites artifact database requires Bun SQLite: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+}
+
 type ReservedSite = {
   slug: 'traces' | 'diffs' | 'docs';
   title: string;
@@ -269,13 +300,16 @@ function addFileAction(actions: SitesAction[], filePath: string, dryRun: boolean
   actions.push({ type: 'create_file', path: filePath, status: dryRun ? 'planned' : 'created', message });
 }
 
-function hasArtifactsTable(db: BunDb): boolean {
+function hasArtifactsTable(db: BunSqliteDatabase): boolean {
   const row = db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'artifacts'").get() as { name?: string } | null;
   return row?.name === 'artifacts';
 }
 
 function readArtifactRows(dbPath: string): ArtifactRow[] {
   if (!fs.existsSync(dbPath)) return [];
+  const stat = fs.statSync(dbPath);
+  if (!stat.isFile() || stat.size === 0) return [];
+  const Database = loadBunSqliteDatabase();
   const db = new Database(dbPath, { readonly: true });
   try {
     if (!hasArtifactsTable(db)) return [];
