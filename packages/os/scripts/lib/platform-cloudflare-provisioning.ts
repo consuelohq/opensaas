@@ -6,9 +6,9 @@ import {
   type WorkspaceCloudflareManagedOsMcpIngressPolicyResult,
 } from './workspace-cloudflare-provisioning';
 
-type CloudflareInstallEnv = Record<string, string | undefined>;
+type PlatformCloudflareEnv = Record<string, string | undefined>;
 
-export type InstallManagedOsMcpIngressPolicyProvisioningResult =
+export type PlatformManagedOsMcpIngressPolicyProvisioningResult =
   | {
       status: 'skipped';
       reason: 'managed OS MCP ingress policy env not configured';
@@ -20,8 +20,8 @@ export type InstallManagedOsMcpIngressPolicyProvisioningResult =
     }
   | ({ status: 'provisioned' } & WorkspaceCloudflareManagedOsMcpIngressPolicyResult);
 
-export type InstallManagedOsMcpIngressPolicyProvisioningInput = {
-  env: CloudflareInstallEnv;
+export type PlatformManagedOsMcpIngressPolicyProvisioningInput = {
+  env: PlatformCloudflareEnv;
   baseDomain: string;
   dryRun?: boolean;
   cloudflare?: WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
@@ -32,7 +32,7 @@ const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
 const readRequiredEnvValue = (
-  env: CloudflareInstallEnv,
+  env: PlatformCloudflareEnv,
   key: 'CLOUDFLARE_ACCOUNT_ID' | 'CLOUDFLARE_API_TOKEN',
 ): string => {
   const value = env[key]?.trim();
@@ -40,9 +40,9 @@ const readRequiredEnvValue = (
   return value;
 };
 
-export const provisionManagedOsMcpIngressPolicyFromEnv = async (
-  input: InstallManagedOsMcpIngressPolicyProvisioningInput,
-): Promise<InstallManagedOsMcpIngressPolicyProvisioningResult> => {
+export const provisionPlatformManagedOsMcpIngressPolicyFromEnv = async (
+  input: PlatformManagedOsMcpIngressPolicyProvisioningInput,
+): Promise<PlatformManagedOsMcpIngressPolicyProvisioningResult> => {
   try {
     const config = createOptionalManagedOsMcpIngressPolicyConfigFromEnv({
       env: input.env,
@@ -81,7 +81,7 @@ export const provisionManagedOsMcpIngressPolicyFromEnv = async (
     return { status: 'provisioned', ...result };
   } catch (error: unknown) {
     throw new Error(
-      `install managed OS MCP ingress policy provisioning failed: ${getErrorMessage(error)}`,
+      `platform managed OS MCP ingress policy provisioning failed: ${getErrorMessage(error)}`,
       { cause: error },
     );
   }
