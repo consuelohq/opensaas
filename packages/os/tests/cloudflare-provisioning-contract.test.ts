@@ -106,6 +106,17 @@ type WorkspaceCloudflareProvisioningClient = {
   }) => Promise<CloudflareRulesetRule>;
 };
 
+type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = Required<
+  Pick<
+    WorkspaceCloudflareProvisioningClient,
+    | 'getAccountIpList'
+    | 'getZoneCustomRuleset'
+    | 'createZoneCustomRuleset'
+    | 'createZoneCustomRulesetRule'
+    | 'updateZoneCustomRulesetRule'
+  >
+>;
+
 type WorkspaceCloudflareProvisioningPlan = {
   workspaceId: string;
   workspaceSlug: string;
@@ -153,6 +164,21 @@ type WorkspaceCloudflareProvisioningContract = {
     env: Record<string, string | undefined>;
     baseDomain: string;
   }) => WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+  createOptionalManagedOsMcpIngressPolicyConfigFromEnv: (input: {
+    env: Record<string, string | undefined>;
+    baseDomain: string;
+  }) => WorkspaceCloudflareManagedOsMcpIngressPolicyConfig | undefined;
+  applyWorkspaceCloudflareProvisioningFromEnv: (input: {
+    cloudflare: WorkspaceCloudflareProvisioningClient;
+    env: Record<string, string | undefined>;
+    input: WorkspaceCloudflareProvisioningInput;
+  }) => Promise<WorkspaceCloudflareProvisioningResult>;
+  createCloudflareManagedOsMcpIngressPolicyClient: (input: {
+    accountId: string;
+    apiToken: string;
+    apiBaseUrl?: string;
+    fetchImpl?: typeof fetch;
+  }) => WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
   ensureManagedOsMcpIngressPolicy: (input: {
     cloudflare: WorkspaceCloudflareProvisioningClient;
     config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
@@ -175,6 +201,9 @@ async function loadWorkspaceCloudflareProvisioningContract(): Promise<WorkspaceC
     'applyWorkspaceCloudflareProvisioning',
     'buildManagedOsMcpIngressPolicyRules',
     'createManagedOsMcpIngressPolicyConfigFromEnv',
+    'createOptionalManagedOsMcpIngressPolicyConfigFromEnv',
+    'applyWorkspaceCloudflareProvisioningFromEnv',
+    'createCloudflareManagedOsMcpIngressPolicyClient',
     'ensureManagedOsMcpIngressPolicy',
   ];
   const missingExports = requiredExports.filter(
@@ -393,8 +422,15 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       ref: 'consuelo-os-mcp-provider-allow',
       description: 'Allow/skip trusted OS MCP provider traffic',
       action: 'skip',
-      action_parameters: { ruleset: 'current' },
       enabled: true,
+    });
+    expect(allowRule.action_parameters).toEqual({
+      ruleset: 'current',
+      phases: [
+        'http_ratelimit',
+        'http_request_firewall_managed',
+        'http_request_sbfm',
+      ],
     });
     expect(blockRule).toMatchObject({
       ref: 'consuelo-os-mcp-untrusted-block',
@@ -421,6 +457,9 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     expect(blockRule.expression).toContain('not (ip.src in $mcp_allowed_ips)');
     expect(blockRule.expression).toContain(
       'ip.src in {\n    2603:6080:37f0:6c50::/64\n    2603:6080:37f0:b460::/64\n  }',
+    );
+    expect(JSON.stringify({ allowRule, blockRule })).not.toMatch(
+      /kokayi\.consuelohq\.com|openai\.consuelohq\.com/,
     );
   });
 
@@ -457,6 +496,54 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         env: {},
       }),
     ).toThrow(/CLOUDFLARE_ZONE_ID/);
+    expect(() =>
+      createManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: { CLOUDFLARE_ZONE_ID: 'zone_123' },
+      }),
+    ).toThrow(/CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME/);
+  });
+
+  it('should derive optional managed OS MCP ingress policy only when policy env is present', async () => {
+    const { createOptionalManagedOsMcpIngressPolicyConfigFromEnv } =
+      await loadWorkspaceCloudflareProvisioningContract();
+
+    expect(
+      createOptionalManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: {},
+      }),
+    ).toBeUndefined();
+    expect(
+      createOptionalManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: {
+          CLOUDFLARE_ZONE_ID: 'zone_123',
+          CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+        },
+      }),
+    ).toMatchObject({
+      zoneId: 'zone_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+    });
+    expect(() =>
+      createOptionalManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: {
+          CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+        },
+      }),
+    ).toThrow(/CLOUDFLARE_ZONE_ID/);
+    expect(() =>
+      createOptionalManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: {
+          CLOUDFLARE_ZONE_ID: 'zone_123',
+          CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS: '2603:6080:37f0:6c50::/64',
+        },
+      }),
+    ).toThrow(/CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME/);
   });
 
   it('should provision managed OS MCP ingress rules idempotently', async () => {
@@ -528,6 +615,100 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     ]);
   });
 
+  it('should update and reorder existing managed OS MCP ingress rules when dashboard payload drifts', async () => {
+    const { buildManagedOsMcpIngressPolicyRules, ensureManagedOsMcpIngressPolicy } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const desired = buildManagedOsMcpIngressPolicyRules({
+      zoneId: 'zone_123',
+      customRulesetId: 'ruleset_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+    });
+    const fakeCloudflare = createFakeCloudflarePolicyClient({
+      ruleset: {
+        id: 'ruleset_123',
+        phase: 'http_request_firewall_custom',
+        rules: [
+          {
+            id: 'rule_bootstrap',
+            ref: 'allow-install-curl-bootstrap',
+            description: 'Allow install curl bootstrap',
+            action: 'skip',
+            action_parameters: { ruleset: 'current' },
+            expression: 'starts_with(http.request.uri.path, "/install")',
+            enabled: true,
+          },
+          {
+            ...desired.blockRule,
+            id: 'rule_block',
+          },
+          {
+            ...desired.allowRule,
+            id: 'rule_allow',
+            action_parameters: { ruleset: 'current' },
+          },
+        ],
+      },
+    });
+
+    const result = await ensureManagedOsMcpIngressPolicy({
+      cloudflare: fakeCloudflare.client,
+      config: {
+        zoneId: 'zone_123',
+        customRulesetId: 'ruleset_123',
+        baseDomain: 'consuelohq.com',
+        mcpAllowedIpsListName: 'mcp_allowed_ips',
+        allowInstallBootstrapRuleRef: 'allow-install-curl-bootstrap',
+      },
+    });
+
+    expect(result.allowRule.status).toBe('updated');
+    expect(result.blockRule.status).toBe('updated');
+    expect(
+      fakeCloudflare.calls.filter(
+        (call) => call.operation === 'updateZoneCustomRulesetRule',
+      ),
+    ).toHaveLength(2);
+    expect(fakeCloudflare.getRuleset().rules.map((rule) => rule.ref)).toEqual([
+      'allow-install-curl-bootstrap',
+      'consuelo-os-mcp-provider-allow',
+      'consuelo-os-mcp-untrusted-block',
+    ]);
+    expect(fakeCloudflare.getRuleset().rules[1]?.action_parameters).toEqual({
+      ruleset: 'current',
+      phases: [
+        'http_ratelimit',
+        'http_request_firewall_managed',
+        'http_request_sbfm',
+      ],
+    });
+  });
+
+  it('should fail closed when the configured Cloudflare account IP list is missing', async () => {
+    const { ensureManagedOsMcpIngressPolicy } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const fakeCloudflare = createFakeCloudflarePolicyClient({ accountLists: [] });
+
+    await expect(
+      ensureManagedOsMcpIngressPolicy({
+        cloudflare: fakeCloudflare.client,
+        config: {
+          zoneId: 'zone_123',
+          customRulesetId: 'ruleset_123',
+          baseDomain: 'consuelohq.com',
+          mcpAllowedIpsListName: 'mcp_allowed_ips',
+        },
+      }),
+    ).rejects.toThrow(/Cloudflare account IP list mcp_allowed_ips was not found/);
+    expect(
+      fakeCloudflare.calls.some((call) =>
+        ['createZoneCustomRuleset', 'createZoneCustomRulesetRule'].includes(
+          call.operation,
+        ),
+      ),
+    ).toBe(false);
+  });
+
   it('should ensure managed OS MCP ingress policy during workspace provisioning', async () => {
     const { applyWorkspaceCloudflareProvisioning } =
       await loadWorkspaceCloudflareProvisioningContract();
@@ -577,6 +758,268 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       'createOrReuseDnsRecord',
       'createOrReuseDnsRecord',
     ]);
+  });
+
+  it('should wire managed OS MCP ingress policy from Cloudflare env during provisioning', async () => {
+    const { applyWorkspaceCloudflareProvisioningFromEnv } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const fakeCloudflare = createFakeCloudflarePolicyClient({
+      ruleset: {
+        id: 'ruleset_123',
+        phase: 'http_request_firewall_custom',
+        rules: [
+          {
+            id: 'rule_bootstrap',
+            ref: 'allow-install-curl-bootstrap',
+            description: 'Allow install curl bootstrap',
+            action: 'skip',
+            action_parameters: { ruleset: 'current' },
+            expression: 'starts_with(http.request.uri.path, "/install")',
+            enabled: true,
+          },
+        ],
+      },
+    });
+
+    await applyWorkspaceCloudflareProvisioningFromEnv({
+      cloudflare: fakeCloudflare.client,
+      env: {
+        CLOUDFLARE_ZONE_ID: 'zone_123',
+        CLOUDFLARE_CUSTOM_RULESET_ID: 'ruleset_123',
+        CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+        CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF:
+          'allow-install-curl-bootstrap',
+      },
+      input: {
+        workspaceId: 'workspace_123',
+        workspaceSlug: 'kokayi',
+        baseDomain: 'consuelohq.com',
+        cloudflareZoneId: 'zone_123',
+        connectorId: 'connector_123',
+      },
+    });
+
+    expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
+      'getAccountIpList',
+      'getZoneCustomRuleset',
+      'createZoneCustomRulesetRule',
+      'createZoneCustomRulesetRule',
+      'createOrReuseTunnel',
+      'putTunnelConfig',
+      'createOrReuseDnsRecord',
+      'createOrReuseDnsRecord',
+    ]);
+    const allowCreate = fakeCloudflare.calls.find(
+      (call) =>
+        call.operation === 'createZoneCustomRulesetRule' &&
+        call.key === 'consuelo-os-mcp-provider-allow',
+    );
+    expect(allowCreate?.body).toMatchObject({
+      rule: {
+        action_parameters: {
+          ruleset: 'current',
+          phases: [
+            'http_ratelimit',
+            'http_request_firewall_managed',
+            'http_request_sbfm',
+          ],
+        },
+      },
+    });
+  });
+
+  it('should keep provisioning local-dev safe when managed OS MCP policy env is absent', async () => {
+    const { applyWorkspaceCloudflareProvisioningFromEnv } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{ operation: string; key: string; body?: unknown }> = [];
+    const cloudflare: WorkspaceCloudflareProvisioningClient = {
+      async createOrReuseTunnel(input) {
+        calls.push({ operation: 'createOrReuseTunnel', key: input.name, body: input });
+        return {
+          tunnelId: 'tunnel_123',
+          tunnelCredential: 'credential_fixture',
+          connectorCredentialId: 'connector_credential_123',
+        };
+      },
+      async putTunnelConfig(input) {
+        calls.push({ operation: 'putTunnelConfig', key: input.tunnelId, body: input });
+      },
+      async createOrReuseDnsRecord(input) {
+        calls.push({ operation: 'createOrReuseDnsRecord', key: input.name, body: input });
+        return { recordId: `dns_${input.name}` };
+      },
+    };
+
+    await applyWorkspaceCloudflareProvisioningFromEnv({
+      cloudflare,
+      env: {},
+      input: {
+        workspaceId: 'workspace_123',
+        workspaceSlug: 'kokayi',
+        baseDomain: 'consuelohq.com',
+        cloudflareZoneId: 'zone_123',
+        connectorId: 'connector_123',
+      },
+    });
+
+    expect(calls.map((call) => call.operation)).toEqual([
+      'createOrReuseTunnel',
+      'putTunnelConfig',
+      'createOrReuseDnsRecord',
+      'createOrReuseDnsRecord',
+    ]);
+  });
+
+  it('should call Cloudflare Lists and Rulesets APIs through the real managed policy client', async () => {
+    const { createCloudflareManagedOsMcpIngressPolicyClient } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{
+      method: string;
+      path: string;
+      authorization: string | null;
+      body?: unknown;
+    }> = [];
+    const jsonResponse = (result: unknown, status = 200): Response =>
+      new Response(
+        JSON.stringify({
+          success: status < 400,
+          errors: status < 400 ? [] : [{ message: 'fixture failure' }],
+          messages: [],
+          result,
+        }),
+        { status, headers: { 'content-type': 'application/json' } },
+      );
+    const fetchImpl: typeof fetch = async (url, init) => {
+      const parsedUrl = new URL(String(url));
+      const bodyText = typeof init?.body === 'string' ? init.body : undefined;
+      const body = bodyText ? JSON.parse(bodyText) : undefined;
+      calls.push({
+        method: init?.method ?? 'GET',
+        path: `${parsedUrl.pathname}${parsedUrl.search}`,
+        authorization: new Headers(init?.headers).get('authorization'),
+        ...(body === undefined ? {} : { body }),
+      });
+
+      if (parsedUrl.pathname.endsWith('/accounts/account_123/rules/lists')) {
+        return jsonResponse([
+          { id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' },
+        ]);
+      }
+      if (
+        parsedUrl.pathname.endsWith(
+          '/zones/zone_123/rulesets/phases/http_request_firewall_custom/entrypoint',
+        )
+      ) {
+        return jsonResponse({
+          id: 'ruleset_123',
+          phase: 'http_request_firewall_custom',
+          rules: [],
+        });
+      }
+      if (
+        parsedUrl.pathname.endsWith('/zones/zone_123/rulesets') &&
+        init?.method === 'POST'
+      ) {
+        return jsonResponse({
+          id: 'ruleset_created',
+          phase: body.phase,
+          rules: body.rules.map((rule: CloudflareRulesetRule, index: number) => ({
+            ...rule,
+            id: `created_rule_${index}`,
+          })),
+        });
+      }
+      if (
+        parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123/rules') &&
+        init?.method === 'POST'
+      ) {
+        return jsonResponse({ ...body, id: 'rule_created' });
+      }
+      if (
+        parsedUrl.pathname.endsWith(
+          '/zones/zone_123/rulesets/ruleset_123/rules/rule_123',
+        ) &&
+        init?.method === 'PATCH'
+      ) {
+        return jsonResponse({
+          id: 'ruleset_123',
+          phase: 'http_request_firewall_custom',
+          rules: [{ ...body, id: 'rule_123' }],
+        });
+      }
+
+      return jsonResponse(null, 404);
+    };
+    const client = createCloudflareManagedOsMcpIngressPolicyClient({
+      accountId: 'account_123',
+      apiToken: 'token_fixture',
+      apiBaseUrl: 'https://api.example.test/client/v4',
+      fetchImpl,
+    });
+
+    await expect(
+      client.getAccountIpList?.({ name: 'mcp_allowed_ips' }),
+    ).resolves.toEqual({ id: 'list_123', name: 'mcp_allowed_ips' });
+    await expect(
+      client.getZoneCustomRuleset?.({
+        zoneId: 'zone_123',
+        phase: 'http_request_firewall_custom',
+      }),
+    ).resolves.toMatchObject({ id: 'ruleset_123' });
+    await expect(
+      client.createZoneCustomRuleset?.({
+        zoneId: 'zone_123',
+        name: 'Consuelo OS MCP ingress policy',
+        description: 'Managed Consuelo OS MCP provider-source filtering policy',
+        phase: 'http_request_firewall_custom',
+        rules: [],
+      }),
+    ).resolves.toMatchObject({ id: 'ruleset_created' });
+    await expect(
+      client.createZoneCustomRulesetRule?.({
+        zoneId: 'zone_123',
+        rulesetId: 'ruleset_123',
+        rule: {
+          ref: 'consuelo-os-mcp-provider-allow',
+          description: 'Allow/skip trusted OS MCP provider traffic',
+          expression: 'starts_with(http.request.uri.path, "/mcp")',
+          action: 'skip',
+          action_parameters: { ruleset: 'current' },
+          enabled: true,
+        },
+        position: { after: 'rule_bootstrap' },
+      }),
+    ).resolves.toMatchObject({ id: 'rule_created' });
+    await expect(
+      client.updateZoneCustomRulesetRule?.({
+        zoneId: 'zone_123',
+        rulesetId: 'ruleset_123',
+        ruleId: 'rule_123',
+        rule: {
+          ref: 'consuelo-os-mcp-provider-allow',
+          description: 'Allow/skip trusted OS MCP provider traffic',
+          expression: 'starts_with(http.request.uri.path, "/mcp")',
+          action: 'skip',
+          action_parameters: { ruleset: 'current' },
+          enabled: true,
+        },
+        position: { after: 'rule_bootstrap' },
+      }),
+    ).resolves.toMatchObject({ id: 'rule_123' });
+
+    expect(calls.map((call) => `${call.method} ${call.path}`)).toEqual([
+      'GET /client/v4/accounts/account_123/rules/lists',
+      'GET /client/v4/zones/zone_123/rulesets/phases/http_request_firewall_custom/entrypoint',
+      'POST /client/v4/zones/zone_123/rulesets',
+      'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
+      'PATCH /client/v4/zones/zone_123/rulesets/ruleset_123/rules/rule_123',
+    ]);
+    expect(calls.every((call) => call.authorization === 'Bearer token_fixture')).toBe(
+      true,
+    );
+    expect(calls[2]?.body).toMatchObject({ kind: 'zone' });
+    expect(calls[3]?.body).toMatchObject({ position: { after: 'rule_bootstrap' } });
+    expect(calls[4]?.body).toMatchObject({ position: { after: 'rule_bootstrap' } });
   });
 
   it('should apply Cloudflare tunnel and DNS operations without Railway DNS provisioning', async () => {

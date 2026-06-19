@@ -6,7 +6,7 @@ This note tracks the remaining evidence for the Network and Security Report item
 
 ## MCP Persistent Connected-App Credentials
 
-Status: open follow-up.
+Status: separate open follow-up; not part of the managed OS MCP Cloudflare ingress surface.
 
 Reviewed files:
 
@@ -14,6 +14,8 @@ Reviewed files:
 - `packages/twenty-server/src/engine/api/mcp/services/mcp-protocol.service.ts`
 - `packages/twenty-server/src/engine/api/mcp/mcp.module.ts`
 - `packages/twenty-server/src/engine/api/mcp/controllers/__tests__/mcp-core.controller.spec.ts`
+
+Scope note: this section tracks the older Twenty-server MCP connected-app credential gap. The managed OS MCP ingress provisioning work is under `packages/os` and does not depend on these Twenty MCP files.
 
 Current evidence:
 
@@ -72,9 +74,12 @@ Repo-local evidence found:
 - `packages/os/cloudflare/workspace-edge/src/index.ts` wires the D1 registry, edge signing secret presence, and optional R2 snapshot store into the edge router.
 - `packages/os/cloudflare/os-device-authority/wrangler.toml` declares the `os.consuelohq.com/*` route and `DEVICE_GRANTS` Durable Object binding.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` builds managed OS MCP custom-rule expressions for the OS workspace hostname class under `*.consuelohq.com`, excluding hidden `*.os-origin.consuelohq.com`, `workspace.consuelohq.com`, and reserved platform hosts.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` represents the dashboard-proven allow rule as a `skip` action with `ruleset: 'current'` and phases `http_ratelimit`, `http_request_firewall_managed`, and `http_request_sbfm`.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` verifies the configured `$mcp_allowed_ips` account list before creating/updating rules and fails closed when the list is missing.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` provisions `Allow/skip trusted OS MCP provider traffic` and `Block untrusted OS MCP traffic` idempotently without duplicate rules on repeated provisioning runs.
-- `packages/os/tests/cloudflare-provisioning-contract.test.ts` covers expression generation, env-derived config, fake Rulesets API idempotency, and provisioning integration without calling Cloudflare.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` exposes `applyWorkspaceCloudflareProvisioningFromEnv()` so install/provisioning code can derive managed OS MCP ingress policy from Cloudflare env when configured while staying inert for local/dev envs with no managed policy keys.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` exposes a real managed-policy Cloudflare client for `getAccountIpList`, `getZoneCustomRuleset`, `createZoneCustomRuleset`, `createZoneCustomRulesetRule`, and `updateZoneCustomRulesetRule` without returning secret material.
+- `packages/os/tests/cloudflare-provisioning-contract.test.ts` covers expression generation, exact skip phases, env-derived provisioning, fake Rulesets API create/update/reorder idempotency, missing-list fail closed, no hardcoded example hostnames, and real client request shapes without calling Cloudflare.
 
 Remaining evidence gap:
 
