@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e2be37f819fc",
+  "tmuxSession": "opensaas-security-provision-managed-os-mcp-ingress-policy-e2be37f8",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-managed-os-mcp-ingress-policy",
+  "branch": "task/security/provision-managed-os-mcp-ingress-policy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-managed-os-mcp-ingress-policy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-managed-os-mcp-ingress-policy",
+  "prNumber": 1145,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1145",
+  "createdAt": "2026-06-19T01:43:16.082Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-managed-os-mcp-ingress-policy/.task/security/provision-managed-os-mcp-ingress-policy/session.json"
+}

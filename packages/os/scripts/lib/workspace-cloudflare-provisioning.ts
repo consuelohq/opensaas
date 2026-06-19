@@ -7,6 +7,87 @@ export type WorkspaceCloudflareProvisioningInput = {
   dialerUpstreamUrl?: string;
   edgeHostname?: string;
   localServiceUrl?: string;
+  managedOsMcpIngressPolicy?: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+};
+
+export type CloudflareRulesetRulePosition =
+  | { before: string }
+  | { after: string }
+  | { index: number };
+
+export type CloudflareRulesetRule = {
+  id?: string;
+  ref: string;
+  description: string;
+  expression: string;
+  action: 'skip' | 'block';
+  enabled: boolean;
+  action_parameters?: Record<string, unknown>;
+};
+
+export type CloudflareRuleset = {
+  id: string;
+  phase: 'http_request_firewall_custom';
+  rules: CloudflareRulesetRule[];
+};
+
+export type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
+  zoneId: string;
+  customRulesetId?: string;
+  baseDomain: string;
+  mcpAllowedIpsListName: string;
+  temporaryDenyIpCidrs?: string[];
+  reservedHostnames?: string[];
+  allowInstallBootstrapRuleId?: string;
+  allowInstallBootstrapRuleRef?: string;
+  allowInstallBootstrapRuleDescription?: string;
+};
+
+export type WorkspaceCloudflareManagedOsMcpIngressPolicyResult = {
+  zoneId: string;
+  rulesetId: string;
+  allowedIpsListName: string;
+  allowRule: {
+    id: string;
+    ref: string;
+    status: 'created' | 'updated' | 'unchanged';
+  };
+  blockRule: {
+    id: string;
+    ref: string;
+    status: 'created' | 'updated' | 'unchanged';
+  };
+};
+
+export type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
+  getAccountIpList: (input: {
+    name: string;
+  }) => Promise<{ id: string; name: string } | null>;
+  getZoneCustomRuleset: (input: {
+    zoneId: string;
+    rulesetId?: string;
+    phase: 'http_request_firewall_custom';
+  }) => Promise<CloudflareRuleset | null>;
+  createZoneCustomRuleset: (input: {
+    zoneId: string;
+    name: string;
+    description: string;
+    phase: 'http_request_firewall_custom';
+    rules: CloudflareRulesetRule[];
+  }) => Promise<CloudflareRuleset>;
+  createZoneCustomRulesetRule: (input: {
+    zoneId: string;
+    rulesetId: string;
+    rule: CloudflareRulesetRule;
+    position?: CloudflareRulesetRulePosition;
+  }) => Promise<CloudflareRulesetRule>;
+  updateZoneCustomRulesetRule: (input: {
+    zoneId: string;
+    rulesetId: string;
+    ruleId: string;
+    rule?: CloudflareRulesetRule;
+    position?: CloudflareRulesetRulePosition;
+  }) => Promise<CloudflareRulesetRule>;
 };
 
 export type WorkspaceCloudflareProvisioningClient = {
@@ -30,7 +111,7 @@ export type WorkspaceCloudflareProvisioningClient = {
     content: string;
     proxied: boolean;
   }) => Promise<{ recordId: string }>;
-};
+} & Partial<WorkspaceCloudflareManagedOsMcpIngressPolicyClient>;
 
 export type WorkspaceCloudflareRouteTarget =
   | {
@@ -93,6 +174,23 @@ export type WorkspaceCloudflareProvisioningResult = {
 };
 
 const OS_ROUTE_PREFIXES = ['/mcp', '/traces'] as const;
+const CLOUDFLARE_CUSTOM_RULESET_PHASE = 'http_request_firewall_custom' as const;
+const MANAGED_OS_MCP_ALLOW_RULE_REF = 'consuelo-os-mcp-provider-allow';
+const MANAGED_OS_MCP_BLOCK_RULE_REF = 'consuelo-os-mcp-untrusted-block';
+const DEFAULT_RESERVED_HOSTNAME_LABELS = [
+  'app',
+  'docs',
+  'diffs',
+  'install',
+  'linear',
+  'api',
+  'www',
+  'sites',
+  'os',
+  'internal',
+  'workspace-edge',
+  'workspace',
+] as const;
 
 const normalizeBaseDomain = (baseDomain: string): string => {
   const normalized = baseDomain
@@ -108,8 +206,397 @@ const normalizeBaseDomain = (baseDomain: string): string => {
   return normalized;
 };
 
+const normalizeCloudflareListName = (listName: string): string => {
+  const normalized = listName.trim().replace(/^\$/, '');
+
+  if (!/^[a-z][a-z0-9_]*$/.test(normalized)) {
+    throw new Error('Cloudflare IP list name must be a safe account-list identifier');
+  }
+
+  return normalized;
+};
+
+const normalizeIpCidrLiteral = (value: string): string => {
+  const normalized = value.trim();
+
+  if (!/^[0-9a-fA-F:.]+\/\d{1,3}$/.test(normalized)) {
+    throw new Error('temporary deny CIDR must be an IPv4 or IPv6 CIDR literal');
+  }
+
+  return normalized;
+};
+
+const normalizeOptionalValue = (value: string | undefined): string | undefined => {
+  const normalized = value?.trim();
+  return normalized ? normalized : undefined;
+};
+
+const createDefaultReservedHostnames = (baseDomain: string): string[] =>
+  DEFAULT_RESERVED_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
+
+const normalizeReservedHostnames = (input: {
+  baseDomain: string;
+  reservedHostnames?: string[];
+}): string[] => {
+  const values = input.reservedHostnames ?? createDefaultReservedHostnames(input.baseDomain);
+  return [...new Set(values.map(normalizeBaseDomain))].sort();
+};
+
+const formatHostnameSet = (hostnames: string[]): string =>
+  hostnames.map((hostname) => `  "${hostname}"`).join('\n');
+
+const formatIpSet = (cidrs: string[], indent: string): string =>
+  cidrs.map((cidr) => `${indent}${cidr}`).join('\n');
+
+const createManagedOsMcpBaseExpression = (input: {
+  baseDomain: string;
+  reservedHostnames: string[];
+}): string =>
+  [
+    `ends_with(http.host, ".${input.baseDomain}")`,
+    `not ends_with(http.host, ".os-origin.${input.baseDomain}")`,
+    `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
+    'starts_with(http.request.uri.path, "/mcp")',
+  ].join('\nand ');
+
+const createRuleSummary = (
+  rule: CloudflareRulesetRule,
+  status: 'created' | 'updated' | 'unchanged',
+): { id: string; ref: string; status: 'created' | 'updated' | 'unchanged' } => {
+  if (!rule.id) {
+    throw new Error(`Cloudflare rule ${rule.ref} did not return an id`);
+  }
+
+  return { id: rule.id, ref: rule.ref, status };
+};
+
+const rulesEqual = (
+  left: CloudflareRulesetRule,
+  right: CloudflareRulesetRule,
+): boolean =>
+  left.ref === right.ref &&
+  left.description === right.description &&
+  left.expression === right.expression &&
+  left.action === right.action &&
+  left.enabled === right.enabled &&
+  JSON.stringify(left.action_parameters ?? null) ===
+    JSON.stringify(right.action_parameters ?? null);
+
+const findManagedRule = (
+  rules: CloudflareRulesetRule[],
+  rule: CloudflareRulesetRule,
+): CloudflareRulesetRule | undefined =>
+  rules.find((candidate) => candidate.ref === rule.ref) ??
+  rules.find((candidate) => candidate.description === rule.description);
+
+const findRulePositionAnchor = (input: {
+  rules: CloudflareRulesetRule[];
+  config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+}): CloudflareRulesetRule | undefined => {
+  const { rules, config } = input;
+  if (config.allowInstallBootstrapRuleId) {
+    const rule = rules.find((candidate) => candidate.id === config.allowInstallBootstrapRuleId);
+    if (!rule) throw new Error('Cloudflare install bootstrap rule id was not found');
+    return rule;
+  }
+  if (config.allowInstallBootstrapRuleRef) {
+    const rule = rules.find((candidate) => candidate.ref === config.allowInstallBootstrapRuleRef);
+    if (!rule) throw new Error('Cloudflare install bootstrap rule ref was not found');
+    return rule;
+  }
+  if (config.allowInstallBootstrapRuleDescription) {
+    const rule = rules.find(
+      (candidate) => candidate.description === config.allowInstallBootstrapRuleDescription,
+    );
+    if (!rule) throw new Error('Cloudflare install bootstrap rule description was not found');
+    return rule;
+  }
+
+  return undefined;
+};
+
+const isPositionedAfter = (input: {
+  rules: CloudflareRulesetRule[];
+  ruleId: string;
+  anchorId: string;
+}): boolean => {
+  const anchorIndex = input.rules.findIndex((rule) => rule.id === input.anchorId);
+  const ruleIndex = input.rules.findIndex((rule) => rule.id === input.ruleId);
+  return anchorIndex >= 0 && ruleIndex === anchorIndex + 1;
+};
+
+const assertManagedOsMcpIngressPolicyClient = (
+  client: WorkspaceCloudflareProvisioningClient,
+): asserts client is WorkspaceCloudflareProvisioningClient &
+  WorkspaceCloudflareManagedOsMcpIngressPolicyClient => {
+  const requiredMethods: Array<keyof WorkspaceCloudflareManagedOsMcpIngressPolicyClient> = [
+    'getAccountIpList',
+    'getZoneCustomRuleset',
+    'createZoneCustomRuleset',
+    'createZoneCustomRulesetRule',
+    'updateZoneCustomRulesetRule',
+  ];
+  const missingMethods = requiredMethods.filter(
+    (method) => typeof client[method] !== 'function',
+  );
+
+  if (missingMethods.length > 0) {
+    throw new Error(
+      `Cloudflare provisioning client is missing managed OS MCP ingress methods: ${missingMethods.join(', ')}`,
+    );
+  }
+};
+
 const DNS_LABEL_ERROR =
   'must be DNS-label safe: 1-63 chars, no leading/trailing hyphen, [a-z0-9-] only';
+
+export const buildManagedOsMcpIngressPolicyRules = (
+  input: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig,
+): { allowRule: CloudflareRulesetRule; blockRule: CloudflareRulesetRule } => {
+  const baseDomain = normalizeBaseDomain(input.baseDomain);
+  const mcpAllowedIpsListName = normalizeCloudflareListName(input.mcpAllowedIpsListName);
+  const temporaryDenyIpCidrs = [
+    ...new Set((input.temporaryDenyIpCidrs ?? []).map(normalizeIpCidrLiteral)),
+  ];
+  const reservedHostnames = normalizeReservedHostnames({
+    baseDomain,
+    reservedHostnames: input.reservedHostnames,
+  });
+  const baseExpression = createManagedOsMcpBaseExpression({
+    baseDomain,
+    reservedHostnames,
+  });
+  const allowedIpsExpression = `ip.src in $${mcpAllowedIpsListName}`;
+  const allowTemporaryDenyExpression = temporaryDenyIpCidrs.length
+    ? `\nand not (ip.src in {\n${formatIpSet(temporaryDenyIpCidrs, '  ')}\n})`
+    : '';
+  const blockIpsExpression = temporaryDenyIpCidrs.length
+    ? `(\n  not (${allowedIpsExpression})\n  or ip.src in {\n${formatIpSet(temporaryDenyIpCidrs, '    ')}\n  }\n)`
+    : `not (${allowedIpsExpression})`;
+
+  return {
+    allowRule: {
+      ref: MANAGED_OS_MCP_ALLOW_RULE_REF,
+      description: 'Allow/skip trusted OS MCP provider traffic',
+      action: 'skip',
+      action_parameters: { ruleset: 'current' },
+      enabled: true,
+      expression: `${baseExpression}\nand (${allowedIpsExpression})${allowTemporaryDenyExpression}`,
+    },
+    blockRule: {
+      ref: MANAGED_OS_MCP_BLOCK_RULE_REF,
+      description: 'Block untrusted OS MCP traffic',
+      action: 'block',
+      enabled: true,
+      expression: `${baseExpression}\nand ${blockIpsExpression}`,
+    },
+  };
+};
+
+export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
+  env: Record<string, string | undefined>;
+  baseDomain: string;
+}): WorkspaceCloudflareManagedOsMcpIngressPolicyConfig => {
+  const zoneId = normalizeOptionalValue(input.env.CLOUDFLARE_ZONE_ID);
+  const mcpAllowedIpsListName = normalizeOptionalValue(
+    input.env.CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME,
+  );
+
+  if (!zoneId) throw new Error('CLOUDFLARE_ZONE_ID is required');
+  if (!mcpAllowedIpsListName) {
+    throw new Error('CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME is required');
+  }
+
+  const temporaryDenyIpCidrs = normalizeOptionalValue(
+    input.env.CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS,
+  )
+    ?.split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
+    zoneId,
+    baseDomain: normalizeBaseDomain(input.baseDomain),
+    mcpAllowedIpsListName,
+    ...(normalizeOptionalValue(input.env.CLOUDFLARE_CUSTOM_RULESET_ID)
+      ? {
+          customRulesetId: normalizeOptionalValue(
+            input.env.CLOUDFLARE_CUSTOM_RULESET_ID,
+          ),
+        }
+      : {}),
+    ...(normalizeOptionalValue(input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_ID)
+      ? {
+          allowInstallBootstrapRuleId: normalizeOptionalValue(
+            input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_ID,
+          ),
+        }
+      : {}),
+    ...(normalizeOptionalValue(input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF)
+      ? {
+          allowInstallBootstrapRuleRef: normalizeOptionalValue(
+            input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF,
+          ),
+        }
+      : {}),
+    ...(normalizeOptionalValue(input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_DESCRIPTION)
+      ? {
+          allowInstallBootstrapRuleDescription: normalizeOptionalValue(
+            input.env.CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_DESCRIPTION,
+          ),
+        }
+      : {}),
+    ...(temporaryDenyIpCidrs?.length ? { temporaryDenyIpCidrs } : {}),
+  };
+
+  buildManagedOsMcpIngressPolicyRules(config);
+
+  return config;
+};
+
+const ensureCloudflareRulesetRule = async (input: {
+  cloudflare: WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
+  zoneId: string;
+  rulesetId: string;
+  rules: CloudflareRulesetRule[];
+  desiredRule: CloudflareRulesetRule;
+  position?: CloudflareRulesetRulePosition;
+}): Promise<{
+  rule: CloudflareRulesetRule;
+  status: 'created' | 'updated' | 'unchanged';
+}> => {
+  try {
+    const existing = findManagedRule(input.rules, input.desiredRule);
+    if (!existing) {
+      const rule = await input.cloudflare.createZoneCustomRulesetRule({
+        zoneId: input.zoneId,
+        rulesetId: input.rulesetId,
+        rule: input.desiredRule,
+        ...(input.position ? { position: input.position } : {}),
+      });
+      return { rule, status: 'created' };
+    }
+
+    const shouldMove =
+      input.position &&
+      'after' in input.position &&
+      existing.id &&
+      !isPositionedAfter({
+        rules: input.rules,
+        ruleId: existing.id,
+        anchorId: input.position.after,
+      });
+    if (rulesEqual(existing, input.desiredRule) && !shouldMove) {
+      return { rule: existing, status: 'unchanged' };
+    }
+    if (!existing.id) {
+      throw new Error(`Cloudflare rule ${existing.ref} is missing an id`);
+    }
+
+    const rule = await input.cloudflare.updateZoneCustomRulesetRule({
+      zoneId: input.zoneId,
+      rulesetId: input.rulesetId,
+      ruleId: existing.id,
+      rule: input.desiredRule,
+      ...(input.position ? { position: input.position } : {}),
+    });
+    return { rule, status: 'updated' };
+  } catch (error: unknown) {
+    throw new Error(
+      `Cloudflare managed OS MCP rule ${input.desiredRule.ref} provisioning failed`,
+      { cause: error },
+    );
+  }
+};
+
+export const ensureManagedOsMcpIngressPolicy = async (input: {
+  cloudflare: WorkspaceCloudflareProvisioningClient;
+  config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+}): Promise<WorkspaceCloudflareManagedOsMcpIngressPolicyResult> => {
+  try {
+    assertManagedOsMcpIngressPolicyClient(input.cloudflare);
+    const zoneId = input.config.zoneId.trim();
+    const allowedIpsListName = normalizeCloudflareListName(
+      input.config.mcpAllowedIpsListName,
+    );
+    const accountList = await input.cloudflare.getAccountIpList({
+      name: allowedIpsListName,
+    });
+
+    if (!accountList) {
+      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
+    }
+
+    const desiredRules = buildManagedOsMcpIngressPolicyRules({
+      ...input.config,
+      mcpAllowedIpsListName: allowedIpsListName,
+    });
+    const existingRuleset = await input.cloudflare.getZoneCustomRuleset({
+      zoneId,
+      rulesetId: input.config.customRulesetId,
+      phase: CLOUDFLARE_CUSTOM_RULESET_PHASE,
+    });
+
+    if (!existingRuleset) {
+      const createdRuleset = await input.cloudflare.createZoneCustomRuleset({
+        zoneId,
+        name: 'Consuelo OS MCP ingress policy',
+        description: 'Managed Consuelo OS MCP provider-source filtering policy',
+        phase: CLOUDFLARE_CUSTOM_RULESET_PHASE,
+        rules: [desiredRules.allowRule, desiredRules.blockRule],
+      });
+      const allowRule = findManagedRule(createdRuleset.rules, desiredRules.allowRule);
+      const blockRule = findManagedRule(createdRuleset.rules, desiredRules.blockRule);
+      if (!allowRule || !blockRule) {
+        throw new Error('Cloudflare custom ruleset creation did not return managed OS MCP rules');
+      }
+
+      return {
+        zoneId,
+        rulesetId: createdRuleset.id,
+        allowedIpsListName,
+        allowRule: createRuleSummary(allowRule, 'created'),
+        blockRule: createRuleSummary(blockRule, 'created'),
+      };
+    }
+
+    const positionAnchor = findRulePositionAnchor({
+      rules: existingRuleset.rules,
+      config: input.config,
+    });
+    const allowPosition = positionAnchor?.id ? { after: positionAnchor.id } : undefined;
+    const allowResult = await ensureCloudflareRulesetRule({
+      cloudflare: input.cloudflare,
+      zoneId,
+      rulesetId: existingRuleset.id,
+      rules: existingRuleset.rules,
+      desiredRule: desiredRules.allowRule,
+      ...(allowPosition ? { position: allowPosition } : {}),
+    });
+    const blockPosition = allowResult.rule.id
+      ? { after: allowResult.rule.id }
+      : undefined;
+    const blockResult = await ensureCloudflareRulesetRule({
+      cloudflare: input.cloudflare,
+      zoneId,
+      rulesetId: existingRuleset.id,
+      rules: existingRuleset.rules,
+      desiredRule: desiredRules.blockRule,
+      ...(blockPosition ? { position: blockPosition } : {}),
+    });
+
+    return {
+      zoneId,
+      rulesetId: existingRuleset.id,
+      allowedIpsListName,
+      allowRule: createRuleSummary(allowResult.rule, allowResult.status),
+      blockRule: createRuleSummary(blockResult.rule, blockResult.status),
+    };
+  } catch (error: unknown) {
+    throw new Error('Cloudflare managed OS MCP ingress policy provisioning failed', {
+      cause: error,
+    });
+  }
+};
 
 const isDnsLabelSafe = (label: string): boolean =>
   label.length >= 1 &&
@@ -216,6 +703,12 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
   try {
     const baseDomain = normalizeBaseDomain(input.input.baseDomain);
     const plan = planWorkspaceCloudflareProvisioning(input.input);
+    if (input.input.managedOsMcpIngressPolicy) {
+      await ensureManagedOsMcpIngressPolicy({
+        cloudflare: input.cloudflare,
+        config: input.input.managedOsMcpIngressPolicy,
+      });
+    }
     const tunnel = await input.cloudflare.createOrReuseTunnel({
       name: plan.cloudflare.tunnelName,
       connectorId: input.input.connectorId,
