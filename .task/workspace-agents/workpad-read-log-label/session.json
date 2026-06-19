@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_01b594c33cd8",
+  "tmuxSession": "opensaas-workspace-agents-workpad-read-log-label-01b594c3",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/workpad-read-log-label",
+  "branch": "task/workspace-agents/workpad-read-log-label",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-read-log-label",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-read-log-label",
+  "prNumber": 1149,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1149",
+  "createdAt": "2026-06-19T03:53:40.108Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-read-log-label/.task/workspace-agents/workpad-read-log-label/session.json"
+}
