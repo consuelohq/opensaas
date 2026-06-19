@@ -1,6 +1,6 @@
 # Security Tightening Evidence
 
-Last reviewed: 2026-06-18
+Last reviewed: 2026-06-19
 
 This note tracks the remaining evidence for the Network and Security Report items that are not fully closed by the local OS gateway hardening alone.
 
@@ -63,7 +63,7 @@ Current evidence:
 
 ## Deployment And Provider Evidence
 
-Status: partially evidenced; WAF/provider allowlist configuration remains open.
+Status: repo-local provisioning support added; deployed-provider evidence still required.
 
 Repo-local evidence found:
 
@@ -71,8 +71,12 @@ Repo-local evidence found:
 - `packages/os/cloudflare/workspace-edge/wrangler.toml` binds D1 as `WORKSPACE_ROUTE_REGISTRY` and R2 as `SITES_SNAPSHOTS`.
 - `packages/os/cloudflare/workspace-edge/src/index.ts` wires the D1 registry, edge signing secret presence, and optional R2 snapshot store into the edge router.
 - `packages/os/cloudflare/os-device-authority/wrangler.toml` declares the `os.consuelohq.com/*` route and `DEVICE_GRANTS` Durable Object binding.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` builds managed OS MCP custom-rule expressions for the OS workspace hostname class under `*.consuelohq.com`, excluding hidden `*.os-origin.consuelohq.com`, `workspace.consuelohq.com`, and reserved platform hosts.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` verifies the configured `$mcp_allowed_ips` account list before creating/updating rules and fails closed when the list is missing.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` provisions `Allow/skip trusted OS MCP provider traffic` and `Block untrusted OS MCP traffic` idempotently without duplicate rules on repeated provisioning runs.
+- `packages/os/tests/cloudflare-provisioning-contract.test.ts` covers expression generation, env-derived config, fake Rulesets API idempotency, and provisioning integration without calling Cloudflare.
 
-Evidence gap:
+Remaining evidence gap:
 
-- No repo-local Cloudflare WAF rule, provider IP allowlist, or provider-level filtering configuration was found during this pass.
-- Do not claim WAF/provider filtering is complete until read-only provider evidence is gathered from the deployed Cloudflare/Railway configuration or the missing config is added to the repo.
+- Read-only provider evidence still needs to confirm the deployed Cloudflare zone has the managed OS MCP rules active, ordered correctly, and backed by the intended provider-only `$mcp_allowed_ips` entries.
+- The temporary local/dev deny CIDR override remains cleanup debt until `$mcp_allowed_ips` contains provider IPs only.
