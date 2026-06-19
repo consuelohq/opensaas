@@ -65,7 +65,7 @@ Current evidence:
 
 ## Deployment And Provider Evidence
 
-Status: repo-local provisioning support added; deployed-provider evidence still required.
+Status: repo-local install/provisioning support added; deployed-provider evidence still required.
 
 Repo-local evidence found:
 
@@ -76,10 +76,12 @@ Repo-local evidence found:
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` builds managed OS MCP custom-rule expressions for the OS workspace hostname class under `*.consuelohq.com`, excluding hidden `*.os-origin.consuelohq.com`, `workspace.consuelohq.com`, and reserved platform hosts.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` represents the dashboard-proven allow rule as a `skip` action with `ruleset: 'current'` and phases `http_ratelimit`, `http_request_firewall_managed`, and `http_request_sbfm`.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` verifies the configured `$mcp_allowed_ips` account list before creating/updating rules and fails closed when the list is missing.
-- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` provisions `Allow/skip trusted OS MCP provider traffic` and `Block untrusted OS MCP traffic` idempotently without duplicate rules on repeated provisioning runs.
-- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` exposes `applyWorkspaceCloudflareProvisioningFromEnv()` so install/provisioning code can derive managed OS MCP ingress policy from Cloudflare env when configured while staying inert for local/dev envs with no managed policy keys.
+- `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` provisions `Allow/skip trusted OS MCP provider traffic` and `Block untrusted OS MCP traffic` idempotently without duplicate rules on repeated provisioning runs. Existing dashboard-created rules without `ref` are parsed and matched by description before update/reorder so migration does not duplicate them.
+- `packages/os/scripts/lib/install-cloudflare-provisioning.ts` derives managed OS MCP ingress policy from Cloudflare env, requires `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` when policy env is explicit, and stays inert for local/dev envs with no managed policy keys.
+- `packages/os/scripts/install.ts` awaits `provisionManagedOsMcpIngressPolicyFromEnv()` after local OS provisioning and before edge publish / install success output, so real installs invoke the managed OS MCP policy path when Cloudflare env is configured.
 - `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` exposes a real managed-policy Cloudflare client for `getAccountIpList`, `getZoneCustomRuleset`, `createZoneCustomRuleset`, `createZoneCustomRulesetRule`, and `updateZoneCustomRulesetRule` without returning secret material.
-- `packages/os/tests/cloudflare-provisioning-contract.test.ts` covers expression generation, exact skip phases, env-derived provisioning, fake Rulesets API create/update/reorder idempotency, missing-list fail closed, no hardcoded example hostnames, and real client request shapes without calling Cloudflare.
+- `packages/os/tests/install-cloudflare-provisioning-contract.test.ts` covers real install-source wiring, inert local/dev env, incomplete-env fail closed, real Cloudflare policy client request shape, exact skip phases, and no hardcoded per-workspace WAF hostnames without calling Cloudflare.
+- `packages/os/tests/cloudflare-provisioning-contract.test.ts` covers expression generation, exact skip phases, env-derived provisioning, fake Rulesets API create/update/reorder idempotency, missing-list fail closed, dashboard no-`ref` reconciliation, no hardcoded example hostnames, and real client request shapes without calling Cloudflare.
 
 Remaining evidence gap:
 
