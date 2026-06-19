@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-process-health-telemetry-packets",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1152,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1152",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1152",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1152/add-process-health-telemetry-packets",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1152",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1152/add-process-health-telemetry-packets",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-process-health-telemetry-packets",
+  "taskSession": "tsk_7840c848e5a9",
+  "tmuxSession": "opensaas-os-add-process-health-telemetry-packets-7840c848",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-process-health-telemetry-packets/.task/os/add-process-health-telemetry-packets/session.json",
+  "createdAt": "2026-06-19T08:33:33.567Z"
+}

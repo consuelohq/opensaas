@@ -1450,5 +1450,27 @@ bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section
 
 Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
 
+### doctor:process - OS process health telemetry packet
 
+Samples and reports broad local process CPU/memory telemetry from the OS home database. This is OS-native and writes to `<CONSUELO_HOME>/consuelo.db`, not the legacy workspace database. The sampler is broad by default: it records Consuelo processes, high-CPU processes, high-RSS processes, and unknown hotspots, then classifies them into families such as `consuelo`, `app`, `macos`, `runtime`, or `unknown`.
+
+```bash
+bun run --cwd packages/os doctor:process -- once --json
+bun run --cwd packages/os doctor:process -- monitor --interval-seconds 10 --retention-days 7 --json
+bun run --cwd packages/os doctor:process -- report --since 1h --limit 30 --json
+bun run --cwd packages/os os -- health process --since 1h --limit 30 --json
+```
+
+The report intentionally returns a packet, not a raw dump. Future agents should use `summary.answer`, `families`, `hotProcesses`, `consueloProcesses`, and `guidance` to answer “what was running hot over this period?” while preserving a Consuelo-specific view of OS overhead.
+
+The packet shape includes:
+
+- `summary`: plain-English diagnosis plus Consuelo CPU share and hotspot counts.
+- `families`: grouped CPU/RSS picture for apps, macOS daemons, Consuelo, runtimes, and unknown processes.
+- `hotProcesses`: bounded ranked list with enough rows for the bigger picture.
+- `consueloProcesses`: filtered Consuelo OS/workspace rows for product overhead checks.
+- `notableProcesses`: non-Consuelo hotspots worth explaining.
+- `guidance`: interpretation hints for agents.
+
+The `monitor` mode is the sidecar loop candidate for LaunchAgent/system-daemon wiring. It samples repeatedly, writes to `consuelo.db`, and prunes raw samples by `--retention-days`. The DB tables are `process_identities`, `process_commands`, `process_samples`, and `process_metric_rollups`. Raw command text is normalized through command hashes and the packet does not print full commands by default.
 

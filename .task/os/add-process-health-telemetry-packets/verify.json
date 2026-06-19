@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-process-health-telemetry-packets",
+  "base": "origin/task/os/add-process-health-telemetry-packets",
+  "headSha": "528a362959455941db1ce174ed4c9492382d2765",
+  "changeHash": "e890b6f9f614853a6bd09aad84c565e48b22f213e712d6b49cbc33ed4d65ab01",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/process-telemetry.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/process-health.ts",
+    "packages/os/tests/process-telemetry.test.ts"
+  ],
+  "verifiedAt": "2026-06-19T09:00:31.018Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-process-health-telemetry-packets/current.json",
+        ".task/os/add-process-health-telemetry-packets/session.json",
+        ".task/os/add-process-health-telemetry-packets/workpad.md",
+        ".task/tasks/os/add-process-health-telemetry-packets.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/process-telemetry.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/scripts/process-health.ts",
+        "packages/os/tests/process-telemetry.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
