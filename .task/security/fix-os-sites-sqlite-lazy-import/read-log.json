@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/security/fix-os-sites-sqlite-lazy-import/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-19T14:23:59.992Z"
+}
