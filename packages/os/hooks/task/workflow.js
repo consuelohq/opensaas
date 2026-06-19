@@ -115,23 +115,43 @@ function isTaskWorkflowEvent(event) {
 
 function handlePreTaskStart(event, resolver) {
   const state = event.state || {};
-  if (state.hasStreamContext === true) {
-    return null;
-  }
+  const area = state.area || '<area>';
+  const title = state.title || '<task title>';
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'stream-context',
+    stage: 'task-start-guidance',
     event: event.event,
-    blockedAction: {
-      requestedTool: event.tool,
-      reason: 'stream.context must run before task.start so the agent sees stream branch, open task PRs, recent commits, worktrees, and conflicts.',
+    advisory: {
+      suggestedNextTool: 'stream.context',
+      reason: 'Next tool call should usually be stream.context if fresh stream context has not already been gathered for this area.',
+      skipWhen: 'If stream.context was already run recently in this conversation, call task.start directly with an explicit startFrom value.',
     },
-    requiredNextAction: resolver.action('stream.context', {
-      input: { area: state.area || '<area>' },
-    }),
+    examples: [
+      {
+        label: 'fresh stream context first, then start from stream',
+        orderedActions: [
+          resolver.action('stream.context', { input: { area } }),
+          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
+        ],
+      },
+      {
+        label: 'already have stream context; start from main',
+        orderedActions: [
+          resolver.action('task.start', { input: { area, title, startFrom: 'main' } }),
+        ],
+      },
+      {
+        label: 'already have stream context; start from stream',
+        orderedActions: [
+          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
+        ],
+      },
+    ],
     notes: [
-      'This hook is scoped to tool.preInvoke:task.start only; it is not ambient guidance for general chat or non-task workflows.',
+      'This hook is advisory only; it must not block task.start because prior stream.context calls are not tracked before task intent starts.',
+      'Use startFrom exactly as "main" or "stream". Do not pass a branch name to startFrom.',
+      'Use stream only to override the target stream branch when the default stream/<area> is wrong.',
     ],
   };
 }
@@ -146,24 +166,25 @@ function handlePostTaskStart(event, resolver, anchors) {
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'workpad-bootstrap',
+    stage: 'post-task-start-guidance',
     event: event.event,
     contextInjection: {
       taskSession,
       worktreePath,
-      requiredBeforeProductionEdit: 'Before any meaningful production edit, the scoped workpad must contain a Test-first contract and either a focused red test result or a no-test waiver.',
+      requiredBeforeProductionEdit: 'Before any meaningful production edit, record a task-shaped discovery batch, then add a Test-first contract and either a focused red test result or a no-test waiver.',
       skillAnchors: [anchors.taskSession, anchors.topLevelSession, anchors.workpad, anchors.testFirst],
+      discoveryGuidance: 'Batch the workpad update with direct explore plus Bun/Python code.call read-mode probes.',
     },
-    requiredNextAction: resolver.action('workpad.write', {
+    suggestedNextAction: resolver.action('tool.batch', {
       taskSession,
       input: {
-        path: workpadPath,
-        content: buildInitialWorkpadContent({ area, branch, taskSession, worktreePath }),
+        steps: buildDiscoveryBatchSteps({ area, workpadPath }),
       },
     }),
     notes: [
       'Place taskSession at the top level of every task-scoped call.',
-      'Bootstrap or update the scoped workpad before production edits.',
+      'task.start already creates task metadata and the initial workpad; this hook is advisory next-step guidance.',
+      'Run a batch that updates the workpad and gathers direct explore plus Bun/Python code.call discovery evidence before production edits.',
     ],
   };
 }
@@ -332,6 +353,18 @@ function workpadPathForBranch(branch, fallbackArea) {
   return `.task/${area}/${slugFromBranch(branch)}/workpad.md`;
 }
 
+function buildDiscoveryBatchSteps({ area, workpadPath }) {
+  const query = area === 'os' ? 'OS intent hooks' : `${area} intent hooks`;
+  return [
+    { tool: 'code.call', input: { language: 'bun', mode: 'edit', code: `Append a discovery section to ${workpadPath} with the exact batch commands and findings.` } },
+    { tool: 'explore', input: { query, limit: 8 } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: 'Bun structured repo scanner shaped to the task. Return compact file/line evidence.' } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: 'Python targeted file/snippet ownership read. Return likely files, symbols, and snippets.' } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: 'Python local diagnostic for state, schema, traces, config, or cache when relevant.' } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: 'Bun exact CLI reproduction when command behavior is the evidence.' } },
+  ];
+}
+
 function buildInitialWorkpadContent({ area, branch, taskSession, worktreePath }) {
   return [
     `# ${slugFromBranch(branch)}`,
@@ -345,9 +378,22 @@ function buildInitialWorkpadContent({ area, branch, taskSession, worktreePath })
     '',
     '- [ ] Fill from the user-approved task scope.',
     '',
+    '## discovery packet',
+    '',
+    'Run a just-in-time discovery batch before production edits. Prefer direct explore plus task-shaped code.call probes:',
+    '',
+    '- [ ] direct explore query for likely implementation paths',
+    '- [ ] Bun structured repo scanner for broad file/symbol discovery',
+    '- [ ] Python targeted file/snippet ownership read for likely implementation files',
+    '- [ ] Python or Bun diagnostic for local state, schema, traces, config, or cache when relevant',
+    '- [ ] Bun exact CLI reproduction when behavior depends on command output',
+    '- [ ] workpad update batched with discovery findings',
+    '',
+    'Example batch shape: workpad edit + explore + Bun/read scanner + Python/read targeted packet + Python/read diagnostic + Bun/read exact reproduction.',
+    '',
     '## plan',
     '',
-    '- [ ] Inspect stream context and local patterns.',
+    '- [ ] Run and record a task-shaped batch discovery packet.',
     '- [ ] Define the Test-first contract before production edits.',
     '',
     '## Test-first contract',

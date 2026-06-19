@@ -142,6 +142,39 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('rejects binary codeFile and stdinFile payloads', async () => {
+    const root = tempRoot();
+    try {
+      const codeFile = join(root, 'program.bin');
+      const stdinFile = join(root, 'input.bin');
+      writeFileSync(codeFile, 'print(1)');
+      writeFileSync(stdinFile, 'hello');
+
+      const codeResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        codeFile,
+      }, root);
+      const stdinResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'import sys\nprint(sys.stdin.read())',
+        stdinFile,
+      }, root);
+
+      expect(codeResult.ok).toBe(false);
+      expect(codeResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(codeResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(codeResult.data.message).toContain('binary');
+      expect(stdinResult.ok).toBe(false);
+      expect(stdinResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(stdinResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(stdinResult.data.message).toContain('binary');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('fails read mode when repo files change', async () => {
     const root = tempRoot();
     try {
@@ -476,6 +509,6 @@ describe('code.call workspace integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('run short language-specific code through staged Python, Bun, or Bash backends');
+    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs');
   });
 });

@@ -9,6 +9,8 @@ type ManifestToolDefinition = {
   name: string;
   workflowRole?: string;
   inputSchema?: string;
+  methodPath?: string[];
+  command?: { script?: string };
 };
 
 type ManifestWrapper = {
@@ -33,7 +35,7 @@ type WorkflowBundlesFile = {
 const manifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
 const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
-const intentScript = resolve(import.meta.dirname, '../scripts/intent.js');
+const taskIntentScript = resolve(import.meta.dirname, '../scripts/task-intent.js');
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -78,7 +80,7 @@ describe('OS workflow intent bundles', () => {
     expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
   });
 
-  test('intent.start returns a task workflow manifest bundle and first scoped hook result', () => {
+  test('task.intent starts with advisory task-start lifecycle guidance', () => {
     const runtime = createWorkflowIntentRuntime({
       manifest: readManifest(),
       bundles: readBundles(),
@@ -97,17 +99,29 @@ describe('OS workflow intent bundles', () => {
     expect(result.hookResult).toEqual(
       expect.objectContaining({
         workflow: 'task',
-        stage: 'stream-context',
-        requiredNextAction: expect.objectContaining({
-          capability: 'stream.context',
-          tool: 'stream.context',
-        }),
+        stage: 'task-start-guidance',
+        advisory: expect.objectContaining({ suggestedNextTool: 'stream.context' }),
       }),
     );
+    expect(result.hookResult?.blockedAction).toBeUndefined();
+    expect(result.hookResult?.requiredNextAction).toBeUndefined();
+    expect(JSON.stringify(result.hookResult)).toContain('startFrom');
+    expect(JSON.stringify(result.hookResult)).toContain('main');
+    expect(JSON.stringify(result.hookResult)).toContain('stream');
     expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'tsk_intent_task' }));
   });
 
-  test('intent.start resolves office workflow aliases from generated metadata', () => {
+  test('manifest exposes task.intent as the workflow lifecycle entrypoint', () => {
+    const intentEntry = readManifest().find((tool) => tool.workflowRole === 'intent.start');
+
+    expect(intentEntry).toEqual(expect.objectContaining({
+      name: 'task.intent',
+      methodPath: ['task', 'intent'],
+      command: expect.objectContaining({ script: 'task-intent' }),
+    }));
+  });
+
+  test('task.intent resolves office workflow aliases from generated metadata', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
@@ -122,7 +136,7 @@ describe('OS workflow intent bundles', () => {
     );
   });
 
-  test('intent.dispatch requires taskSession for scoped hook events', () => {
+  test('task.intent dispatch requires taskSession for scoped hook events', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     expect(() =>
@@ -132,7 +146,7 @@ describe('OS workflow intent bundles', () => {
     ).toThrow('taskSession is required');
   });
 
-  test('intent.dispatch keeps concurrent task sessions isolated by taskSession and worktree', () => {
+  test('task.intent dispatch keeps concurrent task sessions isolated by taskSession and worktree', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     runtime.start({ workflow: 'task', taskSession: 'tsk_a', area: 'os', title: 'agent a' });
@@ -174,12 +188,16 @@ describe('OS workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-a/workpad.md');
-    expect(b.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-b/workpad.md');
+    expect(a.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('code.call');
+    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('explore');
+    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Bun structured repo scanner');
+    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Python targeted file/snippet ownership read');
+    expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
   });
 
-  test('intent CLI rejects unknown actions', () => {
-    const result = spawnSync(process.execPath, [intentScript, 'unknown-action', '--json'], {
+  test('task-intent CLI rejects unknown actions', () => {
+    const result = spawnSync(process.execPath, [taskIntentScript, 'unknown-action', '--json'], {
       cwd: packageRoot,
       encoding: 'utf8',
       timeout: 10_000,
