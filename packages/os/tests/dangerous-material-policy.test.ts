@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -9,6 +9,7 @@ import {
   assessDangerousMaterial,
   type DangerousMaterialDecision,
 } from '../scripts/lib/dangerous-material-policy';
+import { removeSafeTempDir } from './safe-temp-cleanup';
 
 type SubprocessHttpResult = {
   status: number;
@@ -29,8 +30,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  rmSync(tempHome, { recursive: true, force: true });
-  rmSync(tempUserHome, { recursive: true, force: true });
+  removeSafeTempDir(tempHome, 'consuelo-os-dangerous-material-');
+  removeSafeTempDir(tempUserHome, 'consuelo-user-dangerous-material-');
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
