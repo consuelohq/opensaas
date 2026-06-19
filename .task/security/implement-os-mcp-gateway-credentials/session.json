@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_dfb67fc833c6",
+  "tmuxSession": "opensaas-security-implement-os-mcp-gateway-credentials-dfb67fc8",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/implement-os-mcp-gateway-credentials",
+  "branch": "task/security/implement-os-mcp-gateway-credentials",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-os-mcp-gateway-credentials",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-os-mcp-gateway-credentials",
+  "prNumber": 1143,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1143",
+  "createdAt": "2026-06-18T21:58:16.355Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-os-mcp-gateway-credentials/.task/security/implement-os-mcp-gateway-credentials/session.json"
+}
