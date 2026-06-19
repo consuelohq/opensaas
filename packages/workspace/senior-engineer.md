@@ -29,13 +29,13 @@ Use the workspace tool surface as the source of truth.
 Preference order:
 
 1. Use direct typed workspace tools for single known operations and durable transitions.
-2. Use `context.search`, `explore`, `decideNext`, and `confidenceScore` for discovery and prior context.
+2. Use `context.search` and`explore` for discovery and prior context.
 3. Use no-session `code.run` for multi-step read/investigation before a task exists.
-4. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
-5. Use exact task-scoped file tools for file work: `fs.read`, `fs.search`, `fs.list`, `fs.patch`, `fs.write`, and `fs.trash`.
-6. Use `batch` for fixed independent checklists where later steps do not depend on earlier results.
+4. Use `task.intent` to start a task workflow with just-in-time tool discovery and hooks.
+5. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
+6. Use `batch` as the default parallel fanout primitive for dependency-free workspace work. Reach for it whenever several known tool calls can run at the same time: multi-file reads, targeted searches across known areas, status + diff + context gathering, PR/file/review inspection, and independent validation checks. `batch` is not just a checklist helper; it is the preferred way to reduce latency and collect evidence across multiple surfaces when later steps do not depend on earlier results. Do not use `batch` when a step’s inputs must be chosen from a previous step’s output; use `code.run` for that kind of semantic workflow.
 7. Use `git.diff` for structured diff inspection after edits.
-8. Use lifecycle tools directly: `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, `task.merge`, and `task.finish`.
+8. Use lifecycle tools directly: `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, `task.prs`, `task.merge`, `task.finish` and `task.cleanup`.
 9. Use `github` for GitHub/PR state and raw GitHub escape hatches with `reason`; use current `gh` only as a temporary fallback.
 10. Use `code.call` for focused command/runtime evidence: tests, builds, typechecks, package scripts, syntax checks, exact CLI reproduction, small diagnostics, or commands with no typed workspace equivalent.
 11. Use local shell-style or host fallback execution only when the workspace tool model cannot express the operation. Record the tooling gap.
@@ -70,7 +70,7 @@ Use no-session `code.run` before a task exists for read/investigation workflows 
 
 Use task-scoped `code.run` after `task.start` when composing task-scoped tools. Pass `taskSession` on the outer workspace call; nested workspace helpers inherit task context.
 
-Use `code.call` as the normal last-mile command/runtime runner.
+Use `code.call` as the normal command/runtime runner.
 
 Use `code.call` when the command itself is the evidence:
 
@@ -93,29 +93,56 @@ Use the most specific `code.call` runtime:
 
 Do not use Bash just to invoke Python or Bun. Use `language: "python"` for Python work and `language: "bun"` for Bun/package orchestration.
 
-Use `task.call` and `task.exec` only as legacy compatibility surfaces when `code.call` is unavailable or broken. If older context says to use `task.call` or `task.exec` for tests, package scripts, typechecks, builds, syntax checks, or codegen, translate that intent to `code.call`.
 
 `code.call` should usually be short, focused, and validation-oriented. If an agent is using command execution repeatedly for reading files, editing files, JSON inspection, workpad updates, or glue logic, switch to `code.run` plus typed workspace tools.
 
 
 ---
 
-## Explore is a discovery command, not just decision-engine setup
+Explore is a discovery command, not just decision-engine setup.
 
-Use `explore` anywhere you would otherwise start guessing paths, grepping broadly,
-or asking “where is this implemented?”
+Use `explore` anywhere you would otherwise start guessing paths or asking “where is this implemented?”
 
-Treat it as a workspace navigation primitive alongside `fs.read` and `fs.search`:
+An `explore` query should be short and single-intent. Use one concept, subsystem, symbol, or question per query.
 
-- `explore` finds likely files, symbols, tests, docs, and related implementation paths.
-- `fs.read` verifies actual content.
-- `fs.search` follows up with exact targeted symbol/string lookup after direction is narrowed.
-- `decideNext` decides what evidence/action should come next.
-- `confirm` proves behavior against reality.
+Good:
 
-Do not wait until a formal decision-engine loop to use `explore`.
-Use it early, especially before broad `fs.search` or raw shell search.
+```text
+task intent workflow
+```
 
+Bad:
+
+```text
+task intent workflowRole script intent task-intent task.intent
+```
+
+The failure mode is query blending: several competing hypotheses inside one query make retrieval less precise. `explore` does not reason across multiple query meanings in one call.
+
+When multiple query phrasings are plausible, run independent `explore` calls in `batch`:
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "explore",
+        input: { query: "task intent", limit: 8 },
+        parallel: true,
+      },
+      {
+        tool: "explore",
+        input: { query: "where is task intent handled", limit: 8 },
+        parallel: true,
+      },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
 
 ## 3) Decision and evidence principles
 
@@ -133,7 +160,7 @@ The task workflow skill owns the exact loop. This skill owns the judgment standa
 Do not edit the first plausible file just because search found it. Read enough context to understand the local pattern and failure mode.
 
 
-Use `fs.search` only as targeted follow-up after the direction is clear.
+Use `code.call` preferably with a batched follow-up, if possible, after the direction is clear.
 
 Confidence comes from:
 - files actually read
@@ -175,36 +202,43 @@ For platform code, separate:
 
 Avoid mixing these into one function or component.
 
+## API design and performance review
+
+When designing, reviewing, or refactoring APIs, treat performance as an engineering discipline, not a reflex. Do not optimize first. Start by identifying the real bottleneck through load testing, request profiling, traces, database query inspection, and production-like traffic assumptions. Only apply optimization once an endpoint has a confirmed performance issue or a clear scalability requirement.
+
+For API design and review, check these seven performance patterns:
+
+1. **Caching**
+   Use caching for expensive computations or frequently requested responses with stable parameters. Prefer explicit cache keys, TTLs, invalidation rules, and correctness boundaries. Redis or Memcached are appropriate when repeated database hits dominate latency. Do not cache data whose freshness requirements are unclear.
+
+2. **Connection pooling**
+   Reuse database and service connections instead of opening a new connection per request. Confirm pool size, timeout behavior, idle limits, and failure behavior. In serverless systems, check for connection explosion risk and consider managed pooling layers such as RDS Proxy or equivalent platform tools.
+
+3. **Avoid N+1 queries**
+   Inspect API endpoints that load parent records and related entities. Replace per-record child queries with joins, eager loading, batch loading, or two-query patterns that fetch all related records at once. Treat N+1 fixes as a primary database performance concern.
+
+4. **Pagination**
+   Do not return unbounded lists. Large responses increase database load, transfer time, memory use, and client-side work. Use limit/offset, cursor pagination, or keyset pagination depending on consistency and scale requirements. Make pagination behavior explicit in the API contract.
+
+5. **Lightweight JSON serialization**
+   Serialization can become visible in high-throughput or large-payload APIs. Check whether response shaping, DTO construction, or JSON encoding is adding latency. Prefer efficient serializers and avoid returning unnecessary fields.
+
+6. **Compression**
+   Enable compression for large API payloads when network transfer cost matters. Prefer modern algorithms such as Brotli where supported, and use CDN or edge compression when appropriate. Avoid compressing tiny responses where CPU overhead outweighs transfer savings.
+
+7. **Asynchronous logging**
+   Logging should not block hot request paths in high-throughput systems. Use buffered or asynchronous logging when synchronous writes add measurable latency. Preserve reliability expectations: asynchronous logging can lose recent logs if the process crashes before flush, so use it deliberately for the right log class.
+
+Default review stance: first prove the bottleneck, then choose the simplest optimization that addresses it without adding unnecessary complexity. Every API performance change should include evidence, expected effect, and a validation path.
+
+
+
+
+
+
 ---
 
-## 5) Workpad contract
-
-Maintain the scoped task workpad throughout execution:
-
-`.task/<area>/<task-slug>/workpad.md`
-
-- acceptance criteria
-- implementation plan
-- files changed
-- key decisions
-- notes for Ko
-- improvements noticed
-- errors or blockers
-- validation commands and results
-
-The workpad is a running engineering log, not polished prose.
-
-Use it to record:
-- why one implementation path was chosen over another
-- what evidence supported the edit
-- what validation proved
-- what validation was skipped or narrowed and why
-- any surprising failure
-- out-of-scope issues noticed during the task
-
-Do not leave the workpad stale. A reviewer should be able to understand the task state without reconstructing your reasoning from chat history.
-
-## Test-first engineering discipline
+## 5) Test-first engineering discipline
 
 Test-driven development is the default engineering posture for this skill.
 
@@ -268,9 +302,44 @@ If the agent cannot identify an appropriate test, it must stop and explain the t
 
 
 ---
+## 6) Workpad contract
+
+You must always maintain the scoped task workpad throughout execution:
+
+`.task/<area>/<task-slug>/workpad.md`
+
+- acceptance criteria
+- implementation plan
+- key decisions
+- notes for Ko
+- improvements noticed
+- errors or blockers
+- validation commands and results
+
+The workpad is a running engineering log, not polished prose. This is for humans to help with reviewing code, and it provides future agents with context of the current state of work.
+
+Use it to record:
+- Why one implementation path was chosen over another
+- What evidence supported the edit
+- What validation proved
+- What validation was skipped or narrowed and why
+- any surprising failure
+- out-of-scope issues noticed during the task
+
+Do not leave the workpad empty. A reviewer should be able to understand the task state without reconstructing your reasoning from chat history.
+
+## Test-first workpad discipline
+
+For non-trivial code changes, define the test strategy before implementation. The task workpad is the durable contract between Ko, the agent, and the codebase.
+
+Before editing production code, fill the agent-owned `Test-first contract` section with behavior under test, existing pattern to follow, intended tests, focused red command, expected red failure, and no-test waiver when a test is genuinely inappropriate.
+
+Run the focused test before implementation and let workspace-owned workpad sections capture the red evidence, green evidence, files read, test selection, and post-validation where tooling supports it. Do not weaken or rewrite the pretest after implementation unless the contract itself was wrong; record the reason in the workpad.
+
+Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
 
 
-## 6) Implementation principles
+## 7) Implementation principles
 
 Implement only what the acceptance criteria require.
 
@@ -299,7 +368,7 @@ Do not hide uncertainty. If the validation does not prove the behavior, say so a
 
 ---
 
-## 7) Coding standards
+## 8) Coding standards
 
 ### TypeScript
 
@@ -347,7 +416,7 @@ Do not hide uncertainty. If the validation does not prove the behavior, say so a
 - Do not introduce a new abstraction unless it removes real duplication or clarifies ownership.
 
 ---
-## 8) Validation principles
+## 9) Validation principles
 
 Run validation that matches the risk of the change.
 
@@ -512,7 +581,7 @@ Record exact validation commands, tool calls, environment mode, logs, transcript
 
 ---
 
-## 9) Service-backed and E2E behavior proof
+## 10) Service-backed and E2E behavior proof
 
 For product behavior changes, focused tests are not enough by default. Run the smallest meaningful end-to-end path that proves the changed behavior in a realistic development environment.
 
@@ -555,7 +624,7 @@ Do not publish behavior changes with only typecheck/lint unless Ko explicitly wa
 
 ---
 
-## 10) Review discipline
+## 11) Review discipline
 
 Before publishing or reporting done, self-review the changed files.
 
@@ -578,7 +647,7 @@ Do not leave “while I was here” edits in the PR unless they directly support
 
 ---
 
-## 11) Git and commit principles
+## 12) Git and commit principles
 
 The task workflow skill owns the exact publish commands.
 
@@ -594,7 +663,7 @@ Engineering rules:
 
 ---
 
-## 12) Conflict and parallel-agent principles
+## 13) Conflict and parallel-agent principles
 
 Assume parallel agents are active.
 
@@ -616,7 +685,7 @@ Do not casually pick ours/theirs for real code conflicts.
 
 ---
 
-## 13) Definition of engineering done
+## 14) Definition of engineering done
 
 A task is engineering-ready for review only when:
 
@@ -743,36 +812,4 @@ codex exec --cd "$PWD" --sandbox workspace-write --json - < /tmp/<task-name>-ins
 
 * Do not include `--ask-for-approval never` unless the local Codex CLI help confirms that flag is supported.
 * After a worker or direct Codex run, inspect stdout/stderr logs, task diff, and trace output before pushing.
-
-## API design and performance review
-
-When designing, reviewing, or refactoring APIs, treat performance as an engineering discipline, not a reflex. Do not optimize first. Start by identifying the real bottleneck through load testing, request profiling, traces, database query inspection, and production-like traffic assumptions. Only apply optimization once an endpoint has a confirmed performance issue or a clear scalability requirement.
-
-For API design and review, check these seven performance patterns:
-
-1. **Caching**
-   Use caching for expensive computations or frequently requested responses with stable parameters. Prefer explicit cache keys, TTLs, invalidation rules, and correctness boundaries. Redis or Memcached are appropriate when repeated database hits dominate latency. Do not cache data whose freshness requirements are unclear.
-
-2. **Connection pooling**
-   Reuse database and service connections instead of opening a new connection per request. Confirm pool size, timeout behavior, idle limits, and failure behavior. In serverless systems, check for connection explosion risk and consider managed pooling layers such as RDS Proxy or equivalent platform tools.
-
-3. **Avoid N+1 queries**
-   Inspect API endpoints that load parent records and related entities. Replace per-record child queries with joins, eager loading, batch loading, or two-query patterns that fetch all related records at once. Treat N+1 fixes as a primary database performance concern.
-
-4. **Pagination**
-   Do not return unbounded lists. Large responses increase database load, transfer time, memory use, and client-side work. Use limit/offset, cursor pagination, or keyset pagination depending on consistency and scale requirements. Make pagination behavior explicit in the API contract.
-
-5. **Lightweight JSON serialization**
-   Serialization can become visible in high-throughput or large-payload APIs. Check whether response shaping, DTO construction, or JSON encoding is adding latency. Prefer efficient serializers and avoid returning unnecessary fields.
-
-6. **Compression**
-   Enable compression for large API payloads when network transfer cost matters. Prefer modern algorithms such as Brotli where supported, and use CDN or edge compression when appropriate. Avoid compressing tiny responses where CPU overhead outweighs transfer savings.
-
-7. **Asynchronous logging**
-   Logging should not block hot request paths in high-throughput systems. Use buffered or asynchronous logging when synchronous writes add measurable latency. Preserve reliability expectations: asynchronous logging can lose recent logs if the process crashes before flush, so use it deliberately for the right log class.
-
-Default review stance: first prove the bottleneck, then choose the simplest optimization that addresses it without adding unnecessary complexity. Every API performance change should include evidence, expected effect, and a validation path.
-
-
-
 

@@ -39,6 +39,7 @@ import {
   publishWorkspaceEdgeSnapshot,
   type WorkspaceEdgePublishResult,
 } from './lib/install-edge-site-publisher';
+import { provisionManagedOsMcpIngressPolicyFromEnv } from './lib/install-cloudflare-provisioning';
 type ArtifactMode = 'local';
 type SkillName = string;
 type InstallOptions = {
@@ -542,6 +543,18 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
+    const cloudflareMcpIngress = await provisionManagedOsMcpIngressPolicyFromEnv({
+      env: process.env,
+      baseDomain: WORKSPACE_BASE_DOMAIN,
+      dryRun: options.dryRun,
+    });
+    if (
+      !options.quiet &&
+      !options.json &&
+      cloudflareMcpIngress.status === 'provisioned'
+    ) {
+      info('managed OS MCP Cloudflare ingress policy provisioned.');
+    }
     let edgePublish: InstallEdgePublishPayload;
     if (options.dryRun) {
       edgePublish = {
@@ -571,6 +584,7 @@ async function main(): Promise<void> {
     }
     const payload = {
       ...result,
+      cloudflareMcpIngress,
       edgePublish,
       onboarding: {
         selectedSkills: options.selectedSkills,

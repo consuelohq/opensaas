@@ -22,7 +22,7 @@ type CloudflareRulesetRulePosition =
 
 type CloudflareRulesetRule = {
   id?: string;
-  ref: string;
+  ref?: string;
   description: string;
   expression: string;
   action: 'skip' | 'block';
@@ -824,6 +824,129 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
             'http_request_sbfm',
           ],
         },
+      },
+    });
+  });
+
+  it('should update dashboard-created managed OS MCP rules without ref instead of duplicating them', async () => {
+    const {
+      createCloudflareManagedOsMcpIngressPolicyClient,
+      ensureManagedOsMcpIngressPolicy,
+    } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{ method: string; path: string; body?: Record<string, unknown> }> = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      const parsedUrl = new URL(request.url);
+      const body = request.method === 'GET' ? undefined : await request.json() as Record<string, unknown>;
+      calls.push({
+        method: request.method,
+        path: parsedUrl.pathname,
+        ...(body ? { body } : {}),
+      });
+
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/account_123/rules/lists')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: [{ id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' }],
+        }));
+      }
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: {
+            id: 'ruleset_123',
+            phase: 'http_request_firewall_custom',
+            rules: [
+              {
+                id: 'rule_bootstrap',
+                ref: 'allow-install-curl-bootstrap',
+                description: 'Allow install curl bootstrap',
+                action: 'skip',
+                action_parameters: { ruleset: 'current' },
+                expression: 'starts_with(http.request.uri.path, "/install")',
+                enabled: true,
+              },
+              {
+                id: 'rule_dashboard_allow',
+                description: 'Allow/skip trusted OS MCP provider traffic',
+                action: 'skip',
+                action_parameters: { ruleset: 'current' },
+                expression: 'legacy dashboard expression',
+                enabled: true,
+              },
+              {
+                id: 'rule_dashboard_block',
+                description: 'Block untrusted OS MCP traffic',
+                action: 'block',
+                expression: 'legacy dashboard expression',
+                enabled: true,
+              },
+            ],
+          },
+        }));
+      }
+      if (request.method === 'PATCH' && parsedUrl.pathname.endsWith('/rules/rule_dashboard_allow')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: { ...body, id: 'rule_dashboard_allow' },
+        }));
+      }
+      if (request.method === 'PATCH' && parsedUrl.pathname.endsWith('/rules/rule_dashboard_block')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: { ...body, id: 'rule_dashboard_block' },
+        }));
+      }
+      if (request.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: false,
+          errors: [{ message: 'dashboard rule should be updated, not duplicated' }],
+        }), { status: 500 });
+      }
+
+      return new Response(JSON.stringify({
+        success: false,
+        errors: [{ message: 'unexpected request' }],
+      }), { status: 500 });
+    };
+    const cloudflare = createCloudflareManagedOsMcpIngressPolicyClient({
+      accountId: 'account_123',
+      apiToken: 'token_fixture',
+      fetchImpl,
+    });
+
+    const result = await ensureManagedOsMcpIngressPolicy({
+      cloudflare,
+      config: {
+        zoneId: 'zone_123',
+        customRulesetId: 'ruleset_123',
+        baseDomain: 'consuelohq.com',
+        mcpAllowedIpsListName: 'mcp_allowed_ips',
+        allowInstallBootstrapRuleRef: 'allow-install-curl-bootstrap',
+      },
+    });
+
+    expect(result).toMatchObject({
+      allowRule: { id: 'rule_dashboard_allow', status: 'updated' },
+      blockRule: { id: 'rule_dashboard_block', status: 'updated' },
+    });
+    expect(calls.map((call) => call.method)).toEqual([
+      'GET',
+      'GET',
+      'PATCH',
+      'PATCH',
+    ]);
+    expect(calls.some((call) => call.method === 'POST')).toBe(false);
+    expect(calls[2]?.body).toMatchObject({
+      ref: 'consuelo-os-mcp-provider-allow',
+      action_parameters: {
+        ruleset: 'current',
+        phases: [
+          'http_ratelimit',
+          'http_request_firewall_managed',
+          'http_request_sbfm',
+        ],
       },
     });
   });

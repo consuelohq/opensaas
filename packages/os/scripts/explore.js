@@ -21,6 +21,10 @@ function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
 }
 
+function formatErrorDetails(error) {
+  return error instanceof Error ? error.stack || error.message : String(error);
+}
+
 function printHelp() {
   writeStdout('usage: bun run explore -- "<question>" [options]');
   writeStdout('');
@@ -252,8 +256,8 @@ async function main() {
       depth: args.depth,
       worktreeId: indexResult.worktreeId,
     });
-  } catch {
-    throw new Error('explore failed');
+  } catch (error) {
+    throw new Error(`explore failed: ${formatErrorDetails(error)}`, { cause: error });
   }
   const payload = toJsonResult(args, results, indexResult);
   const previousState = readExploreState(indexResult.repoRoot) || {};
