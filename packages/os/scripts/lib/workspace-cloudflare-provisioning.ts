@@ -17,7 +17,7 @@ export type CloudflareRulesetRulePosition =
 
 export type CloudflareRulesetRule = {
   id?: string;
-  ref: string;
+  ref?: string;
   description: string;
   expression: string;
   action: 'skip' | 'block';
@@ -289,7 +289,6 @@ const parseCloudflareRule = (value: unknown): CloudflareRulesetRule | null => {
   const enabled = readBoolean(value, 'enabled') ?? true;
 
   if (
-    !ref ||
     !description ||
     !expression ||
     (action !== 'skip' && action !== 'block')
@@ -299,7 +298,7 @@ const parseCloudflareRule = (value: unknown): CloudflareRulesetRule | null => {
 
   return {
     ...(readString(value, 'id') ? { id: readString(value, 'id') } : {}),
-    ref,
+    ...(ref ? { ref } : {}),
     description,
     expression,
     action,
@@ -408,12 +407,17 @@ const createManagedOsMcpBaseExpression = (input: {
 const createRuleSummary = (
   rule: CloudflareRulesetRule,
   status: 'created' | 'updated' | 'unchanged',
+  fallbackRef?: string,
 ): { id: string; ref: string; status: 'created' | 'updated' | 'unchanged' } => {
   if (!rule.id) {
-    throw new Error(`Cloudflare rule ${rule.ref} did not return an id`);
+    throw new Error(`Cloudflare rule ${rule.ref ?? rule.description} did not return an id`);
+  }
+  const ref = rule.ref ?? fallbackRef;
+  if (!ref) {
+    throw new Error(`Cloudflare rule ${rule.id} did not return a ref`);
   }
 
-  return { id: rule.id, ref: rule.ref, status };
+  return { id: rule.id, ref, status };
 };
 
 const rulesEqual = (
@@ -869,7 +873,7 @@ const ensureCloudflareRulesetRule = async (input: {
       return { rule: existing, status: 'unchanged' };
     }
     if (!existing.id) {
-      throw new Error(`Cloudflare rule ${existing.ref} is missing an id`);
+      throw new Error(`Cloudflare rule ${existing.ref ?? existing.description} is missing an id`);
     }
 
     const rule = await input.cloudflare.updateZoneCustomRulesetRule({
@@ -936,8 +940,16 @@ export const ensureManagedOsMcpIngressPolicy = async (input: {
         zoneId,
         rulesetId: createdRuleset.id,
         allowedIpsListName,
-        allowRule: createRuleSummary(allowRule, 'created'),
-        blockRule: createRuleSummary(blockRule, 'created'),
+        allowRule: createRuleSummary(
+          allowRule,
+          'created',
+          desiredRules.allowRule.ref,
+        ),
+        blockRule: createRuleSummary(
+          blockRule,
+          'created',
+          desiredRules.blockRule.ref,
+        ),
       };
     }
 
@@ -970,8 +982,16 @@ export const ensureManagedOsMcpIngressPolicy = async (input: {
       zoneId,
       rulesetId: existingRuleset.id,
       allowedIpsListName,
-      allowRule: createRuleSummary(allowResult.rule, allowResult.status),
-      blockRule: createRuleSummary(blockResult.rule, blockResult.status),
+      allowRule: createRuleSummary(
+        allowResult.rule,
+        allowResult.status,
+        desiredRules.allowRule.ref,
+      ),
+      blockRule: createRuleSummary(
+        blockResult.rule,
+        blockResult.status,
+        desiredRules.blockRule.ref,
+      ),
     };
   } catch (error: unknown) {
     throw new Error(
