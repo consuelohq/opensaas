@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands",
+  "events": [
+    {
+      "id": "106a541e-8bc5-427d-b41f-8e574af2dbd7",
+      "occurred_at": "2026-06-18T07:43:24.642Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands"
+      }
+    },
+    {
+      "id": "8a2eca44-769d-4793-b659-f9ebe98f42c5",
+      "occurred_at": "2026-06-18T07:46:06.564Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-18T07:46:06.618Z"
+}

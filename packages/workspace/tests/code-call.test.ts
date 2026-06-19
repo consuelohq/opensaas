@@ -32,6 +32,25 @@ function toolRunnerPath(): string {
   return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'tool-runner.ts');
 }
 
+function createTaskWorkpad(worktree: string, slug = 'code-call-read-evidence'): { branch: string; workpadPath: string } {
+  const branch = `task/workspace-agents/${slug}`;
+  const workpadPath = join(worktree, '.task', 'workspace-agents', slug, 'workpad.md');
+  mkdirSync(dirname(workpadPath), { recursive: true });
+  writeFileSync(workpadPath, [
+    '# code call read evidence',
+    '',
+    '## Server Automatically populates this section: files read',
+    '',
+    '- none yet',
+    '',
+    '## Server Automatically populates this section: activity log',
+    '',
+    '- none yet',
+    '',
+  ].join('\n'));
+  return { branch, workpadPath };
+}
+
 function runCodeCall(input: Parameters<typeof executeCodeCall>[0], cwd: string) {
   return executeCodeCall(input, {
     cwd,
@@ -170,6 +189,47 @@ describe('code.call runtime', () => {
       expect(stdinResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
       expect(stdinResult.data.detectedMistakeClass).toBe('invalid_source');
       expect(stdinResult.data.message).toContain('binary');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('records task workpad read evidence from code.call codeFile, stdinFile, and structured stdout', () => {
+    const root = tempTaskWorktree();
+    try {
+      const { branch, workpadPath } = createTaskWorkpad(root);
+      mkdirSync(join(root, 'scripts'), { recursive: true });
+      mkdirSync(join(root, 'fixtures'), { recursive: true });
+      writeFileSync(join(root, 'scripts', 'reader.ts'), [
+        'process.stdout.write(JSON.stringify({',
+        '  file: "packages/workspace/scripts/lib/task-workpad.js",',
+        '  snippets: [{ path: "packages/workspace/scripts/code-call.ts" }],',
+        '}));',
+      ].join('\n'));
+      writeFileSync(join(root, 'fixtures', 'stdin.txt'), 'input');
+
+      const input = {
+        language: 'bun',
+        mode: 'read',
+        codeFile: 'scripts/reader.ts',
+        stdinFile: 'fixtures/stdin.txt',
+        branch,
+        taskWorktree: root,
+      };
+      const result = spawnSync('bun', [scriptPath(), '--stdin'], {
+        cwd: root,
+        input: JSON.stringify(input),
+        encoding: 'utf8',
+      });
+
+      expect(result.status).toBe(0);
+      const workpad = readFileSync(workpadPath, 'utf8');
+      expect(workpad).toContain('- `scripts/reader.ts`');
+      expect(workpad).toContain('- `fixtures/stdin.txt`');
+      expect(workpad).toContain('- `packages/workspace/scripts/lib/task-workpad.js`');
+      expect(workpad).toContain('- `packages/workspace/scripts/code-call.ts`');
+      expect(workpad).toContain('fs.read: `scripts/reader.ts` code.call');
+      expect(workpad).toContain('fs.read: `packages/workspace/scripts/code-call.ts` code.call');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -509,6 +569,6 @@ describe('code.call workspace integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs');
+    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence');
   });
 });

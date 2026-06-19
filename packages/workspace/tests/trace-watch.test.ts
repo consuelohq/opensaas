@@ -107,6 +107,151 @@ function batchRow(childResult: Record<string, unknown>, stepInput: Record<string
   };
 }
 
+function fsWriteFailureRow(): TraceWatchRow {
+  return {
+    rownum: 3,
+    record_id: 'fs-write-1',
+    ts: '2026-06-18T06:45:42.000Z',
+    trace_id: 'trc_fs_write',
+    tool: 'fs.write',
+    task_session: 'tsk_1',
+    branch: 'task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    worktree: '.task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    status: 'error',
+    code: 'COMMAND_FAILED',
+    exit_code: 1,
+    duration_ms: 192,
+    input_tokens: 0,
+    output_tokens: 0,
+    total_tokens: 0,
+    input_json: '{}',
+    resolved_input_json: JSON.stringify({
+      path: '.task/workspace-agents/example/workpad.md',
+      content: '# workpad\n\n' + 'large attempted content '.repeat(40),
+    }),
+    result_json: JSON.stringify({
+      ok: false,
+      code: 'COMMAND_FAILED',
+      message: 'command failed',
+    }),
+    stderr: '# workpad\n\n' + 'large attempted content '.repeat(40) + '\nerror: .task/workspace-agents/example/workpad.md already exists. use --force to overwrite or --append to add.',
+    stderr_chars: 1200,
+  };
+}
+
+function fsReadSuccessRow(): TraceWatchRow {
+  return {
+    rownum: 4,
+    record_id: 'fs-read-1',
+    ts: '2026-06-18T07:43:24.000Z',
+    trace_id: 'trc_fs_read',
+    tool: 'fs.read',
+    task_session: 'tsk_1',
+    branch: 'task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    worktree: '.task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    status: 'ok',
+    code: 'OK',
+    exit_code: 0,
+    duration_ms: 615,
+    input_tokens: 10,
+    output_tokens: 20,
+    total_tokens: 30,
+    input_json: '{}',
+    resolved_input_json: JSON.stringify({ path: 'scripts/operator/trace-watch.ts' }),
+    result_json: JSON.stringify({
+      ok: true,
+      code: 'OK',
+      message: 'command completed',
+      data: { type: 'text-page', path: 'scripts/operator/trace-watch.ts', totalLines: 969 },
+    }),
+    stderr: '',
+  };
+}
+
+function verifySuccessRow(): TraceWatchRow {
+  return {
+    rownum: 5,
+    record_id: 'verify-1',
+    ts: '2026-06-18T06:30:43.000Z',
+    trace_id: 'trc_verify',
+    tool: 'verify',
+    task_session: 'tsk_1',
+    branch: 'task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    worktree: '.task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    status: 'ok',
+    code: 'OK',
+    exit_code: 0,
+    duration_ms: 5854,
+    input_tokens: 1,
+    output_tokens: 1608,
+    total_tokens: 1609,
+    input_json: '{}',
+    resolved_input_json: JSON.stringify({ base: 'origin/stream/workspace-agents' }),
+    result_json: JSON.stringify({
+      ok: true,
+      code: 'OK',
+      message: 'command completed',
+      data: {
+        passed: true,
+        publishValid: true,
+        files: [
+          'packages/workspace/tests/trace-watch.test.ts',
+          'scripts/operator/trace-watch.ts',
+          '.task/workspace-agents/example/workpad.md',
+          '.task/workspace-agents/example/verify.json',
+        ],
+        testSelection: {
+          data: {
+            selectedSuites: [{ name: 'trace watch build' }],
+            runResults: [{ name: 'trace watch build', status: 'passed' }],
+            failedSuites: [],
+          },
+        },
+        because: { lines: ['review ran static_rules, eslint, typecheck, spec_compliance and passed'] },
+      },
+    }),
+    stderr: '',
+  };
+}
+
+function reviewRunSuccessRow(): TraceWatchRow {
+  return {
+    rownum: 6,
+    record_id: 'review-1',
+    ts: '2026-06-18T06:30:28.000Z',
+    trace_id: 'trc_review',
+    tool: 'review.run',
+    task_session: 'tsk_1',
+    branch: 'task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    worktree: '.task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands',
+    status: 'ok',
+    code: 'OK',
+    exit_code: 0,
+    duration_ms: 4321,
+    input_tokens: 1,
+    output_tokens: 1608,
+    total_tokens: 1609,
+    input_json: '{}',
+    resolved_input_json: JSON.stringify({ noTests: true }),
+    result_json: JSON.stringify({
+      ok: true,
+      code: 'OK',
+      message: 'command completed',
+      data: {
+        schema: 'review.summary.v1',
+        files: 3,
+        summary: {
+          blockingIssues: 0,
+          yourIssues: 0,
+          preExistingIssues: 5,
+          failedTestSuites: 0,
+        },
+      },
+    }),
+    stderr: '',
+  };
+}
+
 function captureRow(row: TraceWatchRow): string {
   const lines: string[] = [];
   const originalLog = console.log;
@@ -120,6 +265,84 @@ function captureRow(row: TraceWatchRow): string {
   }
   return lines.join('\n');
 }
+
+describe('trace:watch file and verification row details', () => {
+  test('keeps failed fs.write target path visible before verbose stderr content', () => {
+    const rendered = captureRow(fsWriteFailureRow());
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('.task/workspace-agents/example/workpad.md');
+    expect(rendered).toContain('already exists');
+    expect(firstLine).not.toContain('large attempted content');
+  });
+
+  test('shows fs.read target paths on successful rows', () => {
+    const rendered = captureRow(fsReadSuccessRow());
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('scripts/operator/trace-watch.ts');
+    expect(firstLine).toContain('text-page');
+  });
+
+  test('summarizes verify file and suite counts in the main row', () => {
+    const rendered = captureRow(verifySuccessRow());
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('verify passed');
+    expect(firstLine).toContain('publish-valid');
+    expect(firstLine).toContain('files 4');
+    expect(firstLine).toContain('suites 1');
+    expect(firstLine).toContain('runs 1');
+  });
+
+  test('uses SQL-derived verify counts when result JSON is compacted', () => {
+    const rendered = captureRow({
+      ...verifySuccessRow(),
+      result_json: '{"ok":true',
+      verify_files_count: 2,
+      verify_selected_suites_count: 1,
+      verify_run_results_count: 1,
+      verify_failed_suites_count: 0,
+      verify_passed: 1,
+      verify_publish_valid: 1,
+    });
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('verify passed');
+    expect(firstLine).toContain('publish-valid');
+    expect(firstLine).toContain('files 2');
+    expect(firstLine).toContain('suites 1');
+    expect(firstLine).toContain('runs 1');
+  });
+
+  test('summarizes review file and issue counts in the main row', () => {
+    const rendered = captureRow(reviewRunSuccessRow());
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('review passed');
+    expect(firstLine).toContain('files 3');
+    expect(firstLine).toContain('issues 0');
+    expect(firstLine).toContain('pre-existing 5');
+  });
+
+  test('uses SQL-derived review counts when result JSON is compacted', () => {
+    const rendered = captureRow({
+      ...reviewRunSuccessRow(),
+      result_json: '{"ok":true',
+      review_files_count: 3,
+      review_blocking_issues: 0,
+      review_your_issues: 0,
+      review_pre_existing_issues: 5,
+      review_failed_test_suites: 0,
+    });
+    const firstLine = rendered.split('\n')[0] || '';
+
+    expect(firstLine).toContain('review passed');
+    expect(firstLine).toContain('files 3');
+    expect(firstLine).toContain('issues 0');
+    expect(firstLine).toContain('pre-existing 5');
+  });
+});
 
 describe('trace:watch code.call telemetry', () => {
   test('summarizes structured Bun verification packets in the visible watcher row', () => {
