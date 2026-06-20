@@ -174,8 +174,8 @@ describe('Sites CLI', () => {
     for (const href of ['office/', 'diffs/', 'traces/', 'docs/']) {
       expect(html).toContain('href="' + href + '"');
     }
-    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(5);
-    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).not.toContain('target="_blank"');
+    expect(html).not.toContain('rel="noopener noreferrer"');
     expect(html).toContain('--sites-bg:#050505');
     expect(html).toContain('font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace');
     expect(html).toContain('text-decoration:underline');
