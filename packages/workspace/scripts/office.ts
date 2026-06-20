@@ -1242,25 +1242,25 @@ function writeArchiveServer(ip: string): void {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer">/careers/systems-engineer</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Sites">
       <p class="label">SITES:</p>
       <ul>
-        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" data-hotkey="1">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" data-hotkey="4">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" data-hotkey="5">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" data-hotkey="1" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" data-hotkey="4" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" data-hotkey="5" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
@@ -1872,25 +1872,25 @@ function renderArchiveRootRedirect(): string {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer">/careers/systems-engineer</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Systems Engineer](</span><a href="/careers/systems-engineer" target="_blank" rel="noopener noreferrer">/careers/systems-engineer</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Sites">
       <p class="label">SITES:</p>
       <ul>
-        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
-        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[GTM](</span><a href="https://app.consuelohq.com/welcome" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Diffs](</span><a href="https://diffs.consuelohq.com" target="_blank" rel="noopener noreferrer">${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a><span class="md-label">)</span></li>
+        <li><span class="md-label">[Documentation](</span><a href="${DESIGN_DOCS_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DOCS_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
     <p class="rule">~~~</p>
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
+        <li class="blog-item"><span class="md-label">[On Decision Loops](</span><a href="${DESIGN_DECISION_INFRASTRUCTURE_URL}" target="_blank" rel="noopener noreferrer">${DESIGN_DECISION_INFRASTRUCTURE_URL}</a><span class="md-label">)</span></li>
       </ul>
     </section>
   </main>
