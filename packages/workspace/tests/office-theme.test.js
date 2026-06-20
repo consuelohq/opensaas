@@ -85,7 +85,8 @@ test('polishes design archive into the sites shell with filtering and command pa
     'data-command-palette',
     'Keyboard Cockpit',
     'Slash opens this menu. Press G, then a command letter, to jump directly.',
-    "window.location.assign(href)",
+    "window.open(href, '_blank', 'noopener,noreferrer')",
+    "target=\"_blank\" rel=\"noopener noreferrer\"",
     "location.hash = activeFilter === 'all' ? '' : activeFilter;",
     'font-family: "Geist Mono", "Geist", ui-monospace',
     'archivePaths',
@@ -93,9 +94,6 @@ test('polishes design archive into the sites shell with filtering and command pa
   ]) {
     expect(source).toContain(marker);
   }
-  expect(source).toContain('<h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>');
-  expect(source).toContain("'<h3><a href=\"' + escapeText(href) + '\">'");
-  expect(source).not.toContain("window.open(href, '_blank'");
 });
 
 

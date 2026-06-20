@@ -32,6 +32,7 @@ type WorkspaceConnectorTransportContract = {
     localPort: number;
     transport: 'cloudflare-tunnel' | 'websocket-relay';
     cloudflareTunnelToken?: string;
+    cloudflaredBin?: string;
     relayUrl?: string;
   }) => WorkspaceConnectorTransportPlan;
 };
@@ -69,6 +70,7 @@ contractDescribe('workspace connector transport contract', () => {
       localPort: 8850,
       transport: 'cloudflare-tunnel',
       cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+      cloudflaredBin: '/tmp/consuelo-os-smoke/os/bin/cloudflared',
     });
 
     expect(plan).toMatchObject({
@@ -83,7 +85,13 @@ contractDescribe('workspace connector transport contract', () => {
         runAtLoad: true,
       }),
     });
+    expect(plan.launchd?.programArguments[0]).toBe(
+      '/tmp/consuelo-os-smoke/os/bin/cloudflared',
+    );
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/cloudflared/);
+    expect(plan.launchd?.programArguments.join(' ')).not.toContain(
+      '/usr/local/bin/cloudflared',
+    );
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/tunnel\s+run/);
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/--token-file/);
     expect(plan.launchd?.programArguments.join(' ')).not.toMatch(/login|cert\.pem|cloudflare account/i);

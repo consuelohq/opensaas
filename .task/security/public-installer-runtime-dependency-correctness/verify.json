@@ -1,0 +1,258 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/public-installer-runtime-dependency-correctness",
+  "base": "origin/stream/security",
+  "headSha": "a4ec5ba7c138a4ef6f3ee000bb02aeb5f9a696d2",
+  "changeHash": "796a87adbf2e0236973bf655a5823a2e20fe0f644974fc40f0e0b1f117dd3333",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/explore.js",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/platform-cloudflare-provisioning.ts",
+    "packages/os/scripts/lib/task-meta.js",
+    "packages/os/scripts/lib/workspace-connector-transport.ts",
+    "packages/os/scripts/start-portless-daemon.sh",
+    "packages/os/scripts/uninstall-system-daemons.sh",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/installer-runtime-dependencies.test.ts",
+    "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/task-meta.test.js",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/code-call.ts",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/code-call.test.ts",
+    "packages/workspace/tests/office-theme.test.js",
+    "packages/workspace/tests/task-meta.test.ts",
+    "packages/workspace/tests/task-workpad.test.js",
+    "packages/workspace/tests/task-workpad.test.ts",
+    "packages/workspace/tests/trace-watch.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-06-20T03:31:20.360Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/public-installer-runtime-dependency-correctness/current.json",
+        ".task/security/public-installer-runtime-dependency-correctness/evidence-log.json",
+        ".task/security/public-installer-runtime-dependency-correctness/read-log.json",
+        ".task/security/public-installer-runtime-dependency-correctness/session.json",
+        ".task/security/public-installer-runtime-dependency-correctness/workpad.md",
+        ".task/tasks/security/public-installer-runtime-dependency-correctness.json",
+        ".task/tasks/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands.json",
+        ".task/tasks/workspace-agents/harden-explore-metadata-handling.json",
+        ".task/tasks/workspace-agents/keep-office-links-in-same-tab.json",
+        ".task/tasks/workspace-agents/revert-sites-launcher-link-behavior.json",
+        ".task/tasks/workspace-agents/workpad-read-log-label.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/current.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/evidence-log.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/read-log.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/session.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/verify.json",
+        ".task/workspace-agents/fix-trace-watch-file-enrichment-for-read-commands/workpad.md",
+        ".task/workspace-agents/harden-explore-metadata-handling/current.json",
+        ".task/workspace-agents/harden-explore-metadata-handling/evidence-log.json",
+        ".task/workspace-agents/harden-explore-metadata-handling/read-log.json",
+        ".task/workspace-agents/harden-explore-metadata-handling/session.json",
+        ".task/workspace-agents/harden-explore-metadata-handling/verify.json",
+        ".task/workspace-agents/harden-explore-metadata-handling/workpad.md",
+        ".task/workspace-agents/keep-office-links-in-same-tab/current.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/session.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/verify.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/workpad.md",
+        ".task/workspace-agents/revert-sites-launcher-link-behavior/current.json",
+        ".task/workspace-agents/revert-sites-launcher-link-behavior/session.json",
+        ".task/workspace-agents/revert-sites-launcher-link-behavior/verify.json",
+        ".task/workspace-agents/revert-sites-launcher-link-behavior/workpad.md",
+        ".task/workspace-agents/workpad-read-log-label/current.json",
+        ".task/workspace-agents/workpad-read-log-label/evidence-log.json",
+        ".task/workspace-agents/workpad-read-log-label/read-log.json",
+        ".task/workspace-agents/workpad-read-log-label/session.json",
+        ".task/workspace-agents/workpad-read-log-label/verify.json",
+        ".task/workspace-agents/workpad-read-log-label/workpad.md",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/platform-cloudflare-provisioning.ts",
+        "packages/os/scripts/lib/task-meta.js",
+        "packages/os/scripts/lib/workspace-connector-transport.ts",
+        "packages/os/scripts/start-portless-daemon.sh",
+        "packages/os/scripts/uninstall-system-daemons.sh",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+        "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+        "packages/os/tests/installer-runtime-dependencies.test.ts",
+        "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/task-meta.test.js",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/scripts/code-call.ts",
+        "packages/workspace/scripts/explore.js",
+        "packages/workspace/scripts/lib/task-meta.js",
+        "packages/workspace/scripts/lib/task-workpad.js",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/tests/code-call.test.ts",
+        "packages/workspace/tests/office-theme.test.js",
+        "packages/workspace/tests/task-meta.test.ts",
+        "packages/workspace/tests/task-workpad.test.js",
+        "packages/workspace/tests/task-workpad.test.ts",
+        "packages/workspace/tests/trace-watch.test.ts",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        },
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 127,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.21ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.53ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.06ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.19ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.14ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.25ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.06ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [121.00ms]\n"
+        },
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 17,
+          "outputTail": "Bundled 1 module in 13ms\n\n  trace-watch-test-selection.js  38.60 KB  (entry point)\n\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 453,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 88\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:31:19\n\u001b[2m   Duration \u001b[22m 200ms\u001b[2m (transform 44ms, setup 0ms, import 49ms, tests 88ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

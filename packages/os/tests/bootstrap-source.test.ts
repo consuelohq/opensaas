@@ -5,6 +5,19 @@ import { describe, expect, it } from 'vitest';
 const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
 
 describe('bootstrap source refresh controls', () => {
+  it('declares the public installer dependency model explicitly', () => {
+    const bootstrap = readBootstrap();
+
+    expect(bootstrap).toContain('MACOS_EXPECTED_SYSTEM_TOOLS=(');
+    expect(bootstrap).toContain('INSTALLER_MANAGED_RUNTIME_BINARIES=(');
+    expect(bootstrap).toContain('PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION=');
+    expect(bootstrap).toContain('OPERATOR_ONLY_TOOLS=(');
+    expect(bootstrap).toContain('curl');
+    expect(bootstrap).toContain('portless');
+    expect(bootstrap).toContain('cloudflared');
+    expect(bootstrap).toContain('wrangler');
+  });
+
   it('documents an explicit source refresh option', () => {
     const bootstrap = readBootstrap();
 

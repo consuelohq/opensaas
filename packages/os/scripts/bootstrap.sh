@@ -5,9 +5,28 @@ PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
 OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
 DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
 REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz}"
+ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
+CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
+CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
+CLOUDFLARED_DARWIN_ARM64_SHA256="ae6ee90188ae5833c687ce937c3693e28403677607c06c65a2ff2b6a022f50e4"
+CLOUDFLARED_DARWIN_AMD64_SHA256="3f74d697045ecf56dd2fbeb42f59767ecdf4067c409d55f080563923e8a1bb32"
+
+MACOS_EXPECTED_SYSTEM_TOOLS=(curl tar mktemp launchctl plutil lsof script)
+INSTALLER_MANAGED_RUNTIME_BINARIES=(bun portless cloudflared)
+PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION="dependencies installed by bun install from packages/os/package.json"
+OPERATOR_ONLY_TOOLS=(
+  wrangler
+  cloudflare-account-credentials
+  cloudflare-account-id
+  cloudflare-zone-id
+  cloudflare-ruleset-id
+  r2-admin-authority
+  d1-admin-authority
+)
 
 DRY_RUN=0
 YES=0
@@ -19,10 +38,14 @@ REFRESH_SOURCE=0
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
+PORTLESS_BIN="${PORTLESS_BIN:-}"
+CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-}"
 REPO_DIR=""
 ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
+PORTLESS_STATUS="pending"
+CLOUDFLARED_STATUS="pending"
 SOURCE_STATUS="pending"
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
@@ -58,6 +81,9 @@ Options:
 Environment overrides:
   CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
   CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
+  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/os/bin
+  PORTLESS_BIN                 absolute portless binary path to reuse
+  CLOUDFLARED_BIN              absolute cloudflared binary path to reuse
 USAGE
 }
 
@@ -80,6 +106,14 @@ json_escape() {
   printf '"%s"' "$value"
 }
 
+json_path_or_null() {
+  if [ -z "$1" ]; then
+    printf 'null'
+    return 0
+  fi
+  json_escape "$1"
+}
+
 emit_json_summary() {
   [ "$JSON" -eq 1 ] || return 0
   cat <<JSON
@@ -89,10 +123,42 @@ emit_json_summary() {
   "sourceDir": $(json_escape "$REPO_DIR"),
   "bun": $(json_escape "$BUN_BIN"),
   "bunStatus": $(json_escape "$BUN_STATUS"),
+  "portless": $(json_path_or_null "$PORTLESS_BIN"),
+  "portlessStatus": $(json_escape "$PORTLESS_STATUS"),
+  "cloudflared": $(json_path_or_null "$CLOUDFLARED_BIN"),
+  "cloudflaredStatus": $(json_escape "$CLOUDFLARED_STATUS"),
   "sourceStatus": $(json_escape "$SOURCE_STATUS"),
   "dependencyStatus": $(json_escape "$DEPENDENCY_STATUS"),
   "onboardingStatus": $(json_escape "$ONBOARDING_STATUS"),
-  "daemonStatus": $(json_escape "$DAEMON_STATUS")
+  "daemonStatus": $(json_escape "$DAEMON_STATUS"),
+  "dependencies": {
+    "system": {
+      "curl": { "classification": "macos_expected", "status": "present" },
+      "tar": { "classification": "macos_expected", "status": "present" },
+      "mktemp": { "classification": "macos_expected", "status": "present" },
+      "launchctl": { "classification": "macos_expected", "status": "present" },
+      "plutil": { "classification": "macos_expected", "status": "present" },
+      "lsof": { "classification": "macos_expected", "status": "present" },
+      "script": { "classification": "macos_expected", "status": "present" }
+    },
+    "runtime": {
+      "bun": { "classification": "installer_managed", "status": $(json_escape "$BUN_STATUS"), "path": $(json_path_or_null "$BUN_BIN") },
+      "portless": { "classification": "installer_managed", "status": $(json_escape "$PORTLESS_STATUS"), "path": $(json_path_or_null "$PORTLESS_BIN") },
+      "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") }
+    },
+    "package": {
+      "bunInstall": { "classification": "package_managed", "status": $(json_escape "$DEPENDENCY_STATUS"), "description": $(json_escape "$PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION") }
+    },
+    "operator": {
+      "wrangler": { "classification": "operator_only" },
+      "cloudflareAccountCredentials": { "classification": "operator_only" },
+      "cloudflareAccountId": { "classification": "operator_only" },
+      "cloudflareZoneId": { "classification": "operator_only" },
+      "cloudflareRulesetId": { "classification": "operator_only" },
+      "r2AdminAuthority": { "classification": "operator_only" },
+      "d1AdminAuthority": { "classification": "operator_only" }
+    }
+  }
 }
 JSON
 }
@@ -296,13 +362,19 @@ check_mac_prerequisites() {
     fail "Consuelo OS local bootstrap currently supports macOS. Detected: ${os_name:-unknown}."
   fi
 
-  require_command curl "Consuelo OS needs curl to download Bun and source archives. curl is expected on supported macOS installs."
-  require_command launchctl "Consuelo OS needs launchctl for user LaunchAgents. This Mac environment is incomplete, so onboarding cannot safely continue."
-  require_command plutil "Consuelo OS needs plutil to validate LaunchAgent plists. This Mac environment is incomplete, so onboarding cannot safely continue."
-  require_command lsof "Consuelo OS needs lsof to safely find free local ports. lsof is expected on supported macOS installs. This Mac environment is incomplete, so onboarding cannot safely continue."
+  local tool
+  for tool in "${MACOS_EXPECTED_SYSTEM_TOOLS[@]}"; do
+    require_command "$tool" "Consuelo OS needs $tool during public install. $tool is expected on supported macOS installs. This Mac environment is incomplete, so onboarding cannot safely continue."
+  done
 }
 
 find_bun() {
+  if [ -n "${BUN_BIN:-}" ]; then
+    if [ -x "$BUN_BIN" ]; then
+      return 0
+    fi
+    fail "Configured BUN_BIN is not executable: $BUN_BIN"
+  fi
   if command -v bun >/dev/null 2>&1; then
     BUN_BIN="$(command -v bun)"
     return 0
@@ -356,6 +428,239 @@ ensure_bun() {
 
   BUN_STATUS="installed"
   log "Bun installed: $BUN_BIN"
+}
+
+runtime_arch() {
+  local machine
+  machine="$(uname -m 2>/dev/null || true)"
+  case "$machine" in
+    arm64) printf 'arm64\n' ;;
+    x86_64|amd64) printf 'amd64\n' ;;
+    *) fail "unsupported macOS architecture for Consuelo OS runtime binaries: ${machine:-unknown}" ;;
+  esac
+}
+
+find_runtime_binary() {
+  local configured_path="$1"
+  local name="$2"
+  local managed_path="$3"
+
+  if [ -n "$configured_path" ]; then
+    if [ -x "$configured_path" ]; then
+      printf '%s\n' "$configured_path"
+      return 0
+    fi
+    fail "configured $name binary is not executable: $configured_path"
+  fi
+
+  if [ -x "$managed_path" ]; then
+    printf '%s\n' "$managed_path"
+    return 0
+  fi
+
+  if [ "$ALLOW_GLOBAL_RUNTIME_LOOKUP" = "1" ]; then
+    local candidate
+    for candidate in "/opt/homebrew/bin/$name" "/usr/local/bin/$name"; do
+      if [ -x "$candidate" ]; then
+        printf '%s\n' "$candidate"
+        return 0
+      fi
+    done
+
+    if command -v "$name" >/dev/null 2>&1; then
+      command -v "$name"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+read_remote_sha256() {
+  local explicit_sha="$1"
+  local sha_url="$2"
+  local checksum_text checksum
+
+  if [ -n "$explicit_sha" ]; then
+    printf '%s\n' "$explicit_sha"
+    return 0
+  fi
+
+  if [ -z "$sha_url" ]; then
+    return 1
+  fi
+
+  checksum_text="$(curl -fsSL "$sha_url")"
+  set -- $checksum_text
+  checksum="${1:-}"
+  if [ -z "$checksum" ]; then
+    return 1
+  fi
+  printf '%s\n' "$checksum"
+}
+
+verify_sha256() {
+  local file_path="$1"
+  local expected_sha="$2"
+  local actual_sha
+
+  require_command shasum "Consuelo OS needs shasum to verify downloaded runtime binaries. shasum is expected on supported macOS installs."
+  actual_sha="$(shasum -a 256 "$file_path")"
+  actual_sha="${actual_sha%% *}"
+  if [ "$actual_sha" != "$expected_sha" ]; then
+    fail "checksum mismatch for $(basename "$file_path"): expected $expected_sha, got $actual_sha"
+  fi
+}
+
+download_verified_file() {
+  local name="$1"
+  local url="$2"
+  local sha="$3"
+  local destination="$4"
+  local tmp_dir tmp_file
+
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-${name}.XXXXXX")"
+  tmp_file="$tmp_dir/$name.download"
+  if ! curl -fsSL "$url" -o "$tmp_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  verify_sha256 "$tmp_file" "$sha"
+  mkdir -p "$(dirname "$destination")"
+  mv "$tmp_file" "$destination"
+  chmod 755 "$destination"
+  rm -rf "$tmp_dir"
+}
+
+install_portless_runtime() {
+  local arch target url sha sha_url
+  arch="$(runtime_arch)"
+  target="$RUNTIME_BIN_DIR/portless"
+  url="${CONSUELO_PORTLESS_DOWNLOAD_URL:-https://install.consuelohq.com/os/bin/portless/darwin-${arch}/portless}"
+  sha_url="${CONSUELO_PORTLESS_SHA256_URL:-${url}.sha256}"
+  sha="$(read_remote_sha256 "${CONSUELO_PORTLESS_SHA256:-}" "$sha_url" || true)"
+  if [ -z "$sha" ]; then
+    fail "portless download requires SHA-256 integrity metadata. Set CONSUELO_PORTLESS_SHA256 or publish $sha_url."
+  fi
+  download_verified_file portless "$url" "$sha" "$target"
+}
+
+install_cloudflared_runtime() {
+  local arch asset_arch asset_name target url sha tmp_dir archive_file
+  arch="$(runtime_arch)"
+  asset_arch="$arch"
+  asset_name="cloudflared-darwin-${asset_arch}.tgz"
+  target="$RUNTIME_BIN_DIR/cloudflared"
+  url="${CONSUELO_CLOUDFLARED_DOWNLOAD_URL:-https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${asset_name}}"
+
+  case "$asset_arch" in
+    arm64) sha="${CONSUELO_CLOUDFLARED_SHA256:-$CLOUDFLARED_DARWIN_ARM64_SHA256}" ;;
+    amd64) sha="${CONSUELO_CLOUDFLARED_SHA256:-$CLOUDFLARED_DARWIN_AMD64_SHA256}" ;;
+    *) fail "unsupported cloudflared architecture: $asset_arch" ;;
+  esac
+
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-cloudflared.XXXXXX")"
+  archive_file="$tmp_dir/$asset_name"
+  if ! curl -fsSL "$url" -o "$archive_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  verify_sha256 "$archive_file" "$sha"
+  tar -xzf "$archive_file" -C "$tmp_dir"
+  if [ ! -f "$tmp_dir/cloudflared" ]; then
+    rm -rf "$tmp_dir"
+    fail "cloudflared archive did not contain a cloudflared binary"
+  fi
+  mkdir -p "$(dirname "$target")"
+  mv "$tmp_dir/cloudflared" "$target"
+  chmod 755 "$target"
+  rm -rf "$tmp_dir"
+}
+
+ensure_portless() {
+  local managed_path="$RUNTIME_BIN_DIR/portless"
+  if PORTLESS_BIN="$(find_runtime_binary "${PORTLESS_BIN:-}" portless "$managed_path")"; then
+    PORTLESS_STATUS="present"
+    log "portless found: $PORTLESS_BIN"
+    return 0
+  fi
+
+  PORTLESS_BIN="$managed_path"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    PORTLESS_STATUS="would_install"
+    log "dry-run: portless is missing and would be installed to $PORTLESS_BIN"
+    return 0
+  fi
+
+  run_with_loading_dots "Installing portless" install_portless_runtime
+  if [ ! -x "$PORTLESS_BIN" ]; then
+    fail "portless install finished, but $PORTLESS_BIN was not executable."
+  fi
+  PORTLESS_STATUS="installed"
+  log "portless installed: $PORTLESS_BIN"
+}
+
+ensure_cloudflared() {
+  local managed_path="$RUNTIME_BIN_DIR/cloudflared"
+  if [ "$CLOUDFLARED_REQUIRED" != "1" ]; then
+    CLOUDFLARED_STATUS="skipped_not_needed"
+    return 0
+  fi
+
+  if CLOUDFLARED_BIN="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path")"; then
+    CLOUDFLARED_STATUS="present"
+    log "cloudflared found: $CLOUDFLARED_BIN"
+    return 0
+  fi
+
+  CLOUDFLARED_BIN="$managed_path"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    CLOUDFLARED_STATUS="would_install"
+    log "dry-run: cloudflared is missing and would be installed to $CLOUDFLARED_BIN"
+    return 0
+  fi
+
+  run_with_loading_dots "Installing cloudflared" install_cloudflared_runtime
+  if [ ! -x "$CLOUDFLARED_BIN" ]; then
+    fail "cloudflared install finished, but $CLOUDFLARED_BIN was not executable."
+  fi
+  CLOUDFLARED_STATUS="installed"
+  log "cloudflared installed: $CLOUDFLARED_BIN"
+}
+
+persist_env_value() {
+  local file="$1"
+  local key="$2"
+  local value="$3"
+  local tmp_file line current_key
+
+  tmp_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-os-env.XXXXXX")"
+  if [ -f "$file" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      current_key="${line%%=*}"
+      if [ "$current_key" = "$key" ]; then
+        continue
+      fi
+      printf '%s\n' "$line" >> "$tmp_file"
+    done < "$file"
+  fi
+  printf '%s=%s\n' "$key" "$value" >> "$tmp_file"
+  mkdir -p "$(dirname "$file")"
+  mv "$tmp_file" "$file"
+  chmod 600 "$file"
+}
+
+persist_runtime_paths() {
+  local env_file="$OS_HOME/.env"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would persist runtime binary paths to $env_file"
+    return 0
+  fi
+
+  persist_env_value "$env_file" BUN_BIN "$BUN_BIN"
+  persist_env_value "$env_file" PORTLESS_BIN "$PORTLESS_BIN"
+  persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
+  export BUN_BIN PORTLESS_BIN CLOUDFLARED_BIN
 }
 
 current_repo_dir() {
@@ -645,6 +950,9 @@ main() {
   render_dependency_progress
   prompt_dependency_setup
   ensure_bun
+  ensure_portless
+  ensure_cloudflared
+  persist_runtime_paths
   resolve_source
   ensure_dependencies
   run_onboarding

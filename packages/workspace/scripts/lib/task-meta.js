@@ -119,16 +119,8 @@ function getTaskHistoryPathForMeta(worktreePath, taskMeta) {
   return parts ? getTaskHistoryPath(worktreePath, parts.area, parts.slug) : null;
 }
 
-function getInvalidTaskMetaReason(taskMeta) {
-  if (!taskMeta || !taskMeta.taskBranch) return 'missing taskBranch';
-  if (!parseTaskBranch(taskMeta.taskBranch)) return `invalid taskBranch "${taskMeta.taskBranch}"`;
-  return null;
-}
-
 function getTaskMetaBranchMismatch(taskMeta, currentBranch) {
-  const invalidReason = getInvalidTaskMetaReason(taskMeta);
-  if (invalidReason) return { expectedBranch: null, currentBranch, invalidReason };
-  if (!currentBranch) return null;
+  if (!taskMeta || !taskMeta.taskBranch || !currentBranch) return null;
   if (taskMeta.taskBranch === currentBranch) return null;
   return { expectedBranch: taskMeta.taskBranch, currentBranch };
 }
@@ -161,7 +153,7 @@ function listScopedCurrentMetaPaths(worktreePath) {
 function readTaskMetaRecordFromPath(filePath, directory, expectedBranch, includeStale) {
   if (!fs.existsSync(filePath)) return null;
   const data = readJsonFile(filePath);
-  if (!data || getInvalidTaskMetaReason(data)) return null;
+  if (!data) return null;
   const mismatch = getTaskMetaBranchMismatch(data, expectedBranch);
   const record = { path: filePath, dir: directory, data, stale: Boolean(mismatch), mismatch };
   if (mismatch && !includeStale) return null;
@@ -440,7 +432,6 @@ module.exports = {
   getTaskSessionPath,
   getTaskSlug,
   getTaskStateDir,
-  getInvalidTaskMetaReason,
   getTaskMetaBranchMismatch,
   getTaskVerifyPath,
   getTaskWorkpadPath,

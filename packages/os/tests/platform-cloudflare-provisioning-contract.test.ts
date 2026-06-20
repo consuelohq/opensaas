@@ -191,12 +191,32 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
       provisionPlatformManagedOsMcpIngressPolicyFromEnv({
         env: {
           CLOUDFLARE_ZONE_ID: 'zone_123',
-          CLOUDFLARE_ACCOUNT_ID: 'account_123',
+          CLOUDFLARE_ACCOUNT_ID: 'acct1',
           CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
         },
         baseDomain: 'consuelohq.com',
       }),
     ).rejects.toThrow(/CLOUDFLARE_API_TOKEN/);
+  });
+
+  it('should return the planned dry-run result before requiring Cloudflare account authority', async () => {
+    const { provisionPlatformManagedOsMcpIngressPolicyFromEnv } =
+      await loadPlatformCloudflareProvisioningContract();
+
+    await expect(
+      provisionPlatformManagedOsMcpIngressPolicyFromEnv({
+        env: {
+          CLOUDFLARE_ZONE_ID: 'zone_123',
+          CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+        },
+        baseDomain: 'consuelohq.com',
+        dryRun: true,
+      }),
+    ).resolves.toEqual({
+      status: 'planned',
+      zoneId: 'zone_123',
+      allowedIpsListName: 'mcp_allowed_ips',
+    });
   });
 
   it('should use the real Cloudflare policy client from platform env and preserve exact skip phases', async () => {
@@ -219,7 +239,7 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
         ...(body ? { body } : {}),
       });
 
-      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/account_123/rules/lists')) {
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/acct1/rules/lists')) {
         return createJsonResponse([{ id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' }]);
       }
       if (request.method === 'GET' && parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123')) {
@@ -252,8 +272,8 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
     const result = await provisionPlatformManagedOsMcpIngressPolicyFromEnv({
       env: {
         CLOUDFLARE_ZONE_ID: 'zone_123',
-        CLOUDFLARE_ACCOUNT_ID: 'account_123',
-        CLOUDFLARE_API_TOKEN: 'token_fixture',
+        CLOUDFLARE_ACCOUNT_ID: 'acct1',
+        CLOUDFLARE_API_TOKEN: 'tok',
         CLOUDFLARE_CUSTOM_RULESET_ID: 'ruleset_123',
         CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
         CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF: 'allow-install-curl-bootstrap',
@@ -269,12 +289,12 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
       blockRule: { status: 'created' },
     });
     expect(calls.map((call) => `${call.method} ${call.path}`)).toEqual([
-      'GET /client/v4/accounts/account_123/rules/lists',
+      'GET /client/v4/accounts/acct1/rules/lists',
       'GET /client/v4/zones/zone_123/rulesets/ruleset_123',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
     ]);
-    expect(calls.every((call) => call.authorization === 'Bearer token_fixture')).toBe(true);
+    expect(calls.every((call) => call.authorization === 'Bearer tok')).toBe(true);
     const allowCall = calls.find(
       (call) => call.body?.ref === 'consuelo-os-mcp-provider-allow',
     );

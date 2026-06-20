@@ -51,6 +51,10 @@ sanitize_label() {
   printf '%s\n' "$sanitized"
 }
 
+xml_escape() {
+  printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&apos;/g'
+}
+
 load_env_file "$env_file"
 
 consuelo_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
@@ -66,6 +70,8 @@ watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_L
 workspace_path="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+bun_bin="$(xml_escape "${BUN_BIN:-}")"
+portless_bin="$(xml_escape "${PORTLESS_BIN:-}")"
 
 cat > "$generated_dir/${workspace_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -103,6 +109,8 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_PATH</key>
     <string>${workspace_path}</string>
+    <key>BUN_BIN</key>
+    <string>${bun_bin}</string>
   </dict>
 </dict>
 </plist>
@@ -144,6 +152,8 @@ cat > "$generated_dir/${portless_label}.plist" <<PLIST
     <string>${consuelo_user}</string>
     <key>PORTLESS_DAEMON_PATH</key>
     <string>${portless_path}</string>
+    <key>PORTLESS_BIN</key>
+    <string>${portless_bin}</string>
   </dict>
 </dict>
 </plist>
