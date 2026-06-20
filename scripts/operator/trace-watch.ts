@@ -244,6 +244,17 @@ SELECT
   CASE WHEN tool = 'code.call' THEN substr(coalesce(json_extract(result_json, '$.data.stderr'), ''), 1, 4000) ELSE NULL END AS code_call_stderr,
   CASE WHEN tool = 'code.call' THEN json_array_length(json_extract(result_json, '$.data.filesChanged')) ELSE NULL END AS code_call_files_changed_count,
   CASE WHEN tool = 'code.call' THEN json_extract(result_json, '$.data.truncated') ELSE NULL END AS code_call_truncated,
+  CASE WHEN tool = 'verify' THEN json_array_length(json_extract(result_json, '$.data.files')) ELSE NULL END AS verify_files_count,
+  CASE WHEN tool = 'verify' THEN json_array_length(json_extract(result_json, '$.data.testSelection.data.selectedSuites')) ELSE NULL END AS verify_selected_suites_count,
+  CASE WHEN tool = 'verify' THEN json_array_length(json_extract(result_json, '$.data.testSelection.data.runResults')) ELSE NULL END AS verify_run_results_count,
+  CASE WHEN tool = 'verify' THEN json_array_length(json_extract(result_json, '$.data.testSelection.data.failedSuites')) ELSE NULL END AS verify_failed_suites_count,
+  CASE WHEN tool = 'verify' THEN json_extract(result_json, '$.data.passed') ELSE NULL END AS verify_passed,
+  CASE WHEN tool = 'verify' THEN coalesce(json_extract(result_json, '$.data.publishValid'), json_extract(result_json, '$.data.stamp.publishValid')) ELSE NULL END AS verify_publish_valid,
+  CASE WHEN tool = 'review.run' THEN json_extract(result_json, '$.data.files') ELSE NULL END AS review_files_count,
+  CASE WHEN tool = 'review.run' THEN json_extract(result_json, '$.data.summary.blockingIssues') ELSE NULL END AS review_blocking_issues,
+  CASE WHEN tool = 'review.run' THEN json_extract(result_json, '$.data.summary.yourIssues') ELSE NULL END AS review_your_issues,
+  CASE WHEN tool = 'review.run' THEN json_extract(result_json, '$.data.summary.preExistingIssues') ELSE NULL END AS review_pre_existing_issues,
+  CASE WHEN tool = 'review.run' THEN json_extract(result_json, '$.data.summary.failedTestSuites') ELSE NULL END AS review_failed_test_suites,
   length(coalesce(result_json, '')) AS result_json_chars,
   ${stderr},
   length(coalesce(stderr, '')) AS stderr_chars
@@ -353,6 +364,113 @@ function codeCallInput(row: Row): Record<string, unknown> {
   if (isRecord(resolved)) return resolved;
   const input = parseJson(row.input_json);
   return isRecord(input) ? input : {};
+}
+
+function rowInput(row: Row): Record<string, unknown> {
+  const resolved = parseJson(row.resolved_input_json);
+  if (isRecord(resolved)) return resolved;
+  const input = parseJson(row.input_json);
+  return isRecord(input) ? input : {};
+}
+
+function rowResult(row: Row): Record<string, unknown> {
+  const result = parseJson(row.result_json);
+  return isRecord(result) ? result : {};
+}
+
+function rowResultData(row: Row): Record<string, unknown> {
+  return dataRecordFromResult(rowResult(row));
+}
+
+function arrayCount(value: unknown): number {
+  return Array.isArray(value) ? value.length : 0;
+}
+
+function nestedRecord(value: unknown, key: string): Record<string, unknown> {
+  return isRecord(value) && isRecord(value[key]) ? value[key] : {};
+}
+
+function compactPathList(value: unknown): string {
+  if (typeof value === 'string') return cleanText(value);
+  if (!Array.isArray(value)) return '';
+  const paths = value.map((item) => cleanText(item)).filter(Boolean);
+  if (paths.length === 0) return '';
+  const shown = paths.slice(0, 3).join(', ');
+  return paths.length > 3 ? `${shown}, +${paths.length - 3} more` : shown;
+}
+
+function rowInputDetail(row: Row): string {
+  const input = rowInput(row);
+  const parts: string[] = [];
+  const path = compactPathList(input.path);
+  const paths = compactPathList(input.paths);
+  const contentFile = compactPathList(input.contentFile);
+  if (path) parts.push(path);
+  else if (paths) parts.push(`paths ${paths}`);
+  else if (contentFile) parts.push(`contentFile ${contentFile}`);
+  if (input.pattern) parts.push(`pattern=${cleanText(input.pattern)}`);
+  if (input.query) parts.push(`query=${cleanText(input.query)}`);
+  if (input.keyword) parts.push(`keyword=${cleanText(input.keyword)}`);
+  if (input.base && String(row.tool || '') !== 'verify') parts.push(`base=${cleanText(input.base)}`);
+  return parts.join(' · ');
+}
+
+function resultTypeDetail(row: Row): string {
+  const data = rowResultData(row);
+  const type = cleanText(data.type || data.schema);
+  const path = compactPathList(data.path);
+  if (type && path) return `${type} · ${path}`;
+  return type || path;
+}
+
+function verifyDetail(row: Row): string {
+  const data = rowResultData(row);
+  if (!isRecord(data)) return '';
+  const testSelection = nestedRecord(data, 'testSelection');
+  const testSelectionData = nestedRecord(testSelection, 'data');
+  const selectedSuites = numericValue(row.verify_selected_suites_count, arrayCount(testSelectionData.selectedSuites));
+  const runResults = numericValue(row.verify_run_results_count, arrayCount(testSelectionData.runResults));
+  const failedSuites = numericValue(row.verify_failed_suites_count, arrayCount(testSelectionData.failedSuites));
+  const files = numericValue(row.verify_files_count, arrayCount(data.files));
+  const passed = booleanValue(row.verify_passed) || booleanValue(data.passed) || rowResult(row).ok === true || (String(row.status || '') === 'ok' && String(row.code || '') === 'OK');
+  const publishValid = booleanValue(row.verify_publish_valid) || booleanValue(data.publishValid) || booleanValue(nestedRecord(data, 'stamp').publishValid);
+  const parts = [
+    passed ? 'verify passed' : 'verify failed',
+    publishValid ? 'publish-valid' : 'not publish-valid',
+    `files ${files}`,
+    `suites ${selectedSuites}`,
+    `runs ${runResults}`,
+    failedSuites > 0 ? `failed ${failedSuites}` : '',
+  ].filter(Boolean);
+  return parts.join(' · ');
+}
+
+function reviewDetail(row: Row): string {
+  const data = rowResultData(row);
+  const summary = nestedRecord(data, 'summary');
+  const hasSqlSummary = row.review_files_count !== undefined || row.review_blocking_issues !== undefined || row.review_your_issues !== undefined;
+  if (Object.keys(summary).length === 0 && data.schema !== 'review.summary.v1' && !hasSqlSummary) return '';
+  const failedSuites = numericValue(row.review_failed_test_suites, numericValue(summary.failedTestSuites, 0));
+  const blockingIssues = numericValue(row.review_blocking_issues, numericValue(summary.blockingIssues, numericValue(row.review_your_issues, numericValue(summary.yourIssues, 0))));
+  const preExisting = numericValue(row.review_pre_existing_issues, numericValue(summary.preExistingIssues, 0));
+  const files = numericValue(row.review_files_count, numericValue(data.files, arrayCount(data.files)));
+  return [
+    blockingIssues > 0 || failedSuites > 0 ? 'review needs attention' : 'review passed',
+    `files ${files}`,
+    `issues ${blockingIssues}`,
+    `pre-existing ${preExisting}`,
+    failedSuites > 0 ? `failed suites ${failedSuites}` : '',
+  ].filter(Boolean).join(' · ');
+}
+
+function firstErrorLine(row: Row): string {
+  const result = rowResult(row);
+  const stderr = stringValue(row.stderr);
+  const lines = stderr.split('\n').map((line) => cleanText(line)).filter(Boolean);
+  const explicitError = lines.find((line) => /^error:/i.test(line));
+  if (explicitError) return explicitError;
+  const nonEnvelope = lines.find((line) => line && !isJsonEnvelope(line));
+  return cleanText(result.message) || nonEnvelope || cleanText(row.code) || cleanText(row.status);
 }
 
 function booleanValue(value: unknown): boolean {
@@ -669,14 +787,20 @@ function summarizeResultForTrace(result: unknown, tool?: string): unknown {
 }
 
 export function compactSuccessDetail(row: Row): string {
-  if (String(row.tool || '') === 'code.call') return codeCallDetail(row);
-  const input = parseJson(row.resolved_input_json) || parseJson(row.input_json) || {};
-  const result = parseJson(row.result_json) || {};
+  const tool = String(row.tool || '');
+  if (tool === 'code.call') return codeCallDetail(row);
+  if (tool === 'verify') return verifyDetail(row).slice(0, 180);
+  if (tool === 'review.run') return reviewDetail(row).slice(0, 180);
+  const input = rowInput(row);
+  const result = rowResult(row);
+  const inputDetail = rowInputDetail(row);
+  const typeDetail = resultTypeDetail(row);
   const candidates: string[] = [];
-  if (result.message) candidates.push(cleanText(result.message));
+  if (typeDetail) candidates.push(typeDetail);
+  if (inputDetail) candidates.push(inputDetail);
+  if (result.message && cleanText(result.message) !== 'command completed') candidates.push(cleanText(result.message));
   if (input.facadeTool) candidates.push(`facade=${cleanText(input.facadeTool)}`);
   if (input.command) candidates.push(cleanText(input.command));
-  if (input.path) candidates.push(cleanText(input.path));
   if (input.pattern) candidates.push(`pattern=${cleanText(input.pattern)}`);
   if (input.query) candidates.push(`query=${cleanText(input.query)}`);
   if (input.keyword) candidates.push(`keyword=${cleanText(input.keyword)}`);
@@ -705,8 +829,14 @@ function renderVerifyBecause(args: Args, row: Row): void {
 }
 
 function compactErrorDetail(row: Row): string {
-  if (String(row.tool || '') === 'code.call' && codeCallFailureCode(row) === 'TESTS_FAILED') return 'tests failed';
-  const result = parseJson(row.result_json) || {};
+  const tool = String(row.tool || '');
+  if (tool === 'code.call' && codeCallFailureCode(row) === 'TESTS_FAILED') return 'tests failed';
+  const inputDetail = rowInputDetail(row);
+  const summaryDetail = tool === 'verify' ? verifyDetail(row) : tool === 'review.run' ? reviewDetail(row) : '';
+  const errorLine = firstErrorLine(row);
+  const targetedError = [inputDetail || summaryDetail, errorLine].filter(Boolean).join(' · ');
+  if (targetedError) return targetedError.slice(0, 240);
+  const result = rowResult(row);
   const stderr = cleanText(row.stderr);
   const message = cleanText(result.message);
   const candidates = [stderr, message, cleanText(row.code), cleanText(row.status)].filter(Boolean);
@@ -898,9 +1028,8 @@ export function renderRow(args: Args, row: Row) {
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
     : `${c(args, '2', time)}  ${icon} ${tool} ${code} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens}  ${branch}`;
   const detail = ok ? compactSuccessDetail(row) : compactErrorDetail(row);
-  if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
+  if (detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
   else console.log(first);
-  if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
   renderVerifyBecause(args, row);
   if (args.nested) {
     const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
