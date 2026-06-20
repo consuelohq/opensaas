@@ -28,6 +28,7 @@ type WorkspaceDeviceAuthorizationPollResult =
       connectorId: string;
       connectorBootstrapToken: string;
       connectorBootstrapExpiresAt: string;
+      cloudflareTunnelToken?: string;
     }
   | { status: 'denied' | 'expired'; errorCode: string };
 
@@ -49,6 +50,7 @@ type WorkspaceDeviceAuthorizationContract = {
       workspaceSlug: string;
       workspaceHost: string;
       connectorId: string;
+      cloudflareTunnelToken?: string;
     };
     deny?: boolean;
   }) => WorkspaceDeviceAuthorizationPollResult;
@@ -146,7 +148,7 @@ contractDescribe('workspace OAuth device authorization contract', () => {
     });
   });
 
-  it('should exchange an approved device grant for workspace identity and a short-lived connector bootstrap token', async () => {
+  it('should exchange an approved device grant for workspace identity and scoped bootstrap material', async () => {
     const { startWorkspaceDeviceAuthorization, pollWorkspaceDeviceAuthorization } =
       await loadWorkspaceDeviceAuthorizationContract();
     const session = startWorkspaceDeviceAuthorization({
@@ -163,6 +165,7 @@ contractDescribe('workspace OAuth device authorization contract', () => {
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
         connectorId: 'connector_123',
+        cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
       },
     });
 
@@ -172,6 +175,7 @@ contractDescribe('workspace OAuth device authorization contract', () => {
       workspaceSlug: 'kokayi',
       workspaceHost: 'kokayi.consuelohq.com',
       connectorId: 'connector_123',
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
     });
     expect(approved).toHaveProperty('connectorBootstrapToken');
     expect(JSON.stringify(approved)).not.toMatch(/cloudflare_api_token|edge_signing_secret/i);
