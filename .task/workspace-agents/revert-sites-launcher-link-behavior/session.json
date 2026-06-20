@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_098f71221726",
+  "tmuxSession": "opensaas-workspace-agents-revert-sites-launcher-link-behavior-098f7122",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/revert-sites-launcher-link-behavior",
+  "branch": "task/workspace-agents/revert-sites-launcher-link-behavior",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-revert-sites-launcher-link-behavior",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-revert-sites-launcher-link-behavior",
+  "prNumber": 1158,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1158",
+  "createdAt": "2026-06-20T01:41:24.355Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-revert-sites-launcher-link-behavior/.task/workspace-agents/revert-sites-launcher-link-behavior/session.json"
+}
