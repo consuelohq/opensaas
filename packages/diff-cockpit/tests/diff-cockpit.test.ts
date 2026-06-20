@@ -1156,6 +1156,62 @@ describe('createWorker', () => {
     expect(calls).toBe(callsAfterRefresh);
   });
 
+
+  test('refresh stores homepage snapshots in durable shared storage for cross-device first paint', async () => {
+    const snapshotStore = new Map<string, string>();
+    const snapshots = {
+      async get(key: string): Promise<string | null> {
+        return snapshotStore.get(key) || null;
+      },
+      async put(key: string, value: string): Promise<void> {
+        snapshotStore.set(key, value);
+      },
+    };
+    let calls = 0;
+    const warmingFetcher = async (input: string | URL): Promise<Response> => {
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
+          { number: 1162, title: 'shared snapshot diffs homepage', html_url: 'https://github.com/consuelohq/opensaas/pull/1162', state: 'open', draft: false, updated_at: '2026-06-20T16:00:00Z', created_at: '2026-06-20T15:59:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/shared-snapshot-diffs-homepage', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/1162')) return Response.json({ number: 1162, title: 'shared snapshot diffs homepage', html_url: 'https://github.com/consuelohq/opensaas/pull/1162', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-20T16:00:00Z', created_at: '2026-06-20T15:59:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/shared-snapshot-diffs-homepage', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error('unexpected snapshot warm url ' + url);
+    };
+    const warmingWorker = createWorker({ fetcher: warmingFetcher, snapshotStore: snapshots });
+    const refresh = await warmingWorker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh?wait=1', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [1162], reason: 'webhook.pull_request' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    expect(refresh.status).toBe(200);
+    expect(snapshotStore.size > 0).toBe(true);
+
+    const coldWorker = createWorker({ fetcher: async (input: string | URL): Promise<Response> => { throw new Error('cold worker should read durable snapshot, not GitHub: ' + String(input)); }, snapshotStore: snapshots });
+    const homepage = await coldWorker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls'));
+    const htmlPage = await coldWorker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas'));
+    const homepagePayload = await homepage.json() as { pulls: Array<{ number: number; title: string }> };
+    const html = await htmlPage.text();
+
+    expect(homepage.status).toBe(200);
+    expect(homepage.headers.get('x-diff-cockpit-cache')).toBe('snapshot');
+    expect(homepagePayload.pulls[0]).toMatchObject({ number: 1162, title: 'shared snapshot diffs homepage' });
+    expect(html).toContain('shared snapshot diffs homepage');
+    expect(html).toContain('id="diff-cockpit-index-initial-data"');
+    expect(calls > 0).toBe(true);
+  });
+
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
     const cacheStore = new Map<string, Response>();
     const cache = {
@@ -1245,8 +1301,9 @@ describe('createWorker', () => {
 
     expect(first.status).toBe(200);
     expect(first.headers.get('cache-control') || '').toContain('public');
-    expect(first.headers.get('cache-control') || '').toContain('s-maxage');
-    expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(first.headers.get('cache-control') || '').toContain('s-maxage=30');
+    expect(first.headers.get('cache-control') || '').not.toContain('stale-while-revalidate');
+    expect(first.headers.get('cache-control') || '').toContain('must-revalidate');
     expect(first.headers.get('vary') || '').toBe('Accept');
     expect(etag).toContain('W/');
     expect(second.status).toBe(304);
