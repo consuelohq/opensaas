@@ -12,7 +12,7 @@ const LEGACY_WORKFLOW_ROLE_BY_TOOL = new Map([
   ['task.start', 'task.start'],
   ['fs.write', 'workpad.write'],
   ['code.run', 'decision.research'],
-  ['task.exec', 'test.run'],
+  ['code.call', 'test.run'],
   ['git.diff', 'diff.inspect'],
   ['review.run', 'validation.review'],
   ['verify', 'validation.verify'],

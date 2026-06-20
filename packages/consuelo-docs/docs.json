@@ -440,9 +440,9 @@
                 "pages": [
                   "os/agent-context/steering",
                   "os/agent-context/decision",
-                  "os/agent-context/test-driven-agent-work",
                   "os/agent-context/tools",
-                  "os/agent-context/scripts"
+                  "os/agent-context/scripts",
+                  "os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -471,8 +471,10 @@
                   "os/skills/handoff",
                   "os/skills/research-ingest",
                   "os/skills/senior-engineer",
+                  "os/skills/sites",
                   "os/skills/skill-creator",
                   "os/skills/task",
+                  "os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -1076,9 +1078,9 @@
                 "pages": [
                   "l/fr/os/agent-context/steering",
                   "l/fr/os/agent-context/decision",
-                  "l/fr/os/agent-context/test-driven-agent-work",
                   "l/fr/os/agent-context/tools",
-                  "l/fr/os/agent-context/scripts"
+                  "l/fr/os/agent-context/scripts",
+                  "l/fr/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -1107,8 +1109,10 @@
                   "l/fr/os/skills/handoff",
                   "l/fr/os/skills/research-ingest",
                   "l/fr/os/skills/senior-engineer",
+                  "l/fr/os/skills/sites",
                   "l/fr/os/skills/skill-creator",
                   "l/fr/os/skills/task",
+                  "l/fr/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -1712,9 +1716,9 @@
                 "pages": [
                   "l/ar/os/agent-context/steering",
                   "l/ar/os/agent-context/decision",
-                  "l/ar/os/agent-context/test-driven-agent-work",
                   "l/ar/os/agent-context/tools",
-                  "l/ar/os/agent-context/scripts"
+                  "l/ar/os/agent-context/scripts",
+                  "l/ar/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -1743,8 +1747,10 @@
                   "l/ar/os/skills/handoff",
                   "l/ar/os/skills/research-ingest",
                   "l/ar/os/skills/senior-engineer",
+                  "l/ar/os/skills/sites",
                   "l/ar/os/skills/skill-creator",
                   "l/ar/os/skills/task",
+                  "l/ar/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -2348,9 +2354,9 @@
                 "pages": [
                   "l/cs/os/agent-context/steering",
                   "l/cs/os/agent-context/decision",
-                  "l/cs/os/agent-context/test-driven-agent-work",
                   "l/cs/os/agent-context/tools",
-                  "l/cs/os/agent-context/scripts"
+                  "l/cs/os/agent-context/scripts",
+                  "l/cs/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -2379,8 +2385,10 @@
                   "l/cs/os/skills/handoff",
                   "l/cs/os/skills/research-ingest",
                   "l/cs/os/skills/senior-engineer",
+                  "l/cs/os/skills/sites",
                   "l/cs/os/skills/skill-creator",
                   "l/cs/os/skills/task",
+                  "l/cs/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -2984,9 +2992,9 @@
                 "pages": [
                   "l/de/os/agent-context/steering",
                   "l/de/os/agent-context/decision",
-                  "l/de/os/agent-context/test-driven-agent-work",
                   "l/de/os/agent-context/tools",
-                  "l/de/os/agent-context/scripts"
+                  "l/de/os/agent-context/scripts",
+                  "l/de/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -3015,8 +3023,10 @@
                   "l/de/os/skills/handoff",
                   "l/de/os/skills/research-ingest",
                   "l/de/os/skills/senior-engineer",
+                  "l/de/os/skills/sites",
                   "l/de/os/skills/skill-creator",
                   "l/de/os/skills/task",
+                  "l/de/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -3620,9 +3630,9 @@
                 "pages": [
                   "l/es/os/agent-context/steering",
                   "l/es/os/agent-context/decision",
-                  "l/es/os/agent-context/test-driven-agent-work",
                   "l/es/os/agent-context/tools",
-                  "l/es/os/agent-context/scripts"
+                  "l/es/os/agent-context/scripts",
+                  "l/es/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -3651,8 +3661,10 @@
                   "l/es/os/skills/handoff",
                   "l/es/os/skills/research-ingest",
                   "l/es/os/skills/senior-engineer",
+                  "l/es/os/skills/sites",
                   "l/es/os/skills/skill-creator",
                   "l/es/os/skills/task",
+                  "l/es/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -4256,9 +4268,9 @@
                 "pages": [
                   "l/it/os/agent-context/steering",
                   "l/it/os/agent-context/decision",
-                  "l/it/os/agent-context/test-driven-agent-work",
                   "l/it/os/agent-context/tools",
-                  "l/it/os/agent-context/scripts"
+                  "l/it/os/agent-context/scripts",
+                  "l/it/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -4287,8 +4299,10 @@
                   "l/it/os/skills/handoff",
                   "l/it/os/skills/research-ingest",
                   "l/it/os/skills/senior-engineer",
+                  "l/it/os/skills/sites",
                   "l/it/os/skills/skill-creator",
                   "l/it/os/skills/task",
+                  "l/it/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -4892,9 +4906,9 @@
                 "pages": [
                   "l/ja/os/agent-context/steering",
                   "l/ja/os/agent-context/decision",
-                  "l/ja/os/agent-context/test-driven-agent-work",
                   "l/ja/os/agent-context/tools",
-                  "l/ja/os/agent-context/scripts"
+                  "l/ja/os/agent-context/scripts",
+                  "l/ja/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -4923,8 +4937,10 @@
                   "l/ja/os/skills/handoff",
                   "l/ja/os/skills/research-ingest",
                   "l/ja/os/skills/senior-engineer",
+                  "l/ja/os/skills/sites",
                   "l/ja/os/skills/skill-creator",
                   "l/ja/os/skills/task",
+                  "l/ja/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -5528,9 +5544,9 @@
                 "pages": [
                   "l/ko/os/agent-context/steering",
                   "l/ko/os/agent-context/decision",
-                  "l/ko/os/agent-context/test-driven-agent-work",
                   "l/ko/os/agent-context/tools",
-                  "l/ko/os/agent-context/scripts"
+                  "l/ko/os/agent-context/scripts",
+                  "l/ko/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -5559,8 +5575,10 @@
                   "l/ko/os/skills/handoff",
                   "l/ko/os/skills/research-ingest",
                   "l/ko/os/skills/senior-engineer",
+                  "l/ko/os/skills/sites",
                   "l/ko/os/skills/skill-creator",
                   "l/ko/os/skills/task",
+                  "l/ko/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -6164,9 +6182,9 @@
                 "pages": [
                   "l/pt/os/agent-context/steering",
                   "l/pt/os/agent-context/decision",
-                  "l/pt/os/agent-context/test-driven-agent-work",
                   "l/pt/os/agent-context/tools",
-                  "l/pt/os/agent-context/scripts"
+                  "l/pt/os/agent-context/scripts",
+                  "l/pt/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -6195,8 +6213,10 @@
                   "l/pt/os/skills/handoff",
                   "l/pt/os/skills/research-ingest",
                   "l/pt/os/skills/senior-engineer",
+                  "l/pt/os/skills/sites",
                   "l/pt/os/skills/skill-creator",
                   "l/pt/os/skills/task",
+                  "l/pt/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -6800,9 +6820,9 @@
                 "pages": [
                   "l/ro/os/agent-context/steering",
                   "l/ro/os/agent-context/decision",
-                  "l/ro/os/agent-context/test-driven-agent-work",
                   "l/ro/os/agent-context/tools",
-                  "l/ro/os/agent-context/scripts"
+                  "l/ro/os/agent-context/scripts",
+                  "l/ro/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -6831,8 +6851,10 @@
                   "l/ro/os/skills/handoff",
                   "l/ro/os/skills/research-ingest",
                   "l/ro/os/skills/senior-engineer",
+                  "l/ro/os/skills/sites",
                   "l/ro/os/skills/skill-creator",
                   "l/ro/os/skills/task",
+                  "l/ro/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -7436,9 +7458,9 @@
                 "pages": [
                   "l/ru/os/agent-context/steering",
                   "l/ru/os/agent-context/decision",
-                  "l/ru/os/agent-context/test-driven-agent-work",
                   "l/ru/os/agent-context/tools",
-                  "l/ru/os/agent-context/scripts"
+                  "l/ru/os/agent-context/scripts",
+                  "l/ru/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -7467,8 +7489,10 @@
                   "l/ru/os/skills/handoff",
                   "l/ru/os/skills/research-ingest",
                   "l/ru/os/skills/senior-engineer",
+                  "l/ru/os/skills/sites",
                   "l/ru/os/skills/skill-creator",
                   "l/ru/os/skills/task",
+                  "l/ru/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -8072,9 +8096,9 @@
                 "pages": [
                   "l/tr/os/agent-context/steering",
                   "l/tr/os/agent-context/decision",
-                  "l/tr/os/agent-context/test-driven-agent-work",
                   "l/tr/os/agent-context/tools",
-                  "l/tr/os/agent-context/scripts"
+                  "l/tr/os/agent-context/scripts",
+                  "l/tr/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -8103,8 +8127,10 @@
                   "l/tr/os/skills/handoff",
                   "l/tr/os/skills/research-ingest",
                   "l/tr/os/skills/senior-engineer",
+                  "l/tr/os/skills/sites",
                   "l/tr/os/skills/skill-creator",
                   "l/tr/os/skills/task",
+                  "l/tr/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [
@@ -8708,9 +8734,9 @@
                 "pages": [
                   "l/zh/os/agent-context/steering",
                   "l/zh/os/agent-context/decision",
-                  "l/zh/os/agent-context/test-driven-agent-work",
                   "l/zh/os/agent-context/tools",
-                  "l/zh/os/agent-context/scripts"
+                  "l/zh/os/agent-context/scripts",
+                  "l/zh/os/agent-context/test-driven-agent-work"
                 ]
               },
               {
@@ -8739,8 +8765,10 @@
                   "l/zh/os/skills/handoff",
                   "l/zh/os/skills/research-ingest",
                   "l/zh/os/skills/senior-engineer",
+                  "l/zh/os/skills/sites",
                   "l/zh/os/skills/skill-creator",
                   "l/zh/os/skills/task",
+                  "l/zh/os/skills/teach",
                   {
                     "group": "Planned Skills",
                     "pages": [

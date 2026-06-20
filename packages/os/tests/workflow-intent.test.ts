@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -31,6 +32,8 @@ type WorkflowBundlesFile = {
 
 const manifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
 const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
+const packageRoot = resolve(import.meta.dirname, '..');
+const intentScript = resolve(import.meta.dirname, '../scripts/intent.js');
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -72,7 +75,7 @@ describe('OS workflow intent bundles', () => {
 
     expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
     expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'consueloDesign.generateWebsite']));
+    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
   });
 
   test('intent.start returns a task workflow manifest bundle and first scoped hook result', () => {
@@ -115,7 +118,7 @@ describe('OS workflow intent bundles', () => {
     expect(sites.workflow).toBe('office');
     expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
     expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'consueloDesign.generateWebsite']),
+      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
     );
   });
 
@@ -173,5 +176,16 @@ describe('OS workflow intent bundles', () => {
     );
     expect(a.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-a/workpad.md');
     expect(b.hookResult?.requiredNextAction.input.path).toBe('.task/os/agent-b/workpad.md');
+  });
+
+  test('intent CLI rejects unknown actions', () => {
+    const result = spawnSync(process.execPath, [intentScript, 'unknown-action', '--json'], {
+      cwd: packageRoot,
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('unknown action: unknown-action');
   });
 });

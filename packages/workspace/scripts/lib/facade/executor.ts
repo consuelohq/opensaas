@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
 
+import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
@@ -52,6 +53,36 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
 
   const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
+}
+
+function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
+  if (toolName !== 'fs.patch') {
+    return { message: `unknown tool: ${toolName}`, data: null };
+  }
+
+  const manifestEntry = getToolManifestEntry('fs.apply_patch');
+  return {
+    message: [
+      'unknown tool: fs.patch.',
+      'fs.patch is not a workspace tool; use fs.apply_patch instead.',
+      'Call it with exactly one of patchText or patchFile.',
+      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+    ].join(' '),
+    data: {
+      requestedTool: 'fs.patch',
+      replacementTool: 'fs.apply_patch',
+      action: 'Call workspace fs.apply_patch with exactly one of patchText or patchFile.',
+      exampleCall: {
+        tool: 'fs.apply_patch',
+        input: {
+          taskSession: '<taskSession>',
+          patchFile: '/tmp/change.patch',
+          dryRun: true,
+        },
+      },
+      manifestEntry,
+    },
+  };
 }
 
 
@@ -104,11 +135,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const guidance = buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: guidance.message,
+        data: guidance.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
@@ -523,7 +555,7 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'office.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
@@ -568,6 +600,15 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, method: "get" };
   }
 
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    const { path: searchPath, ...rest } = input;
+    return { ...rest, paths: [searchPath] };
+  }
+
+  if (toolName === "fs.read" && Array.isArray(input.files)) {
+    return { ...input, filesJson: JSON.stringify(input.files) };
+  }
+
   if (toolName === "review.run") {
     return { ...input, mine: true };
   }
@@ -589,6 +630,11 @@ async function executeInternalTool<TData>(
 ): Promise<ToolResult<TData> | null> {
   const internal = entry.command.internal;
   if (!internal) return null;
+
+  if (internal === 'batch') {
+    const steps = Array.isArray(input.steps) ? input.steps : [];
+    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+  }
 
   if (internal === 'code.call') {
     return executeCodeCall(input as CodeCallInput, {
@@ -698,11 +744,6 @@ async function executeInternalTool<TData>(
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
-  if (typeof input.branch === 'string') return {
-    ok: false,
-    code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
-  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
@@ -712,6 +753,12 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   };
 
   const branch = metadata.branch || metadata.taskBranch;
+  if (typeof input.branch === 'string' && input.branch !== branch) return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'Pass either taskSession or a matching explicit branch, not a conflicting branch.',
+  };
+
   return { ok: true, branch, metadata };
 }
 
@@ -854,6 +901,24 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
 
   if (kind === 'boolean') {
     if (argument.flag && value === true) args.push(argument.flag);
+    return;
+  }
+
+  if (kind === 'readFileArray') {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      if (typeof item === 'string') {
+        args.push(item);
+        continue;
+      }
+      if (typeof item !== 'object' || item === null) continue;
+      const file = item as Record<string, unknown>;
+      if (typeof file.path !== 'string' || file.path.length === 0) continue;
+      args.push(file.path);
+      for (const [source, flag] of [['offset', '--offset'], ['limit', '--limit'], ['from', '--from'], ['to', '--to']] as const) {
+        if (typeof file[source] === 'number') args.push(flag, String(file[source]));
+      }
+    }
     return;
   }
 

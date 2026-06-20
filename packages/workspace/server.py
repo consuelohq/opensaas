@@ -271,6 +271,7 @@ DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
+CORE_MANIFEST_FILE = os.path.join(APP_DIR, 'manifests', 'core-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
@@ -303,14 +304,58 @@ def _read_optional_file(path: str) -> str:
         return handle.read()
 
 
+def _repo_root() -> str:
+    return os.path.abspath(os.path.join(APP_DIR, '..', '..'))
+
+
+def _read_manifest_code_file_source(code_file: Any) -> str | None:
+    if not isinstance(code_file, str):
+        return None
+    if not code_file.startswith('scripts/code-call-examples/'):
+        return None
+    if not code_file.endswith(('.ts', '.py')):
+        return None
+    root = _repo_root()
+    candidate = os.path.abspath(os.path.join(root, code_file))
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return None
+    if not os.path.exists(candidate):
+        return None
+    with open(candidate, 'r', encoding='utf-8') as handle:
+        return handle.read()
+
+
+def _expand_manifest_code_file_examples(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_expand_manifest_code_file_examples(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    expanded = {key: _expand_manifest_code_file_examples(item) for key, item in value.items()}
+    source = _read_manifest_code_file_source(expanded.get('codeFile'))
+    if source:
+        expanded.setdefault('codeFileSource', source)
+    return expanded
+
+
+def _read_core_manifest_for_steering() -> str:
+    raw = _read_optional_file(CORE_MANIFEST_FILE)
+    if not raw:
+        return ''
+    try:
+        expanded = _expand_manifest_code_file_examples(json.loads(raw))
+    except json.JSONDecodeError:
+        return raw
+    return json.dumps(expanded, indent=2)
+
+
 def _read_steering() -> str:
     steering_path = _resolve_steering_file()
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
 
-    manifest = _read_optional_file(TOOL_MANIFEST_FILE)
-    if manifest:
-        content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
+    core_manifest = _read_core_manifest_for_steering()
+    if core_manifest:
+        content += '\n\n# core manifest\n\n```json\n' + core_manifest + '\n```'
 
     # Keep decision-engine doctrine in decision.md without injecting it into bootstrap steering.
 
@@ -413,7 +458,7 @@ Do not call get_steering again unless you are intentionally refreshing bootstrap
 
 Use the steering already in context. If you need exact source context, read only the specific file you need:
 - packages/workspace/STEERING.md
-- packages/workspace/tooling/tool-manifest.json
+- packages/workspace/manifests/core-manifest.json
 - packages/os/STEERING.md
 - packages/os/manifests/core.manifest.json
 
@@ -497,7 +542,7 @@ def _run_get_steering() -> str:
 
 @mcp.tool(annotations=RO)
 async def get_steering() -> str:
-    """return current workspace steering and tool manifest."""
+    """return current workspace steering with the core manifest payload."""
     return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _run_get_steering)
 
 
@@ -820,7 +865,7 @@ def _check_command_guardrails(command: str) -> str | None:
 def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
     if not isinstance(tool_input, dict):
         return None
-    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash', 'mac.write'}
+    mutating_path_tools = {'fs.write', 'fs.trash', 'mac.write'}
     if tool not in mutating_path_tools:
         return None
     for key in ('path', 'target', 'destination', 'dest', 'to'):
@@ -1006,8 +1051,28 @@ def _effective_task_session(task_session: str | None, tool_input: Any) -> tuple[
     return task_session or input_task_session, None
 
 
-def _input_has_branch(value: Any) -> bool:
-    return isinstance(value, dict) and isinstance(value.get('branch'), str)
+def _input_branch(value: Any) -> str | None:
+    if isinstance(value, dict) and isinstance(value.get('branch'), str) and value.get('branch'):
+        return value.get('branch')
+    return None
+
+
+def _metadata_branch(metadata: dict[str, Any] | None) -> str | None:
+    if not isinstance(metadata, dict):
+        return None
+    branch = metadata.get('branch') or metadata.get('taskBranch')
+    return branch if isinstance(branch, str) and branch else None
+
+
+
+def _input_branch_conflicts_with_task_session(value: Any, metadata: dict[str, Any] | None) -> bool:
+    branch = _input_branch(value)
+    if branch is None:
+        return False
+    expected_branch = _metadata_branch(metadata)
+    if expected_branch is None:
+        return False
+    return branch != expected_branch
 
 
 def _batch_steps(value: Any) -> list[Any] | None:
@@ -1031,8 +1096,7 @@ def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
             return True
     return False
 
-
-def _batch_has_branch_conflict(value: Any) -> bool:
+def _batch_has_branch_conflict(value: Any, metadata: dict[str, Any] | None) -> bool:
     steps = _batch_steps(value)
     if steps is None:
         return False
@@ -1041,9 +1105,9 @@ def _batch_has_branch_conflict(value: Any) -> bool:
             continue
         child_tool = step.get('tool')
         child_input = step.get('input') if 'input' in step else step.get('args')
-        if child_tool == 'batch' and _batch_has_branch_conflict(child_input):
+        if child_tool == 'batch' and _batch_has_branch_conflict(child_input, metadata):
             return True
-        if _input_has_branch(child_input):
+        if _input_branch_conflicts_with_task_session(child_input, metadata):
             return True
     return False
 
@@ -1137,7 +1201,11 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         return finish(result)
     _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=False)
 
-    if effective_task_session and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+    task_session_metadata = _task_session_metadata(effective_task_session) if effective_task_session else None
+    if effective_task_session and (
+        _input_branch_conflicts_with_task_session(normalized_input, task_session_metadata)
+        or (tool == 'batch' and _batch_has_branch_conflict(normalized_input, task_session_metadata))
+    ):
         return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
@@ -1145,7 +1213,6 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             data={'tool': tool, 'taskSession': effective_task_session},
             traceId=trace_id,
         ))
-
     if not effective_task_session and _tool_requires_task_session(tool, normalized_input):
         return finish(_envelope(
             ok=False,

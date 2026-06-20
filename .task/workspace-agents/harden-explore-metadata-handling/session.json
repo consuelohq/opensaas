@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8d26ede6d199",
+  "tmuxSession": "opensaas-workspace-agents-harden-explore-metadata-handling-8d26ede6",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/harden-explore-metadata-handling",
+  "branch": "task/workspace-agents/harden-explore-metadata-handling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-explore-metadata-handling",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-explore-metadata-handling",
+  "prNumber": 1155,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1155",
+  "createdAt": "2026-06-19T14:03:55.255Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-explore-metadata-handling/.task/workspace-agents/harden-explore-metadata-handling/session.json"
+}

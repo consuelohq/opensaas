@@ -18,16 +18,16 @@ Use direct typed workspace tools for single known operations and durable transit
 Use context.search, explore, decideNext, and confidenceScore for discovery and prior context.
 Use no-session code.run for programmable read/investigation before a task exists.
 Use task-scoped code.run for small programs over typed workspace APIs inside a task.
-Use exact task-scoped file tools for simple file work: fs.read, fs.search, fs.list, fs.patch, fs.write, and fs.trash.
+Use exact task-scoped file tools for simple file work: fs.read, fs.search, fs.list, fs.apply_patch, fs.write, and fs.trash.
 Use batch for fixed independent checklists where later steps do not depend on earlier results.
 Use git.diff for structured diff inspection after edits.
 Use lifecycle tools directly: status, audit, review.run, verify, task.push, task.pr, task.merge, and task.finish.
 Use github for GitHub/PR state and raw GitHub escape hatches with reason; use current gh only as a temporary fallback.
-Use task.call only for focused command/runtime evidence: tests, builds, typechecks, package scripts, syntax checks, exact CLI reproduction, or commands with no typed workspace equivalent.
+Use code.call only for focused command/runtime evidence: tests, builds, typechecks, package scripts, syntax checks, exact CLI reproduction, or commands with no typed workspace equivalent.
 Use local shell-style execution only when the workspace tool model explicitly requires it or no typed path exists.
 Examples of typed-tool preference:
 
-Use status instead of task.exec git status.
+Use status instead of code.call git status.
 Use github for GitHub state instead of ad hoc gh shell commands when possible.
 Use audit for workspace scripts/docs/index drift.
 Use check-files for JavaScript syntax checks.
@@ -54,8 +54,8 @@ Use task-scoped code.run after task.start when composing task-scoped tools. Pass
 
 Batch is not code.run. Use batch only for fixed independent fan-out/fan-in. Use code.run when later steps depend on earlier results or when intermediate output should stay inside code mode.
 
-Do not drop task.call, but treat it as the last-mile command runner.
-Use task.call when the command itself is the evidence:
+Do not drop code.call, but treat it as the last-mile command runner.
+Use code.call when the command itself is the evidence:
 
 run focused tests
 run package scripts
@@ -64,7 +64,7 @@ run language/runtime syntax checks
 reproduce exact CLI behavior
 execute commands that have no typed workspace equivalent
 validate shell-level behavior such as exit codes, argv parsing, redirects, or process output
-task.call should usually be short, focused, and validation-oriented. If an agent is using task.call repeatedly for reading files, editing files, JSON inspection, workpad updates, or glue logic, switch to code.run plus typed workspace tools.
+code.call should usually be short, focused, and validation-oriented. If an agent is using code.call repeatedly for reading files, editing files, JSON inspection, workpad updates, or glue logic, switch to code.run plus typed workspace tools.
 
 Explore is a discovery command, not just decision-engine setup
 Use explore anywhere you would otherwise start guessing paths, grepping broadly, or asking “where is this implemented?”
@@ -290,7 +290,7 @@ verify for the task safety gate.
 confirm for validation evidence.
 dev for service-backed local validation.
 status and doctor for environment and workspace state.
-Use task.exec for validation only when no typed tool exists, such as:
+Use code.call for validation only when no typed tool exists, such as:
 
 Python compilation
 focused package test command
@@ -539,7 +539,7 @@ Use os.call to run fs.read with this exact input:
 Return only the file contents. Do not edit files. Do not start a task. Do not call unrelated tools.
 Example for a validation command:
 
-Use os.call to run task.call in the existing task session:
+Use os.call to run code.call in the existing task session:
 
 taskSession: <taskSession>
 branch: <branch>

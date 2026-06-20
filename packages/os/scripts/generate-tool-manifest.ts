@@ -374,9 +374,10 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
 
   assertUnique(entries);
 
+  const defaultFullOutputPath = outputPathFromConfig(config, configDir, 'full', path.join(packageRoot, 'manifests', 'tool.manifest.json'));
   const fullOutputPath = options.fullOutputPath
     ? path.resolve(options.fullOutputPath)
-    : outputPathFromConfig(config, configDir, 'full', path.join(packageRoot, 'manifests', 'tool.manifest.json'));
+    : defaultFullOutputPath;
   const coreOutputPath = options.coreOutputPath
     ? path.resolve(options.coreOutputPath)
     : outputPathFromConfig(config, configDir, 'core', path.join(packageRoot, 'manifests', 'core.manifest.json'));
@@ -403,7 +404,8 @@ export function buildToolManifest(options: BuildToolManifestOptions = {}): Build
     config: relativeToRepo(configPath),
     tools: coreTools,
   };
-  const workflows = buildWorkflowBundles(config, configDir, configPath, fullOutputPath, fullTools);
+  const workflowSourceManifestPath = fullOutputPath;
+  const workflows = buildWorkflowBundles(config, configDir, configPath, workflowSourceManifestPath, fullTools);
 
   return {
     full,

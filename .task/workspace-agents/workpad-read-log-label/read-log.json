@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/workspace-agents/workpad-read-log-label/workpad.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/code-call.ts",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/code-call/files.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/code-call.test.ts",
+    "packages/workspace/tests/task-workpad.test.js",
+    "packages/workspace/tests/task-workpad.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-06-19T04:53:04.541Z"
+}

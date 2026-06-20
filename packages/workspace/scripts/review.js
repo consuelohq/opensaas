@@ -12,7 +12,7 @@ const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
 const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
-
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
 let activeReviewRun = null;
 
@@ -861,22 +861,22 @@ async function main() {
   const root = gitRoot();
   if (!root) throw new Error("not in a git repository");
   process.chdir(root);
-  // ensure node_modules exists — symlink from main worktree if in a task worktree
-  const nodeModulesPath = path.join(root, 'node_modules');
-  if (!fs.existsSync(nodeModulesPath)) {
-    const mainRoot = run('git', ['worktree', 'list', '--porcelain']).split('\n')
-      .filter((l) => l.startsWith('worktree '))
-      .map((l) => l.replace('worktree ', ''))[0];
-    if (mainRoot && mainRoot !== root) {
-      const mainNodeModules = path.join(mainRoot, 'node_modules');
-      if (fs.existsSync(mainNodeModules)) {
-        fs.symlinkSync(mainNodeModules, nodeModulesPath);
-        if (!args.quiet && !structuredOutput) writeStdout('symlinked node_modules from main worktree');
-      }
-    }
-    if (!fs.existsSync(nodeModulesPath)) {
-      writeStderr('node_modules not found — run yarn install or check main worktree');
-    }
+  const mainRoot = run('git', ['worktree', 'list', '--porcelain']).split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => line.replace('worktree ', ''))[0];
+
+  if (mainRoot && mainRoot !== root) {
+    linkTaskWorktreeNodeModules({
+      repoRoot: mainRoot,
+      worktreePath: root,
+      writeStderr: (message) => {
+        if (!args.quiet && !structuredOutput) writeStdout(message);
+      },
+    });
+  }
+
+  if (!fs.existsSync(path.join(root, 'node_modules'))) {
+    writeStderr('node_modules not found - run yarn install or check main worktree');
   }
 
   const base = args.base || detectBase();

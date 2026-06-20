@@ -65,22 +65,23 @@ const agentContextGroupKey = 'osAgentContext';
 const legacyGroupKey = '__legacyOsRawSourceTools';
 const agentContextGroupLabel = 'Agent Context';
 const agentContextGroupIcon = 'brain';
+const staticAgentContextPages = ['os/agent-context/test-driven-agent-work'];
 
 const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'ko', 'pt', 'ro', 'ru', 'tr', 'zh'] as const;
 
 export const rawSourceDocs: RawSourceDoc[] = [
   {
-    sourcePath: 'packages/os/STEERING.md',
+    sourcePath: 'packages/os/steering/system_prompt.md',
     slug: 'os/agent-context/steering',
     legacySlugs: ['os/tools/default-steering'],
-    title: 'steering.md',
+    title: 'system_prompt.md',
     description: 'Runtime steering loaded into the Consuelo OS agent.',
     runtimeRole: 'Identity, product boundaries, OS server contract, permissions posture, customer-facing skill doctrine, and runtime operating context.',
     controls: 'How OS agents think, which server and skill boundaries they protect, when they act, and when they stop.',
     generatedRoute: '/os/agent-context/steering',
   },
   {
-    sourcePath: 'packages/os/decision.md',
+    sourcePath: 'packages/os/steering/decision.md',
     slug: 'os/agent-context/decision',
     legacySlugs: ['os/tools/decision-engine'],
     title: 'decision.md',
@@ -274,7 +275,10 @@ const syncRawSourceDocs = (): void => {
   }
 };
 
-const expectedAgentContextPages = (): string[] => rawSourceDocs.map((doc) => doc.slug);
+const expectedAgentContextPages = (): string[] => [
+  ...rawSourceDocs.map((doc) => doc.slug),
+  ...staticAgentContextPages,
+];
 
 const buildAgentContextGroup = (): BaseGroup => ({
   key: agentContextGroupKey,

@@ -99,7 +99,7 @@ class OsSteeringServerTest(unittest.TestCase):
 
         self.assertEqual(first, steering_text)
         self.assertIn('GET_STEERING_LOOP_GUARD', second)
-        self.assertIn('packages/os/STEERING.md', second)
+        self.assertIn('$CONSUELO_HOME/steering/system_prompt.md', second)
         self.assertIn('tools.search', second)
         self.assertIn('GET_STEERING_RATE_LIMITED', third)
         self.assertIn('GET_STEERING_COOLDOWN', fourth)

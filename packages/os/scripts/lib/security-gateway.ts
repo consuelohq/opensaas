@@ -1,8 +1,20 @@
-import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createPrivateKey,
+  createPublicKey,
+  generateKeyPairSync,
+  randomUUID,
+  sign as cryptoSign,
+  verify as cryptoVerify,
+} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { readFullToolManifest } from './manifest';
+
 type JsonObject = Record<string, unknown>;
+type SignatureAlgorithm = 'ed25519';
+
+const SIGNATURE_ALGORITHM: SignatureAlgorithm = 'ed25519';
 
 type PublicGatewayMetadata = {
   provider: 'cloudflare';
@@ -26,11 +38,35 @@ export type GatewaySecurityConfig = {
 export type AgentAppToken = {
   tokenId: string;
   workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
   callerId: string;
   appId: string;
   scopes: string[];
   expiresAt: string;
   secret: string;
+};
+
+export type AgentAppCredentialStatus = {
+  tokenId: string;
+  workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
+  callerId: string;
+  appId: string;
+  scopes: string[];
+  expiresAt: string;
+  status: 'active' | 'rotated' | 'revoked';
+  createdAt: string;
+  updatedAt: string;
+  rotatedAt?: string;
+  revokedAt?: string;
+  lastUsedAt?: string;
+  rotationOfTokenId?: string;
 };
 
 type SignedGatewayRequest = {
@@ -41,7 +77,7 @@ type SignedGatewayRequest = {
 };
 
 export type VerificationResult =
-  | { ok: true; caller: { workspaceId: string; callerId: string; scopes: string[] } }
+  | { ok: true; caller: { workspaceId: string; subjectId: string; deviceId: string; connectorId: string; connectionId: string; callerId: string; appId: string; scopes: string[] } }
   | { ok: false; status: number; error: { code: string; message: string } };
 
 type PolicyDecision = {
@@ -51,10 +87,31 @@ type PolicyDecision = {
   reason: string;
 };
 
+export type ToolScopeResolution =
+  | {
+      ok: true;
+      toolName: string;
+      category: 'read' | 'write' | 'dangerous';
+      requiredScope: string;
+      manifestKind: 'os-skill' | 'facade-tool';
+    }
+  | {
+      ok: false;
+      status: 403;
+      error: { code: 'UNKNOWN_TOOL_SCOPE'; message: string };
+    };
+
 type AuditEvent = {
   event: string;
   callerId: string;
   workspaceId: string;
+  tokenId?: string;
+  appId?: string;
+  subjectId?: string;
+  deviceId?: string;
+  connectorId?: string;
+  connectionId?: string;
+  scopes?: string[];
   toolName?: string;
   route?: string;
   decision: string;
@@ -93,8 +150,16 @@ type OutboundConnectorConfig = {
   cloudflare: { managedHostname: string; publicRoutes: string[] };
 };
 
-type StoredToken = AgentAppToken & {
+type StoredToken = Omit<AgentAppToken, 'secret'> & {
   status: 'active' | 'rotated' | 'revoked';
+  signatureAlgorithm: SignatureAlgorithm;
+  publicKey: string;
+  createdAt: string;
+  updatedAt: string;
+  rotatedAt?: string;
+  revokedAt?: string;
+  lastUsedAt?: string;
+  rotationOfTokenId?: string;
 };
 
 type StoredNonce = {
@@ -130,13 +195,65 @@ const PUBLIC_ROUTES = [
 ] as const;
 
 const MAX_TIMESTAMP_SKEW_MS = 5 * 60 * 1000;
+const DEFAULT_DEVICE_ID = 'device:local-os';
+const DEFAULT_CONNECTOR_ID = 'connector:consuelo-os-gateway';
 
 function nowIso(): string {
   return new Date().toISOString();
 }
 
-function randomSecret(): string {
-  return randomBytes(32).toString('base64url');
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function fallbackConnectionId(tokenId: string): string {
+  return `connection:${tokenId}`;
+}
+
+function generateCredentialKeyPair(): { privateKey: string; publicKey: string } {
+  const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+  return {
+    privateKey: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
+    publicKey: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+  };
+}
+
+function publicTokenFromStored(token: StoredToken, secret: string): AgentAppToken {
+  return {
+    tokenId: token.tokenId,
+    workspaceId: token.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
+    callerId: token.callerId,
+    appId: token.appId,
+    scopes: [...token.scopes],
+    expiresAt: token.expiresAt,
+    secret,
+  };
+}
+
+function credentialStatusFromStored(token: StoredToken): AgentAppCredentialStatus {
+  return {
+    tokenId: token.tokenId,
+    workspaceId: token.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
+    callerId: token.callerId,
+    appId: token.appId,
+    scopes: [...token.scopes],
+    expiresAt: token.expiresAt,
+    status: token.status,
+    createdAt: token.createdAt,
+    updatedAt: token.updatedAt,
+    ...(token.rotatedAt ? { rotatedAt: token.rotatedAt } : {}),
+    ...(token.revokedAt ? { revokedAt: token.revokedAt } : {}),
+    ...(token.lastUsedAt ? { lastUsedAt: token.lastUsedAt } : {}),
+    ...(token.rotationOfTokenId ? { rotationOfTokenId: token.rotationOfTokenId } : {}),
+  };
 }
 
 function authPathForHome(home: string): string {
@@ -174,7 +291,13 @@ function writeJsonSecure(filePath: string, value: unknown): void {
 
 function readStoredAuthFile(filePath: string): StoredAuthConfig {
   const raw = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(raw) as StoredAuthConfig;
+  const parsed = JSON.parse(raw) as StoredAuthConfig;
+  const fallbackTimestamp = parsed.updatedAt ?? parsed.createdAt ?? nowIso();
+  return {
+    ...parsed,
+    tokens: normalizeStoredTokens(parsed.tokens, fallbackTimestamp),
+    seenNonces: normalizeSeenNonces(parsed.seenNonces, fallbackTimestamp),
+  };
 }
 
 function readStoredAuth(config: GatewaySecurityConfig): StoredAuthConfig {
@@ -198,6 +321,72 @@ function normalizeSeenNonces(value: unknown, fallbackSeenAt: string): Record<str
   return normalized;
 }
 
+function isLegacySecretToken(candidate: Partial<StoredToken> & { secret?: unknown }): boolean {
+  return typeof candidate.secret === 'string'
+    && typeof candidate.workspaceId === 'string'
+    && typeof candidate.callerId === 'string'
+    && typeof candidate.appId === 'string'
+    && Array.isArray(candidate.scopes)
+    && typeof candidate.expiresAt === 'string';
+}
+
+function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Record<string, StoredToken> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const normalized: Record<string, StoredToken> = {};
+
+  for (const [tokenId, record] of Object.entries(value as Record<string, unknown>)) {
+    if (!record || typeof record !== 'object' || Array.isArray(record)) continue;
+    const candidate = record as Partial<StoredToken> & { credentialHash?: unknown; secret?: unknown };
+    if (
+      typeof candidate.workspaceId !== 'string' ||
+      typeof candidate.callerId !== 'string' ||
+      typeof candidate.appId !== 'string' ||
+      !Array.isArray(candidate.scopes) ||
+      typeof candidate.expiresAt !== 'string' ||
+      candidate.signatureAlgorithm !== SIGNATURE_ALGORITHM ||
+      typeof candidate.publicKey !== 'string'
+    ) {
+      if (isLegacySecretToken(candidate)) {
+        throw new Error(`Legacy gateway token ${tokenId} requires credential rotation before generated auth can be upgraded.`);
+      }
+      continue;
+    }
+    const status = candidate.status === 'rotated' || candidate.status === 'revoked'
+      ? candidate.status
+      : 'active';
+    const createdAt = typeof candidate.createdAt === 'string' ? candidate.createdAt : fallbackTimestamp;
+    const updatedAt = typeof candidate.updatedAt === 'string' ? candidate.updatedAt : fallbackTimestamp;
+    const subjectId = nonEmptyString(candidate.subjectId) ?? candidate.callerId;
+    const deviceId = nonEmptyString(candidate.deviceId) ?? DEFAULT_DEVICE_ID;
+    const connectorId = nonEmptyString(candidate.connectorId) ?? DEFAULT_CONNECTOR_ID;
+    const connectionId = nonEmptyString(candidate.connectionId) ?? fallbackConnectionId(tokenId);
+
+    normalized[tokenId] = {
+      tokenId,
+      workspaceId: candidate.workspaceId,
+      subjectId,
+      deviceId,
+      connectorId,
+      connectionId,
+      callerId: candidate.callerId,
+      appId: candidate.appId,
+      scopes: candidate.scopes.filter((scope): scope is string => typeof scope === 'string'),
+      expiresAt: candidate.expiresAt,
+      signatureAlgorithm: SIGNATURE_ALGORITHM,
+      publicKey: candidate.publicKey,
+      status,
+      createdAt,
+      updatedAt,
+      ...(typeof candidate.rotatedAt === 'string' ? { rotatedAt: candidate.rotatedAt } : {}),
+      ...(typeof candidate.revokedAt === 'string' ? { revokedAt: candidate.revokedAt } : {}),
+      ...(typeof candidate.lastUsedAt === 'string' ? { lastUsedAt: candidate.lastUsedAt } : {}),
+      ...(typeof candidate.rotationOfTokenId === 'string' ? { rotationOfTokenId: candidate.rotationOfTokenId } : {}),
+    };
+  }
+
+  return normalized;
+}
+
 function pruneSeenNonces(stored: StoredAuthConfig, nowTime: number): void {
   const cutoffTime = nowTime - MAX_TIMESTAMP_SKEW_MS;
   for (const [nonce, record] of Object.entries(stored.seenNonces)) {
@@ -209,6 +398,59 @@ function pruneSeenNonces(stored: StoredAuthConfig, nowTime: number): void {
 
 function writeStoredAuth(config: GatewaySecurityConfig, stored: StoredAuthConfig): void {
   writeJsonSecure(config.generatedAuthPath, { ...stored, updatedAt: nowIso() });
+}
+
+function homeFromGeneratedAuthPath(generatedAuthPath: string): string {
+  return path.dirname(path.dirname(path.dirname(generatedAuthPath)));
+}
+
+function recordCredentialAuditEvent(
+  config: GatewaySecurityConfig,
+  token: StoredToken,
+  event: string,
+  decision: string,
+  status: 'allowed' | 'denied' = 'allowed',
+  route?: string,
+): void {
+  recordGatewayAuditEvent({
+    home: homeFromGeneratedAuthPath(config.generatedAuthPath),
+    event: {
+      event,
+      callerId: token.callerId,
+      workspaceId: token.workspaceId,
+      tokenId: token.tokenId,
+      appId: token.appId,
+      subjectId: token.subjectId,
+      deviceId: token.deviceId,
+      connectorId: token.connectorId,
+      connectionId: token.connectionId,
+      scopes: [...token.scopes],
+      ...(route ? { route } : {}),
+      decision,
+      status,
+      timestamp: nowIso(),
+    },
+  });
+}
+
+function denyCredentialUse(input: {
+  config: GatewaySecurityConfig;
+  token: StoredToken;
+  status: number;
+  code: string;
+  message: string;
+  decision: string;
+  route: string;
+}): VerificationResult {
+  recordCredentialAuditEvent(
+    input.config,
+    input.token,
+    'gateway.credential.used',
+    input.decision,
+    'denied',
+    input.route,
+  );
+  return safeError(input.status, input.code, input.message);
 }
 
 function createPublicGatewayMetadata(input: {
@@ -245,9 +487,79 @@ function safeError(status: number, code: string, message: string): VerificationR
   return { ok: false, status, error: { code, message } };
 }
 
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+const DANGEROUS_TOOL_NAMES = new Set([
+  'task.merge',
+  'task.finish',
+  'task.pr',
+  'task.push',
+  'fs.trash',
+  'mac.call',
+  'mac.exec',
+]);
+
+const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
+
+export function resolveToolScope(toolName: string): ToolScopeResolution {
+  const entry = readFullToolManifest().tools.find((candidate) => candidate.name === toolName);
+  if (!entry) {
+    return {
+      ok: false,
+      status: 403,
+      error: {
+        code: 'UNKNOWN_TOOL_SCOPE',
+        message: 'Tool is not present in the generated Consuelo tool manifest.',
+      },
+    };
+  }
+
+  let category: 'read' | 'write' | 'dangerous' = 'read';
+  if (DANGEROUS_TOOL_NAMES.has(toolName)) {
+    category = 'dangerous';
+  } else if (entry.kind === 'facade-tool') {
+    const capabilities = isJsonObject(entry.definition) && isJsonObject(entry.definition.capabilities)
+      ? entry.definition.capabilities
+      : null;
+    const readOnly = capabilities?.readOnly === true;
+    const mutating = capabilities?.mutating === true;
+    category = readOnly && !mutating ? 'read' : 'write';
+  } else if (entry.kind === 'os-skill') {
+    const definition = entry.definition;
+    const permission = typeof definition.permission === 'string' ? definition.permission : 'read';
+    if (ELEVATED_OS_PERMISSIONS.has(permission)) {
+      category = 'dangerous';
+    } else if (
+      permission === 'write' ||
+      permission === 'draft' ||
+      definition.writesRecords === true ||
+      definition.externalSideEffects === true ||
+      definition.requiresApproval === true
+    ) {
+      category = 'write';
+    }
+  }
+
+  return {
+    ok: true,
+    toolName,
+    category,
+    requiredScope: `tool:${toolName}:${category}`,
+    manifestKind: entry.kind,
+  };
+}
+
 function canonicalRequest(input: {
   tokenId: string;
   workspaceId: string;
+  subjectId: string;
+  deviceId: string;
+  connectorId: string;
+  connectionId: string;
+  callerId: string;
+  appId: string;
   method: string;
   path: string;
   body: string;
@@ -257,6 +569,12 @@ function canonicalRequest(input: {
   return [
     input.tokenId,
     input.workspaceId,
+    input.subjectId,
+    input.deviceId,
+    input.connectorId,
+    input.connectionId,
+    input.callerId,
+    input.appId,
     input.method.toUpperCase(),
     input.path,
     input.body,
@@ -265,14 +583,16 @@ function canonicalRequest(input: {
   ].join('\n');
 }
 
-function sign(secret: string, payload: string): string {
-  return createHmac('sha256', secret).update(payload).digest('base64url');
+function sign(privateKey: string, payload: string): string {
+  return cryptoSign(null, Buffer.from(payload), createPrivateKey(privateKey)).toString('base64url');
 }
 
-function signatureMatches(left: string, right: string): boolean {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+function verifySignature(publicKey: string, payload: string, signature: string): boolean {
+  try {
+    return cryptoVerify(null, Buffer.from(payload), createPublicKey(publicKey), Buffer.from(signature, 'base64url'));
+  } catch {
+    return false;
+  }
 }
 
 function requirePrivateUpstream(upstream: { host: string; port: number }): void {
@@ -291,10 +611,11 @@ export function createGatewaySecurityConfig(input: {
   workspaceSlug: string;
   workspaceHost: string;
   upstreamPort?: number;
+  mtls?: { enabled: boolean; caFile: string };
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
-  const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 8850 };
+  const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 8960 };
   const publicGateway = createPublicGatewayMetadata({
     workspaceHost: input.workspaceHost,
     upstream,
@@ -314,7 +635,7 @@ export function createGatewaySecurityConfig(input: {
         signingKeyId: existing.signingKeyId || `csg_${randomUUID()}`,
         publicRoutes: [...PUBLIC_ROUTES],
         publicGateway,
-        tokens: existing.tokens ?? {},
+        tokens: normalizeStoredTokens(existing.tokens, existing.updatedAt ?? existing.createdAt ?? nowIso()),
         seenNonces: normalizeSeenNonces(existing.seenNonces, existing.updatedAt ?? existing.createdAt ?? nowIso()),
         updatedAt: nowIso(),
       }
@@ -339,6 +660,7 @@ export function createGatewaySecurityConfig(input: {
     renderCaddyGatewayConfig({
       workspaceHost: input.workspaceHost,
       upstream,
+      ...(input.mtls ? { mtls: input.mtls } : {}),
     }),
     { mode: 0o600 },
   );
@@ -358,25 +680,38 @@ export function issueAgentAppToken(input: {
   config: GatewaySecurityConfig;
   callerId: string;
   appId: string;
+  subjectId?: string;
+  deviceId?: string;
+  connectorId?: string;
+  connectionId?: string;
   scopes: string[];
   expiresInSeconds: number;
 }): AgentAppToken {
   const stored = readStoredAuth(input.config);
+  const keyPair = generateCredentialKeyPair();
+  const timestamp = nowIso();
+  const tokenId = `tok_${randomUUID()}`;
   const token: StoredToken = {
-    tokenId: `tok_${randomUUID()}`,
+    tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: nonEmptyString(input.subjectId) ?? input.callerId,
+    deviceId: nonEmptyString(input.deviceId) ?? DEFAULT_DEVICE_ID,
+    connectorId: nonEmptyString(input.connectorId) ?? DEFAULT_CONNECTOR_ID,
+    connectionId: nonEmptyString(input.connectionId) ?? `connection:${randomUUID()}`,
     callerId: input.callerId,
     appId: input.appId,
     scopes: [...input.scopes],
     expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
-    secret: randomSecret(),
+    signatureAlgorithm: SIGNATURE_ALGORITHM,
+    publicKey: keyPair.publicKey,
     status: 'active',
+    createdAt: timestamp,
+    updatedAt: timestamp,
   };
+  recordCredentialAuditEvent(input.config, token, 'gateway.credential.issued', 'issued');
   stored.tokens[token.tokenId] = token;
   writeStoredAuth(input.config, stored);
-  const { status: _status, ...publicToken } = token;
-  void _status;
-  return publicToken;
+  return publicTokenFromStored(token, keyPair.privateKey);
 }
 
 export function rotateAgentAppToken(input: {
@@ -388,18 +723,38 @@ export function rotateAgentAppToken(input: {
   if (!existing) {
     throw new Error('gateway token is not recognized');
   }
-  existing.status = 'rotated';
-  const rotated: StoredToken = {
+  const timestamp = nowIso();
+  const keyPair = generateCredentialKeyPair();
+  const rotatedExisting: StoredToken = {
     ...existing,
-    tokenId: `tok_${randomUUID()}`,
-    secret: randomSecret(),
-    status: 'active',
+    status: 'rotated',
+    rotatedAt: timestamp,
+    updatedAt: timestamp,
   };
+  const rotated: StoredToken = {
+    tokenId: `tok_${randomUUID()}`,
+    workspaceId: existing.workspaceId,
+    subjectId: existing.subjectId,
+    deviceId: existing.deviceId,
+    connectorId: existing.connectorId,
+    connectionId: existing.connectionId,
+    callerId: existing.callerId,
+    appId: existing.appId,
+    scopes: [...existing.scopes],
+    expiresAt: existing.expiresAt,
+    signatureAlgorithm: SIGNATURE_ALGORITHM,
+    publicKey: keyPair.publicKey,
+    status: 'active',
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    rotationOfTokenId: existing.tokenId,
+  };
+  recordCredentialAuditEvent(input.config, rotatedExisting, 'gateway.credential.rotated', 'rotated');
+  recordCredentialAuditEvent(input.config, rotated, 'gateway.credential.issued', 'issued');
+  stored.tokens[rotatedExisting.tokenId] = rotatedExisting;
   stored.tokens[rotated.tokenId] = rotated;
   writeStoredAuth(input.config, stored);
-  const { status: _status, ...publicToken } = rotated;
-  void _status;
-  return publicToken;
+  return publicTokenFromStored(rotated, keyPair.privateKey);
 }
 
 export function revokeAgentAppToken(input: {
@@ -408,8 +763,32 @@ export function revokeAgentAppToken(input: {
 }): void {
   const stored = readStoredAuth(input.config);
   const token = stored.tokens[input.tokenId];
-  if (token) token.status = 'revoked';
+  if (token) {
+    const timestamp = nowIso();
+    token.status = 'revoked';
+    token.revokedAt = timestamp;
+    token.updatedAt = timestamp;
+    recordCredentialAuditEvent(input.config, token, 'gateway.credential.revoked', 'revoked');
+  }
   writeStoredAuth(input.config, stored);
+}
+
+export function listAgentAppCredentialStatuses(input: {
+  config: GatewaySecurityConfig;
+}): AgentAppCredentialStatus[] {
+  const stored = readStoredAuth(input.config);
+  return Object.values(stored.tokens)
+    .map(credentialStatusFromStored)
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+}
+
+export function getAgentAppCredentialStatus(input: {
+  config: GatewaySecurityConfig;
+  tokenId: string;
+}): AgentAppCredentialStatus | null {
+  const stored = readStoredAuth(input.config);
+  const token = stored.tokens[input.tokenId];
+  return token ? credentialStatusFromStored(token) : null;
 }
 
 export function signMachineRequest(input: {
@@ -424,6 +803,12 @@ export function signMachineRequest(input: {
   const payload = canonicalRequest({
     tokenId: input.token.tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: input.token.subjectId,
+    deviceId: input.token.deviceId,
+    connectorId: input.token.connectorId,
+    connectionId: input.token.connectionId,
+    callerId: input.token.callerId,
+    appId: input.token.appId,
     method: input.method,
     path: input.path,
     body: input.body,
@@ -439,7 +824,12 @@ export function signMachineRequest(input: {
       authorization: `Bearer ${input.token.tokenId}`,
       'x-consuelo-token-id': input.token.tokenId,
       'x-consuelo-workspace-id': input.config.workspaceId,
+      'x-consuelo-subject-id': input.token.subjectId,
+      'x-consuelo-device-id': input.token.deviceId,
+      'x-consuelo-credential-connector-id': input.token.connectorId,
+      'x-consuelo-connection-id': input.token.connectionId,
       'x-consuelo-caller-id': input.token.callerId,
+      'x-consuelo-app-id': input.token.appId,
       'x-consuelo-timestamp': input.timestamp,
       'x-consuelo-nonce': input.nonce,
       'x-consuelo-signature': signature,
@@ -463,8 +853,14 @@ export function verifyMachineRequest(input: {
   const timestamp = input.headers['x-consuelo-timestamp'];
   const nonce = input.headers['x-consuelo-nonce'];
   const signature = input.headers['x-consuelo-signature'];
+  const subjectId = input.headers['x-consuelo-subject-id'];
+  const deviceId = input.headers['x-consuelo-device-id'];
+  const connectorId = input.headers['x-consuelo-credential-connector-id'];
+  const connectionId = input.headers['x-consuelo-connection-id'];
+  const callerId = input.headers['x-consuelo-caller-id'];
+  const appId = input.headers['x-consuelo-app-id'];
 
-  if (!tokenId || !timestamp || !nonce || !signature) {
+  if (!tokenId || !timestamp || !nonce || !signature || !subjectId || !deviceId || !connectorId || !connectionId || !callerId || !appId) {
     return safeError(401, 'MISSING_SIGNATURE', 'Signed gateway headers are required.');
   }
 
@@ -474,52 +870,231 @@ export function verifyMachineRequest(input: {
 
   const token = stored.tokens[tokenId];
   if (!token) return safeError(401, 'UNKNOWN_TOKEN', 'Gateway token is not recognized.');
-  if (token.status === 'rotated') return safeError(401, 'TOKEN_ROTATED', 'Gateway token has been rotated.');
-  if (token.status === 'revoked') return safeError(401, 'TOKEN_REVOKED', 'Gateway token has been revoked.');
+  if (token.status === 'rotated') {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_ROTATED',
+      message: 'Gateway token has been rotated.',
+      decision: 'token_rotated',
+      route: input.path,
+    });
+  }
+  if (token.status === 'revoked') {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_REVOKED',
+      message: 'Gateway token has been revoked.',
+      decision: 'token_revoked',
+      route: input.path,
+    });
+  }
+  if (token.workspaceId !== input.workspaceId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'WORKSPACE_MISMATCH',
+      message: 'Gateway token workspace does not match the signed request.',
+      decision: 'workspace_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.subjectId !== subjectId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'SUBJECT_MISMATCH',
+      message: 'Gateway subject identity does not match this token.',
+      decision: 'subject_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.deviceId !== deviceId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'DEVICE_MISMATCH',
+      message: 'Gateway device identity does not match this token.',
+      decision: 'device_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.connectorId !== connectorId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CONNECTOR_MISMATCH',
+      message: 'Gateway connector identity does not match this token.',
+      decision: 'connector_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.connectionId !== connectionId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CONNECTION_MISMATCH',
+      message: 'Gateway connection identity does not match this token.',
+      decision: 'connection_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.callerId !== callerId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'CALLER_MISMATCH',
+      message: 'Gateway caller identity does not match this token.',
+      decision: 'caller_mismatch',
+      route: input.path,
+    });
+  }
+  if (token.appId !== appId) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'APP_MISMATCH',
+      message: 'Gateway app identity does not match this token.',
+      decision: 'app_mismatch',
+      route: input.path,
+    });
+  }
 
   const requestTime = Date.parse(timestamp);
   const nowTime = Date.parse(input.now);
   if (!Number.isFinite(requestTime) || !Number.isFinite(nowTime)) {
-    return safeError(401, 'EXPIRED_TIMESTAMP', 'Gateway timestamp is invalid.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'EXPIRED_TIMESTAMP',
+      message: 'Gateway timestamp is invalid.',
+      decision: 'invalid_timestamp',
+      route: input.path,
+    });
   }
   if (Math.abs(nowTime - requestTime) > MAX_TIMESTAMP_SKEW_MS) {
-    return safeError(401, 'EXPIRED_TIMESTAMP', 'Gateway timestamp is outside the allowed window.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'EXPIRED_TIMESTAMP',
+      message: 'Gateway timestamp is outside the allowed window.',
+      decision: 'expired_timestamp',
+      route: input.path,
+    });
   }
 
   const expiresAt = Date.parse(token.expiresAt);
   if (!Number.isFinite(expiresAt) || expiresAt <= nowTime) {
-    return safeError(401, 'TOKEN_EXPIRED', 'Gateway token has expired.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'TOKEN_EXPIRED',
+      message: 'Gateway token has expired.',
+      decision: 'token_expired',
+      route: input.path,
+    });
   }
 
   pruneSeenNonces(stored, nowTime);
   if (stored.seenNonces[nonce]) {
-    return safeError(401, 'REPLAYED_NONCE', 'Gateway nonce has already been used.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'REPLAYED_NONCE',
+      message: 'Gateway nonce has already been used.',
+      decision: 'replayed_nonce',
+      route: input.path,
+    });
   }
 
-  const expected = sign(token.secret, canonicalRequest({
+  if (token.signatureAlgorithm !== SIGNATURE_ALGORITHM) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'BAD_SIGNATURE',
+      message: 'Gateway signature could not be verified.',
+      decision: 'unsupported_signature_algorithm',
+      route: input.path,
+    });
+  }
+
+  const payload = canonicalRequest({
     tokenId,
     workspaceId: input.config.workspaceId,
+    subjectId: token.subjectId,
+    deviceId: token.deviceId,
+    connectorId: token.connectorId,
+    connectionId: token.connectionId,
+    callerId: token.callerId,
+    appId: token.appId,
     method: input.method,
     path: input.path,
     body: input.body,
     timestamp,
     nonce,
-  }));
-  if (!signatureMatches(signature, expected)) {
-    return safeError(401, 'BAD_SIGNATURE', 'Gateway signature could not be verified.');
+  });
+  if (!verifySignature(token.publicKey, payload, signature)) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'BAD_SIGNATURE',
+      message: 'Gateway signature could not be verified.',
+      decision: 'bad_signature',
+      route: input.path,
+    });
   }
 
   if (!token.scopes.includes(input.requiredScope)) {
-    return safeError(403, 'MISSING_SCOPE', 'Gateway token does not grant the required scope.');
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 403,
+      code: 'MISSING_SCOPE',
+      message: 'Gateway token does not grant the required scope.',
+      decision: 'missing_scope',
+      route: input.path,
+    });
   }
 
-  stored.seenNonces[nonce] = { tokenId, seenAt: new Date(nowTime).toISOString() };
+  const verifiedAt = new Date(nowTime).toISOString();
+  stored.seenNonces[nonce] = { tokenId, seenAt: verifiedAt };
+  token.lastUsedAt = verifiedAt;
+  token.updatedAt = verifiedAt;
+  recordCredentialAuditEvent(
+    input.config,
+    token,
+    'gateway.credential.used',
+    'verified',
+    'allowed',
+    input.path,
+  );
   writeStoredAuth(input.config, stored);
   return {
     ok: true,
     caller: {
       workspaceId: token.workspaceId,
+      subjectId: token.subjectId,
+      deviceId: token.deviceId,
+      connectorId: token.connectorId,
+      connectionId: token.connectionId,
       callerId: token.callerId,
+      appId: token.appId,
       scopes: [...token.scopes],
     },
   };
@@ -534,7 +1109,7 @@ export function renderCaddyGatewayConfig(input: {
   const mtlsBlock = input.mtls?.enabled
     ? `\n  tls {\n    client_auth {\n      mode require_and_verify\n      trusted_ca_cert_file ${input.mtls.caFile}\n    }\n  }\n`
     : '';
-  return `${input.workspaceHost} {\n  encode zstd gzip\n  reverse_proxy ${input.upstream.host}:${input.upstream.port}${mtlsBlock}}\n`;
+  return `${input.workspaceHost} {\n  encode zstd gzip\n  request_body {\n    max_size 4MB\n  }\n  header {\n    -Server\n    X-Content-Type-Options \"nosniff\"\n    Referrer-Policy \"no-referrer\"\n    Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n  }${mtlsBlock}\n  reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n    header_up -X-Consuelo-Edge-Signature\n    header_up -X-Consuelo-Edge-Cache-Authority\n    header_up -X-Consuelo-Route\n    header_up -X-Consuelo-Surface\n    header_up -X-Consuelo-Connector-Id\n    header_up X-Forwarded-Host {host}\n    header_up X-Forwarded-Proto {scheme}\n    transport http {\n      dial_timeout 5s\n      response_header_timeout 15s\n      read_timeout 60s\n      write_timeout 60s\n    }\n  }\n}\n`;
 }
 
 export function createPublicRouteRegistry(input: {

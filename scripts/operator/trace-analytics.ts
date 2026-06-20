@@ -45,6 +45,10 @@ const estFormatter = new Intl.DateTimeFormat('en-US', {
 
 const integerColumns = new Set([
   'calls',
+  'rows',
+  'rows_in_past_week',
+  'rows_in_past_month',
+  'rows_older_than_week',
   'tracked_rows',
   'estimated_rows',
   'token_rows',
@@ -115,7 +119,14 @@ function value(row: Row, key: string): string {
   if (raw === null || raw === undefined) return '0';
   if (key === 'ts') return formatEst(raw);
   if (key === 'last_seen') return formatRelative(raw);
-  if (key === 'first_tracked_token_row' || key === 'latest_tracked_token_row') return formatEst(raw);
+  if (
+    key === 'first_row' ||
+    key === 'latest_row' ||
+    key === 'first_tracked_token_row' ||
+    key === 'latest_tracked_token_row'
+  ) {
+    return formatEst(raw);
+  }
   if (key === 'duration' || key === 'avg_duration' || key === 'total_duration') return formatDuration(raw);
   if (integerColumns.has(key)) return formatInteger(raw);
   return String(raw);
@@ -131,7 +142,7 @@ function printTable(title: string, rows: Row[], columns: string[]) {
 
   const widths = columns.map((column) => {
     const max = Math.max(column.length, ...rows.map((row) => value(row, column).length));
-    if (column === 'branch' || column === 'reason_preview') return Math.min(max, 72);
+    if (column === 'branch' || column === 'reason_preview' || column === 'window_note') return Math.min(max, 88);
     if (column === 'ts' || column === 'last_seen' || column.includes('row')) return Math.min(max, 26);
     return Math.min(max, 18);
   });
@@ -156,6 +167,22 @@ const estimatedOutput = `CAST(round((length(coalesce(result_json, '')) + length(
 const inputMixed = `coalesce(input_tokens, ${estimatedInput})`;
 const outputMixed = `coalesce(output_tokens, ${estimatedOutput})`;
 const totalMixed = `coalesce(total_tokens, ${inputMixed} + ${outputMixed})`;
+
+const historySql = `
+SELECT
+  min(ts) AS first_row,
+  max(ts) AS latest_row,
+  count(*) AS rows,
+  sum(CASE WHEN ts >= datetime('now', '-7 days') THEN 1 ELSE 0 END) AS rows_in_past_week,
+  sum(CASE WHEN ts >= datetime('now', '-30 days') THEN 1 ELSE 0 END) AS rows_in_past_month,
+  sum(CASE WHEN ts < datetime('now', '-7 days') THEN 1 ELSE 0 END) AS rows_older_than_week,
+  CASE
+    WHEN count(*) = 0 THEN 'no trace rows found'
+    WHEN sum(CASE WHEN ts < datetime('now', '-7 days') THEN 1 ELSE 0 END) = 0 THEN 'past_week and past_month match because this trace DB has no rows older than 7 days'
+    ELSE 'past_month includes rows older than 7 days'
+  END AS window_note
+FROM tool_traces;
+`;
 
 const windowsSql = `
 WITH windows(label, since, sort) AS (
@@ -340,6 +367,15 @@ console.log('=========================');
 console.log(`trace_db: ${traceDb}`);
 console.log('token note: tracked_* uses recorded token columns. mixed_* uses recorded tokens when present and character-count estimates for older rows.');
 
+printTable('Trace history', sqlJson(historySql), [
+  'first_row',
+  'latest_row',
+  'rows',
+  'rows_in_past_week',
+  'rows_in_past_month',
+  'rows_older_than_week',
+  'window_note',
+]);
 printTable('Token coverage by window', sqlJson(windowsSql), [
   'window',
   'calls',

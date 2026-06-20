@@ -1,0 +1,24 @@
+{
+  "name": "office-landing-page",
+  "title": "Office Landing Page (compatibility alias)",
+  "description": "Deprecated compatibility alias for the landing-page subskill under the top-level office skill. Prefer office with subskill=landing-page for new design work.",
+  "trigger": "Invoke only for legacy calls that still reference the old office-landing-page skill name.",
+  "entrypoint": "skill.json",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/office-landing-page/skill.json"
+  },
+  "script": "scripts/design/office-landing-page.ts",
+  "permission": "draft",
+  "requiresApproval": false,
+  "status": "deprecated",
+  "artifactTypes": [
+    "draft"
+  ],
+  "capabilities": [
+    "office",
+    "local-artifacts"
+  ],
+  "deprecated": true,
+  "supersededBy": "office#landing-page"
+}

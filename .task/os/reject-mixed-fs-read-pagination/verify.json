@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/reject-mixed-fs-read-pagination",
+  "base": "origin/stream/os",
+  "headSha": "4f4f2bb2aec44012d75cdd928c906f4d09620e76",
+  "changeHash": "aa6210b77b1377995479c6db1ad2d2d73eb4299331cf284fbe8487445cfd362e",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T07:36:19.187Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/reject-mixed-fs-read-pagination/current.json",
+        ".task/os/reject-mixed-fs-read-pagination/evidence-log.json",
+        ".task/os/reject-mixed-fs-read-pagination/read-log.json",
+        ".task/os/reject-mixed-fs-read-pagination/session.json",
+        ".task/os/reject-mixed-fs-read-pagination/workpad.md",
+        ".task/tasks/os/reject-mixed-fs-read-pagination.json",
+        "packages/os/TOOLS.md",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

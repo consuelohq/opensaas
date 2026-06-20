@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ae2ac08751a7",
+  "tmuxSession": "opensaas-os-fix-task-worktree-nested-node-modules-ae2ac087",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-task-worktree-nested-node-modules",
+  "branch": "task/os/fix-task-worktree-nested-node-modules",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-task-worktree-nested-node-modules",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-task-worktree-nested-node-modules",
+  "prNumber": 1027,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1027",
+  "createdAt": "2026-06-13T23:39:56.034Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-task-worktree-nested-node-modules/.task/os/fix-task-worktree-nested-node-modules/session.json"
+}

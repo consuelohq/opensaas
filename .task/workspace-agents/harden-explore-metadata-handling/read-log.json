@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/workspace-agents/harden-explore-metadata-handling/workpad.md",
+    "packages/os/tests/task-meta.test.js",
+    "packages/workspace/tests/task-meta.test.ts"
+  ],
+  "updatedAt": "2026-06-19T14:24:10.476Z"
+}

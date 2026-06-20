@@ -276,6 +276,56 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertGreaterEqual(row[7], len(steering_text) // 4)
         self.assertEqual(row[8], row[6] + row[7])
 
+    def test_read_steering_includes_core_manifest_instead_of_full_manifest(self):
+        steering_path = Path(self.tempdir.name) / 'STEERING.md'
+        full_manifest_path = Path(self.tempdir.name) / 'tool-manifest.json'
+        core_manifest_path = Path(self.tempdir.name) / 'core-manifest.json'
+        steering_path.write_text('base steering', encoding='utf-8')
+        full_manifest_path.write_text('[{"name":"linear.issue"}]', encoding='utf-8')
+        core_manifest_path.write_text('{"kind":"consuelo-workspace-core-manifest","tools":[{"name":"tools.search"}]}', encoding='utf-8')
+
+        self.module.STEERING_FILE = str(steering_path)
+        self.module.TOOL_MANIFEST_FILE = str(full_manifest_path)
+        self.module.CORE_MANIFEST_FILE = str(core_manifest_path)
+
+        content = self.module._read_steering()
+
+        self.assertIn('base steering', content)
+        self.assertIn('# core manifest', content)
+        self.assertIn('consuelo-workspace-core-manifest', content)
+        self.assertIn('tools.search', content)
+        self.assertNotIn('# tool manifest', content)
+        self.assertNotIn('linear.issue', content)
+
+    def test_read_steering_expands_code_file_examples_in_core_manifest(self):
+        steering_path = Path(self.tempdir.name) / 'STEERING.md'
+        core_manifest_path = Path(self.tempdir.name) / 'core-manifest.json'
+        steering_path.write_text('base steering', encoding='utf-8')
+        core_manifest_path.write_text(json.dumps({
+            'kind': 'consuelo-workspace-core-manifest',
+            'tools': [{
+                'name': 'code.call',
+                'definition': {
+                    'exampleInput': {
+                        'language': 'python',
+                        'mode': 'edit',
+                        'codeFile': 'scripts/code-call-examples/python-semantic-test-mutation.py',
+                    },
+                },
+            }],
+        }), encoding='utf-8')
+
+        self.module.STEERING_FILE = str(steering_path)
+        self.module.CORE_MANIFEST_FILE = str(core_manifest_path)
+
+        content = self.module._read_steering()
+
+        self.assertIn('base steering', content)
+        self.assertIn('codeFile', content)
+        self.assertIn('codeFileSource', content)
+        self.assertIn('from pathlib import Path', content)
+        self.assertIn('signatureAlgorithm', content)
+
     def test_get_steering_allows_full_body_again_after_guard_window(self):
         now = [2000.0]
         calls = []
@@ -358,6 +408,46 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 self.assert_standard_envelope(result)
                 self.assertFalse(result['ok'])
                 self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
+
+    def test_read_only_fs_tools_do_not_require_task_session(self):
+        manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
+        by_name = {entry['name']: entry for entry in manifest}
+        for tool in ['fs.read', 'fs.search']:
+            with self.subTest(tool=tool):
+                self.assertIn(tool, by_name)
+                self.assertFalse(by_name[tool].get('sessionRequired'), tool)
+                self.assertEqual(by_name[tool].get('command', {}).get('branchMode'), 'optional')
+
+        captured = []
+
+        def fake_run(args, **kwargs):
+            captured.append(args)
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            read_result = self.module._run_workspace_call('fs.read', tool_input={'path': 'AGENTS.md'})
+            search_result = self.module._run_workspace_call('fs.search', tool_input={'pattern': 'workspace', 'paths': ['AGENTS.md']})
+
+        self.assert_standard_envelope(read_result)
+        self.assert_standard_envelope(search_result)
+        self.assertTrue(read_result['ok'])
+        self.assertTrue(search_result['ok'])
+        self.assertEqual(len(captured), 2)
+        for args in captured:
+            resolved_input = json.loads(args[3])
+            self.assertNotIn('taskSession', resolved_input)
+            self.assertNotIn('branch', resolved_input)
 
     def test_session_optional_tools_with_optional_branch_mode_do_not_require_task_session(self):
         captured = {}
@@ -507,6 +597,44 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'VALIDATION_ERROR')
 
+    def test_task_session_allows_matching_input_branch_for_code_call(self):
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {'stdout': 'ok'},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call(
+                'code.call',
+                taskSession=self.session,
+                tool_input={
+                    'branch': 'task/workspace-agents/test',
+                    'language': 'python',
+                    'mode': 'read',
+                    'code': 'print("ok")',
+                },
+            )
+
+        self.assert_standard_envelope(result)
+        self.assertTrue(result['ok'])
+        resolved_input = json.loads(captured['args'][3])
+        self.assertEqual(resolved_input['taskSession'], self.session)
+        self.assertEqual(resolved_input['branch'], 'task/workspace-agents/test')
+        self.assertEqual(result['taskContext']['taskSession'], self.session)
+        self.assertEqual(result['taskContext']['branch'], 'task/workspace-agents/test')
+
     def test_task_session_and_nested_batch_branch_conflict_is_standard_error(self):
         result = self.module._run_workspace_call(
             'batch',
@@ -524,6 +652,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_missing_task_session_is_standard_error(self):
         result = self.module._run_workspace_call('fs.read', taskSession='tsk_missing', tool_input={'path': 'AGENTS.md'})
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
+
+    def test_missing_task_session_with_input_branch_is_not_branch_conflict(self):
+        result = self.module._run_workspace_call(
+            'fs.read',
+            taskSession='tsk_missing',
+            tool_input={'path': 'AGENTS.md', 'branch': 'task/workspace-agents/test'},
+        )
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'TASK_SESSION_NOT_FOUND')
@@ -795,7 +933,6 @@ class WorkspaceCallServerTest(unittest.TestCase):
         protected_file = protected_root + 'config'
         tool_inputs = {
             'fs.write': {'path': protected_file, 'content': 'x'},
-            'fs.patch': {'path': protected_file, 'from': 1, 'to': 1, 'content': 'x'},
             'fs.trash': {'path': protected_file},
             'mac.write': {'path': protected_file, 'content': 'x'},
         }

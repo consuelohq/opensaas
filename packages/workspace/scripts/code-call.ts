@@ -1,10 +1,14 @@
 #!/usr/bin/env bun
 
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { executeCodeCall } from './lib/code-call/runtime';
 import type { CodeCallInput, CodeCallMode } from './lib/code-call/types';
+
+const require = createRequire(import.meta.url);
+const { syncCodeCallReadEvidence } = require('./lib/task-workpad.js');
 
 type JsonRecord = Record<string, unknown>;
 
@@ -141,8 +145,24 @@ function parseArgs(argv: string[]): CodeCallInput {
 async function main(): Promise<void> {
   const input = parseArgs(Bun.argv.slice(2));
   const result = await executeCodeCall(input, { cwd: process.cwd() });
+  syncTaskWorkpadReadEvidence(input, result);
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (!result.ok) process.exit(result.exitCode || 1);
+}
+
+function syncTaskWorkpadReadEvidence(input: CodeCallInput, result: unknown): void {
+  if (!input.taskWorktree || !input.branch) return;
+  const branchParts = input.branch.split('/');
+  const taskMeta = {
+    taskBranch: input.branch,
+    area: branchParts[0] === 'task' ? branchParts[1] : undefined,
+  };
+  try {
+    syncCodeCallReadEvidence(input.taskWorktree, taskMeta, input, result);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`warning: code.call read evidence not recorded: ${message}\n`);
+  }
 }
 
 main().catch((error: unknown) => {

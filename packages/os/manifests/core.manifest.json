@@ -5,115 +5,49 @@
   "config": "packages/os/manifests/manifest.config.json",
   "tools": [
     {
-      "name": "audit",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "decision engine",
-      "description": "audit workspace scripts, docs, or index freshness",
-      "core": true,
-      "definition": {
-        "name": "audit",
-        "methodPath": [
-          "audit"
-        ],
-        "description": "audit workspace scripts, docs, or index freshness",
-        "category": "decision engine",
-        "underlying": "workspace audit",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "AuditInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "audit",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "scripts",
-              "flag": "--scripts",
-              "kind": "boolean"
-            },
-            {
-              "source": "docs",
-              "flag": "--docs",
-              "kind": "boolean"
-            },
-            {
-              "source": "index",
-              "flag": "--index",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "scripts": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "checkFiles",
+      "name": "batch",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "composed",
-      "description": "run syntax checks over a set of files through task:exec",
+      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
       "core": true,
       "definition": {
-        "name": "checkFiles",
+        "name": "batch",
         "methodPath": [
-          "checkFiles"
+          "batch"
         ],
-        "description": "run syntax checks over a set of files through task:exec",
+        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
         "category": "composed",
-        "underlying": "workspace checkFiles",
+        "underlying": "workspace batch",
         "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
           "safeToRetry": false
         },
         "defaultTimeout": 300000,
-        "inputSchema": "CheckFilesInput",
-        "outputSchema": "RawOutput",
+        "inputSchema": "BatchInput",
+        "outputSchema": "BatchOutput",
         "command": {
-          "script": "check-files",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "jsonFlag": "--json",
-          "arguments": [
+          "script": "batch",
+          "branchMode": "none",
+          "internal": "batch",
+          "arguments": []
+        },
+        "exampleInput": {
+          "steps": [
             {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "array",
-              "required": true
-            },
-            {
-              "source": "stopOnFirstError",
-              "flag": "--stop-on-first-error",
-              "kind": "boolean"
+              "tool": "context.find",
+              "input": {
+                "keyword": "workspace",
+                "limit": 1
+              }
             }
           ]
         },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "files": [
-            "packages/os/scripts/fs.js"
-          ],
-          "stopOnFirstError": true
-        },
-        "sessionRequired": true
+        "sessionRequired": false,
+        "workflowRole": "tool.batch"
       }
     },
     {
@@ -122,7 +56,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -130,7 +64,7 @@
           "code",
           "call"
         ],
-        "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -150,12 +84,78 @@
           "arguments": []
         },
         "exampleInput": {
-          "language": "python",
+          "language": "bun",
           "mode": "read",
-          "code": "print(\"hello\")",
+          "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
           "maxResultChars": 20000
         },
-        "sessionRequired": false
+        "sessionRequired": false,
+        "workflowRole": "test.run",
+        "examples": [
+          {
+            "label": "multi-package focused test packet",
+            "input": {
+              "language": "bun",
+              "mode": "verify",
+              "codeFile": "scripts/code-call-examples/multi-package-focused-tests.ts",
+              "maxResultChars": 60000
+            }
+          },
+          {
+            "label": "repository impact analysis packet",
+            "input": {
+              "language": "bun",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/repository-impact-analysis.ts",
+              "maxResultChars": 50000
+            }
+          },
+          {
+            "label": "exact manifest description verification",
+            "input": {
+              "language": "bun",
+              "mode": "verify",
+              "codeFile": "scripts/code-call-examples/exact-manifest-description-verification.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "structured repo read and compare packet",
+            "input": {
+              "language": "bun",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/structured-repo-read-compare.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "task-scoped structured file rewrite",
+            "input": {
+              "language": "bun",
+              "mode": "edit",
+              "codeFile": "scripts/code-call-examples/task-scoped-structured-file-rewrite.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "Python AST/string-heavy test insertion",
+            "input": {
+              "language": "python",
+              "mode": "edit",
+              "codeFile": "scripts/code-call-examples/python-semantic-test-mutation.py",
+              "maxResultChars": 20000
+            }
+          },
+          {
+            "label": "Python test assertion audit packet",
+            "input": {
+              "language": "python",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/python-test-assertion-audit.py",
+              "maxResultChars": 30000
+            }
+          }
+        ]
       }
     },
     {
@@ -235,299 +235,21 @@
       }
     },
     {
-      "name": "confidenceScore",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "decision engine",
-      "description": "score confidence from evidence state",
-      "core": true,
-      "definition": {
-        "name": "confidenceScore",
-        "methodPath": [
-          "confidenceScore"
-        ],
-        "description": "score confidence from evidence state",
-        "category": "decision engine",
-        "underlying": "workspace confidenceScore",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "confidence-score",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "confirm",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "decision engine",
-      "description": "run verification or targeted validation through confirm",
-      "core": true,
-      "definition": {
-        "name": "confirm",
-        "methodPath": [
-          "confirm"
-        ],
-        "description": "run verification or targeted validation through confirm",
-        "category": "decision engine",
-        "underlying": "workspace confirm",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "ConfirmInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "confirm",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "verify",
-              "flag": "--verify",
-              "kind": "boolean"
-            },
-            {
-              "source": "runtime",
-              "flag": "--runtime",
-              "kind": "boolean"
-            },
-            {
-              "source": "test",
-              "flag": "--test",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "verify": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.categories",
+      "name": "context",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "context",
-      "description": "list project memory categories",
+      "description": "search, read, save, list, and inspect project context and local workspace traces",
       "core": true,
       "definition": {
-        "name": "context.categories",
+        "name": "context",
         "methodPath": [
-          "context",
-          "categories"
+          "context"
         ],
-        "description": "list project memory categories",
+        "description": "search, read, save, list, and inspect project context and local workspace traces",
         "category": "context",
-        "underlying": "workspace context.categories",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "categories",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.find",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "search project memory by title",
-      "core": true,
-      "definition": {
-        "name": "context.find",
-        "methodPath": [
-          "context",
-          "find"
-        ],
-        "description": "search project memory by title",
-        "category": "context",
-        "underlying": "workspace context.find",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextFindInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "find",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "keyword": "handoff",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.get",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "read a full project memory search result",
-      "core": true,
-      "definition": {
-        "name": "context.get",
-        "methodPath": [
-          "context",
-          "get"
-        ],
-        "description": "read a full project memory search result",
-        "category": "context",
-        "underlying": "workspace context.get",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextGetInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "get",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "index",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "index": 1,
-          "keyword": "workspace"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.list",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "list recent project memories",
-      "core": true,
-      "definition": {
-        "name": "context.list",
-        "methodPath": [
-          "context",
-          "list"
-        ],
-        "description": "list recent project memories",
-        "category": "context",
-        "underlying": "workspace context.list",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "list",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "category",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "category": "workpad",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.save",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "save a file or text into project memory",
-      "core": true,
-      "definition": {
-        "name": "context.save",
-        "methodPath": [
-          "context",
-          "save"
-        ],
-        "description": "save a file or text into project memory",
-        "category": "context",
-        "underlying": "workspace context.save",
+        "underlying": "workspace context",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -535,18 +257,29 @@
           "safeToRetry": false
         },
         "defaultTimeout": 60000,
-        "inputSchema": "ContextSaveInput",
+        "inputSchema": "ContextInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "context",
-          "subcommand": "save",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
             {
-              "source": "title",
+              "source": "operation",
               "kind": "value",
               "required": true
+            },
+            {
+              "source": "index",
+              "kind": "value"
+            },
+            {
+              "source": "keyword",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "kind": "value"
             },
             {
               "source": "file",
@@ -556,53 +289,6 @@
               "source": "category",
               "flag": "--category",
               "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "title": "example memory",
-          "file": "/tmp/example.md",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.search",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "search project memory by content",
-      "core": true,
-      "definition": {
-        "name": "context.search",
-        "methodPath": [
-          "context",
-          "search"
-        ],
-        "description": "search project memory by content",
-        "category": "context",
-        "underlying": "workspace context.search",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextSearchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "search",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
             },
             {
               "source": "limit",
@@ -610,51 +296,15 @@
               "kind": "value"
             },
             {
-              "source": "category",
-              "flag": "--category",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "keyword": "workspace",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.trace",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-      "core": true,
-      "definition": {
-        "name": "context.trace",
-        "methodPath": [
-          "context",
-          "trace"
-        ],
-        "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-        "category": "context",
-        "underlying": "workspace context.trace",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextTraceInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "trace",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
+              "source": "byTitle",
+              "flag": "--by-title",
+              "kind": "boolean"
+            },
+            {
+              "source": "text",
+              "flag": "--text",
+              "kind": "boolean"
+            },
             {
               "source": "traceId",
               "flag": "--trace-id",
@@ -686,18 +336,13 @@
               "kind": "value"
             },
             {
-              "source": "taskSession",
+              "source": "contextTaskSession",
               "flag": "--task-session",
               "kind": "value"
             },
             {
               "source": "branch",
               "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
               "kind": "value"
             },
             {
@@ -713,145 +358,10 @@
           ]
         },
         "exampleInput": {
-          "status": "error",
-          "limit": 20
+          "operation": "search",
+          "keyword": "workspace",
+          "limit": 3
         },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "decideNext",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "decision engine",
-      "description": "recommend the next action from evidence state",
-      "core": true,
-      "definition": {
-        "name": "decideNext",
-        "methodPath": [
-          "decideNext"
-        ],
-        "description": "recommend the next action from evidence state",
-        "category": "decision engine",
-        "underlying": "workspace decideNext",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "DecideNextInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "decide-next",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "context",
-              "flag": "--context",
-              "kind": "value"
-            },
-            {
-              "source": "markRead",
-              "flag": "--mark-read",
-              "kind": "value"
-            },
-            {
-              "source": "markRelevant",
-              "flag": "--mark-relevant",
-              "kind": "value"
-            },
-            {
-              "source": "markIrrelevant",
-              "flag": "--mark-irrelevant",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "doctor",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "run workspace diagnostics",
-      "core": true,
-      "definition": {
-        "name": "doctor",
-        "methodPath": [
-          "doctor"
-        ],
-        "description": "run workspace diagnostics",
-        "category": "utilities",
-        "underlying": "workspace doctor",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "doctor",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "exploit",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "decision engine",
-      "description": "select the highest-confidence editing target",
-      "core": true,
-      "definition": {
-        "name": "exploit",
-        "methodPath": [
-          "exploit"
-        ],
-        "description": "select the highest-confidence editing target",
-        "category": "decision engine",
-        "underlying": "workspace exploit",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "ExploitInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "exploit",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "query",
-              "kind": "value"
-            },
-            {
-              "source": "target",
-              "flag": "--target",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {},
         "sessionRequired": false
       }
     },
@@ -861,14 +371,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
-      "description": "run repository exploration retrieval",
+      "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
       "core": true,
       "definition": {
         "name": "explore",
         "methodPath": [
           "explore"
         ],
-        "description": "run repository exploration retrieval",
+        "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
         "category": "decision engine",
         "underlying": "workspace explore",
         "capabilities": {
@@ -915,93 +425,22 @@
       }
     },
     {
-      "name": "fs.list",
+      "name": "fs.apply_patch",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "list or find files in the repo root or a resolved task worktree",
+      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
       "core": true,
       "definition": {
-        "name": "fs.list",
+        "name": "fs.apply_patch",
         "methodPath": [
           "fs",
-          "list"
+          "apply_patch"
         ],
-        "description": "list or find files in the repo root or a resolved task worktree",
+        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
         "category": "filesystem",
-        "underlying": "workspace fs list, or task:fs list when a branch is resolved",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "list",
-          "branchMode": "optional",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value"
-            },
-            {
-              "source": "pattern",
-              "flag": "--find",
-              "kind": "value"
-            },
-            {
-              "source": "depth",
-              "flag": "--depth",
-              "kind": "value"
-            },
-            {
-              "source": "tree",
-              "flag": "--tree",
-              "kind": "boolean"
-            },
-            {
-              "source": "dirs",
-              "flag": "--dirs",
-              "kind": "boolean"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "path": "packages/os/scripts",
-          "depth": 1
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "fs.patch",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "replace a line range in a task worktree file",
-      "core": true,
-      "definition": {
-        "name": "fs.patch",
-        "methodPath": [
-          "fs",
-          "patch"
-        ],
-        "description": "replace a line range in a task worktree file",
-        "category": "filesystem",
-        "underlying": "workspace fs.patch",
+        "underlying": "workspace fs.apply_patch",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -1009,177 +448,31 @@
           "safeToRetry": false
         },
         "defaultTimeout": 30000,
-        "inputSchema": "FsPatchInput",
+        "inputSchema": "FsApplyPatchInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "task:fs",
-          "subcommand": "patch",
+          "subcommand": "apply-patch",
           "branchMode": "required",
           "branchArgumentStyle": "prefix",
           "dryRunFlag": "--dry-run",
           "arguments": [
             {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "from",
-              "flag": "--from",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "to",
-              "flag": "--to",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "content",
-              "flag": "--content",
+              "source": "patchText",
+              "flag": "--patch-text",
               "kind": "value"
             },
             {
-              "source": "contentFile",
-              "flag": "--content-file",
+              "source": "patchFile",
+              "flag": "--patch-file",
               "kind": "value"
             }
           ]
         },
         "exampleInput": {
           "branch": "task/workspace-agents/example",
-          "path": "tmp/example.txt",
-          "from": 1,
-          "to": 1,
-          "dryRun": true,
-          "contentFile": "/tmp/replacement.txt"
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "fs.read",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "read file contents with an optional line range",
-      "core": true,
-      "definition": {
-        "name": "fs.read",
-        "methodPath": [
-          "fs",
-          "read"
-        ],
-        "description": "read file contents with an optional line range",
-        "category": "filesystem",
-        "underlying": "workspace fs read, or task:fs read when a branch is resolved",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsReadInput",
-        "outputSchema": "FsReadOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "read",
-          "branchMode": "optional",
-          "branchArgumentStyle": "prefix",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "from",
-              "flag": "--from",
-              "kind": "value"
-            },
-            {
-              "source": "to",
-              "flag": "--to",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "path": "packages/os/package.json"
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "fs.search",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "search files with ripgrep through the workspace script",
-      "core": true,
-      "definition": {
-        "name": "fs.search",
-        "methodPath": [
-          "fs",
-          "search"
-        ],
-        "description": "search files with ripgrep through the workspace script",
-        "category": "filesystem",
-        "underlying": "workspace fs search, or task:fs search when a branch is resolved",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsSearchInput",
-        "outputSchema": "FsSearchOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "search",
-          "branchMode": "optional",
-          "branchArgumentStyle": "prefix",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "pattern",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "paths",
-              "kind": "array"
-            },
-            {
-              "source": "include",
-              "flag": "--include",
-              "kind": "value"
-            },
-            {
-              "source": "context",
-              "flag": "--context",
-              "kind": "value"
-            },
-            {
-              "source": "maxResults",
-              "flag": "--max-results",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "pattern": "task:fs",
-          "paths": [
-            "packages/os/SCRIPTS.md"
-          ]
+          "patchFile": "/tmp/change.patch",
+          "dryRun": true
         },
         "sessionRequired": true
       }
@@ -1190,7 +483,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "move a task worktree file to trash",
+      "description": "An agent safe file deletion path. Prefered over rm rf",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -1198,7 +491,7 @@
           "fs",
           "trash"
         ],
-        "description": "move a task worktree file to trash",
+        "description": "An agent safe file deletion path. Prefered over rm rf",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -1229,266 +522,6 @@
           "dryRun": true
         },
         "sessionRequired": true
-      }
-    },
-    {
-      "name": "fs.write",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "filesystem",
-      "description": "write a file in a task worktree",
-      "core": true,
-      "definition": {
-        "name": "fs.write",
-        "methodPath": [
-          "fs",
-          "write"
-        ],
-        "description": "write a file in a task worktree",
-        "category": "filesystem",
-        "underlying": "workspace fs.write",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": true,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "FsWriteInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:fs",
-          "subcommand": "write",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "content",
-              "flag": "--content",
-              "kind": "value"
-            },
-            {
-              "source": "contentFile",
-              "flag": "--content-file",
-              "kind": "value"
-            },
-            {
-              "source": "force",
-              "flag": "--force",
-              "kind": "boolean"
-            },
-            {
-              "source": "append",
-              "flag": "--append",
-              "kind": "boolean"
-            },
-            {
-              "source": "mkdirs",
-              "flag": "--mkdirs",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "path": "tmp/example.txt",
-          "contentFile": "/tmp/example.txt",
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "workpad.write"
-      }
-    },
-    {
-      "name": "gh",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "github",
-      "description": "run the workspace GitHub helper with an explicit action",
-      "core": true,
-      "definition": {
-        "name": "gh",
-        "methodPath": [
-          "gh"
-        ],
-        "description": "run the workspace GitHub helper with an explicit action",
-        "category": "github",
-        "underlying": "workspace gh",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "GhInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "gh",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "args",
-              "kind": "array"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "view",
-          "args": [
-            "225"
-          ]
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "git.diff",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "git",
-      "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-      "core": true,
-      "definition": {
-        "name": "git.diff",
-        "methodPath": [
-          "git",
-          "diff"
-        ],
-        "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-        "category": "git",
-        "underlying": "workspace git:diff",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "GitDiffInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "git:diff",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "base",
-              "flag": "--base",
-              "kind": "value"
-            },
-            {
-              "source": "head",
-              "flag": "--head",
-              "kind": "value"
-            },
-            {
-              "source": "paths",
-              "flag": "--paths",
-              "kind": "array"
-            },
-            {
-              "source": "stat",
-              "flag": "--stat",
-              "kind": "boolean"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "boolean"
-            },
-            {
-              "source": "hunks",
-              "flag": "--hunks",
-              "kind": "boolean"
-            },
-            {
-              "source": "patch",
-              "flag": "--patch",
-              "kind": "boolean"
-            },
-            {
-              "source": "nameOnly",
-              "flag": "--name-only",
-              "kind": "boolean"
-            },
-            {
-              "source": "context",
-              "flag": "--context",
-              "kind": "value"
-            },
-            {
-              "source": "maxBytes",
-              "flag": "--max-bytes",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "base": "origin/main",
-          "stat": true,
-          "files": true,
-          "hunks": true,
-          "maxBytes": 20000
-        },
-        "sessionRequired": true,
-        "workflowRole": "diff.inspect"
-      }
-    },
-    {
-      "name": "git.status",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "alias for status; use status directly in new code",
-      "core": true,
-      "definition": {
-        "name": "git.status",
-        "methodPath": [
-          "git",
-          "status"
-        ],
-        "description": "alias for status; use status directly in new code",
-        "category": "utilities",
-        "underlying": "workspace status",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "status",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
       }
     },
     {
@@ -1633,16 +666,16 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "workflow",
-      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+      "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
       "core": true,
       "definition": {
         "name": "intent",
         "methodPath": [
           "intent"
         ],
-        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+        "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
         "category": "workflow",
-        "underlying": "workspace intent",
+        "underlying": "os intent",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -1696,429 +729,6 @@
           "area": "os",
           "title": "example task intent"
         }
-      }
-    },
-    {
-      "name": "mac.call",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "run a non-repo shell command on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.call",
-        "methodPath": [
-          "mac",
-          "call"
-        ],
-        "description": "run a non-repo shell command on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.call",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "exec",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "cwd",
-              "flag": "--cwd",
-              "kind": "value"
-            },
-            {
-              "source": "timeout",
-              "flag": "--timeout",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "command": "pwd",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.exec",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.exec",
-        "methodPath": [
-          "mac",
-          "exec"
-        ],
-        "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.exec",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "exec",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "cwd",
-              "flag": "--cwd",
-              "kind": "value"
-            },
-            {
-              "source": "timeout",
-              "flag": "--timeout",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "command": "pwd",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.list",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "list non-repo files on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.list",
-        "methodPath": [
-          "mac",
-          "list"
-        ],
-        "description": "list non-repo files on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.list",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "list",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value"
-            },
-            {
-              "source": "depth",
-              "flag": "--depth",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "path": "/tmp",
-          "depth": 1
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.port",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "check or find a local port",
-      "core": true,
-      "definition": {
-        "name": "mac.port",
-        "methodPath": [
-          "mac",
-          "port"
-        ],
-        "description": "check or find a local port",
-        "category": "mac",
-        "underlying": "workspace mac.port",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacPortInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "port",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "port",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "find"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.process",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "list or kill local Mac processes",
-      "core": true,
-      "definition": {
-        "name": "mac.process",
-        "methodPath": [
-          "mac",
-          "process"
-        ],
-        "description": "list or kill local Mac processes",
-        "category": "mac",
-        "underlying": "workspace mac.process",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacProcessInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "process",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "pid",
-              "flag": "--pid",
-              "kind": "value"
-            },
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "list"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.read",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "read a non-repo file on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.read",
-        "methodPath": [
-          "mac",
-          "read"
-        ],
-        "description": "read a non-repo file on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.read",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacReadInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "read",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "path": "/tmp/example.txt"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.search",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "search non-repo files on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.search",
-        "methodPath": [
-          "mac",
-          "search"
-        ],
-        "description": "search non-repo files on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.search",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacSearchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "search",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "pattern",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "path",
-              "kind": "value"
-            },
-            {
-              "source": "include",
-              "flag": "--include",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "pattern": "hello",
-          "path": "/tmp"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "mac.write",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "mac",
-      "description": "write a non-repo file on the Mac",
-      "core": true,
-      "definition": {
-        "name": "mac.write",
-        "methodPath": [
-          "mac",
-          "write"
-        ],
-        "description": "write a non-repo file on the Mac",
-        "category": "mac",
-        "underlying": "workspace mac.write",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": true,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "MacWriteInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "mac",
-          "subcommand": "write",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "path",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "content",
-              "flag": "--content",
-              "kind": "value"
-            },
-            {
-              "source": "contentFile",
-              "flag": "--content-file",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "path": "/tmp/example.txt",
-          "content": "hello",
-          "dryRun": true
-        },
-        "sessionRequired": false
       }
     },
     {
@@ -2193,41 +803,6 @@
       }
     },
     {
-      "name": "status",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "show compact workspace status",
-      "core": true,
-      "definition": {
-        "name": "status",
-        "methodPath": [
-          "status"
-        ],
-        "description": "show compact workspace status",
-        "category": "utilities",
-        "underlying": "workspace status",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "status",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -2284,48 +859,6 @@
       }
     },
     {
-      "name": "stream.list",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "stream",
-      "description": "list stream branches",
-      "core": true,
-      "definition": {
-        "name": "stream.list",
-        "methodPath": [
-          "stream",
-          "list"
-        ],
-        "description": "list stream branches",
-        "category": "stream",
-        "underlying": "workspace stream.list",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "StreamListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "stream:list",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "repo",
-              "flag": "--repo",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
       "name": "stream.sync",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -2379,740 +912,6 @@
           "dryRun": true
         },
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.call",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "run a command inside a task worktree",
-      "core": true,
-      "definition": {
-        "name": "task.call",
-        "methodPath": [
-          "task",
-          "call"
-        ],
-        "description": "run a command inside a task worktree",
-        "category": "task lifecycle",
-        "underlying": "workspace task.call",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "TaskExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:exec",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "commandArray",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "command": [
-            "git",
-            "status",
-            "--short"
-          ],
-          "dryRun": true
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "task.cleanup",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "preview or remove stale task worktrees and branches",
-      "core": true,
-      "definition": {
-        "name": "task.cleanup",
-        "methodPath": [
-          "task",
-          "cleanup"
-        ],
-        "description": "preview or remove stale task worktrees and branches",
-        "category": "task lifecycle",
-        "underlying": "workspace task.cleanup",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "TaskCleanupInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:cleanup",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "force",
-              "flag": "--force",
-              "kind": "boolean"
-            },
-            {
-              "source": "preview",
-              "flag": "--preview",
-              "kind": "boolean"
-            },
-            {
-              "source": "merged",
-              "flag": "--merged",
-              "kind": "boolean"
-            },
-            {
-              "source": "staleDays",
-              "flag": "--stale-days",
-              "kind": "value"
-            },
-            {
-              "source": "keep",
-              "flag": "--keep",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "preview": true,
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.current",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "resolve the current task branch without running a mutating command",
-      "core": true,
-      "definition": {
-        "name": "task.current",
-        "methodPath": [
-          "task",
-          "current"
-        ],
-        "description": "resolve the current task branch without running a mutating command",
-        "category": "task lifecycle",
-        "underlying": "branch resolver",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "TaskCurrentOutput",
-        "command": {
-          "script": "internal",
-          "internal": "task.current",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.ensureSynced",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "check whether the task stream appears synced",
-      "core": true,
-      "definition": {
-        "name": "task.ensureSynced",
-        "methodPath": [
-          "task",
-          "ensureSynced"
-        ],
-        "description": "check whether the task stream appears synced",
-        "category": "task lifecycle",
-        "underlying": "workspace task.ensureSynced",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "BranchInput",
-        "outputSchema": "TaskEnsureSyncedOutput",
-        "command": {
-          "script": "internal",
-          "internal": "task.ensureSynced",
-          "arguments": []
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.exec",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "legacy alias for task.call; run a command inside a task worktree",
-      "core": true,
-      "definition": {
-        "name": "task.exec",
-        "methodPath": [
-          "task",
-          "exec"
-        ],
-        "description": "legacy alias for task.call; run a command inside a task worktree",
-        "category": "task lifecycle",
-        "underlying": "workspace task.exec",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "TaskExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:exec",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "commandArray",
-              "required": true
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "command": [
-            "git",
-            "status",
-            "--short"
-          ],
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "test.run"
-      }
-    },
-    {
-      "name": "task.finish",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "finish a task branch after merge",
-      "core": true,
-      "definition": {
-        "name": "task.finish",
-        "methodPath": [
-          "task",
-          "finish"
-        ],
-        "description": "finish a task branch after merge",
-        "category": "task lifecycle",
-        "underlying": "workspace task.finish",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "BranchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:finish",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "task.finish"
-      }
-    },
-    {
-      "name": "task.init",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "write task metadata for an existing worktree",
-      "core": true,
-      "definition": {
-        "name": "task.init",
-        "methodPath": [
-          "task",
-          "init"
-        ],
-        "description": "write task metadata for an existing worktree",
-        "category": "task lifecycle",
-        "underlying": "workspace task.init",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": true,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "TaskInitInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:init",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "worktree",
-              "flag": "--worktree",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "area": "workspace-agents",
-          "branch": "task/workspace-agents/example",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.merge",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "merge a pull request through the workspace task merge script",
-      "core": true,
-      "definition": {
-        "name": "task.merge",
-        "methodPath": [
-          "task",
-          "merge"
-        ],
-        "description": "merge a pull request through the workspace task merge script",
-        "category": "task lifecycle",
-        "underlying": "workspace task.merge",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "TaskMergeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:merge",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "wait",
-              "flag": "--wait",
-              "kind": "boolean"
-            },
-            {
-              "source": "squash",
-              "flag": "--squash",
-              "kind": "boolean"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "pr": 225,
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.pr",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "merge task to stream and create or refresh the stream review PR",
-      "core": true,
-      "definition": {
-        "name": "task.pr",
-        "methodPath": [
-          "task",
-          "pr"
-        ],
-        "description": "merge task to stream and create or refresh the stream review PR",
-        "category": "task lifecycle",
-        "underlying": "workspace task.pr",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "TaskPrInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:pr",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "taskOnly",
-              "flag": "--task-only",
-              "kind": "boolean"
-            },
-            {
-              "source": "draft",
-              "flag": "--draft",
-              "kind": "boolean"
-            },
-            {
-              "source": "ready",
-              "flag": "--ready",
-              "kind": "boolean"
-            },
-            {
-              "source": "bodyTemplate",
-              "flag": "--body-template",
-              "kind": "value"
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "taskOnly": true,
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "task.pr"
-      }
-    },
-    {
-      "name": "task.prs",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "show task and review PR links",
-      "core": true,
-      "definition": {
-        "name": "task.prs",
-        "methodPath": [
-          "task",
-          "prs"
-        ],
-        "description": "show task and review PR links",
-        "category": "task lifecycle",
-        "underlying": "workspace task.prs",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "BranchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:prs",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example"
-        },
-        "sessionRequired": true
-      }
-    },
-    {
-      "name": "task.push",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "push changed task files to the task branch through GitHub API",
-      "core": true,
-      "definition": {
-        "name": "task.push",
-        "methodPath": [
-          "task",
-          "push"
-        ],
-        "description": "push changed task files to the task branch through GitHub API",
-        "category": "task lifecycle",
-        "underlying": "workspace task.push",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "TaskPushInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:push",
-          "branchMode": "required",
-          "branchArgumentStyle": "flag",
-          "arguments": [
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "message",
-              "flag": "--message",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "changed",
-              "flag": "--changed",
-              "kind": "boolean"
-            },
-            {
-              "source": "files",
-              "flag": "--files",
-              "kind": "array"
-            },
-            {
-              "source": "approved",
-              "flag": "--approved",
-              "kind": "boolean"
-            },
-            {
-              "source": "reason",
-              "flag": "--reason",
-              "kind": "value"
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "message": "feat(workspace): example",
-          "changed": true,
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "task.push"
-      }
-    },
-    {
-      "name": "task.start",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "create a task branch, worktree, and draft PR",
-      "core": true,
-      "definition": {
-        "name": "task.start",
-        "methodPath": [
-          "task",
-          "start"
-        ],
-        "description": "create a task branch, worktree, and draft PR",
-        "category": "task lifecycle",
-        "underlying": "workspace task.start",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "TaskStartInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:start",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "flag": "--title",
-              "kind": "value"
-            },
-            {
-              "source": "bodyFile",
-              "flag": "--body-file",
-              "kind": "value"
-            },
-            {
-              "source": "startFrom",
-              "flag": "--start-from",
-              "kind": "value"
-            },
-            {
-              "source": "pr",
-              "flag": "--pr",
-              "kind": "value"
-            },
-            {
-              "source": "github",
-              "flag": "--github",
-              "kind": "value"
-            }
-          ],
-          "jsonFlag": "--json"
-        },
-        "exampleInput": {
-          "stream": "stream/workspace-agents",
-          "title": "example task",
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "task.start"
       }
     },
     {
@@ -3241,57 +1040,6 @@
           "limit": 5
         },
         "workflowRole": "tool.search"
-      }
-    },
-    {
-      "name": "verify",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "review",
-      "description": "run the full task safety gate",
-      "core": true,
-      "definition": {
-        "name": "verify",
-        "methodPath": [
-          "verify"
-        ],
-        "description": "run the full task safety gate",
-        "category": "review",
-        "underlying": "workspace verify",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "VerifyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "verify",
-          "branchMode": "optional",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "base",
-              "flag": "--base",
-              "kind": "value"
-            },
-            {
-              "source": "noStamp",
-              "flag": "--no-stamp",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "noStamp": true,
-          "dryRun": true
-        },
-        "sessionRequired": true,
-        "workflowRole": "validation.verify"
       }
     }
   ]

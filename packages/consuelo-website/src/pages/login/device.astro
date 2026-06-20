@@ -23,8 +23,15 @@ const description = 'Authorize Consuelo OS on this device.';
       </div>
 
       <p class="launch-copy device-auth__copy">
-        Return to your terminal to continue setup. Browser approval will become active once the hosted approval endpoint is deployed.
+        Approve this device with your Google-backed Consuelo account, then return to your terminal to finish setup.
       </p>
+      <a
+        class="device-auth__button launch-mono"
+        data-os-device-approve-link
+        href="https://app.consuelohq.com/auth/google?action=os-device-approval"
+      >
+        Approve with Google
+      </a>
     </div>
   </section>
 
@@ -33,12 +40,17 @@ const description = 'Authorize Consuelo OS on this device.';
 
 <script is:inline>
   const deviceCodeNode = document.querySelector('[data-device-code]');
+  const approveLink = document.querySelector('[data-os-device-approve-link]');
   const rawUserCode = new URLSearchParams(window.location.search).get('user_code') ?? '';
   const normalizedUserCode = rawUserCode.replace(/[^a-z0-9]/gi, '').toUpperCase();
   const formattedUserCode = normalizedUserCode.replace(/(.{4})(?=.)/g, '$1-');
 
   if (deviceCodeNode && formattedUserCode) {
     deviceCodeNode.textContent = formattedUserCode;
+  }
+
+  if (approveLink && normalizedUserCode) {
+    approveLink.href = `https://app.consuelohq.com/auth/google?action=os-device-approval&osDeviceUserCode=${encodeURIComponent(normalizedUserCode)}`;
   }
 </script>
 
@@ -93,5 +105,24 @@ const description = 'Authorize Consuelo OS on this device.';
     display: block;
     font-size: clamp(2rem, 8vw, 4.5rem);
     letter-spacing: 0.08em;
+  }
+
+  .device-auth__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    padding: 0.95rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: inherit;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .device-auth__button:hover {
+    background: rgba(255, 255, 255, 0.18);
   }
 </style>

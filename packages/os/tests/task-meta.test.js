@@ -37,6 +37,29 @@ afterEach(() => {
   }
 });
 
+test('findTaskMeta ignores invalid root metadata on main', () => {
+  const repoRoot = makeRepo();
+  writeFile(repoRoot, '.task/current.json', JSON.stringify({
+    area: 'diff-cockpit',
+    stream: 'stream/diff-cockpit',
+    taskBranch: 'main',
+    baseBranch: 'stream/diff-cockpit',
+  }, null, 2));
+
+  expect(findTaskMeta(repoRoot, { currentBranch: 'main', includeStale: true })).toBeNull();
+  expect(findTaskMeta(repoRoot, { currentBranch: 'main' })).toBeNull();
+});
+
+test('findTaskMeta ignores invalid legacy metadata on main', () => {
+  const repoRoot = makeRepo();
+  writeFile(repoRoot, '.task-meta.json', JSON.stringify({
+    taskBranch: 'main',
+    baseBranch: 'stream/os',
+  }, null, 2));
+
+  expect(findTaskMeta(repoRoot, { currentBranch: 'main', includeStale: true })).toBeNull();
+});
+
 test('findTaskMeta discovers scoped current task metadata for the current branch', () => {
   const repoRoot = makeRepo();
   const { taskPath } = writeScopedCurrent(repoRoot);
@@ -52,6 +75,13 @@ test('findTaskMeta discovers scoped current task metadata for the current branch
       taskBranch: 'task/os-skills/example-task',
     },
   });
+});
+
+
+test('explore preserves underlying failures in stderr diagnostics', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'scripts', 'explore.js'), 'utf8');
+  expect(source).toContain('function formatErrorDetails(error)');
+  expect(source).toContain('explore failed: ${formatErrorDetails(error)}');
 });
 
 test('readValidTaskMetaForWorktree reads scoped task metadata', () => {

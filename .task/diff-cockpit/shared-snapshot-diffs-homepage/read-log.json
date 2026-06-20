@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-20T16:26:41.365Z"
+}

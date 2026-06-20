@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-intent-core-manifest-description",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1113,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1113",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1113",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1113/fix-intent-core-manifest-description",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1113",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1113/fix-intent-core-manifest-description",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-intent-core-manifest-description",
+  "taskSession": "tsk_e7320a498a4d",
+  "tmuxSession": "opensaas-workspace-agents-fix-intent-core-manifest-description-e7320a49",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-intent-core-manifest-description/.task/workspace-agents/fix-intent-core-manifest-description/session.json",
+  "createdAt": "2026-06-17T22:18:09.459Z"
+}

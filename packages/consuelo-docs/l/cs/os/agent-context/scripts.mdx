@@ -106,6 +106,22 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ---
 
+## github -- typed GitHub facade
+
+Preferred GitHub tool for agents. Use semantic operations and presets instead of constructing raw `gh` CLI arguments.
+
+```bash
+bun --cwd packages/os ./scripts/github.js pr.view --pr 436 --preset review
+bun --cwd packages/os ./scripts/github.js pr.checks --pr 436
+bun --cwd packages/os ./scripts/github.js branch.compare --base main --head stream/os
+```
+
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the OS response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
+Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
+
+---
+
 ## the task lifecycle
 
 every change — even tiny ones — follows this flow. no exceptions.
@@ -257,19 +273,20 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -288,11 +305,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content "..."
  → error: directory does not exist
@@ -327,6 +344,7 @@ proxies all arguments to `bun run fs` with cwd set to the selected task worktree
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
 bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
 bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
@@ -370,6 +388,7 @@ runs any command with cwd set to the selected task worktree. use for git, pretti
 bun run task:exec -- --area dialer git diff
 bun run task:exec -- --branch task/dialer/fix-thing git status --short
 bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
 bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
 bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
 bun run task:exec -- --branch task/dialer/fix-thing bun run review
@@ -453,12 +472,20 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/\{repoHash\}/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
 
-`packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
+The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
 
 ```bash
-cd packages/workspace && bun install
+CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
+```
+
+Gateway and advanced provider overrides:
+
+```bash
+bun run semantic:embeddings -- doctor --json
+CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-embeddings bun run explore -- "query"
+CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
 ```bash
@@ -473,15 +500,18 @@ bun run explore -- "refresh everything" --reindex
 bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
+bad: embedding gateway failed
+ → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+
 bad: embedding model not found
- → the expected cached model is missing at ~/.cache/qmd/models/Qwen3-Embedding-4B-Q8_0.gguf.
+ → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
 ```
 
 ---
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next
@@ -567,12 +597,26 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
+
+### PR reference selectors
+
+Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.consuelohq.com/.../pull/\{number\}`, and Graphite URLs shaped like `/github/pr/\{owner\}/\{repo\}/\{number\}/...`.
+
+```bash
+bun run task:fs -- --pr "https://diffs.consuelohq.com/consuelohq/opensaas/pull/780" read .task/current.json
+bun run task:exec -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
+```
+
+Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/\{number\}`, Graphite URLs must contain `/github/pr/\{owner\}/\{repo\}/\{number\}`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
+
 ### task:start — create task branch + worktree + PR
 
 creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
@@ -1382,3 +1426,50 @@ bun run install:system-daemons:dry-run
 ```
 
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
+
+
+## Sites page publishing
+
+Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
+
+```bash
+bun ./scripts/os.ts sites render \
+  --template guide \
+  --input /tmp/example-page/content.json \
+  --out /tmp/example-page/index.html \
+  --json
+
+bun ./scripts/os.ts sites publish \
+  --target /tmp/example-page \
+  --path /pages/example-page \
+  --title "Example Page" \
+  --kind guide \
+  --json
+```
+
+For `spec`, `plan`, and `guide`, render typed `content.json` through the canonical Consuelo reader shell before publishing. For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version \{currentVersionId\}`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.
+
+### Sites section patching and leases
+
+Use `sites patch` when an agent is changing one section of an existing typed page instead of republishing the whole page:
+
+```bash
+bun ./scripts/os.ts sites patch   --page trace-burn-intelligence   --section burn-scoring   --input /tmp/burn-scoring-section.json   --base-version {currentVersionId}   --agent {agent-id}   --json
+```
+
+Patch rules:
+
+- `--base-version` is required for existing pages unless `--force-publish` is explicitly used.
+- If another agent changed a different section since the base version, the patch rebases onto the current version and publishes a new immutable version.
+- If another agent changed the same section, the command rejects with `SECTION_CONFLICT`.
+- Patches for `spec`, `plan`, and `guide` pages update `content.json`, re-render through the canonical reader shell, then publish the rendered target.
+
+Use `sites lease` when multiple agents are actively working on the same Sites page:
+
+```bash
+bun ./scripts/os.ts sites lease acquire --page trace-burn-intelligence --section burn-scoring --agent agent-a --ttl-minutes 45 --json
+bun ./scripts/os.ts sites lease status --page trace-burn-intelligence --json
+bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section burn-scoring --agent agent-a --json
+```
+
+Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
