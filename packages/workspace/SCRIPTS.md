@@ -113,7 +113,7 @@ Defaults:
 - Route: `os.consuelohq.com/*`
 - Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
 
-### trace:analytics — inspect local workspace trace token and error usage
+### Trace analytics notes — inspect local workspace trace token and error usage
 
 Operator-only report for the local OpenWorkspace trace database. It shows cumulative windows for the past day, week, and month, plus top tools, branches, errors, slow calls, and high-output calls.
 
@@ -419,7 +419,7 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ---
 
-### task:exec — run commands inside the task worktree
+### Task worktree command notes — run commands inside the task worktree
 
 runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
 
@@ -1167,6 +1167,18 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 
 ---
 
+
+---
+
+### task-intent — start or dispatch task lifecycle guidance
+
+Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
+
+```bash
+bun run task-intent -- start --workflow task --area workspace-agents --title "example task-intent flow" --json
+bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
+```
+
 ### tools:search — search typed workspace tools by intent
 
 searches the workspace tool manifest and generated docs, then returns ranked tool matches with signatures, example input, capability metadata, and usage guidance. use it when an agent knows what it is trying to do but does not know the exact workspace tool name.
@@ -1315,15 +1327,15 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
-### office — run local design tooling
+### consuelo-design — run local design tooling
 
 Publishes design artifacts into the generated Consuelo Wiki archive and manages the archive server used by the private tailnet and wiki tunnel.
 
 The archive server serves the wiki index, generated search assets, and published artifact pages from the same origin. Keep this route contract aligned with design.publish and design.refresh.
 
 ```bash
-bun run office -- --help
-bun run office -- refresh --json
+bun run consuelo-design -- --help
+bun run consuelo-design -- refresh --json
 ```
 
 ---

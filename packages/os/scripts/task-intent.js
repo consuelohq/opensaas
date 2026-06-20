@@ -15,7 +15,7 @@ function writeStderr(value = '') {
 }
 
 function printHelp() {
-  writeStdout('usage: bun run intent -- <start|dispatch> [options]');
+  writeStdout('usage: bun run task-intent -- <start|dispatch> [options]');
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --workflow <task|office|design|sites>');

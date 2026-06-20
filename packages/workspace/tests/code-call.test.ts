@@ -161,6 +161,39 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('rejects binary codeFile and stdinFile payloads', async () => {
+    const root = tempRoot();
+    try {
+      const codeFile = join(root, 'program.bin');
+      const stdinFile = join(root, 'input.bin');
+      writeFileSync(codeFile, 'print(1)');
+      writeFileSync(stdinFile, 'hello');
+
+      const codeResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        codeFile,
+      }, root);
+      const stdinResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'import sys\nprint(sys.stdin.read())',
+        stdinFile,
+      }, root);
+
+      expect(codeResult.ok).toBe(false);
+      expect(codeResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(codeResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(codeResult.data.message).toContain('binary');
+      expect(stdinResult.ok).toBe(false);
+      expect(stdinResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(stdinResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(stdinResult.data.message).toContain('binary');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('records task workpad read evidence from code.call codeFile, stdinFile, and structured stdout', () => {
     const root = tempTaskWorktree();
     try {
