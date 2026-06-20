@@ -2457,11 +2457,6 @@ async function getOrSetCachedJson(
   }
 }
 
-async function readCachedJsonData<T>(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request): Promise<T | null> {
-  const snapshot = await readCachedJsonSnapshot<T>(edgeCache, snapshotStore, cacheRequest);
-  return snapshot?.data ?? null;
-}
-
 async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
   const durable = await readDurableCachedJsonSnapshot<T>(snapshotStore, cacheRequest);
   if (durable) return durable;
