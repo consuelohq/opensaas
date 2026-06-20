@@ -613,12 +613,12 @@ function buildSitesIndex(): string {
     { href: 'traces/', title: 'Tracing' },
     { href: 'docs/', title: 'Documentation' },
   ].map((site) => `
-      <li>- <a href="${escapeHtml(site.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.title)}</a></li>`).join('');
+      <li>- <a href="${escapeHtml(site.href)}">${escapeHtml(site.title)}</a></li>`).join('');
 
   return `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Consuelo OS Sites</title><style>${baseStyles()}</style></head>
-<body><main class="terminal-launcher" aria-labelledby="sites-title"><h1 id="sites-title">CONSUELO OS <span class="cursor" aria-hidden="true">█</span></h1><p class="divider">~~~</p><section class="terminal-block" aria-label="Consuelo OS status"><p class="terminal-line">CONTACT: <a href="mailto:support@consuelohq.com">support@consuelohq.com</a></p><p class="terminal-line">LOCATION: USA</p><p class="terminal-line">STATUS: ONLINE</p><p class="terminal-line">OPEN POSITION:</p><ul class="terminal-list"><li>- <a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li></ul></section><p class="divider">~~~</p><section class="terminal-block" aria-label="Sites"><p>SITES:</p><ul class="terminal-list">${siteLinks}
+<body><main class="terminal-launcher" aria-labelledby="sites-title"><h1 id="sites-title">CONSUELO OS <span class="cursor" aria-hidden="true">█</span></h1><p class="divider">~~~</p><section class="terminal-block" aria-label="Consuelo OS status"><p class="terminal-line">CONTACT: <a href="mailto:support@consuelohq.com">support@consuelohq.com</a></p><p class="terminal-line">LOCATION: USA</p><p class="terminal-line">STATUS: ONLINE</p><p class="terminal-line">OPEN POSITION:</p><ul class="terminal-list"><li>- <a href="/jobs">Systems Engineer</a></li></ul></section><p class="divider">~~~</p><section class="terminal-block" aria-label="Sites"><p>SITES:</p><ul class="terminal-list">${siteLinks}
     </ul></section></main></body></html>
 `;
 }

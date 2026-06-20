@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/keep-office-links-in-same-tab",
+  "base": "origin/main",
+  "headSha": "47ade2c6cd975a712211743182b130924f27bcd9",
+  "changeHash": "e95d0df8bfcb1bd5cd67319f3492f24db420bff75d50347dedf5dbc0bb935169",
+  "changedFiles": [
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/sites-cli.test.ts",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/tests/office-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-20T01:37:25.044Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/keep-office-links-in-same-tab.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/current.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/session.json",
+        ".task/workspace-agents/keep-office-links-in-same-tab/workpad.md",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/tests/office-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

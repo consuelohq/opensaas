@@ -85,8 +85,7 @@ test('polishes design archive into the sites shell with filtering and command pa
     'data-command-palette',
     'Keyboard Cockpit',
     'Slash opens this menu. Press G, then a command letter, to jump directly.',
-    "window.open(href, '_blank', 'noopener,noreferrer')",
-    "target=\"_blank\" rel=\"noopener noreferrer\"",
+    "window.location.assign(href)",
     "location.hash = activeFilter === 'all' ? '' : activeFilter;",
     'font-family: "Geist Mono", "Geist", ui-monospace',
     'archivePaths',
@@ -94,6 +93,9 @@ test('polishes design archive into the sites shell with filtering and command pa
   ]) {
     expect(source).toContain(marker);
   }
+  expect(source).not.toContain("window.open(href, '_blank'");
+  expect(source).not.toContain('target="_blank" rel="noopener noreferrer"');
+  expect(source).not.toContain('target=\\"_blank\\" rel=\\"noopener noreferrer\\"');
 });
 
 
