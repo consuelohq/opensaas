@@ -41,11 +41,15 @@ export PATH="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/
 export PORTLESS_HTTPS="${PORTLESS_HTTPS:-1}"
 
 portless_bin="${PORTLESS_BIN:-}"
-if [ -z "$portless_bin" ]; then
+if [ -n "$portless_bin" ] && [ ! -x "$portless_bin" ]; then
+  echo "configured PORTLESS_BIN is not executable: $portless_bin" >&2
+  exit 1
+fi
+if [ -z "$portless_bin" ] && [ "${PORTLESS_ALLOW_PATH_LOOKUP:-0}" = "1" ]; then
   portless_bin="$(command -v portless || true)"
 fi
 if [ -z "$portless_bin" ]; then
-  echo "portless binary not found in PATH=$PATH" >&2
+  echo "portless binary not configured. Set PORTLESS_BIN in $env_file or PORTLESS_ALLOW_PATH_LOOKUP=1." >&2
   exit 1
 fi
 

@@ -43,6 +43,10 @@ watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
 workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
 portless_generated_plist="$script_dir/generated/${portless_label}.plist"
 watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
+cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$root_dir/security/generated}"
+cloudflared_labels=()
+cloudflared_generated_plists=()
+cloudflared_agent_plists=()
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
   for candidate_port in 8961 8962 8963 9851 10851; do
@@ -62,6 +66,51 @@ launch_domain="gui/$uid_value"
 
 log() {
   printf '%s %s\n' "$log_prefix" "$*"
+}
+
+extract_plist_label() {
+  local plist="$1"
+  sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;q;}' "$plist"
+}
+
+append_cloudflared_plist() {
+  local plist="$1"
+  local label existing_label
+  label="$(extract_plist_label "$plist")"
+  if [ -z "$label" ]; then
+    echo "unable to read Label from cloudflared plist: $plist" >&2
+    exit 1
+  fi
+
+  for existing_label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+    if [ "$existing_label" = "$label" ]; then
+      return 0
+    fi
+  done
+
+  cloudflared_labels+=("$label")
+  cloudflared_generated_plists+=("$plist")
+  cloudflared_agent_plists+=("$launch_agent_dir/${label}.plist")
+}
+
+collect_cloudflared_plists() {
+  local plist
+  if [ ! -d "$cloudflared_generated_dir" ]; then
+    return 0
+  fi
+  for plist in "$cloudflared_generated_dir"/com.consuelo.os.cloudflared*.plist; do
+    [ -e "$plist" ] || continue
+    append_cloudflared_plist "$plist"
+  done
+}
+
+service_labels_csv() {
+  local labels="$workspace_label, $portless_label, $watchdog_label"
+  local label
+  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+    labels="$labels, $label"
+  done
+  printf '%s\n' "$labels"
 }
 
 derive_external_health_url() {
@@ -116,7 +165,11 @@ bootstrap_agent() {
 }
 
 rollback_agents() {
+  local label
   log "rolling back user LaunchAgents"
+  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+    bootout_agent "$label"
+  done
   bootout_agent "$watchdog_label"
   bootout_agent "$portless_label"
   bootout_agent "$workspace_label"
@@ -137,7 +190,7 @@ print_repair_hint() {
 print_success_summary() {
   [ "$quiet" = "1" ] && return 0
   log "background service setup complete"
-  log "Services: $workspace_label, $portless_label, $watchdog_label"
+  log "Services: $(service_labels_csv)"
   log "LaunchAgents: $launch_agent_dir"
   log "Logs: $log_dir"
   log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
@@ -146,9 +199,13 @@ print_success_summary() {
 
 print_debug_state() {
   [ "$debug" = "1" ] || return 0
+  local label
   launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
   launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
   launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
+  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+    launchctl print "$launch_domain/$label" | sed -n '1,80p'
+  done
 }
 
 run_generate_daemons() {
@@ -160,10 +217,15 @@ run_generate_daemons() {
 }
 
 run_plutil_lint() {
+  local plists=("$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist")
+  local plist
+  for plist in "${cloudflared_generated_plists[@]+"${cloudflared_generated_plists[@]}"}"; do
+    plists+=("$plist")
+  done
   if [ "$debug" = "1" ]; then
-    plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist"
+    plutil -lint "${plists[@]}"
   else
-    plutil -lint "$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist" >/dev/null
+    plutil -lint "${plists[@]}" >/dev/null
   fi
 }
 
@@ -172,6 +234,7 @@ if [ "$dry_run" -eq 0 ]; then
 fi
 
 run_generate_daemons
+collect_cloudflared_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
@@ -180,6 +243,7 @@ bash -n "$script_dir/generate-system-daemons.sh"
 bash -n "$script_dir/install-system-daemons.sh"
 run_plutil_lint
 if [ "$dry_run" -eq 1 ]; then
+  log "Services: $(service_labels_csv)"
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
   exit 0
 fi
@@ -199,13 +263,22 @@ trap - EXIT
 install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
 install -m 644 "$portless_generated_plist" "$portless_agent_plist"
 install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+for index in "${!cloudflared_generated_plists[@]}"; do
+  install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+done
 
+for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+  bootout_agent "$label"
+done
 bootout_agent "$watchdog_label"
 bootout_agent "$portless_label"
 bootout_agent "$workspace_label"
 
 bootstrap_agent "$workspace_label" "$workspace_agent_plist"
 bootstrap_agent "$portless_label" "$portless_agent_plist"
+for index in "${!cloudflared_labels[@]}"; do
+  bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
+done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
 if ! wait_for_health "$local_health_url" 20 1; then

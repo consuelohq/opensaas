@@ -55,9 +55,6 @@ export const provisionPlatformManagedOsMcpIngressPolicyFromEnv = async (
       };
     }
 
-    const accountId = readRequiredEnvValue(input.env, 'CLOUDFLARE_ACCOUNT_ID');
-    const apiToken = readRequiredEnvValue(input.env, 'CLOUDFLARE_API_TOKEN');
-
     if (input.dryRun) {
       return {
         status: 'planned',
@@ -65,6 +62,9 @@ export const provisionPlatformManagedOsMcpIngressPolicyFromEnv = async (
         allowedIpsListName: config.mcpAllowedIpsListName,
       };
     }
+
+    const accountId = readRequiredEnvValue(input.env, 'CLOUDFLARE_ACCOUNT_ID');
+    const apiToken = readRequiredEnvValue(input.env, 'CLOUDFLARE_API_TOKEN');
 
     const cloudflare = input.cloudflare ??
       createCloudflareManagedOsMcpIngressPolicyClient({

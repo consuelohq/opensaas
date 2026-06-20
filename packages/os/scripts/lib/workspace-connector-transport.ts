@@ -30,6 +30,7 @@ export type WorkspaceConnectorTransportInput = {
   localPort: number;
   transport: WorkspaceConnectorTransport;
   cloudflareTunnelToken?: string;
+  cloudflaredBin?: string;
   relayUrl?: string;
 };
 
@@ -76,6 +77,7 @@ export function planWorkspaceConnectorTransport(
   const generatedDir = path.join(input.home, 'security', 'generated');
   const logDir = path.join(input.home, 'logs');
   const tokenPath = path.join(generatedDir, 'cloudflared-tunnel.token');
+  const cloudflaredBin = input.cloudflaredBin ?? path.join(input.home, 'bin', 'cloudflared');
   const label = `com.consuelo.os.cloudflared.${normalizeLaunchdLabelSegment(
     input.connectorId,
   )}`;
@@ -89,7 +91,7 @@ export function planWorkspaceConnectorTransport(
     launchd: {
       label,
       programArguments: [
-        '/usr/local/bin/cloudflared',
+        cloudflaredBin,
         'tunnel',
         'run',
         '--token-file',
