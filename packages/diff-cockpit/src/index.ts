@@ -236,10 +236,17 @@ type EdgeCache = {
   delete(request: Request): Promise<boolean>;
 };
 
+type DurableJsonSnapshotStore = {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string): Promise<void>;
+  delete?(key: string): Promise<void>;
+};
+
 type GithubLoaderOptions = {
   fetcher?: Fetcher;
   token?: string;
   cache?: EdgeCache;
+  snapshotStore?: DurableJsonSnapshotStore;
 };
 
 type DiffCockpitEnv = {
@@ -248,6 +255,7 @@ type DiffCockpitEnv = {
   DIFF_COCKPIT_DEFAULT_REPO?: string;
   DIFF_COCKPIT_REFRESH_TOKEN?: string;
   GITHUB_WEBHOOK_SECRET?: string;
+  DIFF_COCKPIT_SNAPSHOT_STORE?: DurableJsonSnapshotStore;
 };
 
 type WorkerExecutionContext = {
@@ -1105,13 +1113,14 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       const codeLoader = createGithubCodeBrowserLoader({ fetcher: options.fetcher, token });
       const historyLoader = createGithubCodeHistoryLoader({ fetcher: options.fetcher, token });
       const edgeCache = options.cache ?? getDefaultEdgeCache();
+      const snapshotStore = options.snapshotStore ?? env?.DIFF_COCKPIT_SNAPSHOT_STORE ?? null;
 
       if (url.pathname === '/healthz') {
         return new Response('ok', { headers: { 'content-type': 'text/plain' } });
       }
 
       if (url.pathname === '/internal/cache/refresh') {
-        return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache });
+        return handleCacheRefresh({ request, env, ctx, defaultRepo, indexLoader, reviewLoader, codeLoader, historyLoader, edgeCache, snapshotStore });
       }
 
       if (url.pathname === '/api/github/webhook') {
@@ -1130,7 +1139,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             path: url.searchParams.get('path') || 'packages',
           };
           const cacheRequest = makeApiCacheRequest(url);
-          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => codeLoader(locator));
+          return getOrSetCachedJson(edgeCache, snapshotStore, cacheRequest, request, async () => codeLoader(locator));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -1146,7 +1155,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             path: url.searchParams.get('path') || 'packages',
           };
           const cacheRequest = makeApiCacheRequest(url);
-          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => historyLoader(locator));
+          return getOrSetCachedJson(edgeCache, snapshotStore, cacheRequest, request, async () => historyLoader(locator));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -1160,7 +1169,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             repo: decodeURIComponent(indexApiMatch[2] || ''),
           };
           const cacheRequest = makeApiCacheRequest(url);
-          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => indexLoader(repo));
+          return getOrSetCachedJson(edgeCache, snapshotStore, cacheRequest, request, async () => indexLoader(repo));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -1203,7 +1212,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
             number: Number(apiMatch[3]),
           };
           const cacheRequest = makeApiCacheRequest(url);
-          return getOrSetCachedJson(edgeCache, cacheRequest, request, async () => reviewLoader(locator));
+          return getOrSetCachedJson(edgeCache, snapshotStore, cacheRequest, request, async () => reviewLoader(locator));
         } catch (error: unknown) {
           return json({ error: getErrorMessage(error) }, 502);
         }
@@ -1213,7 +1222,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         try {
           const repo = parseRepoLocator('', defaultRepo);
           const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
-          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, snapshotStore, makeApiCacheRequest(indexApiUrl));
           return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
         } catch {
           return html(renderIndexPage(parseRepoLocator('', defaultRepo)));
@@ -1246,7 +1255,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
         };
         try {
           const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
-          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, makeApiCacheRequest(indexApiUrl));
+          const initialIndex = await readCachedJsonSnapshot<PullRequestIndexData>(edgeCache, snapshotStore, makeApiCacheRequest(indexApiUrl));
           return html(renderIndexPage(repo, initialIndex?.data ?? null, initialIndex?.etag ?? ''));
         } catch {
           return html(renderIndexPage(repo));
@@ -1264,7 +1273,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
       try {
         const reviewApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(locator.repo)}/pull/${locator.number}`);
-        const initialData = await readCachedJsonSnapshot<PullRequestReviewData>(edgeCache, makeApiCacheRequest(reviewApiUrl));
+        const initialData = await readCachedJsonSnapshot<PullRequestReviewData>(edgeCache, snapshotStore, makeApiCacheRequest(reviewApiUrl));
         return html(renderReviewPage(locator, initialData?.data ?? null, initialData?.etag ?? ''));
       } catch {
         return html(renderReviewPage(locator));
@@ -2231,6 +2240,7 @@ type CacheRefreshDeps = {
   codeLoader: ReturnType<typeof createGithubCodeBrowserLoader>;
   historyLoader: ReturnType<typeof createGithubCodeHistoryLoader>;
   edgeCache: EdgeCache | null;
+  snapshotStore: DurableJsonSnapshotStore | null;
 };
 
 async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
@@ -2292,7 +2302,7 @@ async function refreshCacheEntries(
     const homepageUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
     const homepageRequest = makeApiCacheRequest(new URL(homepageUrl));
     const homepageData = await deps.indexLoader(repo);
-    await replaceCachedJson(deps.edgeCache, homepageRequest, cachedJson(homepageData, homepageRequest));
+    await replaceCachedJson(deps.edgeCache, deps.snapshotStore, homepageRequest, cachedJson(homepageData, homepageRequest));
     const [codeResults, pullResults] = await Promise.all([
       Promise.all(codePaths.map((path) => refreshCodePathCache(deps, repo, path, requestOrigin))),
       Promise.all(pullNumbers.map((pullNumber) => refreshPullCache(deps, repo, pullNumber, requestOrigin))),
@@ -2325,8 +2335,8 @@ async function refreshCodePathCache(
       deps.historyLoader({ owner: repo.owner, repo: repo.repo, ref: 'main', path }),
     ]);
     await Promise.all([
-      replaceCachedJson(deps.edgeCache, codeRequest, cachedJson(codeData, codeRequest)),
-      replaceCachedJson(deps.edgeCache, historyRequest, cachedJson(historyData, historyRequest)),
+      replaceCachedJson(deps.edgeCache, deps.snapshotStore, codeRequest, cachedJson(codeData, codeRequest)),
+      replaceCachedJson(deps.edgeCache, deps.snapshotStore, historyRequest, cachedJson(historyData, historyRequest)),
     ]);
     return { code: cachePathLabel(codeUrl), history: cachePathLabel(historyUrl) };
   } catch (error: unknown) {
@@ -2344,7 +2354,7 @@ async function refreshPullCache(
     const pullUrl = `${requestOrigin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/${pullNumber}`;
     const pullRequest = makeApiCacheRequest(new URL(pullUrl));
     const pullData = await deps.reviewLoader({ owner: repo.owner, repo: repo.repo, number: pullNumber });
-    await replaceCachedJson(deps.edgeCache, pullRequest, cachedJson(pullData, pullRequest));
+    await replaceCachedJson(deps.edgeCache, deps.snapshotStore, pullRequest, cachedJson(pullData, pullRequest));
     return new URL(pullUrl).pathname;
   } catch (error: unknown) {
     throw new Error(`failed to refresh PR cache for ${pullNumber}: ${getErrorMessage(error)}`);
@@ -2405,9 +2415,17 @@ type MemoryCachedJson = {
   expiresAt: number;
 };
 
+type DurableCachedJson = {
+  body: string;
+  etag: string;
+  schemaVersion: string;
+  writtenAt: string;
+};
+
 type CachedJsonSnapshot<T> = {
   data: T;
   etag: string;
+  body?: string;
 };
 
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -2422,17 +2440,16 @@ function makeApiCacheRequest(url: URL): Request {
 
 async function getOrSetCachedJson(
   edgeCache: EdgeCache | null,
+  snapshotStore: DurableJsonSnapshotStore | null,
   cacheRequest: Request,
   clientRequest: Request,
   load: () => Promise<unknown>,
 ): Promise<Response> {
   try {
-    const cached = await readCachedJson(edgeCache, cacheRequest, clientRequest);
+    const cached = await readCachedJson(edgeCache, snapshotStore, cacheRequest, clientRequest);
     if (cached) return cached;
-    const memoryCached = readMemoryCachedJson(cacheRequest, clientRequest);
-    if (memoryCached) return memoryCached;
     const response = cachedJson(await load(), clientRequest);
-    const cacheWriteStatus = await replaceCachedJson(edgeCache, cacheRequest, response);
+    const cacheWriteStatus = await replaceCachedJson(edgeCache, snapshotStore, cacheRequest, response);
     response.headers.set('x-diff-cockpit-cache-write', cacheWriteStatus);
     return response;
   } catch (error: unknown) {
@@ -2440,19 +2457,21 @@ async function getOrSetCachedJson(
   }
 }
 
-async function readCachedJsonData<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<T | null> {
-  const snapshot = await readCachedJsonSnapshot<T>(edgeCache, cacheRequest);
+async function readCachedJsonData<T>(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request): Promise<T | null> {
+  const snapshot = await readCachedJsonSnapshot<T>(edgeCache, snapshotStore, cacheRequest);
   return snapshot?.data ?? null;
 }
 
-async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
+async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
+  const durable = await readDurableCachedJsonSnapshot<T>(snapshotStore, cacheRequest);
+  if (durable) return durable;
   try {
     if (edgeCache) {
       const cached = await edgeCache.match(cacheRequest);
       if (cached?.status === 200) {
         void writeMemoryCachedJson(cacheRequest, cached.clone());
         const body = await cached.clone().text();
-        return { data: JSON.parse(body) as T, etag: cached.headers.get('etag') || makeWeakEtag(body) };
+        return { data: JSON.parse(body) as T, etag: cached.headers.get('etag') || makeWeakEtag(body), body };
       }
     }
   } catch {
@@ -2460,7 +2479,10 @@ async function readCachedJsonSnapshot<T>(edgeCache: EdgeCache | null, cacheReque
   }
   return readMemoryCachedJsonSnapshot<T>(cacheRequest);
 }
-async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
+
+async function readCachedJson(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
+  const durable = await readDurableCachedJson(snapshotStore, cacheRequest, clientRequest);
+  if (durable) return durable;
   try {
     if (edgeCache) {
       const cached = await edgeCache.match(cacheRequest);
@@ -2468,9 +2490,11 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
         if (cached.status === 200) void writeMemoryCachedJson(cacheRequest, cached.clone());
         const etag = cached.headers.get('etag') || '';
         if (etag && clientRequest.headers.get('if-none-match') === etag) {
-          return cachedJsonNotModified(etag);
+          return cachedJsonNotModified(etag, clientRequest, 'edge');
         }
-        return cached;
+        const response = new Response(await cached.clone().text(), { status: cached.status, statusText: cached.statusText, headers: cached.headers });
+        response.headers.set('x-diff-cockpit-cache', 'edge');
+        return response;
       }
     }
   } catch {
@@ -2479,16 +2503,65 @@ async function readCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request
   return readMemoryCachedJson(cacheRequest, clientRequest);
 }
 
-async function replaceCachedJson(edgeCache: EdgeCache | null, cacheRequest: Request, response: Response): Promise<string> {
+async function replaceCachedJson(edgeCache: EdgeCache | null, snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request, response: Response): Promise<string> {
   if (response.status !== 200) return 'skip-status';
   await writeMemoryCachedJson(cacheRequest, response);
+  const snapshotStatus = await writeDurableCachedJson(snapshotStore, cacheRequest, response);
+  let edgeStatus = 'memory';
   try {
-    if (!edgeCache) return 'memory';
-    const cacheResponse = await cloneCacheableResponse(response);
-    await edgeCache.put(cacheRequest, cacheResponse);
-    return 'edge';
+    if (edgeCache) {
+      const cacheResponse = await cloneCacheableResponse(response);
+      await edgeCache.put(cacheRequest, cacheResponse);
+      edgeStatus = 'edge';
+    }
   } catch (error: unknown) {
-    return `edge-error:${getErrorMessage(error).slice(0, 160)}`;
+    edgeStatus = `edge-error:${getErrorMessage(error).slice(0, 160)}`;
+  }
+  return [snapshotStatus, edgeStatus].filter(Boolean).join('+');
+}
+
+function durableSnapshotKey(cacheRequest: Request): string {
+  const url = new URL(cacheRequest.url);
+  return `diff-cockpit:json:${url.pathname}${url.search}`;
+}
+
+async function readDurableCachedJson(snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request, clientRequest: Request): Promise<Response | null> {
+  const snapshot = await readDurableCachedJsonSnapshot<unknown>(snapshotStore, cacheRequest);
+  if (!snapshot?.body) return null;
+  if (snapshot.etag && clientRequest.headers.get('if-none-match') === snapshot.etag) {
+    return cachedJsonNotModified(snapshot.etag, clientRequest, 'snapshot');
+  }
+  return cachedJsonBody(snapshot.body, snapshot.etag, clientRequest, 'snapshot');
+}
+
+async function readDurableCachedJsonSnapshot<T>(snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request): Promise<CachedJsonSnapshot<T> | null> {
+  if (!snapshotStore) return null;
+  try {
+    const raw = await snapshotStore.get(durableSnapshotKey(cacheRequest));
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw) as DurableCachedJson;
+    if (!snapshot || snapshot.schemaVersion !== API_CACHE_SCHEMA_VERSION || typeof snapshot.body !== 'string') return null;
+    const etag = snapshot.etag || makeWeakEtag(snapshot.body);
+    return { data: JSON.parse(snapshot.body) as T, etag, body: snapshot.body };
+  } catch {
+    return null;
+  }
+}
+
+async function writeDurableCachedJson(snapshotStore: DurableJsonSnapshotStore | null, cacheRequest: Request, response: Response): Promise<string> {
+  if (!snapshotStore) return '';
+  try {
+    const body = await response.clone().text();
+    const snapshot: DurableCachedJson = {
+      body,
+      etag: response.headers.get('etag') || makeWeakEtag(body),
+      schemaVersion: API_CACHE_SCHEMA_VERSION,
+      writtenAt: new Date().toISOString(),
+    };
+    await snapshotStore.put(durableSnapshotKey(cacheRequest), JSON.stringify(snapshot));
+    return 'snapshot';
+  } catch (error: unknown) {
+    return `snapshot-error:${getErrorMessage(error).slice(0, 160)}`;
   }
 }
 
@@ -2508,9 +2581,9 @@ function readMemoryCachedJson(cacheRequest: Request, clientRequest: Request): Re
   const cached = getMemoryCachedJson(cacheRequest);
   if (!cached) return null;
   if (cached.etag && clientRequest.headers.get('if-none-match') === cached.etag) {
-    return cachedJsonNotModified(cached.etag);
+    return cachedJsonNotModified(cached.etag, clientRequest, 'memory');
   }
-  return cachedJsonBody(cached.body, cached.etag);
+  return cachedJsonBody(cached.body, cached.etag, clientRequest, 'memory');
 }
 
 function readMemoryCachedJsonData<T>(cacheRequest: Request): T | null {
@@ -2559,27 +2632,37 @@ function memoryCacheKey(request: Request): string {
   return request.url;
 }
 
-function cachedJsonBody(body: string, etag: string): Response {
+function cachedJsonBody(body: string, etag: string, request: Request, cacheSource: string): Response {
   return new Response(body, {
     status: 200,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      'cache-control': apiCacheControl(request),
       vary: 'Accept',
+      'x-diff-cockpit-cache': cacheSource,
     },
   });
 }
 
-function cachedJsonNotModified(etag: string): Response {
+function cachedJsonNotModified(etag: string, request: Request, cacheSource: string): Response {
   return new Response(null, {
     status: 304,
     headers: {
       etag,
-      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      'cache-control': apiCacheControl(request),
       vary: 'Accept',
+      'x-diff-cockpit-cache': cacheSource,
     },
   });
+}
+
+function apiCacheControl(request: Request): string {
+  const pathname = new URL(request.url).pathname;
+  if (/^\/api\/[^/]+\/[^/]+\/pulls$/.test(pathname)) {
+    return 'public, max-age=0, s-maxage=30, must-revalidate';
+  }
+  return 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800';
 }
 
 function getDefaultEdgeCache(): EdgeCache | null {
@@ -2591,22 +2674,16 @@ function cachedJson(data: unknown, request: Request): Response {
   const body = JSON.stringify(data, null, 2);
   const etag = makeWeakEtag(body);
   if (request.headers.get('if-none-match') === etag) {
-    return new Response(null, {
-      status: 304,
-      headers: {
-        etag,
-        'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
-        vary: 'Accept',
-      },
-    });
+    return cachedJsonNotModified(etag, request, 'fresh');
   }
   return new Response(body, {
     status: 200,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800',
+      'cache-control': apiCacheControl(request),
       vary: 'Accept',
+      'x-diff-cockpit-cache': 'fresh',
     },
   });
 }
