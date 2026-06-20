@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+  "events": [
+    {
+      "id": "e342b94b-cf0b-4aff-a731-eadf1bf99997",
+      "occurred_at": "2026-06-20T16:13:11.126Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "0e157031-aba0-4036-bf37-90899b8335bd",
+      "occurred_at": "2026-06-20T16:14:01.857Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "d9f6b679-10f9-427d-92ed-dde3e3804027",
+      "occurred_at": "2026-06-20T16:17:38.471Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "dad8952c-c509-400e-8ee7-531a4f11c48f",
+      "occurred_at": "2026-06-20T16:21:51.641Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "a1ccb782-ee73-41bd-97ea-1b99fcebecbf",
+      "occurred_at": "2026-06-20T16:23:21.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "a118ba6e-76fd-4e4d-9078-4a32f315579a",
+      "occurred_at": "2026-06-20T16:24:53.206Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    },
+    {
+      "id": "4f92aaf7-3225-4fcd-8354-077412f97c98",
+      "occurred_at": "2026-06-20T16:26:41.416Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/shared-snapshot-diffs-homepage"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-20T16:26:41.467Z"
+}

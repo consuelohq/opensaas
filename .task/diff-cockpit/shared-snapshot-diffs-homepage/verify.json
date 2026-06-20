@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/shared-snapshot-diffs-homepage",
+  "base": "origin/task/diff-cockpit/shared-snapshot-diffs-homepage",
+  "headSha": "c5831e1dd0565b32005fb03a50f6eb1a2067279f",
+  "changeHash": "b9bb531d7f5e080bfdee0e9773ab2161a45abee0ea7d24046b7eb4825ede7cfa",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-20T16:29:34.994Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/current.json",
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/evidence-log.json",
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/read-log.json",
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/session.json",
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/verify.json",
+        ".task/diff-cockpit/shared-snapshot-diffs-homepage/workpad.md",
+        ".task/tasks/diff-cockpit/shared-snapshot-diffs-homepage.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
