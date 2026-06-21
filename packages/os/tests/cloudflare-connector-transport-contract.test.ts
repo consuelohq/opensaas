@@ -32,7 +32,7 @@ type WorkspaceConnectorTransportContract = {
     localPort: number;
     transport: 'cloudflare-tunnel' | 'websocket-relay';
     cloudflareTunnelToken?: string;
-    cloudflaredBin?: string;
+    cloudflaredBin?: string | null;
     relayUrl?: string;
   }) => WorkspaceConnectorTransportPlan;
 };
@@ -96,6 +96,47 @@ contractDescribe('workspace connector transport contract', () => {
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/--token-file/);
     expect(plan.launchd?.programArguments.join(' ')).not.toMatch(/login|cert\.pem|cloudflare account/i);
     expect(JSON.stringify(plan)).not.toContain('cloudflared_tunnel_token_fixture');
+  });
+
+  it('should treat blank cloudflared executable input as unset', async () => {
+    const { planWorkspaceConnectorTransport } =
+      await loadWorkspaceConnectorTransportContract();
+    const home = '/tmp/consuelo-os-smoke/os';
+    const fallbackBin = join(home, 'bin', 'cloudflared');
+
+    for (const cloudflaredBin of [undefined, null, '', '   '] as const) {
+      const plan = planWorkspaceConnectorTransport({
+        home,
+        connectorId: 'connector_123',
+        workspaceHost: 'kokayi.consuelohq.com',
+        localPort: 8850,
+        transport: 'cloudflare-tunnel',
+        cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+        cloudflaredBin,
+      });
+
+      expect(plan.launchd?.programArguments[0]).toBe(fallbackBin);
+      expect(plan.launchd?.programArguments[0]?.trim()).not.toBe('');
+    }
+  });
+
+  it('should trim a non-empty cloudflared executable input', async () => {
+    const { planWorkspaceConnectorTransport } =
+      await loadWorkspaceConnectorTransportContract();
+
+    const plan = planWorkspaceConnectorTransport({
+      home: '/tmp/consuelo-os-smoke/os',
+      connectorId: 'connector_123',
+      workspaceHost: 'kokayi.consuelohq.com',
+      localPort: 8850,
+      transport: 'cloudflare-tunnel',
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+      cloudflaredBin: '  /tmp/consuelo-os-smoke/os/bin/cloudflared  ',
+    });
+
+    expect(plan.launchd?.programArguments[0]).toBe(
+      '/tmp/consuelo-os-smoke/os/bin/cloudflared',
+    );
   });
 
   it('should fail closed when a Cloudflare Tunnel token is missing', async () => {

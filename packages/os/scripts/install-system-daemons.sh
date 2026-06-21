@@ -47,6 +47,7 @@ cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$root_dir/security
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
+portless_enabled=0
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
   for candidate_port in 8961 8962 8963 9851 10851; do
@@ -105,8 +106,12 @@ collect_cloudflared_plists() {
 }
 
 service_labels_csv() {
-  local labels="$workspace_label, $portless_label, $watchdog_label"
+  local labels="$workspace_label"
   local label
+  if [ "$portless_enabled" = "1" ]; then
+    labels="$labels, $portless_label"
+  fi
+  labels="$labels, $watchdog_label"
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     labels="$labels, $label"
   done
@@ -171,7 +176,9 @@ rollback_agents() {
     bootout_agent "$label"
   done
   bootout_agent "$watchdog_label"
-  bootout_agent "$portless_label"
+  if [ "$portless_enabled" = "1" ]; then
+    bootout_agent "$portless_label"
+  fi
   bootout_agent "$workspace_label"
 }
 
@@ -179,7 +186,9 @@ print_repair_hint() {
   log "Consuelo OS services were not healthy after LaunchAgent setup."
   log "Log directory: $log_dir"
   log "System log: $log_dir/system.log"
-  log "Portless log: $log_dir/portless.log"
+  if [ "$portless_enabled" = "1" ]; then
+    log "Portless log: $log_dir/portless.log"
+  fi
   log "Watchdog log: $log_dir/watchdog.log"
   log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
   log "Retry services: bash $script_dir/install-system-daemons.sh"
@@ -201,7 +210,9 @@ print_debug_state() {
   [ "$debug" = "1" ] || return 0
   local label
   launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
-  launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
+  if [ "$portless_enabled" = "1" ]; then
+    launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
+  fi
   launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     launchctl print "$launch_domain/$label" | sed -n '1,80p'
@@ -217,8 +228,11 @@ run_generate_daemons() {
 }
 
 run_plutil_lint() {
-  local plists=("$workspace_generated_plist" "$portless_generated_plist" "$watchdog_generated_plist")
+  local plists=("$workspace_generated_plist" "$watchdog_generated_plist")
   local plist
+  if [ "$portless_enabled" = "1" ]; then
+    plists+=("$portless_generated_plist")
+  fi
   for plist in "${cloudflared_generated_plists[@]+"${cloudflared_generated_plists[@]}"}"; do
     plists+=("$plist")
   done
@@ -234,6 +248,9 @@ if [ "$dry_run" -eq 0 ]; then
 fi
 
 run_generate_daemons
+if [ -f "$portless_generated_plist" ]; then
+  portless_enabled=1
+fi
 collect_cloudflared_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
@@ -261,7 +278,9 @@ wait "$stage_pid" 2>/dev/null || true
 trap - EXIT
 
 install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+if [ "$portless_enabled" = "1" ]; then
+  install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+fi
 install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
 for index in "${!cloudflared_generated_plists[@]}"; do
   install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
@@ -271,11 +290,15 @@ for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"
 done
 bootout_agent "$watchdog_label"
-bootout_agent "$portless_label"
+if [ "$portless_enabled" = "1" ]; then
+  bootout_agent "$portless_label"
+fi
 bootout_agent "$workspace_label"
 
 bootstrap_agent "$workspace_label" "$workspace_agent_plist"
-bootstrap_agent "$portless_label" "$portless_agent_plist"
+if [ "$portless_enabled" = "1" ]; then
+  bootstrap_agent "$portless_label" "$portless_agent_plist"
+fi
 for index in "${!cloudflared_labels[@]}"; do
   bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
 done

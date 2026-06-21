@@ -1,6 +1,6 @@
 # Security Tightening Evidence
 
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-21
 
 This note tracks the remaining evidence for the Network and Security Report items that are not fully closed by the local OS gateway hardening alone.
 
@@ -99,3 +99,5 @@ Remaining evidence gap:
 - Read-only provider evidence still needs to confirm the deployed Cloudflare zone has the managed OS MCP rules active, ordered correctly, and backed by the intended provider-only `$mcp_allowed_ips` entries.
 - Read-only deployment evidence still needs to confirm the public installer does not require Cloudflare account credentials in its runtime environment.
 - The temporary local/dev deny CIDR override remains cleanup debt until `$mcp_allowed_ips` contains provider IPs only.
+- Portless runtime artifacts are optional. Baseline public launch must work without portless on the regular local port; hosted portless artifacts only need publication before enabling optional portless install. See `docs/installer-runtime-release-checklist.md`.
+- Clean-machine installer smoke remains required before internal release; this environment did not provide a fresh macOS profile/VM for the proof.

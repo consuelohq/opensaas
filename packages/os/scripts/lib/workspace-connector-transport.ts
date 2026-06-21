@@ -30,7 +30,7 @@ export type WorkspaceConnectorTransportInput = {
   localPort: number;
   transport: WorkspaceConnectorTransport;
   cloudflareTunnelToken?: string;
-  cloudflaredBin?: string;
+  cloudflaredBin?: string | null;
   relayUrl?: string;
 };
 
@@ -41,6 +41,11 @@ const requireLocalPort = (localPort: number): void => {
   if (!Number.isInteger(localPort) || localPort <= 0 || localPort > 65535) {
     throw new Error('connector local port must be a valid TCP port');
   }
+};
+
+const resolveCloudflaredBin = (input: WorkspaceConnectorTransportInput): string => {
+  const configuredBin = input.cloudflaredBin?.trim();
+  return configuredBin || path.join(input.home, 'bin', 'cloudflared');
 };
 
 export function planWorkspaceConnectorTransport(
@@ -77,7 +82,7 @@ export function planWorkspaceConnectorTransport(
   const generatedDir = path.join(input.home, 'security', 'generated');
   const logDir = path.join(input.home, 'logs');
   const tokenPath = path.join(generatedDir, 'cloudflared-tunnel.token');
-  const cloudflaredBin = input.cloudflaredBin ?? path.join(input.home, 'bin', 'cloudflared');
+  const cloudflaredBin = resolveCloudflaredBin(input);
   const label = `com.consuelo.os.cloudflared.${normalizeLaunchdLabelSegment(
     input.connectorId,
   )}`;

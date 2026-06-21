@@ -47,6 +47,12 @@ if [ -n "$portless_bin" ] && [ ! -x "$portless_bin" ]; then
 fi
 if [ -z "$portless_bin" ] && [ "${PORTLESS_ALLOW_PATH_LOOKUP:-0}" = "1" ]; then
   portless_bin="$(command -v portless || true)"
+  if [ -n "$portless_bin" ]; then
+    echo "PORTLESS_BIN is not configured; using portless from PATH: $portless_bin" >&2
+  else
+    echo "portless binary not found on PATH: $PATH. Set PORTLESS_BIN in $env_file or install portless on PORTLESS_DAEMON_PATH." >&2
+    exit 1
+  fi
 fi
 if [ -z "$portless_bin" ]; then
   echo "portless binary not configured. Set PORTLESS_BIN in $env_file or PORTLESS_ALLOW_PATH_LOOKUP=1." >&2

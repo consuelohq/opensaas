@@ -39,6 +39,9 @@ DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
+PORTLESS_ENABLED="${PORTLESS_ENABLED:-auto}"
+PORTLESS_INSTALL="${CONSUELO_OS_INSTALL_PORTLESS:-0}"
+PORTLESS_REQUIRED="${CONSUELO_OS_REQUIRE_PORTLESS:-0}"
 CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-}"
 REPO_DIR=""
 ONBOARDING_STATUS="pending"
@@ -143,7 +146,7 @@ emit_json_summary() {
     },
     "runtime": {
       "bun": { "classification": "installer_managed", "status": $(json_escape "$BUN_STATUS"), "path": $(json_path_or_null "$BUN_BIN") },
-      "portless": { "classification": "installer_managed", "status": $(json_escape "$PORTLESS_STATUS"), "path": $(json_path_or_null "$PORTLESS_BIN") },
+      "portless": { "classification": "optional_installer_managed", "status": $(json_escape "$PORTLESS_STATUS"), "path": $(json_path_or_null "$PORTLESS_BIN") },
       "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") }
     },
     "package": {
@@ -296,20 +299,16 @@ or:
   fi
 
   while true; do
-    printf '%s
-' "Choose Consuelo OS mode:" > /dev/tty
-    printf '%s
-' "1) local" > /dev/tty
-    printf '%s
-' "2) cloud" > /dev/tty
+    printf '%s\n' "Choose Consuelo OS mode:" > /dev/tty
+    printf '%s\n' "1) local" > /dev/tty
+    printf '%s\n' "2) cloud" > /dev/tty
     printf '%s' "Enter 1 or 2: " > /dev/tty
     IFS= read -r mode_choice < /dev/tty
 
     case "$mode_choice" in
       ""|1|local) OS_MODE="local"; return 0 ;;
       2|cloud) OS_MODE="cloud"; return 0 ;;
-      *) printf '%s
-' "Enter 1 for local or 2 for cloud." > /dev/tty ;;
+      *) printf '%s\n' "Enter 1 for local or 2 for cloud." > /dev/tty ;;
     esac
   done
 }
@@ -476,13 +475,44 @@ find_runtime_binary() {
   return 1
 }
 
+curl_retry() {
+  curl -fsSL --retry 3 --retry-delay 1 --retry-connrefused --connect-timeout 10 --max-time 120 "$@"
+}
+
+is_sha256() {
+  local value="$1"
+  [ "${#value}" -eq 64 ] || return 1
+  case "$value" in
+    *[!0123456789abcdefABCDEF]*) return 1 ;;
+  esac
+  return 0
+}
+
+parse_sha256_token() {
+  local checksum_text="$1"
+  printf '%s\n' "$checksum_text" | awk '
+    {
+      for (field_index = 1; field_index <= NF; field_index += 1) {
+        token = $field_index
+        sub(/^\*/, "", token)
+        if (length(token) == 64 && token !~ /[^0-9A-Fa-f]/) {
+          print token
+          exit
+        }
+      }
+    }
+  '
+}
+
 read_remote_sha256() {
   local explicit_sha="$1"
   local sha_url="$2"
   local checksum_text checksum
 
   if [ -n "$explicit_sha" ]; then
-    printf '%s\n' "$explicit_sha"
+    checksum="$(parse_sha256_token "$explicit_sha")"
+    is_sha256 "$checksum" || return 1
+    printf '%s\n' "$checksum"
     return 0
   fi
 
@@ -490,21 +520,22 @@ read_remote_sha256() {
     return 1
   fi
 
-  checksum_text="$(curl -fsSL "$sha_url")"
-  set -- $checksum_text
-  checksum="${1:-}"
-  if [ -z "$checksum" ]; then
+  if ! checksum_text="$(curl_retry "$sha_url")"; then
     return 1
   fi
+  checksum="$(parse_sha256_token "$checksum_text")"
+  is_sha256 "$checksum" || return 1
   printf '%s\n' "$checksum"
 }
-
 verify_sha256() {
   local file_path="$1"
   local expected_sha="$2"
   local actual_sha
 
   require_command shasum "Consuelo OS needs shasum to verify downloaded runtime binaries. shasum is expected on supported macOS installs."
+  if ! is_sha256 "$expected_sha"; then
+    fail "malformed SHA-256 metadata for $(basename "$file_path"): $expected_sha"
+  fi
   actual_sha="$(shasum -a 256 "$file_path")"
   actual_sha="${actual_sha%% *}"
   if [ "$actual_sha" != "$expected_sha" ]; then
@@ -521,7 +552,7 @@ download_verified_file() {
 
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-${name}.XXXXXX")"
   tmp_file="$tmp_dir/$name.download"
-  if ! curl -fsSL "$url" -o "$tmp_file"; then
+  if ! curl_retry "$url" -o "$tmp_file"; then
     rm -rf "$tmp_dir"
     return 1
   fi
@@ -561,7 +592,7 @@ install_cloudflared_runtime() {
 
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-cloudflared.XXXXXX")"
   archive_file="$tmp_dir/$asset_name"
-  if ! curl -fsSL "$url" -o "$archive_file"; then
+  if ! curl_retry "$url" -o "$archive_file"; then
     rm -rf "$tmp_dir"
     return 1
   fi
@@ -579,25 +610,71 @@ install_cloudflared_runtime() {
 
 ensure_portless() {
   local managed_path="$RUNTIME_BIN_DIR/portless"
+
+  case "${PORTLESS_ENABLED:-auto}" in
+    0|false|no)
+      PORTLESS_BIN=""
+      PORTLESS_ENABLED="0"
+      PORTLESS_STATUS="skipped"
+      log "portless disabled; Consuelo OS will use http://127.0.0.1:8960"
+      return 0
+      ;;
+  esac
+
   if PORTLESS_BIN="$(find_runtime_binary "${PORTLESS_BIN:-}" portless "$managed_path")"; then
+    PORTLESS_ENABLED="1"
     PORTLESS_STATUS="present"
     log "portless found: $PORTLESS_BIN"
     return 0
   fi
 
-  PORTLESS_BIN="$managed_path"
-  if [ "$DRY_RUN" -eq 1 ]; then
-    PORTLESS_STATUS="would_install"
-    log "dry-run: portless is missing and would be installed to $PORTLESS_BIN"
+  PORTLESS_BIN=""
+  PORTLESS_ENABLED="0"
+
+  if [ "$PORTLESS_REQUIRED" = "1" ]; then
+    PORTLESS_ENABLED="1"
+    PORTLESS_BIN="$managed_path"
+    if [ "$DRY_RUN" -eq 1 ]; then
+      PORTLESS_STATUS="would_install"
+      log "dry-run: required portless is missing and would be installed to $PORTLESS_BIN"
+      return 0
+    fi
+    run_with_loading_dots "Installing portless" install_portless_runtime
+    if [ ! -x "$PORTLESS_BIN" ]; then
+      fail "portless install finished, but $PORTLESS_BIN was not executable."
+    fi
+    PORTLESS_STATUS="installed"
+    log "portless installed: $PORTLESS_BIN"
     return 0
   fi
 
-  run_with_loading_dots "Installing portless" install_portless_runtime
-  if [ ! -x "$PORTLESS_BIN" ]; then
-    fail "portless install finished, but $PORTLESS_BIN was not executable."
+  if [ "$PORTLESS_INSTALL" = "1" ]; then
+    PORTLESS_BIN="$managed_path"
+    if [ "$DRY_RUN" -eq 1 ]; then
+      PORTLESS_STATUS="would_install"
+      log "dry-run: optional portless is missing and would be installed to $PORTLESS_BIN"
+      return 0
+    fi
+    if run_with_loading_dots "Installing optional portless" install_portless_runtime; then
+      if [ ! -x "$PORTLESS_BIN" ]; then
+        PORTLESS_BIN=""
+        PORTLESS_STATUS="optional_unavailable"
+        log "optional portless install finished without an executable; Consuelo OS will use http://127.0.0.1:8960"
+        return 0
+      fi
+      PORTLESS_ENABLED="1"
+      PORTLESS_STATUS="installed"
+      log "portless installed: $PORTLESS_BIN"
+      return 0
+    fi
+    PORTLESS_BIN=""
+    PORTLESS_STATUS="optional_unavailable"
+    log "optional portless install unavailable; Consuelo OS will use http://127.0.0.1:8960"
+    return 0
   fi
-  PORTLESS_STATUS="installed"
-  log "portless installed: $PORTLESS_BIN"
+
+  PORTLESS_STATUS="optional_missing"
+  log "portless is not installed; Consuelo OS will use http://127.0.0.1:8960"
 }
 
 ensure_cloudflared() {
@@ -650,6 +727,23 @@ persist_env_value() {
   chmod 600 "$file"
 }
 
+remove_env_value() {
+  local file="$1"
+  local key="$2"
+  local tmp_file line current_key
+
+  [ -f "$file" ] || return 0
+  tmp_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-os-env.XXXXXX")"
+  while IFS= read -r line || [ -n "$line" ]; do
+    current_key="${line%%=*}"
+    if [ "$current_key" = "$key" ]; then
+      continue
+    fi
+    printf '%s\n' "$line" >> "$tmp_file"
+  done < "$file"
+  mv "$tmp_file" "$file"
+  chmod 600 "$file"
+}
 persist_runtime_paths() {
   local env_file="$OS_HOME/.env"
   if [ "$DRY_RUN" -eq 1 ]; then
@@ -658,9 +752,15 @@ persist_runtime_paths() {
   fi
 
   persist_env_value "$env_file" BUN_BIN "$BUN_BIN"
-  persist_env_value "$env_file" PORTLESS_BIN "$PORTLESS_BIN"
+  if [ -n "$PORTLESS_BIN" ]; then
+    persist_env_value "$env_file" PORTLESS_BIN "$PORTLESS_BIN"
+    persist_env_value "$env_file" PORTLESS_ENABLED "1"
+  else
+    remove_env_value "$env_file" PORTLESS_BIN
+    persist_env_value "$env_file" PORTLESS_ENABLED "0"
+  fi
   persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
-  export BUN_BIN PORTLESS_BIN CLOUDFLARED_BIN
+  export BUN_BIN PORTLESS_BIN PORTLESS_ENABLED CLOUDFLARED_BIN
 }
 
 current_repo_dir() {
@@ -683,7 +783,7 @@ download_source_archive() {
 
   mkdir -p "$parent_dir" "$staged_dir"
 
-  if ! curl -fsSL "$REPO_ARCHIVE_URL" -o "$archive_file"; then
+  if ! curl_retry "$REPO_ARCHIVE_URL" -o "$archive_file"; then
     rm -rf "$tmp_dir"
     return 1
   fi
@@ -880,7 +980,11 @@ maybe_install_daemons() {
   fi
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    log "dry-run: would offer user LaunchAgent setup for com.consuelo.system, com.consuelo.watchdog, and com.consuelo.portless.system."
+    if [ -n "$PORTLESS_BIN" ]; then
+      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+    else
+      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+    fi
     run_daemon_dry_run
     return 0
   fi
@@ -896,7 +1000,7 @@ maybe_install_daemons() {
 Labels:
 - com.consuelo.system
 - com.consuelo.watchdog
-- com.consuelo.portless.system
+- com.consuelo.portless.system, only when portless is configured
 
 Press Enter to install these user LaunchAgents, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
   fi
@@ -930,7 +1034,11 @@ print_success_summary() {
 
   case "$DAEMON_STATUS" in
     installed)
-      log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
+      if [ -n "$PORTLESS_BIN" ]; then
+        log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
+      else
+        log "Services: com.consuelo.system, com.consuelo.watchdog"
+      fi
       ;;
     skipped)
       log "Services: skipped"

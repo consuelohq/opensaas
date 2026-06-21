@@ -72,6 +72,35 @@ portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 bun_bin="$(xml_escape "${BUN_BIN:-}")"
 portless_bin="$(xml_escape "${PORTLESS_BIN:-}")"
+portless_allow_path_lookup="${PORTLESS_ALLOW_PATH_LOOKUP:-0}"
+if [ -z "${PORTLESS_BIN:-}" ] && [ ! -f "$env_file" ]; then
+  portless_allow_path_lookup="1"
+fi
+portless_enabled="${PORTLESS_ENABLED:-auto}"
+portless_should_generate="0"
+case "$portless_enabled" in
+  0|false|no)
+    portless_should_generate="0"
+    ;;
+  1|true|yes)
+    portless_should_generate="1"
+    if [ -z "${PORTLESS_BIN:-}" ]; then
+      portless_allow_path_lookup="1"
+    fi
+    ;;
+  *)
+    if [ -n "${PORTLESS_BIN:-}" ]; then
+      portless_should_generate="1"
+    elif [ ! -f "$env_file" ] && PATH="$portless_path" command -v portless >/dev/null 2>&1; then
+      portless_should_generate="1"
+      portless_allow_path_lookup="1"
+    fi
+    ;;
+esac
+if [ "$portless_should_generate" != "1" ]; then
+  rm -f "$generated_dir/${portless_label}.plist"
+fi
+portless_allow_path_lookup="$(xml_escape "$portless_allow_path_lookup")"
 
 cat > "$generated_dir/${workspace_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -116,6 +145,7 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
 </plist>
 PLIST
 
+if [ "$portless_should_generate" = "1" ]; then
 cat > "$generated_dir/${portless_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -154,11 +184,14 @@ cat > "$generated_dir/${portless_label}.plist" <<PLIST
     <string>${portless_path}</string>
     <key>PORTLESS_BIN</key>
     <string>${portless_bin}</string>
+    <key>PORTLESS_ALLOW_PATH_LOOKUP</key>
+    <string>${portless_allow_path_lookup}</string>
   </dict>
 </dict>
 </plist>
 PLIST
 
+fi
 cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
