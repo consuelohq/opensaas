@@ -14,6 +14,7 @@ const osPackageRoot = path.join(__dirname, '..');
 const workspaceEdgeRoot = path.join(osPackageRoot, 'cloudflare', 'workspace-edge');
 const wranglerPath = path.join(workspaceEdgeRoot, 'wrangler.toml');
 const workerEntrypointPath = path.join(workspaceEdgeRoot, 'src', 'index.ts');
+const workerReadmePath = path.join(workspaceEdgeRoot, 'README.md');
 const d1MigrationPath = path.join(
   workspaceEdgeRoot,
   'migrations',
@@ -49,6 +50,13 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/pattern\s*=\s*["']internal\.consuelohq\.com\/\*["']/);
     expect(wrangler).toMatch(/pattern\s*=\s*["']\*\.consuelohq\.com\/\*["']/);
     expect(wrangler).not.toMatch(/pattern\s*=\s*["']sites\.consuelohq\.com\/\*["']/);
+    for (const bindingName of [
+      'MCP_CONNECTION_CREDENTIALS',
+      'MCP_CONNECTION_STATES',
+      'MCP_APPROVED_CONNECTOR_BINDINGS',
+    ]) {
+      expect(wrangler).toContain(`binding = \"${bindingName}\"`);
+    }
     expect(wrangler).toMatch(/\[\[r2_buckets\]\]/);
     expect(wrangler).toMatch(/binding\s*=\s*["']SITES_SNAPSHOTS["']/);
     expect(wrangler).toMatch(/bucket_name\s*=\s*["']consuelo-sites-snapshots["']/);
@@ -64,12 +72,43 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(worker).toMatch(/WORKSPACE_ROUTE_REGISTRY/);
     expect(worker).toMatch(/CONSUELO_EDGE_SIGNING_SECRET/);
     expect(worker).toMatch(/SITES_SNAPSHOTS/);
+    expect(worker).toMatch(/MCP_CONNECTION_CREDENTIALS/);
+    expect(worker).toMatch(/MCP_CONNECTION_STATES/);
+    expect(worker).toMatch(/MCP_APPROVED_CONNECTOR_BINDINGS/);
+    expect(worker).toMatch(/MCP_GOOGLE_OAUTH_CLIENT_ID/);
+    expect(worker).toMatch(/MCP_GOOGLE_OAUTH_CLIENT_SECRET/);
+    expect(worker).toMatch(/createWorkspaceMcpConnectionAuthHandler/);
+    expect(worker).toMatch(/createWorkspaceMcpApprovedConnectorBindingStore/);
     expect(worker).toMatch(/siteSnapshots/);
     expect(worker).toMatch(
       /export\s+(?:(?:async\s+)?function|const)\s+fetch|export\s*\{[^}]*\bfetch\b[^}]*\}/,
     );
     expect(worker).toMatch(/fetch\s*\(/);
     expect(worker).not.toMatch(/process\.env/);
+  });
+
+  it('should document required Cloudflare bindings, WAF/IP lists, and Sites route-policy separation', () => {
+    const readme = readRequiredFile(workerReadmePath);
+
+    for (const bindingName of [
+      'WORKSPACE_ROUTE_REGISTRY',
+      'SITES_SNAPSHOTS',
+      'MCP_CONNECTION_CREDENTIALS',
+      'MCP_CONNECTION_STATES',
+      'MCP_APPROVED_CONNECTOR_BINDINGS',
+      'CONSUELO_EDGE_SIGNING_SECRET',
+      'MCP_GOOGLE_OAUTH_CLIENT_ID',
+      'MCP_GOOGLE_OAUTH_CLIENT_SECRET',
+      'MCP_ALLOWED_PROVIDER_CIDRS',
+    ]) {
+      expect(readme).toContain(bindingName);
+    }
+    expect(readme).toMatch(/WAF/i);
+    expect(readme).toMatch(/IP list|CIDR/i);
+    expect(readme).toMatch(/route policy/i);
+    expect(readme).toMatch(/Sites.*R2|R2.*Sites/s);
+    expect(readme).toMatch(/local gateway token/i);
+    expect(readme).toMatch(/MCP connection credential/i);
   });
   it('should ship a D1 migration for the edge route registry tables and indexes', () => {
     const migration = readRequiredFile(d1MigrationPath);

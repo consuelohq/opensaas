@@ -1,4 +1,9 @@
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../scripts/lib/workspace-device-authorization';
+import {
+  createWorkspaceMcpApprovedConnectorBindingStore,
+  type WorkspaceMcpApprovedConnectorBindingStore,
+  type WorkspaceMcpConnectionCredentialKv,
+} from '../../../scripts/lib/workspace-mcp-connection-auth';
 
 type GrantStatus = 'pending' | 'approved' | 'denied';
 type StrongerAuthMethod = 'google' | 'passkey' | 'magic_link' | 'hardware_key' | 'admin_invite';
@@ -46,6 +51,7 @@ type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  MCP_APPROVED_CONNECTOR_BINDINGS?: WorkspaceMcpConnectionCredentialKv;
 };
 
 type GoogleIdentityErrorKind = 'token_exchange' | 'identity_verification' | 'audience_mismatch' | 'email_not_verified';
@@ -228,16 +234,74 @@ function googleApprovalErrorMessage(error: unknown): string {
   return `Google approval failed (${error instanceof Error ? error.message : String(error)}). Try this device code again.`;
 }
 
-async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
+function approvedWorkspaceId(workspaceSlug: string): string {
+  return `workspace_${workspaceSlug.replace(/-/g, '_')}`;
+}
+
+function approvedConnectorId(workspaceSlug: string): string {
+  return `connector_${workspaceSlug.replace(/-/g, '_')}`;
+}
+
+function approvedDeviceId(grant: Grant): string {
+  return `device_${grant.devicePublicKeyThumbprint.replace(/^dpk_/, '')}`;
+}
+
+async function recordApprovedMcpBinding(input: {
+  bindings?: WorkspaceMcpApprovedConnectorBindingStore;
+  grant: Grant;
+  accountId: string;
+  subjectEmail?: string;
+  nowMs: number;
+}): Promise<void> {
   try {
-    input.grant.status = 'approved';
-    input.grant.accountId = input.accountId;
-    input.grant.accountAuthMethod = input.authMethod;
-    input.grant.connectorToken = rand('cbt', 32);
-    input.grant.connectorExpiresAt = input.nowMs + BOOTSTRAP_TTL_MS;
-    await input.store.put(input.grant);
+    if (!input.bindings?.putApprovedBinding) return;
+    await input.bindings.putApprovedBinding({
+      workspaceId: approvedWorkspaceId(input.grant.workspaceSlug),
+      connectorId: approvedConnectorId(input.grant.workspaceSlug),
+      deviceId: approvedDeviceId(input.grant),
+      subjectId: input.accountId,
+      ...(input.subjectEmail ? { subjectEmail: input.subjectEmail } : {}),
+      capabilities: ['tools:list', 'tools:call'],
+      status: 'active',
+      approvedAt: new Date(input.nowMs).toISOString(),
+    });
+  } catch (error: unknown) {
+    throw new Error(`MCP approved connector binding write failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function approveGrant(input: {
+  store: Store;
+  grant: Grant;
+  accountId: string;
+  authMethod: StrongerAuthMethod;
+  nowMs: number;
+  bindings?: WorkspaceMcpApprovedConnectorBindingStore;
+  subjectEmail?: string;
+}): Promise<Grant> {
+  const previousGrant: Grant = { ...input.grant };
+  const approvedGrant: Grant = {
+    ...input.grant,
+    status: 'approved',
+    accountId: input.accountId,
+    accountAuthMethod: input.authMethod,
+    connectorToken: rand('cbt', 32),
+    connectorExpiresAt: input.nowMs + BOOTSTRAP_TTL_MS,
+  };
+
+  try {
+    await input.store.put(approvedGrant);
+    await recordApprovedMcpBinding({
+      bindings: input.bindings,
+      grant: approvedGrant,
+      accountId: input.accountId,
+      subjectEmail: input.subjectEmail,
+      nowMs: input.nowMs,
+    });
+    Object.assign(input.grant, approvedGrant);
     return input.grant;
   } catch (error: unknown) {
+    await input.store.put(previousGrant).catch(() => undefined);
     throw new Error(`grant approval failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -246,10 +310,10 @@ function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
-    workspace_id: `workspace_${g.workspaceSlug.replace(/-/g, '_')}`,
+    workspace_id: approvedWorkspaceId(g.workspaceSlug),
     workspace_slug: g.workspaceSlug,
     workspace_host: g.workspaceHost,
-    connector_id: `connector_${g.workspaceSlug.replace(/-/g, '_')}`,
+    connector_id: approvedConnectorId(g.workspaceSlug),
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
     connector_bootstrap_expires_at: new Date(g.connectorExpiresAt ?? Date.now()).toISOString(),
     device_public_key_thumbprint: g.devicePublicKeyThumbprint,
@@ -265,10 +329,12 @@ export function createOsDeviceAuthorityHandler(input: {
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
   fetchImpl?: typeof fetch;
+  approvedBindings?: WorkspaceMcpApprovedConnectorBindingStore;
 }) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
   const fetchImpl = input.fetchImpl ?? ((url, init) => globalThis.fetch(url, init));
+  const approvedBindings = input.approvedBindings;
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
@@ -310,7 +376,15 @@ export function createOsDeviceAuthorityHandler(input: {
           return text(page({ code: oauthState.userCode, origin, error: googleApprovalErrorMessage(error) }), { status: 502 });
         }
         await input.store.delOAuthState(stateValue);
-        await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
+        await approveGrant({
+          store: input.store,
+          grant,
+          accountId: `google:${identity.sub}`,
+          authMethod: 'google',
+          nowMs: now(),
+          bindings: approvedBindings,
+          subjectEmail: identity.email,
+        });
         return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
       }
       if (url.pathname === '/login/device/code') {
@@ -347,7 +421,14 @@ export function createOsDeviceAuthorityHandler(input: {
         const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
-        await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
+        await approveGrant({
+          store: input.store,
+          grant: g,
+          accountId: auth.accountId,
+          authMethod: auth.method,
+          nowMs: now(),
+          bindings: approvedBindings,
+        });
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
       }
       if (url.pathname === '/login/oauth/access_token') {
@@ -384,6 +465,9 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      ...(env.MCP_APPROVED_CONNECTOR_BINDINGS
+        ? { approvedBindings: createWorkspaceMcpApprovedConnectorBindingStore({ kv: env.MCP_APPROVED_CONNECTOR_BINDINGS }) }
+        : {}),
     });
   }
   fetch(request: Request) { return this.handler(request); }

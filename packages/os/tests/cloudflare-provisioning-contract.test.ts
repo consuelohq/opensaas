@@ -49,6 +49,7 @@ type WorkspaceCloudflareProvisioningPlan = {
     tunnelName: string;
     workspaceDnsRecord: { name: string };
     osTunnelDnsRecord: { name: string };
+    localServiceUrl: string;
   };
   routes: Array<{
     surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
@@ -129,6 +130,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       owner: 'consuelo-os-cloud',
       cloudflare: {
         zoneId: 'zone_123',
+        localServiceUrl: 'http://127.0.0.1:8970',
       },
     });
 

@@ -10,6 +10,11 @@ routes = [
 [vars]
 OS_DEVICE_AUTH_ORIGIN = "https://os.consuelohq.com"
 
+
+[[kv_namespaces]]
+binding = "MCP_APPROVED_CONNECTOR_BINDINGS"
+id = "a10b564e40dd4e43a4560132650cb335"
+
 [[durable_objects.bindings]]
 name = "DEVICE_GRANTS"
 class_name = "OsDeviceGrantDurableObject"

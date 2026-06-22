@@ -218,6 +218,80 @@ function isTraceGatewayReadRoute(pathname: string): boolean {
     pathname === '/gateway/traces/events';
 }
 
+function isMcpRoute(pathname: string): boolean {
+  return pathname === '/mcp' || pathname.startsWith('/mcp/');
+}
+
+type McpJsonRpcRequest = {
+  id?: unknown;
+  method?: unknown;
+  params?: unknown;
+};
+
+function mcpJsonRpcResponse(id: unknown, result: JsonObject): Response {
+  return jsonResponse({ jsonrpc: '2.0', id: id ?? null, result });
+}
+
+function mcpJsonRpcError(id: unknown, status: number, code: number, message: string): Response {
+  return jsonResponse({
+    jsonrpc: '2.0',
+    id: id ?? null,
+    error: { code, message },
+  }, status);
+}
+
+function parseMcpRequest(body: string): McpJsonRpcRequest {
+  if (!body.trim()) return { method: 'tools/list' };
+  const parsed = JSON.parse(body) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('MCP request body must be a JSON object.');
+  }
+  return parsed as McpJsonRpcRequest;
+}
+
+async function handleMcpRequest(request: Request, body: string): Promise<Response> {
+  let input: McpJsonRpcRequest;
+  try {
+    input = parseMcpRequest(body);
+  } catch (error: unknown) {
+    return mcpJsonRpcError(null, 400, -32700, error instanceof Error ? error.message : 'Invalid MCP request');
+  }
+
+  if (input.method === 'tools/list') {
+    return mcpJsonRpcResponse(input.id, {
+      tools: [
+        { name: 'get_steering', description: 'Read Consuelo OS steering.' },
+        { name: 'call', description: 'Invoke a Consuelo OS tool by name.' },
+      ],
+    });
+  }
+
+  if (input.method === 'tools/call') {
+    const params = input.params && typeof input.params === 'object' && !Array.isArray(input.params)
+      ? input.params as Record<string, unknown>
+      : {};
+    const name = typeof params.name === 'string' ? params.name : '';
+    const argumentsValue = params.arguments && typeof params.arguments === 'object' && !Array.isArray(params.arguments)
+      ? params.arguments as Record<string, unknown>
+      : {};
+
+    if (!name) return mcpJsonRpcError(input.id, 400, -32602, 'MCP tools/call requires params.name.');
+
+    if (name === 'get_steering') {
+      return mcpJsonRpcResponse(input.id, { content: [{ type: 'text', text: getSteering() }] });
+    }
+
+    try {
+      const result = await executeCall({ name, input: argumentsValue } as CallInput);
+      return mcpJsonRpcResponse(input.id, { content: [{ type: 'json', json: result }] });
+    } catch (error: unknown) {
+      return mcpJsonRpcError(input.id, 500, -32603, error instanceof Error ? error.message.slice(0, 240) : 'OS tool call failed.');
+    }
+  }
+
+  return mcpJsonRpcError(input.id, 400, -32601, 'Unsupported MCP method.');
+}
+
 function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
   traceGatewayEndpointCache ??= createTraceSitesGatewayLiveEndpoints({
     backend: createLocalTraceSitesReadBackend({ dbPath: resolveTraceDbPath() }),
@@ -246,7 +320,8 @@ function healthResponse(): Response {
 }
 
 async function handleRequest(request: Request): Promise<Response> {
-  const url = new URL(request.url);
+  try {
+    const url = new URL(request.url);
 
   if (url.pathname === '/health') return healthResponse();
 
@@ -260,6 +335,19 @@ async function handleRequest(request: Request): Promise<Response> {
     if (denied) return denied;
 
     return traceGatewayEndpoints().handle(request);
+  }
+
+  if (isMcpRoute(url.pathname) && request.method === 'POST') {
+    const body = await request.clone().text();
+    const denied = await authorizeSignedRequest({
+      request,
+      path: url.pathname,
+      body,
+      requiredScope: 'route:/mcp:access',
+    });
+    if (denied) return denied;
+
+    return handleMcpRequest(request, body);
   }
 
   if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
@@ -318,6 +406,9 @@ async function handleRequest(request: Request): Promise<Response> {
       message: 'Route not found',
     },
   }, 404);
+  } catch (error: unknown) {
+    return internalError(error);
+  }
 }
 
 if (import.meta.main) {

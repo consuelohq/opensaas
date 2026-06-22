@@ -8,6 +8,8 @@ type WorkspaceConnectorTransportPlan = {
   workspaceHost: string;
   transport: 'cloudflare-tunnel' | 'websocket-relay';
   localServiceUrl: string;
+  caddyGateway?: { host: '127.0.0.1'; port: number };
+  bunUpstream?: { host: '127.0.0.1'; port: number };
   tokenPath?: string;
   launchd?: {
     label: string;
@@ -30,6 +32,7 @@ type WorkspaceConnectorTransportContract = {
     connectorId: string;
     workspaceHost: string;
     localPort: number;
+    caddyPort?: number;
     transport: 'cloudflare-tunnel' | 'websocket-relay';
     cloudflareTunnelToken?: string;
     relayUrl?: string;
@@ -67,6 +70,7 @@ contractDescribe('workspace connector transport contract', () => {
       connectorId: 'connector_123',
       workspaceHost: 'kokayi.consuelohq.com',
       localPort: 8850,
+      caddyPort: 8970,
       transport: 'cloudflare-tunnel',
       cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
     });
@@ -75,7 +79,9 @@ contractDescribe('workspace connector transport contract', () => {
       connectorId: 'connector_123',
       workspaceHost: 'kokayi.consuelohq.com',
       transport: 'cloudflare-tunnel',
-      localServiceUrl: 'http://127.0.0.1:8850',
+      localServiceUrl: 'http://127.0.0.1:8970',
+      caddyGateway: { host: '127.0.0.1', port: 8970 },
+      bunUpstream: { host: '127.0.0.1', port: 8850 },
       tokenPath: '/tmp/consuelo-os-smoke/os/security/generated/cloudflared-tunnel.token',
       launchd: expect.objectContaining({
         label: 'com.consuelo.os.cloudflared.connector-123',
@@ -86,6 +92,8 @@ contractDescribe('workspace connector transport contract', () => {
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/cloudflared/);
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/tunnel\s+run/);
     expect(plan.launchd?.programArguments.join(' ')).toMatch(/--token-file/);
+    expect(plan.launchd?.programArguments.join(' ')).toContain('--url http://127.0.0.1:8970');
+    expect(plan.launchd?.programArguments.join(' ')).not.toContain('--url http://127.0.0.1:8850');
     expect(plan.launchd?.programArguments.join(' ')).not.toMatch(/login|cert\.pem|cloudflare account/i);
     expect(JSON.stringify(plan)).not.toContain('cloudflared_tunnel_token_fixture');
   });

@@ -7,6 +7,8 @@ export type WorkspaceConnectorTransportPlan = {
   workspaceHost: string;
   transport: WorkspaceConnectorTransport;
   localServiceUrl: string;
+  caddyGateway?: { host: '127.0.0.1'; port: number };
+  bunUpstream?: { host: '127.0.0.1'; port: number };
   tokenPath?: string;
   launchd?: {
     label: string;
@@ -28,6 +30,7 @@ export type WorkspaceConnectorTransportInput = {
   connectorId: string;
   workspaceHost: string;
   localPort: number;
+  caddyPort?: number;
   transport: WorkspaceConnectorTransport;
   cloudflareTunnelToken?: string;
   relayUrl?: string;
@@ -42,12 +45,21 @@ const requireLocalPort = (localPort: number): void => {
   }
 };
 
+const DEFAULT_CADDY_GATEWAY_PORT = 8970;
+
 export function planWorkspaceConnectorTransport(
   input: WorkspaceConnectorTransportInput,
 ): WorkspaceConnectorTransportPlan {
   requireLocalPort(input.localPort);
+  if (input.caddyPort !== undefined) requireLocalPort(input.caddyPort);
 
-  const localServiceUrl = `http://127.0.0.1:${input.localPort}`;
+  const bunUpstream = { host: '127.0.0.1' as const, port: input.localPort };
+  const caddyGateway = {
+    host: '127.0.0.1' as const,
+    port: input.caddyPort ?? DEFAULT_CADDY_GATEWAY_PORT,
+  };
+  const bunServiceUrl = `http://${bunUpstream.host}:${bunUpstream.port}`;
+  const caddyServiceUrl = `http://${caddyGateway.host}:${caddyGateway.port}`;
 
   if (input.transport === 'websocket-relay') {
     if (!input.relayUrl) {
@@ -58,7 +70,7 @@ export function planWorkspaceConnectorTransport(
       connectorId: input.connectorId,
       workspaceHost: input.workspaceHost,
       transport: 'websocket-relay',
-      localServiceUrl,
+      localServiceUrl: bunServiceUrl,
       relay: {
         url: input.relayUrl,
         protocol: 'websocket',
@@ -84,7 +96,9 @@ export function planWorkspaceConnectorTransport(
     connectorId: input.connectorId,
     workspaceHost: input.workspaceHost,
     transport: 'cloudflare-tunnel',
-    localServiceUrl,
+    localServiceUrl: caddyServiceUrl,
+    caddyGateway,
+    bunUpstream,
     tokenPath,
     launchd: {
       label,
@@ -95,7 +109,7 @@ export function planWorkspaceConnectorTransport(
         '--token-file',
         tokenPath,
         '--url',
-        localServiceUrl,
+        caddyServiceUrl,
       ],
       keepAlive: true,
       runAtLoad: true,

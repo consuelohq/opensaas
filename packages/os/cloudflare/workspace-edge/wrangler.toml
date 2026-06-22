@@ -17,3 +17,13 @@ migrations_dir = "migrations"
 [[r2_buckets]]
 binding = "SITES_SNAPSHOTS"
 bucket_name = "consuelo-sites-snapshots"
+
+[[kv_namespaces]]
+binding = "MCP_CONNECTION_CREDENTIALS"
+id = "6041f26f85af46ee926e6c4d516a5b85"
+[[kv_namespaces]]
+binding = "MCP_CONNECTION_STATES"
+id = "416cff400d584d56bffc14503684ed09"
+[[kv_namespaces]]
+binding = "MCP_APPROVED_CONNECTOR_BINDINGS"
+id = "a10b564e40dd4e43a4560132650cb335"
