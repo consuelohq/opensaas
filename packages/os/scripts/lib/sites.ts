@@ -613,51 +613,110 @@ export function sitePageLeaseStatus(options: { home: string; pagePath?: string |
 
 function baseStyles(): string {
   return `
-    :root{color-scheme:dark;--sites-bg:#050505;--sites-text:#f4f0e8;--sites-muted:#a8a095;--sites-link:#9da7ff;--sites-visited:#c8a4ff;}
-    *{box-sizing:border-box;}
-    html,body{min-height:100%;}
-    body{margin:0;background:var(--sites-bg);color:var(--sites-text);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px;font-weight:700;line-height:1.18;letter-spacing:-0.025em;}
-    main{padding:32px;max-width:760px;}
-    h1,h2,p,ul,li{margin:0;padding:0;}
-    h1{font:inherit;text-transform:uppercase;}
-    h2{font:inherit;text-transform:uppercase;}
-    ul{list-style:none;}
-    a{color:var(--sites-link);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:0.18em;}
-    a:visited{color:var(--sites-visited);}
-    .terminal-launcher{white-space:normal;}
-    .terminal-block{margin-top:18px;}
-    .divider{margin:18px 0;color:var(--sites-text);}
-    .terminal-line{display:block;}
-    .terminal-list{margin-top:0;}
-    .terminal-list li{display:block;}
-    .terminal-muted{color:var(--sites-muted);}
-    .cursor{display:inline-block;animation:blink 1.05s steps(1,end) infinite;}
-    .table-wrap{overflow-x:auto;margin-top:12px;}
-    table{border-collapse:collapse;min-width:760px;}
-    th,td{padding:4px 12px 4px 0;text-align:left;vertical-align:top;font-size:12px;}
-    th{color:var(--sites-muted);text-transform:uppercase;}
-    code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;color:var(--sites-muted);white-space:nowrap;}
-    section{margin-top:18px;}
-    .section-header{margin-bottom:8px;}
-    .empty{color:var(--sites-muted);}
-    @keyframes blink{50%{opacity:0;}}
+    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
+    @media (max-width: 1024px) { body { font-size: clamp(10.3px, 2.62vw, 12.7px); line-height: 1.34; } main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); } .block { margin: 22px 0; } .rule { margin: 22px 0; } li { margin: 2.35px 0; } }
+    @media (max-width: 430px) { body { font-size: clamp(9.9px, 2.42vw, 11.5px); line-height: 1.32; } main { padding: 40px 10px; } li, .blog-item { white-space: nowrap; } }
+    main { padding: 32px 30px; max-width: none; }
+    h1, h2, p, ul, li { margin: 0; padding: 0; }
+    h1, h2 { font: inherit; text-transform: uppercase; }
+    h1 { margin-bottom: 24px; }
+    .block { margin: 22px 0; }
+    .rule { margin: 22px 0; color: inherit; }
+    .label { text-transform: uppercase; }
+    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+    li { margin: 2px 0; white-space: nowrap; }
+    li::before { content: "- "; }
+    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; }
+    .md-label { color: #f2eee6; }
+    .blog-item { white-space: nowrap; }
+    @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table { border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 4px 12px 4px 0; text-align: left; vertical-align: top; font-size: 12px; }
+    th { color: #a8a095; text-transform: uppercase; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; color: #a8a095; white-space: nowrap; }
+    section { margin-top: 18px; }
+    .section-header { margin-bottom: 8px; }
+    .empty { color: #a8a095; }
   `;
+}
+
+function buildMarkdownLink(options: { label: string; href: string; text: string; hotkey?: string }): string {
+  const hotkeyAttribute = options.hotkey ? ` data-hotkey="${escapeHtml(options.hotkey)}"` : '';
+  return `<li><span class="md-label">[${escapeHtml(options.label)}](</span><a href="${escapeHtml(options.href)}"${hotkeyAttribute} target="_blank" rel="noopener noreferrer">${escapeHtml(options.text)}</a><span class="md-label">)</span></li>`;
 }
 
 function buildSitesIndex(): string {
   const siteLinks = [
-    { href: 'office/', title: 'Office' },
-    { href: 'diffs/', title: 'Diffs' },
-    { href: 'traces/', title: 'Tracing' },
-    { href: 'docs/', title: 'Documentation' },
-  ].map((site) => `
-      <li>- <a href="${escapeHtml(site.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.title)}</a></li>`).join('');
+    { label: 'GTM', href: 'https://app.consuelohq.com/welcome', text: 'https://sites.consuelohq.com/gtm', hotkey: '1' },
+    { label: 'Office', href: 'office/', text: 'https://sites.consuelohq.com/office', hotkey: '2' },
+    { label: 'Tracing', href: 'traces/', text: 'https://sites.consuelohq.com/tracing', hotkey: '3' },
+    { label: 'Diffs', href: 'diffs/', text: 'https://sites.consuelohq.com/diffs', hotkey: '4' },
+    { label: 'Documentation', href: 'docs/', text: 'https://docs.consuelohq.com/', hotkey: '5' },
+  ].map(buildMarkdownLink).join('\n        ');
+  const siteHotkeys = {
+    '1': 'https://app.consuelohq.com/welcome',
+    '2': 'office/',
+    '3': 'traces/',
+    '4': 'diffs/',
+    '5': 'docs/',
+  };
 
   return `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Consuelo OS Sites</title><style>${baseStyles()}</style></head>
-<body><main class="terminal-launcher" aria-labelledby="sites-title"><h1 id="sites-title">CONSUELO OS <span class="cursor" aria-hidden="true">█</span></h1><p class="divider">~~~</p><section class="terminal-block" aria-label="Consuelo OS status"><p class="terminal-line">CONTACT: <a href="mailto:support@consuelohq.com">support@consuelohq.com</a></p><p class="terminal-line">LOCATION: USA</p><p class="terminal-line">STATUS: ONLINE</p><p class="terminal-line">OPEN POSITION:</p><ul class="terminal-list"><li>- <a href="/jobs" target="_blank" rel="noopener noreferrer">Systems Engineer</a></li></ul></section><p class="divider">~~~</p><section class="terminal-block" aria-label="Sites"><p>SITES:</p><ul class="terminal-list">${siteLinks}
-    </ul></section></main></body></html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo OS Sites</title>
+  <style>${baseStyles()}</style>
+</head>
+<body>
+  <main>
+    <h1>CONSUELO OS █</h1>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Profile">
+      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
+      <p><span class="label">LOCATION:</span> USA</p>
+      <p><span class="label">STATUS:</span> ONLINE</p>
+      <p><span class="label">OPEN POSITION:</span></p>
+      <ul>
+        ${buildMarkdownLink({ label: 'Systems Engineer', href: '/jobs', text: '/careers/systems-engineer' })}
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Sites">
+      <p class="label">SITES:</p>
+      <ul>
+        ${siteLinks}
+      </ul>
+    </section>
+    <p class="rule">~~~</p>
+    <section class="block" aria-label="Writing">
+      <p class="label">WRITING:</p>
+      <ul>
+        ${buildMarkdownLink({ label: 'On Decision Loops', href: '/writing/on-decision-loops', text: '/writing/on-decision-loops' })}
+      </ul>
+    </section>
+  </main>
+  <script>
+    const siteHotkeys = ${JSON.stringify(siteHotkeys, null, 6)};
+
+    document.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const target = event.target;
+      const tagName = target && target.tagName ? target.tagName.toLowerCase() : "";
+      if (tagName === "input" || tagName === "textarea" || (target && target.isContentEditable)) return;
+      const href = siteHotkeys[event.key];
+      if (!href) return;
+      event.preventDefault();
+      window.location.assign(href);
+    });
+  </script>
+</body>
+</html>
 `;
 }
 
