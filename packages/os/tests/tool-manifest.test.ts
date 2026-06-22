@@ -289,6 +289,20 @@ describe('tool manifest generator', () => {
     expect(generatedClient).toContain('createWorkspaceClient');
   });
 
+  it('should expose runtime fs result envelopes when generating OS TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    expect(generatedWorkspace).toContain('type: \"text-page\"');
+    expect(generatedWorkspace).toContain('content: string');
+    expect(generatedWorkspace).toContain('type: \"binary\"');
+    expect(generatedWorkspace).toContain('type: \"media\"');
+    expect(generatedWorkspace).toContain('results: Array<{ path: string; ok: true; page:');
+    expect(generatedWorkspace).toContain('type: \"search-results\"');
+    expect(generatedWorkspace).toContain('matches: Array<{ type: \"match\"; path: string; line: number; text: string');
+    expect(generatedWorkspace).not.toContain('Array<{ path: string; from: number; to: number; total: number; lines: string[] }>');
+    expect(generatedWorkspace).not.toContain('Array<{ file: string; line: number; text: string }>');
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool.manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core.manifest.json');
