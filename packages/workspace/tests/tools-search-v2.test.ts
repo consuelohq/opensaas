@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 type ToolMatch = {
   name: string;
   score: number;
@@ -31,9 +32,12 @@ type ToolSearchPayload = {
   };
 };
 
+const packageRoot = join(import.meta.dirname, '..');
+const toolSearchScript = join(packageRoot, 'scripts', 'tools-search.ts');
+
 function runSearch(query: string, args: string[] = []): ToolSearchPayload {
-  const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--json', ...args], {
-    cwd: process.cwd(),
+  const result = spawnSync('bun', [toolSearchScript, query, '--json', ...args], {
+    cwd: packageRoot,
     encoding: 'utf8',
     env: {
       ...process.env,
@@ -92,6 +96,48 @@ describe('tools.search v2 intent resolution', () => {
     expect(String(JSON.stringify(writePayload.guidance))).toContain('mutating');
   });
 
+  it('routes programmable repo runtime and structured file work to code.call', () => {
+    for (const query of [
+      'run bun package command',
+      'run tests package script',
+      'syntax typecheck package scripts',
+      'exact cli reproduction',
+      'structured file rewrite python',
+      'multi file transformation',
+      'inspect many files and summarize',
+      'generate files with bun script',
+    ]) {
+      const payload = runSearch(query, ['--limit', '5']);
+      expect(payload.recommended, query).toBe('code.call');
+      expect(names(payload)[0], query).toBe('code.call');
+    }
+  });
+
+  it('keeps task and stream workflow tools ahead of code.call', () => {
+    const expectations: Array<[string, string]> = [
+      ['task push changed files', 'task.push'],
+      ['task current existing branch worktree', 'task.current'],
+      ['merge git task branch conflict', 'task.merge'],
+      ['finish completed task branch', 'task.finish'],
+      ['stream sync branch', 'stream.sync'],
+    ];
+
+    for (const [query, expected] of expectations) {
+      const payload = runSearch(query, ['--limit', '8']);
+      expect(payload.recommended, query).toBe(expected);
+      expect(names(payload)[0], query).toBe(expected);
+    }
+  });
+
+  it('keeps literal file and anchored patch operations on typed fs tools', () => {
+    expect(runSearch('read file lines', ['--limit', '5']).recommended).toBe('fs.read');
+    expect(runSearch('grep file contents for pattern', ['--limit', '5']).recommended).toBe('fs.search');
+    expect(runSearch('search codebase with rg', ['--limit', '5']).recommended).toBe('fs.search');
+    expect(runSearch('list directory files', ['--limit', '5']).recommended).toBe('fs.list');
+    expect(runSearch('apply anchored patch', ['--limit', '5']).recommended).toBe('fs.apply_patch');
+    expect(runSearch('write patch file contents', ['--limit', '5']).recommended).toBe('fs.apply_patch');
+  });
+
   it('does not let caller display limit hide strong task alternatives', () => {
     const payload = runSearch('task close abandon delete branch pr', ['--limit', '1']);
 
@@ -103,7 +149,7 @@ describe('tools.search v2 intent resolution', () => {
 
   it('reports live two-source catalog and cache diagnostics without inventing tools', () => {
     const payload = runSearch('no-such-made-up-tool', ['--limit', '5']);
-    const manifest = JSON.parse(readFileSync('packages/workspace/tooling/tool-manifest.json', 'utf8')) as unknown[];
+    const manifest = JSON.parse(readFileSync(join(packageRoot, 'tooling', 'tool-manifest.json'), 'utf8')) as unknown[];
     expect(payload.catalog?.source).toEqual(['tool-manifest.json', 'TOOLS.md']);
     expect(payload.catalog?.toolCount).toBeGreaterThan(50);
     expect(payload.catalog?.toolCount).toBe(manifest.length);

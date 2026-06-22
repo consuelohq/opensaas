@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/trim-core-manifest-tool-surface",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "a2266b4607721a1871db4044a110a153f38416c7",
+  "changeHash": "a33d5f6e0b1bf2d35ada59152b1296faaa1572dc7d3d99b708627979a8ddd9c7",
+  "changedFiles": [
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "verifiedAt": "2026-06-18T00:32:10.518Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/trim-core-manifest-tool-surface.json",
+        ".task/workspace-agents/trim-core-manifest-tool-surface/current.json",
+        ".task/workspace-agents/trim-core-manifest-tool-surface/session.json",
+        ".task/workspace-agents/trim-core-manifest-tool-surface/workpad.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/tests/tool-manifest.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

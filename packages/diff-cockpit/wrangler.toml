@@ -9,3 +9,8 @@ routes = [
 
 [vars]
 DIFF_COCKPIT_DEFAULT_REPO = "consuelohq/opensaas"
+
+[[kv_namespaces]]
+binding = "DIFF_COCKPIT_SNAPSHOT_STORE"
+id = "8d287d762c2f473289cfd8dbe96575c9"
+preview_id = "9d50cd48b8b0429b9504b2c849739d28"

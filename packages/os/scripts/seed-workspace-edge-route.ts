@@ -3,6 +3,9 @@ import {
   type WorkspaceEdgeRouteSeedInput,
 } from './lib/workspace-edge-route-seed';
 
+// Internal Consuelo operator helper. The public installer must not require
+// local Wrangler access or Cloudflare account authority.
+
 export const readArg = (name: string): string | undefined => {
   const index = process.argv.indexOf(name);
   const value = index === -1 ? undefined : process.argv[index + 1];

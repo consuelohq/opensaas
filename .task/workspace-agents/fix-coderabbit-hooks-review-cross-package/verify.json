@@ -1,0 +1,131 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-coderabbit-hooks-review-cross-package",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "89d913f06b84decdbf550e6c271f25c46b0cefc2",
+  "changeHash": "ba6af6d29e94bb17e18d8cd60d69f3a87a9fdeeb7515c87a753f7144a90c5c60",
+  "changedFiles": [
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/hooks/task/workflow.js",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/intent.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hook-dispatcher.test.ts",
+    "packages/os/tests/task-hook-workflow-contract.test.ts",
+    "packages/os/tests/task-hooks.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/workflow-intent.test.ts",
+    "packages/workspace/hooks/task/guidance.js",
+    "packages/workspace/hooks/task/workflow.js",
+    "packages/workspace/scripts/generate-tool-manifest.ts",
+    "packages/workspace/scripts/intent.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/task-hook-dispatcher.test.ts",
+    "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+    "packages/workspace/tests/task-hooks.test.ts",
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tests/workflow-intent.test.ts"
+  ],
+  "verifiedAt": "2026-06-17T17:24:04.941Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-coderabbit-hooks-review-cross-package.json",
+        ".task/workspace-agents/fix-coderabbit-hooks-review-cross-package/current.json",
+        ".task/workspace-agents/fix-coderabbit-hooks-review-cross-package/evidence-log.json",
+        ".task/workspace-agents/fix-coderabbit-hooks-review-cross-package/read-log.json",
+        ".task/workspace-agents/fix-coderabbit-hooks-review-cross-package/session.json",
+        ".task/workspace-agents/fix-coderabbit-hooks-review-cross-package/workpad.md",
+        "packages/os/hooks/task/guidance.js",
+        "packages/os/hooks/task/workflow.js",
+        "packages/os/scripts/generate-tool-manifest.ts",
+        "packages/os/scripts/intent.js",
+        "packages/os/scripts/task-start.js",
+        "packages/os/tests/task-hook-dispatcher.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/workspace/hooks/task/guidance.js",
+        "packages/workspace/hooks/task/workflow.js",
+        "packages/workspace/scripts/generate-tool-manifest.ts",
+        "packages/workspace/scripts/intent.js",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/task-hook-dispatcher.test.ts",
+        "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+        "packages/workspace/tests/task-hooks.test.ts",
+        "packages/workspace/tests/tool-manifest.test.ts",
+        "packages/workspace/tests/workflow-intent.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 147,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.46ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.64ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.06ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.20ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.12ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.24ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.07ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [141.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

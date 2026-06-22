@@ -1,10 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { Effect } from 'effect';
 
 import { causeMessage, codeCallServiceError } from './errors';
+import { readCodeCallTextFileEffect } from './file-source-guard';
 import type { RuntimeProvider } from './runtimes';
 import type { CodeCallInput, CodeCallLanguage } from './types';
 
@@ -40,23 +41,15 @@ export const validateSourceInputsEffect = (input: CodeCallInput) => Effect.gen(f
   }
 });
 
-const readTextFileEffect = (filePath: string) => Effect.try({
-  try: () => readFileSync(filePath, 'utf8'),
-  catch: (cause) => codeCallServiceError({
-    envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
-    message: 'failed to read file: ' + filePath + ': ' + causeMessage(cause),
-    detectedMistakeClass: 'invalid_source',
-  }),
-});
 
 export const loadSourceEffect = (input: CodeCallInput, sourcePath: string | null, stdinPath: string | null) => Effect.gen(function* () {
   const source = typeof input.code === 'string'
     ? input.code
-    : yield* readTextFileEffect(String(sourcePath));
+    : yield* readCodeCallTextFileEffect(String(sourcePath), 'codeFile');
   const stdin = typeof input.stdin === 'string'
     ? input.stdin
     : stdinPath
-      ? yield* readTextFileEffect(stdinPath)
+      ? yield* readCodeCallTextFileEffect(stdinPath, 'stdinFile')
       : undefined;
 
   return { source, ...(stdin === undefined ? {} : { stdin }) } satisfies LoadedSource;

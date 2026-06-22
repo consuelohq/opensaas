@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/wire-managed-os-mcp-ingress-into-install-provisioning",
+  "base": "origin/task/security/wire-managed-os-mcp-ingress-into-install-provisioning",
+  "headSha": "28ca8b9ca63f1ecb9f460b4cbc1e1249e9e5ec63",
+  "changeHash": "ed4649154cc95adc014cbcaa3d11ea149f24ae19007cabc4e6bbe88cb71ccd86",
+  "changedFiles": [
+    "packages/os/docs/security-tightening-evidence.md",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-cloudflare-provisioning.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/install-cloudflare-provisioning-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-19T04:06:38.915Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/wire-managed-os-mcp-ingress-into-install-provisioning/current.json",
+        ".task/security/wire-managed-os-mcp-ingress-into-install-provisioning/session.json",
+        ".task/security/wire-managed-os-mcp-ingress-into-install-provisioning/workpad.md",
+        ".task/tasks/security/wire-managed-os-mcp-ingress-into-install-provisioning.json",
+        "packages/os/docs/security-tightening-evidence.md",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-cloudflare-provisioning.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/install-cloudflare-provisioning-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

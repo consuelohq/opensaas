@@ -289,7 +289,7 @@ async function main() {
       await cmdGet(env, parseInt(args.positional[1], 10), args.positional[2], args);
       break;
     case 'list':
-      await cmdList(env, args.positional[1], args);
+      await cmdList(env, args.positional[1] || args.category, args);
       break;
     case 'save':
       if (!args.positional[1]) throw new Error('usage: bun run context -- save <title> <file>');

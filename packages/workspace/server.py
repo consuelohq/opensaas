@@ -271,6 +271,7 @@ DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
+CORE_MANIFEST_FILE = os.path.join(APP_DIR, 'manifests', 'core-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
@@ -303,14 +304,58 @@ def _read_optional_file(path: str) -> str:
         return handle.read()
 
 
+def _repo_root() -> str:
+    return os.path.abspath(os.path.join(APP_DIR, '..', '..'))
+
+
+def _read_manifest_code_file_source(code_file: Any) -> str | None:
+    if not isinstance(code_file, str):
+        return None
+    if not code_file.startswith('scripts/code-call-examples/'):
+        return None
+    if not code_file.endswith(('.ts', '.py')):
+        return None
+    root = _repo_root()
+    candidate = os.path.abspath(os.path.join(root, code_file))
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return None
+    if not os.path.exists(candidate):
+        return None
+    with open(candidate, 'r', encoding='utf-8') as handle:
+        return handle.read()
+
+
+def _expand_manifest_code_file_examples(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_expand_manifest_code_file_examples(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    expanded = {key: _expand_manifest_code_file_examples(item) for key, item in value.items()}
+    source = _read_manifest_code_file_source(expanded.get('codeFile'))
+    if source:
+        expanded.setdefault('codeFileSource', source)
+    return expanded
+
+
+def _read_core_manifest_for_steering() -> str:
+    raw = _read_optional_file(CORE_MANIFEST_FILE)
+    if not raw:
+        return ''
+    try:
+        expanded = _expand_manifest_code_file_examples(json.loads(raw))
+    except json.JSONDecodeError:
+        return raw
+    return json.dumps(expanded, indent=2)
+
+
 def _read_steering() -> str:
     steering_path = _resolve_steering_file()
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
 
-    manifest = _read_optional_file(TOOL_MANIFEST_FILE)
-    if manifest:
-        content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
+    core_manifest = _read_core_manifest_for_steering()
+    if core_manifest:
+        content += '\n\n# core manifest\n\n```json\n' + core_manifest + '\n```'
 
     # Keep decision-engine doctrine in decision.md without injecting it into bootstrap steering.
 
@@ -413,7 +458,7 @@ Do not call get_steering again unless you are intentionally refreshing bootstrap
 
 Use the steering already in context. If you need exact source context, read only the specific file you need:
 - packages/workspace/STEERING.md
-- packages/workspace/tooling/tool-manifest.json
+- packages/workspace/manifests/core-manifest.json
 - packages/os/STEERING.md
 - packages/os/manifests/core.manifest.json
 
@@ -497,7 +542,7 @@ def _run_get_steering() -> str:
 
 @mcp.tool(annotations=RO)
 async def get_steering() -> str:
-    """return current workspace steering and tool manifest."""
+    """return current workspace steering with the core manifest payload."""
     return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _run_get_steering)
 
 
