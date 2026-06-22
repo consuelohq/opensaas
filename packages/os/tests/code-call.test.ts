@@ -206,6 +206,25 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('rejects taskWorktree values outside managed task worktrees before using them as cwd', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'print("unsafe")',
+        taskWorktree: '/',
+      }, root);
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(result.data.detectedMistakeClass).toBe('cwd_out_of_scope');
+      expect(result.data.message).toContain('taskWorktree');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('blocks edit mode in the first implementation slice', async () => {
     const root = tempRoot();
     try {
@@ -242,6 +261,24 @@ describe('code.call runtime', () => {
       expect(result.data.cwd).toBe(realpathSync(root));
       expect(result.data.filesChanged).toContain('edited.txt');
       expect(readFileSync(join(root, 'edited.txt'), 'utf8')).toBe('changed');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back to safe defaults for invalid direct execution bounds', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'print("visible")',
+        maxResultChars: 0,
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.stdout).toContain('visible');
+      expect(result.data.truncated).toBe(false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

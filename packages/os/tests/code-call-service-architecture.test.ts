@@ -64,6 +64,15 @@ describe('code.call service architecture', () => {
     }
   });
 
+  it('keeps handled git snapshot failures free of redundant catchAll wrapping', () => {
+    const snapshotSource = readModule('snapshot.ts');
+    const start = snapshotSource.indexOf('const captureGitSnapshotEffect');
+    const end = snapshotSource.indexOf('function captureDirectorySnapshotUnsafe');
+    const gitSnapshotSource = snapshotSource.slice(start, end);
+
+    expect(gitSnapshotSource).not.toContain('Effect.catchAll((snapshot)');
+  });
+
   it('keeps Effect.gen orchestration free of await and broad try/catch', () => {
     for (const moduleFile of codeCallModuleFiles()) {
       const moduleSource = readModule(moduleFile);

@@ -38,7 +38,7 @@ const captureGitSnapshotEffect = (cwd: string) => Effect.gen(function* () {
       return { kind: 'git', root, files: parsePorcelain(stdout) } satisfies Snapshot;
     },
     catch: () => ({ kind: 'none', root: cwd } satisfies Snapshot),
-  }).pipe(Effect.catchAll((snapshot) => Effect.succeed(snapshot)));
+  });
 });
 
 function captureDirectorySnapshotUnsafe(root: string): Snapshot {
