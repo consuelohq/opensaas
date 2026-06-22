@@ -6685,7 +6685,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "workflow",
       "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-      "core": false,
+      "core": true,
       "definition": {
         "name": "task.intent",
         "methodPath": [

@@ -10,6 +10,11 @@ import type { CodeCallContext, CodeCallData, CodeCallInput, CodeCallLanguage, Co
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_RESULT_CHARS = 20_000;
 const DIR_SNAPSHOT_FILE_LIMIT = 1000;
+const BINARY_EXTENSIONS = new Set([
+  '.zip', '.tar', '.gz', '.7z', '.exe', '.dll', '.so', '.class', '.jar', '.war',
+  '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.pdf', '.bin', '.dat',
+  '.wasm', '.png', '.jpg', '.jpeg', '.gif', '.webp',
+]);
 
 const LANGUAGE_ALIASES: Record<string, CodeCallLanguage> = {
   py: 'python',
@@ -74,6 +79,37 @@ function realpathIfExists(value: string): string {
     return realpathSync(value);
   } catch {
     return path.resolve(value);
+  }
+}
+
+function hasPrefix(bytes: Uint8Array, prefix: number[]): boolean {
+  return prefix.every((byte, index) => bytes[index] === byte);
+}
+
+function looksBinary(filePath: string, bytes: Uint8Array): boolean {
+  if (BINARY_EXTENSIONS.has(path.extname(filePath).toLowerCase())) return true;
+  if (bytes.includes(0)) return true;
+  if (hasPrefix(bytes, [0x25, 0x50, 0x44, 0x46])) return true;
+  if (hasPrefix(bytes, [0x50, 0x4b, 0x03, 0x04])) return true;
+  if (hasPrefix(bytes, [0x1f, 0x8b])) return true;
+  if (hasPrefix(bytes, [0x89, 0x50, 0x4e, 0x47])) return true;
+  if (hasPrefix(bytes, [0xff, 0xd8, 0xff])) return true;
+  return false;
+}
+
+function readCodeCallTextFile(filePath: string, inputKind: 'codeFile' | 'stdinFile'): string | ValidationFailure {
+  try {
+    const bytes = readFileSync(filePath);
+    const sample = bytes.subarray(0, Math.min(bytes.length, 4096));
+    if (looksBinary(filePath, sample)) {
+      return { message: `${inputKind} is binary or not text-readable: ${filePath}`, detectedMistakeClass: 'invalid_source' };
+    }
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (error: unknown) {
+    if (error instanceof TypeError) {
+      return { message: `${inputKind} is not valid UTF-8: ${filePath}`, detectedMistakeClass: 'invalid_source' };
+    }
+    return { message: `failed to read ${inputKind}: ${filePath}: ${getErrorMessage(error)}`, detectedMistakeClass: 'invalid_source' };
   }
 }
 
@@ -647,12 +683,65 @@ export async function executeCodeCall(input: CodeCallInput, context: CodeCallCon
     });
   }
 
-  const source = typeof input.code === 'string' ? input.code : readFileSync(sourcePath as string, 'utf8');
-  const stdin = typeof input.stdin === 'string'
+  if (typeof input.code !== 'string' && sourcePath === null) {
+    return failureResult({
+      envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+      message: 'codeFile path could not be resolved',
+      detectedMistakeClass: 'invalid_source',
+      language,
+      requestedLanguage,
+      runtime,
+      mode,
+      cwd: cwdResolution.cwd,
+      startedAt,
+      traceId,
+      requestId,
+      now: context.now,
+    });
+  }
+
+  const sourceRead = typeof input.code === 'string' ? input.code : readCodeCallTextFile(sourcePath, 'codeFile');
+  if (typeof sourceRead !== 'string') {
+    return failureResult({
+      envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+      message: sourceRead.message,
+      detectedMistakeClass: sourceRead.detectedMistakeClass,
+      language,
+      requestedLanguage,
+      runtime,
+      mode,
+      cwd: cwdResolution.cwd,
+      startedAt,
+      traceId,
+      requestId,
+      now: context.now,
+    });
+  }
+
+  const stdinRead = typeof input.stdin === 'string'
     ? input.stdin
     : stdinPath
-      ? readFileSync(stdinPath, 'utf8')
+      ? readCodeCallTextFile(stdinPath, 'stdinFile')
       : undefined;
+  if (stdinRead && typeof stdinRead !== 'string') {
+    return failureResult({
+      envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+      message: stdinRead.message,
+      detectedMistakeClass: stdinRead.detectedMistakeClass,
+      language,
+      requestedLanguage,
+      runtime,
+      mode,
+      cwd: cwdResolution.cwd,
+      startedAt,
+      traceId,
+      requestId,
+      now: context.now,
+    });
+  }
+
+  const source = sourceRead;
+  const stdin = stdinRead;
   const transportFailure = detectTransportMistake(source, language);
   if (transportFailure) {
     return failureResult({
