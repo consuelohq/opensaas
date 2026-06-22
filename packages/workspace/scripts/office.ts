@@ -1423,7 +1423,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     const filterType = archiveEntryFilterType(entry);
     return `
         <article class="post-item" data-template="${escapeHtml(filterType)}" data-category="${escapeHtml(entry.category)}" data-version-count="${escapeHtml(String(entry.versionCount || 1))}">
-          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
+          <h3><a href="${escapeHtml(publicUrlForArchiveEntry(entry))}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
           <div class="post-meta" aria-label="Updated date">▣ Updated <time datetime="${escapeHtml(timestamp)}">${escapeHtml(new Date(timestamp).toLocaleDateString())}</time></div>
           <p>${escapeHtml(entry.path)}</p>
         </article>`;
@@ -1643,7 +1643,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         return normalized === artifactPath || normalized === pagefindUrl || normalized === pathUrl || normalized.startsWith(artifactPath + '/') || normalized.startsWith(pagefindUrl + '/');
       }) || null;
     };
-    const openLink = (href) => { window.location.assign(href); };
+    const openLink = (href) => { window.open(href, '_blank', 'noopener,noreferrer'); };
     const renderCard = (entry, fallback) => {
       const updatedAt = entry && entry.updatedAt ? entry.updatedAt : '';
       const date = updatedAt ? new Date(updatedAt).toLocaleDateString() : '';
@@ -1653,7 +1653,7 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
       const filter = entry && entry.template ? entry.template : 'uncategorized';
       const category = entry && entry.category ? entry.category : '';
       return '<article class="post-item" data-template="' + escapeText(filter) + '" data-category="' + escapeText(category) + '">' +
-        '<h3><a href="' + escapeText(href) + '">' + escapeText(cardTitle) + '</a></h3>' +
+        '<h3><a href="' + escapeText(href) + '" target="_blank" rel="noopener noreferrer">' + escapeText(cardTitle) + '</a></h3>' +
         '<div class="post-meta" aria-label="Updated date">▣ ' + (date ? escapeText(date) : 'Search result') + '</div>' +
         '<p>' + escapeText(cardPath) + '</p>' +
       '</article>';

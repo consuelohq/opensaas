@@ -38,28 +38,14 @@ function readJsonFile(filePath) {
   return safeParseJson(fs.readFileSync(filePath, 'utf8'));
 }
 
-function parseTaskBranch(taskBranch) {
-  if (!taskBranch) return null;
-  const parts = String(taskBranch).split('/');
-  if (parts[0] !== 'task' || !parts[1] || !parts[2]) return null;
-  return { area: parts[1], slug: parts.slice(2).join('/') };
-}
-
 function getTaskSlug(taskBranch) {
-  const parsed = parseTaskBranch(taskBranch);
-  return parsed ? parsed.slug.split('/').join('-') : null;
-}
-
-function getInvalidTaskMetaReason(taskMeta) {
-  if (!taskMeta || !taskMeta.taskBranch) return 'missing taskBranch';
-  if (!parseTaskBranch(taskMeta.taskBranch)) return `invalid taskBranch "${taskMeta.taskBranch}"`;
-  return null;
+  if (!taskBranch) return null;
+  const parts = taskBranch.split('/');
+  return parts[parts.length - 1] || null;
 }
 
 function getTaskMetaBranchMismatch(taskMeta, currentBranch) {
-  const invalidReason = getInvalidTaskMetaReason(taskMeta);
-  if (invalidReason) return { expectedBranch: null, currentBranch, invalidReason };
-  if (!currentBranch) return null;
+  if (!taskMeta || !taskMeta.taskBranch || !currentBranch) return null;
   if (taskMeta.taskBranch === currentBranch) return null;
   return {
     expectedBranch: taskMeta.taskBranch,
@@ -89,8 +75,7 @@ function writeTaskMeta(worktreePath, data) {
 function readTaskMeta(worktreePath) {
   const currentPath = getCurrentMetaPath(worktreePath);
   if (!fs.existsSync(currentPath)) return null;
-  const data = readJsonFile(currentPath);
-  return getInvalidTaskMetaReason(data) ? null : data;
+  return readJsonFile(currentPath);
 }
 
 function readValidTaskMetaForWorktree(worktreePath, branch) {
@@ -114,7 +99,7 @@ function findScopedTaskMetaInDirectory(dir, options = {}) {
       const currentPath = path.join(areaDir, taskEntry.name, CURRENT_FILENAME);
       if (!fs.existsSync(currentPath)) continue;
       const data = readJsonFile(currentPath);
-      if (!data || getInvalidTaskMetaReason(data)) continue;
+      if (!data) continue;
       const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
       if (mismatch && !options.includeStale) continue;
       candidates.push({ path: currentPath, dir, data, stale: Boolean(mismatch), mismatch });
@@ -138,24 +123,20 @@ function findTaskMeta(startDirectory, options = {}) {
     const currentPath = path.join(dir, TASK_DIR, CURRENT_FILENAME);
     if (fs.existsSync(currentPath)) {
       const data = readJsonFile(currentPath);
-      if (data && !getInvalidTaskMetaReason(data)) {
-        const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-        const record = { path: currentPath, dir, data, stale: Boolean(mismatch), mismatch };
-        if (mismatch && !options.includeStale) return null;
-        return record;
-      }
+      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
+      const record = { path: currentPath, dir, data, stale: Boolean(mismatch), mismatch };
+      if (mismatch && !options.includeStale) return null;
+      return record;
     }
 
     // fallback: check for legacy .task-meta.json
     const legacyPath = path.join(dir, '.task-meta.json');
     if (fs.existsSync(legacyPath)) {
       const data = readJsonFile(legacyPath);
-      if (data && !getInvalidTaskMetaReason(data)) {
-        const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-        const record = { path: legacyPath, dir, data, stale: Boolean(mismatch), mismatch };
-        if (mismatch && !options.includeStale) return null;
-        return record;
-      }
+      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
+      const record = { path: legacyPath, dir, data, stale: Boolean(mismatch), mismatch };
+      if (mismatch && !options.includeStale) return null;
+      return record;
     }
 
     const scoped = findScopedTaskMetaInDirectory(dir, options);
@@ -421,7 +402,6 @@ module.exports = {
   collectTaskMetaFiles,
   findTaskMeta,
   findScopedTaskMetaInDirectory,
-  getInvalidTaskMetaReason,
   getTaskMetaBranchMismatch,
   isOnlyTaskMetadataConflict,
   isTaskMetaValidForBranch,
