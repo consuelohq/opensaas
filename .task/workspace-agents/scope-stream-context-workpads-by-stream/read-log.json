@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/validation.js",
+    "packages/workspace/scripts/stream-context.js",
+    "packages/workspace/tests/task-workpad.test.js"
+  ],
+  "updatedAt": "2026-06-02T01:13:57.136Z"
+}

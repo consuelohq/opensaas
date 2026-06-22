@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+  "base": "origin/main",
+  "headSha": "92780eab5afc2b5eb64ec8354d50f5a737118762",
+  "changeHash": "650e7c7701960754d799da70f0761a65072d4a0804e14b71d2211c82f5e9af80",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/stream-workpads.js",
+    "packages/workspace/scripts/stream-context.js",
+    "packages/workspace/tests/stream-workpads.test.js"
+  ],
+  "verifiedAt": "2026-06-02T01:17:34.749Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/scope-stream-context-workpads-by-stream.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/current.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/evidence-log.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/read-log.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/session.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/verify.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream/workpad.md",
+        "packages/workspace/scripts/lib/stream-workpads.js",
+        "packages/workspace/scripts/stream-context.js",
+        "packages/workspace/tests/stream-workpads.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
