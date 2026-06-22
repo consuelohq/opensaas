@@ -15,6 +15,7 @@ type ManifestToolDefinition = {
 
 type ManifestWrapper = {
   name: string;
+  core?: boolean;
   definition: ManifestToolDefinition;
 };
 
@@ -48,6 +49,11 @@ function readManifest(): ManifestToolDefinition[] {
   return value as ManifestToolDefinition[];
 }
 
+
+function readCoreManifest(): { tools: ManifestWrapper[] } {
+  return readJson(resolve(packageRoot, 'manifests/core-manifest.json')) as { tools: ManifestWrapper[] };
+}
+
 function readBundles(): WorkflowBundlesFile {
   const value = readJson(bundlesPath) as WorkflowBundlesFile;
   if (value.kind !== 'consuelo-workspace-workflow-bundles') throw new Error('expected workflow bundle manifest');
@@ -65,7 +71,7 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('Workspace workflow intent bundles', () => {
-  test('generated workflow bundles include task and office without changing get_steering profiles', () => {
+  test('should generate task and office workflow bundles when loading workflow metadata', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
     const office = workflowById(bundles, 'office');
@@ -81,7 +87,7 @@ describe('Workspace workflow intent bundles', () => {
     expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
   });
 
-  test('task.intent starts with advisory task-start lifecycle guidance', () => {
+  test('should return advisory task-start guidance when starting task intent', () => {
     const runtime = createWorkflowIntentRuntime({
       manifest: readManifest(),
       bundles: readBundles(),
@@ -112,17 +118,27 @@ describe('Workspace workflow intent bundles', () => {
     expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'tsk_intent_task' }));
   });
 
-  test('manifest exposes task.intent as the workflow lifecycle entrypoint', () => {
+  test('should expose task.intent when reading the full and core manifests', () => {
     const intentEntry = readManifest().find((tool) => tool.workflowRole === 'intent.start');
+    const coreIntentEntry = readCoreManifest().tools.find((tool) => tool.definition.workflowRole === 'intent.start');
 
     expect(intentEntry).toEqual(expect.objectContaining({
       name: 'task.intent',
       methodPath: ['task', 'intent'],
       command: expect.objectContaining({ script: 'task-intent' }),
     }));
+    expect(coreIntentEntry).toEqual(expect.objectContaining({
+      name: 'task.intent',
+      core: true,
+      definition: expect.objectContaining({
+        name: 'task.intent',
+        methodPath: ['task', 'intent'],
+        command: expect.objectContaining({ script: 'task-intent' }),
+      }),
+    }));
   });
 
-  test('task.intent resolves office workflow aliases from generated metadata', () => {
+  test('should resolve office aliases when starting design or sites intent', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
@@ -137,7 +153,7 @@ describe('Workspace workflow intent bundles', () => {
     );
   });
 
-  test('task.intent dispatch requires taskSession for scoped hook events', () => {
+  test('should require taskSession when dispatching scoped hook events', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     expect(() =>
@@ -147,7 +163,7 @@ describe('Workspace workflow intent bundles', () => {
     ).toThrow('taskSession is required');
   });
 
-  test('task.intent dispatch keeps concurrent task sessions isolated by taskSession and worktree', () => {
+  test('should isolate concurrent task sessions when dispatching post-start hooks', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
     runtime.start({ workflow: 'task', taskSession: 'tsk_a', area: 'workspace-agents', title: 'agent a' });
@@ -197,7 +213,7 @@ describe('Workspace workflow intent bundles', () => {
     expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
   });
 
-  test('repo root package script exposes workspace task-intent CLI help', () => {
+  test('should expose workspace task-intent help when invoked from the repo root', () => {
     const result = spawnSync('bun', ['run', 'task-intent', '--', '--help'], {
       cwd: repoRoot,
       encoding: 'utf8',
@@ -208,7 +224,7 @@ describe('Workspace workflow intent bundles', () => {
     expect(result.stdout).toContain('usage: bun run task-intent -- <start|dispatch> [options]');
   });
 
-  test('repo root package script starts the workspace task-intent bundle', () => {
+  test('should start workspace task intent when invoked from the repo root', () => {
     const result = spawnSync('bun', [
       'run',
       'task-intent',
@@ -233,7 +249,7 @@ describe('Workspace workflow intent bundles', () => {
     expect(envelope.manifestBundle?.tools?.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
   });
 
-  test('task-intent CLI rejects unknown actions', () => {
+  test('should reject unknown actions when invoking task-intent CLI', () => {
     const result = spawnSync(process.execPath, [taskIntentScript, 'unknown-action', '--json'], {
       cwd: packageRoot,
       encoding: 'utf8',

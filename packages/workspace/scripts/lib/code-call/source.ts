@@ -42,9 +42,17 @@ export const validateSourceInputsEffect = (input: CodeCallInput) => Effect.gen(f
 });
 
 export const loadSourceEffect = (input: CodeCallInput, sourcePath: string | null, stdinPath: string | null) => Effect.gen(function* () {
+  if (typeof input.code !== 'string' && sourcePath === null) {
+    return yield* Effect.fail(codeCallServiceError({
+      envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+      message: 'codeFile path could not be resolved',
+      detectedMistakeClass: 'invalid_source',
+    }));
+  }
+
   const source = typeof input.code === 'string'
     ? input.code
-    : yield* readCodeCallTextFileEffect(String(sourcePath), 'codeFile');
+    : yield* readCodeCallTextFileEffect(sourcePath, 'codeFile');
   const stdin = typeof input.stdin === 'string'
     ? input.stdin
     : stdinPath

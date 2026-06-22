@@ -355,13 +355,74 @@ function workpadPathForBranch(branch, fallbackArea) {
 
 function buildDiscoveryBatchSteps({ area, workpadPath }) {
   const query = area === 'os' ? 'OS intent hooks' : `${area} intent hooks`;
+  const root = area === 'os' ? 'packages/os' : 'packages/workspace';
+  const workpadCode = `const path = ${JSON.stringify(workpadPath)};
+const section = ['','## discovery','', '- direct explore query: ${query}', '- Bun structured repo scanner: pending', '- Python targeted file/snippet ownership read: pending', '- Python local diagnostic: pending', '- Bun exact CLI reproduction: pending', ''].join('\n');
+await Bun.write(path, section, { append: true });
+process.stdout.write(JSON.stringify({ ok: true, path, section: 'discovery' }, null, 2) + '\n');`;
+  const bunScannerCode = `const fs = await import('node:fs');
+const path = await import('node:path');
+const root = ${JSON.stringify(root)};
+const needles = ['task.intent', 'task-intent', 'intent.start', 'workflowRole', 'batch', 'code.call'];
+const skip = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.turbo', 'coverage', '.cache']);
+const results = [];
+let scanned = 0;
+function visit(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (skip.has(ent.name)) continue;
+    const file = path.join(dir, ent.name);
+    if (ent.isDirectory()) { visit(file); continue; }
+    if (!/\.(js|ts|json|md)$/.test(ent.name)) continue;
+    scanned++;
+    let text = '';
+    try { text = fs.readFileSync(file, 'utf8'); } catch { continue; }
+    const found = needles.filter((needle) => text.includes(needle));
+    if (!found.length) continue;
+    results.push({ file, found });
+  }
+}
+visit(root);
+process.stdout.write(JSON.stringify({ ok: true, label: 'Bun structured repo scanner', root, scanned, results: results.slice(0, 20) }, null, 2) + '\n');`;
+  const pythonTargetedCode = `from pathlib import Path
+import json
+files = [Path(${JSON.stringify(`${root}/hooks/task/workflow.js`)}), Path(${JSON.stringify(`${root}/tests/workflow-intent.test.ts`)}), Path(${JSON.stringify(`${root}/manifests/manifest.config.json`)})]
+terms = ['task.intent', 'task-intent', 'intent.start', 'batch', 'code.call']
+report = []
+for file in files:
+    if not file.exists():
+        report.append({'file': str(file), 'exists': False})
+        continue
+    hits = []
+    for index, line in enumerate(file.read_text(errors='ignore').splitlines(), 1):
+        if any(term in line for term in terms):
+            hits.append({'line': index, 'text': line.strip()[:220]})
+            if len(hits) >= 20:
+                break
+    report.append({'file': str(file), 'exists': True, 'hits': hits})
+print(json.dumps({'ok': True, 'label': 'Python targeted file/snippet ownership read', 'report': report}, indent=2))`;
+  const pythonDiagnosticCode = `from pathlib import Path
+import json
+paths = [Path(${JSON.stringify(`${root}/manifests/core${area === 'os' ? '.manifest' : '-manifest'}.json`)}), Path(${JSON.stringify(`${root}/src/generated/workspace.d.ts`)})]
+report = []
+for path in paths:
+    text = path.read_text(errors='ignore') if path.exists() else ''
+    report.append({'file': str(path), 'exists': path.exists(), 'has_task_intent': 'task.intent' in text or 'intent:' in text})
+print(json.dumps({'ok': True, 'label': 'Python local diagnostic', 'report': report}, indent=2))`;
+  const exactReproductionCode = `const proc = Bun.spawnSync({ cmd: ['bun', 'run', 'explore', '--', ${JSON.stringify(query)}, '--budget', '8', '--json'], stdout: 'pipe', stderr: 'pipe' });
+const stdout = new TextDecoder().decode(proc.stdout);
+const stderr = new TextDecoder().decode(proc.stderr);
+let parsed = null;
+try { parsed = JSON.parse(stdout); } catch {}
+process.stdout.write(JSON.stringify({ ok: proc.exitCode === 0, label: 'Bun exact CLI reproduction', command: ${JSON.stringify(`bun run explore -- ${query} --budget 8 --json`)}, resultCount: parsed?.data?.results?.length ?? parsed?.results?.length ?? null, stderrTail: stderr.slice(-1000) }, null, 2) + '\n');
+process.exit(proc.exitCode ?? 1);`;
   return [
-    { tool: 'code.call', input: { language: 'bun', mode: 'edit', code: `Append a discovery section to ${workpadPath} with the exact batch commands and findings.` } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'edit', code: workpadCode } },
     { tool: 'explore', input: { query, limit: 8 } },
-    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: 'Bun structured repo scanner shaped to the task. Return compact file/line evidence.' } },
-    { tool: 'code.call', input: { language: 'python', mode: 'read', code: 'Python targeted file/snippet ownership read. Return likely files, symbols, and snippets.' } },
-    { tool: 'code.call', input: { language: 'python', mode: 'read', code: 'Python local diagnostic for state, schema, traces, config, or cache when relevant.' } },
-    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: 'Bun exact CLI reproduction when command behavior is the evidence.' } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: bunScannerCode } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: pythonTargetedCode } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: pythonDiagnosticCode } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: exactReproductionCode } },
   ];
 }
 

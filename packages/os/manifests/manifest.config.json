@@ -25,7 +25,7 @@
       "context",
       "explore",
       "github",
-      "intent",
+      "task.intent",
       "review.run",
       "tools.search",
       "tmp"
