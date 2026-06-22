@@ -13,6 +13,9 @@ export type ResolvedCwd = {
   allowedRoots: string[];
 };
 
+const TASK_WORKTREE_ROOT_NAME = 'opensaas-worktrees';
+const TASK_WORKTREE_PREFIX = 'task-';
+
 export function isInsidePath(candidate: string, root: string): boolean {
   const relative = path.relative(root, candidate);
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
@@ -42,8 +45,37 @@ const uniqueRealRootsEffect = (values: Array<string | undefined | null>) => Effe
   return roots;
 });
 
+const failUnsafeTaskWorktree = (taskWorktree: string, reason: string) => codeCallServiceError({
+  envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+  message: 'taskWorktree is not a managed task worktree: ' + taskWorktree + ': ' + reason,
+  detectedMistakeClass: 'cwd_out_of_scope',
+});
+
+const resolveManagedTaskWorktreeEffect = (taskWorktree: string | undefined) => Effect.gen(function* () {
+  if (!taskWorktree) return null;
+
+  const resolved = yield* realpathIfExistsEffect(taskWorktree);
+  const stats = yield* Effect.try({
+    try: () => statSync(resolved),
+    catch: (cause) => failUnsafeTaskWorktree(taskWorktree, causeMessage(cause)),
+  });
+
+  if (!stats.isDirectory()) {
+    return yield* Effect.fail(failUnsafeTaskWorktree(taskWorktree, 'not a directory'));
+  }
+
+  const expectedRoot = yield* realpathIfExistsEffect(path.join(tmpdir(), TASK_WORKTREE_ROOT_NAME));
+  const worktreeName = path.basename(resolved);
+  if (!worktreeName.startsWith(TASK_WORKTREE_PREFIX) || !isInsidePath(resolved, expectedRoot)) {
+    return yield* Effect.fail(failUnsafeTaskWorktree(taskWorktree, 'expected a task-* directory under ' + expectedRoot));
+  }
+
+  return resolved;
+});
+
 export const resolveSafeCwdEffect = (input: CodeCallInput, contextCwd: string) => Effect.gen(function* () {
-  const defaultCwd = path.resolve(input.taskWorktree || contextCwd);
+  const taskWorktree = yield* resolveManagedTaskWorktreeEffect(input.taskWorktree);
+  const defaultCwd = taskWorktree || path.resolve(contextCwd);
   const requested = input.cwd
     ? path.resolve(path.isAbsolute(input.cwd) ? input.cwd : path.join(defaultCwd, input.cwd))
     : defaultCwd;
@@ -69,7 +101,7 @@ export const resolveSafeCwdEffect = (input: CodeCallInput, contextCwd: string) =
   const gitRoot = yield* findGitRootEffect(defaultCwd);
   const roots = yield* uniqueRealRootsEffect([
     defaultCwd,
-    input.taskWorktree,
+    taskWorktree,
     gitRoot,
     tmpdir(),
   ]);
@@ -122,7 +154,7 @@ export const resolveSafeFileEffect = (filePath: string, cwd: string, allowedRoot
 
 export const isManagedTaskWorktreePathEffect = (candidate: string) => Effect.gen(function* () {
   const resolved = yield* realpathIfExistsEffect(candidate);
-  const worktreeRoot = path.basename(path.dirname(resolved));
+  const expectedRoot = yield* realpathIfExistsEffect(path.join(tmpdir(), TASK_WORKTREE_ROOT_NAME));
   const worktreeName = path.basename(resolved);
-  return worktreeRoot === 'opensaas-worktrees' && worktreeName.startsWith('task-');
+  return worktreeName.startsWith(TASK_WORKTREE_PREFIX) && isInsidePath(resolved, expectedRoot);
 });
