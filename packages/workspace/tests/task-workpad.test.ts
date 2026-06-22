@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
-const { appendActivity, checkWorkpadReady, syncFilesChanged, syncFilesRead, syncValidationEvidence } = require('../scripts/lib/task-workpad');
+const { appendActivity, checkWorkpadReady, syncFilesChanged, syncValidationEvidence } = require('../scripts/lib/task-workpad');
 
 const meta = { area: 'workspace-agents', taskBranch: 'task/workspace-agents/workpad-test' };
 
@@ -26,7 +26,7 @@ describe('task workpad helpers', () => {
       '',
       '- none yet',
       '',
-      '## Server Automatically populates this section: files changed',
+      '## workspace-owned: files changed',
       '',
       '- none yet',
       '',
@@ -54,7 +54,7 @@ describe('task workpad helpers', () => {
       '',
       '- none yet',
       '',
-      '## Server Automatically populates this section: files changed',
+      '## workspace-owned: files changed',
       '',
       '- none yet',
       '',
@@ -78,7 +78,7 @@ describe('task workpad helpers', () => {
       '',
       '- `packages/workspace/scripts/old.js`',
       '',
-      '## Server Automatically populates this section: files changed',
+      '## workspace-owned: files changed',
       '',
       '- `packages/workspace/scripts/old.js`',
       '',
@@ -93,37 +93,11 @@ describe('task workpad helpers', () => {
     }
   });
 
-  it('keeps read evidence ordered and records read activity', () => {
-    const root = makeWorktree([
-      '# workpad',
-      '',
-      '## Server Automatically populates this section: files read',
-      '',
-      '- none yet',
-      '',
-      '## Server Automatically populates this section: activity log',
-      '',
-      '- none yet',
-      '',
-    ].join('\n'));
-    try {
-      syncFilesRead(root, meta, [
-        'packages/workspace/scripts/z-last.js',
-        'packages/workspace/scripts/a-second.js',
-      ]);
-      const content = readFileSync(join(root, '.task', 'workspace-agents', 'workpad-test', 'workpad.md'), 'utf8');
-      expect(content.indexOf('- `packages/workspace/scripts/z-last.js`')).toBeLessThan(content.indexOf('- `packages/workspace/scripts/a-second.js`'));
-      expect(content.indexOf('fs.read: `packages/workspace/scripts/z-last.js`')).toBeLessThan(content.indexOf('fs.read: `packages/workspace/scripts/a-second.js`'));
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
   it('keeps validation evidence human readable', () => {
     const root = makeWorktree([
       '# workpad',
       '',
-      '## Server Automatically populates this section: validation evidence',
+      '## workspace-owned: validation evidence',
       '',
       '- none yet',
       '',
@@ -149,7 +123,7 @@ describe('task workpad helpers', () => {
       '',
       '1. Read the relevant code and update this plan before editing.',
       '',
-      '## Server Automatically populates this section: activity log',
+      '## workspace-owned: activity log',
       '',
       '- none yet',
       '',

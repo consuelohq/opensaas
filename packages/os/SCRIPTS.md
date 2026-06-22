@@ -48,9 +48,11 @@ Dry-run hands off to:
 bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 ```
 
-Background services stay user-level only. Labels are `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`; plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
+Background services stay user-level only. Baseline labels are `com.consuelo.system` and `com.consuelo.watchdog`; `com.consuelo.portless.system` is generated only when portless is configured or discoverable. Plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
 
 The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
+
+Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:8960` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 
 ---
 
@@ -1405,7 +1407,7 @@ bun run doctor -- --json
 ```bash
 bun run install:system-daemons
 ```
-Install the local Mac launchd services for the OS Bun server, portless proxy, and watchdog. The normal path installs user LaunchAgents in `~/Library/LaunchAgents` with labels `com.consuelo.system`, `com.consuelo.watchdog`, and `com.consuelo.portless.system`; it does not require `sudo`. Consuelo OS runs this background service so agents and apps can reach it while the user works.
+Install the local Mac launchd services for the OS Bun server and watchdog. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents` and does not require `sudo`. Consuelo OS runs this background service so agents and apps can reach it while the user works.
 
 ### install:system-daemons:dry-run
 

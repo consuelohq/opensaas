@@ -35,11 +35,6 @@ import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
 } from './lib/workspace-device-login-client';
-import {
-  publishWorkspaceEdgeSnapshot,
-  type WorkspaceEdgePublishResult,
-} from './lib/install-edge-site-publisher';
-import { provisionManagedOsMcpIngressPolicyFromEnv } from './lib/install-cloudflare-provisioning';
 type ArtifactMode = 'local';
 type SkillName = string;
 type InstallOptions = {
@@ -62,10 +57,21 @@ type InstallOptions = {
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
-type InstallEdgePublishPayload =
-  | WorkspaceEdgePublishResult
+type InstallPlatformProvisioningPayload =
   | {
       status: 'planned';
+      workspaceHost?: string;
+      message: string;
+    }
+  | {
+      status: 'managed';
+      workspaceId: string;
+      workspaceSlug: string;
+      workspaceHost: string;
+      message: string;
+    }
+  | {
+      status: 'skipped';
       workspaceHost?: string;
       message: string;
     };
@@ -310,14 +316,52 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
   workspaceHost: string;
   connectorId: string;
   connectorBootstrapToken: string;
+  cloudflareTunnelToken?: string;
 }): WorkspaceBootstrap {
+  const connectorTransport = input.cloudflareTunnelToken
+    ? 'cloudflare-tunnel'
+    : 'websocket-relay';
+
   return {
     workspaceId: input.workspaceId,
     workspaceSlug: input.workspaceSlug,
     workspaceHost: input.workspaceHost,
     connectorId: input.connectorId,
-    connectorTransport: 'websocket-relay',
+    connectorTransport,
     connectorBootstrapToken: input.connectorBootstrapToken,
+    ...(input.cloudflareTunnelToken
+      ? { cloudflareTunnelToken: input.cloudflareTunnelToken }
+      : {}),
+  };
+}
+
+function createInstallPlatformProvisioningPayload(input: {
+  dryRun: boolean;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  approvedWorkspaceBootstrap?: WorkspaceBootstrap;
+}): InstallPlatformProvisioningPayload {
+  if (input.dryRun) {
+    return {
+      status: 'planned',
+      workspaceHost: input.workspaceBootstrap?.workspaceHost,
+      message: 'Consuelo platform provisioning is handled by the approval control plane',
+    };
+  }
+
+  if (input.approvedWorkspaceBootstrap) {
+    return {
+      status: 'managed',
+      workspaceId: input.approvedWorkspaceBootstrap.workspaceId,
+      workspaceSlug: input.approvedWorkspaceBootstrap.workspaceSlug,
+      workspaceHost: input.approvedWorkspaceBootstrap.workspaceHost,
+      message: 'Consuelo platform provisioning completed before scoped bootstrap was issued',
+    };
+  }
+
+  return {
+    status: 'skipped',
+    workspaceHost: input.workspaceBootstrap?.workspaceHost,
+    message: 'workspace platform provisioning skipped: approved device login not available',
   };
 }
 
@@ -543,49 +587,14 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
-    const cloudflareMcpIngress = await provisionManagedOsMcpIngressPolicyFromEnv({
-      env: process.env,
-      baseDomain: WORKSPACE_BASE_DOMAIN,
+    const platformProvisioning = createInstallPlatformProvisioningPayload({
       dryRun: options.dryRun,
+      workspaceBootstrap,
+      approvedWorkspaceBootstrap: options.workspaceBootstrap,
     });
-    if (
-      !options.quiet &&
-      !options.json &&
-      cloudflareMcpIngress.status === 'provisioned'
-    ) {
-      info('managed OS MCP Cloudflare ingress policy provisioned.');
-    }
-    let edgePublish: InstallEdgePublishPayload;
-    if (options.dryRun) {
-      edgePublish = {
-        status: 'planned',
-        workspaceHost: workspaceBootstrap?.workspaceHost,
-        message: 'workspace edge site snapshot publish planned',
-      };
-    } else {
-      const approvedWorkspaceBootstrap = options.workspaceBootstrap;
-      if (!approvedWorkspaceBootstrap) {
-        info('Device approval not completed; skipping workspace edge snapshot publish.');
-        edgePublish = {
-          status: 'planned',
-          workspaceHost: workspaceBootstrap?.workspaceHost,
-          message:
-            'workspace edge site snapshot publish skipped: approved device login not available',
-        };
-      } else {
-        info('publishing workspace site to edge...');
-        edgePublish = await publishWorkspaceEdgeSnapshot({
-          home: result.home,
-          workspaceId: approvedWorkspaceBootstrap.workspaceId,
-          workspaceSlug: approvedWorkspaceBootstrap.workspaceSlug,
-          workspaceHost: approvedWorkspaceBootstrap.workspaceHost,
-        });
-      }
-    }
     const payload = {
       ...result,
-      cloudflareMcpIngress,
-      edgePublish,
+      platformProvisioning,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,

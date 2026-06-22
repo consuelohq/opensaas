@@ -32,25 +32,6 @@ function toolRunnerPath(): string {
   return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'tool-runner.ts');
 }
 
-function createTaskWorkpad(worktree: string, slug = 'code-call-read-evidence'): { branch: string; workpadPath: string } {
-  const branch = `task/workspace-agents/${slug}`;
-  const workpadPath = join(worktree, '.task', 'workspace-agents', slug, 'workpad.md');
-  mkdirSync(dirname(workpadPath), { recursive: true });
-  writeFileSync(workpadPath, [
-    '# code call read evidence',
-    '',
-    '## Server Automatically populates this section: files read',
-    '',
-    '- none yet',
-    '',
-    '## Server Automatically populates this section: activity log',
-    '',
-    '- none yet',
-    '',
-  ].join('\n'));
-  return { branch, workpadPath };
-}
-
 function runCodeCall(input: Parameters<typeof executeCodeCall>[0], cwd: string) {
   return executeCodeCall(input, {
     cwd,
@@ -580,6 +561,6 @@ describe('code.call workspace integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence');
+    expect(docs).toContain('run short language-specific code through staged Python, Bun, or Bash backends');
   });
 });

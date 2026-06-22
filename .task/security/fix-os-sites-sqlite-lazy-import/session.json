@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_df29bacc519a",
+  "tmuxSession": "opensaas-security-fix-os-sites-sqlite-lazy-import-df29bacc",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-sites-sqlite-lazy-import",
+  "branch": "task/security/fix-os-sites-sqlite-lazy-import",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-sites-sqlite-lazy-import",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-sites-sqlite-lazy-import",
+  "prNumber": 1156,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1156",
+  "createdAt": "2026-06-19T14:20:05.811Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-sites-sqlite-lazy-import/.task/security/fix-os-sites-sqlite-lazy-import/session.json"
+}

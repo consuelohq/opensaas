@@ -1656,11 +1656,11 @@ Default behavior:
 
 ## Workpad readiness gate
 
-Task workpads have agent-authored context and server-managed evidence. Workspace tooling writes these headings as `Server Automatically populates this section: ...` and updates human-readable files changed, files read, activity, validation, TDD evidence, and test-selection sections from existing task metadata, file operations, and validation tool output. Agents still need to write the agent-owned task intent and `Test-first contract` sections before publishing.
+Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed, files read, activity, validation, TDD evidence, and test-selection sections from existing task metadata, file operations, and validation tool output. Agents still need to write the agent-owned task intent and `Test-first contract` sections before publishing.
 
 `task.push` and `task.pr` block scaffold-only workpads with a `Workpad update needed before publishing` message. Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups, then rerun the command.
 
-Use `tddPhase: "red" | "green" | "post"` on task-scoped command validation when a focused test run should be copied into the corresponding server-managed TDD evidence section.
+Use `tddPhase: "red" | "green" | "post"` on task-scoped command validation when a focused test run should be copied into the corresponding workspace-owned TDD evidence section.
 
 Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.
 
