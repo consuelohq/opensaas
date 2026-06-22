@@ -989,6 +989,18 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 ---
 
 
+
+---
+
+### task-intent — start or dispatch task lifecycle guidance
+
+Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
+
+```bash
+bun run task-intent -- start --workflow task --area os --title "example task-intent flow" --json
+bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
+```
+
 ### sentry — inspect Sentry issues, events, and traces
 
 Read-only JSON wrapper around the Sentry REST API. It reads configuration from macOS Keychain and never prints the auth token.

@@ -1484,7 +1484,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     {
       name: 'runtime:intent',
       files: [
-        'scripts/intent.js',
+        'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
         'manifests/workflow-bundles.json',

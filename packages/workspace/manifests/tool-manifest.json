@@ -3295,77 +3295,6 @@
       }
     },
     {
-      "name": "intent",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "workflow",
-      "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
-      "core": true,
-      "definition": {
-        "name": "intent",
-        "methodPath": [
-          "intent"
-        ],
-        "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
-        "category": "workflow",
-        "underlying": "workspace intent",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
-        "outputSchema": "RawOutput",
-        "workflowRole": "intent.start",
-        "command": {
-          "script": "intent",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "flag": "--title",
-              "kind": "value"
-            },
-            {
-              "source": "eventFile",
-              "flag": "--event-json",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "workspace-agents",
-          "title": "example task intent"
-        }
-      }
-    },
-    {
       "name": "linear.createIssue",
       "kind": "facade-tool",
       "source": "workspace-tooling",
@@ -6545,6 +6474,78 @@
           "dryRun": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "task.intent",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "workflow",
+      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+      "core": true,
+      "definition": {
+        "name": "task.intent",
+        "methodPath": [
+          "task",
+          "intent"
+        ],
+        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+        "category": "workflow",
+        "underlying": "workspace task.intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "RawOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "task-intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "workspace-agents",
+          "title": "example task-intent flow"
+        }
       }
     },
     {

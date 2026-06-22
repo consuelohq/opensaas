@@ -38,7 +38,6 @@
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",
-    "intent": "bun ./scripts/intent.js",
     "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
@@ -55,7 +54,8 @@
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
-    "office": "bun ./scripts/office.ts"
+    "office": "bun ./scripts/office.ts",
+    "task-intent": "bun ./scripts/task-intent.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

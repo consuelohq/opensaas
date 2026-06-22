@@ -142,6 +142,91 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('should reject binary payloads when codeFile and stdinFile inputs are non-text', async () => {
+    const root = tempRoot();
+    try {
+      const codeFile = join(root, 'program.bin');
+      const stdinFile = join(root, 'input.bin');
+      const contentBinaryCodeFile = join(root, 'program-without-extension');
+      writeFileSync(codeFile, 'print(1)');
+      writeFileSync(stdinFile, 'hello');
+      writeFileSync(contentBinaryCodeFile, Buffer.from([0, 80, 75, 3, 4]));
+
+      const codeResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        codeFile,
+      }, root);
+      const stdinResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'import sys\nprint(sys.stdin.read())',
+        stdinFile,
+      }, root);
+      const contentBinaryResult = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        codeFile: contentBinaryCodeFile,
+      }, root);
+
+      expect(codeResult.ok).toBe(false);
+      expect(codeResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(codeResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(codeResult.data.message).toContain('binary');
+      expect(stdinResult.ok).toBe(false);
+      expect(stdinResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(stdinResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(stdinResult.data.message).toContain('binary');
+      expect(contentBinaryResult.ok).toBe(false);
+      expect(contentBinaryResult.code).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(contentBinaryResult.data.detectedMistakeClass).toBe('invalid_source');
+      expect(contentBinaryResult.data.message).toContain('binary');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('records task workpad read evidence from code.call codeFile, stdinFile, and structured stdout', () => {
+    const root = tempTaskWorktree();
+    try {
+      const { branch, workpadPath } = createTaskWorkpad(root);
+      mkdirSync(join(root, 'scripts'), { recursive: true });
+      mkdirSync(join(root, 'fixtures'), { recursive: true });
+      writeFileSync(join(root, 'scripts', 'reader.ts'), [
+        'process.stdout.write(JSON.stringify({',
+        '  file: "packages/workspace/scripts/lib/task-workpad.js",',
+        '  snippets: [{ path: "packages/workspace/scripts/code-call.ts" }],',
+        '}));',
+      ].join('\n'));
+      writeFileSync(join(root, 'fixtures', 'stdin.txt'), 'input');
+
+      const input = {
+        language: 'bun',
+        mode: 'read',
+        codeFile: 'scripts/reader.ts',
+        stdinFile: 'fixtures/stdin.txt',
+        branch,
+        taskWorktree: root,
+      };
+      const result = spawnSync('bun', [scriptPath(), '--stdin'], {
+        cwd: root,
+        input: JSON.stringify(input),
+        encoding: 'utf8',
+      });
+
+      expect(result.status).toBe(0);
+      const workpad = readFileSync(workpadPath, 'utf8');
+      expect(workpad).toContain('- `scripts/reader.ts`');
+      expect(workpad).toContain('- `fixtures/stdin.txt`');
+      expect(workpad).toContain('- `packages/workspace/scripts/lib/task-workpad.js`');
+      expect(workpad).toContain('- `packages/workspace/scripts/code-call.ts`');
+      expect(workpad).toContain('fs.read: `scripts/reader.ts` code.call');
+      expect(workpad).toContain('fs.read: `packages/workspace/scripts/code-call.ts` code.call');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('fails read mode when repo files change', async () => {
     const root = tempRoot();
     try {

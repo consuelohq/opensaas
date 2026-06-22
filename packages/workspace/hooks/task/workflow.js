@@ -115,23 +115,43 @@ function isTaskWorkflowEvent(event) {
 
 function handlePreTaskStart(event, resolver) {
   const state = event.state || {};
-  if (state.hasStreamContext === true) {
-    return null;
-  }
+  const area = state.area || '<area>';
+  const title = state.title || '<task title>';
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'stream-context',
+    stage: 'task-start-guidance',
     event: event.event,
-    blockedAction: {
-      requestedTool: event.tool,
-      reason: 'stream.context must run before task.start so the agent sees stream branch, open task PRs, recent commits, worktrees, and conflicts.',
+    advisory: {
+      suggestedNextTool: 'stream.context',
+      reason: 'Next tool call should usually be stream.context if fresh stream context has not already been gathered for this area.',
+      skipWhen: 'If stream.context was already run recently in this conversation, call task.start directly with an explicit startFrom value.',
     },
-    requiredNextAction: resolver.action('stream.context', {
-      input: { area: state.area || '<area>' },
-    }),
+    examples: [
+      {
+        label: 'fresh stream context first, then start from stream',
+        orderedActions: [
+          resolver.action('stream.context', { input: { area } }),
+          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
+        ],
+      },
+      {
+        label: 'already have stream context; start from main',
+        orderedActions: [
+          resolver.action('task.start', { input: { area, title, startFrom: 'main' } }),
+        ],
+      },
+      {
+        label: 'already have stream context; start from stream',
+        orderedActions: [
+          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
+        ],
+      },
+    ],
     notes: [
-      'This hook is scoped to tool.preInvoke:task.start only; it is not ambient guidance for general chat or non-task workflows.',
+      'This hook is advisory only; it must not block task.start because prior stream.context calls are not tracked before task intent starts.',
+      'Use startFrom exactly as "main" or "stream". Do not pass a branch name to startFrom.',
+      'Use stream only to override the target stream branch when the default stream/<area> is wrong.',
     ],
   };
 }
@@ -146,24 +166,25 @@ function handlePostTaskStart(event, resolver, anchors) {
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'workpad-bootstrap',
+    stage: 'post-task-start-guidance',
     event: event.event,
     contextInjection: {
       taskSession,
       worktreePath,
-      requiredBeforeProductionEdit: 'Before any meaningful production edit, the scoped workpad must contain a Test-first contract and either a focused red test result or a no-test waiver.',
+      requiredBeforeProductionEdit: 'Before any meaningful production edit, record a task-shaped discovery batch, then add a Test-first contract and either a focused red test result or a no-test waiver.',
       skillAnchors: [anchors.taskSession, anchors.topLevelSession, anchors.workpad, anchors.testFirst],
+      discoveryGuidance: 'Batch the workpad update with direct explore plus Bun/Python code.call read-mode probes.',
     },
-    requiredNextAction: resolver.action('workpad.write', {
+    suggestedNextAction: resolver.action('tool.batch', {
       taskSession,
       input: {
-        path: workpadPath,
-        content: buildInitialWorkpadContent({ area, branch, taskSession, worktreePath }),
+        steps: buildDiscoveryBatchSteps({ area, workpadPath }),
       },
     }),
     notes: [
       'Place taskSession at the top level of every task-scoped call.',
-      'Bootstrap or update the scoped workpad before production edits.',
+      'task.start already creates task metadata and the initial workpad; this hook is advisory next-step guidance.',
+      'Run a batch that updates the workpad and gathers direct explore plus Bun/Python code.call discovery evidence before production edits.',
     ],
   };
 }
@@ -332,6 +353,79 @@ function workpadPathForBranch(branch, fallbackArea) {
   return `.task/${area}/${slugFromBranch(branch)}/workpad.md`;
 }
 
+function buildDiscoveryBatchSteps({ area, workpadPath }) {
+  const query = area === 'os' ? 'OS intent hooks' : `${area} intent hooks`;
+  const root = area === 'os' ? 'packages/os' : 'packages/workspace';
+  const workpadCode = `const path = ${JSON.stringify(workpadPath)};
+const section = ['','## discovery','', '- direct explore query: ${query}', '- Bun structured repo scanner: pending', '- Python targeted file/snippet ownership read: pending', '- Python local diagnostic: pending', '- Bun exact CLI reproduction: pending', ''].join('\n');
+await Bun.write(path, section, { append: true });
+process.stdout.write(JSON.stringify({ ok: true, path, section: 'discovery' }, null, 2) + '\n');`;
+  const bunScannerCode = `const fs = await import('node:fs');
+const path = await import('node:path');
+const root = ${JSON.stringify(root)};
+const needles = ['task.intent', 'task-intent', 'intent.start', 'workflowRole', 'batch', 'code.call'];
+const skip = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.turbo', 'coverage', '.cache']);
+const results = [];
+let scanned = 0;
+function visit(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (skip.has(ent.name)) continue;
+    const file = path.join(dir, ent.name);
+    if (ent.isDirectory()) { visit(file); continue; }
+    if (!/\.(js|ts|json|md)$/.test(ent.name)) continue;
+    scanned++;
+    let text = '';
+    try { text = fs.readFileSync(file, 'utf8'); } catch { continue; }
+    const found = needles.filter((needle) => text.includes(needle));
+    if (!found.length) continue;
+    results.push({ file, found });
+  }
+}
+visit(root);
+process.stdout.write(JSON.stringify({ ok: true, label: 'Bun structured repo scanner', root, scanned, results: results.slice(0, 20) }, null, 2) + '\n');`;
+  const pythonTargetedCode = `from pathlib import Path
+import json
+files = [Path(${JSON.stringify(`${root}/hooks/task/workflow.js`)}), Path(${JSON.stringify(`${root}/tests/workflow-intent.test.ts`)}), Path(${JSON.stringify(`${root}/manifests/manifest.config.json`)})]
+terms = ['task.intent', 'task-intent', 'intent.start', 'batch', 'code.call']
+report = []
+for file in files:
+    if not file.exists():
+        report.append({'file': str(file), 'exists': False})
+        continue
+    hits = []
+    for index, line in enumerate(file.read_text(errors='ignore').splitlines(), 1):
+        if any(term in line for term in terms):
+            hits.append({'line': index, 'text': line.strip()[:220]})
+            if len(hits) >= 20:
+                break
+    report.append({'file': str(file), 'exists': True, 'hits': hits})
+print(json.dumps({'ok': True, 'label': 'Python targeted file/snippet ownership read', 'report': report}, indent=2))`;
+  const pythonDiagnosticCode = `from pathlib import Path
+import json
+paths = [Path(${JSON.stringify(`${root}/manifests/core${area === 'os' ? '.manifest' : '-manifest'}.json`)}), Path(${JSON.stringify(`${root}/src/generated/workspace.d.ts`)})]
+report = []
+for path in paths:
+    text = path.read_text(errors='ignore') if path.exists() else ''
+    report.append({'file': str(path), 'exists': path.exists(), 'has_task_intent': 'task.intent' in text or 'intent:' in text})
+print(json.dumps({'ok': True, 'label': 'Python local diagnostic', 'report': report}, indent=2))`;
+  const exactReproductionCode = `const proc = Bun.spawnSync({ cmd: ['bun', 'run', 'explore', '--', ${JSON.stringify(query)}, '--budget', '8', '--json'], stdout: 'pipe', stderr: 'pipe' });
+const stdout = new TextDecoder().decode(proc.stdout);
+const stderr = new TextDecoder().decode(proc.stderr);
+let parsed = null;
+try { parsed = JSON.parse(stdout); } catch {}
+process.stdout.write(JSON.stringify({ ok: proc.exitCode === 0, label: 'Bun exact CLI reproduction', command: ${JSON.stringify(`bun run explore -- ${query} --budget 8 --json`)}, resultCount: parsed?.data?.results?.length ?? parsed?.results?.length ?? null, stderrTail: stderr.slice(-1000) }, null, 2) + '\n');
+process.exit(proc.exitCode ?? 1);`;
+  return [
+    { tool: 'code.call', input: { language: 'bun', mode: 'edit', code: workpadCode } },
+    { tool: 'explore', input: { query, limit: 8 } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: bunScannerCode } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: pythonTargetedCode } },
+    { tool: 'code.call', input: { language: 'python', mode: 'read', code: pythonDiagnosticCode } },
+    { tool: 'code.call', input: { language: 'bun', mode: 'read', code: exactReproductionCode } },
+  ];
+}
+
 function buildInitialWorkpadContent({ area, branch, taskSession, worktreePath }) {
   return [
     `# ${slugFromBranch(branch)}`,
@@ -345,9 +439,22 @@ function buildInitialWorkpadContent({ area, branch, taskSession, worktreePath })
     '',
     '- [ ] Fill from the user-approved task scope.',
     '',
+    '## discovery packet',
+    '',
+    'Run a just-in-time discovery batch before production edits. Prefer direct explore plus task-shaped code.call probes:',
+    '',
+    '- [ ] direct explore query for likely implementation paths',
+    '- [ ] Bun structured repo scanner for broad file/symbol discovery',
+    '- [ ] Python targeted file/snippet ownership read for likely implementation files',
+    '- [ ] Python or Bun diagnostic for local state, schema, traces, config, or cache when relevant',
+    '- [ ] Bun exact CLI reproduction when behavior depends on command output',
+    '- [ ] workpad update batched with discovery findings',
+    '',
+    'Example batch shape: workpad edit + explore + Bun/read scanner + Python/read targeted packet + Python/read diagnostic + Bun/read exact reproduction.',
+    '',
     '## plan',
     '',
-    '- [ ] Inspect stream context and local patterns.',
+    '- [ ] Run and record a task-shaped batch discovery packet.',
     '- [ ] Define the Test-first contract before production edits.',
     '',
     '## Test-first contract',

@@ -2807,13 +2807,14 @@
     "sessionRequired": false
   },
   {
-    "name": "intent",
+    "name": "task.intent",
     "methodPath": [
+      "task",
       "intent"
     ],
-    "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
+    "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
     "category": "workflow",
-    "underlying": "workspace intent",
+    "underlying": "workspace task.intent",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -2826,7 +2827,7 @@
     "outputSchema": "RawOutput",
     "workflowRole": "intent.start",
     "command": {
-      "script": "intent",
+      "script": "task-intent",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -2865,7 +2866,7 @@
       "action": "start",
       "workflow": "task",
       "area": "workspace-agents",
-      "title": "example task intent"
+      "title": "example task-intent flow"
     }
   },
   {
