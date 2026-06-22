@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-streamos-spec-os-cloud-positioning",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 704,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/704",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/704",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/704/refresh-streamos-spec-os-cloud-positioning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/704",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/704/refresh-streamos-spec-os-cloud-positioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-streamos-spec-os-cloud-positioning",
+  "taskSession": "tsk_8c33366ef0f4",
+  "tmuxSession": "opensaas-os-refresh-streamos-spec-os-cloud-positioning-8c33366e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-streamos-spec-os-cloud-positioning/.task/os/refresh-streamos-spec-os-cloud-positioning/session.json",
+  "createdAt": "2026-06-02T19:22:42.921Z"
+}
