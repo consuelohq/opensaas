@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import type { SpawnSyncReturns } from 'node:child_process';
 import {
-  chmodSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -13,8 +13,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
-const packageRoot = process.cwd();
-const systemPath = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(delimiter);
+const PACKAGE_ROOT = process.cwd();
+const SYSTEM_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(delimiter);
 const tempHomes: string[] = [];
 
 function createTempHome(prefix: string): string {
@@ -23,11 +23,11 @@ function createTempHome(prefix: string): string {
   return home;
 }
 
-function runBootstrapDryRun(home: string, overrides: Record<string, string> = {}) {
+function runBootstrapDryRun(home: string, overrides: Record<string, string> = {}): SpawnSyncReturns<string> {
   return spawnSync(
     '/bin/bash',
     [
-      join(packageRoot, 'scripts', 'bootstrap.sh'),
+      join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'),
       '--dry-run',
       '--yes',
       '--json',
@@ -36,7 +36,7 @@ function runBootstrapDryRun(home: string, overrides: Record<string, string> = {}
       '--skip-daemons',
     ],
     {
-      cwd: packageRoot,
+      cwd: PACKAGE_ROOT,
       encoding: 'utf8',
       env: {
         ...process.env,
@@ -44,7 +44,7 @@ function runBootstrapDryRun(home: string, overrides: Record<string, string> = {}
         CONSUELO_HOME: join(home, '.consuelo', 'os'),
         CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
         CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
-        PATH: systemPath,
+        PATH: SYSTEM_PATH,
         ...overrides,
       },
     },
@@ -65,11 +65,10 @@ function parseBootstrapSummary(stdout: string) {
 
 function writeExecutable(filePath: string, contents: string): void {
   writeFileSync(filePath, contents, { mode: 0o755 });
-  chmodSync(filePath, 0o755);
 }
 
 function readBootstrap(): string {
-  return readFileSync(join(packageRoot, 'scripts', 'bootstrap.sh'), 'utf8');
+  return readFileSync(join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'), 'utf8');
 }
 
 function extractShellFunction(source: string, name: string): string {
@@ -86,7 +85,7 @@ function extractShellFunction(source: string, name: string): string {
   throw new Error(`unterminated shell function: ${name}`);
 }
 
-function parseShaWithBootstrap(checksumText: string) {
+function parseShaWithBootstrap(checksumText: string): SpawnSyncReturns<string> {
   const bootstrap = readBootstrap();
   const script = [
     extractShellFunction(bootstrap, 'is_sha256'),
@@ -98,7 +97,7 @@ function parseShaWithBootstrap(checksumText: string) {
 
   return spawnSync('/bin/bash', ['-c', script], {
     encoding: 'utf8',
-    env: { ...process.env, CHECKSUM_TEXT: checksumText, PATH: systemPath },
+    env: { ...process.env, CHECKSUM_TEXT: checksumText, PATH: SYSTEM_PATH },
   });
 }
 
@@ -147,7 +146,7 @@ afterEach(() => {
 });
 
 describe('public installer runtime dependencies', () => {
-  it('uses bounded retrying curl for source and runtime network fetches', () => {
+  it('should use bounded retrying curl when fetching source and runtime network artifacts', () => {
     const bootstrap = readBootstrap();
 
     for (const flag of [
@@ -166,7 +165,7 @@ describe('public installer runtime dependencies', () => {
     expect(bootstrap).toContain('curl_retry "$url" -o "$archive_file"');
   });
 
-  it('parses SHA-256 metadata deterministically without shell word splitting', () => {
+  it('should parse SHA-256 metadata deterministically when checksum files use supported shapes', () => {
     const sha = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
     for (const checksumText of [sha, `${sha}  portless`, `${sha} *portless`]) {
@@ -184,7 +183,7 @@ describe('public installer runtime dependencies', () => {
     expect(bootstrap).not.toContain('set -- $checksum_text');
   });
 
-  it('persists portless only when available before public daemon installation', () => {
+  it('should persist portless only when available before public daemon installation', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('persist_env_value "$env_file" BUN_BIN "$BUN_BIN"');
@@ -200,7 +199,7 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('uses the regular local port when portless is absent on a clean dry-run PATH', () => {
+  it('should use the regular local port when portless is absent on a clean dry-run PATH', () => {
     const home = createTempHome('consuelo-os-installer-runtime-bootstrap-');
     const result = runBootstrapDryRun(home);
 
@@ -221,7 +220,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.dependencies.operator.wrangler.classification).toBe('operator_only');
   });
 
-  it('keeps portless as an optional enhancement when it is already installed', () => {
+  it('should keep portless as an optional enhancement when it is already installed', () => {
     const home = createTempHome('consuelo-os-installer-runtime-bootstrap-existing-portless-');
     const binDir = join(home, 'bin');
     const portlessBin = join(binDir, 'portless');
@@ -237,7 +236,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.dependencies.runtime.portless.path).toBe(portlessBin);
   });
 
-  it('uses PORTLESS_BIN before PATH in the portless daemon launcher', () => {
+  it('should use PORTLESS_BIN before PATH when starting the portless daemon launcher', () => {
     const home = createTempHome('consuelo-os-installer-runtime-portless-');
     const binDir = join(home, 'bin');
     const captureFile = join(home, 'portless-args.txt');
@@ -250,16 +249,16 @@ describe('public installer runtime dependencies', () => {
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'start-portless-daemon.sh')],
+      [join(PACKAGE_ROOT, 'scripts', 'start-portless-daemon.sh')],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: {
           ...process.env,
           HOME: home,
           PORTLESS_BIN: portlessBin,
           PORTLESS_CAPTURE_FILE: captureFile,
-          PATH: systemPath,
+          PATH: SYSTEM_PATH,
         },
       },
     );
@@ -270,7 +269,7 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('keeps direct daemon dry-run usable with PATH portless when no env file exists', () => {
+  it('should keep direct daemon dry-run usable when PATH portless exists and no env file exists', () => {
     const home = createTempHome('consuelo-os-installer-runtime-direct-daemon-');
     const binDir = join(home, 'bin');
     const portlessBin = join(binDir, 'portless');
@@ -279,15 +278,15 @@ describe('public installer runtime dependencies', () => {
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
+      [join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: installerEnv({
           HOME: home,
           CONSUELO_DAEMON_HOME: home,
-          PORTLESS_DAEMON_PATH: [binDir, systemPath].join(delimiter),
-          PATH: [binDir, systemPath].join(delimiter),
+          PORTLESS_DAEMON_PATH: [binDir, SYSTEM_PATH].join(delimiter),
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
         }),
       },
     );
@@ -295,7 +294,7 @@ describe('public installer runtime dependencies', () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('com.consuelo.portless.system');
     const plist = readFileSync(
-      join(packageRoot, 'scripts', 'generated', 'com.consuelo.portless.system.plist'),
+      join(PACKAGE_ROOT, 'scripts', 'generated', 'com.consuelo.portless.system.plist'),
       'utf8',
     );
     expect(plist).toContain('<key>PORTLESS_ALLOW_PATH_LOOKUP</key>');
@@ -303,20 +302,20 @@ describe('public installer runtime dependencies', () => {
   });
 
 
-  it('skips the optional portless LaunchAgent when portless is absent', () => {
+  it('should skip the optional portless LaunchAgent when portless is absent', () => {
     const home = createTempHome('consuelo-os-installer-runtime-direct-no-portless-');
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
+      [join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: installerEnv({
           HOME: home,
           CONSUELO_DAEMON_HOME: home,
-          PORTLESS_DAEMON_PATH: systemPath,
-          PATH: systemPath,
+          PORTLESS_DAEMON_PATH: SYSTEM_PATH,
+          PATH: SYSTEM_PATH,
         }),
       },
     );
@@ -324,7 +323,7 @@ describe('public installer runtime dependencies', () => {
     expect(result.status).toBe(0);
     expect(result.stdout).not.toContain('com.consuelo.portless.system');
   });
-  it('uses PATH portless only when direct daemon repair mode allows lookup', () => {
+  it('should use PATH portless only when direct daemon repair mode allows lookup', () => {
     const home = createTempHome('consuelo-os-installer-runtime-portless-path-');
     const binDir = join(home, 'bin');
     const captureFile = join(home, 'portless-path-args.txt');
@@ -337,16 +336,16 @@ describe('public installer runtime dependencies', () => {
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'start-portless-daemon.sh')],
+      [join(PACKAGE_ROOT, 'scripts', 'start-portless-daemon.sh')],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: installerEnv({
           HOME: home,
           PORTLESS_ALLOW_PATH_LOOKUP: '1',
-          PORTLESS_DAEMON_PATH: [binDir, systemPath].join(delimiter),
+          PORTLESS_DAEMON_PATH: [binDir, SYSTEM_PATH].join(delimiter),
           PORTLESS_CAPTURE_FILE: captureFile,
-          PATH: [binDir, systemPath].join(delimiter),
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
         }),
       },
     );
@@ -358,20 +357,20 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('fails clearly when direct daemon repair cannot find portless', () => {
+  it('should fail clearly when direct daemon repair cannot find portless', () => {
     const home = createTempHome('consuelo-os-installer-runtime-portless-missing-');
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'start-portless-daemon.sh')],
+      [join(PACKAGE_ROOT, 'scripts', 'start-portless-daemon.sh')],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: installerEnv({
           HOME: home,
           PORTLESS_ALLOW_PATH_LOOKUP: '1',
-          PORTLESS_DAEMON_PATH: systemPath,
-          PATH: systemPath,
+          PORTLESS_DAEMON_PATH: SYSTEM_PATH,
+          PATH: SYSTEM_PATH,
         }),
       },
     );
@@ -382,24 +381,24 @@ describe('public installer runtime dependencies', () => {
   });
 
 
-  it('includes cloudflared in daemon dry-run output only when a generated plist exists', () => {
+  it('should include cloudflared in daemon dry-run output only when a generated plist exists', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
     mkdirSync(generatedDir, { recursive: true });
 
     const absentResult = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
+      [join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: {
           ...installerEnv({
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
-            PORTLESS_DAEMON_PATH: systemPath,
-            PATH: systemPath,
+            PORTLESS_DAEMON_PATH: SYSTEM_PATH,
+            PATH: SYSTEM_PATH,
           }),
         },
       },
@@ -414,17 +413,17 @@ describe('public installer runtime dependencies', () => {
     );
     const presentResult = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
+      [join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'), '--dry-run', '--quiet'],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: {
           ...installerEnv({
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
-            PORTLESS_DAEMON_PATH: systemPath,
-            PATH: systemPath,
+            PORTLESS_DAEMON_PATH: SYSTEM_PATH,
+            PATH: SYSTEM_PATH,
           }),
         },
       },
@@ -435,7 +434,7 @@ describe('public installer runtime dependencies', () => {
     expect(presentResult.stdout).toContain('com.consuelo.os.cloudflared.connector-123');
   });
 
-  it('includes dynamic cloudflared LaunchAgents in uninstall dry-run output', () => {
+  it('should include dynamic cloudflared LaunchAgents when running uninstall dry-run', () => {
     const home = createTempHome('consuelo-os-installer-runtime-uninstall-');
     const launchAgentDir = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgentDir, { recursive: true });
@@ -446,15 +445,15 @@ describe('public installer runtime dependencies', () => {
 
     const result = spawnSync(
       '/bin/bash',
-      [join(packageRoot, 'scripts', 'uninstall-system-daemons.sh'), '--dry-run'],
+      [join(PACKAGE_ROOT, 'scripts', 'uninstall-system-daemons.sh'), '--dry-run'],
       {
-        cwd: packageRoot,
+        cwd: PACKAGE_ROOT,
         encoding: 'utf8',
         env: {
           ...process.env,
           HOME: home,
           CONSUELO_DAEMON_HOME: home,
-          PATH: systemPath,
+          PATH: SYSTEM_PATH,
         },
       },
     );

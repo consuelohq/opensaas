@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
 
 describe('bootstrap source refresh controls', () => {
-  it('declares the public installer dependency model explicitly', () => {
+  it('should declare the public installer dependency model explicitly', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('MACOS_EXPECTED_SYSTEM_TOOLS=(');

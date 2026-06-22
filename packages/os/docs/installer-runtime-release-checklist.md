@@ -52,7 +52,8 @@ Required starting state:
 
 Required baseline verification:
 
-- `~/.consuelo/os/bin/cloudflared` exists and is executable when tunnel transport is configured;
+- `~/.consuelo/os/bin/cloudflared` exists and is executable when Cloudflare tunnel transport is configured;
+  Cloudflared is not required for baseline local-port installs. It is required only after approved bootstrap material selects a Cloudflare tunnel transport for a connector.
 - `~/.consuelo/os/.env` contains `BUN_BIN`, `CLOUDFLARED_BIN`, and `PORTLESS_ENABLED=0` when portless is absent;
 - `~/.consuelo/os/.env` does not contain `PORTLESS_BIN` when portless is absent;
 - `launchctl print` shows the workspace and watchdog LaunchAgents;
@@ -69,6 +70,6 @@ Optional portless verification, only when portless is configured or optional ins
 ## Current release evidence
 
 - Baseline portless fallback: covered by installer runtime tests added on 2026-06-21; clean dry-run PATH reports `optional_missing` and daemon generation skips the portless LaunchAgent.
-- Optional portless artifacts: verified live on 2026-06-21 and all four URLs returned HTTP 404. This blocks optional hosted portless install, not baseline OS launch.
+- Optional portless artifacts: not yet published as of 2026-06-21; all four required URLs returned HTTP 404. This blocks optional hosted portless install, not baseline OS launch.
 - Clean-machine smoke: not run in this environment during this pass; remains required before internal release.
 - PR checks: PR #1154 was inspected on 2026-06-21; `Workers Builds: opensaas` remained the only red check. Record an explicit release-owner decision if that inherited check is not a release gate.

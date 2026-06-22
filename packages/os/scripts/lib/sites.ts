@@ -306,8 +306,12 @@ function hasArtifactsTable(db: BunSqliteDatabase): boolean {
 }
 
 function readArtifactRows(dbPath: string): ArtifactRow[] {
-  if (!fs.existsSync(dbPath)) return [];
-  const stat = fs.statSync(dbPath);
+  let stat: fs.Stats;
+  try {
+    stat = fs.statSync(dbPath);
+  } catch {
+    return [];
+  }
   if (!stat.isFile() || stat.size === 0) return [];
   const Database = loadBunSqliteDatabase();
   const db = new Database(dbPath, { readonly: true });
