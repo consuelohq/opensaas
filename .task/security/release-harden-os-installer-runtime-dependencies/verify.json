@@ -5,7 +5,7 @@
   "branch": "task/security/release-harden-os-installer-runtime-dependencies",
   "base": "origin/stream/security",
   "headSha": "074c3d2fec1a254977dc059d54f995557fc884e5",
-  "changeHash": "f4872fc9d152ac1fa95f451a9b66407ac633c3293194a5dbcaea26a575e8bffb",
+  "changeHash": "a8a203ca4c46b40e58ae7d4f92eb566e126418edf0e0c04c529538e3f8f721dc",
   "changedFiles": [
     "packages/os/README.md",
     "packages/os/SCRIPTS.md",
@@ -17,10 +17,11 @@
     "packages/os/scripts/install-system-daemons.sh",
     "packages/os/scripts/lib/workspace-connector-transport.ts",
     "packages/os/scripts/start-portless-daemon.sh",
+    "packages/os/tests/bootstrap-source.test.ts",
     "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
     "packages/os/tests/installer-runtime-dependencies.test.ts"
   ],
-  "verifiedAt": "2026-06-21T02:35:10.298Z",
+  "verifiedAt": "2026-06-22T23:40:43.033Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -36,6 +37,7 @@
       "changedFiles": [
         ".task/security/release-harden-os-installer-runtime-dependencies/current.json",
         ".task/security/release-harden-os-installer-runtime-dependencies/session.json",
+        ".task/security/release-harden-os-installer-runtime-dependencies/verify.json",
         ".task/security/release-harden-os-installer-runtime-dependencies/workpad.md",
         ".task/tasks/security/release-harden-os-installer-runtime-dependencies.json",
         "packages/os/README.md",
@@ -48,6 +50,7 @@
         "packages/os/scripts/install-system-daemons.sh",
         "packages/os/scripts/lib/workspace-connector-transport.ts",
         "packages/os/scripts/start-portless-daemon.sh",
+        "packages/os/tests/bootstrap-source.test.ts",
         "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
         "packages/os/tests/installer-runtime-dependencies.test.ts"
       ],

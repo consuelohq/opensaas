@@ -77,4 +77,15 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('We can download/setup this now.');
     expect(bootstrap).not.toContain('We can install/setup this now.');
   });
+
+  it('pins cloudflared darwin archive checksums to the currently served release assets', () => {
+    const bootstrap = readBootstrap();
+
+    expect(bootstrap).toContain(
+      'CLOUDFLARED_DARWIN_ARM64_SHA256="f6d4c439c6c782b83264951d327989ce5e23373acc5942b872411601fedb020d"',
+    );
+    expect(bootstrap).toContain(
+      'CLOUDFLARED_DARWIN_AMD64_SHA256="d7a66b525fe76820da6e5406611b61e48b40de682368ac00454d9158f085be4b"',
+    );
+  });
 });
