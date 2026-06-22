@@ -29,7 +29,7 @@ const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+  'task.intent': 'Start or dispatch the task workflow lifecycle guidance for scoped task work.',
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -78,7 +78,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'intent',
+  'task.intent',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -283,7 +283,7 @@ describe('tool manifest generator', () => {
     }
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
-    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
 
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
@@ -301,7 +301,7 @@ describe('tool manifest generator', () => {
 
 
 
-  it('models read-only fs read and search as session-optional', () => {
+  it('should model read-only fs read and search as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
     const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
 
@@ -332,7 +332,7 @@ describe('tool manifest generator', () => {
       expect(fullNames).toContain(toolName);
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
     expect(fullNames).not.toContain('task.call');
     expect(fullNames).not.toContain('task.exec');
     expect(coreNames).not.toContain('task.call');
@@ -364,11 +364,11 @@ describe('tool manifest generator', () => {
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
   });
 
-  it('keeps OS intent wired to the OS runtime surface', () => {
+  it('keeps OS task intent wired to the OS runtime surface', () => {
     const registry = buildToolManifest({ write: false });
-    const intentEntry = registry.full.tools.find((entry) => entry.name === 'intent');
+    const intentEntry = registry.full.tools.find((entry) => entry.name === 'task.intent');
 
-    expect(intentEntry?.definition.underlying).toBe('os intent');
+    expect(intentEntry?.definition.underlying).toBe('os task.intent');
   });
 
   it("uses Ko's core tool descriptions in full and core manifests", () => {
@@ -426,6 +426,21 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('should expose runtime fs result envelopes when generating OS TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    expect(generatedWorkspace).toContain('type: \"text-page\"');
+    expect(generatedWorkspace).toContain('content: string');
+    expect(generatedWorkspace).toContain('mime: string');
+    expect(generatedWorkspace).toContain('type: \"binary\"');
+    expect(generatedWorkspace).toContain('type: \"media\"');
+    expect(generatedWorkspace).toContain('results: Array<{ path: string; ok: true; page:');
+    expect(generatedWorkspace).toContain('type: \"search-results\"');
+    expect(generatedWorkspace).toContain('matches: Array<{ type: \"match\"; path: string; line: number; text: string');
+    expect(generatedWorkspace).not.toContain('Array<{ path: string; from: number; to: number; total: number; lines: string[] }>');
+    expect(generatedWorkspace).not.toContain('Array<{ file: string; line: number; text: string }>');
   });
 
   it('keeps code.call examples strong and aligned', () => {

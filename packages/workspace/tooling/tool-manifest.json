@@ -2198,12 +2198,11 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
       "path": "packages/workspace/scripts/fs.js",
       "offset": 1,
       "limit": 120
     },
-    "sessionRequired": true,
+    "sessionRequired": false,
     "examples": [
       {
         "label": "single paged file",
@@ -2284,11 +2283,10 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
       "pattern": "task:fs",
       "path": "packages/workspace/SCRIPTS.md"
     },
-    "sessionRequired": true,
+    "sessionRequired": false,
     "examples": [
       {
         "label": "search a directory",
