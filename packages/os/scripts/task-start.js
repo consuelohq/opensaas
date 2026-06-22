@@ -550,23 +550,27 @@ async function main() {
 
     // guard 4: emit manifest-driven task hook guidance for non-JSON callers
     if (!args.json) {
-      const guidance = dispatchHookEvent({
-        event: {
-          event: 'tool.postInvoke',
-          tool: 'task.start',
-          workflow: 'task',
-          result: {
-            area,
-            branch: taskBranch,
-            taskSession: taskSessionMeta.taskSession,
-            worktreePath,
+      try {
+        const guidance = dispatchHookEvent({
+          event: {
+            event: 'tool.postInvoke',
+            tool: 'task.start',
+            workflow: 'task',
+            result: {
+              area,
+              branch: taskBranch,
+              taskSession: taskSessionMeta.taskSession,
+              worktreePath,
+            },
           },
-        },
-      });
-      if (guidance) {
-        writeStderr('');
-        writeStderr('task hook guidance:');
-        writeStderr(renderHookResult(guidance).trimEnd());
+        });
+        if (guidance) {
+          writeStderr('');
+          writeStderr('task hook guidance:');
+          writeStderr(renderHookResult(guidance).trimEnd());
+        }
+      } catch (error) {
+        writeStderr(`warning: task hook guidance failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 }

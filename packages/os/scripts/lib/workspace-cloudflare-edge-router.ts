@@ -106,7 +106,6 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
 };
 
 const SITE_SNAPSHOT_CACHE_AUTHORITY = 'sites-snapshot';
-const DEFAULT_WORKSPACE_BASE_DOMAINS = ['consuelohq.com'];
 const DEFAULT_RESERVED_HOSTNAMES = [
   'app.consuelohq.com',
   'docs.consuelohq.com',
@@ -125,13 +124,6 @@ const normalizeHostnameList = (values: readonly string[] | undefined, defaults: 
 
 const isReservedWorkspaceHostname = (host: string, reservedHostnames?: string[]): boolean =>
   normalizeHostnameList(reservedHostnames, DEFAULT_RESERVED_HOSTNAMES).includes(normalizeHostname(host));
-
-const isWorkspaceBaseDomainHost = (host: string, workspaceBaseDomains?: string[]): boolean => {
-  const hostname = normalizeHostname(host);
-  return normalizeHostnameList(workspaceBaseDomains, DEFAULT_WORKSPACE_BASE_DOMAINS).some((domain) =>
-    hostname.endsWith('.' + domain) && hostname !== domain,
-  );
-};
 
 const requestIdFor = (request?: Request): string =>
   request?.headers.get('cf-ray')?.trim() || crypto.randomUUID();
@@ -537,14 +529,6 @@ export const createWorkspaceCloudflareEdgeRouter = (
             request,
           });
         }
-        if (inboundUrl.pathname === '/' && isWorkspaceBaseDomainHost(inboundUrl.hostname, input.workspaceBaseDomains)) {
-          const cachedSiteSnapshot = await readCachedSiteSnapshot({
-            request,
-            cache: input.siteSnapshots?.cache ?? getDefaultSiteCache(),
-          });
-          if (cachedSiteSnapshot) return cachedSiteSnapshot;
-        }
-
         const resolution = await input.registry.resolve({
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,

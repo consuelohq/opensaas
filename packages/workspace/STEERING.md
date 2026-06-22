@@ -474,92 +474,27 @@ Before finishing a Canvas document, scan for broken fences:
 
 ## 3. Global Operating Principles & Tool Preferences 
 
-## Test-first workpad discipline
+## `code.call` for runtime evidence, repo discovery, and command execution
 
-For non-trivial code changes, define the test strategy before implementation. The task workpad is the durable contract between Ko, the agent, and the codebase.
+`code.call` is the normal surface for running small, task-shaped programs inside the workspace runtime. Use it to turn a question into evidence: inspect files, scan source, reproduce CLI behavior, run diagnostics, execute tests, validate builds, and summarize results in the shape the task needs.
 
-Before editing production code, fill the agent-owned `Test-first contract` section with behavior under test, existing pattern to follow, intended tests, focused red command, expected red failure, and no-test waiver when a test is genuinely inappropriate.
+The strongest `code.call` pattern is a purpose-built Bun or Python program that returns compact evidence:
 
-Run the focused test before implementation and let workspace-owned workpad sections capture the red evidence, green evidence, files read, test selection, and post-validation where tooling supports it. Do not weaken or rewrite the pretest after implementation unless the contract itself was wrong; record the reason in the workpad.
+* files inspected
+* line numbers
+* matching symbols or terms
+* short snippets
+* exact commands reproduced
+* observed exit codes
+* compact stdout/stderr tails
+* the next verification command when obvious
 
-Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
+Use `code.call` for:
 
-## Code run first for programmable workspace API work
-
-Use direct `workspace.call` for one exact known tool call.
-
-Use `batch` for a fixed list of independent calls where later steps do not depend on earlier results. Batch is fan-out/fan-in; it is not a control-flow surface.
-
-Use `code.run` when the agent needs to write a small program over the workspace API. Code mode is for control flow and output reduction: loops, branching, filtering, joining, retries, derived summaries, and returning only the compact result instead of streaming every intermediate tool output back through the model.
-
-Examples that should default to `code.run`:
-
-- search -> read only matching files -> decide
-- inspect many trace rows -> filter locally -> return a compact table
-- read several manifests/configs -> join facts -> summarize the mismatch
-- run validation -> trim noisy output -> return status plus the useful tail
-- edit -> reread -> validate invariants in one semantic pass
-- retry a safe read with narrower inputs when the first result is too broad
-- compute derived stats from tool output without exposing the full intermediate payload
-
-Do not describe `code.run` as merely chaining tools. If the calls are known and independent, use `batch`. If the workflow needs state, decisions, loops, or local computation between workspace calls, use `code.run`.
-
-Inside `code.run`, call the same facade tools through `workspace_call("tool.name", input)`, `workspace.*` helpers, or typed helpers. The underlying typed tools still own schemas, task scoping, branch/worktree routing, lifecycle rules, trace IDs, and durable-action boundaries. Code mode is not a guardrail bypass and is not a raw shell replacement.
-
-Default choice:
-
-| Situation | Use |
-|---|---|
-| One exact typed operation | direct `workspace.call` |
-| Fixed independent read-only calls | `batch` |
-| Programmable workspace API workflow with control flow or output reduction | `code.run` |
-| Large/multiline payload | `tmp` / `contentFile` / `--input-file` / `--stdin` |
-| Focused package/test/build command | `code.call` |
-| Final push / PR / merge / deploy / publish | direct outer `workspace.call` |
-| No typed tool exists | report a tooling gap and use the smallest safe fallback |
-
-Good `code.run` example: keep noisy trace rows inside code mode and return only the useful aggregate.
-
-```ts
-await workspace.call({
-  tool: "code.run",
-  input: {
-    mode: "read",
-    maxOperations: 8,
-    maxResultChars: 12000,
-    code: `
-      const rows = await workspace_call("context.trace", {
-        contains: "python3",
-        limit: 40
-      });
-
-      const counts = new Map();
-      for (const row of rows.data?.rows ?? []) {
-        counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);
-      }
-
-      return {
-        totalMatches: rows.data?.count ?? 0,
-        byTool: [...counts.entries()]
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10)
-      };
-    `
-  },
-  timeout: 180
-})
-```
-
-Bad: using `batch` or repeated direct calls when the agent must inspect each result before deciding the next read.
-
-Bad: using `context.trace` with `raw: true` and a high limit, then sending every full row back through the model. Use `code.run` to filter/summarize first, or request one specific `traceId`.
-
-## `code.call` for bounded runtime and command execution
-
-Use `code.call` when the job is to run one focused Python, Bun/JavaScript/TypeScript, or Bash program with bounded output.
-
-`code.call` is the normal execution surface for:
-
+* repo investigation and source inspection
+* exact file/range reads
+* multi-file evidence packets
+* source search shaped to the task
 * focused tests
 * package scripts
 * build checks
@@ -567,73 +502,67 @@ Use `code.call` when the job is to run one focused Python, Bun/JavaScript/TypeSc
 * syntax checks
 * codegen commands
 * exact CLI reproduction
-* small diagnostics
+* local runtime diagnostics
+* schema, trace, cache, or database inspection
 * runtime-specific validation scripts
 
-`code.call` is preferred over `mac.call` for normal agent work because it has language selection, mode semantics, output bounds, cwd validation, transport-mistake detection, mutation detection, and task-worktree routing when `taskSession` is provided.
+`code.call` has language selection, mode semantics, cwd validation, transport-mistake detection, mutation detection, task-worktree routing, trace metadata, and changed-file detection. A good `code.call` replaces many tiny discovery calls with one evidence packet the agent can reason from.
 
-Use `code.run` when the job is programmable orchestration over workspace tools.
+Use `batch` when several independent `code.call` probes should run at the same time. A strong discovery batch usually contains:
 
-Use `code.call` when the job is runtime execution.
+* a Bun repo scanner for broad JS/TS/package discovery
+* a Python known-file packet for compact file/symbol inspection
+* a Python or Bun diagnostic for local state, schemas, traces, or config
+* a Bun exact CLI reproduction when behavior depends on a command
+
+Use `code.run` when the job is programmable orchestration over workspace tools. Use `code.call` when the job is runtime execution inside Python, Bun, JavaScript, TypeScript, or Bash.
 
 ## Runtime selection
 
-Choose the runtime that matches the work. Do not default to Bash.
+Choose the runtime that matches the work. Default to Bun or Python. Use Bash only when shell semantics are the actual requirement.
 
-| Need                                                                                                 | Use                  |
-| ---------------------------------------------------------------------------------------------------- | -------------------- |
-| Python diagnostics, Python syntax checks, Python scripts                                             | `language: "python"` |
-| Bun/JS/TS diagnostics, package-command orchestration, JSON summaries, argv-array command execution   | `language: "bun"`    |
-| Shell semantics such as pipes, redirects, env expansion, shell builtins, or short shell smoke checks | `language: "bash"`   |
+| Need                                                                                                               | Use                  |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| JS/TS/Bun source inspection, package command orchestration, JSON summaries, argv-array command execution           | `language: "bun"`    |
+| Python diagnostics, schema inspection, text processing, compact file packets, Python syntax checks, Python scripts | `language: "python"` |
+| Shell semantics such as pipes, redirects, env expansion, shell builtins, or short shell smoke checks               | `language: "bash"`   |
 
-Do not use `language: "bash"` just to run `python3` or `bun`. Use the Python or Bun runtime directly.
+Do not use `language: "bash"` just to run Python or Bun. Use the Python or Bun runtime directly.
 
 ## Authority modes
 
-| Mode     | Intended use                                                         | Requires `taskSession`?                                                | Mutation policy                                           |
-| -------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| `read`   | non-mutating diagnostics, runtime inspection, small analysis scripts | No                                                                     | Must not intentionally mutate files                       |
-| `verify` | tests, builds, typechecks, syntax checks, validation commands        | Required for task-branch validation; optional for non-repo diagnostics | Should not intentionally edit source                      |
-| `edit`   | commands that may create, update, generate, format, or rewrite files | Yes, or an explicitly managed task worktree                            | Mutation is allowed only inside the managed task worktree |
+| Mode     | Intended use                                                                                          | Requires `taskSession`?                                                | Mutation policy                                           |
+| -------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| `read`   | repo discovery, file inspection, non-mutating diagnostics, runtime inspection, small analysis scripts | No                                                                     | Must not intentionally mutate files                       |
+| `verify` | tests, builds, typechecks, syntax checks, validation commands                                         | Required for task-branch validation; optional for non-repo diagnostics | Should not intentionally edit source                      |
+| `edit`   | commands that may create, update, generate, format, or rewrite files                                  | Yes, or an explicitly managed task worktree                            | Mutation is allowed only inside the managed task worktree |
 
 Do not treat `taskSession` as required for every `code.call`. It is required when the command needs the task branch filesystem or mutation authority. For ordinary non-mutating diagnostics, use `mode: "read"` without `taskSession`.
 
 ## Default split
 
-| Situation                                                                              | Use                                                     |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| One exact typed workspace operation                                                    | direct `workspace.call`                                 |
-| Fixed independent read-only workspace operations                                       | `batch`                                                 |
-| Loops, branching, filtering, joining, retries, or output reduction over workspace APIs | `code.run`                                              |
-| Non-mutating host/runtime diagnostic                                                   | `code.call` with `mode: "read"`                         |
-| Focused package/test/build/typecheck command against a task branch                     | `code.call` with `taskSession` and `mode: "verify"`     |
-| Command that intentionally writes or regenerates repo files                            | `code.call` with `taskSession` and `mode: "edit"`       |
-| Final push, PR promotion, merge, finish, deploy, or publish                            | direct lifecycle workspace tool                         |
-| GitHub, Linear, Railway, browser, repo file reads, repo file writes, trace inspection  | the typed workspace tool for that surface               |
-| Missing typed operation                                                                | name the tooling gap and use the smallest safe fallback |
+| Situation                                                                                                      | Use                                                     |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| One exact typed workspace operation                                                                            | direct `workspace.call`                                 |
+| Fixed independent read-only probes                                                                             | `batch`                                                 |
+| Repo investigation, source search, exact file reads, or structured evidence packets                            | `code.call` with `mode: "read"`                         |
+| Parallel repo/runtime discovery                                                                                | `batch` with Bun/Python `code.call` probes              |
+| Loops, branching, filtering, joining, retries, or output reduction over workspace APIs                         | `code.run`                                              |
+| Non-mutating host/runtime diagnostic                                                                           | `code.call` with `mode: "read"`                         |
+| Focused package/test/build/typecheck command against a task branch                                             | `code.call` with `taskSession` and `mode: "verify"`     |
+| Command that intentionally writes or regenerates repo files                                                    | `code.call` with `taskSession` and `mode: "edit"`       |
+| Anchored source patch                                                                                          | `fs.apply_patch`                                        |
+| Trash task-worktree files                                                                                      | `fs.trash`                                              |
+| Inspect diffs                                                                                                  | `git.diff`                                              |
+| GitHub, Linear, Railway, browser, trace, memory, lifecycle, review, publish, deploy, or durable external state | the typed workspace tool for that surface               |
+| Final push, PR promotion, merge, finish, deploy, or publish                                                    | direct lifecycle workspace tool                         |
+| Missing typed operation                                                                                        | name the tooling gap and use the smallest safe fallback |
 
-## Good `code.call` examples
+## Good `code.call` discovery shapes
 
-### Non-mutating Python diagnostic
+### Bun repo scanner
 
-Use Python for Python work:
-
-```ts
-await workspace.call({
-  tool: "code.call",
-  input: {
-    language: "python",
-    mode: "read",
-    code: "import platform, sys\nprint(platform.platform())\nprint(sys.version)",
-    maxResultChars: 20000,
-  },
-  timeout: 120,
-})
-```
-
-### Non-mutating Bun diagnostic
-
-Use Bun for JS/TS/Bun runtime checks:
+Use Bun when the task is JS/TS/package-shaped or when scanning repo files should produce structured JSON.
 
 ```ts
 await workspace.call({
@@ -641,49 +570,199 @@ await workspace.call({
   input: {
     language: "bun",
     mode: "read",
-    code: "console.log(JSON.stringify({ bun: Bun.version, cwd: process.cwd() }, null, 2))",
-    maxResultChars: 20000,
+    maxResultChars: 50000,
+    code: `
+const fs = await import('node:fs')
+const path = await import('node:path')
+
+const roots = ['packages/workspace']
+const skip = new Set(['node_modules', '.git', '.next', 'dist', 'build', '.turbo', 'coverage', 'tmp', '.cache'])
+const exts = /\\.(ts|tsx|js|jsx|json|md|yml|yaml|toml|cjs|mjs)$/
+const needles = ['code.call', 'batch', 'mode: "read"', 'structured-repo-inspection']
+
+const results = []
+let scanned = 0
+
+function visit(dir) {
+  if (!fs.existsSync(dir)) return
+
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (skip.has(ent.name)) continue
+
+    const p = path.join(dir, ent.name)
+
+    if (ent.isDirectory()) {
+      visit(p)
+      continue
+    }
+
+    if (!exts.test(ent.name)) continue
+    scanned++
+
+    let text
+    try {
+      text = fs.readFileSync(p, 'utf8')
+    } catch {
+      continue
+    }
+
+    const lower = text.toLowerCase()
+    const found = needles.filter((needle) => lower.includes(needle.toLowerCase()))
+    if (!found.length) continue
+
+    const lines = text.split('\\n')
+    const matches = []
+
+    for (let i = 0; i < lines.length && matches.length < 12; i++) {
+      const line = lines[i]
+      const low = line.toLowerCase()
+
+      if (needles.some((needle) => low.includes(needle.toLowerCase()))) {
+        matches.push({
+          line: i + 1,
+          text: line.trim().slice(0, 220),
+        })
+      }
+    }
+
+    results.push({ file: p, found, matches })
+  }
+}
+
+for (const root of roots) visit(root)
+
+results.sort((a, b) => b.found.length - a.found.length || a.file.localeCompare(b.file))
+
+console.log(JSON.stringify({
+  ok: true,
+  scanned,
+  count: results.length,
+  results: results.slice(0, 80),
+}, null, 2))
+`.trim(),
   },
-  timeout: 120,
+  timeout: 180,
 })
 ```
 
-### Python syntax validation in a task worktree
+### Python known-file evidence packet
 
-Use Python directly instead of shelling out to `python3 -m py_compile`:
+Use Python when the likely files are known and the task needs compact symbols, hits, and snippets.
 
 ```ts
 await workspace.call({
   tool: "code.call",
-  taskSession,
   input: {
     language: "python",
-    mode: "verify",
+    mode: "read",
+    maxResultChars: 50000,
     code: `
-import py_compile
-import sys
+from pathlib import Path
+import json
+import re
 
-files = ["packages/workspace/scripts/example.py"]
-failures = []
+files = [
+    Path("packages/workspace/hooks/task/workflow.js"),
+    Path("packages/workspace/hooks/task/guidance.js"),
+    Path("packages/workspace/tests/workflow-intent.test.ts"),
+]
 
-for file in files:
-    try:
-        py_compile.compile(file, doraise=True)
-    except Exception as error:
-        failures.append({"file": file, "error": str(error)})
+patterns = [
+    re.compile(r"code\\.call", re.I),
+    re.compile(r"batch", re.I),
+    re.compile(r"workpad-bootstrap", re.I),
+    re.compile(r"requiredNextAction", re.I),
+]
 
-print({"ok": len(failures) == 0, "failures": failures})
-sys.exit(1 if failures else 0)
+report = []
+
+for path in files:
+    if not path.exists():
+        report.append({"file": str(path), "exists": False})
+        continue
+
+    lines = path.read_text(errors="ignore").splitlines()
+
+    hits = []
+    for index, line in enumerate(lines, 1):
+        if any(pattern.search(line) for pattern in patterns):
+            hits.append({"line": index, "text": line.strip()[:240]})
+            if len(hits) >= 30:
+                break
+
+    symbols = []
+    for index, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if re.search(r"^(export\\s+)?(async\\s+)?function\\s+|^const\\s+\\w+\\s*=", stripped):
+            symbols.append({"line": index, "text": stripped[:180]})
+            if len(symbols) >= 20:
+                break
+
+    report.append({
+        "file": str(path),
+        "exists": True,
+        "lines": len(lines),
+        "hits": hits,
+        "symbols": symbols,
+    })
+
+print(json.dumps({"ok": True, "report": report}, indent=2))
 `.trim(),
-    maxResultChars: 20000,
   },
-  timeout: 120,
+  timeout: 180,
 })
 ```
+
+### Parallel discovery batch
+
+Use `batch` when independent probes can answer different parts of the same investigation.
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "read",
+          maxResultChars: 50000,
+          code: "<Bun repo scanner>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "python",
+          mode: "read",
+          maxResultChars: 50000,
+          code: "<Python known-file evidence packet>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "read",
+          maxResultChars: 30000,
+          code: "<Exact CLI reproduction with compact JSON result>",
+        },
+      },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+## Good `code.call` validation shapes
 
 ### Focused task-branch package test
 
-Use Bun with `Bun.spawnSync` so the package command is an argv array and output is intentionally bounded:
+Use Bun with `Bun.spawnSync` so package commands run as argv arrays and output is intentionally summarized.
 
 ```ts
 await workspace.call({
@@ -692,6 +771,7 @@ await workspace.call({
   input: {
     language: "bun",
     mode: "verify",
+    maxResultChars: 30000,
     code: `
 const proc = Bun.spawnSync({
   cmd: ["bun", "--cwd", "packages/os", "test", "tests/facade/facade.test.ts"],
@@ -710,70 +790,49 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
-    maxResultChars: 30000,
   },
   timeout: 600,
 })
 ```
 
-### Multiple focused validation commands
+### Python syntax validation
 
-Combine commands only when they are a tight validation bundle and the output remains bounded:
+Use Python directly for Python syntax checks.
 
 ```ts
 await workspace.call({
   tool: "code.call",
   taskSession,
   input: {
-    language: "bun",
+    language: "python",
     mode: "verify",
+    maxResultChars: 20000,
     code: `
-const commands = [
-  ["bun", "--cwd", "packages/os", "test", "tests/fs-read.test.ts"],
-  ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"],
-]
+import py_compile
+import sys
 
-function run(cmd) {
-  const proc = Bun.spawnSync({
-    cmd,
-    stdout: "pipe",
-    stderr: "pipe",
-  })
+files = ["packages/workspace/scripts/example.py"]
+failures = []
 
-  const stdout = new TextDecoder().decode(proc.stdout)
-  const stderr = new TextDecoder().decode(proc.stderr)
+for file in files:
+    try:
+        py_compile.compile(file, doraise=True)
+    except Exception as error:
+        failures.append({"file": file, "error": str(error)})
 
-  return {
-    command: cmd.join(" "),
-    ok: proc.exitCode === 0,
-    exitCode: proc.exitCode,
-    stdout: stdout.slice(-8000),
-    stderr: stderr.slice(-8000),
-  }
-}
-
-const results = commands.map(run)
-const failed = results.filter((result) => !result.ok)
-
-console.log(JSON.stringify({
-  ok: failed.length === 0,
-  failed,
-  results,
-}, null, 2))
-
-process.exit(failed.length === 0 ? 0 : 1)
+print({"ok": len(failures) == 0, "failures": failures})
+sys.exit(1 if failures else 0)
 `.trim(),
-    maxResultChars: 40000,
   },
-  timeout: 900,
+  timeout: 120,
 })
 ```
 
 ### Generated-file or codegen command
 
-Use `mode: "edit"` for commands that intentionally update files:
+Use `mode: "edit"` for commands that intentionally update files.
 
 ```ts
 await workspace.call({
@@ -782,6 +841,7 @@ await workspace.call({
   input: {
     language: "bun",
     mode: "edit",
+    maxResultChars: 30000,
     code: `
 const commands = [
   ["bun", "run", "--cwd", "packages/os", "generate-types"],
@@ -812,94 +872,328 @@ for (const cmd of commands) {
 
   if (proc.exitCode !== 0) {
     console.log(JSON.stringify({ ok: false, failed: result, results }, null, 2))
-    process.exit(proc.exitCode)
+    process.exit(proc.exitCode ?? 1)
   }
 }
 
 console.log(JSON.stringify({ ok: true, results }, null, 2))
 `.trim(),
-    maxResultChars: 30000,
   },
   timeout: 600,
 })
 ```
 
-### Shell-shaped smoke check
+After every edit-mode command, inspect the diff and run the focused validation that proves the changed behavior.
 
-Use Bash when shell semantics are the point:
-
-```ts
-await workspace.call({
-  tool: "code.call",
-  input: {
-    language: "bash",
-    mode: "read",
-    code: "set -euo pipefail\nprintf 'node: '; node --version\nprintf 'bun: '; bun --version",
-    maxResultChars: 12000,
-  },
-  timeout: 120,
-})
-```
-
-## Keep `code.call` focused
+## Keep `code.call` evidence-shaped
 
 Prefer:
 
-* one command intent per call
-* direct runtime programs instead of shell wrappers
-* `language: "python"` for Python
-* `language: "bun"` for JS/TS/Bun and package command orchestration
-* `language: "bash"` only for shell semantics
-* bounded output through `maxResultChars`
-* compact JSON summaries for multi-command validation
+* one task intent per call
+* parallel discovery probes through `batch` when they are independent
+* direct Bun/Python programs instead of shell wrappers
+* Bun for JS/TS/package/repo-scanner work
+* Python for compact text processing, schema inspection, diagnostics, and known-file packets
+* Bash only for real shell semantics
+* explicit roots, skip directories, search terms, file extensions, and output caps inside scanners
+* compact JSON summaries for discovery and validation
+* exact command strings in the JSON result when reproducing CLI behavior
 * `taskSession` for task-branch tests, builds, typechecks, and edit-mode commands
 
 Avoid:
 
 * `bash -lc` wrappers
-* `cd <path> && ...` when `taskSession`, package flags, or argv arrays can route execution
 * Bash just to invoke Python or Bun
-* long shell scripts with unrelated steps
+* unrelated steps in one runtime program
 * heredoc file writes
 * giant inline JSON, Markdown, source code, or patch payloads
 * destructive commands such as `rm`, `git reset`, `git clean`, broad `kill`, or `pkill`
-* repo file reads through `cat`, `sed`, `head`, or `tail`
-* repo file search through `rg`, `grep`, or `find`
-* GitHub state through `gh`
-* Linear, Railway, browser, Sentry, or production state through raw CLIs
+* raw GitHub, Linear, Railway, browser, Sentry, or production access through command runners
 * absolute task-worktree paths when `taskSession` can route the worktree
+* discovery loops that make many small calls when one structured evidence packet would answer the question
 
-## Typed tools still own workspace-native operations
+## Typed tools still own durable workspace operations
 
-Do not use `code.call` as a replacement for typed workspace tools. The typed tool owns the schema, routing, durable-action boundary, trace shape, and safety model for that surface.
+Use typed workspace tools for durable state, external systems, lifecycle transitions, review gates, patch safety, and publish boundaries. Use `code.call` for runtime work and evidence production.
 
-| Intent                             | Preferred surface                                                      |
-| ---------------------------------- | ---------------------------------------------------------------------- |
-| Read repo files                    | `fs.read`                                                              |
-| Search repo files                  | `fs.search`                                                            |
-| List repo files                    | `fs.list`                                                              |
-| Write files                        | `fs.write`                                                             |
-| Apply anchored patches             | `fs.apply_patch`                                                       |
-| Trash task-worktree files          | `fs.trash`                                                             |
-| Inspect diffs                      | `git.diff`                                                             |
-| Inspect git/task/stream state      | `status`, `stream.context`, `task.current`, or related lifecycle tools |
-| Inspect GitHub PRs/checks/comments | `github`                                                               |
-| Inspect traces or memories         | `context.*`                                                            |
-| Run final review                   | `review.run`                                                           |
-| Run final publish validation       | `verify`                                                               |
-| Push or promote work               | `task.push`, `task.pr`, `task.merge`, `task.finish`                    |
+| Intent                                                                       | Preferred surface                                                      |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Repo investigation, source inspection, source search, exact file/range reads | `code.call` with Bun/Python read-mode probes                           |
+| Fixed independent discovery probes                                           | `batch`                                                                |
+| Programmable workspace API workflow                                          | `code.run`                                                             |
+| Apply anchored source patches                                                | `fs.apply_patch`                                                       |
+| Trash task-worktree files                                                    | `fs.trash`                                                             |
+| Inspect diffs                                                                | `git.diff`                                                             |
+| Inspect git/task/stream state                                                | `status`, `stream.context`, `task.current`, or related lifecycle tools |
+| Inspect GitHub PRs/checks/comments                                           | `github`                                                               |
+| Inspect traces or memories                                                   | `context.*`                                                            |
+| Run final review                                                             | `review.run`                                                           |
+| Run final publish validation                                                 | `verify`                                                               |
+| Push or promote work                                                         | `task.push`, `task.pr`, `task.merge`, `task.finish`                    |
 
-## `code.call` versus `mac.call`
+A typed tool owns the durable action boundary. `code.call` owns runtime evidence.
 
-Use `code.call` for normal command execution, including non-mutating host/runtime diagnostics in `mode: "read"`.
+## `batch` for parallel fanout and independent workspace work
 
-Use `mac.call` only as an emergency host escape hatch when the operation is truly outside the workspace/tool model or when task/worktree routing is broken.
+`batch` is the default surface for running several known independent workspace calls at the same time. Use it when the next step does not depend on the output of a previous step.
 
-Do not use `mac.call` for repo-scoped tests, package scripts, typechecks, builds, syntax checks, codegen, or ordinary diagnostics that `code.call` can run with bounded output.
+A good `batch` compresses latency and broadens evidence collection. Instead of making an agent wait for one read, search, trace lookup, diff, review, or diagnostic before starting the next unrelated one, `batch` lets the agent fan out across multiple surfaces in parallel and reason from the combined result.
+
+Use `batch` for:
+
+* parallel repo discovery
+* independent file reads
+* independent source searches
+* multi-surface state gathering
+* PR, diff, status, and stream inspection
+* trace and memory lookups
+* independent `code.call` probes
+* independent validation checks
+* review plus focused tests when they do not depend on each other
+* comparing evidence from multiple tools before deciding the next action
+
+`batch` is not only a checklist helper. It is the preferred parallel fanout primitive for dependency-free work.
+
+Use `code.run` when the workflow needs branching, loops, retries, filtering, joining, or selecting later tool calls from earlier results. Use direct typed tools for one exact operation. Use `batch` when the independent calls are already known.
+
+## Default uage
+
+| Situation                                                                                    | Use                                                                |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| One exact workspace operation                                                                | direct `workspace.call`                                            |
+| Several known independent calls                                                              | `batch`                                                            |
+| Several independent runtime probes                                                           | `batch` with `code.call` steps                                     |
+| Need to choose files from a search result before reading                                     | `code.run`                                                         |
+| Need loops, branching, retries, filtering, or joining over tool results                      | `code.run`                                                         |
+| Need exact runtime evidence, tests, builds, diagnostics, or CLI reproduction                 | `code.call`                                                        |
+| Need durable lifecycle, review, GitHub, Linear, Railway, browser, trace, or publish boundary | the typed workspace tool, optionally inside `batch` if independent |
+
+## Good `batch` shapes
+
+### Parallel discovery across runtime and workspace tools
+
+Use this when different probes can answer different parts of the same investigation.
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "read",
+          maxResultChars: 50000,
+          code: "<Bun repo scanner for broad JS/TS/package discovery>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "python",
+          mode: "read",
+          maxResultChars: 50000,
+          code: "<Python known-file evidence packet>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "python",
+          mode: "read",
+          maxResultChars: 30000,
+          code: "<Small diagnostic for local state, schemas, traces, or config>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "read",
+          maxResultChars: 30000,
+          code: "<Exact CLI reproduction with compact JSON result>",
+        },
+      },
+      {
+        tool: "explore",
+        parallel: true,
+        input: {
+          query: "OS intent hooks",
+        },
+      },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+This is the right shape for traces like `trc_9e5360c361e9`: several independent `code.call` probes and one `explore` query ran in the same fanout. The agent did not need the Bun scanner result before starting the Python packet, the diagnostic, the exact CLI reproduction, or the explore query, so parallel execution was the correct primitive.
+
+### Broad eight-way evidence fanout
+
+Use a larger batch when the task has many independent evidence surfaces and none of them mutate the same state.
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "status",
+        parallel: true,
+        input: {},
+      },
+      {
+        tool: "stream.context",
+        parallel: true,
+        input: {},
+      },
+      {
+        tool: "git.diff",
+        parallel: true,
+        input: {},
+      },
+      {
+        tool: "context.search",
+        parallel: true,
+        input: {
+          query: "batch parallel fanout workspace tools",
+          limit: 10,
+        },
+      },
+      {
+        tool: "context.search",
+        parallel: true,
+        input: {
+          query: "code.call batch trace-watch examples",
+          limit: 10,
+        },
+      },
+      {
+        tool: "explore",
+        parallel: true,
+        input: {
+          query: "batch tool steering examples",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "read",
+          maxResultChars: 50000,
+          code: "<Repo scanner for batch/code.call guidance>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "python",
+          mode: "read",
+          maxResultChars: 30000,
+          code: "<Known-file packet for senior-engineer.md and related examples>",
+        },
+      },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+This is stronger than eight sequential calls because the agent receives the same evidence wall-clock faster and can compare repo state, stream state, diff state, memory, semantic exploration, and runtime inspection together.
+
+### Parallel validation after an edit
+
+Use `batch` after an implementation when validation commands are independent.
+
+```ts
+await workspace.call({
+  tool: "batch",
+  taskSession,
+  input: {
+    steps: [
+      {
+        tool: "git.diff",
+        parallel: true,
+        input: {},
+      },
+      {
+        tool: "review.run",
+        parallel: true,
+        input: {},
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "verify",
+          maxResultChars: 30000,
+          code: "<Focused package test>",
+        },
+      },
+      {
+        tool: "code.call",
+        parallel: true,
+        input: {
+          language: "bun",
+          mode: "verify",
+          maxResultChars: 30000,
+          code: "<Focused typecheck or lint command>",
+        },
+      },
+    ],
+  },
+  timeout: 600,
+})
+```
+
+Only use this shape when the validation calls are safe to run concurrently and do not require one another’s output.
+
+## Good `batch` rules
+
+Prefer:
+
+* `batch` before making three or more independent workspace calls
+* read-only fanout for discovery and evidence gathering
+* independent `code.call` probes when each probe has a different purpose
+* combining typed tools and `code.call` when they answer different parts of the same question
+* compact outputs from each step
+* explicit `parallel: true` for dependency-free steps
+* one clear intent per step
+* broad fanout early, then narrower sequential work after the evidence is known
+
+Avoid:
+
+* using `batch` when a later step needs a file path, ID, branch, or decision from an earlier result
+* batching mutating operations that may touch the same files or durable state
+* batching patch application with tests that need the patch result
+* hiding a dependent workflow inside several parallel `code.call` scripts
+* producing huge outputs from many parallel steps
+* using `batch` as a replacement for `code.run` when the workflow needs branching logic
+* using `batch` as a replacement for typed lifecycle tools
+
+## Mental model
+
+Use `batch` when the calls are independent and already knowable.
+
+Use `code.run` when the agent needs to think between calls.
+
+Use `code.call` when runtime execution is the evidence.
+
+A strong agent should routinely ask: “Can these calls run in parallel?” If yes, prefer `batch`.
+
 
 ## Repetition rule
 
-When a command-shaped need repeats, decide whether it is healthy command execution or a missing workspace tool.
+When a command-shaped need repeats, decide whether it is healthy command execution, a missing workspace tool, or a flag for an existing tool.
 
 Healthy repeated `code.call` examples:
 
@@ -970,7 +1264,7 @@ Preferred transport order:
 
 1. structured typed `workspace.call` input
 2. `code.run` for multi-step workspace orchestration
-3. `batch` for independent read-only calls
+3. `batch` for multiple parallel and batch independent calls
 4. `tmp` file plus `contentFile`
 5. temp JSON plus `--input-file`
 6. explicit `--stdin` when supported
@@ -1365,7 +1659,7 @@ Good reasons to write through `code.call`:
 
 Bad reasons:
 
-* avoiding `fs.write`
+
 * avoiding `fs.apply_patch`
 * dumping a large source file into a Python/Bun string
 * burying patches in shell heredocs
@@ -1449,11 +1743,10 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | `git checkout -- <file>`, `git restore <file>` | Typed `git.restorePaths` when available; otherwise ask or use smallest task-scoped fallback with exact paths | Restore can discard edits. Needs path-level intent. |
 | `git merge <branch>` | `stream.sync`, `task.pr`, `task.merge`, or future `stream.mergeIntoTask` | Stream/task merges need metadata handling, conflict reporting, and branch guarantees. |
 | `gh pr view`, `gh pr checks`, `gh api` through `code.call` or any command runner | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree command work. |
-| `cat > file <<EOF ... EOF` | `tmp` + `fs.write` with `contentFile` or `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
-| `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | temp script/input file + `task.call` argv; or `code.run` | Large inline scripts cross too many parsing layers. |
+| `cat > file <<EOF ... EOF` | `tmp` + `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
+| `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | `code.run` or `tmp`| Large inline scripts cross too many parsing layers. |
 | giant `bash -lc "..."` strings | typed tool, `code.run`, or short argv array | Shell strings hide intent and trigger safety filters. |
 | multiple operations joined with `&&` | `code.run` for dependent steps; `batch` for independent read-only steps | Chained shell hides which step failed. |
-| `grep`, `rg`, `find` for repo files | `fs.search` / `fs.list` | Workspace file tools are branch-aware and structured. |
 | `cat`, `sed`, `head`, `tail` for repo files | `fs.read` with line ranges | Line-range reads are structured and avoid shell output shaping. |
 | `cd <path> && <command>` | task-scoped `code.call` with argv or tool cwd support; prefer `bun --cwd` when needed | `taskSession` should route the worktree. |
 | absolute worktree paths like `/Users/.../opensaas-task-*` | task-scoped workspace tools with `taskSession` | Absolute paths bypass task-session routing. |
@@ -1464,7 +1757,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | raw browser/Playwright CLI | `browser.*` tools | Browser tools preserve auth/session/screenshot semantics. |
 | raw Sentry API / curl for Sentry | `sentry.*` tools | Sentry wrappers protect secrets and normalize query shape. |
 | raw Linear API / CLI | `linear.*` tools | Linear writes are durable org changes and need typed defaults. |
-| raw HTTP via `curl` for app/API checks | `http` / `fs.http` workspace wrapper when applicable | HTTP checks should be structured and bounded. |
+| raw HTTP via `curl` for app/API checks | `http` / `fs.http`/ `code.run with bun` workspace wrapper when applicable | HTTP checks should be structured and bounded. |
 | shell pipelines for test log trimming, e.g. `... | tail -n 80` | bounded `code.run` summary or typed validation helper | Return compact summaries without pipeline parsing. |
 | base64 decode pipelines | temp file or positional-arg decode pattern only when typed transport is unavailable | Base64 is a fallback for transport, not normal workflow. |
 
@@ -1477,18 +1770,15 @@ Treat those examples as historical intent, not current execution doctrine.
 
 Before running any legacy command example, translate it into the current typed workspace surface:
 
-| Legacy pattern | Preferred current surface |
+| Legacy pattern | Preferred current tools |
 |---|---|
-| `gh pr view ...` | typed GitHub workspace tool, or current `gh` only as temporary fallback |
-| `rg` / `grep` | `fs.search` |
-| `cat`, `sed`, `head`, `tail` for files | `fs.read` with line ranges |
+| `gh pr view ...` | typed GitHub tool |
 | `git status` | `status` or `task.current` |
-| `git restore`, `git merge`, `rm -rf .task/...` | typed recovery/stream/task tool; if missing, report tooling gap |
-| `bun run task:*` | `task.*` workspace tools |
+| `git restore`, `git merge`, `rm -rf .task/...` | typed recovery/stream/task tool/fr.trash; if missing, report tooling gap |
 | `task.call`/`mac.call` | `code.call` |
 | `railway logs ...` | `railway.logs` |
 | browser CLI commands | `browser.*` workspace tools |
-| long scripts or chained checks | `code.run` over typed tools |
+
 
 If a legacy command cannot be translated, state the missing typed operation and use the smallest safe fallback.
 
@@ -1530,17 +1820,20 @@ Raw shell usage should be observable and reducible over time.
 
 
 
-| Raw pattern | Classification |
-|---|---|
-| `gh pr view`, `gh pr checks`, `gh api` | missing or underused GitHub tool |
-| `rg`, `grep` | should be `fs.search` |
-| `cat`, `sed`, `head`, `tail` for repo files | should be `fs.read` |
-| `git status` | should be `status` / `task.current` |
-| `git restore` / `git merge` / `.task` cleanup | missing typed recovery workflow |
-| heredoc / `cat > file` | should be `contentFile`, `--input-file`, or `fs.write` |
-| shell pipelines for test output | should be typed validation helper or bounded `code.run` summary |
+| Raw pattern                                   | Classification                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------- |
+| `gh pr view`, `gh pr checks`, `gh api`        | missing or underused GitHub tool                                                |
+| `rg`, `grep`, `find` for repo investigation   | should be a Bun/Python `code.call` read-mode probe with structured output       |
+| `cat`, `sed`, `head`, `tail` for repo files   | should be a Bun/Python `code.call` read-mode probe with exact file/range output |
+| `git status`                                  | should be `status` / `task.current`                                             |
+| `git restore` / `git merge` / `.task` cleanup | missing typed recovery workflow                                                 |
+| heredoc / `cat > file`                        | should be `contentFile`, `--input-file`, or an anchored patch                   |
+| shell pipelines for test output               | should be bounded `code.call` or `code.run` summary                             |
+
 
 If the same raw pattern appears more than once, propose or build a workspace tool for it.
+
+Example: 
 
 Desired tool:
 
@@ -1570,23 +1863,9 @@ Tooling gap: I used raw shell for <operation> because no typed workspace tool cu
 
 If the operation is likely to recur, suggest the missing tool name and input shape.
 
-Examples:
+### Truth-Seeking
 
-```text
-Tooling gap: I used raw GitHub CLI to inspect PR checks. Missing tool: github.prChecks({ pr, repo }).
-```
-
-```text
-Tooling gap: I used git merge plus .task cleanup to recover a stream/task branch. Missing tool: stream.mergeIntoTask({ taskSession, stream, metadataPolicy }).
-```
-
-Repeated tooling gaps should become `workspace-agents` tasks or be written in the workpad.
-
-
-
-### truth-seeking
-
-the codebase, running system, logs, tests, docs, and memory are more trustworthy than your memory.
+The Workspace OS harness, codebase, running system, logs, tests, docs, and memory are more trustworthy than your memory.
 
 do not guess about:
 
@@ -1658,7 +1937,6 @@ Recommended defaults:
 
 | Operation | Recommended timeout | Why |
 |---|---:|---|
-| `fs.read`, `fs.search`, `fs.list` | 120s | Usually fast; enough room for large files/searches. |
 | `status`, `stream.context`, `context.search`, `doctor` | 120s | p99 is under 10s, but keep room for server hiccups. |
 | `explore` | 180s | p95 is about 51s; semantic discovery can spike. |
 | `code.run` read/verify orchestration | 180s | p99 is about 20s; allow room for composed child calls. |
@@ -1841,11 +2119,11 @@ The workspace app exposes exactly two MCP entry points:
 * `workspace.get_steering()`
 * `workspace.call({ tool, input, taskSession, timeout })`
 
-All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, `railway.logs`, `tools.search`, or `task.start`, are invoked through `workspace.call`.
+All workspace operations, including tools with names like `code.call`, `bay=tch`, `tools.search`, or `task.intent`, are invoked through `workspace.call`.
 
 ## Steering bootstrap rule
 
-`workspace.get_steering()` is a one-time conversation bootstrap. It loads steering and the current manifest into context.
+`workspace.get_steering()` is a one-time conversation bootstrap. It loads steering and the current core manifest into context.
 
 After one successful `workspace.get_steering()` call in a conversation, treat steering as loaded. Continue with direct `workspace.call` operations.
 
@@ -1895,7 +2173,7 @@ Do not use `tools.search` when the exact tool is already known from steering, th
 
 ## Manifest source of truth
 
-The tool manifest at:
+The full tool manifest at:
 
 ```text
 packages/workspace/tooling/tool-manifest.json
@@ -1903,7 +2181,7 @@ packages/workspace/tooling/tool-manifest.json
 
 defines every workspace operation:
 
-* `name` — the tool identifier, such as `fs.read`, `task.start`, `code.call`, or `explore`
+* `name` — the tool identifier, such as `task.intent`, `code.call`, or `explore`
 * `description` — what the tool does
 * `inputSchema` — the Zod input schema name
 * `defaultTimeout` — max execution time in milliseconds
@@ -1911,7 +2189,13 @@ defines every workspace operation:
 * `command` — the underlying command mapping
 * `sessionRequired` — whether agent-mode calls must include `taskSession`
 
-The manifest is loaded by `get_steering`. Use `tools.search` to discover tools from the manifest when needed. Do not read or reload the full manifest, use tool search if you need just to find one tool.
+The core manifest loaded by the bootstrap call is generated at:
+
+```text
+packages/workspace/manifests/core-manifest.json
+```
+
+Use `tools.search` to discover tools from the full manifest when needed. Avoid reading or reloading the full manifest just to find one tool.
 
 ## Workspace tool-surface recovery
 
@@ -1939,16 +2223,6 @@ Do not loop on `get_steering`.
 
 Do not repeatedly call `api_tool.list_resources` after steering has loaded.
 
-
-## Tool categories
-
-* **fs** — file operations: read, search, list, write, apply patch, http, trash
-* **task** — lifecycle: start, current, push, pr, prs, merge, finish, cleanup, init
-* **code** — runtime execution and programmable workspace mode: call, run
-* **system** — workspace management: server, doctor, status, tmp
-* **decision** — explore, decideNext, confidenceScore, exploit, confirm, audit
-* **github / linear / railway / browser / sentry** — typed external or UI surfaces
-* **tools** — tool discovery through `tools.search`
 
 ## Error handling
 
@@ -2066,12 +2340,13 @@ Do not create local-only work that ko cannot review.
 
 Investigation-only is okay when:
 
+* You are exploring the code base via the explore tool
 * No files are changed
 * The user asks for analysis or planning
 * You are inspecting the current state before deciding
 * You are producing a copy/paste instruction block
 * you are reading logs, docs, scripts, memory, or prs
-* You are exploring the code base, use the explore tool.
+
 
 Even during investigation, use scripts and cite evidence in the response.
 
@@ -2102,17 +2377,52 @@ Exploration must answer these questions before implementation begins:
 5. What tests, snapshots, audits, or review gates prove the change?
 6. What uncertainty remains, and what needs Ko’s answer before coding?
 
-Use context search first, then code/file exploration. Good first-pass commands:
+Good first-pass discovery uses short, single-intent queries. An `explore` query should name one concept, one subsystem, or one question.
+
+Good queries:
+
+```text
+task intent
+where is task intent handled
+workflow intent hook
+task.start lifecycle
+```
+
+Bad queries combine several hypotheses into one search string:
+
+```text
+task intent workflowRole script intent task-intent task.intent
+```
+
+`explore` ranks results for one query. It does not cross-check several different search intents inside the same query. When there are multiple plausible phrasings, run them as parallel independent probes with `batch`.
 
 ```ts
-await workspace.call({ tool: "explore", input: { query: "<feature or behavior> source owner implementation tests generated surfaces", limit: 8 }, timeout: 120 })
-
-await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "explore",
+        input: { query: "task intent", limit: 8 },
+        parallel: true,
+      },
+      {
+        tool: "explore",
+        input: { query: "where is task intent handled", limit: 8 },
+        parallel: true,
+      },
+    ],
+  },
+  timeout: 300,
+})
 ```
+
+After `explore` returns likely paths, use `code.call` in read mode to inspect the candidate files and return a compact evidence packet with file names, line numbers, symbols, and the next exact command to run.
+ 
 
 Explore result interpretation:
 
-Use `explore` as the AI-native repo map when the next source path is uncertain. Treat its output as a prior over where to inspect next, not as proof and not as permission to edit.
+Use `explore` as the AI-native repo map when the next source path is uncertain. Treat its output as a prior over where to spend attention next, not as proof and not as permission to edit.
 
 Interpret results by score and evidence shape:
 
@@ -2122,39 +2432,31 @@ Interpret results by score and evidence shape:
 - `capReason` is a warning label, not noise. For example, `issue-anchor-missing` means the query contained an issue key but the result does not contain that anchor.
 - `source_routes` are required context routes. If explore returns a route such as `linear.issue`, inspect that route before treating repo retrieval as complete.
 
-After interpreting explore, continue with task-scoped workspace tools: use `fs.read` to turn a candidate into evidence, use `fs.search` for exact source confirmation once explore surfaces likely terms, symbols, or files, and use `fs.list` to understand nearby structure. Record what was explored, read, confirmed, rejected, and still uncertain in the task workpad.
+After interpreting `explore`, continue with task-scoped evidence gathering. Use `code.call` in read mode to inspect likely files, confirm exact symbols, scan related paths, and return compact evidence with file names, line numbers, and snippets. Use Bun for JS/TS/package-oriented investigation and Python for text processing, schema inspection, trace analysis, and compact diagnostics.
 
-After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+Record what was explored, what was inspected, what pattern was confirmed, what was rejected, and what remains uncertain in the task workpad.
 
-```ts
-await workspace.call({ tool: "fs.search", taskSession, input: { pattern: "<pattern>", paths: ["."], context: 8, maxResults: 80 }, timeout: 120 })
-await workspace.call({ tool: "fs.read", taskSession, input: { path: "<path>" }, timeout: 120 })
-await workspace.call({ tool: "fs.list", taskSession, input: { path: "<path>", depth: 2 }, timeout: 120 })
-```
 
-For repo changes, exploration should include the nearest existing implementation and at least one generated/consumer surface. For typed facade work, this usually means reading the relevant script, `tool-manifest.json`, `schemas.ts`, generated types/docs, and the facade test/snapshot pattern before editing.
 
 Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
 
-Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.call`. If raw shell is used, explain why the workspace facade was not sufficient.
 
-## retrieval is a prior, not a conclusion in the explore tool
+## Retrieval is a prior, not a conclusion in the Explore tool
 
 when building systems that combine search/retrieval with decision-making, do not conflate
 retrieval quality with decision quality. high-relevance search results are a starting
-belief — a prior distribution over where to look. they are not evidence that the path is
+belief — a prior distribution over where to look. They are not evidence that the path is
 correct.
 
 confidence comes from accumulated evidence: files read, tests run, runtime checked,
-hypotheses confirmed or contradicted. retrieval narrows the search space. evidence
-determines the answer.
+hypotheses confirmed or contradicted. Retrieval narrows the search space. Evidence.
 
-systems that optimize only for retrieval accuracy produce agents that read the "right"
-files but still make wrong decisions. systems that optimize for evidence-driven decisions
+Systems that optimize only for retrieval accuracy produce agents that read the "right"
+files, but still make wrong decisions. systems that optimize for evidence-driven decisions
 produce agents that converge on correct outcomes regardless of initial retrieval quality.
 
-the standard: every tool in a decision pipeline should read and write evidence state.
-retrieval writes candidates. actions write observations. confidence computes from
+The standard: every tool in a decision pipeline should read and write the evidence state.
+Retrieval writes candidates. Actions write observations. confidence computes from
 observations, not from retrieval scores.
 
 
@@ -2167,25 +2469,20 @@ Use `fs.apply_patch` with `patchFile` or stdin for marker/diff patches that upda
 The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter, inserting literal `\n` sequences into TypeScript, or applying a line-number patch after nearby code shifted. Treat shell-safe transport and anchored context as part of correctness, not as formatting details.
 
 File edit primitive routing:
-
-- Use `fs.read` before editing an existing file.
-- Use `fs.apply_patch` for anchored marker/diff patches, especially multi-file edits and add/move/delete operations.
-- Use `fs.write` for new files, whole-file replacement, or exact appends.
-- Use `code.call` to run commands inside the task worktree.
 - Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
 
 
-### verification standard
+### Verification standard
 
-verification must match the change.
+Verification must match the change.
 
-do not use one generic check as a substitute for real validation.
+Do not use one generic check as a substitute for real validation.
 
 examples:
 
 * script behavior changed: run the script
 * docs changed: read the rendered/relevant section
-* js changed: run `node --check` where applicable
+* JS changed: run `node --check` where applicable
 * typescript changed: run project typecheck when relevant
 * ui changed: use browser/screenshot/snapshot
 * api changed: call the endpoint
@@ -2451,7 +2748,6 @@ If any validation step fails because of existing repository drift, record the dr
 
 ## Reminders
 
-multi-file changes — use the task scripts so one task branch commit can touch multiple files cleanly.
 
 verifying work — never ship without checking
 

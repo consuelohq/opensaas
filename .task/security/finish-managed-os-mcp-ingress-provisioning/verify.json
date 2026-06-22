@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/finish-managed-os-mcp-ingress-provisioning",
+  "base": "origin/task/security/finish-managed-os-mcp-ingress-provisioning",
+  "headSha": "9afd5e1fc4bdcbecbed0ca242118a44ecaa4f2e2",
+  "changeHash": "9ca6865472e72e0fdf193f78327cb95abb7ba6b73c260a60af8565a6447ec707",
+  "changedFiles": [
+    "packages/os/docs/security-tightening-evidence.md",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-19T03:13:22.061Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/finish-managed-os-mcp-ingress-provisioning/current.json",
+        ".task/security/finish-managed-os-mcp-ingress-provisioning/session.json",
+        ".task/security/finish-managed-os-mcp-ingress-provisioning/workpad.md",
+        ".task/tasks/security/finish-managed-os-mcp-ingress-provisioning.json",
+        "packages/os/docs/security-tightening-evidence.md",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

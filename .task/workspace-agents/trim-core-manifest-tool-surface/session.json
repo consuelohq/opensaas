@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4726e39266c2",
+  "tmuxSession": "opensaas-workspace-agents-trim-core-manifest-tool-surface-4726e392",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/trim-core-manifest-tool-surface",
+  "branch": "task/workspace-agents/trim-core-manifest-tool-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trim-core-manifest-tool-surface",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trim-core-manifest-tool-surface",
+  "prNumber": 1116,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1116",
+  "createdAt": "2026-06-18T00:27:59.480Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trim-core-manifest-tool-surface/.task/workspace-agents/trim-core-manifest-tool-surface/session.json"
+}

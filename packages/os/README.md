@@ -178,11 +178,16 @@ bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 
 Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later.
 
-After onboarding, the bootstrap offers user LaunchAgent setup unless `--skip-daemons` is passed. `--yes` alone skips LaunchAgents; `--yes --install-daemons` installs them without another prompt. The user LaunchAgents install to:
+After onboarding, the bootstrap offers user LaunchAgent setup unless `--skip-daemons` is passed. `--yes` alone skips LaunchAgents; `--yes --install-daemons` installs them without another prompt. The baseline user LaunchAgents install to:
 
 ```text
 ~/Library/LaunchAgents/com.consuelo.system.plist
 ~/Library/LaunchAgents/com.consuelo.watchdog.plist
+```
+
+When portless is configured or discoverable, setup also installs:
+
+```text
 ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 
@@ -191,8 +196,9 @@ The labels stay:
 ```text
 com.consuelo.system
 com.consuelo.watchdog
-com.consuelo.portless.system
 ```
+
+Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:8960`.
 
 Logs go under:
 
@@ -218,7 +224,7 @@ Status and stop paths are available through the local server helper and `launchc
 bun --cwd packages/os run server -- status
 bun --cwd packages/os run server -- stop
 launchctl bootout "gui/$(id -u)/com.consuelo.watchdog" || true
-launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.system" || true
 ```
 

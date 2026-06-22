@@ -30,8 +30,8 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | Category | Tools |
 | --- | ---: |
 | codemode | 2 |
-| composed | 2 |
-| context | 7 |
+| composed | 3 |
+| context | 1 |
 | decision engine | 6 |
 | filesystem | 6 |
 | generation | 2 |
@@ -48,6 +48,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | tooling | 1 |
 | utilities | 34 |
 | worker | 1 |
+| workflow | 1 |
 
 ## Tools by category
 
@@ -55,7 +56,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 ### workspace.code.call
 
-run short language-specific code through staged Python, Bun, or Bash backends
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
@@ -71,9 +72,9 @@ run short language-specific code through staged Python, Bun, or Bash backends
 await workspace.call({
   "tool": "code.call",
   "input": {
-    "language": "python",
+    "language": "bun",
     "mode": "read",
-    "code": "print(\"hello\")",
+    "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
     "maxResultChars": 20000
   }
 });
@@ -177,6 +178,73 @@ await workspace.call({
 ```
 
 ## composed
+
+### workspace.batch
+
+run multiple workspace tools sequentially or in parallel with compact per-step results
+
+| Field | Value |
+| --- | --- |
+| Category | composed |
+| Signature | `workspace.batch({ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ results: Array<ToolResult<unknown>>; completed: number }>>` |
+| Runtime | `workspace batch` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "batch",
+  "input": {
+    "steps": [
+      {
+        "tool": "context.find",
+        "input": {
+          "keyword": "workspace",
+          "limit": 1
+        }
+      }
+    ]
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
 
 ### workspace.checkFiles
 
@@ -310,252 +378,15 @@ await workspace.call({
 
 ## context
 
-### workspace.context.categories
+### workspace.context
 
-list project memory categories
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.categories({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.categories` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.categories",
-  "input": {}
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.find
-
-search project memory by title
+search, read, save, list, and inspect project context and local workspace traces
 
 | Field | Value |
 | --- | --- |
 | Category | context |
-| Signature | `workspace.context.find({ keyword: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.find` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.find",
-  "input": {
-    "keyword": "handoff",
-    "limit": 3
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.get
-
-read a full project memory search result
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.get({ index: number; keyword: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.get` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.get",
-  "input": {
-    "index": 1,
-    "keyword": "workspace"
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.list
-
-list recent project memories
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.list({ category?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.list` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.list",
-  "input": {
-    "category": "workpad",
-    "limit": 3
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.save
-
-save a file or text into project memory
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.save({ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.save` |
+| Signature | `workspace.context({ operation: "search" &#124; "find" &#124; "get" &#124; "list" &#124; "save" &#124; "categories" &#124; "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace context` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
 
@@ -563,131 +394,11 @@ save a file or text into project memory
 
 ```ts
 await workspace.call({
-  "tool": "context.save",
+  "tool": "context",
   "input": {
-    "title": "example memory",
-    "file": "/tmp/example.md",
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.search
-
-search project memory by content
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.search({ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.search` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.search",
-  "input": {
+    "operation": "search",
     "keyword": "workspace",
     "limit": 3
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.context.trace
-
-query local workspace tool traces from the repo-scoped SQLite trace store
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context.trace({ traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context.trace` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context.trace",
-  "input": {
-    "status": "error",
-    "limit": 20
   }
 });
 ```
@@ -1021,7 +732,7 @@ await workspace.call({
 
 ### workspace.explore
 
-run repository exploration retrieval
+a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.
 
 | Field | Value |
 | --- | --- |
@@ -1326,7 +1037,7 @@ await workspace.call({
 
 ### workspace.fs.trash
 
-move a task worktree file to trash
+An agent safe file deletion path. Prefered over rm rf
 
 | Field | Value |
 | --- | --- |
@@ -7843,6 +7554,70 @@ await workspace.call({
     "policy": "edit",
     "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
     "workspaceOnly": "preferred"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## workflow
+
+### workspace.task.intent
+
+Start or dispatch the task workflow lifecycle guidance for scoped task work.
+
+| Field | Value |
+| --- | --- |
+| Category | workflow |
+| Signature | `workspace.task.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace task.intent` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "task.intent",
+  "input": {
+    "action": "start",
+    "workflow": "task",
+    "area": "workspace-agents",
+    "title": "example task-intent flow"
   }
 });
 ```

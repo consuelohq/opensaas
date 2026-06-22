@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c0b0452f05f",
+  "tmuxSession": "opensaas-workspace-agents-fix-coderabbit-hooks-review-cross-package-4c0b0452",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-coderabbit-hooks-review-cross-package",
+  "branch": "task/workspace-agents/fix-coderabbit-hooks-review-cross-package",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-hooks-review-cross-package",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-hooks-review-cross-package",
+  "prNumber": 1112,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1112",
+  "createdAt": "2026-06-17T17:05:17.068Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-coderabbit-hooks-review-cross-package/.task/workspace-agents/fix-coderabbit-hooks-review-cross-package/session.json"
+}

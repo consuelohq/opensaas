@@ -301,7 +301,8 @@
     "operator": "bun packages/os/operator/operator.ts",
     "artifact:render": "bun run --cwd packages/os artifact:render --",
     "artifact:publish": "bun run --cwd packages/os artifact:publish --",
-    "artifact:validate": "bun run --cwd packages/os artifact:validate --"
+    "artifact:validate": "bun run --cwd packages/os artifact:validate --",
+    "task-intent": "bun packages/workspace/scripts/task-intent.js"
   },
   "workspaces": {
     "packages": [

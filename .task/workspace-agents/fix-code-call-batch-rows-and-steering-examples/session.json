@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a983c94da50b",
+  "tmuxSession": "opensaas-workspace-agents-fix-code-call-batch-rows-and-steering-examples-a983c94d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-code-call-batch-rows-and-steering-examples",
+  "branch": "task/workspace-agents/fix-code-call-batch-rows-and-steering-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-call-batch-rows-and-steering-examples",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-call-batch-rows-and-steering-examples",
+  "prNumber": 1135,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1135",
+  "createdAt": "2026-06-18T06:22:10.479Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-call-batch-rows-and-steering-examples/.task/workspace-agents/fix-code-call-batch-rows-and-steering-examples/session.json"
+}

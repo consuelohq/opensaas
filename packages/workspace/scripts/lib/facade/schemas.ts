@@ -129,6 +129,34 @@ export const CodeCallInput = z.object({
   path: ['stdin'],
 });
 
+
+export const WorkflowIntentInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['start', 'dispatch']),
+  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  area: optionalString,
+  title: optionalString,
+  eventFile: optionalString,
+});
+
+
+const BatchStepInput = z.object({
+  tool: z.string().min(1),
+  input: z.record(z.string(), z.unknown()).optional(),
+  args: z.record(z.string(), z.unknown()).optional(),
+  parallel: z.boolean().optional(),
+}).refine((step) => !(step.input && step.args), {
+  message: 'provide either input or args, not both',
+  path: ['input'],
+});
+
+export const BatchInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  steps: z.array(BatchStepInput).min(1),
+});
+
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -354,6 +382,48 @@ export const ContextTraceInput = z.object({
   limit: z.number().int().positive().optional(),
   raw: z.boolean().optional(),
   db: optionalString,
+});
+
+export const ContextInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
+  keyword: optionalString,
+  index: z.number().int().positive().optional(),
+  category: optionalString,
+  limit: z.number().int().positive().optional(),
+  title: optionalString,
+  file: optionalString,
+  text: z.boolean().optional(),
+  byTitle: z.boolean().optional(),
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  contextTaskSession: optionalString,
+  branch: optionalString,
+  raw: z.boolean().optional(),
+  db: optionalString,
+}).superRefine((input, ctx) => {
+  const issue = (path: string, message: string) => ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: [path],
+    message,
+  });
+
+  if ((input.operation === 'search' || input.operation === 'find') && !input.keyword) {
+    issue('keyword', `operation "${input.operation}" requires keyword`);
+  }
+  if (input.operation === 'get') {
+    if (input.index === undefined) issue('index', 'operation "get" requires index');
+    if (!input.keyword) issue('keyword', 'operation "get" requires keyword');
+  }
+  if (input.operation === 'save') {
+    if (!input.title) issue('title', 'operation "save" requires title');
+    if (!input.file && input.text !== true) issue('file', 'operation "save" requires file or text');
+  }
 });
 
 export const ExploreInput = z.object({
@@ -931,6 +1001,8 @@ export const schemaRegistry = {
   OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
+  WorkflowIntentInput,
+  BatchInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
@@ -947,6 +1019,7 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
+  ContextInput,
   ContextSearchInput,
   ContextFindInput,
   ContextGetInput,
@@ -1035,6 +1108,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
@@ -1051,6 +1126,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
@@ -1124,6 +1200,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: '({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: unknown }> }',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/wire-managed-os-mcp-ingress-into-install-provisioning",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1148,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1148",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1148",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1148/wire-managed-os-mcp-ingress-into-install-provisioning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1148",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1148/wire-managed-os-mcp-ingress-into-install-provisioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-wire-managed-os-mcp-ingress-into-install-provisioning",
+  "taskSession": "tsk_792c2b935e90",
+  "tmuxSession": "opensaas-security-wire-managed-os-mcp-ingress-into-install-provisi-792c2b93",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-wire-managed-os-mcp-ingress-into-install-provisioning/.task/security/wire-managed-os-mcp-ingress-into-install-provisioning/session.json",
+  "createdAt": "2026-06-19T03:52:55.814Z"
+}

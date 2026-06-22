@@ -26,6 +26,7 @@ export type WorkspaceDeviceAuthorizationPollResult =
       connectorId: string;
       connectorBootstrapToken: string;
       connectorBootstrapExpiresAt: string;
+      cloudflareTunnelToken?: string;
     }
   | { status: 'denied' | 'expired'; errorCode: string };
 
@@ -44,6 +45,7 @@ export type WorkspaceDeviceAuthorizationPollInput = {
     workspaceSlug: string;
     workspaceHost: string;
     connectorId: string;
+    cloudflareTunnelToken?: string;
   };
   deny?: boolean;
 };
@@ -151,6 +153,9 @@ export function pollWorkspaceDeviceAuthorization(
       connectorBootstrapExpiresAt: new Date(
         polledAtMs + CONNECTOR_BOOTSTRAP_TTL_MS,
       ).toISOString(),
+      ...(input.approve.cloudflareTunnelToken
+        ? { cloudflareTunnelToken: input.approve.cloudflareTunnelToken }
+        : {}),
     };
   }
 

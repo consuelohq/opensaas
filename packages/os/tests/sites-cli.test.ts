@@ -85,6 +85,14 @@ function runSitesCommand(args: string[]): SitesCommandResult {
   `)) as SitesCommandResult;
 }
 
+describe('Sites artifact database loading', () => {
+  it('should guard database stat before opening SQLite', () => {
+    const source = readFileSync('scripts/lib/sites.ts', 'utf8');
+    expect(source).toContain('try {\n    stat = fs.statSync(dbPath);');
+    expect(source).toContain('} catch {\n    return [];\n  }');
+    expect(source.indexOf('stat = fs.statSync(dbPath);')).toBeLessThan(source.indexOf('const Database = loadBunSqliteDatabase();'));
+  });
+});
 describe('Sites CLI', () => {
   it('prints, refreshes, opens, and reports the local Sites paths', () => {
     const pathResult = runSitesCommand(['path', '--json']);

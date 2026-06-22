@@ -601,6 +601,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
     localPort: input.port,
     transport: 'cloudflare-tunnel',
     cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
+    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.home, 'bin', 'cloudflared'),
   });
 
   if (plan.tokenPath) {
@@ -621,11 +622,17 @@ function materializeWorkspaceConnectorBootstrap(input: {
   }
 
   if (plan.launchd) {
-    const plistPath = path.join(
+    const legacyPlistPath = path.join(
       input.home,
       'security',
       'generated',
       'com.consuelo.os.cloudflared.plist',
+    );
+    const plistPath = path.join(
+      input.home,
+      'security',
+      'generated',
+      `${plan.launchd.label}.plist`,
     );
     actions.push({
       type: 'create_file',
@@ -635,6 +642,9 @@ function materializeWorkspaceConnectorBootstrap(input: {
     });
     if (!input.dryRun) {
       fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+      if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
+        fs.rmSync(legacyPlistPath, { force: true });
+      }
       fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
         mode: 0o600,
       });
@@ -1474,7 +1484,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     {
       name: 'runtime:intent',
       files: [
-        'scripts/intent.js',
+        'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
         'manifests/workflow-bundles.json',
