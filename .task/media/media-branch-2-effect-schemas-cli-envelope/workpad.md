@@ -99,3 +99,7 @@ Issues and follow-ups:
 - No native media tools were installed or downloaded. Actual downloaded size is 0 MB.
 - Core media behavior, media ingest, YouTube, audio, vision, render/export, and artifact handoff remain intentionally red for future branches.
 - One review warning is pre-existing from stream/media and was not introduced by this task.
+
+## Current status
+
+Branch 2 is complete for the approved stream/media scope. The media Effect/schema/CLI envelope contract tests are green, Branch 1 manifest/dependency suites remain green, typecheck passes, review has zero blocking issues on this branch, and the remaining red media tests are intentionally reserved for later branches.
