@@ -213,4 +213,17 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(installSource).not.toMatch(/publishWorkspaceEdgeSnapshot|edgePublish|wrangler/);
     expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
   });
+
+  it('should resolve OS home silently instead of prompting for it in interactive setup', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).not.toContain("message: 'OS home'");
+    expect(installSource).not.toContain("'workspace', 'home', 'skills'");
+    expect(installSource).not.toContain("stepComplete('home')");
+    expect(installSource).toContain('const home = resolveOsHome(options.home);');
+    expect(installSource).toContain('home,');
+  });
 });

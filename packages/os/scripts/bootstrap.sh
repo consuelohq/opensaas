@@ -12,8 +12,8 @@ REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/
 ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
 CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
 CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
-CLOUDFLARED_DARWIN_ARM64_SHA256="ae6ee90188ae5833c687ce937c3693e28403677607c06c65a2ff2b6a022f50e4"
-CLOUDFLARED_DARWIN_AMD64_SHA256="3f74d697045ecf56dd2fbeb42f59767ecdf4067c409d55f080563923e8a1bb32"
+CLOUDFLARED_DARWIN_ARM64_SHA256="f6d4c439c6c782b83264951d327989ce5e23373acc5942b872411601fedb020d"
+CLOUDFLARED_DARWIN_AMD64_SHA256="d7a66b525fe76820da6e5406611b61e48b40de682368ac00454d9158f085be4b"
 
 MACOS_EXPECTED_SYSTEM_TOOLS=(curl tar mktemp launchctl plutil lsof script)
 INSTALLER_MANAGED_RUNTIME_BINARIES=(bun portless cloudflared)
@@ -266,17 +266,23 @@ This shell is non-interactive. Re-run with:
   IFS= read -r _ < /dev/tty
 }
 
-open_contact_url() {
+open_url() {
+  local url="$1"
+
   if [ "$DRY_RUN" -eq 1 ]; then
-    log "dry-run: would open $CONTACT_URL"
+    log "dry-run: would open $url"
     return 0
   fi
 
   if command -v open >/dev/null 2>&1; then
-    open "$CONTACT_URL"
+    open "$url"
   else
-    log "Open $CONTACT_URL"
+    log "Open $url"
   fi
+}
+
+open_contact_url() {
+  open_url "$CONTACT_URL"
 }
 
 choose_os_mode() {
@@ -961,6 +967,30 @@ run_onboarding() { # run_onboarding_json
   ONBOARDING_STATUS="installed"
 }
 
+onboarding_workspace_host() {
+  [ -n "$ONBOARDING_JSON" ] || return 1
+  [ -n "$BUN_BIN" ] || return 1
+
+  ONBOARDING_JSON_PAYLOAD="$ONBOARDING_JSON" "$BUN_BIN" --print '
+const payload = JSON.parse(process.env.ONBOARDING_JSON_PAYLOAD || "{}");
+const host = payload?.onboarding?.workspaceHost || payload?.platformProvisioning?.workspaceHost || "";
+if (typeof host === "string") host;
+' 2>/dev/null
+}
+
+open_workspace_launcher() {
+  [ "$JSON" -eq 0 ] || return 0
+  [ "$DRY_RUN" -eq 0 ] || return 0
+  [ "$YES" -eq 0 ] || return 0
+  [ "$ONBOARDING_STATUS" = "installed" ] || return 0
+
+  local workspace_host
+  workspace_host="$(onboarding_workspace_host || true)"
+  [ -n "$workspace_host" ] || return 0
+
+  open_url "https://$workspace_host"
+}
+
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
   (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --dry-run --quiet)
@@ -1019,35 +1049,10 @@ print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
   local os_home="$OS_HOME"
-  local config_file="$os_home/config.json"
-  local db_file="$os_home/consuelo.db"
-  local log_dir="$os_home/logs"
-  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
   log "Consuelo OS setup complete"
   log "Home: $os_home"
-  log "Package: $os_home"
-  log "Config: $config_file"
-  log "Database: $db_file"
-  log "Logs: $log_dir"
-
-  case "$DAEMON_STATUS" in
-    installed)
-      if [ -n "$PORTLESS_BIN" ]; then
-        log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
-      else
-        log "Services: com.consuelo.system, com.consuelo.watchdog"
-      fi
-      ;;
-    skipped)
-      log "Services: skipped"
-      log "Install services later: $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-      ;;
-  esac
-
-  log "Doctor: $doctor_cmd"
-  log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
 main() {
@@ -1066,6 +1071,7 @@ main() {
   run_onboarding
   maybe_install_daemons
   print_success_summary
+  open_workspace_launcher
   emit_json_summary
 }
 
