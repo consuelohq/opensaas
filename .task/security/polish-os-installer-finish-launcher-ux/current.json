@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/polish-os-installer-finish-launcher-ux",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1175,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1175",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1175",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1175/polish-os-installer-finish-launcher-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1175",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1175/polish-os-installer-finish-launcher-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-installer-finish-launcher-ux",
+  "taskSession": "tsk_61b0c4f44443",
+  "tmuxSession": "opensaas-security-polish-os-installer-finish-launcher-ux-61b0c4f4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-installer-finish-launcher-ux/.task/security/polish-os-installer-finish-launcher-ux/session.json",
+  "createdAt": "2026-06-23T01:27:43.989Z"
+}
