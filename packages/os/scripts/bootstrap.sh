@@ -339,7 +339,7 @@ handle_cloud_mode() {
 render_dependency_progress() {
   [ "$JSON" -eq 0 ] || return 0
 
-  log "C O N S U E L O  O S"
+  log "CONSUELO  OS"
   log "│"
   log "● dependencies"
   log "○ workspace"
