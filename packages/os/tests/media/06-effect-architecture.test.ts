@@ -34,11 +34,11 @@ const expectedMediaModules = [
 ] as const;
 
 describe('media Effect architecture', () => {
-  it('creates the expected media module boundaries', () => {
+  it('should satisfy media contract when it creates the expected media module boundaries', () => {
     for (const modulePath of expectedMediaModules) expectFile(modulePath);
   });
 
-  it('exports Effect-returning domain functions and Promise-returning CLI adapters', async () => {
+  it('should satisfy media contract when it exports Effect-returning domain functions and Promise-returning CLI adapters', async () => {
     const probe = await importMediaModule('scripts/lib/media/probe.ts');
     const frames = await importMediaModule('scripts/lib/media/frames.ts');
     const timeline = await importMediaModule('scripts/lib/media/timeline.ts');
@@ -59,7 +59,7 @@ describe('media Effect architecture', () => {
     }
   });
 
-  it('keeps process execution isolated to the media process service', () => {
+  it('should satisfy media contract when it keeps process execution isolated to the media process service', () => {
     const processSource = readOptionalText('scripts/lib/media/process.ts');
     expect(processSource).toMatch(/MediaProcess/);
     expect(processSource).toMatch(/Effect/);
@@ -75,7 +75,7 @@ describe('media Effect architecture', () => {
     }
   });
 
-  it('limits Effect.runPromise to CLI adapter boundaries', () => {
+  it('should satisfy media contract when it limits Effect.runPromise to CLI adapter boundaries', () => {
     const allowedRunPromiseFiles = new Set(['scripts/media.ts']);
 
     for (const modulePath of expectedMediaModules) {
@@ -86,7 +86,7 @@ describe('media Effect architecture', () => {
     expect(readOptionalText('scripts/media.ts')).toContain('Effect.runPromise');
   });
 
-  it('exposes injectable process, filesystem, dependency, logger, and clock services', async () => {
+  it('should satisfy media contract when it exposes injectable process, filesystem, dependency, logger, and clock services', async () => {
     const processModule = await importMediaModule('scripts/lib/media/process.ts');
     const fsModule = await importMediaModule('scripts/lib/media/fs.ts');
     const dependenciesModule = await importMediaModule('scripts/lib/media/dependencies.ts');

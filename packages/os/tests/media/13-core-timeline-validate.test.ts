@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule, validTimelineFixture } from './helpers';
 
 describe('media.timeline.validate core tool', () => {
-  it('exposes Effect and CLI timeline validation surfaces without native binary requirements', async () => {
+  it('should satisfy media contract when it exposes Effect and CLI timeline validation surfaces without native binary requirements', async () => {
     const module = await importMediaModule('scripts/lib/media/timeline.ts');
     expectFunctionExport(module, 'validateTimelineEffect');
     expectFunctionExport(module, 'validateTimelineForCli');
     expect(module.requiredCommands).toEqual([]);
   });
 
-  it('returns field-path validation errors for invalid timelines', async () => {
+  it('should satisfy media contract when it returns field-path validation errors for invalid timelines', async () => {
     const module = await importMediaModule('scripts/lib/media/timeline.ts');
     expectFunctionExport(module, 'validateTimelineJson');
 
@@ -21,7 +21,7 @@ describe('media.timeline.validate core tool', () => {
     expect(result.errors?.[0]?.path).toMatch(/beats/);
   });
 
-  it('checks referenced assets, frames, captions, voiceover, and overlays', async () => {
+  it('should satisfy media contract when it checks referenced assets, frames, captions, voiceover, and overlays', async () => {
     const module = await importMediaModule('scripts/lib/media/timeline.ts');
     expectFunctionExport(module, 'collectTimelineReferences');
 

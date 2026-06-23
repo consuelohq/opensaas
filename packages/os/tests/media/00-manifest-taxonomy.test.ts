@@ -11,7 +11,7 @@ import {
 } from './helpers';
 
 describe('media manifest taxonomy', () => {
-  it('declares media tools in a dedicated media source manifest, not the legacy dev manifest', () => {
+  it('should satisfy media contract when it declares media tools in a dedicated media source manifest, not the legacy dev manifest', () => {
     const mediaTools = readManifestArray('tooling/media-tool-manifest.json');
     const devTools = readManifestArray('tooling/dev-tool-manifest.json');
     const mediaNames = mediaTools.map((tool) => tool.name).sort();
@@ -23,14 +23,14 @@ describe('media manifest taxonomy', () => {
     }
   });
 
-  it('records media-tool-manifest as a full/facade manifest source', () => {
+  it('should satisfy media contract when it records media-tool-manifest as a full/facade manifest source', () => {
     const sourceConfig = readOptionalText('tooling/manifest-sources.json') || readOptionalText('tooling/manifest.config.json');
 
     expect(sourceConfig, 'manifest source config should exist and include media-tool-manifest.json').toContain('media-tool-manifest.json');
     expect(sourceConfig).toMatch(/facade|full|operator|tool/i);
   });
 
-  it('includes every media tool in the generated full manifest and keeps media out of core by default', () => {
+  it('should satisfy media contract when it includes every media tool in the generated full manifest and keeps media out of core by default', () => {
     const full = readGeneratedManifest('manifests/tool.manifest.json');
     const core = readGeneratedManifest('manifests/core.manifest.json');
     const fullNames = full.tools.map((tool) => tool.name);
@@ -42,7 +42,7 @@ describe('media manifest taxonomy', () => {
     }
   });
 
-  it('models every media manifest entry as a deterministic OS facade tool with explicit contracts', () => {
+  it('should satisfy media contract when it models every media manifest entry as a deterministic OS facade tool with explicit contracts', () => {
     const mediaTools = readManifestArray('tooling/media-tool-manifest.json');
 
     for (const toolName of expectedMediaToolNames) {
@@ -66,7 +66,7 @@ describe('media manifest taxonomy', () => {
     }
   });
 
-  it('preserves source metadata for generated media tools', () => {
+  it('should satisfy media contract when it preserves source metadata for generated media tools', () => {
     const full = readGeneratedManifest('manifests/tool.manifest.json');
 
     for (const toolName of expectedMediaToolNames) {

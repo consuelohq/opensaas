@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule, validTimelineFixture } from './helpers';
 
 describe('media.compose core tool', () => {
-  it('exposes Effect and CLI composition surfaces', async () => {
+  it('should satisfy media contract when it exposes Effect and CLI composition surfaces', async () => {
     const module = await importMediaModule('scripts/lib/media/compose.ts');
     expectFunctionExport(module, 'composeEffect');
     expectFunctionExport(module, 'composeForCli');
   });
 
-  it('renders a vertical mp4 through ffmpeg with deterministic filtergraph planning', async () => {
+  it('should satisfy media contract when it renders a vertical mp4 through ffmpeg with deterministic filtergraph planning', async () => {
     const module = await importMediaModule('scripts/lib/media/compose.ts');
     expectFunctionExport(module, 'buildComposePlan');
 
@@ -23,7 +23,7 @@ describe('media.compose core tool', () => {
     expect(plan.outputPath).toBe('renders/out.mp4');
   });
 
-  it('requires timeline validation and QA handoff metadata before writing final output', async () => {
+  it('should satisfy media contract when it requires timeline validation and QA handoff metadata before writing final output', async () => {
     const module = await importMediaModule('scripts/lib/media/compose.ts');
     expectFunctionExport(module, 'assertComposableTimeline');
 

@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule } from './helpers';
 
 describe('media.probe core tool', () => {
-  it('exposes Effect and CLI probe surfaces', async () => {
+  it('should satisfy media contract when it exposes Effect and CLI probe surfaces', async () => {
     const module = await importMediaModule('scripts/lib/media/probe.ts');
     expectFunctionExport(module, 'probeEffect');
     expectFunctionExport(module, 'probeForCli');
   });
 
-  it('uses ffprobe as the machine-readable source of stream metadata', async () => {
+  it('should satisfy media contract when it uses ffprobe as the machine-readable source of stream metadata', async () => {
     const module = await importMediaModule('scripts/lib/media/probe.ts');
     const source = String(module.probeCommandSpec ?? '');
 
@@ -20,7 +20,7 @@ describe('media.probe core tool', () => {
     expect(source).toContain('-show_format');
   });
 
-  it('normalizes ffprobe output into media.asset.v1 fields', async () => {
+  it('should satisfy media contract when it normalizes ffprobe output into media.asset.v1 fields', async () => {
     const module = await importMediaModule('scripts/lib/media/probe.ts');
     expectFunctionExport(module, 'normalizeFfprobeJson');
 

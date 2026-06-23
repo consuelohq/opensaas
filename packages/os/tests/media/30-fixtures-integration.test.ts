@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('media generated fixture integration', () => {
-  it.skipIf(!hasCommand('ffmpeg') || !hasCommand('ffprobe'))('runs core probe -> frames -> timeline -> compose -> qa against a generated tiny mp4', () => {
+  it.skipIf(!hasCommand('ffmpeg') || !hasCommand('ffprobe'))('should run core probe, frames, timeline, compose, and qa when using a generated tiny mp4', () => {
     const dir = createTempDir('consuelo-media-test-core-');
     tempDirs.push(dir);
     const input = join(dir, 'tiny.mp4');
@@ -59,7 +59,7 @@ describe('media generated fixture integration', () => {
     expect(qa.qa).toMatchObject({ status: 'passed' });
   });
 
-  it('skips optional vision integration with a structured missing-profile reason rather than hard failing', () => {
+  it('should satisfy media contract when it skips optional vision integration with a structured missing-profile reason rather than hard failing', () => {
     const result = expectJsonCliSuccess(['doctor', '--profile', 'media-vision-pose', '--json']);
     const text = JSON.stringify(result);
 
