@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-trace-analytics-month-window",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1014,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1014",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1014",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1014/fix-trace-analytics-month-window",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1014",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1014/fix-trace-analytics-month-window",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-trace-analytics-month-window",
+  "taskSession": "tsk_ef5a25156349",
+  "tmuxSession": "opensaas-workspace-agents-fix-trace-analytics-month-window-ef5a2515",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-trace-analytics-month-window/.task/workspace-agents/fix-trace-analytics-month-window/session.json",
+  "createdAt": "2026-06-13T14:48:50.914Z"
+}

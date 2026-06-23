@@ -1,0 +1,15 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/code-call/runtime.ts",
+    "packages/workspace/scripts/lib/code-call/types.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/code-call.test.ts",
+    "packages/workspace/tests/codemode.test.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-13T19:09:53.250Z"
+}

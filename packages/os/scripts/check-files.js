@@ -31,13 +31,25 @@ function readFlagValue(argv, index, flag) {
 function showHelp() {
   writeStdout('usage: bun run check-files -- --branch task/... --files src/a.js src/b.js --json');
   writeStdout('');
-  writeStdout('runs node --check for each file through task:exec.');
+  writeStdout('runs node --check for each file through code.call in the task worktree.');
+}
+
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, `'\''`)}'`;
 }
 
 function runCheck(args, file) {
-  const command = ['run', 'task:exec', '--'];
-  if (args.branch) command.push('--branch', args.branch);
-  command.push('node', '--check', file);
+  const taskWorktree = process.env.TASK_WORKTREE;
+  const input = {
+    language: 'bash',
+    mode: 'verify',
+    ...(args.branch ? { branch: args.branch } : {}),
+    ...(taskWorktree ? { taskWorktree, cwd: taskWorktree } : {}),
+    code: `node --check ${shellQuote(file)}`,
+    timeout: 120000,
+    maxResultChars: 40000,
+  };
+  const command = ['run', 'code-call', '--', JSON.stringify(input)];
 
   const result = spawnSync('bun', command, {
     cwd: resolveControllerRoot(),

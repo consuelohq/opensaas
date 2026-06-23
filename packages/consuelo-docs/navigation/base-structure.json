@@ -449,9 +449,9 @@
           "pages": [
             "os/agent-context/steering",
             "os/agent-context/decision",
-            "os/agent-context/test-driven-agent-work",
             "os/agent-context/tools",
-            "os/agent-context/scripts"
+            "os/agent-context/scripts",
+            "os/agent-context/test-driven-agent-work"
           ]
         },
         {
@@ -482,8 +482,10 @@
             "os/skills/handoff",
             "os/skills/research-ingest",
             "os/skills/senior-engineer",
+            "os/skills/sites",
             "os/skills/skill-creator",
             "os/skills/task",
+            "os/skills/teach",
             {
               "key": "osPlannedSkills",
               "label": "Planned Skills",

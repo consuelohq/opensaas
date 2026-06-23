@@ -37,7 +37,6 @@ import {
 } from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
-
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -58,6 +57,24 @@ type InstallOptions = {
   selectedSkills: SkillName[];
   connectAgents: AgentName[];
 };
+type InstallPlatformProvisioningPayload =
+  | {
+      status: 'planned';
+      workspaceHost?: string;
+      message: string;
+    }
+  | {
+      status: 'managed';
+      workspaceId: string;
+      workspaceSlug: string;
+      workspaceHost: string;
+      message: string;
+    }
+  | {
+      status: 'skipped';
+      workspaceHost?: string;
+      message: string;
+    };
 
 const AGENT_NAMES = new Set<AgentName>([
   'codex',
@@ -73,7 +90,7 @@ function writeStdout(value: string): void {
 const WORKSPACE_BASE_DOMAIN = 'consuelohq.com';
 const DEVICE_LOGIN_CLIENT_ID = 'consuelo-os-installer';
 const DEVICE_LOGIN_SCOPE = ['workspace:read', 'os:connector:register'];
-const DEVICE_LOGIN_POLL_TIMEOUT_MS = 45_000;
+const DEVICE_LOGIN_POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 function normalizeWorkspaceHost(value: string): string {
   const raw = value.trim();
@@ -299,14 +316,52 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
   workspaceHost: string;
   connectorId: string;
   connectorBootstrapToken: string;
+  cloudflareTunnelToken?: string;
 }): WorkspaceBootstrap {
+  const connectorTransport = input.cloudflareTunnelToken
+    ? 'cloudflare-tunnel'
+    : 'websocket-relay';
+
   return {
     workspaceId: input.workspaceId,
     workspaceSlug: input.workspaceSlug,
     workspaceHost: input.workspaceHost,
     connectorId: input.connectorId,
-    connectorTransport: 'websocket-relay',
+    connectorTransport,
     connectorBootstrapToken: input.connectorBootstrapToken,
+    ...(input.cloudflareTunnelToken
+      ? { cloudflareTunnelToken: input.cloudflareTunnelToken }
+      : {}),
+  };
+}
+
+function createInstallPlatformProvisioningPayload(input: {
+  dryRun: boolean;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  approvedWorkspaceBootstrap?: WorkspaceBootstrap;
+}): InstallPlatformProvisioningPayload {
+  if (input.dryRun) {
+    return {
+      status: 'planned',
+      workspaceHost: input.workspaceBootstrap?.workspaceHost,
+      message: 'Consuelo platform provisioning is handled by the approval control plane',
+    };
+  }
+
+  if (input.approvedWorkspaceBootstrap) {
+    return {
+      status: 'managed',
+      workspaceId: input.approvedWorkspaceBootstrap.workspaceId,
+      workspaceSlug: input.approvedWorkspaceBootstrap.workspaceSlug,
+      workspaceHost: input.approvedWorkspaceBootstrap.workspaceHost,
+      message: 'Consuelo platform provisioning completed before scoped bootstrap was issued',
+    };
+  }
+
+  return {
+    status: 'skipped',
+    workspaceHost: input.workspaceBootstrap?.workspaceHost,
+    message: 'workspace platform provisioning skipped: approved device login not available',
   };
 }
 
@@ -395,8 +450,8 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['workspace', 'home', 'skills', 'artifacts', 'agents', 'health']);
-    info('finish workspace identity, home, skills, artifacts, agents, and health before the final background service step.');
+    printOsBanner(['workspace', 'skills', 'artifacts', 'agents', 'health']);
+    info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
     let mode: OsMode = options.mode ?? 'local';
@@ -443,13 +498,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       dryRun: options.dryRun,
     });
 
-    const home = await text({
-      ...clackIo,
-      message: 'OS home',
-      initialValue: resolveOsHome(options.home),
-      validate: (value) => (value.length > 0 ? undefined : 'home is required'),
-    });
-    if (isCancel(home)) { cancel('setup cancelled.'); process.exit(0); }
+    const home = resolveOsHome(options.home);
 
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
@@ -532,8 +581,14 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
+    const platformProvisioning = createInstallPlatformProvisioningPayload({
+      dryRun: options.dryRun,
+      workspaceBootstrap,
+      approvedWorkspaceBootstrap: options.workspaceBootstrap,
+    });
     const payload = {
       ...result,
+      platformProvisioning,
       onboarding: {
         selectedSkills: options.selectedSkills,
         artifactMode: options.artifactMode,
@@ -563,15 +618,14 @@ async function main(): Promise<void> {
     }
 
     if (!options.quiet) {
-      stepComplete('home');
       stepComplete('skills');
       stepComplete('artifacts');
       if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
-      info(summarizeActions(result));
       if (!suppressFinalSummary) {
+        info(summarizeActions(result));
         info(
-          `next: CONSUELO_HOME=${result.home} bun --cwd ${result.home} run doctor`,
+          `next: CONSUELO_HOME=${result.home} bun run --cwd ${result.home} doctor`,
         );
         printEnd('OS ready');
       }

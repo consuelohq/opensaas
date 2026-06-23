@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/collapse-context-tools-into-canonical-facade",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1119,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1119",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1119",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1119/collapse-context-tools-into-canonical-facade",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1119",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1119/collapse-context-tools-into-canonical-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-collapse-context-tools-into-canonical-facade",
+  "taskSession": "tsk_ff9b3a004eb6",
+  "tmuxSession": "opensaas-workspace-agents-collapse-context-tools-into-canonical-facade-ff9b3a00",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-collapse-context-tools-into-canonical-facade/.task/workspace-agents/collapse-context-tools-into-canonical-facade/session.json",
+  "createdAt": "2026-06-18T01:35:01.169Z"
+}

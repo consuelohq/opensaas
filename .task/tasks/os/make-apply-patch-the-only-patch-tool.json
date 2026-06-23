@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-apply-patch-the-only-patch-tool",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1035,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1035",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1035",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1035/make-apply-patch-the-only-patch-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1035",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1035/make-apply-patch-the-only-patch-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-apply-patch-the-only-patch-tool",
+  "taskSession": "tsk_a58b664f4b64",
+  "tmuxSession": "opensaas-os-make-apply-patch-the-only-patch-tool-a58b664f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-apply-patch-the-only-patch-tool/.task/os/make-apply-patch-the-only-patch-tool/session.json",
+  "createdAt": "2026-06-14T06:44:30.491Z"
+}

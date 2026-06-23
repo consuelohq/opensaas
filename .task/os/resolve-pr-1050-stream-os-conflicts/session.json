@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b99123a45a14",
+  "tmuxSession": "opensaas-os-resolve-pr-1050-stream-os-conflicts-b99123a4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-pr-1050-stream-os-conflicts",
+  "branch": "task/os/resolve-pr-1050-stream-os-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-1050-stream-os-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-1050-stream-os-conflicts",
+  "prNumber": 1098,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1098",
+  "createdAt": "2026-06-16T22:38:45.072Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-1050-stream-os-conflicts/.task/os/resolve-pr-1050-stream-os-conflicts/session.json"
+}

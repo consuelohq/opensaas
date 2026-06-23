@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text",
+  "base": "origin/task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text",
+  "headSha": "b8f16beddf6651347dfd811ac5ae6a4b76d451ab",
+  "changeHash": "3d8c098a06ff2ddafc1e5888c483324565a39aa3cdce58583007740ad38ff2ae",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/os/skills/consuelo-design/references/agents.md"
+  ],
+  "verifiedAt": "2026-06-10T06:49:00.847Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-reader-mobile-nav-header-dark-task-text.json",
+        ".task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text/current.json",
+        ".task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text/evidence-log.json",
+        ".task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text/read-log.json",
+        ".task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text/session.json",
+        ".task/workspace-agents/fix-reader-mobile-nav-header-dark-task-text/workpad.md",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+        "packages/os/skills/consuelo-design/references/agents.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

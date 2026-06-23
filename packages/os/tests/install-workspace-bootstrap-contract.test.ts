@@ -144,7 +144,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       home,
       'security',
       'generated',
-      'com.consuelo.os.cloudflared.plist',
+      'com.consuelo.os.cloudflared.connector-123.plist',
     );
     const plist = fs.readFileSync(plistPath, 'utf8');
 
@@ -154,7 +154,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: 'create_file',
-          path: expect.stringContaining('com.consuelo.os.cloudflared.plist'),
+          path: expect.stringContaining('com.consuelo.os.cloudflared.connector-123.plist'),
           message: expect.stringMatching(/cloudflared/i),
         }),
         expect.objectContaining({
@@ -164,5 +164,66 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         }),
       ]),
     );
+    expect(
+      fs.existsSync(join(home, 'security', 'generated', 'com.consuelo.os.cloudflared.plist')),
+    ).toBe(false);
+  });
+
+  it('should keep repeated cloudflared daemon generation label-derived and idempotent', async () => {
+    const { provisionLocalOs } = await loadInstallStateContract();
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-idempotent-'));
+    const workspaceBootstrap = {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      workspaceHost: 'kokayi.consuelohq.com',
+      connectorId: 'connector_123',
+      connectorTransport: 'cloudflare-tunnel',
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+    };
+
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+
+    const generatedFiles = fs
+      .readdirSync(join(home, 'security', 'generated'))
+      .filter((fileName) => fileName.startsWith('com.consuelo.os.cloudflared'));
+
+    expect(generatedFiles).toEqual([
+      'com.consuelo.os.cloudflared.connector-123.plist',
+    ]);
+  });
+
+  it('should leave platform provisioning to Consuelo control plane before reporting install success', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
+    const platformProvisioningIndex = installSource.indexOf('const platformProvisioning =');
+    const payloadIndex = installSource.indexOf('const payload = {');
+    const successIndex = installSource.indexOf('spin?.succeed');
+
+    expect(provisionIndex).toBeGreaterThan(-1);
+    expect(platformProvisioningIndex).toBeGreaterThan(provisionIndex);
+    expect(payloadIndex).toBeGreaterThan(platformProvisioningIndex);
+    expect(successIndex).toBeGreaterThan(payloadIndex);
+    expect(installSource).toContain('platformProvisioning,');
+    expect(installSource).toContain('Consuelo platform provisioning');
+    expect(installSource).not.toMatch(/publishWorkspaceEdgeSnapshot|edgePublish|wrangler/);
+    expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
+  });
+
+  it('should resolve OS home silently instead of prompting for it in interactive setup', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).not.toContain("message: 'OS home'");
+    expect(installSource).not.toContain("'workspace', 'home', 'skills'");
+    expect(installSource).not.toContain("stepComplete('home')");
+    expect(installSource).toContain('const home = resolveOsHome(options.home);');
+    expect(installSource).toContain('home,');
   });
 });

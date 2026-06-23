@@ -2,9 +2,9 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` - running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** task worktrees are lightweight git checkouts. `task:start` links the root `node_modules` from the main worktree, and it also links package-scoped `node_modules` directories that Yarn creates under `packages/*`. Those package-scoped links matter for Nx/TypeScript resolution because dependencies can be installed under a package directory rather than only at repo root.
 
 every script supports `--help` and `--json`.
 
@@ -63,6 +63,22 @@ cd packages/diff-cockpit && bun run test
 
 Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
+### os:release — release all public Consuelo OS surfaces
+
+Operator-only release wrapper for publishing every public OS surface that the hosted installer depends on. Use this as the default OS release command after OS installer or device approval changes.
+
+```bash
+bun run os:release -- --dry-run
+bun run os:release
+bun run os:release -- --install-only
+bun run os:release -- --device-auth-only
+```
+
+Default release order:
+
+1. `install.consuelohq.com/os` via `os:release-install`
+2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
+
 ### os:release-install — release the hosted Consuelo OS curl installer
 
 Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
@@ -80,6 +96,33 @@ Defaults:
 - Installer path: `/os`
 - Bootstrap source: `packages/os/scripts/bootstrap.sh`
 
+### os:release-device-auth — release the OS device approval authority
+
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+
+```bash
+bun run os:release-device-auth -- --dry-run
+bun run os:release-device-auth
+bun run os:release-device-auth -- --verify-only
+bun run os:release-device-auth -- --no-verify
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-device-authority`
+- Route: `os.consuelohq.com/*`
+- Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
+
+### Trace analytics notes — inspect local workspace trace token and error usage
+
+Operator-only report for the local OpenWorkspace trace database. It shows cumulative windows for the past day, week, and month, plus top tools, branches, errors, slow calls, and high-output calls.
+
+```bash
+bun run trace:analytics
+bun run trace:analytics -- --db=/path/to/traces.db
+```
+
+The `Trace history` section explains the retention horizon for the selected database. When `rows_older_than_week` is `0`, the `past_week` and `past_month` windows are expected to match because the trace database has no rows before the 7-day cutoff.
 
 ---
 
@@ -229,16 +272,18 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+provides bounded file reads plus search, list, write/apply-patch, http, and trash helpers. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 ```bash
-bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
-bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts  # multiple files
-bun run fs -- read src/foo.ts --plain                   # no decoration (best for piping)
-bun run fs -- read src/foo.ts --json                    # structured json (automation-safe)
+bun run fs -- read src/foo.ts --offset 1 --limit 120              # bounded text page
+bun run fs -- read src/foo.ts --from 120 --to 180                 # range aliases for page semantics
+bun run fs -- read src/a.ts --limit 50 src/b.ts --offset 100      # multiple files
+bun run fs -- read src/foo.ts --plain                             # text content only in human mode
+bun run fs -- read src/foo.ts --json                              # text-page/media/binary/error json
 ```
+
+`read --json` is the agent-safe ingestion path. it returns MIME metadata, UTF-8 text pages with `offset`/`limit`/`truncated`/`next`, supported media descriptors, binary descriptors, or typed errors. it does not use terminal decoration or dump arbitrary binary as text.
 
 **search**
 ```bash
@@ -268,14 +313,15 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -294,11 +340,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
@@ -319,14 +365,14 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 **tips**
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
-- before `write --force` or `patch`, always read the target first
+- before `write --force` or `apply-patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
 - `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
-- `patch --from N --to N` replaces line N. always read the range first
+- `fs.patch` is not a workspace tool. use `fs.apply_patch` / `bun run fs -- apply-patch` with `--patch-file` or stdin
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
-- write and patch log touched files to `.task/<area>/<slug>/workpad.md`
-- after any write or patch, immediately verify: read the changed range, `node --check`, `git status`
+- write and apply-patch log touched files to `.task/<area>/<slug>/workpad.md`
+- after any write or apply-patch, immediately verify: read the changed range, `node --check`, `git status`
 
 ---
 
@@ -373,7 +419,7 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ---
 
-### task:exec — run commands inside the task worktree
+### Task worktree command notes — run commands inside the task worktree
 
 runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
 
@@ -852,6 +898,7 @@ bun run context -- search dialer      # search memories by content
 bun run context -- search queue --category workpad  # filter by category
 bun run context -- find "queue handoff"  # search by title
 bun run context -- list workpad       # list recent workpad memories
+bun run context -- list --category workpad  # equivalent category flag form used by the facade
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories
@@ -1035,7 +1082,7 @@ routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the l
 ```bash
 bun run workspace -- status
 bun run workspace -- stream.context '{"area":"workspace-agents"}'
-bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md","offset":1,"limit":80}'
 bun run workspace -- batch '[{"tool":"status","input":{}}]'
 ```
 
@@ -1092,6 +1139,8 @@ bun run github -- branch.compare --base main --head stream/workspace-agents
 
 Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
 
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the workspace response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
 ---
 
 ### tool-runner — run one typed workspace tool
@@ -1099,7 +1148,7 @@ Use `raw` only when the typed operation is missing, and include `--reason` so th
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
 
 ```bash
-bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}'
 bun run tool-runner -- context.categories '{}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
@@ -1111,12 +1160,24 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
 
 ---
+
+
+---
+
+### task-intent — start or dispatch task lifecycle guidance
+
+Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
+
+```bash
+bun run task-intent -- start --workflow task --area workspace-agents --title "example task-intent flow" --json
+bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
+```
 
 ### tools:search — search typed workspace tools by intent
 
@@ -1454,10 +1515,10 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 Recommended Open Design target name: `design.localhost`.
 
 ```bash
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
-bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
-bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
+bun run office publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
+bun run office publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
+bun run office publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
+bun run office publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
 ```
 
 Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
@@ -1472,7 +1533,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|
-| `bat` | syntax-highlighted file reading | `bun run fs -- read` |
+| `bat` | terminal-only file decoration | `bun run fs -- read` |
 | `rg` | fast regex search | `bun run fs -- search` |
 | `eza` | modern ls with tree view | `bun run fs -- list` |
 | `fd` | fast file finder | `bun run fs -- list --find` |
@@ -1542,30 +1603,30 @@ workspace linear.projects '{"first":50}'
 
 ## consuelo design e-guide templates
 
-Use `consueloDesign.generateDigitalEguide` or `bun run consuelo-design generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
+Use `office.generateDigitalEguide` or `bun run office generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
 
 ```bash
-bun run consuelo-design generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
-bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
-bun run consuelo-design generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
+bun run office generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
+bun run office generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
+bun run office generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
 ```
 
 Typed facade equivalent:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
   timeout: 600,
 })
 ```
 
-Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
+Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/office/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
 
 
 ## Design wiki archive
 
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/design-wiki`, sorted by `updatedAt` so republished artifacts return to the top.
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/office`, sorted by `updatedAt` so republished artifacts return to the top.
 
 `design.publish` also rebuilds the Pagefind search bundle for the managed archive. Search stays inside the same text-card wiki UI: the top search control reveals an inline search input, results update as Ko types, and matching cards keep the same title/date/path presentation as the normal archive list.
 

@@ -89,6 +89,7 @@ describe('local OS install state', () => {
       'runs',
       'cache',
       'runtime',
+      'steering',
       'bin',
       'tmp',
     ]) {
@@ -118,6 +119,14 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'hooks', 'task', 'workflow.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'task', 'guidance.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
+    expect(existsSync(join(tempHome, 'steering', 'system_prompt.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'steering', 'decision.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'steering', 'STEERING.md'))).toBe(false);
+    expect(existsSync(join(tempHome, 'steering', 'steering.md'))).toBe(false);
+    expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('# System Prompt');
+    expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('# decision process');
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_operator' && action.path.endsWith('operator') && action.status === 'created')).toBe(true);
@@ -179,12 +188,19 @@ describe('local OS install state', () => {
     expect(statusWrapper).not.toContain('packages/os');
     const installedStatusMetadata = JSON.parse(readFileSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'), 'utf8'));
     expect(installedStatusMetadata.sourcePath).toBe('manifests/tool.manifest.json');
+    writeFileSync(join(tempHome, 'steering', 'system_prompt.md'), '# User system prompt\n\nuser-owned system prompt\n');
+    writeFileSync(join(tempHome, 'steering', 'decision.md'), '# User decision\n\nuser-owned decision\n');
+
     const second = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local' });
       process.stdout.write(JSON.stringify(result));
     `));
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
+    expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'preserved')).toBe(true);
+    expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'preserved')).toBe(true);
+    expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('user-owned system prompt');
+    expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
   });
 
   it('materializes the local Office site from persisted artifacts', () => {
@@ -388,12 +404,12 @@ describe('local OS install state', () => {
 
     expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'consuelo-design-landing-page', 'skill.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'office-landing-page', 'skill.json'))).toBe(false);
 
     const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
     expect(config.selectedSkills).toContain('senior-engineer');
     expect(config.selectedSkills).toContain('research-ingest');
-    expect(config.selectedSkills).not.toContain('consuelo-design-landing-page');
+    expect(config.selectedSkills).not.toContain('office-landing-page');
   });
 
   it('records detected agent connections without editing unknown config files', () => {

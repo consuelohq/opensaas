@@ -102,6 +102,7 @@ export type ProvisionAction = {
     | 'preserve_file'
     | 'connect_agent'
     | 'skip_agent'
+    | 'seed_steering'
     | 'seed_skill'
     | 'seed_tool'
     | 'seed_operator';
@@ -147,6 +148,7 @@ const REQUIRED_DIRS = [
   'cache',
   'runtime',
   'security',
+  'steering',
   'bin',
   'tmp',
 ] as const;
@@ -155,7 +157,7 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
   'security/generated/auth.json',
   'security/generated/Caddyfile',
 ] as const;
-const DEFAULT_PORT = 8850;
+const DEFAULT_PORT = 8960;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
@@ -168,6 +170,7 @@ function resolveBundledOperatorRoot(): string {
 }
 
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
+const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
 const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
@@ -177,6 +180,7 @@ const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
 const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
+const DEFAULT_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -337,6 +341,30 @@ function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
 
   if (!dryRun && !installedInPlace && !targetExists) {
     fs.cpSync(BUNDLED_OPERATOR_ROOT, targetPath, { recursive: true, force: true });
+  }
+
+  return actions;
+}
+
+function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
+  const targetRoot = path.join(home, 'steering');
+  const installedInPlace = samePath(BUNDLED_STEERING_ROOT, targetRoot);
+  const actions: ProvisionAction[] = [];
+
+  for (const fileName of DEFAULT_STEERING_FILES) {
+    const sourcePath = path.join(BUNDLED_STEERING_ROOT, fileName);
+    const targetPath = path.join(targetRoot, fileName);
+    if (!fs.existsSync(sourcePath)) throw new Error(`${sourcePath}: required steering file is missing`);
+    const targetExists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'seed_steering',
+      path: targetPath,
+      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: targetExists || installedInPlace ? 'local steering file preserved' : 'default steering file installed',
+    });
+    if (dryRun || targetExists || installedInPlace) continue;
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
   }
 
   return actions;
@@ -573,6 +601,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
     localPort: input.port,
     transport: 'cloudflare-tunnel',
     cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
+    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.home, 'bin', 'cloudflared'),
   });
 
   if (plan.tokenPath) {
@@ -593,11 +622,17 @@ function materializeWorkspaceConnectorBootstrap(input: {
   }
 
   if (plan.launchd) {
-    const plistPath = path.join(
+    const legacyPlistPath = path.join(
       input.home,
       'security',
       'generated',
       'com.consuelo.os.cloudflared.plist',
+    );
+    const plistPath = path.join(
+      input.home,
+      'security',
+      'generated',
+      `${plan.launchd.label}.plist`,
     );
     actions.push({
       type: 'create_file',
@@ -607,6 +642,9 @@ function materializeWorkspaceConnectorBootstrap(input: {
     });
     if (!input.dryRun) {
       fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+      if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
+        fs.rmSync(legacyPlistPath, { force: true });
+      }
       fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
         mode: 0o600,
       });
@@ -1242,6 +1280,7 @@ export function provisionLocalOs(
 
   actions.push(...materializeProductPackageRoot(home, dryRun));
   actions.push(...materializeOperator(home, dryRun));
+  actions.push(...seedBundledSteering(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1445,7 +1484,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     {
       name: 'runtime:intent',
       files: [
-        'scripts/intent.js',
+        'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
         'manifests/workflow-bundles.json',

@@ -40,23 +40,20 @@ await workspace.call({
 
 `fs.read` is the proof step. It can read a whole file or a bounded line range with `from` and `to`. Bounded reads are better for large generated references such as `packages/os/TOOLS.md`, because they keep the evidence small enough to reason from.
 
-When the edit target is known, prefer `fs.patch` for existing files. It replaces a line range and makes the intended blast radius explicit:
+When applying source edits, prefer `fs.apply_patch`. It applies OpenCode/Codex-style marker patches with embedded project-relative paths and explicit operation markers:
 
 ```ts
 await workspace.call({
-  tool: "fs.patch",
+  tool: "fs.apply_patch",
   taskSession,
   input: {
-    path: "packages/consuelo-docs/os/tools/filesystem-tools.mdx",
-    from: 22,
-    to: 28,
-    contentFile: "/tmp/replacement.md",
+    patchFile: "/tmp/change.patch",
   },
   timeout: 120,
 })
 ```
 
-Use `contentFile` for large replacements. It avoids transport problems with long multiline strings and keeps the patch call focused on the path and line range. `fs.patch` is mutating and task-scoped, so it should run only after the target lines were read.
+Use `patchFile` or stdin for multiline patch payloads. It avoids transport problems with long multiline strings and keeps the patch call focused on anchored operations. `fs.apply_patch` is mutating and task-scoped, so inspect the target files before applying changes.
 
 Use `fs.write` when creating a new file or replacing a whole file intentionally. For new docs pages, the call usually sets `mkdirs: true` so the containing directory can be created with the file:
 
@@ -78,6 +75,6 @@ await workspace.call({
 
 Use `fs.trash` only when deletion is explicitly intended. It moves a task worktree file to trash through the workspace script. A typical safe pattern is to read or list the path first, record why removal is in scope, and then call `fs.trash` with the exact path. Do not use deletion to clean up uncertainty; resolve the uncertainty first.
 
-Durable outputs deserve the right storage layer. Repository source files belong in the task worktree through `fs.write` or `fs.patch`. User-facing exports, reports, traces, and generated evidence may need an artifact workflow when the output is meant to be preserved outside the source tree. The filesystem tools create and edit files; artifact tools preserve deliverables and provenance when the workflow calls for that durability.
+Durable outputs deserve the right storage layer. Repository source files belong in the task worktree through `fs.write` or `fs.apply_patch`. User-facing exports, reports, traces, and generated evidence may need an artifact workflow when the output is meant to be preserved outside the source tree. The filesystem tools create and edit files; artifact tools preserve deliverables and provenance when the workflow calls for that durability.
 
 The filesystem family is therefore not just convenience IO. It is how an OS agent keeps file work inspectable: search, read, patch or write narrowly, then reread and diff before publish.

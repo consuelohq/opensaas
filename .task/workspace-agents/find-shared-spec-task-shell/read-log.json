@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/workspace-agents/find-shared-spec-task-shell/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "package.json",
+    "packages/consuelo-design/package.json",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/README.md",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/consuelo-design/templates/digital-eguides/spec.md",
+    "packages/os/scripts/consuelo-design.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "updatedAt": "2026-06-10T03:03:42.768Z"
+}

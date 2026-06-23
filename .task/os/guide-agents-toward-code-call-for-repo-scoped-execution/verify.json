@@ -1,0 +1,65 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution",
+  "base": "origin/stream/os",
+  "headSha": "ffb58d0075c0ba7c6719e3261c3c077e65cf75ac",
+  "changeHash": "a23c7c0075310ca985a98e5fae512d478b1425e8a4f2c8917b05199a455afbd9",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/steering/system_prompt.md",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-16T21:56:35.392Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/guide-agents-toward-code-call-for-repo-scoped-execution/current.json",
+        ".task/os/guide-agents-toward-code-call-for-repo-scoped-execution/evidence-log.json",
+        ".task/os/guide-agents-toward-code-call-for-repo-scoped-execution/read-log.json",
+        ".task/os/guide-agents-toward-code-call-for-repo-scoped-execution/session.json",
+        ".task/os/guide-agents-toward-code-call-for-repo-scoped-execution/workpad.md",
+        ".task/tasks/os/guide-agents-toward-code-call-for-repo-scoped-execution.json",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/steering/system_prompt.md",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

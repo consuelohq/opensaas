@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-managed-os-mcp-ingress-policy",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1145,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1145",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1145",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1145/provision-managed-os-mcp-ingress-policy",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1145",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1145/provision-managed-os-mcp-ingress-policy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-managed-os-mcp-ingress-policy",
+  "taskSession": "tsk_e2be37f819fc",
+  "tmuxSession": "opensaas-security-provision-managed-os-mcp-ingress-policy-e2be37f8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-managed-os-mcp-ingress-policy/.task/security/provision-managed-os-mcp-ingress-policy/session.json",
+  "createdAt": "2026-06-19T01:43:16.083Z"
+}

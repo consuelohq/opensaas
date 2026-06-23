@@ -270,6 +270,7 @@ export async function pollWorkspaceDeviceAccessToken(
     const connectorId = stringField(json, 'connector_id', 'connectorId');
     const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
     const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
+    const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
 
     if (!workspaceId || !workspaceSlug || !workspaceHost || !connectorId || !connectorBootstrapToken || !connectorBootstrapExpiresAt) {
       return unavailable('approved device response was missing workspace bootstrap fields');
@@ -283,6 +284,7 @@ export async function pollWorkspaceDeviceAccessToken(
       connectorId,
       connectorBootstrapToken,
       connectorBootstrapExpiresAt,
+      ...(cloudflareTunnelToken ? { cloudflareTunnelToken } : {}),
     };
   } catch (error: unknown) {
     return unavailable(error instanceof Error ? error.message : String(error));

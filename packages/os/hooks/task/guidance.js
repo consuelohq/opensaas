@@ -113,9 +113,10 @@ function buildBeforeProductionEdit(options) {
         append: true,
         content: '## Test-first contract\n\nBehavior under test:\n- ...\n',
       }, options.taskSession),
-      osCall('task.exec', {
-        command: ['bun', '--cwd', 'packages/os', 'test', '<focused-test-file>'],
-        tddPhase: 'red',
+      osCall('code.call', {
+        language: 'bash',
+        mode: 'verify',
+        code: 'bun --cwd packages/os test <focused-test-file>',
         timeout: 300000,
       }, options.taskSession),
     ],
@@ -191,8 +192,8 @@ function osCall(tool, input, taskSession) {
 }
 
 function defaultTimeoutForTool(tool) {
-  if (tool === 'task.exec' || tool === 'verify' || tool === 'review.run') return 300000;
-  return 120;
+  if (tool === 'code.call' || tool === 'verify' || tool === 'review.run') return 300000;
+  return 120000;
 }
 
 function renderTaskHookGuidance(guidance) {

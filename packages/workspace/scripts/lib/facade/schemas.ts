@@ -61,12 +61,12 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const ConsueloDesignInput = z.object({
+export const OfficeInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const ConsueloDesignUiInput = z.object({
+export const OfficeUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
@@ -78,7 +78,7 @@ export const DesignArchiveRefreshInput = z.object({
   tailscaleBin: optionalString,
 });
 
-export const ConsueloDesignSessionInput = z.object({
+export const OfficeSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -86,7 +86,7 @@ export const ConsueloDesignSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const ConsueloDesignDigitalEguideInput = z.object({
+export const OfficeDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -119,12 +119,42 @@ export const CodeCallInput = z.object({
   cwd: optionalString,
   timeout: z.number().int().positive().optional(),
   maxResultChars: z.number().int().positive().optional(),
+  taskWorktree: optionalString,
+  branch: optionalString,
 }).refine((input) => Boolean(input.code) !== Boolean(input.codeFile), {
   message: 'provide exactly one of code or codeFile',
   path: ['code'],
 }).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
   message: 'provide at most one of stdin or stdinFile',
   path: ['stdin'],
+});
+
+
+export const WorkflowIntentInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['start', 'dispatch']),
+  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  area: optionalString,
+  title: optionalString,
+  eventFile: optionalString,
+});
+
+
+const BatchStepInput = z.object({
+  tool: z.string().min(1),
+  input: z.record(z.string(), z.unknown()).optional(),
+  args: z.record(z.string(), z.unknown()).optional(),
+  parallel: z.boolean().optional(),
+}).refine((step) => !(step.input && step.args), {
+  message: 'provide either input or args, not both',
+  path: ['input'],
+});
+
+export const BatchInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  steps: z.array(BatchStepInput).min(1),
 });
 
 export const ToolsSearchInput = z.object({
@@ -139,22 +169,44 @@ export const ToolsSearchInput = z.object({
   message: 'readOnly and mutating cannot both be true',
   path: ['mutating'],
 });
+const fsReadPageFields = {
+  offset: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
+  from: z.number().int().positive().optional(),
+  to: z.number().int().positive().optional(),
+};
+
+const FsReadFileInput = z.object({
+  path: z.string().min(1),
+  ...fsReadPageFields,
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive().optional(),
-  to: z.number().int().positive().optional(),
+  path: optionalString,
+  files: z.array(FsReadFileInput).min(1).optional(),
+  ...fsReadPageFields,
+}).refine((input) => Boolean(input.path || input.files?.length), {
+  message: 'provide either path or files',
+  path: ['path'],
+}).refine((input) => !input.files?.length || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined), {
+  message: 'top-level pagination fields cannot be used with files; put offset, limit, from, or to on each file entry instead',
+  path: ['files'],
 });
 
 export const FsSearchInput = z.object({
   ...requestFields,
   ...branchField,
   pattern: z.string().min(1),
+  path: optionalString,
   paths: stringArray,
   include: optionalString,
   context: z.number().int().nonnegative().optional(),
-  maxResults: z.number().int().positive().optional(),
+  maxResults: z.number().int().positive().max(200).optional(),
+}).refine((input) => !(input.path && input.paths), {
+  message: 'provide either path or paths, not both',
+  path: ['path'],
 });
 
 export const FsListInput = z.object({
@@ -183,18 +235,16 @@ export const FsWriteInput = z.object({
   path: ['content'],
 });
 
-export const FsPatchInput = z.object({
+
+export const FsApplyPatchInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
-  path: z.string().min(1),
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  content: z.string().optional(),
-  contentFile: optionalString,
-}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
-  message: 'provide exactly one of content or contentFile',
-  path: ['content'],
+  patchText: z.string().optional(),
+  patchFile: optionalString,
+}).refine((input) => Boolean(input.patchText) !== Boolean(input.patchFile), {
+  message: 'provide exactly one of patchText or patchFile',
+  path: ['patchText'],
 });
 
 export const FsHttpInput = z.object({
@@ -332,6 +382,48 @@ export const ContextTraceInput = z.object({
   limit: z.number().int().positive().optional(),
   raw: z.boolean().optional(),
   db: optionalString,
+});
+
+export const ContextInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
+  keyword: optionalString,
+  index: z.number().int().positive().optional(),
+  category: optionalString,
+  limit: z.number().int().positive().optional(),
+  title: optionalString,
+  file: optionalString,
+  text: z.boolean().optional(),
+  byTitle: z.boolean().optional(),
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  contextTaskSession: optionalString,
+  branch: optionalString,
+  raw: z.boolean().optional(),
+  db: optionalString,
+}).superRefine((input, ctx) => {
+  const issue = (path: string, message: string) => ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: [path],
+    message,
+  });
+
+  if ((input.operation === 'search' || input.operation === 'find') && !input.keyword) {
+    issue('keyword', `operation "${input.operation}" requires keyword`);
+  }
+  if (input.operation === 'get') {
+    if (input.index === undefined) issue('index', 'operation "get" requires index');
+    if (!input.keyword) issue('keyword', 'operation "get" requires keyword');
+  }
+  if (input.operation === 'save') {
+    if (!input.title) issue('title', 'operation "save" requires title');
+    if (!input.file && input.text !== true) issue('file', 'operation "save" requires file or text');
+  }
 });
 
 export const ExploreInput = z.object({
@@ -903,18 +995,20 @@ export const schemaRegistry = {
   BranchInput,
   DesignPublishInput,
   DesignArchiveRefreshInput,
-  ConsueloDesignInput,
-  ConsueloDesignUiInput,
-  ConsueloDesignSessionInput,
-  ConsueloDesignDigitalEguideInput,
+  OfficeInput,
+  OfficeUiInput,
+  OfficeSessionInput,
+  OfficeDigitalEguideInput,
   CodeRunInput,
   CodeCallInput,
+  WorkflowIntentInput,
+  BatchInput,
   ToolsSearchInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
   FsWriteInput,
-  FsPatchInput,
+  FsApplyPatchInput,
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
@@ -925,6 +1019,7 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
+  ContextInput,
   ContextSearchInput,
   ContextFindInput,
   ContextGetInput,
@@ -1007,18 +1102,20 @@ export const schemaTypeSignatures: Record<string, string> = {
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
-  FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
-  FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
+  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
+  FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1029,6 +1126,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
   ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
@@ -1102,8 +1200,9 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
-  FsReadOutput: 'Array<{ path: string; from: number; to: number; total: number; lines: string[] }>',
-  FsSearchOutput: 'Array<{ file: string; line: number; text: string }>',
+  BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
+  FsReadOutput: '({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
+  FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: unknown }> }',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
   CodeCallOutput: '{ ok: boolean; exitCode: number; language: \"python\" | \"bun\" | \"bash\"; requestedLanguage?: string; runtime: string; mode: \"read\" | \"edit\" | \"verify\"; cwd: string; durationMs: number; stdout: string; stderr: string; filesChanged: string[]; truncated: boolean; traceId: string; message?: string; code?: string; detectedMistakeClass?: string; stdoutLogPath?: string; stderrLogPath?: string }',

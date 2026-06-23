@@ -38,7 +38,8 @@ const { getTaskWorkpadPath, readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = 
 const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { parsePrRef } = require('./lib/pr-ref');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
-
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
+const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
 
@@ -425,24 +426,11 @@ async function main() {
     const worktreePath = worktree.path;
     removeStaleRootTaskState(worktreePath);
 
-    // symlink node_modules from main worktree so tests/lint/typecheck work
-    const worktreeNodeModules = path.join(worktreePath, 'node_modules');
-    if (!fs.existsSync(worktreeNodeModules)) {
-      const mainNodeModules = path.join(repoRoot, 'node_modules');
-      if (fs.existsSync(mainNodeModules)) {
-        fs.symlinkSync(mainNodeModules, worktreeNodeModules);
-        writeStderr('symlinked node_modules from main worktree');
-      }
-    }
-
-    const workspacePackageNodeModules = path.join(worktreePath, 'packages', 'workspace', 'node_modules');
-    if (!fs.existsSync(workspacePackageNodeModules)) {
-      const mainWorkspacePackageNodeModules = path.join(repoRoot, 'packages', 'workspace', 'node_modules');
-      if (fs.existsSync(mainWorkspacePackageNodeModules)) {
-        fs.symlinkSync(mainWorkspacePackageNodeModules, workspacePackageNodeModules);
-        writeStderr('symlinked packages/workspace/node_modules from main worktree');
-      }
-    }
+    linkTaskWorktreeNodeModules({
+      repoRoot,
+      worktreePath,
+      writeStderr,
+    });
 
     const taskTmux = ensureTaskTmuxSession({
       area,
@@ -639,14 +627,30 @@ async function main() {
       args.json,
     );
 
-    // guard 4: print next steps
+    // guard 4: emit manifest-driven task hook guidance for non-JSON callers
     if (!args.json) {
-      writeStderr('');
-      writeStderr('next steps:');
-      writeStderr(`  cd ${worktreePath}`);
-      writeStderr('  # make your changes');
-      writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
-      writeStderr('  bun run task:pr');
+      try {
+        const guidance = dispatchHookEvent({
+          event: {
+            event: 'tool.postInvoke',
+            tool: 'task.start',
+            workflow: 'task',
+            result: {
+              area,
+              branch: taskBranch,
+              taskSession: taskSessionMeta.taskSession,
+              worktreePath,
+            },
+          },
+        });
+        if (guidance) {
+          writeStderr('');
+          writeStderr('task hook guidance:');
+          writeStderr(renderHookResult(guidance).trimEnd());
+        }
+      } catch (error) {
+        writeStderr(`warning: task hook guidance failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
   } catch (error) {
     throw error;

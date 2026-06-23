@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-pr-1050-stream-os-conflicts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1098,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1098",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1098",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1098/resolve-pr-1050-stream-os-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1098",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1098/resolve-pr-1050-stream-os-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-1050-stream-os-conflicts",
+  "taskSession": "tsk_b99123a45a14",
+  "tmuxSession": "opensaas-os-resolve-pr-1050-stream-os-conflicts-b99123a4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-pr-1050-stream-os-conflicts/.task/os/resolve-pr-1050-stream-os-conflicts/session.json",
+  "createdAt": "2026-06-16T22:38:45.073Z"
+}

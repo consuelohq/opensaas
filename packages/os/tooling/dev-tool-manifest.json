@@ -5,7 +5,7 @@
       "fs",
       "read"
     ],
-    "description": "read file contents with an optional line range",
+    "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
     "category": "filesystem",
     "underlying": "workspace fs read, or task:fs read when a branch is resolved",
     "capabilities": {
@@ -26,8 +26,22 @@
       "arguments": [
         {
           "source": "path",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "filesJson",
+          "flag": "--files-json",
+          "kind": "value"
+        },
+        {
+          "source": "offset",
+          "flag": "--offset",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
         },
         {
           "source": "from",
@@ -42,10 +56,38 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "path": "packages/os/package.json"
+      "path": "packages/os/scripts/fs.js",
+      "offset": 1,
+      "limit": 120
     },
-    "sessionRequired": true
+    "sessionRequired": false,
+    "examples": [
+      {
+        "label": "single paged file",
+        "input": {
+          "path": "packages/os/scripts/fs.js",
+          "offset": 1,
+          "limit": 120
+        }
+      },
+      {
+        "label": "multiple paged files",
+        "input": {
+          "files": [
+            {
+              "path": "packages/os/scripts/fs.js",
+              "offset": 1,
+              "limit": 80
+            },
+            {
+              "path": "packages/os/tooling/dev-tool-manifest.json",
+              "offset": 1,
+              "limit": 120
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "name": "fs.search",
@@ -53,7 +95,7 @@
       "fs",
       "search"
     ],
-    "description": "search files with ripgrep through the workspace script",
+    "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
     "category": "filesystem",
     "underlying": "workspace fs search, or task:fs search when a branch is resolved",
     "capabilities": {
@@ -99,13 +141,32 @@
       ]
     },
     "exampleInput": {
-      "branch": "task/workspace-agents/example",
       "pattern": "task:fs",
-      "paths": [
-        "packages/os/SCRIPTS.md"
-      ]
+      "path": "packages/os/SCRIPTS.md"
     },
-    "sessionRequired": true
+    "sessionRequired": false,
+    "examples": [
+      {
+        "label": "search a directory",
+        "input": {
+          "pattern": "Effect.gen",
+          "path": "packages/os/scripts",
+          "include": "*.ts",
+          "maxResults": 20
+        }
+      },
+      {
+        "label": "search multiple paths",
+        "input": {
+          "pattern": "task:fs",
+          "paths": [
+            "packages/os/SCRIPTS.md",
+            "packages/os/TOOLS.md"
+          ],
+          "maxResults": 10
+        }
+      }
+    ]
   },
   {
     "name": "fs.list",
@@ -235,14 +296,14 @@
     "workflowRole": "workpad.write"
   },
   {
-    "name": "fs.patch",
+    "name": "fs.apply_patch",
     "methodPath": [
       "fs",
-      "patch"
+      "apply_patch"
     ],
-    "description": "replace a line range in a task worktree file",
+    "description": "apply an anchored patch file with embedded task-worktree-relative paths",
     "category": "filesystem",
-    "underlying": "workspace fs.patch",
+    "underlying": "workspace fs.apply_patch",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -250,51 +311,31 @@
       "safeToRetry": false
     },
     "defaultTimeout": 30000,
-    "inputSchema": "FsPatchInput",
+    "inputSchema": "FsApplyPatchInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "task:fs",
-      "subcommand": "patch",
+      "subcommand": "apply-patch",
       "branchMode": "required",
       "branchArgumentStyle": "prefix",
       "dryRunFlag": "--dry-run",
       "arguments": [
         {
-          "source": "path",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "from",
-          "flag": "--from",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "to",
-          "flag": "--to",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "content",
-          "flag": "--content",
+          "source": "patchText",
+          "flag": "--patch-text",
           "kind": "value"
         },
         {
-          "source": "contentFile",
-          "flag": "--content-file",
+          "source": "patchFile",
+          "flag": "--patch-file",
           "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example",
-      "path": "tmp/example.txt",
-      "from": 1,
-      "to": 1,
-      "dryRun": true,
-      "contentFile": "/tmp/replacement.txt"
+      "patchFile": "/tmp/change.patch",
+      "dryRun": true
     },
     "sessionRequired": true
   },
@@ -319,7 +360,7 @@
     "command": {
       "script": "fs",
       "subcommand": "http",
-      "branchMode": "optional",
+      "branchMode": "none",
       "arguments": [
         {
           "source": "method",
@@ -353,7 +394,7 @@
       "fs",
       "trash"
     ],
-    "description": "move a task worktree file to trash",
+    "description": "An agent safe file deletion path. Prefered over rm rf",
     "category": "filesystem",
     "underlying": "workspace fs.trash",
     "capabilities": {
@@ -865,99 +906,6 @@
     "sessionRequired": false
   },
   {
-    "name": "task.call",
-    "methodPath": [
-      "task",
-      "call"
-    ],
-    "description": "run a command inside a task worktree",
-    "category": "task lifecycle",
-    "underlying": "workspace task.call",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "TaskExecInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "task:exec",
-      "branchMode": "required",
-      "branchArgumentStyle": "prefix",
-      "arguments": [
-        {
-          "source": "command",
-          "kind": "commandArray",
-          "required": true
-        }
-      ]
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "command": [
-        "git",
-        "status",
-        "--short"
-      ],
-      "dryRun": true
-    },
-    "sessionRequired": true
-  },
-  {
-    "name": "task.exec",
-    "methodPath": [
-      "task",
-      "exec"
-    ],
-    "description": "legacy alias for task.call; run a command inside a task worktree",
-    "category": "task lifecycle",
-    "underlying": "workspace task.exec",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "TaskExecInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "task:exec",
-      "branchMode": "required",
-      "branchArgumentStyle": "prefix",
-      "arguments": [
-        {
-          "source": "command",
-          "kind": "commandArray",
-          "required": true
-        },
-        {
-          "source": "pr",
-          "flag": "--pr",
-          "kind": "value"
-        },
-        {
-          "source": "github",
-          "flag": "--github",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "branch": "task/workspace-agents/example",
-      "command": [
-        "git",
-        "status",
-        "--short"
-      ],
-      "dryRun": true
-    },
-    "sessionRequired": true,
-    "workflowRole": "test.run"
-  },
-  {
     "name": "task.current",
     "methodPath": [
       "task",
@@ -1070,186 +1018,13 @@
     "sessionRequired": false
   },
   {
-    "name": "context.search",
+    "name": "context",
     "methodPath": [
-      "context",
-      "search"
+      "context"
     ],
-    "description": "search project memory by content",
+    "description": "search, read, save, list, and inspect project context and local workspace traces",
     "category": "context",
-    "underlying": "workspace context.search",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextSearchInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "search",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
-          "kind": "value"
-        },
-        {
-          "source": "category",
-          "flag": "--category",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "keyword": "workspace",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.find",
-    "methodPath": [
-      "context",
-      "find"
-    ],
-    "description": "search project memory by title",
-    "category": "context",
-    "underlying": "workspace context.find",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextFindInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "find",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "keyword": "handoff",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.get",
-    "methodPath": [
-      "context",
-      "get"
-    ],
-    "description": "read a full project memory search result",
-    "category": "context",
-    "underlying": "workspace context.get",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextGetInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "get",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "index",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "keyword",
-          "kind": "value",
-          "required": true
-        }
-      ]
-    },
-    "exampleInput": {
-      "index": 1,
-      "keyword": "workspace"
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.list",
-    "methodPath": [
-      "context",
-      "list"
-    ],
-    "description": "list recent project memories",
-    "category": "context",
-    "underlying": "workspace context.list",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextListInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "list",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "category",
-          "kind": "value"
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "category": "workpad",
-      "limit": 3
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.save",
-    "methodPath": [
-      "context",
-      "save"
-    ],
-    "description": "save a file or text into project memory",
-    "category": "context",
-    "underlying": "workspace context.save",
+    "underlying": "workspace context",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -1257,18 +1032,29 @@
       "safeToRetry": false
     },
     "defaultTimeout": 60000,
-    "inputSchema": "ContextSaveInput",
+    "inputSchema": "ContextInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "context",
-      "subcommand": "save",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {
-          "source": "title",
+          "source": "operation",
           "kind": "value",
           "required": true
+        },
+        {
+          "source": "index",
+          "kind": "value"
+        },
+        {
+          "source": "keyword",
+          "kind": "value"
+        },
+        {
+          "source": "title",
+          "kind": "value"
         },
         {
           "source": "file",
@@ -1278,68 +1064,22 @@
           "source": "category",
           "flag": "--category",
           "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "title": "example memory",
-      "file": "/tmp/example.md",
-      "dryRun": true
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "context.categories",
-    "methodPath": [
-      "context",
-      "categories"
-    ],
-    "description": "list project memory categories",
-    "category": "context",
-    "underlying": "workspace context.categories",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "EmptyInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "categories",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": []
-    },
-    "exampleInput": {},
-    "sessionRequired": false
-  },
-  {
-    "name": "context.trace",
-    "methodPath": [
-      "context",
-      "trace"
-    ],
-    "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-    "category": "context",
-    "underlying": "workspace context.trace",
-    "capabilities": {
-      "readOnly": true,
-      "mutating": false,
-      "deterministic": false,
-      "safeToRetry": true
-    },
-    "defaultTimeout": 60000,
-    "inputSchema": "ContextTraceInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "context",
-      "subcommand": "trace",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "byTitle",
+          "flag": "--by-title",
+          "kind": "boolean"
+        },
+        {
+          "source": "text",
+          "flag": "--text",
+          "kind": "boolean"
+        },
         {
           "source": "traceId",
           "flag": "--trace-id",
@@ -1371,18 +1111,13 @@
           "kind": "value"
         },
         {
-          "source": "taskSession",
+          "source": "contextTaskSession",
           "flag": "--task-session",
           "kind": "value"
         },
         {
           "source": "branch",
           "flag": "--branch",
-          "kind": "value"
-        },
-        {
-          "source": "limit",
-          "flag": "--limit",
           "kind": "value"
         },
         {
@@ -1398,8 +1133,9 @@
       ]
     },
     "exampleInput": {
-      "status": "error",
-      "limit": 20
+      "operation": "search",
+      "keyword": "workspace",
+      "limit": 3
     },
     "sessionRequired": false
   },
@@ -1408,7 +1144,7 @@
     "methodPath": [
       "explore"
     ],
-    "description": "run repository exploration retrieval",
+    "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
     "category": "decision engine",
     "underlying": "workspace explore",
     "capabilities": {
@@ -4636,7 +4372,7 @@
     "methodPath": [
       "checkFiles"
     ],
-    "description": "run syntax checks over a set of files through task:exec",
+    "description": "run syntax checks over a set of files through code.call in the task worktree",
     "category": "composed",
     "underlying": "workspace checkFiles",
     "capabilities": {
@@ -4761,7 +4497,7 @@
       "mac",
       "call"
     ],
-    "description": "run a non-repo shell command on the Mac",
+    "description": "emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.call",
     "capabilities": {
@@ -4797,7 +4533,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -4808,7 +4544,7 @@
       "mac",
       "exec"
     ],
-    "description": "legacy alias for mac.call; run a non-repo shell command on the Mac",
+    "description": "legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.",
     "category": "mac",
     "underlying": "workspace mac.exec",
     "capabilities": {
@@ -4844,7 +4580,7 @@
       ]
     },
     "exampleInput": {
-      "command": "pwd",
+      "command": "sw_vers",
       "dryRun": true
     },
     "sessionRequired": false
@@ -5174,12 +4910,49 @@
     "workflowRole": "decision.research"
   },
   {
+    "name": "batch",
+    "methodPath": [
+      "batch"
+    ],
+    "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+    "category": "composed",
+    "underlying": "workspace batch",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BatchInput",
+    "outputSchema": "BatchOutput",
+    "command": {
+      "script": "batch",
+      "branchMode": "none",
+      "internal": "batch",
+      "arguments": []
+    },
+    "exampleInput": {
+      "steps": [
+        {
+          "tool": "context.find",
+          "input": {
+            "keyword": "workspace",
+            "limit": 1
+          }
+        }
+      ]
+    },
+    "sessionRequired": false,
+    "workflowRole": "tool.batch"
+  },
+  {
     "name": "code.call",
     "methodPath": [
       "code",
       "call"
     ],
-    "description": "run short language-specific code through staged Python, Bun, or Bash backends inside the Consuelo OS tool runtime",
+    "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
     "category": "codemode",
     "underlying": "os code.call",
     "capabilities": {
@@ -5199,12 +4972,78 @@
       "arguments": []
     },
     "exampleInput": {
-      "language": "python",
+      "language": "bun",
       "mode": "read",
-      "code": "print(\"hello\")",
+      "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
       "maxResultChars": 20000
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "test.run",
+    "examples": [
+      {
+        "label": "multi-package focused test packet",
+        "input": {
+          "language": "bun",
+          "mode": "verify",
+          "codeFile": "scripts/code-call-examples/multi-package-focused-tests.ts",
+          "maxResultChars": 60000
+        }
+      },
+      {
+        "label": "repository impact analysis packet",
+        "input": {
+          "language": "bun",
+          "mode": "read",
+          "codeFile": "scripts/code-call-examples/repository-impact-analysis.ts",
+          "maxResultChars": 50000
+        }
+      },
+      {
+        "label": "exact manifest description verification",
+        "input": {
+          "language": "bun",
+          "mode": "verify",
+          "codeFile": "scripts/code-call-examples/exact-manifest-description-verification.ts",
+          "maxResultChars": 30000
+        }
+      },
+      {
+        "label": "structured repo read and compare packet",
+        "input": {
+          "language": "bun",
+          "mode": "read",
+          "codeFile": "scripts/code-call-examples/structured-repo-read-compare.ts",
+          "maxResultChars": 30000
+        }
+      },
+      {
+        "label": "task-scoped structured file rewrite",
+        "input": {
+          "language": "bun",
+          "mode": "edit",
+          "codeFile": "scripts/code-call-examples/task-scoped-structured-file-rewrite.ts",
+          "maxResultChars": 30000
+        }
+      },
+      {
+        "label": "Python AST/string-heavy test insertion",
+        "input": {
+          "language": "python",
+          "mode": "edit",
+          "codeFile": "scripts/code-call-examples/python-semantic-test-mutation.py",
+          "maxResultChars": 20000
+        }
+      },
+      {
+        "label": "Python test assertion audit packet",
+        "input": {
+          "language": "python",
+          "mode": "read",
+          "codeFile": "scripts/code-call-examples/python-test-assertion-audit.py",
+          "maxResultChars": 30000
+        }
+      }
+    ]
   },
   {
     "name": "tools.search",
@@ -5330,8 +5169,8 @@
       "publish"
     ],
     "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design publish",
+    "category": "office",
+    "underlying": "workspace office publish",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5342,7 +5181,7 @@
     "inputSchema": "DesignPublishInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "publish",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5403,8 +5242,8 @@
       "refresh"
     ],
     "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design refresh",
+    "category": "office",
+    "underlying": "workspace office refresh",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5415,7 +5254,7 @@
     "inputSchema": "DesignArchiveRefreshInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "refresh",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5439,14 +5278,14 @@
     ]
   },
   {
-    "name": "consueloDesign.run",
+    "name": "office.run",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "run"
     ],
     "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design run",
+    "category": "office",
+    "underlying": "workspace office run",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5454,10 +5293,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignUiInput",
+    "inputSchema": "OfficeUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "run",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5475,14 +5314,14 @@
     ]
   },
   {
-    "name": "consueloDesign.getDesignSystem",
+    "name": "office.getDesignSystem",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "getDesignSystem"
     ],
-    "description": "return base Consuelo DESIGN.md and consuelo-design AGENTS.md only",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design get-design-system",
+    "description": "return base Consuelo DESIGN.md and office AGENTS.md only",
+    "category": "office",
+    "underlying": "workspace office get-design-system",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5490,10 +5329,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "get-design-system",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5509,14 +5348,14 @@
     ]
   },
   {
-    "name": "consueloDesign.listSkills",
+    "name": "office.listSkills",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "listSkills"
     ],
     "description": "list upstream Open Design skills and Consuelo workflow mappings",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design list-skills",
+    "category": "office",
+    "underlying": "workspace office list-skills",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5524,10 +5363,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "list-skills",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5543,14 +5382,14 @@
     ]
   },
   {
-    "name": "consueloDesign.listDesignSystems",
+    "name": "office.listDesignSystems",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "listDesignSystems"
     ],
     "description": "list Consuelo default design system and upstream reference systems",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design list-design-systems",
+    "category": "office",
+    "underlying": "workspace office list-design-systems",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5558,10 +5397,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "list-design-systems",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5577,14 +5416,14 @@
     ]
   },
   {
-    "name": "consueloDesign.upstreamStatus",
+    "name": "office.upstreamStatus",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "upstreamStatus"
     ],
     "description": "show vendored Open Design metadata and runtime requirements",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design upstream-status",
+    "category": "office",
+    "underlying": "workspace office upstream-status",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5592,10 +5431,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "upstream-status",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5611,14 +5450,14 @@
     ]
   },
   {
-    "name": "consueloDesign.railwayCheck",
+    "name": "office.railwayCheck",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "railwayCheck"
     ],
-    "description": "verify consuelo-design is excluded from Railway deploy paths",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design railway:check",
+    "description": "verify office is excluded from Railway deploy paths",
+    "category": "office",
+    "underlying": "workspace office railway:check",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5626,10 +5465,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "railway:check",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5645,14 +5484,14 @@
     ]
   },
   {
-    "name": "consueloDesign.check",
+    "name": "office.check",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "check"
     ],
-    "description": "run consuelo-design package boundary and Railway checks",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design check",
+    "description": "run office package boundary and Railway checks",
+    "category": "office",
+    "underlying": "workspace office check",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5660,10 +5499,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "check",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5679,14 +5518,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateWebsite",
+    "name": "office.generateWebsite",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateWebsite"
     ],
     "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-website",
+    "category": "office",
+    "underlying": "workspace office generate-website",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5694,10 +5533,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-website",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5731,14 +5570,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateDemo",
+    "name": "office.generateDemo",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateDemo"
     ],
     "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-demo",
+    "category": "office",
+    "underlying": "workspace office generate-demo",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5746,10 +5585,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-demo",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5783,14 +5622,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateImageBrief",
+    "name": "office.generateImageBrief",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateImageBrief"
     ],
     "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-image-brief",
+    "category": "office",
+    "underlying": "workspace office generate-image-brief",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5798,10 +5637,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-image-brief",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5835,14 +5674,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateDigitalEguide",
+    "name": "office.generateDigitalEguide",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateDigitalEguide"
     ],
     "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-digital-eguide",
+    "category": "office",
+    "underlying": "workspace office generate-digital-eguide",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5850,10 +5689,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignDigitalEguideInput",
+    "inputSchema": "OfficeDigitalEguideInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-digital-eguide",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5892,14 +5731,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateEmail",
+    "name": "office.generateEmail",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateEmail"
     ],
     "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-email",
+    "category": "office",
+    "underlying": "workspace office generate-email",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5907,10 +5746,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-email",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5944,14 +5783,14 @@
     ]
   },
   {
-    "name": "consueloDesign.generateMotionFrame",
+    "name": "office.generateMotionFrame",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "generateMotionFrame"
     ],
     "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design generate-motion-frame",
+    "category": "office",
+    "underlying": "workspace office generate-motion-frame",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5959,10 +5798,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "generate-motion-frame",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5996,14 +5835,14 @@
     ]
   },
   {
-    "name": "consueloDesign.renderHyperframes",
+    "name": "office.renderHyperframes",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "renderHyperframes"
     ],
     "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design render-hyperframes",
+    "category": "office",
+    "underlying": "workspace office render-hyperframes",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6011,10 +5850,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "OfficeSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "render-hyperframes",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6048,14 +5887,14 @@
     ]
   },
   {
-    "name": "consueloDesign.uiBg",
+    "name": "office.uiBg",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "uiBg"
     ],
     "description": "start Open Design managed runtimes in the background through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design ui:bg",
+    "category": "office",
+    "underlying": "workspace office ui:bg",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6063,10 +5902,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 300000,
-    "inputSchema": "ConsueloDesignUiInput",
+    "inputSchema": "OfficeUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "ui:bg",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6084,14 +5923,14 @@
     ]
   },
   {
-    "name": "consueloDesign.uiStop",
+    "name": "office.uiStop",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "uiStop"
     ],
     "description": "stop Open Design managed runtimes through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design ui:stop",
+    "category": "office",
+    "underlying": "workspace office ui:stop",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6099,10 +5938,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 120000,
-    "inputSchema": "ConsueloDesignUiInput",
+    "inputSchema": "OfficeUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "ui:stop",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6120,14 +5959,14 @@
     ]
   },
   {
-    "name": "consueloDesign.uiStatus",
+    "name": "office.uiStatus",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "uiStatus"
     ],
     "description": "show Open Design managed runtime status through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design ui:status",
+    "category": "office",
+    "underlying": "workspace office ui:status",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -6135,10 +5974,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "ui:status",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6154,14 +5993,14 @@
     ]
   },
   {
-    "name": "consueloDesign.uiLogs",
+    "name": "office.uiLogs",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "uiLogs"
     ],
     "description": "show Open Design managed runtime logs through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design ui:logs",
+    "category": "office",
+    "underlying": "workspace office ui:logs",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -6169,10 +6008,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "ConsueloDesignInput",
+    "inputSchema": "OfficeInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "ui:logs",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6188,14 +6027,14 @@
     ]
   },
   {
-    "name": "consueloDesign.odBuild",
+    "name": "office.odBuild",
     "methodPath": [
-      "consueloDesign",
+      "office",
       "odBuild"
     ],
     "description": "build the vendored Open Design daemon CLI through the Bun facade",
-    "category": "consuelo design",
-    "underlying": "workspace consuelo-design od:build",
+    "category": "office",
+    "underlying": "workspace office od:build",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6203,10 +6042,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 300000,
-    "inputSchema": "ConsueloDesignUiInput",
+    "inputSchema": "OfficeUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "consuelo-design",
+      "script": "office",
       "subcommand": "od:build",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6224,13 +6063,14 @@
     ]
   },
   {
-    "name": "intent",
+    "name": "task.intent",
     "methodPath": [
+      "task",
       "intent"
     ],
-    "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
+    "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
     "category": "workflow",
-    "underlying": "workspace intent",
+    "underlying": "os task.intent",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6243,7 +6083,7 @@
     "outputSchema": "WorkflowIntentOutput",
     "workflowRole": "intent.start",
     "command": {
-      "script": "intent",
+      "script": "task-intent",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -6282,7 +6122,7 @@
       "action": "start",
       "workflow": "task",
       "area": "os",
-      "title": "example task intent"
+      "title": "example task-intent flow"
     }
   }
 ]

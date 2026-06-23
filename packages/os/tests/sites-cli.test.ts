@@ -85,6 +85,14 @@ function runSitesCommand(args: string[]): SitesCommandResult {
   `)) as SitesCommandResult;
 }
 
+describe('Sites artifact database loading', () => {
+  it('should guard database stat before opening SQLite', () => {
+    const source = readFileSync('scripts/lib/sites.ts', 'utf8');
+    expect(source).toContain('try {\n    stat = fs.statSync(dbPath);');
+    expect(source).toContain('} catch {\n    return [];\n  }');
+    expect(source.indexOf('stat = fs.statSync(dbPath);')).toBeLessThan(source.indexOf('const Database = loadBunSqliteDatabase();'));
+  });
+});
 describe('Sites CLI', () => {
   it('prints, refreshes, opens, and reports the local Sites paths', () => {
     const pathResult = runSitesCommand(['path', '--json']);
@@ -155,30 +163,48 @@ describe('Sites CLI', () => {
   });
 
 
-  it('renders the Sites launcher as a terminal-style Consuelo OS page with flat destinations', () => {
+  it('renders the Sites launcher with the public Markdown terminal UI and local OS routes', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    expect(html).toContain('<title>Consuelo OS Sites</title>');
-    expect(html).toContain('CONSUELO OS');
-    expect(html).toContain('CONTACT:');
-    expect(html).toContain('support@consuelohq.com');
-    expect(html).toContain('LOCATION: USA');
-    expect(html).toContain('STATUS: ONLINE');
-    expect(html).toContain('OPEN POSITION:');
-    expect(html).toContain('href="/jobs"');
-    expect(html).toContain('SITES:');
-    for (const label of ['Office', 'Diffs', 'Tracing', 'Documentation']) {
-      expect(html).toContain('>' + label + '</a>');
+    for (const marker of [
+      '<title>Consuelo OS Sites</title>',
+      'CONSUELO OS █',
+      'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
+      'LOCATION:</span> USA',
+      'STATUS:</span> ONLINE',
+      'OPEN POSITION:',
+      '[Systems Engineer](</span><a href="/jobs"',
+      '>/careers/systems-engineer</a>',
+      'SITES:',
+      '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
+      '>https://sites.consuelohq.com/gtm</a>',
+      '[Office](</span><a href="office/"',
+      '>https://sites.consuelohq.com/office</a>',
+      '[Tracing](</span><a href="traces/"',
+      '>https://sites.consuelohq.com/tracing</a>',
+      '[Diffs](</span><a href="diffs/"',
+      '>https://sites.consuelohq.com/diffs</a>',
+      '[Documentation](</span><a href="docs/"',
+      '>https://docs.consuelohq.com/</a>',
+      'WRITING:',
+      '[On Decision Loops](</span><a href="/writing/on-decision-loops"',
+      'font-family: "Geist Mono", "Geist", ui-monospace',
+      'font-weight: 400',
+      'letter-spacing: 0.02em',
+      '@media (max-width: 430px)',
+      'const siteHotkeys = {',
+      '"2": "office/"',
+      '"3": "traces/"',
+      '"4": "diffs/"',
+      '"5": "docs/"',
+      'window.location.assign(href)',
+    ]) {
+      expect(html).toContain(marker);
     }
-    for (const href of ['office/', 'diffs/', 'traces/', 'docs/']) {
-      expect(html).toContain('href="' + href + '"');
-    }
-    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(5);
+
+    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(7);
     expect(html).toContain('rel="noopener noreferrer"');
-    expect(html).toContain('--sites-bg:#050505');
-    expect(html).toContain('font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace');
-    expect(html).toContain('text-decoration:underline');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
   });

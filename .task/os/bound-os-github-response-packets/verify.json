@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/bound-os-github-response-packets",
+  "base": "origin/stream/os",
+  "headSha": "83687d1ae302202b3871d1f4a004e1c2cd45977a",
+  "changeHash": "1e6baedd22a273781a77e39ccfe73d9ca24a2f8008ef0f08a958b25350bf2cfc",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/github.js",
+    "packages/os/tests/github.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T21:12:48.400Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/bound-os-github-response-packets/current.json",
+        ".task/os/bound-os-github-response-packets/evidence-log.json",
+        ".task/os/bound-os-github-response-packets/read-log.json",
+        ".task/os/bound-os-github-response-packets/session.json",
+        ".task/os/bound-os-github-response-packets/workpad.md",
+        ".task/tasks/os/bound-os-github-response-packets.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/scripts/github.js",
+        "packages/os/tests/github.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

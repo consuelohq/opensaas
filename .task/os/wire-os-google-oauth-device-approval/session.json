@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_272be1c08d39",
+  "tmuxSession": "opensaas-os-wire-os-google-oauth-device-approval-272be1c0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-os-google-oauth-device-approval",
+  "branch": "task/os/wire-os-google-oauth-device-approval",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-os-google-oauth-device-approval",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-os-google-oauth-device-approval",
+  "prNumber": 1047,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1047",
+  "createdAt": "2026-06-14T23:41:23.319Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-os-google-oauth-device-approval/.task/os/wire-os-google-oauth-device-approval/session.json"
+}

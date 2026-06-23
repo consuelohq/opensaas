@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9adfeae3677f",
+  "tmuxSession": "opensaas-workspace-agents-upgrade-fs-read-ingestion-primitive-9adfeae3",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/upgrade-fs-read-ingestion-primitive",
+  "branch": "task/workspace-agents/upgrade-fs-read-ingestion-primitive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-upgrade-fs-read-ingestion-primitive",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-upgrade-fs-read-ingestion-primitive",
+  "prNumber": 1065,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1065",
+  "createdAt": "2026-06-15T06:41:49.800Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-upgrade-fs-read-ingestion-primitive/.task/workspace-agents/upgrade-fs-read-ingestion-primitive/session.json"
+}

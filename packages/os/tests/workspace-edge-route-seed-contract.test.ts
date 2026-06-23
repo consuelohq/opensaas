@@ -62,7 +62,7 @@ async function loadWorkspaceEdgeRouteSeedScriptContract(): Promise<WorkspaceEdge
 }
 
 contractDescribe('workspace edge route seed contract', () => {
-  it('should default the migration host to internal.consuelohq.com and route app traffic to the Railway-backed app', async () => {
+  it('should default the migration host to internal.consuelohq.com and route Sites shells plus Trace gateway routes', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const record = seed.createWorkspaceEdgeRouteSeedRecord();
 
@@ -76,14 +76,47 @@ contractDescribe('workspace edge route seed contract', () => {
       status: 'active',
       routes: [
         {
-          surface: 'app',
+          surface: 'sites',
           pathPrefix: '/',
+          auth: 'public',
+          status: 'active',
+          target: {
+            kind: 'site-snapshot',
+            siteId: 'launcher',
+            versionId: 'seeded-workspace-site-shell',
+            manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html',
+            cachePolicy: 'static-shell',
+          },
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/traces',
+          auth: 'public',
+          status: 'active',
+          target: { kind: 'site-snapshot' },
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/gateway/traces/events',
           auth: 'required',
           status: 'active',
           target: {
-            kind: 'service-upstream',
-            service: 'app',
-            upstreamUrl: 'https://app.consuelohq.com',
+            kind: 'consuelo-gateway-service',
+            serviceName: 'trace-sites-live-endpoints',
+            gatewayRouteFamily: '/gateway/traces/*',
+            publicSiteRouteFamily: '/traces/*',
+          },
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/gateway/traces',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'consuelo-gateway-service',
+            serviceName: 'trace-sites-read-layer',
+            gatewayRouteFamily: '/gateway/traces/*',
+            publicSiteRouteFamily: '/traces/*',
           },
         },
       ],
@@ -105,14 +138,13 @@ contractDescribe('workspace edge route seed contract', () => {
       workspaceSlug: 'internal',
       hostname: 'internal.consuelohq.com',
       baseDomain: 'consuelohq.com',
-      routes: [
-        {
-          target: {
-            kind: 'service-upstream',
-            upstreamUrl: 'https://app.consuelohq.com',
-          },
-        },
-      ],
+    });
+    expect((record as { routes: Array<{ pathPrefix: string; surface: string; target: { kind: string; manifestKey?: string } }> }).routes.find((route) => route.pathPrefix === '/')).toMatchObject({
+      surface: 'sites',
+      target: {
+        kind: 'site-snapshot',
+        manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html',
+      },
     });
   });
 
@@ -136,8 +168,12 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
     expect(osSql).toMatch(/\/traces/);
+    expect(osSql).toMatch(/consuelo-gateway-service/);
+    expect(osSql).toMatch(/trace-sites-read-layer/);
+    expect(osSql).toMatch(/trace-sites-live-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
     expect(osSql).not.toMatch(/token|credential|secret/i);
+    expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
   });
 
   it('should ignore incomplete connector inputs instead of persisting empty connector routes', async () => {

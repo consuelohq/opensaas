@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_72f93dee932c",
+  "tmuxSession": "opensaas-os-match-os-sites-launcher-ui-72f93dee",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/match-os-sites-launcher-ui",
+  "branch": "task/os/match-os-sites-launcher-ui",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-match-os-sites-launcher-ui",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-match-os-sites-launcher-ui",
+  "prNumber": 1172,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1172",
+  "createdAt": "2026-06-22T21:20:44.607Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-match-os-sites-launcher-ui/.task/os/match-os-sites-launcher-ui/session.json"
+}

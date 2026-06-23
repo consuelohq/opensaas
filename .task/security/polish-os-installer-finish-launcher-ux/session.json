@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_61b0c4f44443",
+  "tmuxSession": "opensaas-security-polish-os-installer-finish-launcher-ux-61b0c4f4",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/polish-os-installer-finish-launcher-ux",
+  "branch": "task/security/polish-os-installer-finish-launcher-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-installer-finish-launcher-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-installer-finish-launcher-ux",
+  "prNumber": 1175,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1175",
+  "createdAt": "2026-06-23T01:27:43.988Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-installer-finish-launcher-ux/.task/security/polish-os-installer-finish-launcher-ux/session.json"
+}
