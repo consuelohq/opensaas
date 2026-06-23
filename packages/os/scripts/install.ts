@@ -450,8 +450,8 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['workspace', 'home', 'skills', 'artifacts', 'agents', 'health']);
-    info('finish workspace identity, home, skills, artifacts, agents, and health before the final background service step.');
+    printOsBanner(['workspace', 'skills', 'artifacts', 'agents', 'health']);
+    info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
     let mode: OsMode = options.mode ?? 'local';
@@ -498,13 +498,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       dryRun: options.dryRun,
     });
 
-    const home = await text({
-      ...clackIo,
-      message: 'OS home',
-      initialValue: resolveOsHome(options.home),
-      validate: (value) => (value.length > 0 ? undefined : 'home is required'),
-    });
-    if (isCancel(home)) { cancel('setup cancelled.'); process.exit(0); }
+    const home = resolveOsHome(options.home);
 
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
@@ -624,13 +618,12 @@ async function main(): Promise<void> {
     }
 
     if (!options.quiet) {
-      stepComplete('home');
       stepComplete('skills');
       stepComplete('artifacts');
       if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
-      info(summarizeActions(result));
       if (!suppressFinalSummary) {
+        info(summarizeActions(result));
         info(
           `next: CONSUELO_HOME=${result.home} bun run --cwd ${result.home} doctor`,
         );
