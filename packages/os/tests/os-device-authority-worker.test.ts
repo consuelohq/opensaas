@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createMemoryDeviceGrantStore,
   createOsDeviceAuthorityHandler,
+  createWorkspaceRouteProvisioner,
 } from '../cloudflare/os-device-authority/src/index';
 import {
   CONSUELO_DEVICE_CODE_URL,
@@ -54,19 +55,29 @@ function form(data: Record<string, string>): { body: string; headers: HeadersIni
   };
 }
 
-async function startGrant(handler: (request: Request) => Promise<Response>): Promise<{
+async function startGrant(
+  handler: (request: Request) => Promise<Response>,
+  workspace: {
+    workspaceName?: string;
+    workspaceSlug?: string;
+    workspaceHost?: string;
+  } = {},
+): Promise<{
   codeJson: Record<string, string | number>;
   deviceKeyPair: WorkspaceDeviceKeyPair;
 }> {
   const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+  const workspaceName = workspace.workspaceName ?? 'testing';
+  const workspaceSlug = workspace.workspaceSlug ?? workspaceName;
+  const workspaceHost = workspace.workspaceHost ?? `${workspaceSlug}.consuelohq.com`;
   const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
     method: 'POST',
     ...form({
       client_id: 'consuelo-os-installer',
       scope: 'workspace:read os:connector:register',
-      workspace_name: 'testing',
-      workspace_slug: 'testing',
-      workspace_host: 'testing.consuelohq.com',
+      workspace_name: workspaceName,
+      workspace_slug: workspaceSlug,
+      workspace_host: workspaceHost,
       device_public_key_jwk: deviceKeyPair.publicKeyJwk,
       device_key_algorithm: 'Ed25519',
     }),
@@ -116,6 +127,52 @@ const googleFetch: typeof fetch = async (input) => {
   }
   return new Response(JSON.stringify({ error: 'unexpected_google_fetch' }), { status: 500 });
 };
+
+
+
+type FakeD1Statement = {
+  sql: string;
+  values: unknown[];
+  bind: (...values: unknown[]) => FakeD1Statement;
+  run: () => Promise<unknown>;
+};
+
+function createFakeD1() {
+  const statements: FakeD1Statement[] = [];
+  return {
+    statements,
+    db: {
+      prepare(sql: string): FakeD1Statement {
+        const statement: FakeD1Statement = {
+          sql,
+          values: [],
+          bind(...values: unknown[]) {
+            statement.values = values;
+            return statement;
+          },
+          async run() {
+            return { success: true };
+          },
+        };
+        statements.push(statement);
+        return statement;
+      },
+    },
+  };
+}
+
+function createFakeR2() {
+  const puts: Array<{ key: string; value: string; options?: unknown }> = [];
+  return {
+    puts,
+    bucket: {
+      async put(key: string, value: string, options?: unknown) {
+        puts.push({ key, value, options });
+        return { key };
+      },
+    },
+  };
+}
 
 const failingGoogleTokenFetch: typeof fetch = async (input) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
@@ -176,6 +233,134 @@ describe('os device authority worker', () => {
       workspace_host: 'testing.consuelohq.com',
       device_public_key_bound: true,
     });
+  });
+
+
+
+  it('should provision the dynamic workspace route before marking a Google-approved grant approved', async () => {
+    const provisioned: Array<{
+      workspaceId: string;
+      workspaceSlug: string;
+      workspaceHost: string;
+    }> = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+      workspaceRouteProvisioner: async (workspace) => {
+        provisioned.push(workspace);
+      },
+    });
+    const { codeJson, deviceKeyPair } = await startGrant(handler, {
+      workspaceName: 'MacBook Air Test',
+      workspaceSlug: 'macbook-air-test',
+      workspaceHost: 'macbook-air-test.consuelohq.com',
+    });
+
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+
+    expect(callback.status).toBe(200);
+    expect(provisioned).toEqual([
+      {
+        workspaceId: 'workspace_macbook_air_test',
+        workspaceSlug: 'macbook-air-test',
+        workspaceHost: 'macbook-air-test.consuelohq.com',
+      },
+    ]);
+
+    const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(approved.status).toBe(200);
+    await expect(approved.json()).resolves.toMatchObject({
+      workspace_slug: 'macbook-air-test',
+      workspace_host: 'macbook-air-test.consuelohq.com',
+    });
+  });
+
+  it('should keep the grant pending when dynamic route provisioning fails', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+      workspaceRouteProvisioner: async () => {
+        throw new Error('route registry unavailable');
+      },
+    });
+    const { codeJson, deviceKeyPair } = await startGrant(handler, {
+      workspaceSlug: 'new-user-flow',
+      workspaceHost: 'new-user-flow.consuelohq.com',
+    });
+
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(502);
+    await expect(callback.text()).resolves.toContain('workspace route provisioning failed');
+
+    const stillPending = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(stillPending.status).toBe(400);
+    await expect(stillPending.json()).resolves.toMatchObject({ error: 'authorization_pending' });
+  });
+
+  it('should build a per-workspace launcher snapshot and D1 route without hardcoded test hostnames', async () => {
+    const r2 = createFakeR2();
+    const d1 = createFakeD1();
+    const provision = createWorkspaceRouteProvisioner({
+      routeRegistry: d1.db,
+      siteSnapshots: r2.bucket,
+      now: () => '2026-06-23T03:00:00.000Z',
+    });
+
+    await provision({
+      workspaceId: 'workspace_real_user',
+      workspaceSlug: 'real-user',
+      workspaceHost: 'real-user.consuelohq.com',
+    });
+
+    expect(r2.puts).toHaveLength(1);
+    expect(r2.puts[0].key).toMatch(/^sites\/workspace_real_user\/launcher\/sha256-[a-f0-9]{16}\/index\.html$/);
+    expect(r2.puts[0].value).toContain('real-user.consuelohq.com');
+    expect(r2.puts[0].value).not.toContain('testing.consuelohq.com');
+    expect(d1.statements).toHaveLength(1);
+    expect(d1.statements[0].sql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
+    expect(d1.statements[0].values).toEqual(expect.arrayContaining([
+      'real-user.consuelohq.com',
+      'workspace_real_user',
+      'real-user',
+    ]));
+    expect(JSON.stringify(d1.statements[0].values)).not.toContain('mac-air-test');
+    expect(JSON.stringify(d1.statements[0].values)).not.toContain('testing.consuelohq.com');
   });
 
   it('should call the default global fetch with the Cloudflare global receiver', async () => {
