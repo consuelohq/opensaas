@@ -17,17 +17,18 @@ describe('media.ingest YouTube provenance', () => {
     });
   });
 
-  it('writes the expected ingest folder layout and never marks rights safe automatically', async () => {
-    const module = await importMediaModule('scripts/lib/media/youtube.ts');
-    expect(module.expectedIngestLayout).toEqual([
+  it('keeps the visible YouTube ingest layout under media.ingest, not research ingest', async () => {
+    const module = await importMediaModule('scripts/lib/media/ingest.ts');
+    expect(module.expectedMediaIngestLayout).toEqual([
       'assets/source.mp4',
       'source.info.json',
       'transcript.vtt',
       'transcript.json',
       'thumbnails/',
+      'media-asset.json',
       'ingest-manifest.json',
     ]);
-    expect(JSON.stringify(module)).not.toMatch(/rights.*safe/i);
+    expect(JSON.stringify(module)).not.toMatch(/packet\.md|context-bundle\.md|research:ingest|rights.*safe/i);
   });
 
   it('supports subtitles and auto-subtitle metadata without making network calls in tests', async () => {

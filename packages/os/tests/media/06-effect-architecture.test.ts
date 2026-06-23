@@ -14,11 +14,22 @@ const expectedMediaModules = [
   'scripts/lib/media/timeline.ts',
   'scripts/lib/media/compose.ts',
   'scripts/lib/media/qa.ts',
+  'scripts/lib/media/ingest.ts',
   'scripts/lib/media/youtube.ts',
   'scripts/lib/media/audio.ts',
   'scripts/lib/media/vision.ts',
   'scripts/lib/media/overlays.ts',
   'scripts/lib/media/export.ts',
+  'scripts/lib/media/source-capture/schema.ts',
+  'scripts/lib/media/source-capture/errors.ts',
+  'scripts/lib/media/source-capture/plan.ts',
+  'scripts/lib/media/source-capture/process.ts',
+  'scripts/lib/media/source-capture/fs.ts',
+  'scripts/lib/media/source-capture/ytdlp.ts',
+  'scripts/lib/media/source-capture/summarize-adapter.ts',
+  'scripts/lib/media/source-capture/bundle.ts',
+  'scripts/lib/media/source-capture/checksums.ts',
+  'scripts/lib/media/source-capture/provenance.ts',
   'scripts/media.ts',
 ] as const;
 
@@ -33,6 +44,7 @@ describe('media Effect architecture', () => {
     const timeline = await importMediaModule('scripts/lib/media/timeline.ts');
     const compose = await importMediaModule('scripts/lib/media/compose.ts');
     const qa = await importMediaModule('scripts/lib/media/qa.ts');
+    const ingest = await importMediaModule('scripts/lib/media/ingest.ts');
 
     for (const [module, effectName, cliName] of [
       [probe, 'probeEffect', 'probeForCli'],
@@ -40,6 +52,7 @@ describe('media Effect architecture', () => {
       [timeline, 'validateTimelineEffect', 'validateTimelineForCli'],
       [compose, 'composeEffect', 'composeForCli'],
       [qa, 'qaEffect', 'qaForCli'],
+      [ingest, 'ingestMediaEffect', 'ingestMediaForCli'],
     ] as const) {
       expectFunctionExport(module, effectName);
       expectFunctionExport(module, cliName);
@@ -52,8 +65,10 @@ describe('media Effect architecture', () => {
     expect(processSource).toMatch(/Effect/);
     expect(processSource).toMatch(/Bun\.spawn|spawn\(|execFile/);
 
+    const processBoundaryFiles = new Set(['scripts/lib/media/process.ts', 'scripts/lib/media/source-capture/process.ts']);
+
     for (const modulePath of expectedMediaModules) {
-      if (modulePath === 'scripts/lib/media/process.ts') continue;
+      if (processBoundaryFiles.has(modulePath)) continue;
       const source = readOptionalText(modulePath);
       expect(source, modulePath + ' must not import child_process').not.toMatch(/from ['"]node:child_process['"]|require\(['"]node:child_process['"]\)/);
       expect(source, modulePath + ' must not call Bun.spawn directly').not.toMatch(/Bun\.spawn|spawnSync\(/);
