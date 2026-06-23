@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-workspace-route-on-os-approval",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1180,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1180",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1180",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1180/provision-workspace-route-on-os-approval",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1180",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1180/provision-workspace-route-on-os-approval",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-route-on-os-approval",
+  "taskSession": "tsk_2198ab206ac0",
+  "tmuxSession": "opensaas-security-provision-workspace-route-on-os-approval-2198ab20",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-route-on-os-approval/.task/security/provision-workspace-route-on-os-approval/session.json",
+  "createdAt": "2026-06-23T03:31:36.170Z"
+}
