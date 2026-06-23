@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule } from './helpers';
 
 describe('media.frames.extract core tool', () => {
-  it('exposes Effect and CLI frame extraction surfaces', async () => {
+  it('should satisfy media contract when it exposes Effect and CLI frame extraction surfaces', async () => {
     const module = await importMediaModule('scripts/lib/media/frames.ts');
     expectFunctionExport(module, 'extractFramesEffect');
     expectFunctionExport(module, 'extractFramesForCli');
   });
 
-  it('builds ffmpeg arguments for exact timestamp and range extraction', async () => {
+  it('should satisfy media contract when it builds ffmpeg arguments for exact timestamp and range extraction', async () => {
     const module = await importMediaModule('scripts/lib/media/frames.ts');
     expectFunctionExport(module, 'buildFrameExtractionPlan');
 
@@ -23,7 +23,7 @@ describe('media.frames.extract core tool', () => {
     expect(plan.manifestPath).toBe('frames/frame-manifest.json');
   });
 
-  it('writes media.frame-manifest.v1 and rejects unsafe output paths', async () => {
+  it('should satisfy media contract when it writes media.frame-manifest.v1 and rejects unsafe output paths', async () => {
     const module = await importMediaModule('scripts/lib/media/frames.ts');
     expect(module.FRAME_MANIFEST_SCHEMA).toBe('media.frame-manifest.v1');
     expectFunctionExport(module, 'assertSafeFrameOutputPath');

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule } from './helpers';
 
 describe('media vision-pose MediaPipe profile', () => {
-  it('models MediaPipe as semantic pose/body-landmark tooling on top of vision-light', async () => {
+  it('should satisfy media contract when it models MediaPipe as semantic pose/body-landmark tooling on top of vision-light', async () => {
     const module = await importMediaModule('scripts/lib/media/vision.ts');
 
     expect(module.visionPoseProfile).toMatchObject({
@@ -13,14 +13,14 @@ describe('media vision-pose MediaPipe profile', () => {
     expect(module.visionPoseProfile.dependencies).toContain('mediapipe');
   });
 
-  it('emits pose tracks with 33 landmark slots per detected pose frame', async () => {
+  it('should satisfy media contract when it emits pose tracks with 33 landmark slots per detected pose frame', async () => {
     const module = await importMediaModule('scripts/lib/media/vision.ts');
     expectFunctionExport(module, 'poseEstimateEffect');
     expect(module.poseTrackLandmarkCount).toBe(33);
     expect(module.poseTrackOutputSchema).toBe('media.pose-track.v1');
   });
 
-  it('requires explicit model bundles and structured missing-model errors', async () => {
+  it('should satisfy media contract when it requires explicit model bundles and structured missing-model errors', async () => {
     const module = await importMediaModule('scripts/lib/media/vision.ts');
     expect(module.mediapipeModelBundles?.length).toBeGreaterThan(0);
     expect(module.implicitModelDownloads).toBe(false);

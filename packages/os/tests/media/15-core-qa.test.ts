@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, importMediaModule } from './helpers';
 
 describe('media.qa core tool', () => {
-  it('exposes Effect and CLI QA surfaces', async () => {
+  it('should satisfy media contract when it exposes Effect and CLI QA surfaces', async () => {
     const module = await importMediaModule('scripts/lib/media/qa.ts');
     expectFunctionExport(module, 'qaEffect');
     expectFunctionExport(module, 'qaForCli');
   });
 
-  it('uses ffprobe to verify output duration, dimensions, codec, and file size', async () => {
+  it('should satisfy media contract when it uses ffprobe to verify output duration, dimensions, codec, and file size', async () => {
     const module = await importMediaModule('scripts/lib/media/qa.ts');
     expectFunctionExport(module, 'buildQaChecks');
 
@@ -21,7 +21,7 @@ describe('media.qa core tool', () => {
     expect(checks.filter((check) => check.dependency === 'ffprobe').length).toBeGreaterThanOrEqual(3);
   });
 
-  it('emits media.render-result.v1-compatible QA status', async () => {
+  it('should satisfy media contract when it emits media.render-result.v1-compatible QA status', async () => {
     const module = await importMediaModule('scripts/lib/media/qa.ts');
     expect(module.QA_RESULT_SCHEMA).toBe('media.render-result.v1');
   });

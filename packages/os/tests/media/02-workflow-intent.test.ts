@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -15,7 +16,7 @@ type Workflow = {
 type WorkflowFile = { workflows: Workflow[] };
 
 describe('media workflow intent and runbook routing', () => {
-  it('declares media as a first-class OS workflow with video/youtube/sports aliases', () => {
+  it('should satisfy media contract when it declares media as a first-class OS workflow with video/youtube/sports aliases', () => {
     const workflowFile = readJson<WorkflowFile>('tooling/workflows.json');
     const media = workflowFile.workflows.find((workflow) => workflow.id === 'media');
 
@@ -27,7 +28,7 @@ describe('media workflow intent and runbook routing', () => {
     ]));
   });
 
-  it('generates media workflow bundles with media tools only, not office-owned tools', () => {
+  it('should satisfy media contract when it generates media workflow bundles with media tools only, not office-owned tools', () => {
     const bundles = readJson<WorkflowFile>('manifests/workflow-bundles.json');
     const media = bundles.workflows.find((workflow) => workflow.id === 'media');
     const toolNames = media?.tools?.map((tool) => tool.name).sort() ?? [];
@@ -42,7 +43,7 @@ describe('media workflow intent and runbook routing', () => {
     }
   });
 
-  it('accepts media and aliases in the OS workflow intent schema', () => {
+  it('should satisfy media contract when it accepts media and aliases in the OS workflow intent schema', () => {
     const result = spawnSync('bun', ['./scripts/task-intent.js', 'start', '--workflow', 'media', '--json'], {
       cwd: readPackageRoot(),
       encoding: 'utf8',
@@ -55,7 +56,7 @@ describe('media workflow intent and runbook routing', () => {
     expect(json.manifestBundle?.aliases).toEqual(expect.arrayContaining(['video', 'clips', 'youtube', 'sports-media']));
   });
 
-  it('keeps the media runbook in OS and models the deterministic recipe order', () => {
+  it('should satisfy media contract when it keeps the media runbook in OS and models the deterministic recipe order', () => {
     const runbook = readJson<{ id: string; steps: string[]; ownedBy: string }>('runbooks/media.json');
 
     expect(runbook).toMatchObject({ id: 'media', ownedBy: 'os' });
@@ -75,5 +76,5 @@ describe('media workflow intent and runbook routing', () => {
 function readPackageRoot(): string {
   const pkg = readPackageJson();
   expect(pkg.name).toBe('@consuelo/os');
-  return new URL('../..', import.meta.url).pathname;
+  return fileURLToPath(new URL('../..', import.meta.url));
 }

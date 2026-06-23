@@ -13,7 +13,7 @@ const commandMatrix = [
 ] as const;
 
 describe('media CLI JSON envelope', () => {
-  it('supports --json on every core command and never prints required data as unstructured stdout', () => {
+  it('should satisfy media contract when it supports --json on every core command and never prints required data as unstructured stdout', () => {
     for (const args of commandMatrix) {
       const result = runMediaCli([...args]);
       const stdout = result.stdout.trim();
@@ -29,9 +29,9 @@ describe('media CLI JSON envelope', () => {
     }
   });
 
-  it('returns dependency ids and profiles for missing binary errors', () => {
+  it('should satisfy media contract when it returns dependency ids and profiles for missing binary errors', () => {
     const result = runMediaCli(['probe', '--input', 'fixtures/missing.mp4', '--json'], { env: { CONSUELO_MEDIA_TEST_FORCE_MISSING: 'ffprobe' } });
-    const json = parseJsonStdout(result.stdout || result.stderr);
+    const json = parseJsonStdout(result.stdout.trim() || result.stderr.trim());
 
     expect(result.status).not.toBe(0);
     expect(json.schema).toBe('media.error.v1');

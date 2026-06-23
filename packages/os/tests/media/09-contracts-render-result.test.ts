@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { expectedSchemaKinds, expectSchemaAccepts, expectSchemaRejects, getExport, importMediaModule, validRenderResultFixture } from './helpers';
 
 describe('media render and artifact contracts', () => {
-  it('accepts a render result carrying QA, tool versions, provenance, and artifacts', async () => {
+  it('should satisfy media contract when it accepts a render result carrying QA, tool versions, provenance, and artifacts', async () => {
     const module = await importMediaModule('scripts/lib/media/schema.ts');
     const schema = getExport(module, 'MediaRenderResultSchema');
 
     expectSchemaAccepts(schema, validRenderResultFixture());
   });
 
-  it('rejects render results without output, QA, tool versions, or source provenance', async () => {
+  it('should satisfy media contract when it rejects render results without output, QA, tool versions, or source provenance', async () => {
     const module = await importMediaModule('scripts/lib/media/schema.ts');
     const schema = getExport(module, 'MediaRenderResultSchema');
 
@@ -20,11 +20,11 @@ describe('media render and artifact contracts', () => {
     expectSchemaRejects(schema, validRenderResultFixture({ provenance: undefined }));
   });
 
-  it('exports every final-state media schema and kind', async () => {
+  it('should satisfy media contract when it exports every final-state media schema and kind', async () => {
     const module = await importMediaModule('scripts/lib/media/schema.ts');
     const schemaKinds = module.mediaSchemaKinds;
 
-    expect(schemaKinds).toEqual(expect.arrayContaining([...expectedSchemaKinds]));
+    expect([...schemaKinds].sort()).toEqual([...expectedSchemaKinds].sort());
     for (const exportName of [
       'MediaDependencyReportSchema',
       'MediaIngestManifestSchema',

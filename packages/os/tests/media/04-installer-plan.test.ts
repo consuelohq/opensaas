@@ -2,22 +2,40 @@ import { describe, expect, it } from 'vitest';
 
 import { expectJsonCliSuccess, importMediaModule, runMediaCli } from './helpers';
 
+type InstallPlanStep = {
+  dependencyId: string;
+  packageName?: string;
+  commands?: string[];
+  skipped?: boolean;
+};
+
 type InstallPlan = {
   schema: string;
   dryRun: boolean;
   profiles: string[];
   packageManager: string;
-  steps: Array<{ dependencyId: string; packageName?: string; commands?: string[]; skipped?: boolean }>;
+  steps: InstallPlanStep[];
   estimatedInstalledSizeMb: number;
   warnings?: string[];
 };
 
+function expectInstallPlanStep(plan: Record<string, unknown>, dependencyId: string): void {
+  const steps = plan.steps;
+  expect(Array.isArray(steps), 'install plan should include steps array').toBe(true);
+  expect(
+    (steps as InstallPlanStep[]).some((step) => step.dependencyId === dependencyId),
+    'install plan should include dependency step ' + dependencyId,
+  ).toBe(true);
+}
+
 describe('media installer plan', () => {
-  it('exposes a pure install-plan builder for dry-run tests', async () => {
+  it('should satisfy media contract when it exposes a pure install-plan builder for dry-run tests', async () => {
     const module = await importMediaModule('scripts/lib/media/install-plan.ts');
     expect(typeof module.createMediaInstallPlan).toBe('function');
 
-    const createMediaInstallPlan = module.createMediaInstallPlan as (input: { profiles: string[]; dryRun: boolean; installedCommands?: Record<string, string> }) => InstallPlan;
+    const createMediaInstallPlanExport = module.createMediaInstallPlan;
+    expect(typeof createMediaInstallPlanExport).toBe('function');
+    const createMediaInstallPlan = createMediaInstallPlanExport as (input: { profiles: string[]; dryRun: boolean; installedCommands?: Record<string, string> }) => InstallPlan;
     const plan = createMediaInstallPlan({ profiles: ['media-core'], dryRun: true, installedCommands: { ffmpeg: '/opt/homebrew/bin/ffmpeg', ffprobe: '/opt/homebrew/bin/ffprobe' } });
 
     expect(plan).toMatchObject({ schema: 'media.install-plan.v1', dryRun: true, packageManager: 'homebrew' });
@@ -27,29 +45,29 @@ describe('media installer plan', () => {
     expect(plan.estimatedInstalledSizeMb).toBeGreaterThan(0);
   });
 
-  it('returns structured JSON from media install dry-runs without mutating the filesystem', () => {
+  it('should satisfy media contract when it returns structured JSON from media install dry-runs without mutating the filesystem', () => {
     const json = expectJsonCliSuccess(['install', '--profile', 'media-core', '--dry-run', '--json']);
 
     expect(json.schema).toBe('media.install-plan.v1');
     expect(json.dryRun).toBe(true);
     expect(json.profiles).toEqual(['media-core']);
-    expect(JSON.stringify(json)).toContain('ffmpeg');
-    expect(JSON.stringify(json)).toContain('ffprobe');
-    expect(JSON.stringify(json)).not.toMatch(/vlc/i);
+    expectInstallPlanStep(json, 'ffmpeg');
+    expect((json.steps as InstallPlanStep[]).find((step) => step.dependencyId === 'ffmpeg')?.commands).toEqual(expect.arrayContaining(['ffmpeg', 'ffprobe']));
+    expect((json.steps as InstallPlanStep[]).some((step) => /vlc/i.test(step.dependencyId))).toBe(false);
   });
 
-  it('keeps optional profiles explicit and enforces size warnings', () => {
+  it('should satisfy media contract when it keeps optional profiles explicit and enforces size warnings', () => {
     const json = expectJsonCliSuccess(['install', '--profile', 'media-vision-pose', '--dry-run', '--json', '--max-estimated-size-mb', '200']);
 
     expect(json.schema).toBe('media.install-plan.v1');
     expect(json.profiles).toEqual(['media-vision-pose']);
-    expect(JSON.stringify(json)).toContain('mediapipe');
-    expect(JSON.stringify(json)).toContain('opencv-python-headless');
-    expect(JSON.stringify(json)).not.toContain('opencv-python"');
+    expectInstallPlanStep(json, 'mediapipe');
+    expectInstallPlanStep(json, 'opencv-python-headless');
+    expect((json.steps as InstallPlanStep[]).some((step) => step.dependencyId === 'opencv-python')).toBe(false);
     expect(json.warnings).toEqual(expect.arrayContaining([expect.stringMatching(/size|budget|estimate/i)]));
   });
 
-  it('fails clearly when Homebrew is unavailable and install is requested', () => {
+  it('should satisfy media contract when it fails clearly when Homebrew is unavailable and install is requested', () => {
     const result = runMediaCli(['install', '--profile', 'media-core', '--json'], { env: { CONSUELO_MEDIA_TEST_DISABLE_HOMEBREW: '1' } });
     const output = result.stdout || result.stderr;
 

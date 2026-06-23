@@ -27,14 +27,26 @@ type Profile = {
 
 async function loadCatalog() {
   const module = await importMediaModule('scripts/lib/media/dependency-catalog.ts');
+  const dependencies = module.mediaRuntimeDependencies;
+  const profiles = module.mediaDependencyProfiles;
+
+  expect(
+    Array.isArray(dependencies),
+    'mediaRuntimeDependencies should be an array',
+  ).toBe(true);
+  expect(
+    Array.isArray(profiles),
+    'mediaDependencyProfiles should be an array',
+  ).toBe(true);
+
   return {
-    dependencies: module.mediaRuntimeDependencies as Dependency[],
-    profiles: module.mediaDependencyProfiles as Profile[],
+    dependencies: dependencies as Dependency[],
+    profiles: profiles as Profile[],
   };
 }
 
 describe('media runtime dependency catalog', () => {
-  it('declares explicit media dependency profiles with storage budgets', async () => {
+  it('should satisfy media contract when it declares explicit media dependency profiles with storage budgets', async () => {
     const { profiles } = await loadCatalog();
     const ids = profiles.map((profile) => profile.id);
 
@@ -50,7 +62,7 @@ describe('media runtime dependency catalog', () => {
     expect(profiles.find((profile) => profile.id === 'media-render-advanced')?.optional).toBe(true);
   });
 
-  it('models ffmpeg as the package that provides both ffmpeg and ffprobe commands', async () => {
+  it('should satisfy media contract when it models ffmpeg as the package that provides both ffmpeg and ffprobe commands', async () => {
     const { dependencies } = await loadCatalog();
     const ffmpeg = dependencies.find((dependency) => dependency.id === 'ffmpeg');
 
@@ -65,7 +77,7 @@ describe('media runtime dependency catalog', () => {
     expect(ffmpeg?.requiredBy).toEqual(expect.arrayContaining(['media.probe', 'media.frames.extract', 'media.compose', 'media.qa']));
   });
 
-  it('keeps YouTube, audio, OpenCV, and MediaPipe out of media-core', async () => {
+  it('should satisfy media contract when it keeps YouTube, audio, OpenCV, and MediaPipe out of media-core', async () => {
     const { dependencies, profiles } = await loadCatalog();
     const core = profiles.find((profile) => profile.id === 'media-core');
 
@@ -79,10 +91,10 @@ describe('media runtime dependency catalog', () => {
     expect(dependencies.find((dependency) => dependency.id === 'opencv-python')).toBeUndefined();
   });
 
-  it('declares model bundles and makes large downloads explicit, never implicit', async () => {
+  it('should satisfy media contract when it declares model bundles and makes large downloads explicit, never implicit', async () => {
     const { dependencies, profiles } = await loadCatalog();
     const mediapipe = dependencies.find((dependency) => dependency.id === 'mediapipe');
-    const whisper = dependencies.find((dependency) => dependency.id === 'whisper.cpp') ?? dependencies.find((dependency) => dependency.id === 'openai-whisper');
+    const whisper = dependencies.find((dependency) => dependency.id === 'whisper.cpp' || dependency.id === 'openai-whisper');
     const fullEstimate = profiles.reduce((total, profile) => total + (profile.estimatedInstalledSizeMb ?? 0), 0);
 
     expect(mediapipe?.modelBundles?.length).toBeGreaterThan(0);
@@ -90,6 +102,7 @@ describe('media runtime dependency catalog', () => {
       expect(bundle.implicit, 'MediaPipe model bundle downloads must be explicit').not.toBe(true);
       expect(bundle.estimatedInstalledSizeMb).toBeGreaterThan(0);
     }
+    expect(whisper, 'whisper.cpp or openai-whisper should exist in dependencies').toBeDefined();
     expect(whisper?.optional).toBe(true);
     for (const bundle of whisper?.modelBundles ?? []) {
       expect(bundle.implicit, 'Whisper model downloads must be explicit').not.toBe(true);

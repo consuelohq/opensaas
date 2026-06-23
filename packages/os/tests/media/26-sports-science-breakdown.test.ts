@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectFunctionExport, expectSchemaAccepts, expectSchemaRejects, getExport, importMediaModule } from './helpers';
 
 describe('sports-science breakdown planning', () => {
-  it('requires structured claims linked to timestamp, frame, metric, and provenance', async () => {
+  it('should satisfy media contract when it requires structured claims linked to timestamp, frame, metric, and provenance', async () => {
     const schemaModule = await importMediaModule('scripts/lib/media/schema.ts');
     const schema = getExport(schemaModule, 'MediaBreakdownPlanSchema');
 
@@ -24,7 +24,7 @@ describe('sports-science breakdown planning', () => {
     });
   });
 
-  it('prevents invented measurements when required data is absent', async () => {
+  it('should satisfy media contract when it prevents invented measurements when required data is absent', async () => {
     const module = await importMediaModule('scripts/lib/media/sports-science.ts');
     expectFunctionExport(module, 'assertBreakdownPlanIsDataBacked');
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { listRepoFiles, readIfExistsRepo, readPackageJson } from './helpers';
 
 describe('media package boundaries', () => {
-  it('adds OS package scripts for running the media facade and focused media suites', () => {
+  it('should satisfy media contract when it adds OS package scripts for running the media facade and focused media suites', () => {
     const pkg = readPackageJson();
     const scripts = pkg.scripts as Record<string, string> | undefined;
 
@@ -22,7 +22,7 @@ describe('media package boundaries', () => {
     expect(scripts?.['media:test:handoff']).toBe('vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts');
   });
 
-  it('keeps native runtime tools out of package dependencies', () => {
+  it('should satisfy media contract when it keeps native runtime tools out of package dependencies', () => {
     const pkg = readPackageJson();
     const dependencies = { ...(pkg.dependencies as Record<string, string> | undefined), ...(pkg.devDependencies as Record<string, string> | undefined) };
 
@@ -32,7 +32,7 @@ describe('media package boundaries', () => {
     expect(Object.keys(dependencies)).toContain('effect');
   });
 
-  it('keeps media implementation under packages/os and away from workspace/office ownership', () => {
+  it('should satisfy media contract when it keeps media implementation under packages/os and away from workspace/office ownership', () => {
     const workspaceFiles = listRepoFiles('packages/workspace').filter((file) => !file.includes('node_modules'));
     const officeFiles = listRepoFiles('packages/office').concat(listRepoFiles('packages/consuelo-design'));
     const suspiciousWorkspaceMediaFiles = workspaceFiles.filter((file) => /media|ffmpeg|ffprobe|yt-dlp|mediapipe|opencv/i.test(file));
@@ -42,7 +42,7 @@ describe('media package boundaries', () => {
     expect(suspiciousOfficeMediaFiles, 'office/design should not own media composition/probe implementation files').toEqual([]);
   });
 
-  it('allows office to consume artifact contracts but forbids media importing office', () => {
+  it('should satisfy media contract when it allows office to consume artifact contracts but forbids media importing office', () => {
     const mediaSource = [
       readIfExistsRepo('packages/os/scripts/media.ts'),
       readIfExistsRepo('packages/os/scripts/lib/media/index.ts'),

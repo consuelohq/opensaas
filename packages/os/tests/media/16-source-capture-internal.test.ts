@@ -25,11 +25,11 @@ const visibleSurfaceFiles = [
 ] as const;
 
 describe('media source capture internal boundary', () => {
-  it('keeps source capture as media-internal implementation plumbing', () => {
+  it('should satisfy media contract when it keeps source capture as media-internal implementation plumbing', () => {
     for (const modulePath of sourceCaptureModules) expectFile(modulePath);
   });
 
-  it('does not expose source capture as a tool, workflow, runbook, manifest entry, or package script', () => {
+  it('should satisfy media contract when it does not expose source capture as a tool, workflow, runbook, manifest entry, or package script', () => {
     for (const file of visibleSurfaceFiles) {
       const source = readOptionalText(file);
       expect(source, file + ' must not expose source.capture').not.toMatch(/source\.capture|media\.sourceCapture|source:capture|source-capture/i);
@@ -40,14 +40,14 @@ describe('media source capture internal boundary', () => {
     expect(scriptNames).not.toEqual(expect.arrayContaining(['source:capture', 'source-capture', 'media:source-capture']));
   });
 
-  it('requires media.ingest to consume source capture without routing through research ingest', () => {
+  it('should satisfy media contract when it requires media.ingest to consume source capture without routing through research ingest', () => {
     const ingestSource = readOptionalText('scripts/lib/media/ingest.ts');
 
     expect(ingestSource).toMatch(/source-capture|sourceCapture|SourceCapture/);
     expect(ingestSource).not.toMatch(/research-ingest|research:ingest|research\.ingest/);
   });
 
-  it('keeps source acquisition process execution behind media process services', () => {
+  it('should satisfy media contract when it keeps source acquisition process execution behind media process services', () => {
     const sourceCaptureProcess = readOptionalText('scripts/lib/media/source-capture/process.ts');
     expect(sourceCaptureProcess).toMatch(/SourceCaptureProcess|MediaProcess/);
     expect(sourceCaptureProcess).toMatch(/Bun\.spawn|spawn\(|execFile/);
