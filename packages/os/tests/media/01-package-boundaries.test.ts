@@ -14,9 +14,12 @@ describe('media package boundaries', () => {
     expect(scripts?.['media:test:manifest']).toBe('vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts');
     expect(scripts?.['media:test:deps']).toBe('vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts');
     expect(scripts?.['media:test:core']).toBe('vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts');
-    expect(scripts?.['media:test:vision']).toBe('vitest run tests/media/19-scene-detect.test.ts tests/media/20-vision-light-opencv.test.ts tests/media/21-vision-pose-mediapipe.test.ts tests/media/22-motion-track.test.ts');
-    expect(scripts?.['media:test:render']).toBe('vitest run tests/media/23-overlay-render.test.ts tests/media/24-sports-science-breakdown.test.ts tests/media/25-export-package.test.ts');
-    expect(scripts?.['media:test:handoff']).toBe('vitest run tests/media/26-artifact-handoff.test.ts tests/media/27-storage-budget.test.ts tests/media/28-fixtures-integration.test.ts');
+    expect(scripts?.['media:test:ingest']).toBe('vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts');
+    expect(scripts?.['media:test:youtube']).toBe('vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts');
+    expect(scripts?.['media:test:audio']).toBe('vitest run tests/media/20-audio-transcribe.test.ts');
+    expect(scripts?.['media:test:vision']).toBe('vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts');
+    expect(scripts?.['media:test:render']).toBe('vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts');
+    expect(scripts?.['media:test:handoff']).toBe('vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts');
   });
 
   it('keeps native runtime tools out of package dependencies', () => {
