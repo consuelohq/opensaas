@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2198ab206ac0",
+  "tmuxSession": "opensaas-security-provision-workspace-route-on-os-approval-2198ab20",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-workspace-route-on-os-approval",
+  "branch": "task/security/provision-workspace-route-on-os-approval",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-route-on-os-approval",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-route-on-os-approval",
+  "prNumber": 1180,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1180",
+  "createdAt": "2026-06-23T03:31:36.169Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-route-on-os-approval/.task/security/provision-workspace-route-on-os-approval/session.json"
+}

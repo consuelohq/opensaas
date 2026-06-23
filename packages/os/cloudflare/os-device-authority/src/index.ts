@@ -40,8 +40,35 @@ type StorageLike = { get<T>(key: string): Promise<T | undefined>; put<T>(key: st
 type StateLike = { storage: StorageLike };
 type StubLike = { fetch(request: Request): Promise<Response> };
 type NamespaceLike = { idFromName(name: string): unknown; get(id: unknown): StubLike };
+type D1PreparedStatementLike = {
+  bind: (...values: unknown[]) => D1PreparedStatementLike;
+  run: () => Promise<unknown>;
+};
+
+type D1DatabaseLike = {
+  prepare: (sql: string) => D1PreparedStatementLike;
+};
+
+type R2BucketLike = {
+  put: (
+    key: string,
+    value: string,
+    options?: { httpMetadata?: { contentType?: string } },
+  ) => Promise<unknown>;
+};
+
+type WorkspaceRouteProvisionInput = {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+};
+
+type WorkspaceRouteProvisioner = (input: WorkspaceRouteProvisionInput) => Promise<void>;
+
 type Env = {
   DEVICE_GRANTS: NamespaceLike;
+  WORKSPACE_ROUTE_REGISTRY?: D1DatabaseLike;
+  SITES_SNAPSHOTS?: R2BucketLike;
   OS_DEVICE_AUTH_ORIGIN?: string;
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -84,6 +111,14 @@ function b64Decode(value: string): Uint8Array { const normalized = value.replace
 function rand(prefix: string, len: number): string { const bytes = new Uint8Array(len); crypto.getRandomValues(bytes); return `${prefix}_${b64(bytes)}`; }
 function userCode(): string { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const bytes = new Uint8Array(8); crypto.getRandomValues(bytes); const c = Array.from(bytes, b => alphabet[b % alphabet.length]); return `${c.slice(0, 4).join('')}-${c.slice(4).join('')}`; }
 async function hash(value: string): Promise<string> { try { return b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))); } catch { throw new Error('hash failed'); } }
+async function hashHex(value: string): Promise<string> {
+  try {
+    const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  } catch {
+    throw new Error('hash failed');
+  }
+}
 async function hmac(secret: string, value: string): Promise<string> { try { const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); return b64(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)))); } catch { throw new Error('auth assertion signing failed'); } }
 async function devicePublicKeyThumbprint(value: string): Promise<string> { try { return `dpk_${(await hash(value)).slice(0, 32)}`; } catch { throw new Error('device public key thumbprint failed'); } }
 function slug(value: string): string { const out = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); if (!out) throw new Error('workspace_name is required'); return out; }
@@ -94,6 +129,9 @@ async function params(request: Request): Promise<URLSearchParams> { try { const 
 function verifyUrl(origin: string, code: string): string { const url = new URL('/login/device', origin); url.searchParams.set('user_code', cleanCode(code)); return url.toString(); }
 function stringField(record: Record<string, unknown>, key: string): string { const value = record[key]; return typeof value === 'string' ? value : ''; }
 function expectedDeviceProofPayload(input: { clientId: string; deviceCode: string; devicePublicKeyThumbprint: string }): string { return `${input.clientId}.${input.deviceCode}.${input.devicePublicKeyThumbprint}`; }
+function workspaceIdForSlug(workspaceSlug: string): string { return `workspace_${workspaceSlug.replace(/-/g, '_')}`; }
+function connectorIdForSlug(workspaceSlug: string): string { return `connector_${workspaceSlug.replace(/-/g, '_')}`; }
+function baseDomainForHost(workspaceHost: string): string { const host = workspaceHost.trim().toLowerCase(); return host.endsWith('.consuelohq.com') ? 'consuelohq.com' : host.split('.').slice(-2).join('.'); }
 
 function page(input: { code: string; origin: string; message?: string; error?: string }): string {
   const shown = htmlEscape(showCode(input.code));
@@ -101,6 +139,85 @@ function page(input: { code: string; origin: string; message?: string; error?: s
   const approveUrl = new URL('/login/google/start', input.origin);
   approveUrl.searchParams.set('user_code', hidden);
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Authorize Consuelo OS</title><style>body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f5;color:#080808}main{text-align:center;width:min(720px,calc(100vw - 32px))}.card{background:white;border-radius:28px;margin:28px auto;padding:56px;box-shadow:0 24px 90px #0002}.eyebrow{letter-spacing:.24em;text-transform:uppercase;color:#777}.code{display:block;font-size:clamp(44px,12vw,96px);letter-spacing:.08em}.button{display:inline-block;border:0;border-radius:12px;background:#050505;color:white;padding:14px 22px;font:inherit;text-decoration:none}.notice{color:#066b36}.error{color:#9f1239}</style></head><body><main><p class="eyebrow">Consuelo OS</p><h1>Authorize this Mac</h1><p>Confirm this code matches your terminal before approving.</p><section class="card"><span class="eyebrow">Device code</span><strong class="code" data-device-code>${shown || 'Waiting'}</strong></section>${input.message ? `<p class="notice">${htmlEscape(input.message)}</p>` : ''}${input.error ? `<p class="error">${htmlEscape(input.error)}</p>` : ''}<a class="button" href="${htmlEscape(approveUrl.toString())}">Approve this Mac with Google</a><p>Approval requires a Consuelo account session backed by Google, passkey, magic link, hardware key, or admin invite.</p></main></body></html>`;
+}
+
+
+
+function launcherHtml(input: WorkspaceRouteProvisionInput): string {
+  const title = `${input.workspaceSlug} Consuelo OS`;
+  const host = htmlEscape(input.workspaceHost);
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${htmlEscape(title)}</title><style>:root{color-scheme:dark}body{margin:0;min-height:100vh;background:#050505;color:#f4f0e8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;display:grid;place-items:center}main{width:min(760px,calc(100vw - 40px));padding:48px}.eyebrow{letter-spacing:.22em;text-transform:uppercase;color:#a8a095}.card{border:1px solid #ffffff24;border-radius:24px;padding:32px;background:#ffffff08}a{color:#9da7ff}</style></head>
+<body><main><p class="eyebrow">Consuelo OS</p><section class="card"><h1>Consuelo OS Sites</h1><p>Workspace route is ready for <strong>${host}</strong>.</p><p><a href="/traces">Tracing</a> · <a href="/office">Office</a> · <a href="/diffs">Diffs</a></p></section></main></body>
+</html>
+`;
+}
+
+export function createWorkspaceRouteProvisioner(input: {
+  routeRegistry: D1DatabaseLike;
+  siteSnapshots: R2BucketLike;
+  now?: () => string;
+}): WorkspaceRouteProvisioner {
+  return async (workspace) => {
+    try {
+      const workspaceHost = workspace.workspaceHost.trim().toLowerCase();
+    const html = launcherHtml({ ...workspace, workspaceHost });
+    const versionId = `sha256-${(await hashHex(html)).slice(0, 16)}`;
+    const snapshotKey = `sites/${workspace.workspaceId}/launcher/${versionId}/index.html`;
+    const contentType = 'text/html; charset=utf-8';
+    const snapshotTarget = {
+      kind: 'site-snapshot',
+      siteId: 'launcher',
+      versionId,
+      manifestKey: snapshotKey,
+      contentType,
+      cachePolicy: 'static-shell',
+    };
+    const record = {
+      workspaceId: workspace.workspaceId,
+      workspaceSlug: workspace.workspaceSlug,
+      hostname: workspaceHost,
+      baseDomain: baseDomainForHost(workspaceHost),
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: snapshotTarget },
+        { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: snapshotTarget },
+      ],
+      updatedAt: input.now?.() ?? new Date().toISOString(),
+    };
+
+    await input.siteSnapshots.put(snapshotKey, html, {
+      httpMetadata: { contentType },
+    });
+    await input.routeRegistry
+      .prepare([
+        'INSERT OR REPLACE INTO workspace_route_registry (',
+        '  hostname, workspace_id, workspace_slug, workspace_host, base_domain,',
+        '  route_path_prefix, route_surface, route_status, route_target_kind, target_origin_url,',
+        '  connector_id, connector_status, record_json, created_at, updated_at',
+        ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, datetime(\'now\'), datetime(\'now\'))',
+      ].join('\n'))
+      .bind(
+        workspaceHost,
+        workspace.workspaceId,
+        workspace.workspaceSlug,
+        workspaceHost,
+        baseDomainForHost(workspaceHost),
+        '/',
+        'sites',
+        'active',
+        'site-snapshot',
+        `r2://consuelo-sites-snapshots/${snapshotKey}`,
+        JSON.stringify(record),
+      )
+      .run();
+    } catch (error: unknown) {
+      throw new Error(`route provisioning failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
 }
 
 class DurableStore implements Store {
@@ -228,8 +345,16 @@ function googleApprovalErrorMessage(error: unknown): string {
   return `Google approval failed (${error instanceof Error ? error.message : String(error)}). Try this device code again.`;
 }
 
-async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
+async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number; provisionWorkspaceRoute?: WorkspaceRouteProvisioner }): Promise<Grant> {
   try {
+    const workspaceId = workspaceIdForSlug(input.grant.workspaceSlug);
+    if (input.provisionWorkspaceRoute) {
+      await input.provisionWorkspaceRoute({
+        workspaceId,
+        workspaceSlug: input.grant.workspaceSlug,
+        workspaceHost: input.grant.workspaceHost,
+      });
+    }
     input.grant.status = 'approved';
     input.grant.accountId = input.accountId;
     input.grant.accountAuthMethod = input.authMethod;
@@ -238,7 +363,7 @@ async function approveGrant(input: { store: Store; grant: Grant; accountId: stri
     await input.store.put(input.grant);
     return input.grant;
   } catch (error: unknown) {
-    throw new Error(`grant approval failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`workspace route provisioning failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -246,10 +371,10 @@ function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
-    workspace_id: `workspace_${g.workspaceSlug.replace(/-/g, '_')}`,
+    workspace_id: workspaceIdForSlug(g.workspaceSlug),
     workspace_slug: g.workspaceSlug,
     workspace_host: g.workspaceHost,
-    connector_id: `connector_${g.workspaceSlug.replace(/-/g, '_')}`,
+    connector_id: connectorIdForSlug(g.workspaceSlug),
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
     connector_bootstrap_expires_at: new Date(g.connectorExpiresAt ?? Date.now()).toISOString(),
     device_public_key_thumbprint: g.devicePublicKeyThumbprint,
@@ -265,10 +390,21 @@ export function createOsDeviceAuthorityHandler(input: {
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
   fetchImpl?: typeof fetch;
+  routeRegistry?: D1DatabaseLike;
+  siteSnapshots?: R2BucketLike;
+  workspaceRouteProvisioner?: WorkspaceRouteProvisioner;
 }) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
   const fetchImpl = input.fetchImpl ?? ((url, init) => globalThis.fetch(url, init));
+  const provisionWorkspaceRoute = input.workspaceRouteProvisioner ?? (
+    input.routeRegistry && input.siteSnapshots
+      ? createWorkspaceRouteProvisioner({
+          routeRegistry: input.routeRegistry,
+          siteSnapshots: input.siteSnapshots,
+        })
+      : undefined
+  );
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
@@ -310,7 +446,11 @@ export function createOsDeviceAuthorityHandler(input: {
           return text(page({ code: oauthState.userCode, origin, error: googleApprovalErrorMessage(error) }), { status: 502 });
         }
         await input.store.delOAuthState(stateValue);
-        await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
+        try {
+          await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now(), provisionWorkspaceRoute });
+        } catch (error: unknown) {
+          return text(page({ code: oauthState.userCode, origin, error: error instanceof Error ? error.message : String(error) }), { status: 502 });
+        }
         return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
       }
       if (url.pathname === '/login/device/code') {
@@ -347,7 +487,11 @@ export function createOsDeviceAuthorityHandler(input: {
         const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
-        await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
+        try {
+          await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now(), provisionWorkspaceRoute });
+        } catch (error: unknown) {
+          return json({ error: 'workspace_route_provisioning_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
+        }
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
       }
       if (url.pathname === '/login/oauth/access_token') {
@@ -384,6 +528,8 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      routeRegistry: env.WORKSPACE_ROUTE_REGISTRY,
+      siteSnapshots: env.SITES_SNAPSHOTS,
     });
   }
   fetch(request: Request) { return this.handler(request); }
