@@ -1690,3 +1690,22 @@ bun --cwd packages/consuelo-core test tests/registry.test.ts
 ```
 
 `audit:registry` checks root/workspace/OS script targets, local script imports, and workspace-owned source guardrails. `drift:registry` prints JSON for duplicate workspace/OS script paths with hashes and ownership hints; it is informational unless a follow-up task promotes a duplicate into shared core.
+
+### trace:burn-feed — pseudo-live Trace Burn Intelligence JSON feed
+
+Writes `live-traces.json` beside the local Trace Burn Intelligence design archive artifact. The archive page can poll this file to feel live while the full OS live tracing path is still being replaced. Raw payloads are included by default for development inspection.
+
+Usage:
+
+```bash
+bun run trace:burn-feed -- --once --limit 250
+bun run trace:burn-feed -- --interval 15 --limit 250
+```
+
+Useful options:
+
+- `--db <path>` points at a specific OpenWorkspace trace SQLite database.
+- `--artifact-dir <path>` points at a Trace Burn Intelligence artifact directory.
+- `--no-raw` omits raw payload string copies while keeping previews and parsed inspector objects.
+- `--max-rowid <n>` creates a stable export for tests or screenshots.
+

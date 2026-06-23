@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_02bd685fb331",
+  "tmuxSession": "opensaas-design-add-pseudo-live-trace-feed-from-current-main-02bd685f",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-pseudo-live-trace-feed-from-current-main",
+  "branch": "task/design/add-pseudo-live-trace-feed-from-current-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-pseudo-live-trace-feed-from-current-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-pseudo-live-trace-feed-from-current-main",
+  "prNumber": 1186,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1186",
+  "createdAt": "2026-06-23T04:30:05.125Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-pseudo-live-trace-feed-from-current-main/.task/design/add-pseudo-live-trace-feed-from-current-main/session.json"
+}
