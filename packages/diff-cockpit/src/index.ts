@@ -270,6 +270,9 @@ const INDEX_OPEN_PULL_LIMIT = 75;
 const INDEX_RECENT_PULL_LIMIT = 75;
 const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
+const HOT_PR_CACHE_LIMIT = 20;
+const HOT_PR_RECENT_WINDOW_MS = 72 * 60 * 60 * 1000;
+const REVIEW_REVALIDATE_MS = 15_000;
 type PullRequestSearchTarget = Pick<
   PullRequestSummary,
   'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
@@ -2303,9 +2306,10 @@ async function refreshCacheEntries(
     const homepageRequest = makeApiCacheRequest(new URL(homepageUrl));
     const homepageData = await deps.indexLoader(repo);
     await replaceCachedJson(deps.edgeCache, deps.snapshotStore, homepageRequest, cachedJson(homepageData, homepageRequest));
+    const selectedPullNumbers = selectRefreshPullNumbers(homepageData.pulls, pullNumbers);
     const [codeResults, pullResults] = await Promise.all([
       Promise.all(codePaths.map((path) => refreshCodePathCache(deps, repo, path, requestOrigin))),
-      Promise.all(pullNumbers.map((pullNumber) => refreshPullCache(deps, repo, pullNumber, requestOrigin))),
+      mapWithConcurrency(selectedPullNumbers, 5, (pullNumber) => refreshPullCache(deps, repo, pullNumber, requestOrigin)),
     ]);
 
     return {
@@ -2381,6 +2385,56 @@ function cachePathLabel(url: string): string {
   return `${parsed.pathname}${parsed.search}`;
 }
 
+function selectRefreshPullNumbers(pulls: PullRequestSummary[], explicitPullNumbers: number[]): number[] {
+  const explicit = new Set(explicitPullNumbers);
+  const selected = [...explicit];
+  const hot = pulls
+    .filter((pull) => isHotPullSummary(pull))
+    .sort((a, b) => pullUpdatedAtMs(b) - pullUpdatedAtMs(a));
+  for (const pull of hot) {
+    if (selected.length >= explicit.size + HOT_PR_CACHE_LIMIT) break;
+    if (!explicit.has(pull.number) && !selected.includes(pull.number)) selected.push(pull.number);
+  }
+  return selected;
+}
+
+function isHotPullSummary(pull: PullRequestSummary): boolean {
+  return pull.state === 'open' || isRecentIsoDate(pull.updatedAt);
+}
+
+function pullUpdatedAtMs(pull: PullRequestSummary): number {
+  const timestamp = Date.parse(pull.updatedAt || '');
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+async function mapWithConcurrency<T, R>(items: T[], concurrency: number, mapper: (item: T) => Promise<R>): Promise<R[]> {
+  try {
+    const results = new Array<R>(items.length);
+    let nextIndex = 0;
+    const workerCount = Math.min(Math.max(concurrency, 1), items.length);
+    const runWorker = async () => {
+      try {
+        while (nextIndex < items.length) {
+          const currentIndex = nextIndex;
+          nextIndex += 1;
+          results[currentIndex] = await mapper(items[currentIndex]);
+        }
+      } catch (error: unknown) {
+        throw error;
+      }
+    };
+    await Promise.all(Array.from({ length: workerCount }, () => runWorker()));
+    return results;
+  } catch (error: unknown) {
+    throw new Error(`failed to run bounded cache refresh workers: ${getErrorMessage(error)}`);
+  }
+}
+
+function isRecentIsoDate(value: string): boolean {
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && timestamp >= Date.now() - HOT_PR_RECENT_WINDOW_MS;
+}
+
 function isAuthorizedRefreshRequest(request: Request, expectedToken: string): boolean {
   const authorization = request.headers.get('authorization') || '';
   const bearer = authorization.startsWith('Bearer ') ? authorization.slice('Bearer '.length).trim() : '';
@@ -2429,7 +2483,7 @@ type CachedJsonSnapshot<T> = {
 };
 
 const MEMORY_JSON_CACHE_TTL_MS = 5 * 60 * 1000;
-const API_CACHE_SCHEMA_VERSION = 'v5-review-commit-popovers';
+const API_CACHE_SCHEMA_VERSION = 'v6-hot-pr-cache';
 const memoryJsonCache = new Map<string, MemoryCachedJson>();
 
 function makeApiCacheRequest(url: URL): Request {
@@ -2484,12 +2538,11 @@ async function readCachedJson(edgeCache: EdgeCache | null, snapshotStore: Durabl
       if (cached) {
         if (cached.status === 200) void writeMemoryCachedJson(cacheRequest, cached.clone());
         const etag = cached.headers.get('etag') || '';
+        const body = await cached.clone().text();
         if (etag && clientRequest.headers.get('if-none-match') === etag) {
-          return cachedJsonNotModified(etag, clientRequest, 'edge');
+          return cachedJsonNotModified(etag, clientRequest, 'edge', body);
         }
-        const response = new Response(await cached.clone().text(), { status: cached.status, statusText: cached.statusText, headers: cached.headers });
-        response.headers.set('x-diff-cockpit-cache', 'edge');
-        return response;
+        return cachedJsonBody(body, etag || makeWeakEtag(body), clientRequest, 'edge');
       }
     }
   } catch {
@@ -2524,7 +2577,7 @@ async function readDurableCachedJson(snapshotStore: DurableJsonSnapshotStore | n
   const snapshot = await readDurableCachedJsonSnapshot<unknown>(snapshotStore, cacheRequest);
   if (!snapshot?.body) return null;
   if (snapshot.etag && clientRequest.headers.get('if-none-match') === snapshot.etag) {
-    return cachedJsonNotModified(snapshot.etag, clientRequest, 'snapshot');
+    return cachedJsonNotModified(snapshot.etag, clientRequest, 'snapshot', snapshot.body);
   }
   return cachedJsonBody(snapshot.body, snapshot.etag, clientRequest, 'snapshot');
 }
@@ -2576,7 +2629,7 @@ function readMemoryCachedJson(cacheRequest: Request, clientRequest: Request): Re
   const cached = getMemoryCachedJson(cacheRequest);
   if (!cached) return null;
   if (cached.etag && clientRequest.headers.get('if-none-match') === cached.etag) {
-    return cachedJsonNotModified(cached.etag, clientRequest, 'memory');
+    return cachedJsonNotModified(cached.etag, clientRequest, 'memory', cached.body);
   }
   return cachedJsonBody(cached.body, cached.etag, clientRequest, 'memory');
 }
@@ -2633,31 +2686,51 @@ function cachedJsonBody(body: string, etag: string, request: Request, cacheSourc
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': apiCacheControl(request),
+      'cache-control': apiCacheControl(request, parseJsonBody(body)),
       vary: 'Accept',
       'x-diff-cockpit-cache': cacheSource,
     },
   });
 }
 
-function cachedJsonNotModified(etag: string, request: Request, cacheSource: string): Response {
+function cachedJsonNotModified(etag: string, request: Request, cacheSource: string, body?: string): Response {
   return new Response(null, {
     status: 304,
     headers: {
       etag,
-      'cache-control': apiCacheControl(request),
+      'cache-control': apiCacheControl(request, body ? parseJsonBody(body) : null),
       vary: 'Accept',
       'x-diff-cockpit-cache': cacheSource,
     },
   });
 }
 
-function apiCacheControl(request: Request): string {
+function apiCacheControl(request: Request, data?: unknown): string {
   const pathname = new URL(request.url).pathname;
   if (/^\/api\/[^/]+\/[^/]+\/pulls$/.test(pathname)) {
     return 'public, max-age=0, s-maxage=30, must-revalidate';
   }
+  if (/^\/api\/[^/]+\/[^/]+\/pull\/\d+$/.test(pathname) && isHotPullReviewData(data)) {
+    return 'public, max-age=0, s-maxage=30, must-revalidate';
+  }
   return 'public, max-age=30, s-maxage=300, stale-while-revalidate=1800';
+}
+
+function parseJsonBody(body: string): unknown {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
+}
+
+function isHotPullReviewData(data: unknown): boolean {
+  if (!data || typeof data !== 'object') return false;
+  const pull = (data as { pull?: unknown }).pull;
+  if (!pull || typeof pull !== 'object') return false;
+  const state = stringValue((pull as { state?: unknown }).state, '').toLowerCase();
+  const updatedAt = stringValue((pull as { updatedAt?: unknown }).updatedAt, '');
+  return state === 'open' || isRecentIsoDate(updatedAt);
 }
 
 function getDefaultEdgeCache(): EdgeCache | null {
@@ -2676,7 +2749,7 @@ function cachedJson(data: unknown, request: Request): Response {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       etag,
-      'cache-control': apiCacheControl(request),
+      'cache-control': apiCacheControl(request, data),
       vary: 'Accept',
       'x-diff-cockpit-cache': 'fresh',
     },
@@ -3544,6 +3617,7 @@ let currentReviewEtag = readInitialReviewEtag();
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
 loadLiveData();
+startReviewRevalidation();
 loadViewerLibraries();
 setupFilePaneResize();
 
@@ -3646,6 +3720,15 @@ function applyReviewData(data) {
   setupActiveFileObserver();
   renderDrawer();
   renderAiCommentsSidebar();
+}
+
+function startReviewRevalidation() {
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible') loadLiveData();
+  }, ${REVIEW_REVALIDATE_MS});
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') loadLiveData();
+  });
 }
 
 function loadLiveData() {
