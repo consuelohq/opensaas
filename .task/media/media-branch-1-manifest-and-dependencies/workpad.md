@@ -70,3 +70,34 @@ Expected red failure before implementation:
 ## workspace-owned: validation evidence
 
 - 2026-06-23 22:42:01 `review.run`: passed — OK
+
+## Agent-authored implementation update
+
+What changed:
+- Created the new stream/media branch through task.start and branched PR1 from it.
+- Added packages/os/tooling/media-tool-manifest.json as the dedicated source manifest for visible media tools.
+- Added media to the generated full manifest and workflow bundles while keeping media tools out of the core manifest by default.
+- Added the OS media workflow aliases and runbook ordering for deterministic media work.
+- Added media runtime dependency catalog, install dry-run planner, doctor dependency report, and the initial scripts/media.ts CLI for PR1 commands only.
+- Updated task-intent and facade schema signatures so workflow=media is accepted.
+- Regenerated tool manifest, workflow bundles, generated type stubs, and TOOLS.md.
+
+Why it changed:
+- Branch 1 needed to make the executable media manifest/dependency contract green before any processing implementation starts.
+- The branch keeps source capture internal-only by not adding any source.capture tool, script, workflow, or manifest entry.
+- The branch intentionally avoids installing native media tooling; it models future downloads and reports profile estimates instead.
+
+Validation run:
+- bun run --cwd packages/os media:test:manifest: passed, 13 tests.
+- bun run --cwd packages/os media:test:deps: passed, 11 tests.
+- bun run --cwd packages/os generate-tool-manifest: passed.
+- bun run --cwd packages/os generate-types: passed.
+- bun run --cwd packages/os generate-docs: passed.
+- bun run --cwd packages/os typecheck: passed.
+- bun run --cwd packages/os media:test: expected red outside Branch 1, with later media suites still failing for missing implementation.
+- review.run --base origin/stream/media --no-tests: passed with 0 blocking issues.
+
+Issues and follow-ups:
+- No native packages were installed. Actual downloaded size is 0 MB.
+- Later branches still need to implement contracts, core media processing, internal media source capture, ingest, vision/audio/render/export, and artifact handoff.
+- The full media suite remains intentionally red outside the PR1 suites.
