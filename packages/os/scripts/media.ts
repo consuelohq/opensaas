@@ -3,8 +3,13 @@ import { Effect } from 'effect';
 import { existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 
+import { composeForCli } from './lib/media/compose';
 import { checkMediaDependenciesEffect } from './lib/media/dependencies';
+import { extractFramesForCli } from './lib/media/frames';
 import { createMediaInstallPlan } from './lib/media/install-plan';
+import { probeForCli } from './lib/media/probe';
+import { qaForCli } from './lib/media/qa';
+import { validateTimelineForCli } from './lib/media/timeline';
 
 type ParsedProfileArgs = {
   json: boolean;
@@ -107,24 +112,60 @@ function missingInputError(kind: string, path: string | undefined): MediaCliEnve
   };
 }
 
-function handleCoreCommand(command: string, args: string[]): MediaCliEnvelope {
-  if (command === 'probe') {
-    if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffprobe') return missingDependencyError('ffprobe');
-    return missingInputError('probe', optionValue(args, '--input'));
+function allOptionValues(args: string[], flag: string): string[] {
+  const values: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] !== flag) continue;
+    const value = args[index + 1];
+    if (value && !value.startsWith('--')) values.push(value);
   }
-  if (command === 'frames') {
-    return missingInputError('frames.extract', optionValue(args, '--input'));
+  return values;
+}
+
+function parseNumericOptions(args: string[], flag: string): number[] {
+  return allOptionValues(args, flag).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+}
+
+function inputExists(path: string | undefined): path is string {
+  return typeof path === 'string' && path.length > 0 && existsSync(path);
+}
+
+async function handleCoreCommand(command: string, args: string[]): Promise<unknown> {
+  try {
+    if (command === 'probe') {
+      if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffprobe') return missingDependencyError('ffprobe');
+      const inputPath = optionValue(args, '--input');
+      if (!inputExists(inputPath)) return missingInputError('probe', inputPath);
+      return await Effect.runPromise(probeForCli({ inputPath, provenance: { status: 'needs-review' } }));
+    }
+    if (command === 'frames') {
+      const inputPath = optionValue(args, '--input');
+      const outDir = optionValue(args, '--out');
+      if (!inputExists(inputPath)) return missingInputError('frames.extract', inputPath);
+      if (!outDir) return missingInputError('frames.extract out', outDir);
+      return await Effect.runPromise(extractFramesForCli({ inputPath, outDir, timestamps: parseNumericOptions(args, '--timestamp') }));
+    }
+    if (command === 'timeline') {
+      const timelinePath = optionValue(args, '--timeline');
+      if (!inputExists(timelinePath)) return missingInputError('timeline.validate', timelinePath);
+      return await Effect.runPromise(validateTimelineForCli({ timelinePath }));
+    }
+    if (command === 'compose') {
+      const timelinePath = optionValue(args, '--timeline');
+      const outPath = optionValue(args, '--out');
+      if (!inputExists(timelinePath)) return missingInputError('compose', timelinePath);
+      if (!outPath) return missingInputError('compose out', outPath);
+      return await Effect.runPromise(composeForCli({ timelinePath, outPath }));
+    }
+    if (command === 'qa') {
+      const inputPath = optionValue(args, '--input');
+      if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
+      return await Effect.runPromise(qaForCli({ inputPath }));
+    }
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+  } catch (error: unknown) {
+    return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
   }
-  if (command === 'timeline') {
-    return missingInputError('timeline.validate', optionValue(args, '--timeline'));
-  }
-  if (command === 'compose') {
-    return missingInputError('compose', optionValue(args, '--timeline'));
-  }
-  if (command === 'qa') {
-    return missingInputError('qa', optionValue(args, '--input'));
-  }
-  return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
 }
 
 async function main(): Promise<void> {
@@ -158,9 +199,9 @@ async function main(): Promise<void> {
     return;
   }
 
-  const envelope = handleCoreCommand(command, rest);
+  const envelope = await handleCoreCommand(command, rest);
   writeJson(envelope);
-  if (!envelope.ok) process.exitCode = 1;
+  if (typeof envelope === 'object' && envelope !== null && 'ok' in envelope && envelope.ok === false) process.exitCode = 1;
 }
 
 main().catch((error: unknown) => {
