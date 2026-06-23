@@ -1,4 +1,5 @@
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../scripts/lib/workspace-device-authorization';
+import { createWorkspaceEdgeRouteSeedSql } from '../../../scripts/lib/workspace-edge-route-seed';
 
 type GrantStatus = 'pending' | 'approved' | 'denied';
 type StrongerAuthMethod = 'google' | 'passkey' | 'magic_link' | 'hardware_key' | 'admin_invite';
@@ -27,6 +28,15 @@ type OAuthState = {
   expiresAt: number;
 };
 
+type WorkspaceRouteRegistryBinding = { exec(sql: string): Promise<unknown> };
+type DefaultSiteSnapshot = {
+  key: string;
+  versionId: string;
+  siteId?: string;
+  contentType?: string;
+  cachePolicy?: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
+};
+
 type Store = {
   put(g: Grant): Promise<void>;
   byHash(hash: string): Promise<Grant | undefined>;
@@ -46,6 +56,9 @@ type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
+  OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
+  OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
 };
 
 type GoogleIdentityErrorKind = 'token_exchange' | 'identity_verification' | 'audience_mismatch' | 'email_not_verified';
@@ -74,6 +87,10 @@ const GOOGLE_SCOPE = 'openid email profile';
 const ALLOWED_AUTH_METHODS = ['google', 'passkey', 'magic_link', 'hardware_key', 'admin_invite'] as const;
 const ALLOWED_AUTH_METHOD_SET = new Set<string>(ALLOWED_AUTH_METHODS);
 const REJECTED_AUTH_METHODS = new Set<string>(['password', 'username_password', 'basic', 'basic_auth']);
+const DEFAULT_SITE_SNAPSHOT_KEY = 'sites/workspace_testing/launcher/sha256-15c3f6f5c611b43c/index.html';
+const DEFAULT_SITE_SNAPSHOT_VERSION_ID = 'sha256-15c3f6f5c611b43c';
+const DEFAULT_SITE_ID = 'launcher';
+const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 const json = (body: unknown, init: ResponseInit = {}) => new Response(JSON.stringify(body, null, 2), { ...init, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...(init.headers ?? {}) } });
 const text = (body: string, init: ResponseInit = {}) => new Response(body, { ...init, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...(init.headers ?? {}) } });
@@ -87,6 +104,9 @@ async function hash(value: string): Promise<string> { try { return b64(new Uint8
 async function hmac(secret: string, value: string): Promise<string> { try { const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); return b64(new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)))); } catch { throw new Error('auth assertion signing failed'); } }
 async function devicePublicKeyThumbprint(value: string): Promise<string> { try { return `dpk_${(await hash(value)).slice(0, 32)}`; } catch { throw new Error('device public key thumbprint failed'); } }
 function slug(value: string): string { const out = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); if (!out) throw new Error('workspace_name is required'); return out; }
+function host(value: string): string { const out = value.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, ''); if (!out) throw new Error('workspace_host is required'); return out; }
+function workspaceIdFromSlug(value: string): string { return `workspace_${slug(value).replace(/-/g, '_')}`; }
+function baseDomainFromHost(value: string): string { const normalized = host(value); return normalized.endsWith('.consuelohq.com') ? 'consuelohq.com' : normalized.split('.').slice(-2).join('.'); }
 function cleanCode(value: string): string { return value.trim().replace(/[^a-z0-9]/gi, '').toUpperCase(); }
 function showCode(value: string): string { return cleanCode(value).replace(/(.{4})(?=.)/g, '$1-'); }
 function htmlEscape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c)); }
@@ -242,6 +262,33 @@ async function approveGrant(input: { store: Store; grant: Grant; accountId: stri
   }
 }
 
+function defaultSiteSnapshot(input?: DefaultSiteSnapshot): Required<DefaultSiteSnapshot> {
+  return {
+    key: input?.key?.trim() || DEFAULT_SITE_SNAPSHOT_KEY,
+    versionId: input?.versionId?.trim() || DEFAULT_SITE_SNAPSHOT_VERSION_ID,
+    siteId: input?.siteId?.trim() || DEFAULT_SITE_ID,
+    contentType: input?.contentType?.trim() || DEFAULT_SITE_CONTENT_TYPE,
+    cachePolicy: input?.cachePolicy ?? 'static-shell',
+  };
+}
+
+async function registerApprovedWorkspaceRoute(input: { routeRegistry?: WorkspaceRouteRegistryBinding; grant: Grant; defaultSiteSnapshot?: DefaultSiteSnapshot }): Promise<void> {
+  if (!input.routeRegistry) return;
+  try {
+    const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
+    await input.routeRegistry.exec(createWorkspaceEdgeRouteSeedSql({
+      workspaceId: workspaceIdFromSlug(input.grant.workspaceSlug),
+      workspaceSlug: input.grant.workspaceSlug,
+      hostname: input.grant.workspaceHost,
+      baseDomain: baseDomainFromHost(input.grant.workspaceHost),
+      siteSnapshotKey: snapshot.key,
+      siteVersionId: snapshot.versionId,
+    }));
+  } catch (error: unknown) {
+    throw new Error(`workspace route setup failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
@@ -265,6 +312,8 @@ export function createOsDeviceAuthorityHandler(input: {
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
   fetchImpl?: typeof fetch;
+  workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
+  defaultSiteSnapshot?: DefaultSiteSnapshot;
 }) {
   const origin = input.origin ?? ORIGIN;
   const now = input.now ?? Date.now;
@@ -309,6 +358,11 @@ export function createOsDeviceAuthorityHandler(input: {
         } catch (error: unknown) {
           return text(page({ code: oauthState.userCode, origin, error: googleApprovalErrorMessage(error) }), { status: 502 });
         }
+        try {
+          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant, defaultSiteSnapshot: input.defaultSiteSnapshot });
+        } catch (error: unknown) {
+          return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${error instanceof Error ? error.message : String(error)}). Restart the installer after platform setup is fixed.` }), { status: 502 });
+        }
         await input.store.delOAuthState(stateValue);
         await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
         return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
@@ -347,6 +401,11 @@ export function createOsDeviceAuthorityHandler(input: {
         const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
+        try {
+          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant: g, defaultSiteSnapshot: input.defaultSiteSnapshot });
+        } catch (error: unknown) {
+          return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
+        }
         await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
       }
@@ -384,6 +443,11 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
+      defaultSiteSnapshot: {
+        key: env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY ?? DEFAULT_SITE_SNAPSHOT_KEY,
+        versionId: env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID ?? DEFAULT_SITE_SNAPSHOT_VERSION_ID,
+      },
     });
   }
   fetch(request: Request) { return this.handler(request); }

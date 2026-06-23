@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS workspace_route_registry (
   route_path_prefix TEXT NOT NULL,
   route_surface TEXT NOT NULL CHECK (route_surface IN ('os', 'dialer', 'app', 'sites', 'twenty')),
   route_status TEXT NOT NULL CHECK (route_status IN ('active', 'disabled')),
-  route_target_kind TEXT NOT NULL CHECK (route_target_kind IN ('service-upstream', 'os-connector')),
+  route_target_kind TEXT NOT NULL CHECK (route_target_kind IN ('service-upstream', 'os-connector', 'site-snapshot', 'consuelo-gateway-service')),
   target_origin_url TEXT NOT NULL,
   connector_id TEXT,
   connector_status TEXT CHECK (connector_status IN ('connected', 'disconnected') OR connector_status IS NULL),

@@ -450,7 +450,14 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['workspace', 'skills', 'artifacts', 'agents', 'health']);
+    printOsBanner([
+      { label: 'dependencies', state: 'complete' },
+      { label: 'workspace', state: 'active' },
+      'skills',
+      'artifacts',
+      'agents',
+      'health',
+    ]);
     info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
@@ -488,7 +495,8 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       },
     });
     if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceName = normalizeWorkspaceName(workspaceNameInput);
+    const rawWorkspaceName = String(workspaceNameInput);
+    const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
     const deviceLogin = await attemptWorkspaceDeviceLogin({
@@ -530,10 +538,16 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       }
     }
 
-    const installDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
-    if (isCancel(installDaemons)) { cancel('setup cancelled.'); process.exit(0); }
-    info('background service is the final setup step; tokens and secrets stay local and are not printed.');
-
+    let installDaemons = false;
+    if (options.installDaemons) {
+      installDaemons = true;
+    } else if (options.skipDaemons) {
+      installDaemons = false;
+    } else {
+      const selectedInstallDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
+      if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
+      installDaemons = selectedInstallDaemons;
+    }
     return {
       ...options,
       mode,
@@ -618,9 +632,6 @@ async function main(): Promise<void> {
     }
 
     if (!options.quiet) {
-      stepComplete('skills');
-      stepComplete('artifacts');
-      if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
       if (!suppressFinalSummary) {
         info(summarizeActions(result));

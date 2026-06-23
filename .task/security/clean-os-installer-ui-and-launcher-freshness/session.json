@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ecc3b36066e",
+  "tmuxSession": "opensaas-security-clean-os-installer-ui-and-launcher-freshness-0ecc3b36",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/clean-os-installer-ui-and-launcher-freshness",
+  "branch": "task/security/clean-os-installer-ui-and-launcher-freshness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-clean-os-installer-ui-and-launcher-freshness",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-clean-os-installer-ui-and-launcher-freshness",
+  "prNumber": 1188,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1188",
+  "createdAt": "2026-06-23T05:26:32.982Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-clean-os-installer-ui-and-launcher-freshness/.task/security/clean-os-installer-ui-and-launcher-freshness/session.json"
+}

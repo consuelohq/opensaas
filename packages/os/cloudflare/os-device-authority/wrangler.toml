@@ -9,6 +9,14 @@ routes = [
 
 [vars]
 OS_DEVICE_AUTH_ORIGIN = "https://os.consuelohq.com"
+OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY = "sites/workspace_testing/launcher/sha256-15c3f6f5c611b43c/index.html"
+OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID = "sha256-15c3f6f5c611b43c"
+
+[[d1_databases]]
+binding = "WORKSPACE_ROUTE_REGISTRY"
+database_name = "consuelo-workspace-route-registry"
+database_id = "2e16a374-cf0d-463e-b696-b24b8c8599bd"
+migrations_dir = "../workspace-edge/migrations"
 
 [[durable_objects.bindings]]
 name = "DEVICE_GRANTS"

@@ -9,6 +9,8 @@ export type WorkspaceEdgeRouteSeedInput = {
   workspaceSlug?: string;
   hostname?: string;
   baseDomain?: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
   appUpstreamUrl?: string;
   connectorId?: string;
   tunnelOriginUrl?: string;
@@ -60,6 +62,8 @@ const sqlNullableText = (value: string | null): string =>
 const buildSiteSnapshotRoute = (input: {
   pathPrefix: '/' | '/traces';
   workspaceId: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
 }): WorkspaceRouteD1Route => ({
   surface: 'sites',
   pathPrefix: input.pathPrefix,
@@ -68,8 +72,11 @@ const buildSiteSnapshotRoute = (input: {
   target: {
     kind: 'site-snapshot',
     siteId: DEFAULT_SITE_ID,
-    versionId: DEFAULT_SITE_VERSION_ID,
-    manifestKey: DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
+    versionId: trimmedOrDefault(input.siteVersionId, DEFAULT_SITE_VERSION_ID),
+    manifestKey: trimmedOrDefault(
+      input.siteSnapshotKey,
+      DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
+    ),
     contentType: DEFAULT_SITE_CONTENT_TYPE,
     cachePolicy: 'static-shell',
   },
@@ -173,8 +180,18 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
   const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
   const routes: WorkspaceRouteD1Route[] = [
-    buildSiteSnapshotRoute({ pathPrefix: '/', workspaceId }),
-    buildSiteSnapshotRoute({ pathPrefix: '/traces', workspaceId }),
+    buildSiteSnapshotRoute({
+      pathPrefix: '/',
+      workspaceId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+    }),
+    buildSiteSnapshotRoute({
+      pathPrefix: '/traces',
+      workspaceId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+    }),
     ...buildTraceGatewayRoutes(),
   ];
 
@@ -213,68 +230,72 @@ const createConnectorSql = (input: {
   connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }>;
   localServiceUrl: string;
 }): string =>
+  `INSERT OR REPLACE INTO workspace_connectors (` +
   [
-    'INSERT OR REPLACE INTO workspace_connectors (',
-    '  connector_id,',
-    '  workspace_id,',
-    '  workspace_host,',
-    '  transport,',
-    '  local_service_url,',
-    '  connector_status,',
-    '  created_at,',
-    '  updated_at',
-    ') VALUES (',
-    `  ${sqlText(input.connectorTarget.connectorId)},`,
-    `  ${sqlText(input.record.workspaceId)},`,
-    `  ${sqlText(input.record.hostname)},`,
-    "  'cloudflare-tunnel',",
-    `  ${sqlText(input.localServiceUrl)},`,
-    `  ${sqlText(input.connectorTarget.connectorStatus)},`,
-    "  datetime('now'),",
-    "  datetime('now')",
-    ');',
-  ].join('\n');
+    'connector_id',
+    'workspace_id',
+    'workspace_host',
+    'transport',
+    'local_service_url',
+    'connector_status',
+    'created_at',
+    'updated_at',
+  ].join(', ') +
+  `) VALUES (` +
+  [
+    sqlText(input.connectorTarget.connectorId),
+    sqlText(input.record.workspaceId),
+    sqlText(input.record.hostname),
+    sqlText('cloudflare-tunnel'),
+    sqlText(input.localServiceUrl),
+    sqlText(input.connectorTarget.connectorStatus),
+    "datetime('now')",
+    "datetime('now')",
+  ].join(', ') +
+  `);`;
 
 const createRouteSql = (input: {
   record: WorkspaceEdgeSeedRecord;
   primaryRoute: WorkspaceRouteD1Route;
   connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }> | null;
 }): string =>
+  `INSERT OR REPLACE INTO workspace_route_registry (` +
   [
-    'INSERT OR REPLACE INTO workspace_route_registry (',
-    '  hostname,',
-    '  workspace_id,',
-    '  workspace_slug,',
-    '  workspace_host,',
-    '  base_domain,',
-    '  route_path_prefix,',
-    '  route_surface,',
-    '  route_status,',
-    '  route_target_kind,',
-    '  target_origin_url,',
-    '  connector_id,',
-    '  connector_status,',
-    '  record_json,',
-    '  created_at,',
-    '  updated_at',
-    ') VALUES (',
-    `  ${sqlText(input.record.hostname)},`,
-    `  ${sqlText(input.record.workspaceId)},`,
-    `  ${sqlText(input.record.workspaceSlug)},`,
-    `  ${sqlText(input.record.hostname)},`,
-    `  ${sqlText(input.record.baseDomain)},`,
-    `  ${sqlText(input.primaryRoute.pathPrefix)},`,
-    `  ${sqlText(input.primaryRoute.surface)},`,
-    `  ${sqlText(input.primaryRoute.status)},`,
-    `  ${sqlText(input.primaryRoute.target.kind)},`,
-    `  ${sqlText(getTargetOriginUrl(input.primaryRoute.target))},`,
-    `  ${sqlNullableText(input.connectorTarget?.connectorId ?? null)},`,
-    `  ${sqlNullableText(input.connectorTarget?.connectorStatus ?? null)},`,
-    `  ${sqlText(JSON.stringify(input.record))},`,
-    "  datetime('now'),",
-    "  datetime('now')",
-    ');',
-  ].join('\n');
+    'hostname',
+    'workspace_id',
+    'workspace_slug',
+    'workspace_host',
+    'base_domain',
+    'route_path_prefix',
+    'route_surface',
+    'route_status',
+    'route_target_kind',
+    'target_origin_url',
+    'connector_id',
+    'connector_status',
+    'record_json',
+    'created_at',
+    'updated_at',
+  ].join(', ') +
+  `) VALUES (` +
+  [
+    sqlText(input.record.hostname),
+    sqlText(input.record.workspaceId),
+    sqlText(input.record.workspaceSlug),
+    sqlText(input.record.hostname),
+    sqlText(input.record.baseDomain),
+    sqlText(input.primaryRoute.pathPrefix),
+    sqlText(input.primaryRoute.surface),
+    sqlText(input.primaryRoute.status),
+    sqlText(input.primaryRoute.target.kind),
+    sqlText(getTargetOriginUrl(input.primaryRoute.target)),
+    sqlNullableText(input.connectorTarget?.connectorId ?? null),
+    sqlNullableText(input.connectorTarget?.connectorStatus ?? null),
+    sqlText(JSON.stringify(input.record)),
+    "datetime('now')",
+    "datetime('now')",
+  ].join(', ') +
+  `);`;
 
 export const createWorkspaceEdgeRouteSeedSql = (
   input: WorkspaceEdgeRouteSeedInput = {},
