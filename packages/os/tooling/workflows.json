@@ -118,6 +118,30 @@
           "workflow": "office"
         }
       ]
+    },
+    {
+      "id": "media",
+      "aliases": [
+        "video",
+        "clips",
+        "youtube",
+        "sports-media"
+      ],
+      "roles": [
+        "media.probe",
+        "media.compose",
+        "media.qa",
+        "media.workflow.runbook"
+      ],
+      "categories": [
+        "media"
+      ],
+      "subscriptions": [
+        {
+          "event": "workflow.intent.media.detected",
+          "workflow": "media"
+        }
+      ]
     }
   ]
 }
