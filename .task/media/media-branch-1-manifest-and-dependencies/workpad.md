@@ -101,3 +101,7 @@ Issues and follow-ups:
 - No native packages were installed. Actual downloaded size is 0 MB.
 - Later branches still need to implement contracts, core media processing, internal media source capture, ingest, vision/audio/render/export, and artifact handoff.
 - The full media suite remains intentionally red outside the PR1 suites.
+
+## Current status
+
+Branch 1 is complete for the approved PR1 scope. The media manifest, workflow/runbook routing, dependency catalog, install dry-run planner, and doctor report are implemented under packages/os. Focused PR1 suites are green, full media suite remains intentionally red outside this branch, and no local native media packages were installed or downloaded.
