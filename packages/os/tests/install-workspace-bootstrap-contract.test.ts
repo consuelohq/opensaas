@@ -214,6 +214,29 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
   });
 
+
+  it('should show workspace progress and slug workspace names before device authorization', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+    const cliUiSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'lib', 'cli-ui.ts'),
+      'utf8',
+    );
+
+    expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
+    expect(installSource).toContain("{ label: 'workspace', state: 'active' }");
+    expect(installSource).toContain("message: 'enter workspace name (spaces become hyphens)'");
+    expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
+    expect(installSource).toContain('info(`workspace slug: ${workspaceSlug}`);');
+    expect(installSource.indexOf('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);')).toBeLessThan(
+      installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
+    );
+    expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete'");
+    expect(cliUiSource).toContain("if (step.state === 'active' || step.state === 'complete') return chalk.white('●');");
+  });
+
   it('should resolve OS home silently instead of prompting for it in interactive setup', () => {
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),

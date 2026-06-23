@@ -339,7 +339,7 @@ render_dependency_progress() {
   log "C O N S U E L O   O S"
   log "│"
   log "● dependencies"
-  log "○ home"
+  log "○ workspace"
   log "○ skills"
   log "○ artifacts"
   log "○ agents"
