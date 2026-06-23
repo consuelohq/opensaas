@@ -239,6 +239,29 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
   });
 
 
+
+  it('should avoid duplicate final step rows after local OS save', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    const afterSave = installSource.slice(installSource.indexOf("spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');"));
+    expect(afterSave).not.toContain("stepComplete('skills')");
+    expect(afterSave).not.toContain("stepComplete('artifacts')");
+    expect(afterSave).not.toContain("stepComplete('agents')");
+    expect(afterSave).toContain("success(options.dryRun ? 'dry run complete' : 'configuration saved')");
+  });
+
+  it('should not print background-service explanatory copy when daemon choice was preselected', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).not.toContain('background service is the final setup step; tokens and secrets stay local and are not printed.');
+  });
+
   it('should honor preselected daemon flags without reprompting during interactive setup', () => {
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),

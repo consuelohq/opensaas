@@ -83,6 +83,8 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('Consuelo OS needs its dependencies to continue.');
     expect(bootstrap).toContain('render_dependency_progress');
+    expect(bootstrap).toContain('C O N S U E L O  O S');
+    expect(bootstrap).not.toContain('C O N S U E L O   O S');
     expect(bootstrap).toContain('● dependencies');
     expect(bootstrap).not.toContain('○ home');
     expect(bootstrap).toContain('○ workspace');
