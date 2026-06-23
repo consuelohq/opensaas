@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/diagnose-installer-launcher-freshness",
+  "base": "stream/os",
+  "headSha": "9979f881244084ce8c9c7f923d4ec9a77f19daa3",
+  "changeHash": "c0959d71e156f0abb436e6ee409d909beb53ff9ee90beb3a7f28db93c45074f8",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/tests/bootstrap-source.test.ts"
+  ],
+  "verifiedAt": "2026-06-23T03:08:49.469Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/diagnose-installer-launcher-freshness/current.json",
+        ".task/os/diagnose-installer-launcher-freshness/session.json",
+        ".task/os/diagnose-installer-launcher-freshness/workpad.md",
+        ".task/tasks/os/diagnose-installer-launcher-freshness.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/tests/bootstrap-source.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

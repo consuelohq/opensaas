@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_445ec5e95029",
+  "tmuxSession": "opensaas-os-diagnose-installer-launcher-freshness-445ec5e9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/diagnose-installer-launcher-freshness",
+  "branch": "task/os/diagnose-installer-launcher-freshness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-diagnose-installer-launcher-freshness",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-diagnose-installer-launcher-freshness",
+  "prNumber": 1179,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1179",
+  "createdAt": "2026-06-23T03:02:40.719Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-diagnose-installer-launcher-freshness/.task/os/diagnose-installer-launcher-freshness/session.json"
+}

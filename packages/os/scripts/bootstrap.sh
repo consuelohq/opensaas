@@ -842,7 +842,8 @@ download_source() {
 
     REPO_DIR="$SOURCE_DIR"
     SOURCE_STATUS="present"
-    log "Using existing Consuelo OS source: $REPO_DIR (pass --refresh-source to refresh it)"
+    log "Using existing Consuelo OS source: $REPO_DIR"
+    log "To refresh source, run: $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --refresh-source"
     return 0
   fi
 
@@ -978,17 +979,76 @@ if (typeof host === "string") host;
 ' 2>/dev/null
 }
 
+local_sites_index_path() {
+  printf '%s
+' "$OS_HOME/sites/index.html"
+}
+
+local_sites_version() {
+  local index_path hash
+  index_path="$(local_sites_index_path)"
+  [ -f "$index_path" ] || return 1
+  command -v shasum >/dev/null 2>&1 || return 1
+  hash="$(shasum -a 256 "$index_path" | awk '{ print $1 }')"
+  [ -n "$hash" ] || return 1
+  printf 'sha256-%.16s
+' "$hash"
+}
+
+workspace_launcher_site_version() {
+  local workspace_host="$1"
+  local headers
+  [ -n "$workspace_host" ] || return 1
+  headers="$(mktemp "${TMPDIR:-/tmp}/consuelo-os-launcher-headers.XXXXXX")"
+  if curl -fsS --max-time 8 -H "cache-control: no-cache" -D "$headers" -o /dev/null "https://$workspace_host/" >/dev/null 2>&1; then
+    awk 'BEGIN { IGNORECASE = 1 } /^x-consuelo-site-version:/ { value = $0; sub(/^[^:]*:[[:space:]]*/, "", value); gsub(/
+/, "", value); print value; exit }' "$headers"
+    rm -f "$headers"
+    return 0
+  fi
+  rm -f "$headers"
+  return 1
+}
+
+launcher_target_url() {
+  local workspace_host="$1"
+  local local_index local_version remote_version
+  local_index="$(local_sites_index_path)"
+
+  [ -n "$workspace_host" ] || return 1
+  if [ ! -f "$local_index" ]; then
+    printf 'https://%s
+' "$workspace_host"
+    return 0
+  fi
+
+  local_version="$(local_sites_version || true)"
+  remote_version="$(workspace_launcher_site_version "$workspace_host" || true)"
+  if [ -n "$local_version" ] && [ "$remote_version" != "$local_version" ]; then
+    printf '%s
+' "Workspace launcher is not current: https://$workspace_host serves ${remote_version:-unknown}; local Sites is $local_version. Opening local launcher: $local_index" >&2
+    printf '%s
+' "$local_index"
+    return 0
+  fi
+
+  printf 'https://%s
+' "$workspace_host"
+}
+
 open_workspace_launcher() {
   [ "$JSON" -eq 0 ] || return 0
   [ "$DRY_RUN" -eq 0 ] || return 0
   [ "$YES" -eq 0 ] || return 0
   [ "$ONBOARDING_STATUS" = "installed" ] || return 0
 
-  local workspace_host
+  local workspace_host target_url
   workspace_host="$(onboarding_workspace_host || true)"
   [ -n "$workspace_host" ] || return 0
 
-  open_url "https://$workspace_host"
+  target_url="$(launcher_target_url "$workspace_host" || true)"
+  [ -n "$target_url" ] || return 0
+  open_url "$target_url"
 }
 
 run_daemon_dry_run() {

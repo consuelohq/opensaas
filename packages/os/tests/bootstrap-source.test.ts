@@ -38,6 +38,8 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('--refresh-source');
     expect(bootstrap).toContain('REFRESH_SOURCE');
     expect(bootstrap).toContain('SOURCE_STATUS="refreshed"');
+    expect(bootstrap).toContain('$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --refresh-source');
+    expect(bootstrap).not.toContain('(pass --refresh-source to refresh it)');
   });
 
   it('asks for local or cloud before dependency setup', () => {
@@ -108,6 +110,11 @@ describe('bootstrap source refresh controls', () => {
     expect(summary).not.toContain('Tokens and secrets');
 
     expect(bootstrap).toContain('open_workspace_launcher');
+    expect(bootstrap).toContain('launcher_target_url');
+    expect(bootstrap).toContain('local_sites_version');
+    expect(bootstrap).toContain('workspace_launcher_site_version');
+    expect(bootstrap).toContain('x-consuelo-site-version');
+    expect(bootstrap).toContain('Workspace launcher is not current');
     expect(bootstrap).toContain('[ "$YES" -eq 0 ] || return 0');
     expect(bootstrap).toContain('[ "$DRY_RUN" -eq 0 ] || return 0');
     expect(bootstrap).toContain('[ "$JSON" -eq 0 ] || return 0');
