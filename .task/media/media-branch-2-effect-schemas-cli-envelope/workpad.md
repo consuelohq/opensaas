@@ -71,3 +71,31 @@ Expected red failure before implementation:
 - Revalidation after fix: `bun run --cwd packages/os media:test:contracts` passed, 5 files / 16 tests.
 - Revalidation after fix: `bun run --cwd packages/os typecheck` passed.
 - Final review: `review.run --base origin/stream/media --no-tests` passed with 0 blocking issues on this branch. One pre-existing warning remains in `scripts/media.ts` from the stream base.
+
+## Agent-authored implementation update
+
+What changed:
+- Added the Branch 2 media schema and service spine under packages/os/scripts/lib/media.
+- Added final-state media schema exports for asset, timeline, render result, dependency report, ingest manifest, frame manifest, transcript, pose track, motion track, overlay, breakdown plan, and export package.
+- Added process, filesystem, errors, and placeholder media module boundaries required by the Effect architecture contract.
+- Updated media dependency checks to avoid direct process execution in the dependency module.
+- Updated media install dry-run output to include the shared JSON ok envelope field.
+- Extended packages/os/scripts/media.ts to return structured JSON envelopes for doctor, install, and core command error paths.
+
+Why it changed:
+- Branch 2 is the contract/runtime spine needed before core media processing starts in Branch 3.
+- The implementation keeps heavy behavior intentionally out of scope while giving later agents stable schemas, services, and CLI envelopes to build against.
+- Research ingest remains untouched, and source capture remains internal-only.
+
+Validation run:
+- bun run --cwd packages/os media:test:contracts: passed, 5 files / 16 tests.
+- bun run --cwd packages/os media:test:manifest: passed, 3 files / 13 tests.
+- bun run --cwd packages/os media:test:deps: passed, 3 files / 11 tests.
+- bun run --cwd packages/os typecheck: passed.
+- bun run --cwd packages/os media:test: expected red outside Branch 2, 31 files / 100 tests, 12 files passed / 19 failed, 52 passed / 48 failed.
+- review.run --base origin/stream/media --no-tests: passed with 0 blocking issues on this branch.
+
+Issues and follow-ups:
+- No native media tools were installed or downloaded. Actual downloaded size is 0 MB.
+- Core media behavior, media ingest, YouTube, audio, vision, render/export, and artifact handoff remain intentionally red for future branches.
+- One review warning is pre-existing from stream/media and was not introduced by this task.
