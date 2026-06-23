@@ -450,7 +450,14 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner(['workspace', 'skills', 'artifacts', 'agents', 'health']);
+    printOsBanner([
+      { label: 'dependencies', state: 'complete' },
+      { label: 'workspace', state: 'active' },
+      'skills',
+      'artifacts',
+      'agents',
+      'health',
+    ]);
     info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
@@ -476,7 +483,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
     const workspaceNameInput = await text({
       ...clackIo,
-      message: 'enter workspace name',
+      message: 'enter workspace name (spaces become hyphens)',
       initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
       validate: (value) => {
         try {
@@ -488,9 +495,13 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       },
     });
     if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const workspaceName = normalizeWorkspaceName(workspaceNameInput);
+    const rawWorkspaceName = String(workspaceNameInput);
+    const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    if (rawWorkspaceName.trim() !== workspaceSlug) {
+      info(`workspace slug: ${workspaceSlug}`);
+    }
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       workspaceName,
       workspaceSlug,

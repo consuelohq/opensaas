@@ -156,6 +156,8 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(appOnlySql).toMatch(/internal\.consuelohq\.com/);
     expect(appOnlySql).not.toMatch(/workspace_connectors/i);
     expect(appOnlySql).not.toMatch(/token|credential|secret/i);
+    expect(appOnlySql.split('\n')).toHaveLength(1);
+    expect(appOnlySql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry \(\n/);
 
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
       connectorId: '  connector_internal  ',
@@ -165,6 +167,11 @@ contractDescribe('workspace edge route seed contract', () => {
 
     expect(osSql).toMatch(/INSERT OR REPLACE INTO workspace_connectors/i);
     expect(osSql).toMatch(/connector_internal/);
+    expect(osSql.split('\n')).toHaveLength(3);
+    for (const statement of osSql.split('\n\n')) {
+      expect(statement).toMatch(/;$/);
+      expect(statement).not.toContain('\n');
+    }
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
     expect(osSql).toMatch(/\/traces/);
