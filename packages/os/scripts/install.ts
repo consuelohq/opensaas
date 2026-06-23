@@ -548,10 +548,6 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
       installDaemons = selectedInstallDaemons;
     }
-    if (installDaemons) {
-      info('background service is the final setup step; tokens and secrets stay local and are not printed.');
-    }
-
     return {
       ...options,
       mode,
@@ -636,9 +632,6 @@ async function main(): Promise<void> {
     }
 
     if (!options.quiet) {
-      stepComplete('skills');
-      stepComplete('artifacts');
-      if (options.connectAgents.length > 0) stepComplete('agents');
       success(options.dryRun ? 'dry run complete' : 'configuration saved');
       if (!suppressFinalSummary) {
         info(summarizeActions(result));

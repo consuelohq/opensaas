@@ -342,11 +342,19 @@ const buildProxyRequest = (input: {
   return new Request(input.upstreamUrl, init);
 };
 
+type SiteSnapshotTarget = Extract<
+  WorkspaceCloudflareEdgeRouteTarget,
+  { kind: 'site-snapshot' }
+>;
+
 const createSiteSnapshotCacheKey = (request: Request): Request => {
   const url = new URL(request.url);
   url.search = '';
   return new Request(url.toString(), { method: 'GET' });
 };
+
+const isSiteSnapshotEdgeCacheable = (target: SiteSnapshotTarget): boolean =>
+  target.cachePolicy === 'versioned-asset' || target.cachePolicy === 'mutable-artifact';
 
 const getDefaultSiteCache = (): WorkspaceSitesEdgeCache | undefined => {
   const maybeCaches = globalThis.caches as
@@ -367,8 +375,8 @@ const siteSnapshotCacheControl = (
   if (policy === 'mutable-artifact') {
     return 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400';
   }
-  if (policy === 'private-preview') return 'no-store';
-  return 'public, max-age=60, s-maxage=2592000, stale-while-revalidate=604800, stale-if-error=604800';
+  if (policy === 'private-preview' || policy === 'static-shell') return 'no-store';
+  return 'no-store';
 };
 
 const withSiteSnapshotCacheState = (
@@ -386,6 +394,7 @@ const withSiteSnapshotCacheState = (
 
 const readCachedSiteSnapshot = async (input: {
   request: Request;
+  target: SiteSnapshotTarget;
   cache?: WorkspaceSitesEdgeCache;
 }): Promise<Response | null> => {
   try {
@@ -397,6 +406,9 @@ const readCachedSiteSnapshot = async (input: {
       cached?.headers.get('x-consuelo-edge-cache-authority') !==
       SITE_SNAPSHOT_CACHE_AUTHORITY
     ) {
+      return null;
+    }
+    if (cached.headers.get('x-consuelo-site-version') !== input.target.versionId) {
       return null;
     }
     return withSiteSnapshotCacheState(cached, 'hit');
@@ -482,7 +494,14 @@ const serveSiteSnapshot = async (input: {
     }
 
     const cache = input.store?.cache ?? getDefaultSiteCache();
-    const cached = await readCachedSiteSnapshot({ request: input.request, cache });
+    const cacheable = isSiteSnapshotEdgeCacheable(input.resolution.target);
+    const cached = cacheable
+      ? await readCachedSiteSnapshot({
+          request: input.request,
+          target: input.resolution.target,
+          cache,
+        })
+      : null;
     if (cached) return cached;
 
     const html = await readSiteSnapshotHtml({
@@ -501,9 +520,11 @@ const serveSiteSnapshot = async (input: {
       html,
       target: input.resolution.target,
     });
-    await cache
-      ?.put(createSiteSnapshotCacheKey(input.request), response.clone())
-      .catch(() => undefined);
+    if (cacheable) {
+      await cache
+        ?.put(createSiteSnapshotCacheKey(input.request), response.clone())
+        .catch(() => undefined);
+    }
     return withSiteSnapshotCacheState(response, 'miss');
   } catch {
     return createSafeErrorResponse({
