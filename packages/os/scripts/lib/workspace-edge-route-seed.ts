@@ -9,6 +9,8 @@ export type WorkspaceEdgeRouteSeedInput = {
   workspaceSlug?: string;
   hostname?: string;
   baseDomain?: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
   appUpstreamUrl?: string;
   connectorId?: string;
   tunnelOriginUrl?: string;
@@ -60,6 +62,8 @@ const sqlNullableText = (value: string | null): string =>
 const buildSiteSnapshotRoute = (input: {
   pathPrefix: '/' | '/traces';
   workspaceId: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
 }): WorkspaceRouteD1Route => ({
   surface: 'sites',
   pathPrefix: input.pathPrefix,
@@ -68,8 +72,11 @@ const buildSiteSnapshotRoute = (input: {
   target: {
     kind: 'site-snapshot',
     siteId: DEFAULT_SITE_ID,
-    versionId: DEFAULT_SITE_VERSION_ID,
-    manifestKey: DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
+    versionId: trimmedOrDefault(input.siteVersionId, DEFAULT_SITE_VERSION_ID),
+    manifestKey: trimmedOrDefault(
+      input.siteSnapshotKey,
+      DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
+    ),
     contentType: DEFAULT_SITE_CONTENT_TYPE,
     cachePolicy: 'static-shell',
   },
@@ -173,8 +180,18 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
   const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
   const routes: WorkspaceRouteD1Route[] = [
-    buildSiteSnapshotRoute({ pathPrefix: '/', workspaceId }),
-    buildSiteSnapshotRoute({ pathPrefix: '/traces', workspaceId }),
+    buildSiteSnapshotRoute({
+      pathPrefix: '/',
+      workspaceId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+    }),
+    buildSiteSnapshotRoute({
+      pathPrefix: '/traces',
+      workspaceId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+    }),
     ...buildTraceGatewayRoutes(),
   ];
 
