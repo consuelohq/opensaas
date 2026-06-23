@@ -227,14 +227,31 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
     expect(installSource).toContain("{ label: 'workspace', state: 'active' }");
-    expect(installSource).toContain("message: 'enter workspace name (spaces become hyphens)'");
+    expect(installSource).toContain("message: 'enter workspace name'");
+    expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
-    expect(installSource).toContain('info(`workspace slug: ${workspaceSlug}`);');
+    expect(installSource).not.toContain('workspace slug:');
     expect(installSource.indexOf('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);')).toBeLessThan(
       installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
     );
     expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete'");
     expect(cliUiSource).toContain("if (step.state === 'active' || step.state === 'complete') return chalk.white('●');");
+  });
+
+
+  it('should honor preselected daemon flags without reprompting during interactive setup', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).toContain('if (options.installDaemons) {');
+    expect(installSource).toContain('installDaemons = true;');
+    expect(installSource).toContain('} else if (options.skipDaemons) {');
+    expect(installSource).toContain('installDaemons = false;');
+    expect(installSource.indexOf('if (options.installDaemons) {')).toBeLessThan(
+      installSource.indexOf("message: 'install local background service?'"),
+    );
   });
 
   it('should resolve OS home silently instead of prompting for it in interactive setup', () => {

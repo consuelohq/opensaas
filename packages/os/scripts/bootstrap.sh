@@ -34,7 +34,7 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
-REFRESH_SOURCE=0
+REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
@@ -68,6 +68,7 @@ Repo-local testing:
   bash packages/os/scripts/bootstrap.sh --yes --install-daemons
   bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
   bash packages/os/scripts/bootstrap.sh --yes --refresh-source
+  bash packages/os/scripts/bootstrap.sh --yes --use-existing-source
 
 Options:
   --dry-run          print what would happen without installing Bun or LaunchAgents
@@ -75,7 +76,8 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
-  --refresh-source  refresh an existing hosted source checkout/archive before onboarding
+  --refresh-source  refresh an existing hosted source checkout/archive before onboarding; default for hosted installs
+  --use-existing-source reuse an existing hosted source checkout when present
   --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
@@ -175,6 +177,7 @@ parse_args() {
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
       --refresh-source) REFRESH_SOURCE=1 ;;
+      --use-existing-source) REFRESH_SOURCE=0 ;;
       --mode)
         shift
         if [ "$#" -eq 0 ]; then
@@ -841,8 +844,8 @@ download_source() {
     fi
 
     REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="present"
-    log "Using existing Consuelo OS source: $REPO_DIR (pass --refresh-source to refresh it)"
+    SOURCE_STATUS="reused"
+    log "Using existing Consuelo OS source: $REPO_DIR"
     return 0
   fi
 
@@ -908,8 +911,15 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
+  local install_args=(--home "$os_home" --mode "${OS_MODE:-local}")
+  if [ "$INSTALL_DAEMONS" -eq 1 ]; then
+    install_args+=(--install-daemons)
+  fi
+  if [ "$SKIP_DAEMONS" -eq 1 ]; then
+    install_args+=(--skip-daemons)
+  fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}" < /dev/tty
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts "${install_args[@]}" < /dev/tty
 }
 
 run_install_with_tty() {

@@ -203,6 +203,46 @@ describe('local OS install state', () => {
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
   });
 
+
+  it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
+    mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(
+      join(tempUserHome, '.config', 'opencode', 'opencode.json'),
+      `${JSON.stringify({ theme: 'system', mcp: { existing: { type: 'local', command: ['existing'], enabled: true } } }, null, 2)}\n`,
+    );
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const opencodeConfigPath = join(tempUserHome, '.config', 'opencode', 'opencode.json');
+    const opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf8'));
+    expect(opencodeConfig.theme).toBe('system');
+    expect(opencodeConfig.mcp.existing).toMatchObject({ type: 'local', enabled: true });
+    expect(opencodeConfig.mcp['consuelo-os']).toMatchObject({
+      type: 'local',
+      enabled: true,
+      cwd: tempHome,
+      environment: { CONSUELO_HOME: tempHome },
+    });
+    expect(opencodeConfig.mcp['consuelo-os'].command).toEqual([
+      'bun',
+      join(tempHome, 'scripts', 'mcp-stdio.ts'),
+    ]);
+    expect(existsSync(join(tempHome, 'scripts', 'mcp-stdio.ts'))).toBe(true);
+    expect(result.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'connect_agent',
+          path: opencodeConfigPath,
+          message: expect.stringMatching(/OpenCode MCP/i),
+        }),
+      ]),
+    );
+  });
+
   it('materializes the local Office site from persisted artifacts', () => {
     const result = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');

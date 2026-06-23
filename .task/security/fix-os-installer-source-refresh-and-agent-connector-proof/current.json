@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-installer-source-refresh-and-agent-connector-proof",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1187,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1187",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1187",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1187/fix-os-installer-source-refresh-and-agent-connector-proof",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1187",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1187/fix-os-installer-source-refresh-and-agent-connector-proof",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-source-refresh-and-agent-connector-proof",
+  "taskSession": "tsk_068d2dabd161",
+  "tmuxSession": "opensaas-security-fix-os-installer-source-refresh-and-agent-connec-068d2dab",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-source-refresh-and-agent-connector-proof/.task/security/fix-os-installer-source-refresh-and-agent-connector-proof/session.json",
+  "createdAt": "2026-06-23T04:48:21.905Z"
+}

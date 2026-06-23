@@ -483,7 +483,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
     const workspaceNameInput = await text({
       ...clackIo,
-      message: 'enter workspace name (spaces become hyphens)',
+      message: 'enter workspace name',
       initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
       validate: (value) => {
         try {
@@ -499,9 +499,6 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
-    if (rawWorkspaceName.trim() !== workspaceSlug) {
-      info(`workspace slug: ${workspaceSlug}`);
-    }
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       workspaceName,
       workspaceSlug,
@@ -541,9 +538,19 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       }
     }
 
-    const installDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
-    if (isCancel(installDaemons)) { cancel('setup cancelled.'); process.exit(0); }
-    info('background service is the final setup step; tokens and secrets stay local and are not printed.');
+    let installDaemons = false;
+    if (options.installDaemons) {
+      installDaemons = true;
+    } else if (options.skipDaemons) {
+      installDaemons = false;
+    } else {
+      const selectedInstallDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
+      if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
+      installDaemons = selectedInstallDaemons;
+    }
+    if (installDaemons) {
+      info('background service is the final setup step; tokens and secrets stay local and are not printed.');
+    }
 
     return {
       ...options,
