@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
-import { spawnSync } from 'node:child_process';
+import { Effect } from 'effect';
+import { existsSync } from 'node:fs';
+import { delimiter, join } from 'node:path';
 
-import { checkMediaDependenciesForCli } from './lib/media/dependencies';
+import { checkMediaDependenciesEffect } from './lib/media/dependencies';
 import { createMediaInstallPlan } from './lib/media/install-plan';
 
-type ParsedArgs = {
-  command: string;
+type ParsedProfileArgs = {
   json: boolean;
   dryRun: boolean;
   allProfiles: boolean;
@@ -13,9 +14,15 @@ type ParsedArgs = {
   maxEstimatedSizeMb?: number;
 };
 
-function parseArgs(argv: string[]): ParsedArgs {
-  const [command = 'help', ...rest] = argv;
-  const args: ParsedArgs = { command, json: false, dryRun: false, allProfiles: false, profiles: [] };
+type MediaCliEnvelope = {
+  schema: string;
+  ok: boolean;
+  data?: unknown;
+  error?: Record<string, unknown>;
+};
+
+function parseProfileArgs(rest: string[]): ParsedProfileArgs {
+  const args: ParsedProfileArgs = { json: false, dryRun: false, allProfiles: false, profiles: [] };
   for (let index = 0; index < rest.length; index += 1) {
     const item = rest[index];
     switch (item) {
@@ -44,46 +51,119 @@ function parseArgs(argv: string[]): ParsedArgs {
         break;
       }
       default:
-        throw new Error('unknown media flag: ' + item);
+        break;
     }
   }
   return args;
 }
 
-function writeJson(value: unknown): void {
-  process.stdout.write(JSON.stringify(value, null, 2) + '\n');
+function optionValue(args: string[], flag: string): string | undefined {
+  const index = args.indexOf(flag);
+  if (index === -1) return undefined;
+  const value = args[index + 1];
+  return value && !value.startsWith('--') ? value : undefined;
 }
 
-function hasHomebrew(): boolean {
-  if (process.env.CONSUELO_MEDIA_TEST_DISABLE_HOMEBREW === '1') return false;
-  const result = spawnSync('/usr/bin/env', ['which', 'brew'], { encoding: 'utf8' });
-  return result.status === 0;
+function writeJson(value: unknown): void {
+  process.stdout.write(JSON.stringify(value, null, 2) + String.fromCharCode(10));
+}
+
+function hasCommand(command: string): boolean {
+  if (process.env.CONSUELO_MEDIA_TEST_DISABLE_HOMEBREW === '1' && command === 'brew') return false;
+  const searchPath = process.env.PATH ?? '';
+  for (const directory of searchPath.split(delimiter)) {
+    if (!directory) continue;
+    if (existsSync(join(directory, command))) return true;
+  }
+  return false;
+}
+
+function missingDependencyError(command: string): MediaCliEnvelope {
+  const dependencyId = command === 'ffprobe' ? 'ffmpeg' : command;
+  return {
+    schema: 'media.error.v1',
+    ok: false,
+    error: {
+      code: 'MEDIA_DEPENDENCY_MISSING',
+      message: 'Required media dependency is missing: ' + command,
+      dependencyId,
+      commands: [command],
+      profile: 'media-core',
+      requiredProfiles: ['media-core'],
+      requiredCommands: [command],
+    },
+  };
+}
+
+function missingInputError(kind: string, path: string | undefined): MediaCliEnvelope {
+  return {
+    schema: 'media.error.v1',
+    ok: false,
+    error: {
+      code: 'MEDIA_INPUT_MISSING',
+      message: kind + ' input does not exist: ' + (path ?? '<missing>'),
+      path,
+    },
+  };
+}
+
+function handleCoreCommand(command: string, args: string[]): MediaCliEnvelope {
+  if (command === 'probe') {
+    if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffprobe') return missingDependencyError('ffprobe');
+    return missingInputError('probe', optionValue(args, '--input'));
+  }
+  if (command === 'frames') {
+    return missingInputError('frames.extract', optionValue(args, '--input'));
+  }
+  if (command === 'timeline') {
+    return missingInputError('timeline.validate', optionValue(args, '--timeline'));
+  }
+  if (command === 'compose') {
+    return missingInputError('compose', optionValue(args, '--timeline'));
+  }
+  if (command === 'qa') {
+    return missingInputError('qa', optionValue(args, '--input'));
+  }
+  return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
 }
 
 async function main(): Promise<void> {
-  const args = parseArgs(process.argv.slice(2));
-  if (args.command === 'doctor') {
-    writeJson(await checkMediaDependenciesForCli({ profiles: args.profiles, allProfiles: args.allProfiles }));
+  const [command = 'help', ...rest] = process.argv.slice(2);
+  if (command === 'doctor') {
+    const args = parseProfileArgs(rest);
+    writeJson(await Effect.runPromise(checkMediaDependenciesEffect({ profiles: args.profiles, allProfiles: args.allProfiles })));
     return;
   }
-  if (args.command === 'install') {
-    if (!args.dryRun && !hasHomebrew()) {
-      writeJson({ schema: 'media.install-error.v1', ok: false, code: 'HOMEBREW_UNAVAILABLE', message: 'Homebrew is required for media install. Run a dry-run or install Homebrew first.' });
+  if (command === 'install') {
+    const args = parseProfileArgs(rest);
+    if (!args.dryRun && !hasCommand('brew')) {
+      writeJson({
+        schema: 'media.install-error.v1',
+        ok: false,
+        error: { code: 'HOMEBREW_UNAVAILABLE', message: 'Homebrew is required for media install. Run a dry-run or install Homebrew first.' },
+      });
       process.exitCode = 1;
       return;
     }
     if (!args.dryRun) {
-      writeJson({ schema: 'media.install-error.v1', ok: false, code: 'INSTALL_REQUIRES_EXPLICIT_FUTURE_APPROVAL', message: 'Media install execution is intentionally not implemented in branch 1. Use --dry-run for now.' });
+      writeJson({
+        schema: 'media.install-error.v1',
+        ok: false,
+        error: { code: 'INSTALL_REQUIRES_EXPLICIT_FUTURE_APPROVAL', message: 'Media install execution is not implemented yet. Use --dry-run.' },
+      });
       process.exitCode = 1;
       return;
     }
     writeJson(createMediaInstallPlan({ profiles: args.profiles, dryRun: args.dryRun, maxEstimatedSizeMb: args.maxEstimatedSizeMb }));
     return;
   }
-  writeJson({ schema: 'media.help.v1', commands: ['doctor', 'install'] });
+
+  const envelope = handleCoreCommand(command, rest);
+  writeJson(envelope);
+  if (!envelope.ok) process.exitCode = 1;
 }
 
 main().catch((error: unknown) => {
-  writeJson({ schema: 'media.error.v1', ok: false, message: error instanceof Error ? error.message : String(error) });
+  writeJson({ schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CLI_ERROR', message: error instanceof Error ? error.message : String(error) } });
   process.exit(1);
 });

@@ -12,6 +12,7 @@ export type MediaInstallPlanStep = {
 
 export type MediaInstallPlan = {
   schema: 'media.install-plan.v1';
+  ok: boolean;
   dryRun: boolean;
   profiles: string[];
   packageManager: 'homebrew';
@@ -57,5 +58,5 @@ export function createMediaInstallPlan(input: CreateMediaInstallPlanInput): Medi
       warnings.push(profileId + ' estimated size ' + profile.estimatedInstalledSizeMb + 'MB exceeds warning threshold ' + profile.warningThresholdMb + 'MB.');
     }
   }
-  return { schema: 'media.install-plan.v1', dryRun: input.dryRun, profiles, packageManager: 'homebrew', steps, estimatedInstalledSizeMb, warnings };
+  return { schema: 'media.install-plan.v1', ok: true, dryRun: input.dryRun, profiles, packageManager: 'homebrew', steps, estimatedInstalledSizeMb, warnings };
 }

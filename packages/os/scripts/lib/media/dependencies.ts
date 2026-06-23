@@ -1,7 +1,12 @@
 import { Effect } from 'effect';
-import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { delimiter, join } from 'node:path';
 
 import { dependenciesForProfiles, mediaDependencyProfiles } from './dependency-catalog';
+
+export const MediaDependencyCatalog = Symbol('MediaDependencyCatalog');
+export const MediaLogger = Symbol('MediaLogger');
+export const MediaClock = Symbol('MediaClock');
 
 export type MediaDependencyCommandStatus = {
   name: string;
@@ -32,15 +37,14 @@ export type MediaDependencyReport = {
 };
 
 function commandPath(command: string): string | undefined {
-  const result = spawnSync('/usr/bin/env', ['which', command], { encoding: 'utf8' });
-  if (result.status !== 0) return undefined;
-  return result.stdout.trim() || undefined;
-}
-
-function commandVersion(command: string): string | undefined {
-  const result = spawnSync(command, ['--version'], { encoding: 'utf8', timeout: 5000 });
-  if (result.status !== 0) return undefined;
-  return (result.stdout || result.stderr).split('\n')[0]?.trim() || undefined;
+  if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === command) return undefined;
+  const searchPath = process.env.PATH ?? '';
+  for (const directory of searchPath.split(delimiter)) {
+    if (!directory) continue;
+    const candidate = join(directory, command);
+    if (existsSync(candidate)) return candidate;
+  }
+  return undefined;
 }
 
 export function checkMediaDependencies(input: { profiles?: string[]; allProfiles?: boolean } = {}): MediaDependencyReport {
@@ -60,7 +64,7 @@ export function checkMediaDependencies(input: { profiles?: string[]; allProfiles
         return {
           name: command,
           found: Boolean(foundPath),
-          ...(foundPath ? { path: foundPath, version: commandVersion(command) } : {}),
+          ...(foundPath ? { path: foundPath } : {}),
         };
       });
       return {
@@ -89,5 +93,5 @@ export const checkMediaDependenciesEffect = (input: { profiles?: string[]; allPr
 });
 
 export function checkMediaDependenciesForCli(input: { profiles?: string[]; allProfiles?: boolean } = {}): Promise<MediaDependencyReport> {
-  return Effect.runPromise(checkMediaDependenciesEffect(input));
+  return Promise.resolve(checkMediaDependencies(input));
 }
