@@ -1,0 +1,76 @@
+---
+import "../styles/trace.css";
+
+const feedUrl = "/trace-burn-intelligence/live-traces.json";
+const seedFeed = {
+  meta: { generatedAt: new Date(0).toISOString(), rowCount: 0, failureCount: 0, maxRowid: 0, tokens: 0, cost: 0 },
+  rows: [],
+  failures: [],
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trace Burn Intelligence</title>
+  </head>
+  <body class="trace-page">
+    <main class="dashboard" data-trace-app data-feed-url={feedUrl}>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Trace Burn Intelligence</div>
+          <h1>Trace cockpit</h1>
+          <p>Real trace rows, raw payloads, token burn, failures, and tool pressure in one lightweight preview surface. This is the design/testing ground for the future OS tracing product.</p>
+        </div>
+        <button class="live-pill" type="button" data-testid="trace-launcher">● Live traces</button>
+      </section>
+      <section class="kpis" aria-label="trace burn summary">
+        <article class="card"><span class="label">Trace rows</span><strong data-kpi="trace-count">0</strong><span data-feed-health>waiting for live feed</span></article>
+        <article class="card"><span class="label">Failures</span><strong data-kpi="failure-count">0</strong><span>from current feed window</span></article>
+        <article class="card"><span class="label">Token burn</span><strong data-kpi="tokens">0</strong><span>input + output tokens</span></article>
+        <article class="card"><span class="label">Estimated cost</span><strong data-kpi="cost">$0.00</strong><span>static trace estimate</span></article>
+      </section>
+
+      <section class="trace-modal" data-trace-modal aria-label="Traces">
+        <div class="trace-shell" data-mode="list">
+          <header class="trace-chrome">
+            <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="trace-title">Traces</div>
+            <button class="chrome-button" type="button" data-show-filters>filters</button>
+          </header>
+          <div class="trace-toolbar">
+            <input data-search placeholder="Search traces…" aria-label="Search traces" />
+            <div class="trace-window">1 day</div>
+            <button class="chrome-button" type="button" data-close-traces>close</button>
+          </div>
+          <div class="trace-body">
+            <section class="trace-table-wrap" aria-label="Trace table">
+              <div class="trace-table">
+                <div class="trace-head">
+                  <span></span><span>Time</span><span>Type</span><span>Tool name</span><span>Branch</span><span>Input</span><span>Output</span><span>Tokens</span><span>Cost</span><span>Latency</span>
+                </div>
+                <div data-trace-rows></div>
+              </div>
+            </section>
+            <aside class="trace-rail" aria-label="Trace details">
+              <div class="trace-inspector" data-inspector></div>
+            </aside>
+          </div>
+          <footer class="trace-footer">
+            <span><b data-trace-count>0</b> traces</span>
+            <span>Rows per page <b>100</b></span>
+            <span>Page <input data-page-input value="1" aria-label="Page" /> of <b data-page-count>1</b></span>
+            <button type="button" data-prev-page>‹</button>
+            <button type="button" data-next-page>›</button>
+          </footer>
+        </div>
+      </section>
+      <script id="trace-seed-data" type="application/json" set:html={JSON.stringify(seedFeed)} />
+    </main>
+    <script>
+      import { mountTraceExplorer } from "../scripts/traceExplorer.ts";
+      mountTraceExplorer(document.querySelector("[data-trace-app]") ?? document.body);
+    </script>
+  </body>
+</html>

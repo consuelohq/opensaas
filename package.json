@@ -302,7 +302,11 @@
     "artifact:render": "bun run --cwd packages/os artifact:render --",
     "artifact:publish": "bun run --cwd packages/os artifact:publish --",
     "artifact:validate": "bun run --cwd packages/os artifact:validate --",
-    "task-intent": "bun packages/workspace/scripts/task-intent.js"
+    "task-intent": "bun packages/workspace/scripts/task-intent.js",
+    "trace:burn-astro:test": "bun test packages/consuelo-design/trace-burn-intelligence/tests",
+    "trace:burn-astro:build": "bun packages/consuelo-design/trace-burn-intelligence/scripts/build.ts",
+    "trace:burn-astro:publish-local": "bun packages/consuelo-design/trace-burn-intelligence/scripts/build.ts --copy-to-archive",
+    "trace:burn-feed": "bun scripts/operator/trace-burn-page-feed.ts"
   },
   "workspaces": {
     "packages": [

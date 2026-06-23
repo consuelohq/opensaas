@@ -1690,3 +1690,47 @@ bun --cwd packages/consuelo-core test tests/registry.test.ts
 ```
 
 `audit:registry` checks root/workspace/OS script targets, local script imports, and workspace-owned source guardrails. `drift:registry` prints JSON for duplicate workspace/OS script paths with hashes and ownership hints; it is informational unless a follow-up task promotes a duplicate into shared core.
+
+### trace:burn-astro:test / trace:burn-astro:build — Astro Trace Burn Intelligence source
+
+Runs the source-first Astro rewrite for the Trace Burn Intelligence testing-ground page. This is the clean implementation path for the future OS traces product: one Astro page, one client trace store, one feed contract, and no stacked generated-HTML patch scripts.
+
+Usage:
+
+```bash
+bun run trace:burn-astro:test
+bun run trace:burn-astro:build
+bun run trace:burn-astro:publish-local
+```
+
+Behavior:
+
+- `trace:burn-astro:test` runs the TDD contract and store tests under `packages/consuelo-design/trace-burn-intelligence/tests`.
+- `trace:burn-astro:build` builds the static Astro page into `packages/consuelo-design/trace-burn-intelligence/dist`.
+- `trace:burn-astro:publish-local` copies `index.html` and `_astro/` assets into the managed local archive artifact at `.od/consuelo/archive/artifacts/trace-burn-intelligence`, leaving `live-traces.json` in place.
+- The page consumes `/trace-burn-intelligence/live-traces.json` and preserves raw payload fields from `trace:burn-feed`.
+
+```
+source Astro page -> static artifact shell
+trace:burn-feed -> live-traces.json -> trace explorer client store
+```
+
+
+### trace:burn-feed — pseudo-live Trace Burn Intelligence JSON feed
+
+Writes `live-traces.json` beside the local Trace Burn Intelligence design archive artifact. The Astro trace page polls this file to feel live while the full OS live tracing path is still being replaced. Raw payloads are included by default for development inspection.
+
+Usage:
+
+```bash
+bun run trace:burn-feed -- --once --limit 250
+bun run trace:burn-feed -- --interval 15 --limit 250
+```
+
+Useful options:
+
+- `--db <path>` points at a specific OpenWorkspace trace SQLite database.
+- `--artifact-dir <path>` points at a Trace Burn Intelligence artifact directory.
+- `--no-raw` omits raw payload string copies while keeping previews and parsed inspector objects.
+- `--max-rowid <n>` creates a stable export for tests or screenshots.
+
