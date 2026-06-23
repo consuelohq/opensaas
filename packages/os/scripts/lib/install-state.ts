@@ -745,6 +745,41 @@ export function detectAgents(home?: string): AgentDetection[] {
   });
 }
 
+function openCodeGlobalConfigPath(): string {
+  return path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
+}
+
+function buildOpenCodeMcpConfig(home: string, existingConfig: JsonObject): JsonObject {
+  const existingMcp = isJsonObject(existingConfig.mcp) ? existingConfig.mcp : {};
+  return {
+    ...existingConfig,
+    $schema: typeof existingConfig.$schema === 'string'
+      ? existingConfig.$schema
+      : 'https://opencode.ai/config.json',
+    mcp: {
+      ...existingMcp,
+      'consuelo-os': {
+        type: 'local',
+        command: ['bun', path.join(home, 'scripts', 'mcp-stdio.ts')],
+        cwd: home,
+        enabled: true,
+        environment: { CONSUELO_HOME: home },
+      },
+    },
+  };
+}
+
+function connectOpenCodeMcp(home: string, dryRun: boolean): ProvisionAction[] {
+  const configPath = openCodeGlobalConfigPath();
+  const existingConfig = readJsonFile<JsonObject>(configPath) ?? {};
+  const backupPath = `${configPath}.bak`;
+  if (!dryRun && fs.existsSync(configPath) && !fs.existsSync(backupPath)) {
+    fs.copyFileSync(configPath, backupPath);
+  }
+  writeJsonFile(configPath, buildOpenCodeMcpConfig(home, existingConfig), dryRun);
+  return [{ type: 'connect_agent', path: configPath, status: dryRun ? 'planned' : 'created', message: 'connected OpenCode MCP server' }];
+}
+
 function connectAgent(
   home: string,
   config: OsConfig,
@@ -793,6 +828,9 @@ function connectAgent(
     status: dryRun ? 'planned' : 'created',
     message: `connected ${agent.label}`,
   });
+  if (agent.name === 'opencode') {
+    actions.push(...connectOpenCodeMcp(home, dryRun));
+  }
 
   const existingIndex = config.agents.findIndex(
     (item) => item.name === agent.name && item.homePath === agent.homePath,

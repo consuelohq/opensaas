@@ -32,12 +32,15 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('wrangler');
   });
 
-  it('documents an explicit source refresh option', () => {
+  it('refreshes hosted source by default with an explicit reuse escape hatch', () => {
     const bootstrap = readBootstrap();
 
+    expect(bootstrap).toContain('REFRESH_SOURCE=1');
     expect(bootstrap).toContain('--refresh-source');
-    expect(bootstrap).toContain('REFRESH_SOURCE');
+    expect(bootstrap).toContain('--use-existing-source');
     expect(bootstrap).toContain('SOURCE_STATUS="refreshed"');
+    expect(bootstrap).toContain('SOURCE_STATUS="reused"');
+    expect(bootstrap).not.toContain('pass --refresh-source to refresh it');
   });
 
   it('asks for local or cloud before dependency setup', () => {
@@ -91,6 +94,17 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('Consuelo OS needs its local runtime dependencies to continue.');
     expect(bootstrap).not.toContain('We can download/setup this now.');
     expect(bootstrap).not.toContain('We can install/setup this now.');
+  });
+
+
+  it('forwards daemon decisions into interactive onboarding', () => {
+    const bootstrap = readBootstrap();
+    const runner = extractShellFunction(bootstrap, 'run_install_with_script_pty');
+
+    expect(runner).toContain('local install_args=');
+    expect(runner).toContain('install_args+=(--install-daemons)');
+    expect(runner).toContain('install_args+=(--skip-daemons)');
+    expect(runner).toContain('"${install_args[@]}"');
   });
 
   it('keeps the human success summary minimal and opens the launcher last', () => {
