@@ -63,6 +63,21 @@ msgid "Update your subscription"
 msgstr "Opdateer jou intekening"
 
 #. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>) het jou genooi om by 'n werksruimte met die naam <1>{workspaceName}</1> aan te sluit."
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "Aanvaar uitnodiging"
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -94,44 +109,24 @@ msgid "Verify Email"
 msgstr "Verifieer E-pos"
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Wagwoord opgedateer"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Dit is 'n bevestiging dat die wagwoord vir jou rekening ({email}) suksesvol verander is op {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "As jy nie hierdie verandering geïnisieer het nie, kontak asseblief jou werkruimte-eienaar dadelik."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr "{senderName} (<0>{senderEmail}</0>) het jou genooi om by 'n werksruimte met die naam <1>{workspaceName}</1> aan te sluit."
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr "Aanvaar uitnodiging"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset your password 🗝"
-msgstr "Stel jou wagwoord terug 🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set your password 🗝"
-msgstr "Stel jou wagwoord 🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset"
-msgstr "Stel terug"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set"
-msgstr "Stel"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
-msgstr "Hierdie skakel is slegs geldig vir die volgende {duration}. Indien die skakel nie werk nie, kan jy die aanmeldverifiëringskakel direk gebruik:"
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
@@ -159,24 +154,29 @@ msgid "Create a new workspace"
 msgstr "Skep 'n nuwe werksruimte"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Wagwoord opgedateer"
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset your password 🗝"
+msgstr "Stel jou wagwoord terug 🗝"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Dit is 'n bevestiging dat die wagwoord vir jou rekening ({email}) suksesvol verander is op {formattedDate}."
+#: src/emails/password-reset-link.email.tsx
+msgid "Set your password 🗝"
+msgstr "Stel jou wagwoord 🗝"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "As jy nie hierdie verandering geïnisieer het nie, kontak asseblief jou werkruimte-eienaar dadelik."
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset"
+msgstr "Stel terug"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
+#: src/emails/password-reset-link.email.tsx
+msgid "Set"
+msgstr "Stel"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
+msgstr "Hierdie skakel is slegs geldig vir die volgende {duration}. Indien die skakel nie werk nie, kan jy die aanmeldverifiëringskakel direk gebruik:"
 
 #. js-lingui-explicit-id
 #: src/components/WhatIsTwenty.tsx

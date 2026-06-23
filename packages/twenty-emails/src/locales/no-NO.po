@@ -63,6 +63,21 @@ msgid "Update your subscription"
 msgstr "Oppdater abonnementet ditt"
 
 #. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>) har invitert deg til å bli med i et arbeidsområde kalt <1>{workspaceName}</1>."
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "Godta invitasjon"
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -94,44 +109,24 @@ msgid "Verify Email"
 msgstr "Verifiser e-post"
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Passord oppdatert"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Dette er en bekreftelse på at passordet for kontoen din ({email}) ble vellykket endret den {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Hvis du ikke initierte denne endringen, vennligst kontakt eieren av arbeidsområdet ditt umiddelbart."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr "{senderName} (<0>{senderEmail}</0>) har invitert deg til å bli med i et arbeidsområde kalt <1>{workspaceName}</1>."
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr "Godta invitasjon"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset your password 🗝"
-msgstr "Tilbakestill passordet ditt 🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set your password 🗝"
-msgstr "Opprett ditt passord 🗝"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Reset"
-msgstr "Tilbakestill"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "Set"
-msgstr "Angi"
-
-#. js-lingui-explicit-id
-#: src/emails/password-reset-link.email.tsx
-msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
-msgstr "Denne lenken er kun gyldig i de neste {duration}. Hvis lenken ikke fungerer, kan du bruke verifiseringslenken for innlogging direkte:"
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
@@ -159,24 +154,29 @@ msgid "Create a new workspace"
 msgstr "Opprett et nytt arbeidsområde"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Passord oppdatert"
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset your password 🗝"
+msgstr "Tilbakestill passordet ditt 🗝"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Dette er en bekreftelse på at passordet for kontoen din ({email}) ble vellykket endret den {formattedDate}."
+#: src/emails/password-reset-link.email.tsx
+msgid "Set your password 🗝"
+msgstr "Opprett ditt passord 🗝"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Hvis du ikke initierte denne endringen, vennligst kontakt eieren av arbeidsområdet ditt umiddelbart."
+#: src/emails/password-reset-link.email.tsx
+msgid "Reset"
+msgstr "Tilbakestill"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
+#: src/emails/password-reset-link.email.tsx
+msgid "Set"
+msgstr "Angi"
+
+#. js-lingui-explicit-id
+#: src/emails/password-reset-link.email.tsx
+msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
+msgstr "Denne lenken er kun gyldig i de neste {duration}. Hvis lenken ikke fungerer, kan du bruke verifiseringslenken for innlogging direkte:"
 
 #. js-lingui-explicit-id
 #: src/components/WhatIsTwenty.tsx
