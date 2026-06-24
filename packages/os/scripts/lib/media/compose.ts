@@ -8,12 +8,33 @@ import { validateTimelineJson } from './timeline';
 
 type JsonObject = Record<string, unknown>;
 
+export const composeConsumableOverlayArtifactSchema = 'media.overlay.v1';
+export const composeSupportsOverlayArtifacts = true;
+
 function objectValue(value: unknown): JsonObject {
   return typeof value === 'object' && value !== null ? value as JsonObject : {};
 }
 
 function stableId(prefix: string, value: string): string {
   return prefix + '_' + createHash('sha256').update(value).digest('hex').slice(0, 16);
+}
+
+
+export function collectOverlayArtifacts(timeline: unknown): Array<{ schema: string; id?: string; path?: string }> {
+  const value = objectValue(timeline);
+  const candidates = [
+    ...(Array.isArray(value.overlayArtifacts) ? value.overlayArtifacts : []),
+    ...(Array.isArray(value.artifacts) ? value.artifacts : []),
+    ...(Array.isArray(value.overlays) ? value.overlays.map((overlay) => objectValue(overlay).artifact).filter(Boolean) : []),
+  ];
+  return candidates
+    .map((candidate) => objectValue(candidate))
+    .filter((candidate) => candidate.schema === composeConsumableOverlayArtifactSchema || candidate.kind === composeConsumableOverlayArtifactSchema)
+    .map((candidate) => ({
+      schema: composeConsumableOverlayArtifactSchema,
+      id: typeof candidate.id === 'string' ? candidate.id : undefined,
+      path: typeof candidate.path === 'string' ? candidate.path : undefined,
+    }));
 }
 
 function firstSourcePath(timeline: unknown): string {
@@ -45,6 +66,7 @@ export function buildComposePlan(input: { timeline: unknown; outPath: string }):
     command: 'ffmpeg',
     args: ['-y', '-i', sourcePath, '-vf', filter, '-r', String(fps), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-metadata', 'comment=overlay-plan', '-shortest', input.outPath],
     outputPath: input.outPath,
+    overlayArtifacts: collectOverlayArtifacts(input.timeline),
   };
 }
 
