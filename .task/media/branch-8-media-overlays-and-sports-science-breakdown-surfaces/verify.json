@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
+  "base": "origin/stream/media",
+  "headSha": "1a5291b61dbfeddb489534d248f1ddd3189a03a5",
+  "changeHash": "915e2ba3ed612e6c26373bc8e6ebcf8b8ab5f9ad1c6ffbd5ca2fdc31af188c88",
+  "changedFiles": [
+    "packages/os/scripts/lib/media/compose.ts",
+    "packages/os/scripts/lib/media/overlays.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/lib/media/sports-science.ts"
+  ],
+  "verifiedAt": "2026-06-24T01:26:20.374Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/current.json",
+        ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/session.json",
+        ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/workpad.md",
+        ".task/tasks/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces.json",
+        "packages/os/scripts/lib/media/compose.ts",
+        "packages/os/scripts/lib/media/overlays.ts",
+        "packages/os/scripts/lib/media/schema.ts",
+        "packages/os/scripts/lib/media/sports-science.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
