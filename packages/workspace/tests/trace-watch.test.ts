@@ -22,6 +22,24 @@ const baseArgs: Args = {
   interval: 1000,
 };
 
+
+function expectedLocalTimestamp(value: string): string {
+  const date = new Date(value);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(date).map((part) => [part.type, part.value]),
+  ) as Record<string, string>;
+
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}:${parts.second}`;
+}
+
 function codeCallRow(overrides: Partial<TraceWatchRow> = {}): TraceWatchRow {
   return {
     rownum: 1,
@@ -146,6 +164,13 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain('multi-command-verification');
     expect(rendered).toContain('good');
     expect(rendered).toContain('changed 0');
+  });
+
+  test('renders local full timestamps with a readable gap before status and tool', () => {
+    const timestamp = '2026-06-01T20:00:33.000Z';
+    const rendered = captureRow(codeCallRow({ ts: timestamp }));
+
+    expect(rendered).toContain(`${expectedLocalTimestamp(timestamp)}  ✓ code.call`);
   });
 
   test('renders child command rows from code.call JSON stdout results', () => {

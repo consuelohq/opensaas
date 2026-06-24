@@ -260,17 +260,24 @@ function c(args: Args, code: string, text: string): string {
 
 
 const traceTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/New_York',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
   hour12: false,
 });
 
+function traceTimeParts(date: Date): Record<string, string> {
+  return Object.fromEntries(traceTimeFormatter.formatToParts(date).map((part) => [part.type, part.value])) as Record<string, string>;
+}
+
 function fmtTraceTime(value: unknown): string {
   const date = new Date(String(value || ''));
-  if (Number.isNaN(date.getTime())) return '--:--:--';
-  return traceTimeFormatter.format(date).replace(/^24:/, '00:');
+  if (Number.isNaN(date.getTime())) return '---- -- -- --:--:--';
+  const parts = traceTimeParts(date);
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}:${parts.second}`;
 }
 
 function fmtDuration(ms: unknown): string {
