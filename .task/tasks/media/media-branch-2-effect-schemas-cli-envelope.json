@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-2-effect-schemas-cli-envelope",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1198,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1198",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1198",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1198/media-branch-2-effect-schemas-cli-envelope",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1198",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1198/media-branch-2-effect-schemas-cli-envelope",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-2-effect-schemas-cli-envelope",
+  "taskSession": "tsk_3c2a8135bed0",
+  "tmuxSession": "opensaas-media-media-branch-2-effect-schemas-cli-envelope-3c2a8135",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-2-effect-schemas-cli-envelope/.task/media/media-branch-2-effect-schemas-cli-envelope/session.json",
+  "createdAt": "2026-06-23T22:49:17.872Z"
+}

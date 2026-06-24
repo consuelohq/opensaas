@@ -101,6 +101,56 @@ declare const workspace: {
     search: (input: { pattern: string; path?: string; include?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     write: (input: { path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  media: {
+    angle: {
+      measure: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    audio: {
+      extract: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+      normalize: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    breakdown: {
+      plan: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    camera: {
+      motion: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    clip: {
+      search: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    frames: {
+      extract: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    motion: {
+      track: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    object: {
+      track: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    overlay: {
+      render: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    pose: {
+      estimate: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    scene: {
+      detect: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    sports-science: {
+      metrics: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    timeline: {
+      validate: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
+    compose: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    doctor: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    export: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    ingest: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    install: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    probe: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    qa: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    transcribe: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   office: {
     check: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     generateDemo: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -152,7 +202,7 @@ declare const workspace: {
     ensureSynced: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>;
     finish: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     init: (input: { area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    intent: (input: { action: "start" | "dispatch"; workflow?: "task" | "office" | "design" | "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    intent: (input: { action: "start" | "dispatch"; workflow?: "task" | "office" | "design" | "sites" | "media"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     merge: (input: { pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     pr: (input: { branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     prs: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;

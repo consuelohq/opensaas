@@ -18,7 +18,7 @@ function printHelp() {
   writeStdout('usage: bun run task-intent -- <start|dispatch> [options]');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <task|office|design|sites>');
+  writeStdout('  --workflow <task|office|design|sites|media>');
   writeStdout('  --task-session <id>');
   writeStdout('  --area <value>');
   writeStdout('  --title <value>');
