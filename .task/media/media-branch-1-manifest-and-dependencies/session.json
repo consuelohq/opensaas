@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5b29e320985c",
+  "tmuxSession": "opensaas-media-media-branch-1-manifest-and-dependencies-5b29e320",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-1-manifest-and-dependencies",
+  "branch": "task/media/media-branch-1-manifest-and-dependencies",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-1-manifest-and-dependencies",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-1-manifest-and-dependencies",
+  "prNumber": 1196,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1196",
+  "createdAt": "2026-06-23T22:35:14.051Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-1-manifest-and-dependencies/.task/media/media-branch-1-manifest-and-dependencies/session.json"
+}
