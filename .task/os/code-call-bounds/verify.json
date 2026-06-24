@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/code-call-bounds",
+  "base": "origin/stream/os",
+  "headSha": "01a22b849631e563ff23b72ece9956460a28814b",
+  "changeHash": "b7164a6441b6436d1f54ef75f9d5269c37e559d76749fd8f33eeb357e7165ab9",
+  "changedFiles": [
+    "packages/os/scripts/lib/code-call/location.ts",
+    "packages/os/scripts/lib/code-call/schema.ts",
+    "packages/os/scripts/lib/code-call/snapshot.ts",
+    "packages/os/tests/code-call-service-architecture.test.ts",
+    "packages/os/tests/code-call.test.ts"
+  ],
+  "verifiedAt": "2026-06-22T21:54:25.261Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/code-call-bounds/current.json",
+        ".task/os/code-call-bounds/session.json",
+        ".task/os/code-call-bounds/verify.json",
+        ".task/os/code-call-bounds/workpad.md",
+        ".task/tasks/os/code-call-bounds.json",
+        "packages/os/scripts/lib/code-call/location.ts",
+        "packages/os/scripts/lib/code-call/schema.ts",
+        "packages/os/scripts/lib/code-call/snapshot.ts",
+        "packages/os/tests/code-call-service-architecture.test.ts",
+        "packages/os/tests/code-call.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

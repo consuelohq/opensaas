@@ -102,6 +102,9 @@ describe('MCP gateway credential lifecycle', () => {
     expect(storedToken.connectionId).toBe('connection_mcp_test');
     expect(storedToken.secret).toBeUndefined();
     expect(storedToken.privateKey).toBeUndefined();
+    expect(storedToken.bearerToken).toBeUndefined();
+    expect(storedToken.bearerTokenHash).toMatch(/^sha256:/);
+    expect(token.bearerToken).toMatch(/^cst_/);
     expect(typeof storedToken.publicKey).toBe('string');
     expect(status.subjectId).toBe('subject_mcp_test');
     expect(directStatus?.connectionId).toBe('connection_mcp_test');
@@ -253,6 +256,43 @@ describe('MCP gateway adapter', () => {
       ok: false,
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
+    });
+  });
+
+  it('accepts bearer-only MCP requests and lets the gateway handle internal auth', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:*:read']);
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+      },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(200);
+    expect(json.result).toBeDefined();
+
+    const missingScopeToken = issueMcpToken(config, ['route:/mcp:read']);
+    const denied = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${missingScopeToken.bearerToken}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'call',
+        method: 'tools/call',
+        params: { name: 'get_raw_steering', arguments: {} },
+      }),
+    }));
+    await expect(denied.json()).resolves.toMatchObject({
+      error: { code: 'MISSING_SCOPE' },
     });
   });
 

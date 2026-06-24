@@ -1,0 +1,70 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/os-workspace-route-registration",
+  "base": "origin/main",
+  "headSha": "4df58d4c554bbd5cbbbf1167af05f642f3b2ed77",
+  "changeHash": "cf3f5a94f4fea3054111a25a84a2b42f02e784a7d8509d2007fbb3a2a5a9d06f",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-23T03:42:31.861Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/os-workspace-route-registration/current.json",
+        ".task/security/os-workspace-route-registration/session.json",
+        ".task/security/os-workspace-route-registration/workpad.md",
+        ".task/tasks/security/os-workspace-route-registration.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/cloudflare/os-device-authority/wrangler.toml",
+        "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "migration",
+        "file": "packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql",
+        "severity": "warning",
+        "message": "migration file changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

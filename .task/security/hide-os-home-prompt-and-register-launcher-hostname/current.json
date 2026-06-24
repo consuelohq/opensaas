@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/hide-os-home-prompt-and-register-launcher-hostname",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1176,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1176",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1176",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1176/hide-os-home-prompt-and-register-launcher-hostname",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1176",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1176/hide-os-home-prompt-and-register-launcher-hostname",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hide-os-home-prompt-and-register-launcher-hostname",
+  "taskSession": "tsk_4c6d5e1fceb2",
+  "tmuxSession": "opensaas-security-hide-os-home-prompt-and-register-launcher-hostna-4c6d5e1f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hide-os-home-prompt-and-register-launcher-hostname/.task/security/hide-os-home-prompt-and-register-launcher-hostname/session.json",
+  "createdAt": "2026-06-23T02:06:16.833Z"
+}
