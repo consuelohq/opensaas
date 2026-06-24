@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 import { Effect } from 'effect';
+
+import { transcribeForCli } from './lib/media/audio';
 import { existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 
@@ -130,8 +132,29 @@ function inputExists(path: string | undefined): path is string {
   return typeof path === 'string' && path.length > 0 && existsSync(path);
 }
 
+async function handleAudioCommand(args: string[]): Promise<unknown> {
+  const [subcommand = 'help', ...rest] = args;
+  try {
+    if (subcommand === 'transcribe') {
+      const inputPath = optionValue(rest, '--input');
+      if (!inputExists(inputPath)) return missingInputError('audio.transcribe', inputPath);
+      const mode = optionValue(rest, '--mode') ?? 'fixture';
+      const fixtureText = optionValue(rest, '--fixture-text');
+      const language = optionValue(rest, '--language');
+      const modelRef = optionValue(rest, '--model');
+      return await Effect.runPromise(transcribeForCli({ inputPath, mode: mode === 'whisper.cpp' || mode === 'openai-whisper' ? mode : 'fixture', fixtureText, language, modelRef }));
+    }
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['audio transcribe'] } };
+  } catch (error: unknown) {
+    return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_AUDIO_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
+  }
+}
+
 async function handleCoreCommand(command: string, args: string[]): Promise<unknown> {
   try {
+    if (command === 'audio') {
+      return await handleAudioCommand(args);
+    }
     if (command === 'probe') {
       if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffprobe') return missingDependencyError('ffprobe');
       const inputPath = optionValue(args, '--input');
@@ -162,7 +185,7 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
       return await Effect.runPromise(qaForCli({ inputPath }));
     }
-    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
   } catch (error: unknown) {
     return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
   }

@@ -138,7 +138,44 @@ export const MediaRenderResultSchema = z.object({
 export const MediaDependencyReportSchema = z.object({ schema: z.literal('media.dependency-report.v1') }).passthrough();
 export const MediaIngestManifestSchema = z.object({ schema: z.literal('media.ingest-manifest.v1') }).passthrough();
 export const MediaFrameManifestSchema = z.object({ schema: z.literal('media.frame-manifest.v1') }).passthrough();
-export const MediaTranscriptSchema = z.object({ schema: z.literal('media.transcript.v1') }).passthrough();
+export const MediaTranscriptWordSchema = z.object({
+  startSeconds: z.number().nonnegative(),
+  endSeconds: z.number().positive(),
+  text: NonEmptyStringSchema,
+  confidence: z.number().min(0).max(1).optional(),
+}).passthrough().superRefine((word, ctx) => {
+  if (word.endSeconds <= word.startSeconds) {
+    ctx.addIssue({ code: 'custom', path: ['endSeconds'], message: 'word end must be after start' });
+  }
+});
+
+export const MediaTranscriptSegmentSchema = z.object({
+  id: NonEmptyStringSchema,
+  startSeconds: z.number().nonnegative(),
+  endSeconds: z.number().positive(),
+  text: NonEmptyStringSchema,
+  words: z.array(MediaTranscriptWordSchema).default([]),
+}).passthrough().superRefine((segment, ctx) => {
+  if (segment.endSeconds <= segment.startSeconds) {
+    ctx.addIssue({ code: 'custom', path: ['endSeconds'], message: 'segment end must be after start' });
+  }
+  for (const [index, word] of segment.words.entries()) {
+    if (word.startSeconds < segment.startSeconds || word.endSeconds > segment.endSeconds) {
+      ctx.addIssue({ code: 'custom', path: ['words', index], message: 'word must fit within segment time range' });
+    }
+  }
+});
+
+export const MediaTranscriptSchema = z.object({
+  schema: z.literal('media.transcript.v1'),
+  id: NonEmptyStringSchema.optional(),
+  mode: z.enum(['fixture', 'whisper.cpp', 'openai-whisper']),
+  language: NonEmptyStringSchema.optional(),
+  source: z.object({ audioPath: NonEmptyStringSchema }).passthrough(),
+  implicitModelDownloads: z.literal(false),
+  modelRef: z.string().optional(),
+  segments: z.array(MediaTranscriptSegmentSchema),
+}).passthrough();
 export const MediaPoseTrackSchema = z.object({ schema: z.literal('media.pose-track.v1') }).passthrough();
 export const MediaMotionTrackSchema = z.object({ schema: z.literal('media.motion-track.v1') }).passthrough();
 export const MediaOverlaySchema = z.object({ schema: z.literal('media.overlay.v1') }).passthrough();

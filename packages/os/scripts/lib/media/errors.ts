@@ -3,7 +3,9 @@ export type MediaErrorCode =
   | 'MEDIA_INPUT_MISSING'
   | 'MEDIA_VALIDATION_ERROR'
   | 'MEDIA_NOT_IMPLEMENTED'
-  | 'MEDIA_SOURCE_ASSET_MISSING';
+  | 'MEDIA_SOURCE_ASSET_MISSING'
+  | 'MEDIA_MODEL_REQUIRED'
+  | 'MEDIA_AUDIO_PROCESS_FAILED';
 
 export class MediaError extends Error {
   readonly code: MediaErrorCode;
