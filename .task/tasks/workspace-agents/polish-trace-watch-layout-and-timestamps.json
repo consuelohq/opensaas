@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/polish-trace-watch-layout-and-timestamps",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1207,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1207",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1207",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1207/polish-trace-watch-layout-and-timestamps",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1207",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1207/polish-trace-watch-layout-and-timestamps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-trace-watch-layout-and-timestamps",
+  "taskSession": "tsk_87c9686d344f",
+  "tmuxSession": "opensaas-workspace-agents-polish-trace-watch-layout-and-timestamps-87c9686d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-trace-watch-layout-and-timestamps/.task/workspace-agents/polish-trace-watch-layout-and-timestamps/session.json",
+  "createdAt": "2026-06-24T03:17:41.085Z"
+}

@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest';
 import { classifyTaskCallCommand, classifyTaskExecCommand } from '../scripts/trace-home/command-quality';
 import { parseArgs } from '../scripts/trace-home/cli';
 import { resolveTraceDb } from '../scripts/trace-home/db';
-import { buildTraceHomeModel } from '../scripts/trace-home/model';
+import { buildTraceHomeModel, formatTime } from '../scripts/trace-home/model';
 import { stripWrapperInternals } from '../scripts/trace-home/sanitize';
 import { renderTraceHome } from '../scripts/trace-home/text-renderer';
 import type { TraceHomeRow } from '../scripts/trace-home/types';
@@ -15,6 +15,24 @@ import {
   reduceTraceHomeState,
   stateToBuildOptions,
 } from '../scripts/trace-home/tui/state';
+
+
+function expectedLocalTimestamp(value: string): string {
+  const date = new Date(value);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(date).map((part) => [part.type, part.value]),
+  ) as Record<string, string>;
+
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}:${parts.second}`;
+}
 
 function row(overrides: Partial<TraceHomeRow>): TraceHomeRow {
   return {
@@ -130,6 +148,36 @@ describe('trace home', () => {
     expect(model.rawShell).toMatchObject({ total: 3, good: 1, suspect: 1, bad: 1 });
     expect(model.topTools[0].tool).toBe('code.run');
     expect(model.inspect?.tabs).toContain('JSON');
+  });
+
+  test('model formats trace time as the local full timestamp', () => {
+    const timestamp = '2026-06-01T20:00:33.000Z';
+
+    expect(formatTime(timestamp)).toBe(expectedLocalTimestamp(timestamp));
+    expect(formatTime(timestamp)).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  });
+
+  test('renderer prioritizes timestamp, tool-status alignment, and the full branch', () => {
+    const timestamp = '2026-06-01T20:00:33.000Z';
+    const model = buildTraceHomeModel([
+      row({
+        rownum: 99,
+        record_id: 'layout-1',
+        trace_id: 'trc_layout',
+        tool: 'code.call',
+        branch: 'task/workspace-agents/polish-trace-watch-layout-and-timestamps',
+        ts: timestamp,
+        duration_ms: 4321,
+        total_tokens: 1900,
+        result_json: JSON.stringify({ ok: true, code: 'OK', message: 'code.call completed' }),
+      }),
+    ], { selectedTraceId: 'trc_layout', live: false });
+
+    const output = renderTraceHome(model, { width: 151, height: 44, color: false });
+
+    expect(output).toContain('TIMESTAMP            TOOL');
+    expect(output).toContain(`${expectedLocalTimestamp(timestamp)}  ✓ code.call`);
+    expect(output).toContain('workspace-agents/polish-trace-watch-layout-and-timestamps');
   });
 
   test('sanitization hides wrapper internals and summarizes GitHub raw failure', () => {
