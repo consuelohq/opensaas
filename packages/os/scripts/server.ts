@@ -6,6 +6,7 @@ import path from 'node:path';
 import {
   loadGatewaySecurityConfig,
   resolveToolScope,
+  verifyBearerMcpRequest,
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
@@ -152,6 +153,36 @@ async function authorizeSignedRequest(input: {
   return result.ok ? null : verificationResponse(result);
 }
 
+
+function bearerTokenFromRequest(request: Request): string | null {
+  const value = request.headers.get('authorization') ?? '';
+  const match = value.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
+
+async function authorizeBearerMcpRequest(input: {
+  request: Request;
+  path: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  const bearerToken = bearerTokenFromRequest(input.request);
+  if (!bearerToken) return unauthorized('MISSING_BEARER', 'Bearer token is required.');
+  let config: ReturnType<typeof loadGatewaySecurityConfig>;
+  try {
+    config = loadAuthConfigForRequest();
+  } catch {
+    return unauthorized('AUTH_CONFIG_REQUIRED', 'Generated Consuelo OS auth config is required.');
+  }
+  const result = verifyBearerMcpRequest({
+    config,
+    bearerToken,
+    path: input.path,
+    requiredScope: input.requiredScope,
+    now: new Date().toISOString(),
+  });
+  return result.ok ? null : verificationResponse(result);
+}
+
 function parseCallInput(body: string): CallInput {
   const parsed = JSON.parse(body) as unknown;
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -289,9 +320,6 @@ async function handleRequest(request: Request): Promise<Response> {
       const rawMaterialDenied = admitRawMcpBody(body);
       if (rawMaterialDenied) return rawMaterialDenied;
 
-      const preflightDenied = authPreflight(request);
-      if (preflightDenied) return preflightDenied;
-
       const decodedMaterialDenied = admitDecodedMcpBody(body);
       if (decodedMaterialDenied) return decodedMaterialDenied;
 
@@ -300,12 +328,19 @@ async function handleRequest(request: Request): Promise<Response> {
         return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
       }
 
-      const denied = await authorizeSignedRequest({
-        request,
-        path: '/mcp',
-        body,
-        requiredScope: mcpScope.requiredScope,
-      });
+      const headers = requestHeaders(request);
+      const denied = hasSignedGatewayHeaders(headers)
+        ? await authorizeSignedRequest({
+            request,
+            path: '/mcp',
+            body,
+            requiredScope: mcpScope.requiredScope,
+          })
+        : await authorizeBearerMcpRequest({
+            request,
+            path: '/mcp',
+            requiredScope: mcpScope.requiredScope,
+          });
       if (denied) return denied;
 
       const result = await handleMcpGatewayJsonRpc(body, {
