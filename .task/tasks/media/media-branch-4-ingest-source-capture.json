@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-4-ingest-source-capture",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1200,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1200",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1200",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1200/media-branch-4-ingest-source-capture",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1200",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1200/media-branch-4-ingest-source-capture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-4-ingest-source-capture",
+  "taskSession": "tsk_dedfe0d562a5",
+  "tmuxSession": "opensaas-media-media-branch-4-ingest-source-capture-dedfe0d5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-4-ingest-source-capture/.task/media/media-branch-4-ingest-source-capture/session.json",
+  "createdAt": "2026-06-24T00:00:30.825Z"
+}
