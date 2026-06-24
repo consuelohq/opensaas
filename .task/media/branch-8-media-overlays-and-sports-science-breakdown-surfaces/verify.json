@@ -4,15 +4,15 @@
   "mode": "full",
   "branch": "task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
   "base": "origin/stream/media",
-  "headSha": "1a5291b61dbfeddb489534d248f1ddd3189a03a5",
-  "changeHash": "915e2ba3ed612e6c26373bc8e6ebcf8b8ab5f9ad1c6ffbd5ca2fdc31af188c88",
+  "headSha": "08c45c6287398afce2341bb00e6cb00a89645f32",
+  "changeHash": "9a9310cf8a36e8632b13982a8e5607def3685228cae2b999413493faf002f397",
   "changedFiles": [
     "packages/os/scripts/lib/media/compose.ts",
     "packages/os/scripts/lib/media/overlays.ts",
     "packages/os/scripts/lib/media/schema.ts",
     "packages/os/scripts/lib/media/sports-science.ts"
   ],
-  "verifiedAt": "2026-06-24T01:26:20.374Z",
+  "verifiedAt": "2026-06-24T01:29:02.811Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -28,6 +28,7 @@
       "changedFiles": [
         ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/current.json",
         ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/session.json",
+        ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/verify.json",
         ".task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/workpad.md",
         ".task/tasks/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces.json",
         "packages/os/scripts/lib/media/compose.ts",
