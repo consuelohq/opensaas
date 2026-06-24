@@ -242,3 +242,269 @@ export function objectTrackForCli(input: Record<string, unknown>) {
 export function cameraMotionForCli(input: Record<string, unknown>) {
   return Effect.map(cameraMotionEffect(input), (data) => ({ schema: 'media.camera-motion-result.v1', ok: true, data }));
 }
+
+export const poseTrackOutputSchema = 'media.pose-track.v1';
+export const angleMeasureOutputSchema = 'media.angle-measure-result.v1';
+export const sportsScienceMetricsOutputSchema = 'media.sports-science-metrics.v1';
+export const poseTrackLandmarkCount = 33;
+export const implicitModelDownloads = false;
+
+export const mediapipeModelBundles = [
+  {
+    id: 'pose_landmarker_lite',
+    profile: 'media-vision-pose',
+    task: 'pose-landmarker',
+    estimatedInstalledSizeMb: 15,
+    implicit: false,
+  },
+  {
+    id: 'pose_landmarker_full',
+    profile: 'media-vision-pose',
+    task: 'pose-landmarker',
+    estimatedInstalledSizeMb: 30,
+    implicit: false,
+  },
+] as const;
+
+export const visionPoseProfile = {
+  id: 'media-vision-pose',
+  dependencies: ['python3', 'numpy', 'opencv-python-headless', 'mediapipe'],
+  optional: true,
+  semanticLayer: 'human-body-pose-landmarks',
+  buildsOn: ['media-vision-light'],
+  requiresExplicitModelBundle: true,
+  implicitModelDownloads,
+  landmarkSlotsPerPoseFrame: poseTrackLandmarkCount,
+  modelBundles: mediapipeModelBundles.map((bundle) => bundle.id),
+} as const;
+
+export const poseEstimateRequiredProfiles = ['media-vision-pose'] as const;
+export const poseEstimateRequiredDependencies = ['python3', 'numpy', 'opencv-python-headless', 'mediapipe'] as const;
+export const angleMeasureInputs = ['media.pose-track.v1'] as const;
+export const sportsScienceMetricInputs = ['media.pose-track.v1', 'media.motion-track.v1'] as const;
+
+const poseLandmarkNames = [
+  'nose',
+  'left_eye_inner',
+  'left_eye',
+  'left_eye_outer',
+  'right_eye_inner',
+  'right_eye',
+  'right_eye_outer',
+  'left_ear',
+  'right_ear',
+  'mouth_left',
+  'mouth_right',
+  'left_shoulder',
+  'right_shoulder',
+  'left_elbow',
+  'right_elbow',
+  'left_wrist',
+  'right_wrist',
+  'left_pinky',
+  'right_pinky',
+  'left_index',
+  'right_index',
+  'left_thumb',
+  'right_thumb',
+  'left_hip',
+  'right_hip',
+  'left_knee',
+  'right_knee',
+  'left_ankle',
+  'right_ankle',
+  'left_heel',
+  'right_heel',
+  'left_foot_index',
+  'right_foot_index',
+] as const;
+
+export type PoseLandmark = {
+  index: number;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+  presence: number;
+};
+
+type PoseFrameInput = {
+  timeSeconds?: number;
+  frameId?: string;
+  landmarks?: Array<Partial<PoseLandmark>>;
+};
+
+type AnglePointInput = {
+  name: string;
+  x: number;
+  y: number;
+};
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(1, Math.max(0, value));
+}
+
+function buildDefaultLandmark(index: number, override: Partial<PoseLandmark> = {}): PoseLandmark {
+  return {
+    index,
+    name: typeof override.name === 'string' && override.name.length > 0 ? override.name : poseLandmarkNames[index] ?? 'landmark_' + index,
+    x: round3(numberValue(override.x, 0)),
+    y: round3(numberValue(override.y, 0)),
+    z: round3(numberValue(override.z, 0)),
+    visibility: round3(clamp01(numberValue(override.visibility, 1))),
+    presence: round3(clamp01(numberValue(override.presence, 1))),
+  };
+}
+
+function normalizePoseLandmarks(inputLandmarks: unknown): PoseLandmark[] {
+  const overrides = Array.isArray(inputLandmarks) ? inputLandmarks as Array<Partial<PoseLandmark>> : [];
+  return Array.from({ length: poseTrackLandmarkCount }, (_, index) => buildDefaultLandmark(index, overrides[index] ?? {}));
+}
+
+function asPoseFrameInputs(value: unknown): PoseFrameInput[] {
+  if (!Array.isArray(value)) return [{ timeSeconds: 0, frameId: 'frame_000001' }];
+  const frames = value
+    .map((frame) => typeof frame === 'object' && frame !== null ? frame as PoseFrameInput : null)
+    .filter((frame): frame is PoseFrameInput => frame !== null);
+  return frames.length > 0 ? frames : [{ timeSeconds: 0, frameId: 'frame_000001' }];
+}
+
+export function missingMediapipeError(): Record<string, unknown> {
+  return {
+    schema: 'media.error.v1',
+    code: 'MEDIA_DEPENDENCY_MISSING',
+    message: 'MediaPipe pose tools require the mediapipe Python import and the media-vision-pose profile.',
+    dependencyId: 'mediapipe',
+    importName: 'mediapipe',
+    profile: 'media-vision-pose',
+    requiredProfiles: [...poseEstimateRequiredProfiles],
+    requiredDependencies: [...poseEstimateRequiredDependencies],
+    recovery: 'Install or enable media-vision-pose before running MediaPipe-backed pose tools.',
+  };
+}
+
+export function missingMediapipeModelError(modelBundleId = 'pose_landmarker_lite'): Record<string, unknown> {
+  return {
+    schema: 'media.error.v1',
+    code: 'MEDIA_MODEL_BUNDLE_MISSING',
+    message: 'MediaPipe pose estimate requires an explicit pose model bundle. Model downloads are never implicit.',
+    dependencyId: 'mediapipe',
+    profile: 'media-vision-pose',
+    modelBundleId,
+    modelBundles: mediapipeModelBundles.map((bundle) => ({ ...bundle })),
+    implicitModelDownloads,
+    requiredProfiles: [...poseEstimateRequiredProfiles],
+    recovery: 'Select and install one of the declared MediaPipe pose model bundles before running pose estimation.',
+  };
+}
+
+export function buildPoseTrackFixtureResult(input: Record<string, unknown>): Record<string, unknown> {
+  const sourcePath = stringValue(input.sourcePath, 'source.mp4');
+  const modelBundleId = stringValue(input.modelBundleId, 'pose_landmarker_lite');
+  const frames = asPoseFrameInputs(input.frames).map((frame, index) => ({
+    id: stringValue(frame.frameId, 'pose_frame_' + String(index + 1).padStart(6, '0')),
+    frameId: stringValue(frame.frameId, 'frame_' + String(index + 1).padStart(6, '0')),
+    timeSeconds: round3(numberValue(frame.timeSeconds, index / 30)),
+    poses: [
+      {
+        id: 'pose_' + String(index + 1).padStart(3, '0'),
+        landmarkCount: poseTrackLandmarkCount,
+        landmarks: normalizePoseLandmarks(frame.landmarks),
+      },
+    ],
+  }));
+
+  return {
+    schema: poseTrackOutputSchema,
+    source: sourceObject(sourcePath),
+    profile: 'media-vision-pose',
+    method: 'mediapipe-pose-landmarker-fixture',
+    modelBundleId,
+    implicitModelDownloads,
+    landmarkSlotsPerPoseFrame: poseTrackLandmarkCount,
+    requiredProfiles: [...poseEstimateRequiredProfiles],
+    requiredDependencies: [...poseEstimateRequiredDependencies],
+    frames,
+  };
+}
+
+function angleDegrees(a: AnglePointInput, b: AnglePointInput, c: AnglePointInput): number {
+  const abx = a.x - b.x;
+  const aby = a.y - b.y;
+  const cbx = c.x - b.x;
+  const cby = c.y - b.y;
+  const denominator = Math.hypot(abx, aby) * Math.hypot(cbx, cby);
+  if (denominator === 0) return 0;
+  const cosine = Math.min(1, Math.max(-1, (abx * cbx + aby * cby) / denominator));
+  return round3((Math.acos(cosine) * 180) / Math.PI);
+}
+
+function defaultAnglePoints(input: Record<string, unknown>): [AnglePointInput, AnglePointInput, AnglePointInput] {
+  const points = Array.isArray(input.points) ? input.points as AnglePointInput[] : [];
+  const [a, b, c] = points;
+  return [
+    a ?? { name: 'left_hip', x: 0, y: 0 },
+    b ?? { name: 'left_knee', x: 1, y: 0 },
+    c ?? { name: 'left_ankle', x: 1, y: 1 },
+  ];
+}
+
+export function buildAngleMeasureFixtureResult(input: Record<string, unknown>): Record<string, unknown> {
+  const poseTrackId = stringValue(input.poseTrackId, 'pose_track_fixture');
+  const [a, b, c] = defaultAnglePoints(input);
+  return {
+    schema: angleMeasureOutputSchema,
+    inputSchemas: [...angleMeasureInputs],
+    profile: 'media-vision-pose',
+    poseTrackId,
+    metrics: [
+      {
+        id: 'angle_001',
+        type: 'joint-angle',
+        joint: b.name,
+        points: [a.name, b.name, c.name],
+        degrees: angleDegrees(a, b, c),
+      },
+    ],
+  };
+}
+
+export function buildSportsScienceMetricsFixtureResult(input: Record<string, unknown>): Record<string, unknown> {
+  return {
+    schema: sportsScienceMetricsOutputSchema,
+    inputSchemas: [...sportsScienceMetricInputs],
+    profile: 'media-vision-pose',
+    metricSources: {
+      poseTrackId: stringValue(input.poseTrackId, 'pose_track_fixture'),
+      motionTrackId: stringValue(input.motionTrackId, 'motion_track_fixture'),
+    },
+    metrics: [
+      {
+        id: 'metric_001',
+        type: 'pose-derived-angle',
+        label: 'fixture joint angle',
+        sourceSchemas: [...sportsScienceMetricInputs],
+        requiresMeasurementData: true,
+      },
+    ],
+  };
+}
+
+export const poseEstimateEffect = (input: Record<string, unknown>) => Effect.succeed(buildPoseTrackFixtureResult(input));
+export const angleMeasureEffect = (input: Record<string, unknown>) => Effect.succeed(buildAngleMeasureFixtureResult(input));
+export const sportsScienceMetricsEffect = (input: Record<string, unknown>) => Effect.succeed(buildSportsScienceMetricsFixtureResult(input));
+
+export function poseEstimateForCli(input: Record<string, unknown>) {
+  return Effect.map(poseEstimateEffect(input), (data) => ({ schema: 'media.pose-estimate-result.v1', ok: true, data }));
+}
+
+export function angleMeasureForCli(input: Record<string, unknown>) {
+  return Effect.map(angleMeasureEffect(input), (data) => ({ schema: angleMeasureOutputSchema, ok: true, data }));
+}
+
+export function sportsScienceMetricsForCli(input: Record<string, unknown>) {
+  return Effect.map(sportsScienceMetricsEffect(input), (data) => ({ schema: sportsScienceMetricsOutputSchema, ok: true, data }));
+}
+
