@@ -4,15 +4,15 @@
   "mode": "full",
   "branch": "task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
   "base": "origin/stream/media",
-  "headSha": "08c45c6287398afce2341bb00e6cb00a89645f32",
-  "changeHash": "9a9310cf8a36e8632b13982a8e5607def3685228cae2b999413493faf002f397",
+  "headSha": "e2c3e07ab0fe80d643195f038b75459f87eef493",
+  "changeHash": "8d1f83e6c31c5de801449e7315100131b529705c61f417ebc4dcceab68b6a2f6",
   "changedFiles": [
     "packages/os/scripts/lib/media/compose.ts",
     "packages/os/scripts/lib/media/overlays.ts",
     "packages/os/scripts/lib/media/schema.ts",
     "packages/os/scripts/lib/media/sports-science.ts"
   ],
-  "verifiedAt": "2026-06-24T01:29:02.811Z",
+  "verifiedAt": "2026-06-24T01:30:34.474Z",
   "review": {
     "skipped": false,
     "passed": true,

@@ -53,3 +53,10 @@ Validation run:
 
 Issues/follow-ups:
 - Export package, artifact handoff, storage-budget model accounting, research ingest, and native overlay rendering dependencies remain intentionally out of scope.
+
+
+## Summary
+
+Branch 8 implements schema and fixture surfaces for media overlays and sports-science breakdown planning. The overlay surface is declarative JSON only, supports arrow, label, zoom-box, freeze-frame-callout, force-vector, joint-angle, velocity-trail, and comparison-ghost primitives, and rejects arbitrary executable fields. The sports-science surface requires data-backed claims with timestamp, frame, metric, and provenance links, and prevents force-vector, joint-angle, and velocity-trail overlays from being planned without their required data sources. Compose now exposes a small overlay-artifact collection hook for media.overlay.v1 artifacts without adding native rendering behavior.
+
+Validation passed for typecheck, tests 25-26, media:test:manifest, media:test:deps, media:test:contracts, media:test:core, media:test:ingest, media:test:audio, media:test:vision, review.run against origin/stream/media, and verify against origin/stream/media. Export packages, artifact handoff, storage-budget model accounting, research ingest, and native overlay rendering dependencies remain intentionally out of scope.
