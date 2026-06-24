@@ -301,6 +301,76 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     );
   });
 
+
+  it('should advertise OAuth protected-resource metadata for workspace MCP routes', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const resolvedPaths: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          resolvedPaths.push(input.path);
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/mcp',
+            surface: 'os',
+            auth: 'required',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_123',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            },
+          };
+        },
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/.well-known/oauth-protected-resource'),
+    );
+    const body = await response.json() as {
+      resource: string;
+      authorization_servers: string[];
+      scopes_supported: string[];
+    };
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    expect(body.resource).toBe('https://kokayi.consuelohq.com/mcp');
+    expect(body.authorization_servers).toEqual(['https://os.consuelohq.com']);
+    expect(body.scopes_supported).toEqual(expect.arrayContaining(['mcp:read', 'mcp:call', 'tool:*:read']));
+    expect(resolvedPaths).toEqual(['/mcp']);
+  });
+
+  it('should not advertise OAuth protected-resource metadata for hosts without an MCP connector route', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          return {
+            allowed: false,
+            status: 404,
+            errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+            auditEvent: 'workspace.hostname.route.denied',
+          };
+        },
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/.well-known/oauth-protected-resource'),
+    );
+    const body = await response.json() as { error: { code: string } };
+
+    expect(response.status).toBe(404);
+    expect(body.error.code).toBe('WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND');
+  });
+
   it('should route OS paths only to connected outbound connector origins', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();

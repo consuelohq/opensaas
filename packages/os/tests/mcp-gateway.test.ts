@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createGatewaySecurityConfig,
@@ -294,6 +294,54 @@ describe('MCP gateway adapter', () => {
     await expect(denied.json()).resolves.toMatchObject({
       error: { code: 'MISSING_SCOPE' },
     });
+  });
+
+
+  it('advertises OAuth discovery when MCP auth is missing and accepts active Consuelo OAuth tokens', async () => {
+    const config = createConfig();
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
+
+    const missing = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-consuelo-hostname': config.workspaceHost },
+      body,
+    }));
+    expect(missing.status).toBe(401);
+    expect(missing.headers.get('www-authenticate')).toContain(
+      `https://${config.workspaceHost}/.well-known/oauth-protected-resource`,
+    );
+
+    const fetchCalls: Array<{ url: string; body: string }> = [];
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      fetchCalls.push({ url, body: String(init?.body ?? '') });
+      return new Response(JSON.stringify({
+        active: true,
+        workspace_host: config.workspaceHost,
+        scopes: ['route:/mcp:read', 'tool:*:read'],
+        sub: 'google:123',
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    });
+
+    const accepted = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer coa_test_oauth_access_token',
+        'content-type': 'application/json',
+        'x-consuelo-hostname': config.workspaceHost,
+      },
+      body,
+    }));
+    const json = await readJsonResponse(accepted);
+
+    expect(accepted.status).toBe(200);
+    expect(json.result).toBeDefined();
+    expect(fetchCalls).toHaveLength(1);
+    expect(fetchCalls[0].url).toBe('https://os.consuelohq.com/oauth/introspect');
+    expect(fetchCalls[0].body).toContain('resource=https%3A%2F%2Fmcp-test.consuelohq.com%2Fmcp');
   });
 
   it('filters non-callable facade tools out of the MCP surface', async () => {
