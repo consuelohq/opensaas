@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-design",
+  "stream": "stream/consuelo-design",
+  "taskBranch": "task/consuelo-design/fix-trace-table-mobile-scroll-ownership",
+  "baseBranch": "stream/consuelo-design",
+  "sourceBranch": "stream/consuelo-design",
+  "startFrom": "stream",
+  "prNumber": 1218,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1218",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1218",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1218/fix-trace-table-mobile-scroll-ownership",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1218",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1218/fix-trace-table-mobile-scroll-ownership",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-design-fix-trace-table-mobile-scroll-ownership",
+  "taskSession": "tsk_6c9d872552ad",
+  "tmuxSession": "opensaas-consuelo-design-fix-trace-table-mobile-scroll-ownership-6c9d8725",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-design-fix-trace-table-mobile-scroll-ownership/.task/consuelo-design/fix-trace-table-mobile-scroll-ownership/session.json",
+  "createdAt": "2026-06-26T16:10:30.144Z"
+}
