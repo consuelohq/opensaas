@@ -2,7 +2,10 @@
 import { Effect } from 'effect';
 
 import { transcribeForCli } from './lib/media/audio';
-import { existsSync } from 'node:fs';
+import { breakdownPlanForCli } from './lib/media/sports-science';
+import { exportPackageForCli } from './lib/media/export';
+import { renderOverlayForCli } from './lib/media/overlays';
+import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 
 import { composeForCli } from './lib/media/compose';
@@ -132,6 +135,27 @@ function inputExists(path: string | undefined): path is string {
   return typeof path === 'string' && path.length > 0 && existsSync(path);
 }
 
+function readJsonInput(path: string | undefined, kind: string): unknown | MediaCliEnvelope {
+  if (!inputExists(path)) return missingInputError(kind, path);
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')) as unknown;
+  } catch (error: unknown) {
+    return {
+      schema: 'media.error.v1',
+      ok: false,
+      error: {
+        code: 'MEDIA_JSON_INPUT_INVALID',
+        message: kind + ' JSON input is invalid: ' + (error instanceof Error ? error.message : String(error)),
+        path,
+      },
+    };
+  }
+}
+
+function isErrorEnvelope(value: unknown): value is MediaCliEnvelope {
+  return typeof value === 'object' && value !== null && 'ok' in value && (value as { ok?: unknown }).ok === false;
+}
+
 async function handleAudioCommand(args: string[]): Promise<unknown> {
   const [subcommand = 'help', ...rest] = args;
   try {
@@ -154,6 +178,37 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
   try {
     if (command === 'audio') {
       return await handleAudioCommand(args);
+    }
+    if (command === 'overlay' || command === 'overlay.render') {
+      const rest = command === 'overlay' && args[0] === 'render' ? args.slice(1) : args;
+      const spec = readJsonInput(optionValue(rest, '--spec'), 'overlay.render');
+      if (isErrorEnvelope(spec)) return spec;
+      const outPath = optionValue(rest, '--out');
+      const value = typeof spec === 'object' && spec !== null ? { ...(spec as Record<string, unknown>) } : {};
+      if (outPath) {
+        const output = typeof value.output === 'object' && value.output !== null ? value.output as Record<string, unknown> : {};
+        value.output = { ...output, path: outPath };
+      }
+      return await Effect.runPromise(renderOverlayForCli(value));
+    }
+    if (command === 'breakdown' || command === 'breakdown.plan' || command === 'breakdown:plan') {
+      const rest = command === 'breakdown' && args[0] === 'plan' ? args.slice(1) : args;
+      const plan = readJsonInput(optionValue(rest, '--input'), 'breakdown.plan');
+      if (isErrorEnvelope(plan)) return plan;
+      return await Effect.runPromise(breakdownPlanForCli({ plan, availableRefs: allOptionValues(rest, '--available-ref') }));
+    }
+    if (command === 'export') {
+      const renderResultPath = optionValue(args, '--render-result');
+      if (!inputExists(renderResultPath)) return missingInputError('export render-result', renderResultPath);
+      return await Effect.runPromise(exportPackageForCli({
+        renderResultPath,
+        target: optionValue(args, '--target'),
+        outDir: optionValue(args, '--out'),
+        thumbnail: optionValue(args, '--thumbnail'),
+        captions: optionValue(args, '--captions'),
+        notes: optionValue(args, '--notes'),
+        rightsNotes: optionValue(args, '--rights-notes'),
+      }));
     }
     if (command === 'probe') {
       if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffprobe') return missingDependencyError('ffprobe');
