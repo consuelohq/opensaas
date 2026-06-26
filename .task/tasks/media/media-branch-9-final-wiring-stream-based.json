@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-9-final-wiring-stream-based",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1217",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1217",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1217/media-branch-9-final-wiring-stream-based",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1217",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1217/media-branch-9-final-wiring-stream-based",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-9-final-wiring-stream-based",
+  "taskSession": "tsk_928d6acbd64b",
+  "tmuxSession": "opensaas-media-media-branch-9-final-wiring-stream-based-928d6acb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-9-final-wiring-stream-based/.task/media/media-branch-9-final-wiring-stream-based/session.json",
+  "createdAt": "2026-06-26T15:52:02.523Z"
+}
