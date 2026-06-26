@@ -186,6 +186,15 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
   },
 ];
 
+export const mediaModelBundles = mediaRuntimeDependencies.flatMap((dependency) =>
+  (dependency.modelBundles ?? []).map((bundle) => ({
+    id: bundle.id,
+    dependencyId: dependency.id,
+    estimatedInstalledSizeMb: bundle.estimatedInstalledSizeMb,
+    implicit: bundle.implicit === true,
+  })),
+);
+
 export const mediaDependencyProfiles: MediaDependencyProfile[] = [
   { id: 'media-core', dependencies: ['ffmpeg', 'mediainfo', 'imagemagick', 'exiftool'], default: true, optional: false, estimatedInstalledSizeMb: 320, warningThresholdMb: 600 },
   { id: 'media-youtube', dependencies: ['yt-dlp'], optional: true, estimatedInstalledSizeMb: 35, warningThresholdMb: 200 },

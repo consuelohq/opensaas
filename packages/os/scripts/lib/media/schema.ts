@@ -325,7 +325,26 @@ export const MediaBreakdownPlanSchema = z.object({
     }
   }
 });
-export const MediaExportPackageSchema = z.object({ schema: z.literal('media.export-package.v1') }).passthrough();
+const MediaExportTargetSchema = z.enum(['youtube-shorts', 'tiktok', 'reels', 'longform-youtube']);
+
+export const MediaExportPackageSchema = z.object({
+  schema: z.literal('media.export-package.v1'),
+  id: NonEmptyStringSchema,
+  target: MediaExportTargetSchema,
+  files: z.object({
+    mp4: NonEmptyStringSchema,
+    thumbnail: NonEmptyStringSchema,
+    captions: NonEmptyStringSchema,
+    notes: NonEmptyStringSchema,
+    renderResult: NonEmptyStringSchema,
+  }).passthrough(),
+  provenance: z.object({
+    sourceAssetId: NonEmptyStringSchema,
+    rightsStatus: RightsStatusSchema,
+    rightsNotes: z.string().optional(),
+  }).passthrough(),
+  deterministic: z.literal(true),
+}).passthrough();
 
 export type MediaAsset = z.infer<typeof MediaAssetSchema>;
 export type MediaTimeline = z.infer<typeof MediaTimelineSchema>;
