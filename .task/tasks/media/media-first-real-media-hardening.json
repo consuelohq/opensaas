@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-first-real-media-hardening",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1219,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1219",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1219",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1219/media-first-real-media-hardening",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1219",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1219/media-first-real-media-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-first-real-media-hardening",
+  "taskSession": "tsk_af4d09f3de39",
+  "tmuxSession": "opensaas-media-media-first-real-media-hardening-af4d09f3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-first-real-media-hardening/.task/media/media-first-real-media-hardening/session.json",
+  "createdAt": "2026-06-26T21:02:21.152Z"
+}

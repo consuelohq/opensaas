@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/media-first-real-media-hardening",
+  "base": "origin/stream/media",
+  "headSha": "31c752b8f918665d20e954148e6088db7cddc6b6",
+  "changeHash": "c4f963d30a3d460086b3e177b08b6ab03e633279d188d2746dbe259a7c2c7b3d",
+  "changedFiles": [
+    "packages/os/scripts/lib/media/ingest.ts",
+    "packages/os/scripts/lib/media/source-capture/plan.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/tests/media/17-media-ingest-source-capture.test.ts"
+  ],
+  "verifiedAt": "2026-06-26T21:13:46.704Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/media-first-real-media-hardening/current.json",
+        ".task/media/media-first-real-media-hardening/session.json",
+        ".task/media/media-first-real-media-hardening/workpad.md",
+        ".task/tasks/media/media-first-real-media-hardening.json",
+        "packages/os/scripts/lib/media/ingest.ts",
+        "packages/os/scripts/lib/media/source-capture/plan.ts",
+        "packages/os/scripts/media.ts",
+        "packages/os/tests/media/17-media-ingest-source-capture.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
