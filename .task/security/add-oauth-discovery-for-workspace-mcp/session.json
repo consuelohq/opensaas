@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_22e6ce0b4513",
+  "tmuxSession": "opensaas-security-add-oauth-discovery-for-workspace-mcp-22e6ce0b",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/add-oauth-discovery-for-workspace-mcp",
+  "branch": "task/security/add-oauth-discovery-for-workspace-mcp",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-add-oauth-discovery-for-workspace-mcp",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-add-oauth-discovery-for-workspace-mcp",
+  "prNumber": 1206,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1206",
+  "createdAt": "2026-06-24T02:55:35.351Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-add-oauth-discovery-for-workspace-mcp/.task/security/add-oauth-discovery-for-workspace-mcp/session.json"
+}
