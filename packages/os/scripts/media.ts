@@ -12,9 +12,11 @@ import { composeForCli } from './lib/media/compose';
 import { checkMediaDependenciesEffect } from './lib/media/dependencies';
 import { extractFramesForCli } from './lib/media/frames';
 import { createMediaInstallPlan } from './lib/media/install-plan';
+import { ingestMediaForCli } from './lib/media/ingest';
 import { probeForCli } from './lib/media/probe';
 import { qaForCli } from './lib/media/qa';
 import { validateTimelineForCli } from './lib/media/timeline';
+import { MediaError } from './lib/media/errors';
 
 type ParsedProfileArgs = {
   json: boolean;
@@ -30,6 +32,30 @@ type MediaCliEnvelope = {
   data?: unknown;
   error?: Record<string, unknown>;
 };
+
+function mediaErrorEnvelope(error: unknown, fallbackCode: string): MediaCliEnvelope {
+  const value = typeof error === 'object' && error !== null ? error as Record<string, unknown> : {};
+  const code = typeof value.code === 'string' && value.code.startsWith('MEDIA_') ? value.code : undefined;
+  if (error instanceof MediaError || code) {
+    return {
+      schema: 'media.error.v1',
+      ok: false,
+      error: {
+        code: code ?? error.code,
+        message: error instanceof Error ? error.message : String(value.message ?? 'media command failed'),
+        details: value.details,
+      },
+    };
+  }
+  return {
+    schema: 'media.error.v1',
+    ok: false,
+    error: {
+      code: fallbackCode,
+      message: error instanceof Error ? error.message : String(error),
+    },
+  };
+}
 
 function parseProfileArgs(rest: string[]): ParsedProfileArgs {
   const args: ParsedProfileArgs = { json: false, dryRun: false, allProfiles: false, profiles: [] };
@@ -197,6 +223,18 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (isErrorEnvelope(plan)) return plan;
       return await Effect.runPromise(breakdownPlanForCli({ plan, availableRefs: allOptionValues(rest, '--available-ref') }));
     }
+    if (command === 'ingest') {
+      const source = optionValue(args, '--source');
+      const outDir = optionValue(args, '--out');
+      if (!source) return missingInputError('ingest source', source);
+      if (!outDir) return missingInputError('ingest out', outDir);
+      return await Effect.runPromise(ingestMediaForCli({
+        source,
+        outDir,
+        dryRun: args.includes('--dry-run'),
+        format: optionValue(args, '--format'),
+      }));
+    }
     if (command === 'export') {
       const renderResultPath = optionValue(args, '--render-result');
       if (!inputExists(renderResultPath)) return missingInputError('export render-result', renderResultPath);
@@ -240,9 +278,9 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
       return await Effect.runPromise(qaForCli({ inputPath }));
     }
-    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'ingest', 'probe', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa', 'export', 'overlay render', 'breakdown plan'] } };
   } catch (error: unknown) {
-    return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
+    return mediaErrorEnvelope(error, 'MEDIA_CORE_COMMAND_ERROR');
   }
 }
 
@@ -283,6 +321,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  writeJson({ schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CLI_ERROR', message: error instanceof Error ? error.message : String(error) } });
+  writeJson(mediaErrorEnvelope(error, 'MEDIA_CLI_ERROR'));
   process.exit(1);
 });

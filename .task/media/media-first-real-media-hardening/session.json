@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_af4d09f3de39",
+  "tmuxSession": "opensaas-media-media-first-real-media-hardening-af4d09f3",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-first-real-media-hardening",
+  "branch": "task/media/media-first-real-media-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-first-real-media-hardening",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-first-real-media-hardening",
+  "prNumber": 1219,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1219",
+  "createdAt": "2026-06-26T21:02:21.150Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-first-real-media-hardening/.task/media/media-first-real-media-hardening/session.json"
+}

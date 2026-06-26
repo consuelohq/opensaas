@@ -24,6 +24,7 @@ function sourceKind(source: string): 'url' | 'file' {
 function buildYtDlpArgs(input: Required<Pick<SourceCapturePlanInput, 'source' | 'outDir'>> & Pick<SourceCapturePlanInput, 'format'>): string[] {
   const args = [
     '--no-playlist',
+    '--ignore-errors',
     '--write-info-json',
     '--write-subs',
     '--write-auto-subs',
@@ -32,12 +33,16 @@ function buildYtDlpArgs(input: Required<Pick<SourceCapturePlanInput, 'source' | 
     '--convert-subs',
     'vtt',
     '--write-thumbnail',
+    '--merge-output-format',
+    'mp4',
+    '--max-filesize',
+    '100M',
     '--paths',
     input.outDir,
     '--output',
     'assets/source.%(ext)s',
   ];
-  if (input.format) args.push('--format', input.format);
+  args.push('--format', input.format ?? 'best[ext=mp4][height<=720]/best[height<=720]/worst');
   args.push(input.source);
   return args;
 }
