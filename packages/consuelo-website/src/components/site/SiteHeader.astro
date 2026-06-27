@@ -1,16 +1,13 @@
 ---
-import {
-  launchHeaderLinks,
-  launchMobileMenuLinks,
-  siteLinks,
-} from '../../data/launch-content';
-import { launchDocsMenuTabs } from '../../data/launch-docs';
+import { siteHeaderLinks, siteMobileMenuLinks } from '../../data/site-navigation';
+import { siteLinks } from '../../data/site-links';
+import { docsMenuTabs } from '../../data/docs-navigation';
 
 type Props = {
-  pageSections?: LaunchPageSection[];
+  pageSections?: HomePageSection[];
 };
 
-type LaunchPageSection = {
+type HomePageSection = {
   id: string;
   label: string;
 };
@@ -25,7 +22,7 @@ const hasPageSections = pageSections.length > 0;
 
     <div class="launch-header__desktop">
       <nav class="launch-header__nav" aria-label="Primary">
-        {launchHeaderLinks.map((link) => (
+        {siteHeaderLinks.map((link) => (
           <a href={link.href}>{link.label}</a>
         ))}
       </nav>
@@ -93,7 +90,7 @@ const hasPageSections = pageSections.length > 0;
       <section class="launch-header__mobile-section">
         <p class="launch-eyebrow">Menu</p>
         <nav class="launch-header__mobile-links" aria-label="mobile navigation">
-          {launchMobileMenuLinks.map((link) => (
+          {siteMobileMenuLinks.map((link) => (
             <a class="launch-header__mobile-link" href={link.href} data-mobile-link>{link.label}</a>
           ))}
         </nav>
@@ -103,7 +100,7 @@ const hasPageSections = pageSections.length > 0;
         <p class="launch-eyebrow">Docs</p>
 
         <div class="launch-header__docs-groups">
-          {launchDocsMenuTabs.flatMap((tab) => tab.groups).map((group) => (
+          {docsMenuTabs.flatMap((tab) => tab.groups).map((group) => (
             <details class="launch-header__docs-group">
               <summary class="launch-header__docs-summary">
                 <span>{group.label}</span>

@@ -1,5 +1,5 @@
 ---
-import { launchMercury } from '../../data/launch-content';
+import { homeMercuryPromo } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
@@ -18,15 +18,15 @@ const icons = [
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-mercury-promo">
-    <h2 class="launch-mono">{launchMercury.title}</h2>
-    <p class="launch-copy">{launchMercury.intro}</p>
+    <h2 class="launch-mono">{homeMercuryPromo.title}</h2>
+    <p class="launch-copy">{homeMercuryPromo.intro}</p>
     <div class="launch-mercury-promo__icons">
       {icons.map((icon) => (
         <img src={icon.src} alt={icon.alt} width="24" height="24" class="launch-mercury-promo__icon" />
       ))}
     </div>
-    <a class="launch-mercury-promo__link launch-mono" href={launchMercury.primaryHref}>
-      {launchMercury.primaryLabel} ↗
+    <a class="launch-mercury-promo__link launch-mono" href={homeMercuryPromo.primaryHref}>
+      {homeMercuryPromo.primaryLabel} ↗
     </a>
   </div>
 </section>

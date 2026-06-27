@@ -1,5 +1,5 @@
 ---
-import { launchMetrics, launchStats } from '../../data/launch-content';
+import { homeMetrics, homeStats } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
@@ -81,13 +81,13 @@ const thinBars = Array.from({ length: numBars }).map((_, i) => {
 <section class="launch-section" id={sectionId} data-motion-section="proof-svg">
   <div class="launch-content launch-content--wide launch-stats">
     <div class="launch-stats__intro">
-      <p class="launch-eyebrow">{launchStats.eyebrow}</p>
-      <h2 class="launch-stats__title">{launchStats.title}</h2>
-      {launchStats.intro && <p class="launch-copy">{launchStats.intro}</p>}
+      <p class="launch-eyebrow">{homeStats.eyebrow}</p>
+      <h2 class="launch-stats__title">{homeStats.title}</h2>
+      {homeStats.intro && <p class="launch-copy">{homeStats.intro}</p>}
     </div>
 
     <div class="launch-stats__grid">
-      {launchMetrics.map((metric, index) => (
+      {homeMetrics.map((metric, index) => (
         <article class="launch-stats__metric">
           <div class="launch-stats__chart" aria-hidden="true" data-motion="svg-grid" data-motion-chart={metric.chart}>
             {metric.chart === 'line' && (

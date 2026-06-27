@@ -206,7 +206,7 @@ svg.icon-tabler {
   }
 }
 
-/* language selector vars (from LaunchLayout) */
+/* language selector vars (from MarketingLayout) */
 :root {
   --launch-muted: #B3B3B3;
   --launch-fg: var(--foreground);

@@ -1,9 +1,7 @@
 ---
-import {
-  footerLinks,
-  launchFooterSignup,
-  siteLinks,
-} from '../../data/launch-content';
+import { homeFooterSignup } from '../../data/home-content';
+import { siteLinks } from '../../data/site-links';
+import { footerLinks } from '../../data/site-navigation';
 import LanguageSelector from './LanguageSelector.astro';
 
 type Props = {
@@ -16,15 +14,15 @@ const { sectionId } = Astro.props as Props;
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-footer-signup">
     <div class="launch-footer-signup__intro">
-      <p class="launch-eyebrow">{launchFooterSignup.eyebrow}</p>
-      <h2>{launchFooterSignup.title}</h2>
-      <p class="launch-copy">{launchFooterSignup.intro}</p>
+      <p class="launch-eyebrow">{homeFooterSignup.eyebrow}</p>
+      <h2>{homeFooterSignup.title}</h2>
+      <p class="launch-copy">{homeFooterSignup.intro}</p>
     </div>
 
     <form class="launch-footer-signup__form" data-newsletter-form>
       <div class="launch-footer-signup__field">
         <input aria-label="Email address" name="email" placeholder="Email address" type="email" />
-        <button class="launch-button launch-mono" type="submit">{launchFooterSignup.buttonLabel}</button>
+        <button class="launch-button launch-mono" type="submit">{homeFooterSignup.buttonLabel}</button>
       </div>
     </form>
   </div>
