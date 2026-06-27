@@ -1,0 +1,49 @@
+---
+title: media.breakdown.plan
+description: Create a structured, data-backed media or sports-science breakdown plan.
+---
+
+# media.breakdown.plan
+
+Create a structured, data-backed media or sports-science breakdown plan.
+
+## When to use it
+
+Use this before writing a video script when claims need timestamps, frames, metrics, or analysis artifacts.
+
+## Mental model
+
+Breakdown planning connects explanation to evidence. It ties claims to source references and keeps unsupported claims out of the render plan.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Source manifest, frame manifest, motion artifact, pose artifact, or analysis context. |
+| `out` | Path for the breakdown plan when written to disk. |
+
+## Output
+
+Returns a breakdown plan with claims, timestamps, supporting evidence, and media references.
+
+## CLI fallback
+
+```bash
+bun run --cwd packages/os media -- breakdown plan --input artifacts/media/analysis.json --json
+```
+
+## Good agent instruction
+
+```text
+Use `media.breakdown.plan` before scripting analysis claims.
+Tie every claim to a timestamp, frame, metric, or source reference.
+Return JSON and report unsupported claims.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Claims | Each claim has evidence. |
+| Sources | Timestamps, frames, metrics, or analysis artifacts are linked. |
+| Render readiness | The plan can be turned into timeline beats and overlays. |

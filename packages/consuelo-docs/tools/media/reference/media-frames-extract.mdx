@@ -1,0 +1,50 @@
+---
+title: media.frames.extract
+description: Extract selected frames and write a frame manifest.
+---
+
+# media.frames.extract
+
+Extract selected frames and write a frame manifest.
+
+## When to use it
+
+Use this for visual evidence, thumbnails, freeze frames, overlay targets, or review frames.
+
+## Mental model
+
+The tool samples selected timestamps and writes image files plus a manifest. Later tools can cite the frame paths and timestamps.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Path to source media. |
+| `timestamps` | Frame timestamps to extract. |
+| `outDir` | Directory for frame images and manifest. |
+
+## Output
+
+Returns a frame manifest with frame paths, timestamps, and source references.
+
+## CLI fallback
+
+```bash
+bun run --cwd packages/os media -- frames extract --input artifacts/media/source.mp4 --timestamps 00:00:02.000,00:00:05.000 --out artifacts/media/frames --json
+```
+
+## Good agent instruction
+
+```text
+Use `media.frames.extract` for visual evidence.
+Extract only the timestamps needed for the task.
+Return JSON and verify every frame path exists.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Frame files | Every frame path exists. |
+| Timestamps | Each frame has a timestamp. |
+| Source | The manifest links back to the media source. |
