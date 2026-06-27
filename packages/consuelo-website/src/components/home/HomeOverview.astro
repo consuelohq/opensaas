@@ -1,8 +1,8 @@
 ---
 import {
-  launchOverview,
-  launchOverviewFeatures,
-} from '../../data/launch-content';
+  homeOverview,
+  homeOverviewFeatures,
+} from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
@@ -14,14 +14,14 @@ const { sectionId } = Astro.props as Props;
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-overview">
     <div class="launch-overview__intro">
-      <p class="launch-eyebrow">{launchOverview.eyebrow}</p>
-      {launchOverview.title && <h2 class="launch-overview__title">{launchOverview.title}</h2>}
-      <p class="launch-copy">{launchOverview.intro}</p>
+      <p class="launch-eyebrow">{homeOverview.eyebrow}</p>
+      {homeOverview.title && <h2 class="launch-overview__title">{homeOverview.title}</h2>}
+      <p class="launch-copy">{homeOverview.intro}</p>
     </div>
 
     <div class="launch-overview__body">
       <div class="launch-overview__list">
-        {launchOverviewFeatures.map((feature) => (
+        {homeOverviewFeatures.map((feature) => (
           <div class="launch-overview__item">
             <span class="launch-overview__marker launch-mono" aria-hidden="true">[*]</span>
             <p class="launch-copy">
@@ -32,7 +32,7 @@ const { sectionId } = Astro.props as Props;
         ))}
       </div>
 
-      <a class="launch-button launch-mono launch-overview__cta" href={launchOverview.ctaHref}>{launchOverview.ctaLabel} →</a>
+      <a class="launch-button launch-mono launch-overview__cta" href={homeOverview.ctaHref}>{homeOverview.ctaLabel} →</a>
     </div>
   </div>
 </section>

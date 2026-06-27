@@ -1,9 +1,9 @@
 ---
 import {
-  launchAnnouncement,
-  launchHero,
-  launchTabs,
-} from '../../data/launch-content';
+  homeAnnouncement,
+  homeHero,
+  homeTabs,
+} from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
@@ -14,21 +14,21 @@ const { sectionId } = Astro.props as Props;
 
 <section class="launch-section" id={sectionId} data-motion-section="hero">
   <div class="launch-content launch-content--wide launch-hero">
-    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono" data-motion="hero-eyebrow">
-      <span class="launch-hero__badge">{launchAnnouncement.badge}</span>
+    <a href={homeAnnouncement.linkHref} class="launch-hero__announcement launch-mono" data-motion="hero-eyebrow">
+      <span class="launch-hero__badge">{homeAnnouncement.badge}</span>
       <span class="launch-hero__announcement-text">
-        {launchAnnouncement.text} <span class="launch-inline-link">{launchAnnouncement.linkLabel}</span>
+        {homeAnnouncement.text} <span class="launch-inline-link">{homeAnnouncement.linkLabel}</span>
       </span>
     </a>
 
     <div class="launch-hero__copy">
-      <h1 class="launch-title" data-motion="hero-title">{launchHero.title}</h1>
-      <p class="launch-copy" data-motion="hero-copy">{launchHero.description}</p>
+      <h1 class="launch-title" data-motion="hero-title">{homeHero.title}</h1>
+      <p class="launch-copy" data-motion="hero-copy">{homeHero.description}</p>
     </div>
 
     <div class="launch-hero__snippet launch-card" data-launch-hero data-motion="product-frame">
       <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces">
-        {launchTabs.map((tab, index) => (
+        {homeTabs.map((tab, index) => (
           <button
             class:list={['launch-hero__tab', { 'is-active': index === 0 }]}
             type="button"
@@ -42,7 +42,7 @@ const { sectionId } = Astro.props as Props;
       </div>
 
       <div class="launch-hero__snippet-panels">
-        {launchTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
+        {homeTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
           <a
             href={tab.href}
             class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]}
@@ -78,7 +78,7 @@ const { sectionId } = Astro.props as Props;
     </div>
 
     <div class="launch-hero__media launch-card" data-launch-media data-motion="product-frame">
-      {launchTabs.map((tab, index) => (
+      {homeTabs.map((tab, index) => (
         <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
           <picture>
             {tab.darkImageSrc && <source srcset={tab.darkImageSrc} media="(prefers-color-scheme: dark)" />}
@@ -91,7 +91,7 @@ const { sectionId } = Astro.props as Props;
   </div>
 </section>
 
-<script define:vars={{ launchTabs }}>
+<script define:vars={{ homeTabs }}>
   const root = document.querySelector('[data-launch-hero]');
   const mediaRoot = document.querySelector('[data-launch-media]');
 
@@ -122,7 +122,7 @@ const { sectionId } = Astro.props as Props;
     copyButtons.forEach((button) => {
       button.addEventListener('click', async () => {
         const tabId = button.getAttribute('data-copy-button');
-        const entry = launchTabs.find((tab) => tab.id === tabId);
+        const entry = homeTabs.find((tab) => tab.id === tabId);
 
         if (!entry) {
           return;

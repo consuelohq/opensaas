@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import Navbar from "../components/Navbar";
-import { CookieConsent } from "../components/CookieConsent";
 import SeoHead from '../components/SeoHead.astro';
 import { siteMetadata } from '../lib/site-seo';
 
@@ -44,6 +43,5 @@ const {
       <slot />
     </main>
     <slot name="footer" />
-    <CookieConsent client:load />
   </body>
 </html>

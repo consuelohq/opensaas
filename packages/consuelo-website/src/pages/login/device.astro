@@ -1,13 +1,13 @@
 ---
-import LaunchFooter from '../../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../../layouts/LaunchLayout.astro';
+import SiteFooter from '../../components/site/SiteFooter.astro';
+import SiteHeader from '../../components/site/SiteHeader.astro';
+import MarketingLayout from '../../layouts/MarketingLayout.astro';
 
 const description = 'Authorize Consuelo OS on this device.';
 ---
 
-<LaunchLayout title="Authorize Consuelo OS" description={description}>
-  <LaunchHeader />
+<MarketingLayout title="Authorize Consuelo OS" description={description}>
+  <SiteHeader />
 
   <section class="launch-section device-auth">
     <div class="launch-content device-auth__content">
@@ -35,8 +35,8 @@ const description = 'Authorize Consuelo OS on this device.';
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <script is:inline>
   const deviceCodeNode = document.querySelector('[data-device-code]');

@@ -1,4 +1,4 @@
-import docsConfigJson from './launch-docs-source.json';
+import docsConfigJson from './docs-navigation-source.json';
 
 type DocsPage =
   | string
@@ -28,19 +28,19 @@ type DocsConfig = {
   };
 };
 
-export type LaunchDocLink = {
+export type DocLink = {
   label: string;
   href: string;
 };
 
-export type LaunchDocMenuGroup = {
+export type DocMenuGroup = {
   label: string;
-  links: LaunchDocLink[];
+  links: DocLink[];
 };
 
-export type LaunchDocMenuTab = {
+export type DocMenuTab = {
   label: string;
-  groups: LaunchDocMenuGroup[];
+  groups: DocMenuGroup[];
 };
 
 const docsBaseUrl = 'https://docs.consuelohq.com';
@@ -107,7 +107,7 @@ const expandGroups = (groups: DocsGroup[]): DocsGroup[] => {
   });
 };
 
-export const launchDocsMenuTabs: LaunchDocMenuTab[] =
+export const docsMenuTabs: DocMenuTab[] =
   englishNavigation?.tabs.map((tab) => ({
     label: tab.tab,
     groups: expandGroups(tab.groups).map((group) => {

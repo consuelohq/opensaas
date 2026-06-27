@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b27dd4f83c41",
+  "tmuxSession": "opensaas-sites-refactor-website-launch-naming-b27dd4f8",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/refactor-website-launch-naming",
+  "branch": "task/sites/refactor-website-launch-naming",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-refactor-website-launch-naming",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-refactor-website-launch-naming",
+  "prNumber": 1226,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1226",
+  "createdAt": "2026-06-27T20:57:45.370Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-refactor-website-launch-naming/.task/sites/refactor-website-launch-naming/session.json"
+}

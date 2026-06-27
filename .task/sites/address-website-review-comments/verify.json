@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/address-website-review-comments",
+  "base": "origin/task/sites/address-website-review-comments",
+  "headSha": "ad83e12ffd0e9912ae0f2a9957c70ed8dde64106",
+  "changeHash": "170efbfd2592e7d816de964dfd6a1b95e2f27ca41cbb0bf50b0e35cf9f423390",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/home/HomeFaq.astro",
+    "packages/consuelo-website/src/data/contact-content.ts",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/src/data/site-links.ts",
+    "packages/consuelo-website/src/data/site-navigation.ts",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+    "packages/consuelo-website/src/pages/contact.astro",
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/consuelo-website/src/pages/privacy.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-27T21:55:43.784Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/address-website-review-comments/current.json",
+        ".task/sites/address-website-review-comments/session.json",
+        ".task/sites/address-website-review-comments/workpad.md",
+        ".task/tasks/sites/address-website-review-comments.json",
+        "packages/consuelo-website/src/components/home/HomeFaq.astro",
+        "packages/consuelo-website/src/data/contact-content.ts",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/data/site-links.ts",
+        "packages/consuelo-website/src/data/site-navigation.ts",
+        "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+        "packages/consuelo-website/src/pages/contact.astro",
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/consuelo-website/src/pages/privacy.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

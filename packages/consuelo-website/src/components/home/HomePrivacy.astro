@@ -1,5 +1,5 @@
 ---
-import { launchPrivacy } from '../../data/launch-content';
+import { homePrivacy } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
@@ -10,13 +10,13 @@ const { sectionId } = Astro.props as Props;
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-privacy">
-    <p class="launch-eyebrow">{launchPrivacy.eyebrow}</p>
+    <p class="launch-eyebrow">{homePrivacy.eyebrow}</p>
     <div class="launch-privacy__row">
       <span class="launch-privacy__marker launch-mono" aria-hidden="true">[*]</span>
       <p class="launch-copy">
-        <strong>{launchPrivacy.title}</strong>
-        <span>{launchPrivacy.description}</span>
-        <a class="launch-inline-link" href={launchPrivacy.linkHref}>{launchPrivacy.linkLabel}</a>
+        <strong>{homePrivacy.title}</strong>
+        <span>{homePrivacy.description}</span>
+        <a class="launch-inline-link" href={homePrivacy.linkHref}>{homePrivacy.linkLabel}</a>
       </p>
     </div>
   </div>

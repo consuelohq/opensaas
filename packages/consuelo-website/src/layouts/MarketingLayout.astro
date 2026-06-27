@@ -63,10 +63,6 @@ const {
           secure_cookie: true,
           opt_out_capturing_by_default: false
         });
-        // check if user previously declined
-        if (localStorage.getItem('consuelo-cookie-consent') === 'declined') {
-          posthog.opt_out_capturing();
-        }
         // custom tracking — scroll depth
         var scrollFired = {};
         window.addEventListener('scroll', function() {
@@ -109,66 +105,6 @@ const {
     <div class="launch-shell">
       <slot />
     </div>
-    <div id="cookie-banner" style="display:none;position:fixed;bottom:1rem;right:1rem;z-index:9999;padding:0.85rem 1rem;border:1px solid var(--launch-line);background:color-mix(in srgb, var(--launch-bg) 40%, transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-family:var(--launch-mono-font);font-size:0.68rem;line-height:1.5;color:var(--launch-muted);">
-      <button id="cookie-close" style="position:absolute;top:0.4rem;right:0.5rem;background:none;border:none;color:var(--launch-muted);font-size:0.8rem;cursor:pointer;padding:0;line-height:1;opacity:0.6;">✕</button>
-      <p id="cookie-text" style="margin:0;">We use cookies to understand how you use our site and improve your experience.</p>
-      <div style="display:flex;gap:0.4rem;margin-top:0.5rem;">
-        <button id="cookie-accept" class="launch-button launch-button--sm" style="flex:1;font-family:var(--launch-mono-font);font-size:0.65rem;">Accept</button>
-        <button id="cookie-decline" class="launch-button--ghost launch-button--sm" style="flex:1;font-family:var(--launch-mono-font);font-size:0.65rem;opacity:0.5;">Decline</button>
-      </div>
-    </div>
-    <script>
-      import { prepare, layout } from '@chenglou/pretext';
-
-      const k = 'consuelo-cookie-consent';
-      const v = localStorage.getItem(k);
-      if (v === 'declined' && (window as any).posthog) (window as any).posthog.opt_out_capturing();
-
-      if (!v) {
-        const banner = document.getElementById('cookie-banner')!;
-        const textEl = document.getElementById('cookie-text')!;
-
-        // wait for fonts then size + show
-        const ready = document.fonts ? document.fonts.ready : Promise.resolve();
-        ready.then(() => {
-          // measure off-screen
-          banner.style.visibility = 'hidden';
-          banner.style.display = 'block';
-
-          const style = getComputedStyle(textEl);
-          const fontSize = parseFloat(style.fontSize);
-          const lh = Math.round(fontSize * 1.5);
-          const prepared = prepare(textEl.textContent || '', fontSize + 'px ' + style.fontFamily);
-
-          // binary search: narrowest width for 2 lines
-          let lo = 120, hi = 600;
-          while (hi - lo > 1) {
-            const mid = (lo + hi) >> 1;
-            if (layout(prepared, mid, lh).height <= lh * 2 + 1) hi = mid; else lo = mid;
-          }
-
-          banner.style.width = (hi + 40) + 'px';
-          banner.style.maxWidth = 'calc(100vw - 2rem)';
-
-          // now show for real
-          banner.style.visibility = '';
-        });
-
-        document.getElementById('cookie-accept')!.addEventListener('click', () => {
-          localStorage.setItem(k, 'accepted');
-          banner.style.display = 'none';
-        });
-        document.getElementById('cookie-close')!.addEventListener('click', () => {
-          localStorage.setItem(k, 'accepted');
-          banner.style.display = 'none';
-        });
-        document.getElementById('cookie-decline')!.addEventListener('click', () => {
-          localStorage.setItem(k, 'declined');
-          banner.style.display = 'none';
-          if ((window as any).posthog) (window as any).posthog.opt_out_capturing();
-        });
-      }
-    </script>
   </body>
 </html>
 
