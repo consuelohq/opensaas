@@ -5,6 +5,7 @@ import { transcribeForCli } from './lib/media/audio';
 import { breakdownPlanForCli } from './lib/media/sports-science';
 import { exportPackageForCli } from './lib/media/export';
 import { renderOverlayForCli } from './lib/media/overlays';
+import { convertSvgForCli } from './lib/media/svg';
 import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 
@@ -176,6 +177,19 @@ async function handleAudioCommand(args: string[]): Promise<unknown> {
 
 async function handleCoreCommand(command: string, args: string[]): Promise<unknown> {
   try {
+
+    if (command === 'svg' || command === 'svg.convert' || command === 'svg:convert') {
+      const rest = command === 'svg' && args[0] === 'convert' ? args.slice(1) : args;
+      const inputPath = optionValue(rest, '--input');
+      const outPath = optionValue(rest, '--out');
+      if (!inputExists(inputPath)) return missingInputError('svg.convert', inputPath);
+      if (!outPath) return missingInputError('svg.convert out', outPath);
+      return await Effect.runPromise(convertSvgForCli({
+        inputPath,
+        outPath,
+        strategy: optionValue(rest, '--strategy') ?? optionValue(rest, '--mode'),
+      }));
+    }
     if (command === 'audio') {
       return await handleAudioCommand(args);
     }
@@ -240,7 +254,7 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
       return await Effect.runPromise(qaForCli({ inputPath }));
     }
-    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'svg convert', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
   } catch (error: unknown) {
     return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
   }

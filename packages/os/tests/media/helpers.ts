@@ -32,6 +32,7 @@ export const expectedMediaToolNames = [
   'media.compose',
   'media.qa',
   'media.export',
+  'media.svg.convert',
 ] as const;
 
 export const expectedCoreToolNames = [
@@ -65,6 +66,7 @@ export const expectedSchemaKinds = [
   'media.overlay.v1',
   'media.breakdown-plan.v1',
   'media.export-package.v1',
+  'media.svg-result.v1',
 ] as const;
 
 type JsonObject = Record<string, unknown>;
