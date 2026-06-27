@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/fix-svg-facade-and-review-feedback",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1223,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1223",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1223",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1223/fix-svg-facade-and-review-feedback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1223",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1223/fix-svg-facade-and-review-feedback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-fix-svg-facade-and-review-feedback",
+  "taskSession": "tsk_0aa86b97e0e8",
+  "tmuxSession": "opensaas-media-fix-svg-facade-and-review-feedback-0aa86b97",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-fix-svg-facade-and-review-feedback/.task/media/fix-svg-facade-and-review-feedback/session.json",
+  "createdAt": "2026-06-27T19:57:14.018Z"
+}

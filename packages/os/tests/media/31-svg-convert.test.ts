@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -123,6 +123,9 @@ describe('media.svg.convert', () => {
       const json = expectJsonCliSuccess(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'both', '--trace-engine', 'mono', '--json'], 60_000);
       const data = json.data as { outputs?: Record<string, string> };
 
+      expect(existsSync(out)).toBe(true);
+      expect(data.outputs?.svg).toBe(out);
+      expect(data.outputs?.tracedSvg).toBe(out);
       expect(existsSync(data.outputs?.wrapperSvg ?? '')).toBe(true);
       expect(existsSync(data.outputs?.tracedSvg ?? '')).toBe(true);
     } finally {
@@ -158,6 +161,50 @@ describe('media.svg.convert', () => {
     } finally {
       removeTempDir(tmp);
     }
+  });
+
+
+  it('fails clearly for unsupported strategies', async () => {
+    const tmp = createTempDir('consuelo-media-test-svg-invalid-strategy-');
+    try {
+      const input = writeFixturePng(tmp);
+      const out = join(tmp, 'invalid.svg');
+      const result = runMediaCli(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'typo', '--json']);
+      const payload = result.stdout + result.stderr;
+      expect(result.status).not.toBe(0);
+      expect(payload).toContain('Unsupported SVG conversion strategy');
+    } finally {
+      removeTempDir(tmp);
+    }
+  });
+
+  it('returns SVG help for bare svg command instead of routing to convert', () => {
+    const result = runMediaCli(['svg', '--json']);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('svg convert');
+    expect(result.stdout).not.toContain('MEDIA_INPUT_MISSING');
+  });
+
+  it('rejects truncated JPEG inputs as validation errors without RangeError leakage', async () => {
+    const tmp = createTempDir('consuelo-media-test-svg-truncated-jpeg-');
+    try {
+      const input = join(tmp, 'truncated.jpg');
+      writeFileSync(input, Buffer.from([0xff, 0xd8, 0xff]));
+      const out = join(tmp, 'truncated.svg');
+      const result = runMediaCli(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'wrapper', '--json']);
+      const payload = result.stdout + result.stderr;
+      expect(result.status).not.toBe(0);
+      expect(payload).toContain('Unsupported SVG conversion input type');
+      expect(payload).not.toContain('RangeError');
+    } finally {
+      removeTempDir(tmp);
+    }
+  });
+
+  it('exposes media.svg.convert in the generated workspace type surface', () => {
+    const generated = readFileSync('src/generated/workspace.d.ts', 'utf8');
+    expect(generated).toContain('svg: {');
+    expect(generated).toContain('convert: (input: { input: string; out: string; strategy?: "wrapper" | "trace" | "both" | "auto"; traceEngine?: "auto" | "color" | "mono"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string })');
   });
 
 });

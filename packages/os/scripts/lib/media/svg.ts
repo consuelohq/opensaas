@@ -76,12 +76,14 @@ function parsePngInfo(buffer: Buffer): ImageInfo | undefined {
 function parseJpegInfo(buffer: Buffer): ImageInfo | undefined {
   if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) return undefined;
   let offset = 2;
-  while (offset < buffer.length) {
+  while (offset + 4 <= buffer.length) {
     if (buffer[offset] !== 0xff) return undefined;
     const marker = buffer[offset + 1];
+    if (marker === undefined) return undefined;
     const length = buffer.readUInt16BE(offset + 2);
-    if (length < 2) return undefined;
+    if (length < 2 || offset + 2 + length > buffer.length) return undefined;
     if (marker >= 0xc0 && marker <= 0xc3) {
+      if (offset + 9 > buffer.length) return undefined;
       return { mimeType: 'image/jpeg', height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
     }
     offset += 2 + length;
@@ -159,8 +161,9 @@ async function traceWithPotrace(inputPath: string, outPath: string): Promise<str
 type TraceEngine = 'auto' | 'color' | 'mono';
 
 function normalizeTraceEngine(value: string | undefined): TraceEngine {
+  if (value === undefined) return 'auto';
   if (value === 'color' || value === 'mono' || value === 'auto') return value;
-  return 'auto';
+  throw new MediaError('MEDIA_VALIDATION_ERROR', 'Unsupported SVG trace engine: ' + value, { traceEngine: value });
 }
 
 async function writeTracedSvg(inputPath: string, outPath: string, traceEngine: TraceEngine): Promise<{ path: string; tool: string; traceEngine: TraceEngine }> {
@@ -183,8 +186,9 @@ async function writeTracedSvg(inputPath: string, outPath: string, traceEngine: T
 }
 
 function normalizeStrategy(value: string | undefined): Exclude<SvgConvertStrategy, 'auto'> {
+  if (value === undefined || value === 'auto') return 'both';
   if (value === 'wrapper' || value === 'trace' || value === 'both') return value;
-  return 'both';
+  throw new MediaError('MEDIA_VALIDATION_ERROR', 'Unsupported SVG conversion strategy: ' + value, { strategy: value });
 }
 
 function relatedPath(outPath: string, suffix: string): string {
@@ -229,7 +233,7 @@ async function convertSvg(input: SvgConvertInput): Promise<JsonObject> {
     }
     if (strategy === 'both') {
       const wrapper = await writeWrapperSvg(inputPath, relatedPath(outPath, '.wrapper'));
-      const traced = await writeTracedSvg(inputPath, relatedPath(outPath, '.traced'), requestedTraceEngine);
+      const traced = await writeTracedSvg(inputPath, outPath, requestedTraceEngine);
       outputs.svg = traced.path;
       outputs.wrapperSvg = wrapper.path;
       outputs.tracedSvg = traced.path;
