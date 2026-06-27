@@ -1,14 +1,14 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
 
 const description = 'Privacy policy for Consuelo — how we collect, use, and protect your data.';
 ---
 
-<LaunchLayout title="Privacy Policy" description={description}>
-  <LaunchHeader />
+<MarketingLayout title="Privacy Policy" description={description}>
+  <SiteHeader />
 
   <section class="launch-section">
     <div class="launch-content launch-content--wide legal-hero">
@@ -196,8 +196,8 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .legal-hero {

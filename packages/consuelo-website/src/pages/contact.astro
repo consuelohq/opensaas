@@ -1,14 +1,14 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
-import { mercuryFaqItems } from '../data/launch-content';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import { mercuryFaqItems } from '../data/mercury-content';
 
 const description = 'Contact the Consuelo team for support or inquiries.';
 ---
 
-<LaunchLayout title="Contact Us" description={description}>
-  <LaunchHeader />
+<MarketingLayout title="Contact Us" description={description}>
+  <SiteHeader />
 
   <section class="launch-section">
     <div class="launch-content launch-content--wide contact-split">
@@ -68,8 +68,8 @@ const description = 'Contact the Consuelo team for support or inquiries.';
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .contact-split {

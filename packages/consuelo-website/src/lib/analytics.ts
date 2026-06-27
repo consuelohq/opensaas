@@ -1,4 +1,4 @@
-// PostHog helpers — init happens in LaunchLayout.astro inline script
+// PostHog helpers — init happens in MarketingLayout.astro inline script
 // These functions use the global window.posthog instance
 
 const ph = () => (window as any).posthog;

@@ -1,18 +1,18 @@
 ---
-import { launchFaq } from '../../data/launch-content';
-import type { LaunchFaqItem } from '../../data/launch-content';
+import { homeFaq } from '../../data/home-content';
+import type { HomeFaqItem } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
   title?: string;
   intro?: string;
-  items: LaunchFaqItem[];
+  items: HomeFaqItem[];
 };
 
 const {
   sectionId,
-  title = launchFaq.title,
-  intro = launchFaq.intro,
+  title = homeFaq.title,
+  intro = homeFaq.intro,
   items,
 } = Astro.props as Props;
 ---
@@ -20,7 +20,7 @@ const {
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-faq">
     <div class="launch-faq__intro">
-      <p class="launch-eyebrow">{launchFaq.eyebrow}</p>
+      <p class="launch-eyebrow">{homeFaq.eyebrow}</p>
       <h2>{title}</h2>
       {intro && <p class="launch-copy">{intro}</p>}
     </div>
