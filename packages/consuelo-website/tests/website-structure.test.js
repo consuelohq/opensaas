@@ -18,7 +18,7 @@ const expectNoFile = (relativePath) => {
 };
 
 describe('Consuelo website structure', () => {
-  test('uses site/home/marketing names for the public marketing shell', () => {
+  test('should use site home and marketing names when defining the public marketing shell', () => {
     [
       'src/layouts/MarketingLayout.astro',
       'src/components/site/SiteHeader.astro',
@@ -50,7 +50,7 @@ describe('Consuelo website structure', () => {
     ].forEach(expectNoFile);
   });
 
-  test('keeps public shell routes on the SEO-capable marketing layout and site chrome', () => {
+  test('should keep public shell routes on the SEO capable marketing layout when routes use shared site chrome', () => {
     const routeImports = {
       'src/pages/index.astro': [
         '../layouts/MarketingLayout.astro',
@@ -87,7 +87,7 @@ describe('Consuelo website structure', () => {
         '../layouts/MarketingLayout.astro',
         '../components/site/SiteHeader.astro',
         '../components/site/SiteFooter.astro',
-        '../data/mercury-content',
+        '../data/contact-content',
       ],
       'src/pages/mercury.astro': [
         '../layouts/MarketingLayout.astro',
@@ -100,6 +100,7 @@ describe('Consuelo website structure', () => {
         '../../layouts/MarketingLayout.astro',
         '../../components/site/SiteHeader.astro',
         '../../components/site/SiteFooter.astro',
+        'analyticsEnabled={false}',
       ],
     };
 
@@ -115,7 +116,7 @@ describe('Consuelo website structure', () => {
     }
   });
 
-  test('preserves SEO layout wiring and critical site links', async () => {
+  test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {
     const layout = readSource('src/layouts/MarketingLayout.astro');
     expect(layout).toContain("../components/SeoHead.astro");
     expect(layout).toContain("../lib/site-seo");
@@ -154,13 +155,61 @@ describe('Consuelo website structure', () => {
     ]);
   });
 
-  test('keeps the GHL redirect on the shared site links module', () => {
-    const ghlRoute = readSource('src/pages/ghl.astro');
-    expect(ghlRoute).toContain("../data/site-links");
-    expect(ghlRoute).not.toContain('launch-content');
+
+  test('should preserve review-comment contracts when validating marketing data and route behavior', async () => {
+    expectFile('src/data/contact-content.ts');
+
+    const homeFaq = readSource('src/components/home/HomeFaq.astro');
+    expect(homeFaq).toContain('set:html={item.answer}');
+    expect(homeFaq).not.toContain('{item.answer}</p>');
+
+    const homeContent = readSource('src/data/home-content.ts');
+    expect(homeContent).toContain('linkHref: siteLinks.privacy');
+
+    const { ghlMarketplaceUrl } = await import(pathToFileURL(join(sourceRoot, 'data/site-links.ts')).href);
+    expect(ghlMarketplaceUrl).toContain('marketplace.gohighlevel.com');
+    expect(ghlMarketplaceUrl).toContain('redirect_uri=https%3A%2F%2Fapp.consuelohq.com%2Fapi%2Foauth%2Fcallback');
+    expect(ghlMarketplaceUrl).not.toContain('github.dev');
+
+    const navigation = await import(pathToFileURL(join(sourceRoot, 'data/site-navigation.ts')).href);
+    expect(navigation.siteMobileMenuLinks.map((link) => link.label)).toEqual([
+      'Mercury',
+      'Enterprise',
+      'Login',
+      'Free',
+    ]);
+
+    const contactRoute = readSource('src/pages/contact.astro');
+    expect(contactRoute).toContain("../data/contact-content");
+    expect(contactRoute).toContain('contactFaqItems.map');
+    expect(contactRoute).not.toContain('mercuryFaqItems');
   });
 
-  test('keeps blog route surfaces outside the marketing shell rename', () => {
+  test('should not initialize analytics when a route opts out or consent is not accepted', () => {
+    const layout = readSource('src/layouts/MarketingLayout.astro');
+    expect(layout).toContain('analyticsEnabled?: boolean');
+    expect(layout).toContain('analyticsEnabled = true');
+    expect(layout).toContain('analyticsEnabled && posthogKey');
+    expect(layout).toContain("localStorage.getItem('consuelo-cookie-consent') !== 'accepted'");
+    expect(layout.indexOf("localStorage.getItem('consuelo-cookie-consent') !== 'accepted'")).toBeLessThan(layout.indexOf('posthog.init(posthogKey'));
+
+    const privacyRoute = readSource('src/pages/privacy.astro');
+    expect(privacyRoute).toContain('analyticsEnabled={false}');
+
+    const deviceRoute = readSource('src/pages/login/device.astro');
+    expect(deviceRoute).toContain('analyticsEnabled={false}');
+  });
+
+  test('should keep the GHL redirect on shared site links when the route is a noindex redirect', () => {
+    const ghlRoute = readSource('src/pages/ghl.astro');
+    expect(ghlRoute).toContain("../data/site-links");
+    expect(ghlRoute).toContain('http-equiv="refresh"');
+    expect(ghlRoute).toContain('noindex,nofollow');
+    expect(ghlRoute).not.toContain('launch-content');
+    expect(ghlRoute).not.toContain('MarketingLayout');
+  });
+
+  test('should keep blog route surfaces outside the marketing shell rename when preserving blog behavior', () => {
     expectFile('src/pages/blog/index.astro');
     expectFile('src/layouts/Layout.astro');
     expectFile('src/layouts/PostLayout.astro');

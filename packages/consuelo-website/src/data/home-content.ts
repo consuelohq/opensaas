@@ -267,7 +267,7 @@ export const homePrivacy: HomePrivacyContent = {
   title: 'Consuelo does not store provider keys or call recordings on shared infrastructure,',
   description: 'so that it can operate in privacy-sensitive environments. Learn more about',
   linkLabel: 'privacy.',
-  linkHref: siteLinks.docs,
+  linkHref: siteLinks.privacy,
 };
 
 export const homeFaq: HomeFaqContent = {
