@@ -17,6 +17,7 @@ export const mediaSchemaKinds = [
   'media.overlay.v1',
   'media.breakdown-plan.v1',
   'media.export-package.v1',
+  'media.svg-result.v1',
 ] as const;
 
 const IsoTimestampSchema = z.string().min(1);
@@ -132,6 +133,38 @@ export const MediaRenderResultSchema = z.object({
 }).passthrough().superRefine((result, ctx) => {
   if (Object.keys(result.toolVersions).length === 0) {
     ctx.addIssue({ code: 'custom', path: ['toolVersions'], message: 'render result requires tool versions' });
+  }
+});
+
+
+export const MediaSvgResultSchema = z.object({
+  schema: z.literal('media.svg-result.v1'),
+  id: NonEmptyStringSchema,
+  input: z.object({
+    path: NonEmptyStringSchema,
+    mimeType: NonEmptyStringSchema,
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  }).passthrough(),
+  strategy: z.enum(['wrapper', 'trace', 'both']),
+  traceEngine: z.enum(['auto', 'color', 'mono']).default('auto'),
+  optimized: z.boolean().default(false),
+  outputs: z.object({
+    svg: NonEmptyStringSchema,
+    wrapperSvg: NonEmptyStringSchema.optional(),
+    tracedSvg: NonEmptyStringSchema.optional(),
+  }).passthrough(),
+  toolVersions: z.record(z.string(), z.string()).default({}),
+  deterministic: z.literal(true),
+}).passthrough().superRefine((result, ctx) => {
+  if (result.strategy === 'wrapper' && !result.outputs.wrapperSvg) {
+    ctx.addIssue({ code: 'custom', path: ['outputs', 'wrapperSvg'], message: 'wrapper strategy requires wrapperSvg output' });
+  }
+  if (result.strategy === 'trace' && !result.outputs.tracedSvg) {
+    ctx.addIssue({ code: 'custom', path: ['outputs', 'tracedSvg'], message: 'trace strategy requires tracedSvg output' });
+  }
+  if (result.strategy === 'both' && (!result.outputs.wrapperSvg || !result.outputs.tracedSvg)) {
+    ctx.addIssue({ code: 'custom', path: ['outputs'], message: 'both strategy requires wrapperSvg and tracedSvg outputs' });
   }
 });
 

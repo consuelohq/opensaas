@@ -139,6 +139,9 @@ declare const workspace: {
     sports-science: {
       metrics: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };
+    svg: {
+      convert: (input: { input: string; out: string; strategy?: "wrapper" | "trace" | "both" | "auto"; traceEngine?: "auto" | "color" | "mono"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    };
     timeline: {
       validate: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };

@@ -5,6 +5,7 @@ import { transcribeForCli } from './lib/media/audio';
 import { breakdownPlanForCli } from './lib/media/sports-science';
 import { exportPackageForCli } from './lib/media/export';
 import { renderOverlayForCli } from './lib/media/overlays';
+import { convertSvgForCli } from './lib/media/svg';
 import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 
@@ -72,6 +73,10 @@ function optionValue(args: string[], flag: string): string | undefined {
   if (index === -1) return undefined;
   const value = args[index + 1];
   return value && !value.startsWith('--') ? value : undefined;
+}
+
+function hasFlag(args: string[], flag: string): boolean {
+  return args.includes(flag);
 }
 
 function writeJson(value: unknown): void {
@@ -176,6 +181,36 @@ async function handleAudioCommand(args: string[]): Promise<unknown> {
 
 async function handleCoreCommand(command: string, args: string[]): Promise<unknown> {
   try {
+
+    if (command === 'svg') {
+      if (args[0] !== 'convert') return { schema: 'media.help.v1', ok: true, data: { commands: ['svg convert'] } };
+      const rest = args.slice(1);
+      const inputPath = optionValue(rest, '--input');
+      const outPath = optionValue(rest, '--out');
+      if (!inputExists(inputPath)) return missingInputError('svg.convert', inputPath);
+      if (!outPath) return missingInputError('svg.convert out', outPath);
+      return await Effect.runPromise(convertSvgForCli({
+        inputPath,
+        outPath,
+        strategy: optionValue(rest, '--strategy') ?? optionValue(rest, '--mode'),
+        traceEngine: optionValue(rest, '--trace-engine'),
+        optimize: hasFlag(rest, '--optimize'),
+      }));
+    }
+    if (command === 'svg.convert' || command === 'svg:convert') {
+      const rest = args;
+      const inputPath = optionValue(rest, '--input');
+      const outPath = optionValue(rest, '--out');
+      if (!inputExists(inputPath)) return missingInputError('svg.convert', inputPath);
+      if (!outPath) return missingInputError('svg.convert out', outPath);
+      return await Effect.runPromise(convertSvgForCli({
+        inputPath,
+        outPath,
+        strategy: optionValue(rest, '--strategy') ?? optionValue(rest, '--mode'),
+        traceEngine: optionValue(rest, '--trace-engine'),
+        optimize: hasFlag(rest, '--optimize'),
+      }));
+    }
     if (command === 'audio') {
       return await handleAudioCommand(args);
     }
@@ -240,7 +275,7 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
       return await Effect.runPromise(qaForCli({ inputPath }));
     }
-    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'svg convert', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
   } catch (error: unknown) {
     return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
   }

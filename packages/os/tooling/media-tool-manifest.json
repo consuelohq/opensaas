@@ -828,5 +828,75 @@
       "ffmpeg",
       "ffprobe"
     ]
+  },
+  {
+    "name": "media.svg.convert",
+    "methodPath": [
+      "media",
+      "svg",
+      "convert"
+    ],
+    "description": "Convert raster images into SVG assets using exact wrapper and vector trace strategies.",
+    "category": "media",
+    "underlying": "os media svg.convert",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": true,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "MediaSvgConvertInput",
+    "outputSchema": "MediaSvgResult",
+    "command": {
+      "script": "media",
+      "subcommand": "svg:convert",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "input",
+          "flag": "--input",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "out",
+          "flag": "--out",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "strategy",
+          "flag": "--strategy",
+          "kind": "value"
+        },
+        {
+          "source": "traceEngine",
+          "flag": "--trace-engine",
+          "kind": "value"
+        },
+        {
+          "source": "optimize",
+          "flag": "--optimize",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "input": "image.png",
+      "out": "image.svg",
+      "strategy": "both",
+      "traceEngine": "auto"
+    },
+    "sessionRequired": false,
+    "workflowRole": "media.svg.convert",
+    "requiredProfiles": [
+      "media-render-advanced"
+    ],
+    "requiredCommands": [
+      "ffmpeg",
+      "potrace"
+    ]
   }
 ]
