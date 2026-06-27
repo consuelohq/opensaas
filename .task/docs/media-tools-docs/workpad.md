@@ -73,3 +73,21 @@ The full Mintlify build is not clean before this PR. This task improves the page
 - `verify` also noted zero selected test suites because this is a docs-only task.
 - Docs-specific validation remains green: navigation resolution and changed-file frontmatter/fence checks.
 - Review reported no issues attributed to this task.
+
+
+## Final publishing update
+
+State: The Media Tools docs are written and the new top-level Tools tab is configured.
+
+Delta: Added a full `Tools > Media` structure with getting started, capabilities, three workflow pages, fourteen reference pages, and a small Office placeholder. Also added three dialer placeholder pages because the existing docs navigation referenced missing files.
+
+Evidence:
+- Navigation target check passed with no missing pages.
+- Changed-file frontmatter and code-fence check passed.
+- `bun run --cwd packages/consuelo-docs build` was attempted and failed on existing site-wide Mintlify parser issues outside this task.
+- `review.run --base origin/stream/docs` reported zero issues attributed to this change.
+- `verify --base origin/stream/docs` failed because the full repo gate includes pre-existing eslint/typecheck/test failures.
+
+Risk: The Mintlify preview may still surface pre-existing translated-docs and GraphQL-docs parser issues. The new Media docs and navigation targets pass focused validation.
+
+Next move: Review the docs preview on the task/stream PR and use it to decide the broader OS Cloud/User Guide cleanup structure.
