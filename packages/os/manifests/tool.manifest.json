@@ -18,7 +18,7 @@
       "label": "media-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/media-tool-manifest.json",
-      "entryCount": 22
+      "entryCount": 23
     }
   ],
   "tools": [
@@ -5276,6 +5276,56 @@
         ],
         "requiredCommands": [
           "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.svg.convert",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Convert raster images into SVG assets using exact wrapper and vector trace strategies.",
+      "core": false,
+      "definition": {
+        "name": "media.svg.convert",
+        "methodPath": [
+          "media",
+          "svg",
+          "convert"
+        ],
+        "description": "Convert raster images into SVG assets using exact wrapper and vector trace strategies.",
+        "category": "media",
+        "underlying": "os media svg.convert",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaSvgConvertInput",
+        "outputSchema": "MediaSvgResult",
+        "command": {
+          "script": "media",
+          "subcommand": "svg:convert",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "input": "image.png",
+          "out": "image.svg",
+          "strategy": "both"
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.svg.convert",
+        "requiredProfiles": [
+          "media-render-advanced"
+        ],
+        "requiredCommands": [
+          "ffmpeg",
+          "potrace"
         ]
       }
     },

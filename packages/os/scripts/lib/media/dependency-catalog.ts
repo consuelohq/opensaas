@@ -31,7 +31,7 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
     packageManagers: { homebrew: 'ffmpeg' },
     versionCommands: [['ffmpeg', '-version'], ['ffprobe', '-version']],
     installHint: 'brew install ffmpeg',
-    requiredBy: ['media.probe', 'media.frames.extract', 'media.compose', 'media.qa'],
+    requiredBy: ['media.probe', 'media.frames.extract', 'media.compose', 'media.qa', 'media.svg.convert'],
     optional: false,
     estimatedInstalledSizeMb: 180,
   },
@@ -180,9 +180,20 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
     packageManagers: { homebrew: 'vtracer' },
     versionCommands: [['vtracer', '--version']],
     installHint: 'brew install vtracer',
-    requiredBy: ['media.overlay.render'],
+    requiredBy: ['media.overlay.render', 'media.svg.convert'],
     optional: true,
     estimatedInstalledSizeMb: 45,
+  },
+  {
+    id: 'potrace',
+    profile: 'media-render-advanced',
+    commands: ['potrace'],
+    packageManagers: { homebrew: 'potrace' },
+    versionCommands: [['potrace', '--version']],
+    installHint: 'brew install potrace',
+    requiredBy: ['media.svg.convert'],
+    optional: true,
+    estimatedInstalledSizeMb: 10,
   },
 ];
 
@@ -201,7 +212,7 @@ export const mediaDependencyProfiles: MediaDependencyProfile[] = [
   { id: 'media-audio', dependencies: ['sox', 'whisper.cpp'], optional: true, estimatedInstalledSizeMb: 60, warningThresholdMb: 350 },
   { id: 'media-vision-light', dependencies: ['python3', 'numpy', 'opencv-python-headless'], optional: true, estimatedInstalledSizeMb: 410, warningThresholdMb: 700 },
   { id: 'media-vision-pose', dependencies: ['python3', 'numpy', 'opencv-python-headless', 'mediapipe'], optional: true, estimatedInstalledSizeMb: 670, warningThresholdMb: 900 },
-  { id: 'media-render-advanced', dependencies: ['sharp', 'gifski', 'vtracer'], optional: true, estimatedInstalledSizeMb: 140, warningThresholdMb: 300 },
+  { id: 'media-render-advanced', dependencies: ['sharp', 'gifski', 'vtracer', 'potrace'], optional: true, estimatedInstalledSizeMb: 150, warningThresholdMb: 320 },
 ];
 
 export function dependencyById(id: string): MediaRuntimeDependency | undefined {
