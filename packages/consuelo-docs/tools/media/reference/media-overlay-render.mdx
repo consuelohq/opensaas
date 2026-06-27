@@ -1,0 +1,49 @@
+---
+title: media.overlay.render
+description: Render declarative overlay artifacts for composition.
+---
+
+# media.overlay.render
+
+Render declarative overlay artifacts for composition.
+
+## When to use it
+
+Use this for arrows, labels, zoom boxes, angle callouts, motion trails, and other visual annotations.
+
+## Mental model
+
+Overlay rendering consumes a declarative overlay spec and writes media-ready overlay assets. The spec describes what to draw and where to draw it.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `spec` | Overlay specification or path. |
+| `out` | Output path for the rendered overlay artifact. |
+
+## Output
+
+Returns overlay artifact metadata with output paths and source references.
+
+## CLI fallback
+
+```bash
+bun run --cwd packages/os media -- overlay render --spec artifacts/media/overlay.json --out artifacts/media/overlay.svg --json
+```
+
+## Good agent instruction
+
+```text
+Use `media.overlay.render` for visual annotations.
+Use a declarative overlay spec.
+Return JSON and verify the overlay output exists.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Overlay file | The output path exists. |
+| References | The overlay points to the frame, timeline, or source it annotates. |
+| Render contract | The result can be consumed by timeline or compose steps. |

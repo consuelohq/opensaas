@@ -1,0 +1,82 @@
+---
+title: media.svg.convert
+description: Convert PNG or JPEG images into exact SVG wrappers and traced vector SVGs.
+---
+
+# media.svg.convert
+
+Convert PNG or JPEG images into exact SVG wrappers and traced vector SVGs.
+
+## When to use it
+
+Use this tool for generated images, logos, icons, stickers, and media-kit graphics that need SVG output.
+
+## Mental model
+
+The tool reads a raster image and writes SVG files. `wrapper` preserves the original image by embedding it in SVG. `trace` writes vector paths. `both` writes the traced SVG to the requested output path and writes the wrapper SVG beside it.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Path to a PNG or JPEG source image. |
+| `out` | Requested SVG output path. |
+| `strategy` | `wrapper`, `trace`, `both`, or `auto`. Use `both` for first-pass conversion. |
+| `traceEngine` | `color`, `mono`, or `auto`. Use `color` when `vtracer` is installed. |
+| `optimize` | Set to `true` only when `svgo` is installed. |
+
+## Output
+
+Returns `media.svg-result.v1` with the selected strategy, trace engine, optimization flag, and written output paths.
+
+## Recommended call
+
+```json
+{
+  "input": "assets/logo.png",
+  "out": "artifacts/logo.svg",
+  "strategy": "both",
+  "traceEngine": "color",
+  "optimize": false
+}
+```
+
+## CLI fallback
+
+```bash
+bun run --cwd packages/os media -- svg convert \
+  --input assets/logo.png \
+  --out artifacts/logo.svg \
+  --strategy both \
+  --trace-engine color \
+  --json
+```
+
+## Good agent instruction
+
+```text
+Use the existing OS tool `media.svg.convert`.
+Input: assets/logo.png
+Output: artifacts/logo.svg
+Strategy: both
+Trace engine: color when vtracer is available.
+Return JSON.
+Verify artifacts/logo.svg exists.
+Report outputs.svg, outputs.wrapperSvg, outputs.tracedSvg, traceEngine, and optimized.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Requested output path | Exists and points to the traced SVG. |
+| Wrapper output | Exists at the derived `.wrapper.svg` path. |
+| Schema | The JSON result uses `media.svg-result.v1`. |
+
+## Common failures
+
+| Failure | Fix |
+| --- | --- |
+| `vtracer` missing | Install with `cargo install vtracer` and add `$HOME/.cargo/bin` to PATH. |
+| `svgo` missing | Install with `brew install svgo` before using `optimize: true`. |
+| Unsupported input | Use PNG or JPEG. |
