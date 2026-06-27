@@ -7,7 +7,7 @@ import MarketingLayout from '../layouts/MarketingLayout.astro';
 const description = 'Privacy policy for Consuelo — how we collect, use, and protect your data.';
 ---
 
-<MarketingLayout title="Privacy Policy" description={description} analyticsEnabled={false}>
+<MarketingLayout title="Privacy Policy" description={description}>
   <SiteHeader />
 
   <section class="launch-section">
@@ -67,11 +67,10 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
       <p class="launch-copy">We enable cross-subdomain tracking, which means your session data persists across <code>*.consuelohq.com</code> subdomains. This allows us to maintain a consistent understanding of your journey across our platform.</p>
 
       <p class="legal-block__eyebrow launch-mono">Local Storage & Cookies</p>
-      <p class="launch-copy">We use <strong>localStorage</strong> and <strong>cookies</strong> to persist your preferences and session data. This includes:</p>
+      <p class="launch-copy">We use analytics storage to understand site sessions and improve the product experience. This includes:</p>
       <ul class="launch-copy">
-        <li>Cookies for tracking consent status</li>
-        <li>localStorage for session continuity</li>
-        <li>Cookies for cross-page analytics</li>
+        <li>Session continuity across page views</li>
+        <li>Cross-page analytics for website performance and product improvement</li>
       </ul>
     </div>
   </section>
@@ -79,7 +78,7 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
   <section class="launch-section">
     <div class="launch-content launch-content--wide legal-block">
       <p class="legal-block__eyebrow launch-mono">How We Use Your Data</p>
-      <p class="launch-copy">Your data helps us improve our product and provide a better experience for all users.</p>
+      <p class="launch-copy">We use analytics data to improve our website and product experience.</p>
 
       <p class="legal-block__eyebrow launch-mono">Purpose of Processing</p>
       <p class="launch-copy">We use the data collected to:</p>
@@ -93,7 +92,7 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
       </ul>
 
       <p class="legal-block__eyebrow launch-mono">Legal Basis for Processing</p>
-      <p class="launch-copy">Under GDPR, we rely on <strong>consent</strong> as our legal basis for processing your personal data through our analytics tools. You can withdraw your consent at any time by declining cookies or contacting us.</p>
+      <p class="launch-copy">Where applicable, we process website analytics under our legitimate interests in understanding product usage, improving the website, debugging issues, and measuring content performance.</p>
       <p class="launch-copy">Under CCPA, we collect personal information for the business purposes described above. You have the right to know what information we collect, request deletion, and opt out of the sale of personal information (we do not sell personal information).</p>
 
       <p class="legal-block__eyebrow launch-mono">Data Retention</p>
@@ -107,7 +106,7 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
       <p class="launch-copy">You have control over your data. This section explains your rights and how to exercise them.</p>
 
       <p class="legal-block__eyebrow launch-mono">Opting Out</p>
-      <p class="launch-copy"><strong>You can opt out of tracking at any time.</strong> When you first visit our website, you will see a cookie banner. Clicking <strong>"Decline"</strong> will prevent us from loading analytics and tracking your behavior. If you previously accepted cookies, you can clear your browser's cookies and localStorage to reset your consent.</p>
+      <p class="launch-copy"><strong>You can control website analytics storage through your browser settings.</strong> You can block or clear cookies and localStorage in your browser, and you can contact us with privacy requests at support@consuelohq.com.</p>
 
       <p class="legal-block__eyebrow launch-mono">GDPR Rights (EU/EEA Users)</p>
       <p class="launch-copy">If you are in the European Union or European Economic Area, you have the right to:</p>
@@ -118,7 +117,7 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
         <li><strong>Restrict processing:</strong> Limit how we use your data</li>
         <li><strong>Data portability:</strong> Receive your data in a portable format</li>
         <li><strong>Object:</strong> Object to processing of your personal data</li>
-        <li><strong>Withdraw consent:</strong> Withdraw consent at any time</li>
+        <li><strong>Complaint:</strong> Lodge a complaint with your local data protection authority</li>
       </ul>
       <p class="launch-copy">To exercise these rights, contact us at <strong>support@consuelohq.com</strong>. We will respond within 30 days of receiving your request.</p>
 
@@ -133,7 +132,7 @@ const description = 'Privacy policy for Consuelo — how we collect, use, and pr
       <p class="launch-copy">We are required to disclose, at or before collection, the categories of personal information we collect and how we use it. We do not sell or share personal information for cross-context behavioral advertising.</p>
 
       <p class="legal-block__eyebrow launch-mono">Do Not Track</p>
-      <p class="launch-copy">We currently do not respond to Do Not Track signals in your browser settings. If you wish to opt out of tracking, please use the cookie banner decline option or contact us.</p>
+      <p class="launch-copy">We currently do not respond to Do Not Track signals in your browser settings. You can use browser-level controls to block or clear analytics storage, or contact us with privacy requests.</p>
     </div>
   </section>
 

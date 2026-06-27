@@ -100,7 +100,6 @@ describe('Consuelo website structure', () => {
         '../../layouts/MarketingLayout.astro',
         '../../components/site/SiteHeader.astro',
         '../../components/site/SiteFooter.astro',
-        'analyticsEnabled={false}',
       ],
     };
 
@@ -185,19 +184,31 @@ describe('Consuelo website structure', () => {
     expect(contactRoute).not.toContain('mercuryFaqItems');
   });
 
-  test('should not initialize analytics when a route opts out or consent is not accepted', () => {
+  test('should initialize analytics by default when consent banner is removed', () => {
     const layout = readSource('src/layouts/MarketingLayout.astro');
-    expect(layout).toContain('analyticsEnabled?: boolean');
-    expect(layout).toContain('analyticsEnabled = true');
-    expect(layout).toContain('analyticsEnabled && posthogKey');
-    expect(layout).toContain("localStorage.getItem('consuelo-cookie-consent') !== 'accepted'");
-    expect(layout.indexOf("localStorage.getItem('consuelo-cookie-consent') !== 'accepted'")).toBeLessThan(layout.indexOf('posthog.init(posthogKey'));
+    expect(layout).toContain('{posthogKey && (');
+    expect(layout).toContain('posthog.init(posthogKey');
+    expect(layout).not.toContain('analyticsEnabled');
+    expect(layout).not.toContain('consuelo-cookie-consent');
+    expect(layout).not.toContain('cookie-banner');
+    expect(layout).not.toContain('cookie-accept');
+    expect(layout).not.toContain('cookie-decline');
+    expect(layout).not.toContain('We use cookies to understand how you use our site and improve your experience.');
+    expect(layout.indexOf('posthog.init(posthogKey')).toBeGreaterThan(layout.indexOf('!function(t,e)'));
 
     const privacyRoute = readSource('src/pages/privacy.astro');
-    expect(privacyRoute).toContain('analyticsEnabled={false}');
+    expect(privacyRoute).not.toContain('analyticsEnabled={false}');
+    expect(privacyRoute).not.toContain('cookie banner');
+    expect(privacyRoute).not.toContain('Decline');
+    expect(privacyRoute).not.toContain('Cookies for tracking consent status');
+    expect(privacyRoute).not.toContain('rely on <strong>consent</strong>');
+    expect(privacyRoute).toContain('analytics data to improve our website and product experience');
 
     const deviceRoute = readSource('src/pages/login/device.astro');
-    expect(deviceRoute).toContain('analyticsEnabled={false}');
+    expect(deviceRoute).not.toContain('analyticsEnabled={false}');
+
+    expectNoFile('src/components/CookieConsent.tsx');
+    expectNoFile('src/components/ui/Toast.astro');
   });
 
   test('should keep the GHL redirect on shared site links when the route is a noindex redirect', () => {
