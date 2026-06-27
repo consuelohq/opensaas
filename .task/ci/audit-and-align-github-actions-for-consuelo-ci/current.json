@@ -1,0 +1,19 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/audit-and-align-github-actions-for-consuelo-ci",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 1233,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1233",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1233",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1233/audit-and-align-github-actions-for-consuelo-ci",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1233",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1233/audit-and-align-github-actions-for-consuelo-ci",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-audit-and-align-github-actions-for-consuelo-ci",
+  "taskSession": "tsk_5c0b6f77fff5",
+  "tmuxSession": "opensaas-ci-audit-and-align-github-actions-for-consuelo-ci-5c0b6f77",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-audit-and-align-github-actions-for-consuelo-ci/.task/ci/audit-and-align-github-actions-for-consuelo-ci/session.json",
+  "createdAt": "2026-06-27T23:13:17.567Z"
+}
