@@ -22,6 +22,8 @@ type SvgConvertInput = {
   inputPath?: string;
   outPath?: string;
   strategy?: string;
+  traceEngine?: string;
+  optimize?: boolean;
 };
 
 type CommandResult = {
@@ -117,8 +119,13 @@ async function writeWrapperSvg(inputPath: string, outPath: string): Promise<{ pa
   return { path: outPath, info };
 }
 
-async function traceWithVtracer(inputPath: string, outPath: string): Promise<string | undefined> {
-  if (!commandExists('vtracer')) return undefined;
+async function traceWithVtracer(inputPath: string, outPath: string, required = false): Promise<string | undefined> {
+  if (!commandExists('vtracer')) {
+    if (required) {
+      throw new MediaError('MEDIA_DEPENDENCY_MISSING', 'vtracer is required for color SVG tracing. Install it with: cargo install vtracer', { dependencyId: 'vtracer', installHint: 'cargo install vtracer' });
+    }
+    return undefined;
+  }
   ensureParent(outPath);
   const result = await runCommand('vtracer', ['--input', inputPath, '--output', outPath]);
   if (result.exitCode !== 0) {
@@ -149,12 +156,27 @@ async function traceWithPotrace(inputPath: string, outPath: string): Promise<str
   }
 }
 
-async function writeTracedSvg(inputPath: string, outPath: string): Promise<{ path: string; tool: string }> {
+type TraceEngine = 'auto' | 'color' | 'mono';
+
+function normalizeTraceEngine(value: string | undefined): TraceEngine {
+  if (value === 'color' || value === 'mono' || value === 'auto') return value;
+  return 'auto';
+}
+
+async function writeTracedSvg(inputPath: string, outPath: string, traceEngine: TraceEngine): Promise<{ path: string; tool: string; traceEngine: TraceEngine }> {
   try {
+    if (traceEngine === 'color') {
+      const tool = await traceWithVtracer(inputPath, outPath, true);
+      return { path: outPath, tool: tool ?? 'vtracer', traceEngine: 'color' };
+    }
+    if (traceEngine === 'mono') {
+      const tool = await traceWithPotrace(inputPath, outPath);
+      return { path: outPath, tool, traceEngine: 'mono' };
+    }
     const vtracerTool = await traceWithVtracer(inputPath, outPath);
-    if (vtracerTool) return { path: outPath, tool: vtracerTool };
+    if (vtracerTool) return { path: outPath, tool: vtracerTool, traceEngine: 'color' };
     const tool = await traceWithPotrace(inputPath, outPath);
-    return { path: outPath, tool };
+    return { path: outPath, tool, traceEngine: 'mono' };
   } catch (error: unknown) {
     throw error instanceof Error ? error : new Error(String(error));
   }
@@ -169,6 +191,17 @@ function relatedPath(outPath: string, suffix: string): string {
   return outPath.toLowerCase().endsWith('.svg') ? outPath.slice(0, -4) + suffix + '.svg' : outPath + suffix + '.svg';
 }
 
+async function optimizeSvgPath(path: string): Promise<boolean> {
+  if (!commandExists('svgo')) {
+    throw new MediaError('MEDIA_DEPENDENCY_MISSING', 'svgo is required for SVG optimization. Install it with: brew install svgo', { dependencyId: 'svgo', installHint: 'brew install svgo' });
+  }
+  const first = await runCommand('svgo', ['--multipass', '--input', path, '--output', path]);
+  if (first.exitCode === 0) return true;
+  const second = await runCommand('svgo', ['--multipass', path, '--output', path]);
+  if (second.exitCode === 0) return true;
+  throw new MediaError('MEDIA_VALIDATION_ERROR', 'svgo failed to optimize SVG', { stderr: first.stderr + String.fromCharCode(10) + second.stderr, exitCode: second.exitCode });
+}
+
 async function convertSvg(input: SvgConvertInput): Promise<JsonObject> {
   try {
     const inputPath = input.inputPath;
@@ -176,9 +209,11 @@ async function convertSvg(input: SvgConvertInput): Promise<JsonObject> {
     if (!inputPath) throw new MediaError('MEDIA_INPUT_MISSING', 'SVG conversion requires --input');
     if (!outPath) throw new MediaError('MEDIA_INPUT_MISSING', 'SVG conversion requires --out');
     const strategy = normalizeStrategy(input.strategy);
+    const requestedTraceEngine = normalizeTraceEngine(input.traceEngine);
     const info = inspectRasterImage(inputPath);
     const outputs: Record<string, string> = {};
     const toolVersions: Record<string, string> = {};
+    let actualTraceEngine: TraceEngine = requestedTraceEngine;
 
     if (strategy === 'wrapper') {
       const wrapper = await writeWrapperSvg(inputPath, outPath);
@@ -186,18 +221,26 @@ async function convertSvg(input: SvgConvertInput): Promise<JsonObject> {
       outputs.wrapperSvg = wrapper.path;
     }
     if (strategy === 'trace') {
-      const traced = await writeTracedSvg(inputPath, outPath);
+      const traced = await writeTracedSvg(inputPath, outPath, requestedTraceEngine);
       outputs.svg = traced.path;
       outputs.tracedSvg = traced.path;
+      actualTraceEngine = traced.traceEngine;
       toolVersions[traced.tool] = 'available';
     }
     if (strategy === 'both') {
       const wrapper = await writeWrapperSvg(inputPath, relatedPath(outPath, '.wrapper'));
-      const traced = await writeTracedSvg(inputPath, relatedPath(outPath, '.traced'));
+      const traced = await writeTracedSvg(inputPath, relatedPath(outPath, '.traced'), requestedTraceEngine);
       outputs.svg = traced.path;
       outputs.wrapperSvg = wrapper.path;
       outputs.tracedSvg = traced.path;
+      actualTraceEngine = traced.traceEngine;
       toolVersions[traced.tool] = 'available';
+    }
+
+    if (input.optimize) {
+      const uniquePaths = Array.from(new Set(Object.values(outputs)));
+      for (const outputPath of uniquePaths) await optimizeSvgPath(outputPath);
+      toolVersions.svgo = 'available';
     }
 
     const result = {
@@ -205,6 +248,8 @@ async function convertSvg(input: SvgConvertInput): Promise<JsonObject> {
       id: stableId('svg', { inputPath, outPath, strategy }),
       input: { path: inputPath, mimeType: info.mimeType, width: info.width, height: info.height },
       strategy,
+      traceEngine: actualTraceEngine,
+      optimized: input.optimize === true,
       outputs,
       toolVersions,
       deterministic: true,
