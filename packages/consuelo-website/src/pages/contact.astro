@@ -2,7 +2,7 @@
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
-import { mercuryFaqItems } from '../data/mercury-content';
+import { contactFaqItems } from '../data/contact-content';
 
 const description = 'Contact the Consuelo team for support or inquiries.';
 ---
@@ -59,7 +59,7 @@ const description = 'Contact the Consuelo team for support or inquiries.';
   <section class="launch-section">
     <div class="launch-content launch-content--wide contact-block">
       <p class="contact-block__eyebrow launch-mono">FAQ</p>
-      {mercuryFaqItems.map((item) => (
+      {contactFaqItems.map((item) => (
         <details class="contact-expandable">
           <summary class="contact-expandable__trigger launch-mono">{item.question}</summary>
           <p class="launch-copy contact-expandable__body">{item.answer}</p>

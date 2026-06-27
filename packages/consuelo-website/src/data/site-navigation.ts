@@ -17,7 +17,7 @@ export const siteHeaderLinks: SiteNavLink[] = [
 ];
 
 export const siteMobileMenuLinks: SiteNavLink[] = [
-  ...siteHeaderLinks.filter((link) => link.label !== 'docs'),
+  ...siteHeaderLinks.filter((link) => link.label !== 'Docs'),
   { label: 'Login', href: siteLinks.login },
   { label: 'Free', href: siteLinks.free },
 ];

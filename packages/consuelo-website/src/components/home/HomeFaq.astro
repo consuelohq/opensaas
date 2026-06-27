@@ -35,7 +35,7 @@ const {
             </span>
             <span>{item.question}</span>
           </summary>
-          <p class="launch-copy">{item.answer}</p>
+          <p class="launch-copy" set:html={item.answer} />
         </details>
       ))}
     </div>
