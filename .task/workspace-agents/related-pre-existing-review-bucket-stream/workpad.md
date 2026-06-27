@@ -32,3 +32,7 @@ Ko narrowed this to one implementation file: `packages/workspace/scripts/review.
 ## Out of scope
 - A separate `tests/tool-manifest.test.ts` failure exists around the `intent` core tool manifest. That is not part of this one-file review.js change.
 - The initial task branch was accidentally based on `main`; this corrected task branch is based on `stream/workspace-agents`.
+
+
+## Final publishing note
+The implementation was pushed. The script now separates your changes, related pre-existing findings, and background pre-existing findings. Related findings are blocking and carry the fix-or-escalate prompt. Focused validation passed; typed review and verify were platform-blocked, so the task-scoped review command was used as fallback.
