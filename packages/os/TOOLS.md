@@ -38,7 +38,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
-| media | 22 |
+| media | 23 |
 | office | 21 |
 | review | 4 |
 | sentry | 7 |
@@ -3632,6 +3632,68 @@ await workspace.call({
   "tool": "media.sports-science.metrics",
   "input": {
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.media.svg.convert
+
+Convert raster images into SVG assets using exact wrapper and vector trace strategies.
+
+| Field | Value |
+| --- | --- |
+| Category | media |
+| Signature | `workspace.media.svg.convert({ input: string; out: string; strategy?: "wrapper" &#124; "trace" &#124; "both" &#124; "auto"; traceEngine?: "auto" &#124; "color" &#124; "mono"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `os media svg.convert` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "media.svg.convert",
+  "input": {
+    "input": "image.png",
+    "out": "image.svg",
+    "strategy": "both",
+    "traceEngine": "auto"
   }
 });
 ```

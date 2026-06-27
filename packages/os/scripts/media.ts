@@ -182,8 +182,23 @@ async function handleAudioCommand(args: string[]): Promise<unknown> {
 async function handleCoreCommand(command: string, args: string[]): Promise<unknown> {
   try {
 
-    if (command === 'svg' || command === 'svg.convert' || command === 'svg:convert') {
-      const rest = command === 'svg' && args[0] === 'convert' ? args.slice(1) : args;
+    if (command === 'svg') {
+      if (args[0] !== 'convert') return { schema: 'media.help.v1', ok: true, data: { commands: ['svg convert'] } };
+      const rest = args.slice(1);
+      const inputPath = optionValue(rest, '--input');
+      const outPath = optionValue(rest, '--out');
+      if (!inputExists(inputPath)) return missingInputError('svg.convert', inputPath);
+      if (!outPath) return missingInputError('svg.convert out', outPath);
+      return await Effect.runPromise(convertSvgForCli({
+        inputPath,
+        outPath,
+        strategy: optionValue(rest, '--strategy') ?? optionValue(rest, '--mode'),
+        traceEngine: optionValue(rest, '--trace-engine'),
+        optimize: hasFlag(rest, '--optimize'),
+      }));
+    }
+    if (command === 'svg.convert' || command === 'svg:convert') {
+      const rest = args;
       const inputPath = optionValue(rest, '--input');
       const outPath = optionValue(rest, '--out');
       if (!inputExists(inputPath)) return missingInputError('svg.convert', inputPath);

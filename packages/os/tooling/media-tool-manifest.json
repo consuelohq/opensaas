@@ -853,12 +853,41 @@
       "subcommand": "svg:convert",
       "branchMode": "none",
       "jsonFlag": "--json",
-      "arguments": []
+      "arguments": [
+        {
+          "source": "input",
+          "flag": "--input",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "out",
+          "flag": "--out",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "strategy",
+          "flag": "--strategy",
+          "kind": "value"
+        },
+        {
+          "source": "traceEngine",
+          "flag": "--trace-engine",
+          "kind": "value"
+        },
+        {
+          "source": "optimize",
+          "flag": "--optimize",
+          "kind": "boolean"
+        }
+      ]
     },
     "exampleInput": {
       "input": "image.png",
       "out": "image.svg",
-      "strategy": "both"
+      "strategy": "both",
+      "traceEngine": "auto"
     },
     "sessionRequired": false,
     "workflowRole": "media.svg.convert",
