@@ -147,6 +147,8 @@ export const MediaSvgResultSchema = z.object({
     height: z.number().int().positive(),
   }).passthrough(),
   strategy: z.enum(['wrapper', 'trace', 'both']),
+  traceEngine: z.enum(['auto', 'color', 'mono']).default('auto'),
+  optimized: z.boolean().default(false),
   outputs: z.object({
     svg: NonEmptyStringSchema,
     wrapperSvg: NonEmptyStringSchema.optional(),

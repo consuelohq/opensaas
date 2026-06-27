@@ -75,6 +75,10 @@ function optionValue(args: string[], flag: string): string | undefined {
   return value && !value.startsWith('--') ? value : undefined;
 }
 
+function hasFlag(args: string[], flag: string): boolean {
+  return args.includes(flag);
+}
+
 function writeJson(value: unknown): void {
   process.stdout.write(JSON.stringify(value, null, 2) + String.fromCharCode(10));
 }
@@ -188,6 +192,8 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
         inputPath,
         outPath,
         strategy: optionValue(rest, '--strategy') ?? optionValue(rest, '--mode'),
+        traceEngine: optionValue(rest, '--trace-engine'),
+        optimize: hasFlag(rest, '--optimize'),
       }));
     }
     if (command === 'audio') {

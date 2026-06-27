@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/improve-media-svg-conversion-quality-and-optimization",
+  "base": "origin/stream/media",
+  "headSha": "df481c94fa485d0b85bdef535045d247dcc86cb8",
+  "changeHash": "dab70e75a8457cf5b2b5cf0732ad146c062e087083bfea68b8fc442782cd9754",
+  "changedFiles": [
+    "packages/os/scripts/lib/media/dependency-catalog.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/lib/media/svg.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/tests/media/31-svg-convert.test.ts"
+  ],
+  "verifiedAt": "2026-06-27T19:42:37.054Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/improve-media-svg-conversion-quality-and-optimization/current.json",
+        ".task/media/improve-media-svg-conversion-quality-and-optimization/session.json",
+        ".task/media/improve-media-svg-conversion-quality-and-optimization/workpad.md",
+        ".task/tasks/media/improve-media-svg-conversion-quality-and-optimization.json",
+        "packages/os/scripts/lib/media/dependency-catalog.ts",
+        "packages/os/scripts/lib/media/schema.ts",
+        "packages/os/scripts/lib/media/svg.ts",
+        "packages/os/scripts/media.ts",
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

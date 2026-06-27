@@ -13,6 +13,7 @@ import {
   importMediaModule,
   readManifestArray,
   removeTempDir,
+  runMediaCli,
 } from './helpers';
 
 function writeFixturePng(dir: string): string {
@@ -65,6 +66,8 @@ describe('media.svg.convert', () => {
       input: { path: 'fixture.png', mimeType: 'image/png', width: 8, height: 8 },
       strategy: 'wrapper',
       outputs: { svg: 'fixture.svg', wrapperSvg: 'fixture.svg' },
+      traceEngine: 'mono',
+      optimized: false,
       toolVersions: {},
       deterministic: true,
     });
@@ -97,7 +100,7 @@ describe('media.svg.convert', () => {
     try {
       const input = writeFixturePng(tmp);
       const out = join(tmp, 'traced.svg');
-      const json = expectJsonCliSuccess(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'trace', '--json'], 60_000);
+      const json = expectJsonCliSuccess(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'trace', '--trace-engine', 'mono', '--json'], 60_000);
 
       expect(json.schema).toBe('media.svg-result.v1');
       expect(json.ok).toBe(true);
@@ -117,7 +120,7 @@ describe('media.svg.convert', () => {
     try {
       const input = writeFixturePng(tmp);
       const out = join(tmp, 'asset.svg');
-      const json = expectJsonCliSuccess(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'both', '--json'], 60_000);
+      const json = expectJsonCliSuccess(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'both', '--trace-engine', 'mono', '--json'], 60_000);
       const data = json.data as { outputs?: Record<string, string> };
 
       expect(existsSync(data.outputs?.wrapperSvg ?? '')).toBe(true);
@@ -126,4 +129,35 @@ describe('media.svg.convert', () => {
       removeTempDir(tmp);
     }
   });
+
+  it('fails clearly when color trace is requested without vtracer', async () => {
+    if (hasCommand('vtracer')) return;
+    const tmp = createTempDir('consuelo-media-test-svg-color-missing-');
+    try {
+      const input = writeFixturePng(tmp);
+      const out = join(tmp, 'color.svg');
+      const result = runMediaCli(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'trace', '--trace-engine', 'color', '--json']);
+      const payload = result.stdout + result.stderr;
+      expect(result.status).not.toBe(0);
+      expect(payload).toContain('vtracer');
+    } finally {
+      removeTempDir(tmp);
+    }
+  });
+
+  it('fails clearly when optimization is requested without svgo', async () => {
+    if (hasCommand('svgo')) return;
+    const tmp = createTempDir('consuelo-media-test-svg-optimize-missing-');
+    try {
+      const input = writeFixturePng(tmp);
+      const out = join(tmp, 'optimized.svg');
+      const result = runMediaCli(['svg', 'convert', '--input', input, '--out', out, '--strategy', 'wrapper', '--optimize', '--json']);
+      const payload = result.stdout + result.stderr;
+      expect(result.status).not.toBe(0);
+      expect(payload).toContain('svgo');
+    } finally {
+      removeTempDir(tmp);
+    }
+  });
+
 });

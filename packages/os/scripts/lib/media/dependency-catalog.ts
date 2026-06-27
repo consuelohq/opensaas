@@ -177,9 +177,8 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
     id: 'vtracer',
     profile: 'media-render-advanced',
     commands: ['vtracer'],
-    packageManagers: { homebrew: 'vtracer' },
     versionCommands: [['vtracer', '--version']],
-    installHint: 'brew install vtracer',
+    installHint: 'cargo install vtracer',
     requiredBy: ['media.overlay.render', 'media.svg.convert'],
     optional: true,
     estimatedInstalledSizeMb: 45,
@@ -194,6 +193,17 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
     requiredBy: ['media.svg.convert'],
     optional: true,
     estimatedInstalledSizeMb: 10,
+  },
+  {
+    id: 'svgo',
+    profile: 'media-render-advanced',
+    commands: ['svgo'],
+    packageManagers: { homebrew: 'svgo' },
+    versionCommands: [['svgo', '--version']],
+    installHint: 'brew install svgo',
+    requiredBy: ['media.svg.convert'],
+    optional: true,
+    estimatedInstalledSizeMb: 25,
   },
 ];
 
@@ -212,7 +222,7 @@ export const mediaDependencyProfiles: MediaDependencyProfile[] = [
   { id: 'media-audio', dependencies: ['sox', 'whisper.cpp'], optional: true, estimatedInstalledSizeMb: 60, warningThresholdMb: 350 },
   { id: 'media-vision-light', dependencies: ['python3', 'numpy', 'opencv-python-headless'], optional: true, estimatedInstalledSizeMb: 410, warningThresholdMb: 700 },
   { id: 'media-vision-pose', dependencies: ['python3', 'numpy', 'opencv-python-headless', 'mediapipe'], optional: true, estimatedInstalledSizeMb: 670, warningThresholdMb: 900 },
-  { id: 'media-render-advanced', dependencies: ['sharp', 'gifski', 'vtracer', 'potrace'], optional: true, estimatedInstalledSizeMb: 150, warningThresholdMb: 320 },
+  { id: 'media-render-advanced', dependencies: ['sharp', 'gifski', 'vtracer', 'potrace', 'svgo'], optional: true, estimatedInstalledSizeMb: 175, warningThresholdMb: 350 },
 ];
 
 export function dependencyById(id: string): MediaRuntimeDependency | undefined {
