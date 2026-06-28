@@ -37,6 +37,16 @@ export const DOCUMENTATION_PATHS = {
     '/consuelo-ui/navigation/navigation-bar',
   CONSUELO_UI_NAVIGATION_STEP_BAR: '/consuelo-ui/navigation/step-bar',
   CONSUELO_UI_PROGRESS_BAR: '/consuelo-ui/progress-bar',
+  DEVELOPERS_AGENT_CRM_TOOLS: '/developers/agent/crm-tools',
+  DEVELOPERS_AGENT_INTEGRATIONS: '/developers/agent/integrations',
+  DEVELOPERS_AGENT_OVERVIEW: '/developers/agent/overview',
+  DEVELOPERS_AGENT_TOOL_SYSTEM: '/developers/agent/tool-system',
+  DEVELOPERS_API_AUTH: '/developers/api/auth',
+  DEVELOPERS_API_CONTACTS: '/developers/api/contacts',
+  DEVELOPERS_API_GRAPHQL: '/developers/api/graphql',
+  DEVELOPERS_API_OVERVIEW: '/developers/api/overview',
+  DEVELOPERS_API_VOICE: '/developers/api/voice',
+  DEVELOPERS_INTRODUCTION: '/developers/introduction',
   GRAPHQL_API_ANALYTICS_CONNECTING_EXTERNAL_ANALYTICS:
     '/graphql-api/analytics/connecting-external-analytics',
   GRAPHQL_API_ANALYTICS_GROWTH_METRICS_DASHBOARDS:
@@ -149,6 +159,7 @@ export const DOCUMENTATION_PATHS = {
     '/tools/media/workflows/youtube-clip-breakdown',
   TOOLS_OFFICE: '/tools/office',
   TOOLS_OVERVIEW: '/tools/overview',
+  TOOLS_SITES_OVERVIEW: '/tools/sites/overview',
   USER_GUIDE_BILLING_CAPABILITIES_PRICING_PLANS:
     '/user-guide/billing/capabilities/pricing-plans',
   USER_GUIDE_BILLING_CAPABILITIES_WORKFLOW_CREDITS:
@@ -253,6 +264,7 @@ export const DOCUMENTATION_PATHS = {
   USER_GUIDE_DISCORD_BOT_GETTING_STARTED:
     '/user-guide/discord-bot/getting-started',
   USER_GUIDE_DISCORD_BOT_OVERVIEW: '/user-guide/discord-bot/overview',
+  USER_GUIDE_FEATURES_OVERVIEW: '/user-guide/features/overview',
   USER_GUIDE_FILE_SYSTEM_CAPABILITIES_AUTO_INDEXING:
     '/user-guide/file-system/capabilities/auto-indexing',
   USER_GUIDE_FILE_SYSTEM_CAPABILITIES_FILE_CATEGORIES:
@@ -276,6 +288,8 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/getting-started/how-tos/create-workspace',
   USER_GUIDE_GETTING_STARTED_HOW_TOS_NAVIGATE_AROUND_CONSUELO:
     '/user-guide/getting-started/how-tos/navigate-around-consuelo',
+  USER_GUIDE_GUIDES_TUTORIALS_OVERVIEW: '/user-guide/guides-tutorials/overview',
+  USER_GUIDE_INTEGRATIONS_OVERVIEW: '/user-guide/integrations/overview',
   USER_GUIDE_INTRODUCTION: '/user-guide/introduction',
   USER_GUIDE_PERMISSIONS_ACCESS_CAPABILITIES_PERMISSIONS:
     '/user-guide/permissions-access/capabilities/permissions',
@@ -300,6 +314,7 @@ export const DOCUMENTATION_PATHS = {
   USER_GUIDE_SETTINGS_HOW_TOS_SETTINGS_FAQ:
     '/user-guide/settings/how-tos/settings-faq',
   USER_GUIDE_SETTINGS_OVERVIEW: '/user-guide/settings/overview',
+  USER_GUIDE_USER_STORIES_USE_CASES: '/user-guide/user-stories-use-cases',
   USER_GUIDE_VIEWS_PIPELINES_CAPABILITIES_CALENDAR_VIEW:
     '/user-guide/views-pipelines/capabilities/calendar-view',
   USER_GUIDE_VIEWS_PIPELINES_CAPABILITIES_FIELDS_AND_COLUMNS:
