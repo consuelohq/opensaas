@@ -111,49 +111,12 @@ const {
 </html>
 
 <style is:global>
-  :root {
-    color-scheme: light;
-    --launch-bg: #ffffff;
-    --launch-fg: #000000;
-    --launch-muted: rgba(0, 0, 0, 0.62);
-    --launch-soft: rgba(0, 0, 0, 0.04);
-    --launch-line: rgba(0, 0, 0, 0.12);
-    --launch-panel: rgba(0, 0, 0, 0.03);
-    --launch-panel-strong: rgba(0, 0, 0, 0.06);
-    --launch-dropdown-bg: #fbfbfa;
-    --launch-dropdown-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
-    --launch-shimmer-stop-1: rgba(0, 0, 0, 0.18);
-    --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
-    --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
-    --launch-success: #6fdd92;
-    --launch-mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
-      --launch-bg: #000000;
-      --launch-fg: #ffffff;
-      --launch-muted: rgba(255, 255, 255, 0.68);
-      --launch-soft: rgba(255, 255, 255, 0.04);
-      --launch-line: rgba(255, 255, 255, 0.1);
-      --launch-panel: #0e0e10;
-      --launch-panel-strong: rgba(255, 255, 255, 0.08);
-      --launch-dropdown-bg: #111111;
-      --launch-dropdown-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-      --launch-shimmer-stop-1: rgba(255, 255, 255, 0.22);
-      --launch-shimmer-stop-2: rgba(255, 255, 255, 0.52);
-      --launch-shimmer-stop-3: rgba(255, 255, 255, 0.88);
-      --launch-success: #82e8a4;
-    }
-  }
-
   * {
     box-sizing: border-box;
   }
 
   html {
-    background: var(--launch-bg);
+    background: var(--site-color-paper);
     scroll-behavior: smooth;
   }
 
@@ -161,11 +124,11 @@ const {
     margin: 0;
     min-height: 100vh;
     background:
-      linear-gradient(var(--launch-soft), var(--launch-soft)) left top / 1px 100% no-repeat,
-      linear-gradient(var(--launch-soft), var(--launch-soft)) right top / 1px 100% no-repeat,
-      var(--launch-bg);
-    color: var(--launch-fg);
-    font-family: var(--launch-mono-font);
+      linear-gradient(var(--site-color-soft), var(--site-color-soft)) left top / 1px 100% no-repeat,
+      linear-gradient(var(--site-color-soft), var(--site-color-soft)) right top / 1px 100% no-repeat,
+      var(--site-color-paper);
+    color: var(--site-color-ink);
+    font-family: var(--site-font-mono);
     font-size: 0.9rem;
     line-height: 1.55;
     text-rendering: optimizeLegibility;
@@ -186,11 +149,11 @@ const {
     color: transparent !important;
     background-image: linear-gradient(
       90deg,
-      var(--launch-shimmer-stop-1) 0%,
-      var(--launch-shimmer-stop-2) 30%,
-      var(--launch-shimmer-stop-3) 50%,
-      var(--launch-shimmer-stop-2) 70%,
-      var(--launch-shimmer-stop-1) 100%
+      var(--site-color-shimmer-stop-1) 0%,
+      var(--site-color-shimmer-stop-2) 30%,
+      var(--site-color-shimmer-stop-3) 50%,
+      var(--site-color-shimmer-stop-2) 70%,
+      var(--site-color-shimmer-stop-1) 100%
     );
     background-size: 220% 100%;
     background-position: 200% 50%;
@@ -205,11 +168,11 @@ const {
     color: transparent !important;
     background-image: linear-gradient(
       90deg,
-      var(--launch-shimmer-stop-1) 0%,
-      var(--launch-shimmer-stop-2) 30%,
-      var(--launch-shimmer-stop-3) 50%,
-      var(--launch-shimmer-stop-2) 70%,
-      var(--launch-shimmer-stop-1) 100%
+      var(--site-color-shimmer-stop-1) 0%,
+      var(--site-color-shimmer-stop-2) 30%,
+      var(--site-color-shimmer-stop-3) 50%,
+      var(--site-color-shimmer-stop-2) 70%,
+      var(--site-color-shimmer-stop-1) 100%
     );
     background-size: 220% 100%;
     background-position: 200% 50%;
@@ -252,13 +215,13 @@ const {
   .launch-shell {
     width: min(100%, 1600px);
     margin: 0 auto;
-    border-left: 1px solid var(--launch-line);
-    border-right: 1px solid var(--launch-line);
+    border-left: 1px solid var(--site-color-line);
+    border-right: 1px solid var(--site-color-line);
     min-height: 100vh;
   }
 
   .launch-section {
-    border-top: 1px solid var(--launch-line);
+    border-top: 1px solid var(--site-color-line);
     scroll-margin-top: 8.5rem;
   }
 
@@ -271,21 +234,21 @@ const {
   }
 
   .launch-mono {
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
   }
 
   .launch-eyebrow {
     margin: 0 0 0.7rem;
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     font-weight: 700;
-    color: var(--launch-fg);
+    color: var(--site-color-ink);
   }
 
   .launch-title {
     margin: 0;
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
     font-size: clamp(1.35rem, 0.9rem + 1.8vw, 2rem);
     font-weight: 700;
     line-height: 1.02;
@@ -296,7 +259,7 @@ const {
   .launch-copy {
     margin: 0;
     max-width: 48rem;
-    color: var(--launch-muted);
+    color: var(--site-color-muted);
     font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
     line-height: 1.72;
     text-wrap: pretty;
@@ -310,7 +273,7 @@ const {
     justify-content: center;
     gap: 0.42rem;
     border-radius: 0.2rem;
-    border: 1px solid var(--launch-line);
+    border: 1px solid var(--site-color-line);
     min-height: 2.2rem;
     padding: 0 0.78rem;
     transition: background 160ms ease, color 160ms ease, border-color 160ms ease, opacity 160ms ease;
@@ -318,9 +281,9 @@ const {
   }
 
   .launch-button {
-    background: var(--launch-fg);
-    color: var(--launch-bg);
-    border-color: var(--launch-fg);
+    background: var(--site-color-ink);
+    color: var(--site-color-paper);
+    border-color: var(--site-color-ink);
   }
 
   .launch-button:hover,
@@ -338,22 +301,22 @@ const {
 
   .launch-button--ghost {
     background: transparent;
-    color: var(--launch-fg);
+    color: var(--site-color-ink);
   }
 
   .launch-button--ghost:hover,
   .launch-button--quiet:hover {
-    background: var(--launch-panel);
+    background: var(--site-color-panel);
   }
 
   .launch-button--quiet {
     background: transparent;
-    color: var(--launch-muted);
+    color: var(--site-color-muted);
   }
 
   .launch-card {
-    border: 1px solid var(--launch-line);
-    background: var(--launch-panel);
+    border: 1px solid var(--site-color-line);
+    background: var(--site-color-panel);
   }
 
   .launch-inline-link {

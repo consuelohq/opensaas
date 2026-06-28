@@ -167,7 +167,7 @@ If no workflow fits, call `office.listSkills`, choose the nearest existing workf
 
 ## digital e-guide templates
 
-For `consueloDesign.generateDigitalEguide`, use:
+For `office.generateDigitalEguide`, use:
 
 | Template   | Use for                                                                             |
 | ---------- | ----------------------------------------------------------------------------------- |
@@ -532,7 +532,7 @@ Do not:
 - Tool calls go through the typed workspace facade as `workspace office.*`.
 - Open Design upstream remains vendored at `packages/consuelo-design/upstream/open-design`.
 - `pnpm` is not a Consuelo-facing workflow tool. It is used only behind the Bun facade because upstream Open Design pins `pnpm@10.33.2`.
-- `generate <workflow>` means start/create/open a live Open Design working session. It must not degrade into a dead-end prompt/spec generator.
+- `generate <workflow>` returns a headless work order by default. Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session, and only that live path may set `project.pendingPrompt`.
 - Open Design bundled design systems are reference skins only. Consuelo truth comes from our repo.
 - `consuelo-design` must remain outside Railway deployment graphs.
 
@@ -554,9 +554,9 @@ Do not include `animations.md` or website `AGENTS.md` in base `get-design-system
 
 ## Open Design mental model
 
-Open Design is a live design workspace, not a static prompt generator.
+Open Design supports live design workspaces, but the Consuelo facade is headless by default.
 
-The loop is:
+The live UI loop is used only when Ko asks for a live session or the tool input passes `live: true`:
 
 ```text
 start Open Design
@@ -569,7 +569,7 @@ start Open Design
   -> Ko and the agent iterate together
 ```
 
-The Consuelo facade should preserve that loop. If a command says `generate website`, it should start or reuse Open Design, create/open a project, attach the right Consuelo prompt context, and take Ko to the working session.
+Default `generate <workflow>` commands return a headless work order that agents can execute directly. Live `generate <workflow> --live` commands start or reuse Open Design, create or open a project, attach the right Consuelo prompt context, set `project.pendingPrompt`, and take Ko to the working session.
 
 
 ## workflow mapping

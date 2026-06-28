@@ -279,6 +279,9 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-color-accent');
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
+    expect(tokens).toContain("--site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;");
+    expect(tokens).toContain("--site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;");
+    expect(tokens).toContain("--site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;");
 
     const primitives = readRepo('packages/consuelo-website/src/styles/primitives.css');
     expect(primitives).toContain('.site-container');
@@ -287,6 +290,9 @@ describe('Consuelo website structure', () => {
     expect(primitives).toContain('.site-card');
     expect(primitives).toContain('.site-stack');
     expect(primitives).toContain('.site-cluster');
+    expect(primitives).toContain('.site-field:focus-visible');
+    expect(primitives).toContain('outline: 2px solid var(--site-color-accent);');
+    expect(primitives).not.toContain('outline: none;');
   });
 
   test('should resolve every Consuelo design manifest source path used by website agents', () => {
@@ -313,10 +319,28 @@ describe('Consuelo website structure', () => {
     expect(JSON.stringify(manifest.sourceOfTruth)).not.toContain('upstream/open-design/design-systems/warm-editorial');
   });
 
-  test('should load website design tokens and primitives through the marketing layout', () => {
+  test('should load and consume website design tokens and primitives through the marketing layout', () => {
     const layout = readSource('src/layouts/MarketingLayout.astro');
     expect(layout).toContain("../styles/tokens.css");
     expect(layout).toContain("../styles/primitives.css");
     expect(layout).not.toContain('upstream/open-design/design-systems');
+    expect(layout).not.toContain('--launch-');
+    expect(layout).not.toContain('var(--launch-');
+    expect(layout).toContain('var(--site-color-paper)');
+    expect(layout).toContain('var(--site-color-ink)');
+    expect(layout).toContain('var(--site-font-mono)');
+    expect(layout).toContain('var(--site-color-line)');
+  });
+
+  test('should keep the design operator contract on office headless defaults', () => {
+    const agentRules = readRepo('areas/consuelo-design/AGENTS.md');
+    expect(agentRules).toContain('Default `office.generate*` behavior');
+    expect(agentRules).toContain('For `office.generateDigitalEguide`, use:');
+    expect(agentRules).toContain('`generate <workflow>` returns a headless work order by default');
+    expect(agentRules).toContain('Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session');
+    expect(agentRules).toContain('Only the live UI path should use project.pendingPrompt.');
+    expect(agentRules).not.toContain('consueloDesign.generateDigitalEguide');
+    expect(agentRules).not.toContain('means start/create/open a live Open Design working session');
+    expect(agentRules).not.toContain('If a command says `generate website`, it should start or reuse Open Design');
   });
 });

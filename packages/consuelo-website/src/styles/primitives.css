@@ -150,7 +150,8 @@
   font: 400 var(--site-text-md) / 1.4 var(--site-font-body);
 }
 
-.site-field:focus {
+.site-field:focus-visible {
   border-bottom-color: var(--site-color-accent);
-  outline: none;
+  outline: 2px solid var(--site-color-accent);
+  outline-offset: 4px;
 }
