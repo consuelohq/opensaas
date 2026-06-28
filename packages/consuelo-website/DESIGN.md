@@ -36,6 +36,8 @@ Use one accent color per screen. A page with a terracotta hero should keep secon
 
 Do not invent new hex values. Add a semantic token when a new value is genuinely required.
 
+Dark mode uses `--site-color-dark-paper` as the same near-black Office canvas so Consuelo web surfaces do not drift into a separate brown shell on mobile.
+
 ## Typography
 
 Use the available website fonts first and keep the type hierarchy editorial:
