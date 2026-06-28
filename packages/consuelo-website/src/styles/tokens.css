@@ -17,10 +17,10 @@
   --site-color-shimmer-stop-1: rgba(28, 26, 23, 0.18);
   --site-color-shimmer-stop-2: rgba(28, 26, 23, 0.4);
   --site-color-shimmer-stop-3: rgba(28, 26, 23, 0.82);
-  --site-color-dark-paper: #211915;
+  --site-color-dark-paper: #0B0D0C;
   --site-color-dark-ink: #F7EFE7;
-  --site-color-dark-surface: #2B211B;
-  --site-color-dark-surface-raised: #342820;
+  --site-color-dark-surface: #15110F;
+  --site-color-dark-surface-raised: #211915;
   --site-color-dark-muted: #C3B4A7;
   --site-color-dark-accent: #E06B3E;
   --site-color-dark-accent-ink: #211915;
@@ -118,8 +118,8 @@
     --site-color-line: rgba(255, 247, 235, 0.14);
     --site-color-line-strong: rgba(255, 247, 235, 0.28);
     --site-color-soft: rgba(255, 247, 235, 0.05);
-    --site-color-panel: rgba(255, 247, 235, 0.06);
-    --site-color-panel-strong: rgba(255, 247, 235, 0.1);
+    --site-color-panel: rgba(255, 247, 235, 0.055);
+    --site-color-panel-strong: rgba(255, 247, 235, 0.095);
     --site-color-dropdown-bg: var(--site-color-dark-surface);
     --site-color-success: #82E8A4;
     --site-color-shimmer-stop-1: rgba(255, 247, 235, 0.22);

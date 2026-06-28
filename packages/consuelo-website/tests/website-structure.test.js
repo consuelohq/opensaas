@@ -222,9 +222,26 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('@media (max-width: 860px)');
     expect(hero).toContain('@media (max-width: 560px)');
     expect(hero).not.toContain('font-size: clamp(4.2rem, 8.8vw, 8.5rem);');
+    expect(hero).not.toContain('font-size: clamp(2.8rem, 16vw, 4.5rem);');
     expect(hero).not.toContain('max-width: 54rem;');
     expect(hero).not.toContain("'Claude'");
     expect(hero).not.toContain("'Cursor'");
+  });
+
+  test('should keep the mobile hero scaled down against the dark office background', () => {
+    const hero = readSource('src/components/home/HomeHero.astro');
+    const tokens = readSource('src/styles/tokens.css');
+
+    expect(hero).toContain('font-size: clamp(2.95rem, 10vw, 4.7rem);');
+    expect(hero).toContain('font-size: clamp(2.6rem, 11.2vw, 3.35rem);');
+    expect(hero).toContain('padding-block: var(--site-space-6) var(--site-space-7);');
+    expect(hero).toContain('font-size: 0.72rem;');
+    expect(hero).toContain('padding: var(--site-space-3) var(--site-space-4);');
+
+    expect(tokens).toContain('--site-color-dark-paper: #0B0D0C;');
+    expect(tokens).toContain('--site-color-dark-surface: #15110F;');
+    expect(tokens).toContain('--site-color-dark-surface-raised: #211915;');
+    expect(tokens).not.toContain('--site-color-dark-paper: #211915;');
   });
 
   test('should keep hero controls sharp, compact, and muted like the Hermes reference', () => {
