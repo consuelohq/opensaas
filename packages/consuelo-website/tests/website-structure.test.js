@@ -146,6 +146,7 @@ describe('Consuelo website structure', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
 
     expect(hero).toContain('/images/consuelo-integrations-hero.svg');
+    expect(hero).not.toContain('/images/consuelo-integrations-hero.svg?');
     expect(hero).toContain('Give every agent');
     expect(hero).toContain('workspace');
     expect(hero).toContain('<em>superpowers</em>');
@@ -187,7 +188,9 @@ describe('Consuelo website structure', () => {
     const svg = readSource('public/images/consuelo-integrations-hero.svg');
     const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
 
-    expect(hero).toContain('<span class="home-hero__title-line">Give every agent</span>');
+    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--desktop">Give every agent</span>');
+    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--mobile">Give every</span>');
+    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--mobile">agent</span>');
     expect(hero).toContain('<span class="home-hero__title-line">workspace</span>');
     expect(hero).toContain('<span class="home-hero__title-line"><em>superpowers</em></span>');
     expect(hero).not.toContain('<span class="home-hero__title-line"><em>superpowers</em>.</span>');
@@ -237,10 +240,10 @@ describe('Consuelo website structure', () => {
     const tokens = readSource('src/styles/tokens.css');
 
     expect(hero).toContain('font-size: clamp(2.95rem, 10vw, 4.7rem);');
-    expect(hero).toContain('font-size: clamp(2.6rem, 11.2vw, 3.35rem);');
+    expect(hero).toContain('font-size: clamp(3.15rem, 13.2vw, 4.25rem);');
     expect(hero).toContain('padding-block: var(--site-space-6) var(--site-space-7);');
     expect(hero).toContain('font-size: clamp(0.64rem, 2.6vw, 0.72rem);');
-    expect(hero).toContain('padding: 0.72rem clamp(0.85rem, 3.8vw, 1rem);');
+    expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
 
     expect(tokens).toContain('--site-color-dark-paper: #0F0F0D;');
     expect(tokens).toContain('--site-color-dark-surface: #191814;');
@@ -268,12 +271,12 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('border-bottom-color: transparent;');
     expect(hero).toContain('width: min(100%, 30rem);');
     expect(hero).toContain('--home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);');
-    expect(hero).toContain('gap: clamp(0.85rem, 3.4vw, 1.15rem);');
-    expect(hero).toContain('padding: 0.64rem 0.95rem;');
-    expect(hero).toContain('gap: clamp(1.25rem, 8vw, 1.85rem);');
-    expect(hero).toContain('padding: 0.62rem clamp(0.85rem, 3.8vw, 1rem) 0;');
-    expect(hero).toContain('padding: 0 0 0.62rem;');
-    expect(hero).toContain('padding: 0.72rem clamp(0.85rem, 3.8vw, 1rem);');
+    expect(hero).toContain('gap: clamp(1.45rem, 5.8vw, 2.15rem);');
+    expect(hero).toContain('padding: 0.78rem 1.22rem;');
+    expect(hero).toContain('gap: clamp(1.55rem, 8.6vw, 2.05rem);');
+    expect(hero).toContain('padding: 0.82rem clamp(1rem, 4.2vw, 1.18rem) 0;');
+    expect(hero).toContain('padding: 0 0 0.82rem;');
+    expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
 
     expect(hero).not.toContain('box-shadow: var(--site-shadow-control);');
     expect(hero).not.toContain('background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);');
