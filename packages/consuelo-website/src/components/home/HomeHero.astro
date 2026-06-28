@@ -253,15 +253,22 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   }
 
   .home-hero__portal {
-    min-height: 2.35rem;
+    width: fit-content;
+    min-height: 2.45rem;
     justify-content: center;
+    justify-self: start;
     gap: var(--site-space-2);
-    border: 0;
+    border: 1px solid var(--site-color-line);
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
     color: var(--site-color-ink);
     box-shadow: none;
-    padding: calc(var(--site-space-2) + var(--site-space-1)) var(--site-space-5);
+    font-family: var(--site-font-mono);
+    font-size: var(--site-text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
+    padding: 0.72rem 1.15rem;
   }
 
   .home-hero__portal svg {
@@ -279,7 +286,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   .home-hero__install {
     overflow: hidden;
     padding: 0;
-    border: 0;
+    border: 1px solid var(--site-color-line);
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
     box-shadow: none;
@@ -290,8 +297,8 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     gap: var(--site-space-2);
     overflow-x: auto;
     overflow-y: hidden;
-    border-bottom: 0;
-    padding: var(--site-space-2) var(--site-space-3) 0;
+    border-bottom: 1px solid var(--site-color-line);
+    padding: 0.72rem var(--site-space-4) 0;
     scrollbar-width: none;
   }
 
@@ -301,12 +308,12 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   .home-hero__tab {
     border: 0;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     background: transparent;
     color: var(--site-color-muted);
     font: 400 var(--site-text-xs) / 1 var(--site-font-mono);
     letter-spacing: 0;
-    padding: var(--site-space-2) var(--site-space-3) calc(var(--site-space-2) + var(--site-space-1));
+    padding: 0 0 0.72rem;
     white-space: nowrap;
   }
 
@@ -335,7 +342,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     background: transparent;
     color: var(--site-color-ink);
     cursor: pointer;
-    padding: var(--site-space-4) var(--site-space-4);
+    padding: 0.86rem var(--site-space-4);
     text-align: left;
     text-decoration: none;
     transition:
@@ -349,7 +356,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   .home-hero__panel:hover,
   .home-hero__panel:focus-visible {
-    background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);
+    background: transparent;
     outline: none;
   }
 
@@ -377,8 +384,8 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   .home-hero__panel:hover .home-hero__panel-action,
   .home-hero__panel:focus-visible .home-hero__panel-action {
-    color: var(--site-color-accent);
-    background: color-mix(in srgb, var(--site-color-accent) 9%, transparent);
+    color: var(--site-color-ink);
+    background: transparent;
   }
 
   .home-hero__panel-action svg {
@@ -520,9 +527,13 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
       letter-spacing: -0.04em;
     }
 
+    .home-hero__portal {
+      width: fit-content;
+    }
+
     .home-hero__panel {
       gap: var(--site-space-2);
-      padding: var(--site-space-3) clamp(var(--site-space-3), 3.6vw, var(--site-space-4));
+      padding: 0.8rem clamp(var(--site-space-3), 3.6vw, var(--site-space-4));
     }
 
     .home-hero__panel-action {

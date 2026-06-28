@@ -148,7 +148,8 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('/images/consuelo-integrations-hero.svg');
     expect(hero).toContain('Give every agent');
     expect(hero).toContain('workspace');
-    expect(hero).toContain('<em>superpowers</em>.');
+    expect(hero).toContain('<em>superpowers</em>');
+    expect(hero).not.toContain('<em>superpowers</em>.');
     expect(hero).toContain('superpowers');
     expect(hero).toContain('BATTERIES INCLUDED');
     expect(hero).toContain('MIT LICENSE');
@@ -167,13 +168,13 @@ describe('Consuelo website structure', () => {
 
     expect(hero).toContain('var(--site-color-paper)');
     expect(hero).toContain('var(--site-color-ink)');
-    expect(hero).toContain('var(--site-color-accent)');
+    expect(readSource('src/styles/tokens.css')).toContain('--site-color-accent');
     expect(hero).toContain('var(--site-font-display)');
     expect(hero).toContain('var(--site-font-body)');
     expect(hero).toContain('var(--site-font-mono)');
     expect(hero).toContain('var(--site-space-');
     expect(hero).toContain('var(--site-radius-');
-    expect(hero).toContain('var(--site-shadow-');
+    expect(hero).toContain('box-shadow: none;');
 
     expect(hero).not.toContain('--launch-');
     expect(hero).not.toContain('#FAF7F2');
@@ -188,7 +189,8 @@ describe('Consuelo website structure', () => {
 
     expect(hero).toContain('<span class="home-hero__title-line">Give every agent</span>');
     expect(hero).toContain('<span class="home-hero__title-line">workspace</span>');
-    expect(hero).toContain('<span class="home-hero__title-line"><em>superpowers</em>.</span>');
+    expect(hero).toContain('<span class="home-hero__title-line"><em>superpowers</em></span>');
+    expect(hero).not.toContain('<span class="home-hero__title-line"><em>superpowers</em>.</span>');
     expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext';");
     expect(hero).toContain('data-pretext-title');
     expect(hero).toContain('data-pretext-lines');
@@ -214,9 +216,9 @@ describe('Consuelo website structure', () => {
   test('should keep the next hero pass responsive and visually quieter', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
 
-    expect(hero).toContain('grid-template-columns: minmax(0, 39rem) minmax(38rem, 1fr);');
+    expect(hero).toContain('grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);');
     expect(hero).toContain('color: var(--site-color-muted);');
-    expect(hero).toContain('font-size: clamp(3.4rem, 5.8vw, 6rem);');
+    expect(hero).toContain('font-size: clamp(3.35rem, 5.75vw, 6.05rem);');
     expect(hero).toContain('border-radius: calc(var(--site-radius-sm) * 0.25);');
     expect(hero).toContain('@media (max-width: 1180px)');
     expect(hero).toContain('@media (max-width: 860px)');
@@ -235,8 +237,8 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('font-size: clamp(2.95rem, 10vw, 4.7rem);');
     expect(hero).toContain('font-size: clamp(2.6rem, 11.2vw, 3.35rem);');
     expect(hero).toContain('padding-block: var(--site-space-6) var(--site-space-7);');
-    expect(hero).toContain('font-size: 0.72rem;');
-    expect(hero).toContain('padding: var(--site-space-3) var(--site-space-4);');
+    expect(hero).toContain('font-size: clamp(0.64rem, 2.6vw, 0.72rem);');
+    expect(hero).toContain('padding: 0.8rem clamp(var(--site-space-3), 3.6vw, var(--site-space-4));');
 
     expect(tokens).toContain('--site-color-dark-paper: #0F0F0D;');
     expect(tokens).toContain('--site-color-dark-surface: #191814;');
@@ -249,25 +251,25 @@ describe('Consuelo website structure', () => {
     expect(tokens).not.toContain('--site-color-dark-paper: #211915;');
   });
 
-  test('should keep hero controls sharp, compact, and muted like the Hermes reference', () => {
+  test('should keep hero controls bordered, compact, mono, and quiet like the Hermes reference', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
     const tokens = readSource('src/styles/tokens.css');
 
     expect(hero).toContain('width: fit-content;');
-    expect(hero).toContain('min-height: 2.35rem;');
-    expect(hero).toContain('justify-content: center;');
-    expect(hero).toContain('gap: var(--site-space-2);');
-    expect(hero).toContain('box-shadow: var(--site-shadow-control);');
-    expect(hero).toContain('background: var(--site-color-control);');
-    expect(hero).toContain('background: var(--site-color-control-panel);');
-    expect(hero).toContain('width: min(100%, 32rem);');
-    expect(hero).toContain('font: 700 var(--site-text-xs) / 1 var(--site-font-mono);');
-    expect(hero).toContain('font: 500 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);');
-    expect(hero).toContain('padding: var(--site-space-4) var(--site-space-4);');
-    expect(hero).not.toContain('home-hero__portal-arrow');
-    expect(hero).not.toContain('width: min(100%, 18.5rem);');
-    expect(hero).not.toContain('width: min(100%, 39rem);');
-    expect(hero).not.toContain('min-height: 3.5rem;');
+    expect(hero).toContain('border: 1px solid var(--site-color-line);');
+    expect(hero).toContain('box-shadow: none;');
+    expect(hero).toContain('font-family: var(--site-font-mono);');
+    expect(hero).toContain('font-size: var(--site-text-xs);');
+    expect(hero).toContain('font-weight: 400;');
+    expect(hero).toContain('font: 400 var(--site-text-xs) / 1 var(--site-font-mono);');
+    expect(hero).toContain('border-bottom: 1px solid var(--site-color-line);');
+    expect(hero).toContain('border-bottom-color: transparent;');
+    expect(hero).toContain('width: min(100%, 30rem);');
+    expect(hero).toContain('--home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);');
+
+    expect(hero).not.toContain('box-shadow: var(--site-shadow-control);');
+    expect(hero).not.toContain('background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);');
+    expect(hero).not.toContain('font: 700 var(--site-text-xs) / 1 var(--site-font-mono);');
 
     expect(tokens).toContain('--site-shadow-control:');
     expect(tokens).toContain('--site-color-control: #FFFFFF;');
@@ -431,9 +433,12 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
     expect(tokens).toContain('@media (prefers-color-scheme: dark)');
-    expect(tokens).toContain("--site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;");
-    expect(tokens).toContain("--site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;");
-    expect(tokens).toContain("--site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;");
+    expect(tokens).toContain("--site-font-display: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;");
+    expect(tokens).toContain('--site-font-body: var(--site-font-display);');
+    expect(tokens).toContain("--site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
+    expect(tokens).not.toContain("--site-font-display: 'Georgia'");
+    expect(tokens).not.toContain("--site-font-body: 'Geist'");
+    expect(tokens).not.toContain("--site-font-mono: 'Geist Mono'");
 
     const primitives = readRepo('packages/consuelo-website/src/styles/primitives.css');
     expect(primitives).toContain('.site-container');
