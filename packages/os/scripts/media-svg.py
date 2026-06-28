@@ -277,6 +277,17 @@ def apply_operations(svg_text, operations, render_options):
                 idx = list(parent).index(node)
                 parent.remove(node)
                 parent.insert(idx, ET.fromstring(str(op.get('node') or op.get('value') or '<g />')))
+            elif name == 'wrap-node':
+                parent = parent_map(root)[node]
+                idx = list(parent).index(node)
+                parent.remove(node)
+                tag = str(op.get('tag') or 'g')
+                wrapper_tag = qname(tag) if tag and ':' not in tag and not tag.startswith('{') else tag
+                wrapper = ET.Element(wrapper_tag)
+                for key, value in (op.get('attrs') or {}).items():
+                    wrapper.set(str(key), str(value))
+                wrapper.append(node)
+                parent.insert(idx, wrapper)
             elif name == 'center-visible-bbox':
                 m = measure_svg(serialize(root), [measure_spec(op)], render_options)[0]
                 if not m.get('visibleBBox'):
@@ -341,15 +352,47 @@ def composite_background(png, background):
     bg.save(png)
 
 
+def isolated_svg_for_selector(svg_text, selector):
+    if not selector:
+        return svg_text
+    tree = parse_tree(svg_text)
+    root = tree.getroot()
+    node = find_node(root, selector)
+    if node is None:
+        return svg_text
+    isolated = ET.Element(root.tag, dict(root.attrib))
+    parents = parent_map(root)
+    for child in list(root):
+        if child is node:
+            continue
+        if local_name(child.tag) in ('defs', 'style'):
+            isolated.append(copy.deepcopy(child))
+    wrapped = copy.deepcopy(node)
+    current = node
+    wrappers = []
+    while current in parents and parents[current] is not root:
+        current = parents[current]
+        attrs = {key: value for key, value in current.attrib.items() if key in ('transform', 'style', 'class', 'opacity', 'fill', 'stroke', 'color')}
+        if attrs or local_name(current.tag) == 'g':
+            wrappers.append((current.tag, attrs))
+    for tag, attrs in reversed(wrappers):
+        wrapper = ET.Element(tag, attrs)
+        wrapper.append(wrapped)
+        wrapped = wrapper
+    isolated.append(wrapped)
+    return serialize(isolated)
+
+
 def measure_svg(svg_text, specs, render_options=None):
-    rendered = render_svg(svg_text, render_options or {})
-    try:
-        from PIL import Image
-        im = Image.open(rendered['path']).convert('RGBA')
-        pix = im.load()
-        width, height = im.size
-        results = []
-        for index, spec in enumerate(specs or [{}]):
+    from PIL import Image
+    results = []
+    for index, spec in enumerate(specs or [{}]):
+        measure_text = isolated_svg_for_selector(svg_text, spec.get('selector')) if spec.get('selector') else svg_text
+        rendered = render_svg(measure_text, render_options or {})
+        try:
+            im = Image.open(rendered['path']).convert('RGBA')
+            pix = im.load()
+            width, height = im.size
             region = spec.get('region')
             if region:
                 box = normalize_region(region)
@@ -371,9 +414,9 @@ def measure_svg(svg_text, specs, render_options=None):
             else:
                 bbox, center = None, None
             results.append({'name': spec.get('name') or spec.get('selector') or f'measure-{index+1}', 'selector': spec.get('selector'), 'mode': mode, 'region': {'x': x0, 'y': y0, 'width': x1 - x0, 'height': y1 - y0}, 'visibleBBox': bbox, 'center': center, 'pixelCount': len(xs)})
-        return results
-    finally:
-        shutil.rmtree(rendered['tempDir'], ignore_errors=True)
+        finally:
+            shutil.rmtree(rendered['tempDir'], ignore_errors=True)
+    return results
 
 
 def include_pixel(pixel, mode, threshold, alpha):
@@ -521,8 +564,11 @@ def main():
     if svg_text is not None and args.action == 'inspect': data['inspect'] = inspect_svg(svg_text, selectors)
     if svg_text is not None and args.action == 'render':
         out = args.output or str(Path((args.input or 'media-svg.svg')).with_suffix('.preview.png'))
-        r = render_svg(svg_text, render_options, out)
-        data['renders'] = [{'path': r['path'], 'colorScheme': r['colorScheme'], 'width': r['width'], 'height': r['height']}]
+        if args.dry_run:
+            data['renders'] = [{'path': str(Path(out).expanduser().resolve()), 'colorScheme': render_options.get('colorScheme', 'no-preference'), 'width': render_options.get('width'), 'height': render_options.get('height'), 'dryRun': True}]
+        else:
+            r = render_svg(svg_text, render_options, out)
+            data['renders'] = [{'path': r['path'], 'colorScheme': r['colorScheme'], 'width': r['width'], 'height': r['height']}]
     if svg_text is not None and args.action == 'measure':
         specs = checks if checks else [{'selector': s, 'name': s} if isinstance(s, str) else s for s in (selectors or [{}])]
         data['measurements'] = measure_svg(svg_text, specs, render_options)
