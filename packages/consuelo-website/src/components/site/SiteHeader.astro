@@ -1,564 +1,224 @@
 ---
-import { siteHeaderLinks, siteMobileMenuLinks } from '../../data/site-navigation';
-import { siteLinks } from '../../data/site-links';
-import { docsMenuTabs } from '../../data/docs-navigation';
+import { siteLinks } from '../../data/site-links'
 
 type Props = {
-  pageSections?: HomePageSection[];
-};
+	pageSections?: HomePageSection[]
+}
 
 type HomePageSection = {
-  id: string;
-  label: string;
-};
+	id: string
+	label: string
+}
 
-const { pageSections = [] } = Astro.props as Props;
-const hasPageSections = pageSections.length > 0;
+const { pageSections = [] } = Astro.props as Props
+const hasPageSections = pageSections.length > 0
+const portalHref = 'https://os.consuelohq.com'
+const installHref = 'https://os.consuelohq.com/install.sh'
 ---
 
-<header class="launch-header launch-section" data-launch-header data-motion="hero-header">
-  <div class="launch-content launch-content--wide launch-header__inner">
-    <a class="launch-header__brand launch-mono" href="/">consuelo</a>
+<header class="launch-header" data-launch-header data-motion="hero-header">
+	<nav class="launch-content launch-content--wide launch-header__desktop" aria-label="Primary">
+		<a class="launch-header__brand" data-header-brand href="/">Consuelo</a>
+		<a class="launch-header__link" data-desktop-header-slot href={siteLinks.docs}>Docs</a>
+		<a
+			class="launch-header__center"
+			data-desktop-header-slot
+			href="/"
+			aria-label="Consuelo OS home"
+		>
+			Consuelo OS
+		</a>
+		<a class="launch-header__link" data-desktop-header-slot href={portalHref}>Portal</a>
+		<a class="launch-header__link" data-desktop-header-slot href={installHref}>
+			<span>Install</span>
+			<span aria-hidden="true">→</span>
+		</a>
+	</nav>
 
-    <div class="launch-header__desktop">
-      <nav class="launch-header__nav" aria-label="Primary">
-        {siteHeaderLinks.map((link) => (
-          <a href={link.href}>{link.label}</a>
-        ))}
-      </nav>
+	<nav
+		class="launch-content launch-content--wide launch-header__mobile"
+		aria-label="Mobile primary"
+	>
+		<a class="launch-header__mobile-link" data-mobile-header-slot href={portalHref}>Portal</a>
+		<a
+			class="launch-header__mobile-link launch-header__mobile-link--center"
+			data-mobile-header-slot
+			href="/"
+		>
+			Consuelo OS
+		</a>
+		<a
+			class="launch-header__mobile-link launch-header__mobile-link--right"
+			data-mobile-header-slot
+			href={siteLinks.docs}>Docs</a
+		>
+	</nav>
 
-      <div class="launch-header__actions">
-        <a class="launch-header__login" href={siteLinks.login}>Login</a>
-        <a class="launch-button" href={siteLinks.free} style="font-size: 1.1rem; padding: 0.4rem 1rem;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.2rem;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Free
-        </a>
-      </div>
-    </div>
-
-    <button
-      class="launch-header__menu-toggle"
-      type="button"
-      aria-controls="launch-mobile-menu"
-      aria-expanded="false"
-      data-mobile-menu-toggle
-    >
-      <span class="sr-only">open menu</span>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="launch-header__menu-line launch-header__menu-line--top" d="M4 7H20" />
-        <path class="launch-header__menu-line launch-header__menu-line--middle" d="M4 12H20" />
-        <path class="launch-header__menu-line launch-header__menu-line--bottom" d="M4 17H20" />
-      </svg>
-    </button>
-  </div>
-
-  {hasPageSections && (
-    <div class="launch-header__page-nav launch-mono" data-page-nav>
-      <div class="launch-header__page-nav-scroll">
-        {pageSections.map((section) => (
-          <a class="launch-header__page-link" href={
-            '#' + section.id
-          } data-page-anchor>
-            {section.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  )}
+	{
+		hasPageSections && (
+			<div class="launch-header__page-nav" data-page-nav>
+				<div class="launch-header__page-nav-scroll">
+					{pageSections.map((section) => (
+						<a class="launch-header__page-link" href={'#' + section.id} data-page-anchor>
+							{section.label}
+						</a>
+					))}
+				</div>
+			</div>
+		)
+	}
 </header>
 
-<div class="launch-header__mobile-menu" data-mobile-menu data-open="false" aria-hidden="true" id="launch-mobile-menu">
-  <button class="launch-header__mobile-backdrop" type="button" aria-label="close menu" data-mobile-menu-close></button>
-
-  <div class="launch-header__mobile-panel">
-    <div class="launch-header__mobile-top launch-mono">
-      <a class="launch-header__brand" href="/">consuelo</a>
-      <button class="launch-header__mobile-close" type="button" data-mobile-menu-close>
-        <span class="sr-only">close menu</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6L18 18" />
-          <path d="M18 6L6 18" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="launch-header__mobile-scroll">
-      <section class="launch-header__mobile-section">
-        <p class="launch-eyebrow">Menu</p>
-        <nav class="launch-header__mobile-links" aria-label="mobile navigation">
-          {siteMobileMenuLinks.map((link) => (
-            <a class="launch-header__mobile-link" href={link.href} data-mobile-link>{link.label}</a>
-          ))}
-        </nav>
-      </section>
-
-      <section class="launch-header__mobile-section">
-        <p class="launch-eyebrow">Docs</p>
-
-        <div class="launch-header__docs-groups">
-          {docsMenuTabs.flatMap((tab) => tab.groups).map((group) => (
-            <details class="launch-header__docs-group">
-              <summary class="launch-header__docs-summary">
-                <span>{group.label}</span>
-                <span class="launch-header__summary-icon" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                </span>
-              </summary>
-
-              <div class="launch-header__docs-links">
-                {group.links.map((link) => (
-                  <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
-                ))}
-              </div>
-            </details>
-          ))}
-        </div>
-      </section>
-    </div>
-  </div>
-</div>
-
-<script define:vars={{ pageSections }}>
-  const header = document.querySelector('[data-launch-header]');
-  const menu = document.querySelector('[data-mobile-menu]');
-  const menuToggle = document.querySelector('[data-mobile-menu-toggle]');
-  const menuCloseButtons = Array.from(
-    document.querySelectorAll('[data-mobile-menu-close]'),
-  );
-  const pageAnchors = Array.from(document.querySelectorAll('[data-page-anchor]'));
-  const mobileLinks = Array.from(document.querySelectorAll('[data-mobile-link]'));
-
-  const setMenuOpen = (nextOpen) => {
-    if (!(menu instanceof HTMLElement) || !(menuToggle instanceof HTMLButtonElement)) {
-      return;
-    }
-
-    menu.dataset.open = nextOpen ? 'true' : 'false';
-    menu.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
-    menuToggle.dataset.open = nextOpen ? 'true' : 'false';
-    menuToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
-    document.body.style.overflow = nextOpen ? 'hidden' : '';
-  };
-
-  const syncActiveSection = (sectionId) => {
-    pageAnchors.forEach((anchor) => {
-      if (!(anchor instanceof HTMLAnchorElement)) {
-        return;
-      }
-
-      const isActive = anchor.getAttribute('href') === '#' + sectionId;
-      anchor.classList.toggle('is-active', isActive);
-      anchor.setAttribute('aria-current', isActive ? 'location' : 'false');
-    });
-  };
-
-  if (menuToggle instanceof HTMLButtonElement) {
-    menuToggle.addEventListener('click', () => {
-      const isOpen = menu instanceof HTMLElement && menu.dataset.open === 'true';
-      setMenuOpen(!isOpen);
-    });
-  }
-
-  menuCloseButtons.forEach((button) => {
-    if (!(button instanceof HTMLButtonElement)) {
-      return;
-    }
-
-    button.addEventListener('click', () => {
-      setMenuOpen(false);
-    });
-  });
-
-  mobileLinks.forEach((link) => {
-    if (!(link instanceof HTMLAnchorElement)) {
-      return;
-    }
-
-    link.addEventListener('click', () => {
-      setMenuOpen(false);
-    });
-  });
-
-  if (pageSections.length > 0) {
-    const updateActiveOnScroll = () => {
-      const offset = window.innerHeight * 0.3;
-      let activeId = pageSections[0].id;
-
-      for (const section of pageSections) {
-        const el = document.getElementById(section.id);
-        if (el && el.getBoundingClientRect().top <= offset) {
-          activeId = section.id;
-        }
-      }
-
-      syncActiveSection(activeId);
-    };
-
-    window.addEventListener('scroll', updateActiveOnScroll, { passive: true });
-    updateActiveOnScroll();
-  }
-
-  const syncHeaderState = () => {
-    if (!(header instanceof HTMLElement)) {
-      return;
-    }
-
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
-  };
-
-  syncHeaderState();
-  window.addEventListener('scroll', syncHeaderState, { passive: true });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      setMenuOpen(false);
-    }
-  });
-</script>
-
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+	.launch-header {
+		z-index: 1;
+		background: var(--launch-bg);
+		color: var(--launch-fg);
+	}
 
-  .launch-header {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    backdrop-filter: blur(16px);
-    background: color-mix(in srgb, var(--launch-bg) 90%, transparent);
-    transition: background 180ms ease, border-color 180ms ease;
-  }
+	:global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
+		opacity: 0;
+		transform: translate3d(0, -0.65rem, 0);
+		will-change: opacity, transform;
+	}
 
-  :global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
-    opacity: 0;
-    transform: translate3d(0, -0.65rem, 0);
-    will-change: opacity, transform;
-  }
+	@media (prefers-reduced-motion: reduce) {
+		:global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
+			opacity: 1;
+			transform: none;
+			will-change: auto;
+		}
+	}
 
-  @media (prefers-reduced-motion: reduce) {
-    :global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
-      opacity: 1;
-      transform: none;
-      will-change: auto;
-    }
-  }
+	.launch-header__desktop {
+		min-height: 5.75rem;
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		align-items: start;
+		gap: 1rem;
+		padding-block: 1.35rem 1rem;
+	}
 
-  .launch-header.is-scrolled {
-    background: color-mix(in srgb, var(--launch-bg) 95%, transparent);
-  }
+	.launch-header__brand,
+	.launch-header__link,
+	.launch-header__mobile-link,
+	.launch-header__page-link {
+		font-family: var(--site-font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		line-height: 1;
+	}
 
-  .launch-header__inner {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 1rem;
-    align-items: center;
-    min-height: 3.9rem;
-  }
+	.launch-header__brand,
+	.launch-header__link,
+	.launch-header__center,
+	.launch-header__mobile-link,
+	.launch-header__page-link {
+		transition:
+			color 160ms ease,
+			opacity 160ms ease;
+	}
 
-  .launch-header__brand {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.08em;
-  }
+	.launch-header__brand,
+	.launch-header__link,
+	.launch-header__center {
+		justify-self: center;
+		white-space: nowrap;
+	}
 
-  .launch-header__desktop {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-  }
+	.launch-header__center {
+		color: var(--launch-fg);
+		font-family: var(--site-font-display);
+		font-size: 1.7rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		line-height: 0.95;
+		text-align: center;
+	}
 
-  .launch-header__nav,
-  .launch-header__actions {
-    display: flex;
-    align-items: center;
-  }
+	.launch-header__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.28rem;
+	}
 
-  .launch-header__nav {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      font-size: 1.1rem;
-    }
+	.launch-header__brand:hover,
+	.launch-header__link:hover,
+	.launch-header__center:hover,
+	.launch-header__mobile-link:hover,
+	.launch-header__page-link:hover {
+		color: var(--launch-muted);
+	}
 
-  .launch-header__actions {
-    gap: 0.72rem;
-  }
+	.launch-header__mobile {
+		min-height: 3.8rem;
+		display: none;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
+		gap: 1rem;
+		padding-block: 0.95rem;
+	}
 
-  .launch-header__nav a:hover,
-  .launch-header__docs-links a:hover,
-  .launch-header__mobile-links a:hover,
-  .launch-header__page-link:hover,
-  .launch-header__login:hover {
-    color: var(--launch-fg);
-  }
+	.launch-header__mobile-link {
+		white-space: nowrap;
+	}
 
-  .launch-header__login {
-    font-size: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
+	.launch-header__mobile-link--center {
+		justify-self: center;
+		font-family: var(--site-font-display);
+		font-size: 1.16rem;
+		line-height: 1;
+	}
 
-  .launch-header__menu-toggle,
-  .launch-header__page-nav {
-    display: none;
-  }
+	.launch-header__mobile-link--right {
+		justify-self: end;
+	}
 
-  .launch-header__menu-toggle,
-  .launch-header__mobile-close {
-    width: 2.15rem;
-    height: 2.15rem;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    background: transparent;
-    color: var(--launch-fg);
-  }
+	.launch-header__page-nav {
+		border-top: 1px solid var(--launch-line);
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
 
-  .launch-header__menu-toggle svg,
-  .launch-header__mobile-close svg {
-    width: 1rem;
-    height: 1rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: square;
-    stroke-linejoin: miter;
-  }
+	.launch-header__page-nav::-webkit-scrollbar {
+		display: none;
+	}
 
-  .launch-header__menu-line {
-    transform-origin: center;
-    transition: transform 180ms ease, opacity 180ms ease;
-  }
+	.launch-header__page-nav-scroll {
+		display: flex;
+		gap: 0.4rem;
+		min-width: max-content;
+		padding: 0.7rem 1rem;
+	}
 
-  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--top {
-    transform: translateY(5px) rotate(45deg);
-  }
+	.launch-header__page-link {
+		color: var(--launch-muted);
+		padding: 0.38rem 0.6rem;
+		white-space: nowrap;
+	}
 
-  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--middle {
-    opacity: 0;
-  }
+	@media (max-width: 640px) {
+		.launch-header__desktop {
+			display: none;
+		}
 
-  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--bottom {
-    transform: translateY(-5px) rotate(-45deg);
-  }
+		.launch-header__mobile {
+			display: grid;
+		}
+	}
 
-  .launch-header__page-nav {
-    border-top: 1px solid var(--launch-line);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
+	@media (max-width: 360px) {
+		.launch-header__mobile {
+			gap: 0.65rem;
+		}
 
-  .launch-header__page-nav::-webkit-scrollbar {
-    display: none;
-  }
+		.launch-header__mobile-link {
+			font-size: 0.72rem;
+		}
 
-  .launch-header__page-nav-scroll {
-    display: flex;
-    gap: 0.4rem;
-    padding: 0.7rem 1rem;
-    min-width: max-content;
-  }
-
-  .launch-header__page-link {
-    color: var(--launch-muted);
-    font-size: 0.68rem;
-    padding: 0.38rem 0.6rem;
-    
-    white-space: nowrap;
-  }
-
-  .launch-header__page-link.is-active {
-    color: var(--launch-fg);
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 4px;
-  }
-
-  .launch-header__mobile-menu {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 180ms ease;
-  }
-
-  .launch-header__mobile-menu[data-open='true'] {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .launch-header__mobile-backdrop {
-    position: absolute;
-    inset: 0;
-    border: 0;
-    background: rgba(0, 0, 0, 0.55);
-  }
-
-  .launch-header__mobile-panel {
-    position: absolute;
-    inset: 0 0 0 auto;
-    width: min(100%, 28rem);
-    height: 100dvh;
-    background: var(--launch-bg);
-    border-left: 1px solid var(--launch-line);
-    transform: translateX(100%);
-    transition: transform 220ms ease;
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .launch-header__mobile-menu[data-open='true'] .launch-header__mobile-panel {
-    transform: translateX(0);
-  }
-
-  .launch-header__mobile-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem;
-    border-bottom: 1px solid var(--launch-line);
-  }
-
-  .launch-header__mobile-scroll {
-    overflow-y: auto;
-    min-height: 0;
-    padding: 0 1rem 1.5rem;
-    display: grid;
-    gap: 1.35rem;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .launch-header__mobile-section {
-    display: grid;
-    gap: 0.7rem;
-  }
-
-  .launch-header__mobile-section {
-    padding-top: 1rem;
-    border-top: 1px solid var(--launch-line);
-  }
-
-  .launch-header__mobile-section:first-child {
-    border-top: 0;
-  }
-
-  .launch-header__mobile-links {
-    display: grid;
-  }
-
-  .launch-header__mobile-link,
-  .launch-header__docs-links a {
-    padding: 0.95rem 0;
-    border-top: 1px solid var(--launch-line);
-    font-size: 0.84rem;
-    color: var(--launch-muted);
-  }
-
-  .launch-header__mobile-link:first-child,
-  .launch-header__docs-links a:first-child {
-    border-top: 0;
-  }
-
-  .launch-header__docs-groups {
-    display: grid;
-    gap: 0;
-  }
-
-  .launch-header__docs-group {
-    border-top: 1px solid var(--launch-line);
-  }
-
-  .launch-header__docs-summary {
-    list-style: none;
-    padding: 0.95rem 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.84rem;
-    color: var(--launch-fg);
-  }
-
-  .launch-header__docs-summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .launch-header__summary-icon {
-    position: relative;
-    width: 0.8rem;
-    height: 0.8rem;
-    flex: 0 0 auto;
-  }
-
-  .launch-header__summary-icon span {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    width: 0.8rem;
-    height: 1px;
-    background: currentColor;
-    transform: translate(-50%, -50%);
-    transition: transform 160ms ease, opacity 160ms ease;
-  }
-
-  .launch-header__summary-icon span:last-child {
-    transform: translate(-50%, -50%) rotate(90deg);
-  }
-
-  .launch-header__docs-group[open] .launch-header__summary-icon span:last-child {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(90deg) scaleX(0.2);
-  }
-
-  .launch-header__docs-links {
-    display: grid;
-    gap: 0.55rem;
-    padding: 0 0 1rem 1rem;
-  }
-
-  .launch-header__docs-links a {
-    padding: 0;
-    border-top: 0;
-    font-size: 0.8rem;
-    line-height: 1.3;
-  }
-
-  .launch-header__docs-links a:hover,
-  .launch-header__mobile-link:hover,
-  .launch-header__docs-summary:hover {
-    color: var(--launch-fg);
-  }
-
-  @media (max-width: 980px) {
-    .launch-header__desktop {
-      display: none;
-    }
-
-    .launch-header__menu-toggle {
-      display: inline-flex;
-      justify-self: end;
-    }
-
-    .launch-header__page-nav {
-      display: block;
-    }
-  }
+		.launch-header__mobile-link--center {
+			font-size: 1rem;
+		}
+	}
 </style>
