@@ -48,3 +48,26 @@ Docs/navigation-only IA task. Validation will use generated docs config checks, 
 ## Build note
 - `bun run --cwd packages/consuelo-docs build` was attempted and hit the workspace command timeout before producing output. This is not counted as a passing build.
 - Focused docs/navigation validation passed.
+
+
+## Final publishing note
+State: The sidebar IA structure is implemented and pushed to `task/docs/docs-sidebar-structure` at `cd594534a3fe38325f9ef70026d19b0319227515`.
+
+Delta:
+- User Stories & Use Cases is a single page, not a section of child pages.
+- User Guide now follows the requested Hermes-style sections.
+- Sites is the GTM umbrella in the Tools tab and owns the old GTM/product docs.
+- Office remains separate from Sites.
+- OS docs remain preserved under User Guide / Reference structure.
+- Generated docs config and documentation path constants were refreshed.
+
+Validation:
+- Focused navigation invariant check passed.
+- OS docs validation passed.
+- OS skill docs check passed.
+- Syntax checks for touched docs scripts and generated path constants passed.
+- Full Mintlify build attempt timed out before output; not counted as a pass.
+
+Next:
+- Promote task PR #1272 into `stream/docs`.
+- Merge `stream/docs` to `main` if docs-lint and Mintlify are green or only known unrelated CI remains.
