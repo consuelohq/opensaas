@@ -19,7 +19,8 @@ const osPortalHref = 'https://os.consuelohq.com';
       </p>
 
       <h1 class="home-hero__title">
-        Give every agent workspace <em>superpowers</em>.
+        <span class="home-hero__title-line">Give every agent</span>
+        <span class="home-hero__title-line">workspace <em>superpowers</em>.</span>
       </h1>
 
       <div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
@@ -33,8 +34,10 @@ const osPortalHref = 'https://os.consuelohq.com';
         </a>
       </div>
 
-      <div class="home-hero__install site-card" data-hero-install>
-        <div class="home-hero__tabs" role="tablist" aria-label="Consuelo install and workspace surfaces">
+      <div class="home-hero__install-wrap">
+        <p class="home-hero__install-label site-eyebrow">INSTALL VIA TERMINAL</p>
+        <div class="home-hero__install site-card" data-hero-install>
+          <div class="home-hero__tabs" role="tablist" aria-label="Consuelo install and workspace surfaces">
           {homeTabs.map((tab, index) => (
             <button
               class:list={['home-hero__tab', { 'is-active': index === 0 }]}
@@ -48,7 +51,7 @@ const osPortalHref = 'https://os.consuelohq.com';
           ))}
         </div>
 
-        <div class="home-hero__panels">
+          <div class="home-hero__panels">
           {homeTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
             <a
               href={tab.href}
@@ -77,11 +80,12 @@ const osPortalHref = 'https://os.consuelohq.com';
               </span>
             </button>
           ))}
+          </div>
         </div>
       </div>
     </div>
 
-    <figure class="home-hero__diagram site-card" aria-label="Consuelo integrations diagram">
+    <figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
       <img
         src="/images/consuelo-integrations-hero.svg"
         alt="Developer tools and work surfaces connected to Consuelo"
@@ -137,23 +141,25 @@ const osPortalHref = 'https://os.consuelohq.com';
     min-height: calc(100svh - var(--site-space-8));
     display: grid;
     align-items: center;
-    background:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--site-color-accent) 9%, transparent), transparent 34rem),
-      var(--site-color-paper);
+    background: var(--site-color-paper);
     color: var(--site-color-ink);
-    padding-block: var(--site-space-section) var(--site-space-8);
+    font-family: var(--site-font-body);
+    padding-block: clamp(4rem, 9vw, 8rem) var(--site-space-8);
+    overflow: hidden;
   }
 
   .home-hero__inner {
     display: grid;
-    gap: var(--site-space-8);
+    gap: clamp(var(--site-space-5), 4vw, var(--site-space-8));
     align-items: center;
   }
 
   .home-hero__content {
     display: grid;
-    gap: var(--site-space-6);
-    max-width: 46rem;
+    gap: clamp(var(--site-space-5), 2.2vw, var(--site-space-7));
+    max-width: 54rem;
+    position: relative;
+    z-index: 1;
   }
 
   .home-hero__eyebrow {
@@ -170,12 +176,17 @@ const osPortalHref = 'https://os.consuelohq.com';
   .home-hero__title {
     margin: 0;
     color: var(--site-color-ink);
-    font-family: var(--site-font-body);
-    font-size: clamp(var(--site-text-3xl), 7vw, var(--site-text-4xl));
-    font-weight: 800;
-    letter-spacing: var(--site-tracking-display);
-    line-height: var(--site-leading-tight);
+    font-family: var(--site-font-display);
+    font-size: clamp(4.2rem, 8.8vw, 8.5rem);
+    font-weight: 500;
+    letter-spacing: -0.075em;
+    line-height: 0.9;
     text-wrap: balance;
+  }
+
+  .home-hero__title-line {
+    display: block;
+    white-space: nowrap;
   }
 
   .home-hero__title em {
@@ -183,16 +194,17 @@ const osPortalHref = 'https://os.consuelohq.com';
     font-family: var(--site-font-display);
     font-style: italic;
     font-weight: 500;
-    letter-spacing: var(--site-tracking-tight);
+    letter-spacing: -0.07em;
   }
 
   .home-hero__actions {
     display: grid;
-    gap: var(--site-space-4);
-    width: min(100%, 20rem);
+    gap: var(--site-space-3);
+    width: min(100%, 19rem);
   }
 
-  .home-hero__action-label {
+  .home-hero__action-label,
+  .home-hero__install-label {
     color: var(--site-color-accent);
   }
 
@@ -200,7 +212,7 @@ const osPortalHref = 'https://os.consuelohq.com';
     min-height: calc(var(--site-space-7) + var(--site-space-2));
     justify-content: space-between;
     border-color: var(--site-color-line);
-    background: color-mix(in srgb, var(--site-color-surface) 86%, transparent);
+    background: color-mix(in srgb, var(--site-color-surface) 82%, transparent);
     color: var(--site-color-ink);
     box-shadow: var(--site-shadow-border);
   }
@@ -217,20 +229,26 @@ const osPortalHref = 'https://os.consuelohq.com';
     font-weight: 700;
   }
 
+  .home-hero__install-wrap {
+    display: grid;
+    gap: var(--site-space-3);
+    width: min(100%, 42rem);
+  }
+
   .home-hero__install {
     overflow: hidden;
     padding: 0;
-    background: var(--site-color-surface);
+    background: color-mix(in srgb, var(--site-color-surface) 74%, transparent);
     box-shadow: var(--site-shadow-border);
   }
 
   .home-hero__tabs {
     display: flex;
-    gap: var(--site-space-1);
+    gap: var(--site-space-2);
     overflow-x: auto;
     overflow-y: hidden;
     border-bottom: 1px solid var(--site-color-line);
-    padding: var(--site-space-2) var(--site-space-3) 0;
+    padding: var(--site-space-2) var(--site-space-4) 0;
     scrollbar-width: none;
   }
 
@@ -243,7 +261,8 @@ const osPortalHref = 'https://os.consuelohq.com';
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--site-color-muted);
-    font: 700 var(--site-text-sm) / 1 var(--site-font-body);
+    font: 700 var(--site-text-sm) / 1 var(--site-font-mono);
+    letter-spacing: -0.03em;
     padding: var(--site-space-3) var(--site-space-4);
     white-space: nowrap;
   }
@@ -260,7 +279,7 @@ const osPortalHref = 'https://os.consuelohq.com';
   }
 
   .home-hero__panels {
-    background: color-mix(in srgb, var(--site-color-ink) 3%, var(--site-color-surface));
+    background: color-mix(in srgb, var(--site-color-paper) 62%, var(--site-color-surface));
   }
 
   .home-hero__panel {
@@ -345,21 +364,39 @@ const osPortalHref = 'https://os.consuelohq.com';
   .home-hero__diagram {
     position: relative;
     margin: 0;
-    padding: var(--site-space-6);
-    overflow: hidden;
-    background: color-mix(in srgb, var(--site-color-surface) 80%, transparent);
-    border-radius: var(--site-radius-card);
-    box-shadow: var(--site-shadow-raised);
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .home-hero__diagram img {
-    width: 100%;
+    width: min(58vw, 52rem);
+    max-width: none;
     height: auto;
+    margin-inline-start: clamp(-5rem, -5vw, -2rem);
   }
 
   @media (min-width: 940px) {
     .home-hero__inner {
-      grid-template-columns: minmax(0, 0.95fr) minmax(28rem, 1.05fr);
+      grid-template-columns: minmax(0, 1.02fr) minmax(30rem, 0.98fr);
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .home-hero__title {
+      font-size: clamp(3.4rem, 9vw, 6rem);
+    }
+
+    .home-hero__title-line {
+      white-space: normal;
+    }
+
+    .home-hero__diagram img {
+      width: 100%;
+      margin-inline-start: 0;
     }
   }
 
@@ -384,8 +421,8 @@ const osPortalHref = 'https://os.consuelohq.com';
       display: none;
     }
 
-    .home-hero__diagram {
-      padding: var(--site-space-3);
+    .home-hero__title {
+      font-size: clamp(3rem, 16vw, 4.8rem);
     }
   }
 </style>
