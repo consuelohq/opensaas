@@ -37,56 +37,6 @@ export const DOCUMENTATION_PATHS = {
     '/consuelo-ui/navigation/navigation-bar',
   CONSUELO_UI_NAVIGATION_STEP_BAR: '/consuelo-ui/navigation/step-bar',
   CONSUELO_UI_PROGRESS_BAR: '/consuelo-ui/progress-bar',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_BEST_PRACTICES_SERVER:
-    '/developers/contribute/capabilities/backend-development/best-practices-server',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_CUSTOM_OBJECTS:
-    '/developers/contribute/capabilities/backend-development/custom-objects',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_FEATURE_FLAGS:
-    '/developers/contribute/capabilities/backend-development/feature-flags',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_FOLDER_ARCHITECTURE_SERVER:
-    '/developers/contribute/capabilities/backend-development/folder-architecture-server',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_QUEUE:
-    '/developers/contribute/capabilities/backend-development/queue',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_SERVER_COMMANDS:
-    '/developers/contribute/capabilities/backend-development/server-commands',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_ZAPIER:
-    '/developers/contribute/capabilities/backend-development/zapier',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BUG_AND_REQUESTS:
-    '/developers/contribute/capabilities/bug-and-requests',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_BEST_PRACTICES_FRONT:
-    '/developers/contribute/capabilities/frontend-development/best-practices-front',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_FOLDER_ARCHITECTURE_FRONT:
-    '/developers/contribute/capabilities/frontend-development/folder-architecture-front',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_FRONTEND_COMMANDS:
-    '/developers/contribute/capabilities/frontend-development/frontend-commands',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_HOTKEYS:
-    '/developers/contribute/capabilities/frontend-development/hotkeys',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_STORYBOOK:
-    '/developers/contribute/capabilities/frontend-development/storybook',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_STYLE_GUIDE:
-    '/developers/contribute/capabilities/frontend-development/style-guide',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_WORK_WITH_FIGMA:
-    '/developers/contribute/capabilities/frontend-development/work-with-figma',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_LOCAL_SETUP:
-    '/developers/contribute/capabilities/local-setup',
-  DEVELOPERS_CONTRIBUTE_CONTRIBUTE: '/developers/contribute/contribute',
-  DEVELOPERS_EXTEND_CAPABILITIES_APIS: '/developers/extend/capabilities/apis',
-  DEVELOPERS_EXTEND_CAPABILITIES_APPS: '/developers/extend/capabilities/apps',
-  DEVELOPERS_EXTEND_CAPABILITIES_WEBHOOKS:
-    '/developers/extend/capabilities/webhooks',
-  DEVELOPERS_EXTEND_EXTEND: '/developers/extend/extend',
-  DEVELOPERS_INTRODUCTION: '/developers/introduction',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_CLOUD_PROVIDERS:
-    '/developers/self-host/capabilities/cloud-providers',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_DOCKER_COMPOSE:
-    '/developers/self-host/capabilities/docker-compose',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_SETUP:
-    '/developers/self-host/capabilities/setup',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_TROUBLESHOOTING:
-    '/developers/self-host/capabilities/troubleshooting',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_UPGRADE_GUIDE:
-    '/developers/self-host/capabilities/upgrade-guide',
-  DEVELOPERS_SELF_HOST_SELF_HOST: '/developers/self-host/self-host',
   GRAPHQL_API_ANALYTICS_CONNECTING_EXTERNAL_ANALYTICS:
     '/graphql-api/analytics/connecting-external-analytics',
   GRAPHQL_API_ANALYTICS_GROWTH_METRICS_DASHBOARDS:
@@ -136,9 +86,6 @@ export const DOCUMENTATION_PATHS = {
   OS_HOW_IT_WORKS: '/os/how-it-works',
   OS_OVERVIEW: '/os/overview',
   OS_SKILLS_BROWSER: '/os/skills/browser',
-  OS_SKILLS_CONSUELO_DESIGN: '/os/skills/consuelo-design',
-  OS_SKILLS_CONSUELO_DESIGN_LANDING_PAGE:
-    '/os/skills/consuelo-design-landing-page',
   OS_SKILLS_CONSUELO_WORKSPACE_SNAPSHOT:
     '/os/skills/consuelo-workspace-snapshot',
   OS_SKILLS_DAILY_REVENUE_BRIEF: '/os/skills/daily-revenue-brief',
