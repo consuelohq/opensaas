@@ -10,7 +10,7 @@ import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
-import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -161,8 +161,10 @@ function writeFakePi(tempRoot: string): string {
   return binDir;
 }
 
+const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search', 'tools.search']);
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
 describe('typed facade executor', () => {
@@ -185,9 +187,11 @@ describe('typed facade executor', () => {
   });
 
   it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const toolsSearchScript = join(import.meta.dirname, '..', '..', 'scripts', 'tools-search.ts');
+    const packageRoot = join(import.meta.dirname, '..', '..');
     const runSearch = (query: string, limit = 5) => {
-      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
-        cwd: process.cwd(),
+      const result = spawnSync('bun', [toolsSearchScript, query, '--limit', String(limit), '--json'], {
+        cwd: packageRoot,
         encoding: 'utf8',
       });
       expect(result.status).toBe(0);
@@ -260,6 +264,61 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('NOT_FOUND');
     expect(result.message).toBe('unknown tool: missing.tool');
     expect(result.data).toBeNull();
+  });
+
+  it('plans canonical context search through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'search',
+      'workspace',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('plans canonical context trace through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'trace',
+      status: 'error',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'trace',
+      '--status',
+      'error',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('rejects canonical context calls without an operation', async () => {
+    const result = await executeTool('context', {
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('operation');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -480,6 +539,82 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/workspace/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes fs.search path alias without retaining path for downstream serialization', async () => {
+    const entry = manifestEntries.find((item) => item.name === 'fs.search');
+    if (!entry) throw new Error('missing fs.search manifest entry');
+    const originalArguments = entry.command.arguments;
+    const pathArgument: CommandArgument = { source: 'path', kind: 'value' };
+    entry.command.arguments = [...originalArguments, pathArgument];
+
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-canonical-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_canonical_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_canonical_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args.filter((arg) => arg === 'packages/workspace/scripts')).toHaveLength(1);
+    } finally {
+      entry.command.arguments = originalArguments;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.search input with both path and paths', async () => {
+    const result = await executeTool('fs.search', {
+      taskSession: 'tsk_search_path_conflict',
+      pattern: 'needle',
+      path: 'packages/workspace/scripts',
+      paths: ['packages/workspace/tests'],
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('provide either path or paths, not both');
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {
@@ -496,48 +631,44 @@ describe('typed facade executor', () => {
     expect(plans[0].args).toContain('https://example.com');
   });
 
-  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
+  it('runs read-only fs tools without taskSession', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
+
+    const readResult = await executeTool('fs.read', {
       path: 'AGENTS.md',
     }, {
       ...stableOptions(successfulRunner(), plans),
       branchResolver: () => ({
         ok: false,
         code: 'WORKTREE_NOT_FOUND',
-        message: 'no active task worktree found; run task:start first or pass branch',
+        message: 'no active task worktree found',
         candidates: [],
       }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect(plans).toHaveLength(0);
-    expect(result.data).toMatchObject({
-      tool: 'fs.read',
-      repoStateBound: true,
-      originalCall: {
-        tool: 'fs.read',
-        input: { path: 'AGENTS.md' },
-      },
-      recovery: { action: 'start_task_session_then_retry' },
-    });
-  });
-
-  it('requires taskSession for sessionRequired tools', async () => {
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
     }, {
-      ...stableOptions(successfulRunner()),
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found',
+        candidates: [],
+      }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect((result.data as { reason?: string }).reason).toContain('branch-aware and fresh');
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(plans).toHaveLength(2);
+    expect(plans[0].args).not.toContain('--branch');
+    expect(plans[1].args).not.toContain('--branch');
   });
 
   it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
@@ -1317,6 +1448,33 @@ describe('branch resolver', () => {
   });
 });
 
+describe('batch facade tool', () => {
+  it('routes batch through the internal executor', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('batch', {
+      steps: [
+        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+      ],
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(result.data.completed).toBe(1);
+    expect(plans).toHaveLength(1);
+  });
+
+  it('validates BatchInput step shape', () => {
+    const schema = getInputSchema('BatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+    }).success).toBe(true);
+    expect(schema?.safeParse({ steps: [] }).success).toBe(false);
+    expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);
+  });
+});
+
 describe('batch executor', () => {
   it('runs successful chains', async () => {
     const result = await runBatch([
@@ -1414,6 +1572,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
-
 
 

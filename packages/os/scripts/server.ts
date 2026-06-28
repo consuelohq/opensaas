@@ -3,9 +3,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { executeCall, getSteering } from './os';
 import {
   loadGatewaySecurityConfig,
+  resolveToolScope,
+  verifyBearerMcpRequest,
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
@@ -21,17 +22,19 @@ import {
   type TraceSitesGatewayLiveEndpoints,
 } from './lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from './lib/trace-sites-local-read-backend';
+import {
+  handleMcpGatewayJsonRpc,
+  resolveMcpGatewayRequiredScope,
+} from './lib/mcp-gateway';
 
 const DEFAULT_PORT = 8960;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
 const SERVER_NAME = process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os';
-const AUTH_CONFIG_ENV = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
-const TRACE_DB_ENV = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
 
 let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
+let osRuntimePromise: Promise<typeof import('./os')> | null = null;
 
 type JsonObject = Record<string, unknown>;
-type ToolCategory = 'read' | 'write' | 'dangerous';
 
 function jsonResponse(body: JsonObject, status = 200): Response {
   return new Response(JSON.stringify(body, null, 2), {
@@ -51,8 +54,36 @@ function textResponse(body: string, status = 200): Response {
   });
 }
 
-function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized'): Response {
-  return jsonResponse({ error: { code, message } }, 401);
+function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized', headers: HeadersInit = {}): Response {
+  const response = jsonResponse({ error: { code, message } }, 401);
+  for (const [key, value] of new Headers(headers).entries()) response.headers.set(key, value);
+  return response;
+}
+
+
+function workspaceHostFromRequest(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  const explicit = request.headers.get('x-consuelo-hostname')?.trim();
+  if (explicit) return explicit.toLowerCase();
+  if (config?.workspaceHost) return config.workspaceHost;
+  const host = request.headers.get('host')?.trim();
+  return host ? host.toLowerCase() : 'localhost';
+}
+
+function protectedResourceMetadataUrl(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  const workspaceHost = workspaceHostFromRequest(request, config);
+  if (workspaceHost === 'localhost' || workspaceHost.startsWith('127.')) {
+    return 'https://os.consuelohq.com/.well-known/oauth-protected-resource';
+  }
+  return `https://${workspaceHost}/.well-known/oauth-protected-resource`;
+}
+
+function oauthDiscoveryChallenge(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  return `Bearer realm="Consuelo OS MCP", resource_metadata="${protectedResourceMetadataUrl(request, config)}"`;
+}
+
+function loadOsRuntime(): Promise<typeof import('./os')> {
+  osRuntimePromise ??= import('./os');
+  return osRuntimePromise;
 }
 
 function verificationResponse(result: Extract<VerificationResult, { ok: false }>): Response {
@@ -70,7 +101,8 @@ function candidateHomeAuthPaths(): string[] {
 }
 
 function resolveAuthConfigPath(): string | null {
-  if (AUTH_CONFIG_ENV) return AUTH_CONFIG_ENV;
+  const authConfigEnv = process.env.CONSUELO_OS_AUTH_CONFIG ?? '';
+  if (authConfigEnv) return authConfigEnv;
   for (const candidate of candidateHomeAuthPaths()) {
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -112,17 +144,6 @@ function loadAuthConfigForRequest(): ReturnType<typeof loadGatewaySecurityConfig
   return loadGatewaySecurityConfig({ authConfigPath });
 }
 
-function toolCategory(toolName: string): ToolCategory {
-  if (/^(task\.merge|task\.finish|task\.pr|task\.push|delete|trash)/.test(toolName)) return 'dangerous';
-  if (/(write|patch|create|update|start|apply|modify|archive|send|forward|run|call)$/.test(toolName)) return 'write';
-  if (/(^|\.)(write|patch|trash|delete|create|update|send|archive|forward)(\.|$)/.test(toolName)) return 'write';
-  return 'read';
-}
-
-function requiredToolScope(toolName: string): string {
-  return `tool:${toolName}:${toolCategory(toolName)}`;
-}
-
 async function authorizeSignedRequest(input: {
   request: Request;
   path: string;
@@ -153,6 +174,101 @@ async function authorizeSignedRequest(input: {
   });
 
   return result.ok ? null : verificationResponse(result);
+}
+
+
+function bearerTokenFromRequest(request: Request): string | null {
+  const value = request.headers.get('authorization') ?? '';
+  const match = value.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
+
+async function authorizeBearerMcpRequest(input: {
+  request: Request;
+  path: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  const bearerToken = bearerTokenFromRequest(input.request);
+  if (!bearerToken) {
+    let config: ReturnType<typeof loadGatewaySecurityConfig> | undefined;
+    try { config = loadAuthConfigForRequest(); } catch { config = undefined; }
+    return unauthorized('MISSING_BEARER', 'Bearer token is required.', {
+      'www-authenticate': oauthDiscoveryChallenge(input.request, config),
+    });
+  }
+  let config: ReturnType<typeof loadGatewaySecurityConfig>;
+  try {
+    config = loadAuthConfigForRequest();
+  } catch {
+    return unauthorized('AUTH_CONFIG_REQUIRED', 'Generated Consuelo OS auth config is required.');
+  }
+  const result = verifyBearerMcpRequest({
+    config,
+    bearerToken,
+    path: input.path,
+    requiredScope: input.requiredScope,
+    now: new Date().toISOString(),
+  });
+  if (result.ok) return null;
+  if (result.error.code !== 'UNKNOWN_TOKEN') return verificationResponse(result);
+
+  const oauthResult = await authorizeConsueloOAuthMcpRequest({
+    config,
+    bearerToken,
+    requiredScope: input.requiredScope,
+  });
+  return oauthResult;
+}
+
+function scopeAllowed(scopes: string[], requiredScope: string): boolean {
+  if (scopes.includes(requiredScope)) return true;
+  const parts = requiredScope.split(':');
+  return parts.length === 3 && parts[0] === 'tool' && (
+    scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')
+  );
+}
+
+async function authorizeConsueloOAuthMcpRequest(input: {
+  config: ReturnType<typeof loadGatewaySecurityConfig>;
+  bearerToken: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  const endpoint = process.env.CONSUELO_OS_OAUTH_INTROSPECTION_URL ?? 'https://os.consuelohq.com/oauth/introspect';
+  const resource = `https://${input.config.workspaceHost}/mcp`;
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: input.bearerToken,
+        resource,
+        scope: input.requiredScope,
+      }).toString(),
+    });
+  } catch {
+    return unauthorized('OAUTH_INTROSPECTION_UNAVAILABLE', 'Consuelo OAuth introspection is unavailable.');
+  }
+  const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
+  if (!response.ok || !payload || payload.active !== true) {
+    return unauthorized('UNKNOWN_TOKEN', 'Gateway bearer token is not recognized.');
+  }
+  const workspaceHost = typeof payload.workspace_host === 'string' ? payload.workspace_host : '';
+  if (workspaceHost !== input.config.workspaceHost) {
+    return jsonResponse({ error: { code: 'WORKSPACE_MISMATCH', message: 'OAuth token is not bound to this workspace.' } }, 403);
+  }
+  const scopes = Array.isArray(payload.scopes)
+    ? payload.scopes.filter((scope): scope is string => typeof scope === 'string')
+    : typeof payload.scope === 'string'
+      ? payload.scope.split(/\s+/).filter(Boolean)
+      : [];
+  if (!scopeAllowed(scopes, input.requiredScope)) {
+    return jsonResponse({ error: { code: 'MISSING_SCOPE', message: 'OAuth token does not grant the required scope.' } }, 403);
+  }
+  return null;
 }
 
 function parseCallInput(body: string): CallInput {
@@ -193,6 +309,14 @@ function admitRawCallBody(body: string): Response | null {
   return decision.allowed ? null : dangerousMaterialResponse(decision);
 }
 
+function admitRawMcpBody(body: string): Response | null {
+  const decision = assessDangerousMaterial({
+    source: 'server mcp raw-body',
+    rawBody: body,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
 function admitDecodedCallBody(input: CallInput): Response | null {
   const decision = assessDangerousMaterial({
     source: 'server call decoded-json',
@@ -201,8 +325,24 @@ function admitDecodedCallBody(input: CallInput): Response | null {
   return decision.allowed ? null : dangerousMaterialResponse(decision);
 }
 
+function admitDecodedMcpBody(body: string): Response | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body) as unknown;
+  } catch {
+    return null;
+  }
+
+  const decision = assessDangerousMaterial({
+    source: 'server mcp decoded-json',
+    value: parsed,
+  });
+  return decision.allowed ? null : dangerousMaterialResponse(decision);
+}
+
 function resolveTraceDbPath(): string {
-  if (TRACE_DB_ENV) return TRACE_DB_ENV;
+  const traceDbEnv = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
+  if (traceDbEnv) return traceDbEnv;
   const home = process.env.CONSUELO_OS_HOME ?? process.env.CONSUELO_HOME ?? '';
   if (home) return path.join(home, 'traces', 'traces.db');
   if (process.platform === 'darwin') return path.join(process.env.HOME ?? '', 'Library', 'Application Support', 'OpenWorkspace', 'traces', 'traces.db');
@@ -239,85 +379,145 @@ function healthResponse(): Response {
     status: 'ok',
     name: SERVER_NAME,
     runtime: 'bun',
-    toolNames: ['get_steering', 'call'],
-    tools: 2,
+    toolNames: ['get_steering', 'call', 'mcp'],
+    tools: 3,
     port: PORT,
   });
 }
 
 async function handleRequest(request: Request): Promise<Response> {
-  const url = new URL(request.url);
+  try {
+    const url = new URL(request.url);
 
-  if (url.pathname === '/health') return healthResponse();
+    if (url.pathname === '/health') return healthResponse();
 
-  if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
-    const denied = await authorizeSignedRequest({
-      request,
-      path: url.pathname,
-      body: '',
-      requiredScope: 'route:/gateway/traces:read',
-    });
-    if (denied) return denied;
+    if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
+      const denied = await authorizeSignedRequest({
+        request,
+        path: url.pathname,
+        body: '',
+        requiredScope: 'route:/gateway/traces:read',
+      });
+      if (denied) return denied;
 
-    return traceGatewayEndpoints().handle(request);
-  }
-
-  if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
-    const body = request.method === 'GET' ? '' : await request.clone().text();
-    const denied = await authorizeSignedRequest({
-      request,
-      path: '/get_steering',
-      body,
-      requiredScope: 'route:/get_steering:read',
-    });
-    if (denied) return denied;
-    return textResponse(getSteering());
-  }
-
-  if (url.pathname === '/call' && request.method === 'POST') {
-    const body = await request.clone().text();
-    const rawMaterialDenied = admitRawCallBody(body);
-    if (rawMaterialDenied) return rawMaterialDenied;
-
-    let input: CallInput;
-    try {
-      input = parseCallInput(body);
-    } catch (error: unknown) {
-      return invalidRequest(error);
+      return traceGatewayEndpoints().handle(request);
     }
 
-    const decodedMaterialDenied = admitDecodedCallBody(input);
-    if (decodedMaterialDenied) return decodedMaterialDenied;
+    if (url.pathname === '/mcp' && request.method === 'POST') {
+      const body = await request.clone().text();
+      const rawMaterialDenied = admitRawMcpBody(body);
+      if (rawMaterialDenied) return rawMaterialDenied;
 
-    const preflightDenied = authPreflight(request);
-    if (preflightDenied) return preflightDenied;
+      const decodedMaterialDenied = admitDecodedMcpBody(body);
+      if (decodedMaterialDenied) return decodedMaterialDenied;
 
-    const denied = await authorizeSignedRequest({
-      request,
-      path: '/call',
-      body,
-      requiredScope: requiredToolScope(input.name),
-    });
-    if (denied) return denied;
+      const mcpScope = resolveMcpGatewayRequiredScope(body);
+      if (!mcpScope.ok) {
+        return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
+      }
 
-    try {
-      const result = await executeCall(input);
-      return jsonResponse(result, result.ok ? 200 : 400);
-    } catch (error: unknown) {
-      return internalError(error);
+      const headers = requestHeaders(request);
+      const denied = hasSignedGatewayHeaders(headers)
+        ? await authorizeSignedRequest({
+            request,
+            path: '/mcp',
+            body,
+            requiredScope: mcpScope.requiredScope,
+          })
+        : await authorizeBearerMcpRequest({
+            request,
+            path: '/mcp',
+            requiredScope: mcpScope.requiredScope,
+          });
+      if (denied) return denied;
+
+      const result = await handleMcpGatewayJsonRpc(body, {
+        executeCall: async (input) => {
+          try {
+            const { executeCall } = await loadOsRuntime();
+            return await executeCall(input);
+          } catch {
+            return {
+              ok: false,
+              name: input.name,
+              permission: 'execute',
+              error: {
+                code: 'OS_EXECUTION_FAILED',
+                message: 'OS tool execution failed.',
+              },
+            };
+          }
+        },
+      });
+      return jsonResponse(result);
     }
-  }
 
-  if (!hasGeneratedAuthConfig()) {
-    return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
-  }
+    if (url.pathname === '/get_steering' && (request.method === 'GET' || request.method === 'POST')) {
+      const body = request.method === 'GET' ? '' : await request.clone().text();
+      const denied = await authorizeSignedRequest({
+        request,
+        path: '/get_steering',
+        body,
+        requiredScope: 'route:/get_steering:read',
+      });
+      if (denied) return denied;
+      const { getSteering } = await loadOsRuntime();
+      return textResponse(getSteering());
+    }
 
-  return jsonResponse({
-    error: {
-      code: 'NOT_FOUND',
-      message: 'Route not found',
-    },
-  }, 404);
+    if (url.pathname === '/call' && request.method === 'POST') {
+      const body = await request.clone().text();
+      const rawMaterialDenied = admitRawCallBody(body);
+      if (rawMaterialDenied) return rawMaterialDenied;
+
+      const preflightDenied = authPreflight(request);
+      if (preflightDenied) return preflightDenied;
+
+      let input: CallInput;
+      try {
+        input = parseCallInput(body);
+      } catch (error: unknown) {
+        return invalidRequest(error);
+      }
+
+      const decodedMaterialDenied = admitDecodedCallBody(input);
+      if (decodedMaterialDenied) return decodedMaterialDenied;
+
+      const toolScope = resolveToolScope(input.name);
+      if (!toolScope.ok) {
+        return jsonResponse({ ok: false, error: toolScope.error }, toolScope.status);
+      }
+
+      const denied = await authorizeSignedRequest({
+        request,
+        path: '/call',
+        body,
+        requiredScope: toolScope.requiredScope,
+      });
+      if (denied) return denied;
+
+      try {
+        const { executeCall } = await loadOsRuntime();
+        const result = await executeCall(input);
+        return jsonResponse(result, result.ok ? 200 : 400);
+      } catch (error: unknown) {
+        return internalError(error);
+      }
+    }
+
+    if (!hasGeneratedAuthConfig()) {
+      return unauthorized('CONSUELO_AUTH_REQUIRED', 'Generated Consuelo OS auth is required.');
+    }
+
+    return jsonResponse({
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Route not found',
+      },
+    }, 404);
+  } catch (error: unknown) {
+    return internalError(error);
+  }
 }
 
 if (import.meta.main) {

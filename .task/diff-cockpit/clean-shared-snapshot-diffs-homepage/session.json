@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6f927d21e436",
+  "tmuxSession": "opensaas-diff-cockpit-clean-shared-snapshot-diffs-homepage-6f927d21",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/clean-shared-snapshot-diffs-homepage",
+  "branch": "task/diff-cockpit/clean-shared-snapshot-diffs-homepage",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clean-shared-snapshot-diffs-homepage",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clean-shared-snapshot-diffs-homepage",
+  "prNumber": 1163,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1163",
+  "createdAt": "2026-06-20T22:07:16.700Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clean-shared-snapshot-diffs-homepage/.task/diff-cockpit/clean-shared-snapshot-diffs-homepage/session.json"
+}

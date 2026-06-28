@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/branch-7-media-vision-pose-motion",
+  "base": "origin/task/media/branch-7-media-vision-pose-motion",
+  "headSha": "2a557ba920f0e6ec989437fb1cdcf35750b139b6",
+  "changeHash": "2d953696fef7cbd05b73be213698b25af0d3521b0d889381f2cc287a9e81e2a1",
+  "changedFiles": [
+    "packages/os/scripts/lib/media/vision.ts"
+  ],
+  "verifiedAt": "2026-06-24T01:18:20.425Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/branch-7-media-vision-pose-motion/current.json",
+        ".task/media/branch-7-media-vision-pose-motion/session.json",
+        ".task/media/branch-7-media-vision-pose-motion/workpad.md",
+        ".task/tasks/media/branch-7-media-vision-pose-motion.json",
+        "packages/os/scripts/lib/media/vision.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

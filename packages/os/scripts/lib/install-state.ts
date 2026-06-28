@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { createGatewaySecurityConfig } from './security-gateway';
+import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
@@ -146,7 +146,6 @@ const REQUIRED_DIRS = [
   'logs',
   'runs',
   'cache',
-  'runtime',
   'security',
   'steering',
   'bin',
@@ -582,6 +581,54 @@ function renderGatewayAuthSmokeScript(input: {
   ].join('\n');
 }
 
+
+function materializeChatGptMcpConnection(input: {
+  home: string;
+  config: ReturnType<typeof createGatewaySecurityConfig>;
+  port: number;
+  dryRun: boolean;
+}): ProvisionAction[] {
+  const targetPath = path.join(input.home, 'security', 'generated', 'chatgpt-mcp.json');
+  const scopes = ['route:/mcp:read', 'tool:*:read'];
+  if (input.dryRun) {
+    return [{ type: 'create_file', path: targetPath, status: 'planned', message: 'ChatGPT MCP connection planned' }];
+  }
+  const existing = readJsonFile<JsonObject>(targetPath);
+  if (
+    typeof existing?.bearerToken === 'string' &&
+    typeof existing?.tokenId === 'string' &&
+    typeof existing?.url === 'string'
+  ) {
+    return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
+  }
+  const token = issueAgentAppToken({
+    config: input.config,
+    callerId: 'chatgpt-mcp',
+    appId: 'chatgpt',
+    subjectId: 'chatgpt-user',
+    deviceId: 'chatgpt-custom-connector',
+    connectorId: 'connector_chatgpt_mcp',
+    connectionId: 'connection_chatgpt_mcp',
+    scopes,
+    expiresInSeconds: 60 * 60 * 24 * 365,
+  });
+  if (!token.bearerToken) {
+    throw new Error('ChatGPT MCP token was not issued');
+  }
+  writeJsonFile(targetPath, {
+    version: 1,
+    kind: 'consuelo-chatgpt-mcp-connection',
+    auth: 'bearer',
+    url: `https://${input.config.workspaceHost}/mcp`,
+    localUrl: `http://127.0.0.1:${input.port}/mcp`,
+    tokenId: token.tokenId,
+    bearerToken: token.bearerToken,
+    scopes,
+    createdAt: nowIso(),
+  }, false);
+  return [{ type: 'create_file', path: targetPath, status: 'created', message: 'ChatGPT MCP connection written' }];
+}
+
 function materializeWorkspaceConnectorBootstrap(input: {
   home: string;
   port: number;
@@ -601,6 +648,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
     localPort: input.port,
     transport: 'cloudflare-tunnel',
     cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
+    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.home, 'bin', 'cloudflared'),
   });
 
   if (plan.tokenPath) {
@@ -621,11 +669,17 @@ function materializeWorkspaceConnectorBootstrap(input: {
   }
 
   if (plan.launchd) {
-    const plistPath = path.join(
+    const legacyPlistPath = path.join(
       input.home,
       'security',
       'generated',
       'com.consuelo.os.cloudflared.plist',
+    );
+    const plistPath = path.join(
+      input.home,
+      'security',
+      'generated',
+      `${plan.launchd.label}.plist`,
     );
     actions.push({
       type: 'create_file',
@@ -635,6 +689,9 @@ function materializeWorkspaceConnectorBootstrap(input: {
     });
     if (!input.dryRun) {
       fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+      if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
+        fs.rmSync(legacyPlistPath, { force: true });
+      }
       fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
         mode: 0o600,
       });
@@ -735,6 +792,41 @@ export function detectAgents(home?: string): AgentDetection[] {
   });
 }
 
+function openCodeGlobalConfigPath(): string {
+  return path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
+}
+
+function buildOpenCodeMcpConfig(home: string, existingConfig: JsonObject): JsonObject {
+  const existingMcp = isJsonObject(existingConfig.mcp) ? existingConfig.mcp : {};
+  return {
+    ...existingConfig,
+    $schema: typeof existingConfig.$schema === 'string'
+      ? existingConfig.$schema
+      : 'https://opencode.ai/config.json',
+    mcp: {
+      ...existingMcp,
+      'consuelo-os': {
+        type: 'local',
+        command: ['bun', path.join(home, 'scripts', 'mcp-stdio.ts')],
+        cwd: home,
+        enabled: true,
+        environment: { CONSUELO_HOME: home },
+      },
+    },
+  };
+}
+
+function connectOpenCodeMcp(home: string, dryRun: boolean): ProvisionAction[] {
+  const configPath = openCodeGlobalConfigPath();
+  const existingConfig = readJsonFile<JsonObject>(configPath) ?? {};
+  const backupPath = `${configPath}.bak`;
+  if (!dryRun && fs.existsSync(configPath) && !fs.existsSync(backupPath)) {
+    fs.copyFileSync(configPath, backupPath);
+  }
+  writeJsonFile(configPath, buildOpenCodeMcpConfig(home, existingConfig), dryRun);
+  return [{ type: 'connect_agent', path: configPath, status: dryRun ? 'planned' : 'created', message: 'connected OpenCode MCP server' }];
+}
+
 function connectAgent(
   home: string,
   config: OsConfig,
@@ -783,6 +875,9 @@ function connectAgent(
     status: dryRun ? 'planned' : 'created',
     message: `connected ${agent.label}`,
   });
+  if (agent.name === 'opencode') {
+    actions.push(...connectOpenCodeMcp(home, dryRun));
+  }
 
   const existingIndex = config.agents.findIndex(
     (item) => item.name === agent.name && item.homePath === agent.homePath,
@@ -1360,6 +1455,12 @@ export function provisionLocalOs(
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
     });
+    actions.push(...materializeChatGptMcpConnection({
+      home,
+      config: gatewayConfig,
+      port: gatewayPort,
+      dryRun,
+    }));
     config.security = {
       auth: {
         kind: 'consuelo-generated',
@@ -1474,7 +1575,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     {
       name: 'runtime:intent',
       files: [
-        'scripts/intent.js',
+        'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
         'manifests/workflow-bundles.json',

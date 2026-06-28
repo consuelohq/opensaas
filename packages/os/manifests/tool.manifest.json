@@ -12,7 +12,13 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 128
+      "entryCount": 123
+    },
+    {
+      "label": "media-tooling",
+      "kind": "facade-tool",
+      "path": "packages/os/tooling/media-tool-manifest.json",
+      "entryCount": 23
     }
   ],
   "tools": [
@@ -71,7 +77,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
       "description": "audit workspace scripts, docs, or index freshness",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "audit",
         "methodPath": [
@@ -115,6 +121,52 @@
           "scripts": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "batch",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "composed",
+      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+      "core": true,
+      "definition": {
+        "name": "batch",
+        "methodPath": [
+          "batch"
+        ],
+        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+        "category": "composed",
+        "underlying": "workspace batch",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "BatchInput",
+        "outputSchema": "BatchOutput",
+        "command": {
+          "script": "batch",
+          "branchMode": "none",
+          "internal": "batch",
+          "arguments": []
+        },
+        "exampleInput": {
+          "steps": [
+            {
+              "tool": "context.find",
+              "input": {
+                "keyword": "workspace",
+                "limit": 1
+              }
+            }
+          ]
+        },
+        "sessionRequired": false,
+        "workflowRole": "tool.batch"
       }
     },
     {
@@ -1500,7 +1552,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "composed",
       "description": "run syntax checks over a set of files through code.call in the task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "checkFiles",
         "methodPath": [
@@ -1558,7 +1610,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
+      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -1566,7 +1618,7 @@
           "code",
           "call"
         ],
-        "description": "preferred repo-scoped execution tool for focused tests, package scripts, typechecks, syntax checks, and short Python, Bun, or Bash programs inside the Consuelo OS runtime; use this instead of mac.call when a taskSession/task worktree exists",
+        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -1586,30 +1638,75 @@
           "arguments": []
         },
         "exampleInput": {
-          "language": "bash",
-          "mode": "verify",
-          "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+          "language": "bun",
+          "mode": "read",
+          "codeFile": "scripts/code-call-examples/structured-snippet-read.ts",
           "maxResultChars": 20000
         },
         "sessionRequired": false,
         "workflowRole": "test.run",
         "examples": [
           {
-            "label": "task-scoped focused OS test",
+            "label": "multi-package focused test packet",
             "input": {
-              "language": "bash",
+              "language": "bun",
               "mode": "verify",
-              "code": "bun --cwd packages/os test tests/tool-manifest.test.ts",
+              "codeFile": "scripts/code-call-examples/multi-package-focused-tests.ts",
+              "maxResultChars": 60000
+            }
+          },
+          {
+            "label": "repository impact analysis packet",
+            "input": {
+              "language": "bun",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/repository-impact-analysis.ts",
+              "maxResultChars": 50000
+            }
+          },
+          {
+            "label": "exact manifest description verification",
+            "input": {
+              "language": "bun",
+              "mode": "verify",
+              "codeFile": "scripts/code-call-examples/exact-manifest-description-verification.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "structured repo read and compare packet",
+            "input": {
+              "language": "bun",
+              "mode": "read",
+              "codeFile": "scripts/code-call-examples/structured-repo-read-compare.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "task-scoped structured file rewrite",
+            "input": {
+              "language": "bun",
+              "mode": "edit",
+              "codeFile": "scripts/code-call-examples/task-scoped-structured-file-rewrite.ts",
+              "maxResultChars": 30000
+            }
+          },
+          {
+            "label": "Python AST/string-heavy test insertion",
+            "input": {
+              "language": "python",
+              "mode": "edit",
+              "codeFile": "scripts/code-call-examples/python-semantic-test-mutation.py",
               "maxResultChars": 20000
             }
           },
           {
-            "label": "short Python inspection",
+            "label": "Python test assertion audit packet",
             "input": {
               "language": "python",
               "mode": "read",
-              "code": "print(\"hello\")",
-              "maxResultChars": 20000
+              "codeFile": "scripts/code-call-examples/python-test-assertion-audit.py",
+              "maxResultChars": 30000
             }
           }
         ]
@@ -1698,7 +1795,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
       "description": "score confidence from evidence state",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "confidenceScore",
         "methodPath": [
@@ -1733,7 +1830,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
       "description": "run verification or targeted validation through confirm",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "confirm",
         "methodPath": [
@@ -1831,211 +1928,21 @@
       }
     },
     {
-      "name": "context.categories",
+      "name": "context",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "context",
-      "description": "list project memory categories",
+      "description": "search, read, save, list, and inspect project context and local workspace traces",
       "core": true,
       "definition": {
-        "name": "context.categories",
+        "name": "context",
         "methodPath": [
-          "context",
-          "categories"
+          "context"
         ],
-        "description": "list project memory categories",
+        "description": "search, read, save, list, and inspect project context and local workspace traces",
         "category": "context",
-        "underlying": "workspace context.categories",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "EmptyInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "categories",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.find",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "search project memory by title",
-      "core": true,
-      "definition": {
-        "name": "context.find",
-        "methodPath": [
-          "context",
-          "find"
-        ],
-        "description": "search project memory by title",
-        "category": "context",
-        "underlying": "workspace context.find",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextFindInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "find",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "keyword": "handoff",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.get",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "read a full project memory search result",
-      "core": true,
-      "definition": {
-        "name": "context.get",
-        "methodPath": [
-          "context",
-          "get"
-        ],
-        "description": "read a full project memory search result",
-        "category": "context",
-        "underlying": "workspace context.get",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextGetInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "get",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "index",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "index": 1,
-          "keyword": "workspace"
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.list",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "list recent project memories",
-      "core": true,
-      "definition": {
-        "name": "context.list",
-        "methodPath": [
-          "context",
-          "list"
-        ],
-        "description": "list recent project memories",
-        "category": "context",
-        "underlying": "workspace context.list",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextListInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "list",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "category",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "category": "workpad",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.save",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "save a file or text into project memory",
-      "core": true,
-      "definition": {
-        "name": "context.save",
-        "methodPath": [
-          "context",
-          "save"
-        ],
-        "description": "save a file or text into project memory",
-        "category": "context",
-        "underlying": "workspace context.save",
+        "underlying": "workspace context",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -2043,18 +1950,29 @@
           "safeToRetry": false
         },
         "defaultTimeout": 60000,
-        "inputSchema": "ContextSaveInput",
+        "inputSchema": "ContextInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "context",
-          "subcommand": "save",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
             {
-              "source": "title",
+              "source": "operation",
               "kind": "value",
               "required": true
+            },
+            {
+              "source": "index",
+              "kind": "value"
+            },
+            {
+              "source": "keyword",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "kind": "value"
             },
             {
               "source": "file",
@@ -2064,53 +1982,6 @@
               "source": "category",
               "flag": "--category",
               "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "title": "example memory",
-          "file": "/tmp/example.md",
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.search",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "search project memory by content",
-      "core": true,
-      "definition": {
-        "name": "context.search",
-        "methodPath": [
-          "context",
-          "search"
-        ],
-        "description": "search project memory by content",
-        "category": "context",
-        "underlying": "workspace context.search",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextSearchInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "search",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "keyword",
-              "kind": "value",
-              "required": true
             },
             {
               "source": "limit",
@@ -2118,51 +1989,15 @@
               "kind": "value"
             },
             {
-              "source": "category",
-              "flag": "--category",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "keyword": "workspace",
-          "limit": 3
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "context.trace",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-      "core": true,
-      "definition": {
-        "name": "context.trace",
-        "methodPath": [
-          "context",
-          "trace"
-        ],
-        "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
-        "category": "context",
-        "underlying": "workspace context.trace",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextTraceInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "subcommand": "trace",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
+              "source": "byTitle",
+              "flag": "--by-title",
+              "kind": "boolean"
+            },
+            {
+              "source": "text",
+              "flag": "--text",
+              "kind": "boolean"
+            },
             {
               "source": "traceId",
               "flag": "--trace-id",
@@ -2194,18 +2029,13 @@
               "kind": "value"
             },
             {
-              "source": "taskSession",
+              "source": "contextTaskSession",
               "flag": "--task-session",
               "kind": "value"
             },
             {
               "source": "branch",
               "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
               "kind": "value"
             },
             {
@@ -2221,8 +2051,9 @@
           ]
         },
         "exampleInput": {
-          "status": "error",
-          "limit": 20
+          "operation": "search",
+          "keyword": "workspace",
+          "limit": 3
         },
         "sessionRequired": false
       }
@@ -2276,7 +2107,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
       "description": "recommend the next action from evidence state",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "decideNext",
         "methodPath": [
@@ -2465,7 +2296,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
       "description": "run workspace diagnostics",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "doctor",
         "methodPath": [
@@ -2583,7 +2414,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
       "description": "select the highest-confidence editing target",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "exploit",
         "methodPath": [
@@ -2627,14 +2458,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "decision engine",
-      "description": "run repository exploration retrieval",
+      "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
       "core": true,
       "definition": {
         "name": "explore",
         "methodPath": [
           "explore"
         ],
-        "description": "run repository exploration retrieval",
+        "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
         "category": "decision engine",
         "underlying": "workspace explore",
         "capabilities": {
@@ -2740,7 +2571,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "list or find files in the repo root or a resolved task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.list",
         "methodPath": [
@@ -2811,7 +2642,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.read",
         "methodPath": [
@@ -2869,12 +2700,11 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/os/example",
           "path": "packages/os/scripts/fs.js",
           "offset": 1,
           "limit": 120
         },
-        "sessionRequired": true,
+        "sessionRequired": false,
         "examples": [
           {
             "label": "single paged file",
@@ -2911,7 +2741,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "search file contents with ripgrep and return structured bounded matches for agent-safe discovery",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.search",
         "methodPath": [
@@ -2964,11 +2794,10 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/os/example",
           "pattern": "task:fs",
           "path": "packages/os/SCRIPTS.md"
         },
-        "sessionRequired": true,
+        "sessionRequired": false,
         "examples": [
           {
             "label": "search a directory",
@@ -2999,7 +2828,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "move a task worktree file to trash",
+      "description": "An agent safe file deletion path. Prefered over rm rf",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -3007,7 +2836,7 @@
           "fs",
           "trash"
         ],
-        "description": "move a task worktree file to trash",
+        "description": "An agent safe file deletion path. Prefered over rm rf",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -3047,7 +2876,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
       "description": "write a file in a task worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "fs.write",
         "methodPath": [
@@ -3227,7 +3056,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "github",
       "description": "run the workspace GitHub helper with an explicit action",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "gh",
         "methodPath": [
@@ -3276,7 +3105,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "git",
       "description": "inspect task or working-tree diffs as bounded structured JSON for agents",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "git.diff",
         "methodPath": [
@@ -3377,7 +3206,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
       "description": "alias for status; use status directly in new code",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "git.status",
         "methodPath": [
@@ -3598,77 +3427,6 @@
           "url": "https://example.com"
         },
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "intent",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "workflow",
-      "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
-      "core": true,
-      "definition": {
-        "name": "intent",
-        "methodPath": [
-          "intent"
-        ],
-        "description": "start a workflow intent or dispatch a scoped workflow hook event and return the relevant manifest bundle",
-        "category": "workflow",
-        "underlying": "workspace intent",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
-        "outputSchema": "WorkflowIntentOutput",
-        "workflowRole": "intent.start",
-        "command": {
-          "script": "intent",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "flag": "--title",
-              "kind": "value"
-            },
-            {
-              "source": "eventFile",
-              "flag": "--event-json",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "os",
-          "title": "example task intent"
-        }
       }
     },
     {
@@ -4278,7 +4036,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "list non-repo files on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.list",
         "methodPath": [
@@ -4328,7 +4086,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "check or find a local port",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.port",
         "methodPath": [
@@ -4377,7 +4135,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "list or kill local Mac processes",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.process",
         "methodPath": [
@@ -4432,7 +4190,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "read a non-repo file on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.read",
         "methodPath": [
@@ -4477,7 +4235,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "search non-repo files on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.search",
         "methodPath": [
@@ -4532,7 +4290,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "mac",
       "description": "write a non-repo file on the Mac",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "mac.write",
         "methodPath": [
@@ -4580,6 +4338,1113 @@
           "dryRun": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "media.angle.measure",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Measure joint and segment angles from pose-track artifacts.",
+      "core": false,
+      "definition": {
+        "name": "media.angle.measure",
+        "methodPath": [
+          "media",
+          "angle",
+          "measure"
+        ],
+        "description": "Measure joint and segment angles from pose-track artifacts.",
+        "category": "media",
+        "underlying": "os media angle.measure",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaAngleMeasureInput",
+        "outputSchema": "MediaAngleMetrics",
+        "command": {
+          "script": "media",
+          "subcommand": "angle:measure",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.angle.measure",
+        "requiredProfiles": [
+          "media-vision-pose"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.audio.extract",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Extract audio tracks from source media into deterministic audio artifacts.",
+      "core": false,
+      "definition": {
+        "name": "media.audio.extract",
+        "methodPath": [
+          "media",
+          "audio",
+          "extract"
+        ],
+        "description": "Extract audio tracks from source media into deterministic audio artifacts.",
+        "category": "media",
+        "underlying": "os media audio.extract",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaAudioExtractInput",
+        "outputSchema": "MediaAudioArtifact",
+        "command": {
+          "script": "media",
+          "subcommand": "audio:extract",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.audio.extract",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg"
+        ]
+      }
+    },
+    {
+      "name": "media.audio.normalize",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Normalize media audio loudness for rendering and QA workflows.",
+      "core": false,
+      "definition": {
+        "name": "media.audio.normalize",
+        "methodPath": [
+          "media",
+          "audio",
+          "normalize"
+        ],
+        "description": "Normalize media audio loudness for rendering and QA workflows.",
+        "category": "media",
+        "underlying": "os media audio.normalize",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaAudioNormalizeInput",
+        "outputSchema": "MediaAudioArtifact",
+        "command": {
+          "script": "media",
+          "subcommand": "audio:normalize",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.audio.normalize",
+        "requiredProfiles": [
+          "media-audio"
+        ],
+        "requiredCommands": [
+          "sox"
+        ]
+      }
+    },
+    {
+      "name": "media.breakdown.plan",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Create a structured data-backed sports-science breakdown plan.",
+      "core": false,
+      "definition": {
+        "name": "media.breakdown.plan",
+        "methodPath": [
+          "media",
+          "breakdown",
+          "plan"
+        ],
+        "description": "Create a structured data-backed sports-science breakdown plan.",
+        "category": "media",
+        "underlying": "os media breakdown.plan",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaBreakdownPlanInput",
+        "outputSchema": "MediaBreakdownPlan",
+        "command": {
+          "script": "media",
+          "subcommand": "breakdown:plan",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.breakdown.plan",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffprobe"
+        ]
+      }
+    },
+    {
+      "name": "media.camera.motion",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Estimate camera movement separately from subject movement.",
+      "core": false,
+      "definition": {
+        "name": "media.camera.motion",
+        "methodPath": [
+          "media",
+          "camera",
+          "motion"
+        ],
+        "description": "Estimate camera movement separately from subject movement.",
+        "category": "media",
+        "underlying": "os media camera.motion",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaCameraMotionInput",
+        "outputSchema": "MediaCameraMotion",
+        "command": {
+          "script": "media",
+          "subcommand": "camera:motion",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.camera.motion",
+        "requiredProfiles": [
+          "media-vision-light"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.clip.search",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Search and score candidate video clips for downstream media workflows.",
+      "core": false,
+      "definition": {
+        "name": "media.clip.search",
+        "methodPath": [
+          "media",
+          "clip",
+          "search"
+        ],
+        "description": "Search and score candidate video clips for downstream media workflows.",
+        "category": "media",
+        "underlying": "os media clip.search",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": true,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaClipSearchInput",
+        "outputSchema": "MediaClipSearchResult",
+        "command": {
+          "script": "media",
+          "subcommand": "clip:search",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.clip.search",
+        "requiredProfiles": [
+          "media-youtube"
+        ],
+        "requiredCommands": [
+          "yt-dlp"
+        ]
+      }
+    },
+    {
+      "name": "media.compose",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Compose a timeline and media assets into a rendered draft video.",
+      "core": false,
+      "definition": {
+        "name": "media.compose",
+        "methodPath": [
+          "media",
+          "compose"
+        ],
+        "description": "Compose a timeline and media assets into a rendered draft video.",
+        "category": "media",
+        "underlying": "os media compose",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaComposeInput",
+        "outputSchema": "MediaRenderResult",
+        "command": {
+          "script": "media",
+          "subcommand": "compose",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.compose",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg"
+        ]
+      }
+    },
+    {
+      "name": "media.doctor",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Check installed media runtime dependencies and optional profile readiness.",
+      "core": false,
+      "definition": {
+        "name": "media.doctor",
+        "methodPath": [
+          "media",
+          "doctor"
+        ],
+        "description": "Check installed media runtime dependencies and optional profile readiness.",
+        "category": "media",
+        "underlying": "os media doctor",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": false,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaDoctorInput",
+        "outputSchema": "MediaDependencyReport",
+        "command": {
+          "script": "media",
+          "subcommand": "doctor",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.doctor",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg",
+          "ffprobe",
+          "mediainfo",
+          "magick",
+          "exiftool"
+        ]
+      }
+    },
+    {
+      "name": "media.export",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Package rendered media for YouTube Shorts, TikTok, Reels, and handoff workflows.",
+      "core": false,
+      "definition": {
+        "name": "media.export",
+        "methodPath": [
+          "media",
+          "export"
+        ],
+        "description": "Package rendered media for YouTube Shorts, TikTok, Reels, and handoff workflows.",
+        "category": "media",
+        "underlying": "os media export",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaExportInput",
+        "outputSchema": "MediaExportPackage",
+        "command": {
+          "script": "media",
+          "subcommand": "export",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.export",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      }
+    },
+    {
+      "name": "media.frames.extract",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Extract selected frames and frame manifests from a media source.",
+      "core": false,
+      "definition": {
+        "name": "media.frames.extract",
+        "methodPath": [
+          "media",
+          "frames",
+          "extract"
+        ],
+        "description": "Extract selected frames and frame manifests from a media source.",
+        "category": "media",
+        "underlying": "os media frames.extract",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaFramesExtractInput",
+        "outputSchema": "MediaFrameManifest",
+        "command": {
+          "script": "media",
+          "subcommand": "frames:extract",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.frames.extract",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg"
+        ]
+      }
+    },
+    {
+      "name": "media.ingest",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Ingest a source video or media URL into a deterministic media asset bundle.",
+      "core": false,
+      "definition": {
+        "name": "media.ingest",
+        "methodPath": [
+          "media",
+          "ingest"
+        ],
+        "description": "Ingest a source video or media URL into a deterministic media asset bundle.",
+        "category": "media",
+        "underlying": "os media ingest",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaIngestInput",
+        "outputSchema": "MediaIngestManifest",
+        "command": {
+          "script": "media",
+          "subcommand": "ingest",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.ingest",
+        "requiredProfiles": [
+          "media-youtube"
+        ],
+        "requiredCommands": [
+          "yt-dlp",
+          "ffprobe"
+        ]
+      }
+    },
+    {
+      "name": "media.install",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Create media runtime dependency install plans and guarded install attempts.",
+      "core": false,
+      "definition": {
+        "name": "media.install",
+        "methodPath": [
+          "media",
+          "install"
+        ],
+        "description": "Create media runtime dependency install plans and guarded install attempts.",
+        "category": "media",
+        "underlying": "os media install",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaInstallInput",
+        "outputSchema": "MediaInstallPlan",
+        "command": {
+          "script": "media",
+          "subcommand": "install",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.install",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "brew"
+        ]
+      }
+    },
+    {
+      "name": "media.motion.track",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Track generic motion vectors and features across a video range.",
+      "core": false,
+      "definition": {
+        "name": "media.motion.track",
+        "methodPath": [
+          "media",
+          "motion",
+          "track"
+        ],
+        "description": "Track generic motion vectors and features across a video range.",
+        "category": "media",
+        "underlying": "os media motion.track",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaMotionTrackInput",
+        "outputSchema": "MediaMotionTrack",
+        "command": {
+          "script": "media",
+          "subcommand": "motion:track",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.motion.track",
+        "requiredProfiles": [
+          "media-vision-light"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.object.track",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Track configured objects or regions through a video range.",
+      "core": false,
+      "definition": {
+        "name": "media.object.track",
+        "methodPath": [
+          "media",
+          "object",
+          "track"
+        ],
+        "description": "Track configured objects or regions through a video range.",
+        "category": "media",
+        "underlying": "os media object.track",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaObjectTrackInput",
+        "outputSchema": "MediaObjectTrack",
+        "command": {
+          "script": "media",
+          "subcommand": "object:track",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.object.track",
+        "requiredProfiles": [
+          "media-vision-light"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.overlay.render",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Render declarative overlay artifacts for composition.",
+      "core": false,
+      "definition": {
+        "name": "media.overlay.render",
+        "methodPath": [
+          "media",
+          "overlay",
+          "render"
+        ],
+        "description": "Render declarative overlay artifacts for composition.",
+        "category": "media",
+        "underlying": "os media overlay.render",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaOverlayRenderInput",
+        "outputSchema": "MediaOverlay",
+        "command": {
+          "script": "media",
+          "subcommand": "overlay:render",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.overlay.render",
+        "requiredProfiles": [
+          "media-render-advanced"
+        ],
+        "requiredCommands": [
+          "magick"
+        ]
+      }
+    },
+    {
+      "name": "media.pose.estimate",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Estimate human pose landmarks for sports-science analysis.",
+      "core": false,
+      "definition": {
+        "name": "media.pose.estimate",
+        "methodPath": [
+          "media",
+          "pose",
+          "estimate"
+        ],
+        "description": "Estimate human pose landmarks for sports-science analysis.",
+        "category": "media",
+        "underlying": "os media pose.estimate",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaPoseEstimateInput",
+        "outputSchema": "MediaPoseTrack",
+        "command": {
+          "script": "media",
+          "subcommand": "pose:estimate",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.pose.estimate",
+        "requiredProfiles": [
+          "media-vision-pose"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.probe",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Inspect a media source with ffprobe and normalize codec, duration, stream, and metadata facts.",
+      "core": false,
+      "definition": {
+        "name": "media.probe",
+        "methodPath": [
+          "media",
+          "probe"
+        ],
+        "description": "Inspect a media source with ffprobe and normalize codec, duration, stream, and metadata facts.",
+        "category": "media",
+        "underlying": "os media probe",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": true,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaProbeInput",
+        "outputSchema": "MediaAsset",
+        "command": {
+          "script": "media",
+          "subcommand": "probe",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.probe",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffprobe"
+        ]
+      }
+    },
+    {
+      "name": "media.qa",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Inspect rendered media for dimensions, duration, codec, size, captions, and basic quality checks.",
+      "core": false,
+      "definition": {
+        "name": "media.qa",
+        "methodPath": [
+          "media",
+          "qa"
+        ],
+        "description": "Inspect rendered media for dimensions, duration, codec, size, captions, and basic quality checks.",
+        "category": "media",
+        "underlying": "os media qa",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": true,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaQaInput",
+        "outputSchema": "MediaQaResult",
+        "command": {
+          "script": "media",
+          "subcommand": "qa",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.qa",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffprobe"
+        ]
+      }
+    },
+    {
+      "name": "media.scene.detect",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Detect scene boundaries and candidate highlight moments.",
+      "core": false,
+      "definition": {
+        "name": "media.scene.detect",
+        "methodPath": [
+          "media",
+          "scene",
+          "detect"
+        ],
+        "description": "Detect scene boundaries and candidate highlight moments.",
+        "category": "media",
+        "underlying": "os media scene.detect",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaSceneDetectInput",
+        "outputSchema": "MediaSceneDetectResult",
+        "command": {
+          "script": "media",
+          "subcommand": "scene:detect",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.scene.detect",
+        "requiredProfiles": [
+          "media-vision-light"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.sports-science.metrics",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Compute sports-science metrics from pose and motion artifacts.",
+      "core": false,
+      "definition": {
+        "name": "media.sports-science.metrics",
+        "methodPath": [
+          "media",
+          "sports-science",
+          "metrics"
+        ],
+        "description": "Compute sports-science metrics from pose and motion artifacts.",
+        "category": "media",
+        "underlying": "os media sports-science.metrics",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaSportsScienceMetricsInput",
+        "outputSchema": "MediaSportsScienceMetrics",
+        "command": {
+          "script": "media",
+          "subcommand": "sports-science:metrics",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.sports-science.metrics",
+        "requiredProfiles": [
+          "media-vision-pose"
+        ],
+        "requiredCommands": [
+          "python3"
+        ]
+      }
+    },
+    {
+      "name": "media.svg.convert",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Convert raster images into SVG assets using exact wrapper and vector trace strategies.",
+      "core": false,
+      "definition": {
+        "name": "media.svg.convert",
+        "methodPath": [
+          "media",
+          "svg",
+          "convert"
+        ],
+        "description": "Convert raster images into SVG assets using exact wrapper and vector trace strategies.",
+        "category": "media",
+        "underlying": "os media svg.convert",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaSvgConvertInput",
+        "outputSchema": "MediaSvgResult",
+        "command": {
+          "script": "media",
+          "subcommand": "svg:convert",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "input",
+              "flag": "--input",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "out",
+              "flag": "--out",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "strategy",
+              "flag": "--strategy",
+              "kind": "value"
+            },
+            {
+              "source": "traceEngine",
+              "flag": "--trace-engine",
+              "kind": "value"
+            },
+            {
+              "source": "optimize",
+              "flag": "--optimize",
+              "kind": "boolean"
+            }
+          ]
+        },
+        "exampleInput": {
+          "input": "image.png",
+          "out": "image.svg",
+          "strategy": "both",
+          "traceEngine": "auto"
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.svg.convert",
+        "requiredProfiles": [
+          "media-render-advanced"
+        ],
+        "requiredCommands": [
+          "ffmpeg",
+          "potrace"
+        ]
+      }
+    },
+    {
+      "name": "media.timeline.validate",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Validate a media timeline contract and referenced artifacts.",
+      "core": false,
+      "definition": {
+        "name": "media.timeline.validate",
+        "methodPath": [
+          "media",
+          "timeline",
+          "validate"
+        ],
+        "description": "Validate a media timeline contract and referenced artifacts.",
+        "category": "media",
+        "underlying": "os media timeline.validate",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": true,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaTimelineValidateInput",
+        "outputSchema": "MediaTimelineValidationResult",
+        "command": {
+          "script": "media",
+          "subcommand": "timeline:validate",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.timeline.validate",
+        "requiredProfiles": [],
+        "requiredCommands": []
+      }
+    },
+    {
+      "name": "media.transcribe",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Create transcript artifacts from a media audio or video source.",
+      "core": false,
+      "definition": {
+        "name": "media.transcribe",
+        "methodPath": [
+          "media",
+          "transcribe"
+        ],
+        "description": "Create transcript artifacts from a media audio or video source.",
+        "category": "media",
+        "underlying": "os media transcribe",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaTranscribeInput",
+        "outputSchema": "MediaTranscript",
+        "command": {
+          "script": "media",
+          "subcommand": "transcribe",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.transcribe",
+        "requiredProfiles": [
+          "media-audio"
+        ],
+        "requiredCommands": [
+          "ffmpeg"
+        ]
       }
     },
     {
@@ -6476,7 +7341,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
       "description": "show compact workspace status",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "status",
         "methodPath": [
@@ -6567,7 +7432,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "stream",
       "description": "list stream branches",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "stream.list",
         "methodPath": [
@@ -6665,7 +7530,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "preview or remove stale task worktrees and branches",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.cleanup",
         "methodPath": [
@@ -6736,7 +7601,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "resolve the current task branch without running a mutating command",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.current",
         "methodPath": [
@@ -6771,7 +7636,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "check whether the task stream appears synced",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.ensureSynced",
         "methodPath": [
@@ -6808,7 +7673,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "finish a task branch after merge",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.finish",
         "methodPath": [
@@ -6865,7 +7730,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "write task metadata for an existing worktree",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.init",
         "methodPath": [
@@ -6927,13 +7792,85 @@
       }
     },
     {
+      "name": "task.intent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "workflow",
+      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+      "core": true,
+      "definition": {
+        "name": "task.intent",
+        "methodPath": [
+          "task",
+          "intent"
+        ],
+        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+        "category": "workflow",
+        "underlying": "os task.intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "WorkflowIntentOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "task-intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "os",
+          "title": "example task-intent flow"
+        }
+      }
+    },
+    {
       "name": "task.merge",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "merge a pull request through the workspace task merge script",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.merge",
         "methodPath": [
@@ -6993,7 +7930,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "merge task to stream and create or refresh the stream review PR",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.pr",
         "methodPath": [
@@ -7071,7 +8008,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "show task and review PR links",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.prs",
         "methodPath": [
@@ -7126,7 +8063,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "push changed task files to the task branch through GitHub API",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.push",
         "methodPath": [
@@ -7216,7 +8153,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
       "description": "create a task branch, worktree, and draft PR",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "task.start",
         "methodPath": [
@@ -7451,7 +8388,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "review",
       "description": "run the full task safety gate",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "verify",
         "methodPath": [

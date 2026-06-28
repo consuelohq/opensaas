@@ -88,7 +88,6 @@ describe('local OS install state', () => {
       'logs',
       'runs',
       'cache',
-      'runtime',
       'steering',
       'bin',
       'tmp',
@@ -113,6 +112,15 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'runtime'))).toBe(false);
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    expect(chatgptMcp).toMatchObject({
+      auth: 'bearer',
+      url: 'https://local.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:8960/mcp',
+    });
+    expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
+    expect(chatgptMcp.scopes).toEqual(expect.arrayContaining(['route:/mcp:read', 'tool:*:read']));
     expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'intent.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'dispatcher.js'))).toBe(true);
@@ -201,6 +209,46 @@ describe('local OS install state', () => {
     expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'preserved')).toBe(true);
     expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('user-owned system prompt');
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
+  });
+
+
+  it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
+    mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(
+      join(tempUserHome, '.config', 'opencode', 'opencode.json'),
+      `${JSON.stringify({ theme: 'system', mcp: { existing: { type: 'local', command: ['existing'], enabled: true } } }, null, 2)}\n`,
+    );
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const opencodeConfigPath = join(tempUserHome, '.config', 'opencode', 'opencode.json');
+    const opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf8'));
+    expect(opencodeConfig.theme).toBe('system');
+    expect(opencodeConfig.mcp.existing).toMatchObject({ type: 'local', enabled: true });
+    expect(opencodeConfig.mcp['consuelo-os']).toMatchObject({
+      type: 'local',
+      enabled: true,
+      cwd: tempHome,
+      environment: { CONSUELO_HOME: tempHome },
+    });
+    expect(opencodeConfig.mcp['consuelo-os'].command).toEqual([
+      'bun',
+      join(tempHome, 'scripts', 'mcp-stdio.ts'),
+    ]);
+    expect(existsSync(join(tempHome, 'scripts', 'mcp-stdio.ts'))).toBe(true);
+    expect(result.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'connect_agent',
+          path: opencodeConfigPath,
+          message: expect.stringMatching(/OpenCode MCP/i),
+        }),
+      ]),
+    );
   });
 
   it('materializes the local Office site from persisted artifacts', () => {

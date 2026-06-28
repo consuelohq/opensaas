@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy",
+  "base": "origin/stream/diff-cockpit",
+  "headSha": "3bf5a34b08e54b55d34725c51bfe9d6d0b669cf1",
+  "changeHash": "3740902b0c0e55fb0627a0445b79f76938e3142230646ca3e833b3d89efd908a",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-23T02:32:34.560Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy/current.json",
+        ".task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy/session.json",
+        ".task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy/workpad.md",
+        ".task/tasks/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

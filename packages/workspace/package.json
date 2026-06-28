@@ -10,6 +10,8 @@
     "task:cleanup": "bun ./scripts/task-cleanup.js",
     "task:finish": "bun ./scripts/task-finish.js",
     "task:merge": "bun ./scripts/task-merge.js",
+    "task:init": "bun ./scripts/task-init.js",
+    "task:hook": "bun ./scripts/task-hook.js",
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
@@ -36,6 +38,7 @@
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",
+    "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
@@ -51,7 +54,8 @@
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
-    "office": "bun ./scripts/office.ts"
+    "office": "bun ./scripts/office.ts",
+    "task-intent": "bun ./scripts/task-intent.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

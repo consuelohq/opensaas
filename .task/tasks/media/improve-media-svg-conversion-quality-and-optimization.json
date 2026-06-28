@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/improve-media-svg-conversion-quality-and-optimization",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1222,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1222",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1222",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1222/improve-media-svg-conversion-quality-and-optimization",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1222",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1222/improve-media-svg-conversion-quality-and-optimization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-improve-media-svg-conversion-quality-and-optimization",
+  "taskSession": "tsk_974784dfdab5",
+  "tmuxSession": "opensaas-media-improve-media-svg-conversion-quality-and-optimiz-974784df",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-improve-media-svg-conversion-quality-and-optimization/.task/media/improve-media-svg-conversion-quality-and-optimization/session.json",
+  "createdAt": "2026-06-27T19:36:28.994Z"
+}

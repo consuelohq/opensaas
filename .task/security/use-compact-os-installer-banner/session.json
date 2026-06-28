@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_18859ea7ea58",
+  "tmuxSession": "opensaas-security-use-compact-os-installer-banner-18859ea7",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/use-compact-os-installer-banner",
+  "branch": "task/security/use-compact-os-installer-banner",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-use-compact-os-installer-banner",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-use-compact-os-installer-banner",
+  "prNumber": 1191,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1191",
+  "createdAt": "2026-06-23T06:33:36.842Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-use-compact-os-installer-banner/.task/security/use-compact-os-installer-banner/session.json"
+}

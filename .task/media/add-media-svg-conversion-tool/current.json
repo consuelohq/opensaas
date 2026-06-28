@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/add-media-svg-conversion-tool",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1220,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1220",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1220",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1220/add-media-svg-conversion-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1220",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1220/add-media-svg-conversion-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-add-media-svg-conversion-tool",
+  "taskSession": "tsk_e6133cf936fe",
+  "tmuxSession": "opensaas-media-add-media-svg-conversion-tool-e6133cf9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-add-media-svg-conversion-tool/.task/media/add-media-svg-conversion-tool/session.json",
+  "createdAt": "2026-06-27T18:51:44.591Z"
+}

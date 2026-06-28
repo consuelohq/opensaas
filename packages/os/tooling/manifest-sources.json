@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "note": "Human-readable source map for OS manifest generation. Canonical generator config remains packages/os/manifests/manifest.config.json.",
+  "sources": [
+    "tool-manifest.json",
+    "dev-tool-manifest.json",
+    "media-tool-manifest.json"
+  ],
+  "fullManifestSource": "media-tool-manifest.json",
+  "facadeManifestSources": [
+    "dev-tool-manifest.json",
+    "media-tool-manifest.json"
+  ]
+}

@@ -15,10 +15,10 @@ function writeStderr(value = '') {
 }
 
 function printHelp() {
-  writeStdout('usage: bun run intent -- <start|dispatch> [options]');
+  writeStdout('usage: bun run task-intent -- <start|dispatch> [options]');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <task|office|design|sites>');
+  writeStdout('  --workflow <task|office|design|sites|media>');
   writeStdout('  --task-session <id>');
   writeStdout('  --area <value>');
   writeStdout('  --title <value>');
@@ -36,6 +36,10 @@ function parseArgs(argv) {
   if (argv[0] && !argv[0].startsWith('--')) {
     args.action = argv[0];
     index = 1;
+  }
+
+  if (args.action !== 'start' && args.action !== 'dispatch') {
+    throw new Error(`unknown action: ${args.action}`);
   }
 
   for (; index < argv.length; index += 1) {

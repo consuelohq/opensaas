@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/harden-consuelo-reload-port-ownership",
+  "base": "origin/task/workspace/harden-consuelo-reload-port-ownership",
+  "headSha": "d4b89a6c0e5ab9a4561df3449ec45aadeaf9f6e1",
+  "changeHash": "89fac2a4967e3b4264687396e11441d742d510aa0efae67a23013466551cba2b",
+  "changedFiles": [
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/workspace/scripts/consuelo-reload.js"
+  ],
+  "verifiedAt": "2026-06-17T03:35:41.545Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/harden-consuelo-reload-port-ownership.json",
+        ".task/workspace/harden-consuelo-reload-port-ownership/current.json",
+        ".task/workspace/harden-consuelo-reload-port-ownership/session.json",
+        ".task/workspace/harden-consuelo-reload-port-ownership/workpad.md",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/workspace/scripts/consuelo-reload.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

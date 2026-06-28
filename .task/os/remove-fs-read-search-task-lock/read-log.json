@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-06-17T05:11:07.635Z"
+}

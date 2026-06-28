@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/public-installer-runtime-dependency-correctness",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1159,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1159",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1159",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1159/public-installer-runtime-dependency-correctness",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1159",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1159/public-installer-runtime-dependency-correctness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness",
+  "taskSession": "tsk_30ca963fa7ae",
+  "tmuxSession": "opensaas-security-public-installer-runtime-dependency-correctness-30ca963f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness/.task/security/public-installer-runtime-dependency-correctness/session.json",
+  "createdAt": "2026-06-20T03:00:40.602Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6960cbb95962",
+  "tmuxSession": "opensaas-security-close-security-report-gaps-6960cbb9",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/close-security-report-gaps",
+  "branch": "task/security/close-security-report-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-security-report-gaps",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-security-report-gaps",
+  "prNumber": 1141,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1141",
+  "createdAt": "2026-06-18T13:55:40.647Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-security-report-gaps/.task/security/close-security-report-gaps/session.json"
+}

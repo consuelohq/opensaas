@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-media-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1195,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1195",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1195",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1195/address-media-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1195",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1195/address-media-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-media-review-comments",
+  "taskSession": "tsk_dc88e17ea7f4",
+  "tmuxSession": "opensaas-os-address-media-review-comments-dc88e17e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-media-review-comments/.task/os/address-media-review-comments/session.json",
+  "createdAt": "2026-06-23T19:41:16.762Z"
+}

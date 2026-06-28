@@ -836,7 +836,7 @@ describe('createWorker', () => {
         return cacheStore.delete(request.url);
       },
     };
-    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v6-hot-pr-cache';
     cacheStore.set(cacheKey, Response.json({ cached: true }));
     const fetcher = async (input: string | URL, init?: RequestInit): Promise<Response> => {
       calls.push({ url: String(input), method: init?.method, body: String(init?.body ?? '') });
@@ -879,7 +879,7 @@ describe('createWorker', () => {
         return cacheStore.delete(request.url);
       },
     };
-    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers';
+    const cacheKey = 'https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v6-hot-pr-cache';
     cacheStore.set(cacheKey, Response.json({ cached: true }));
     const body = JSON.stringify({
       action: 'resolved',
@@ -944,7 +944,7 @@ describe('createWorker', () => {
       checks: [],
     };
     const cacheStore = new Map<string, Response>([
-      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v5-review-commit-popovers', Response.json(cachedReviewData)],
+      ['https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708?_dcv=v6-hot-pr-cache', Response.json(cachedReviewData)],
     ]);
     const cache = {
       async match(request: Request): Promise<Response | undefined> {
@@ -1089,7 +1089,7 @@ describe('createWorker', () => {
     release();
     await Promise.all(waitUntilPromises);
     expect(calls > 0).toBe(true);
-    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757?_dcv=v5-review-commit-popovers')).toBe(true);
+    expect(cacheStore.has('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/757?_dcv=v6-hot-pr-cache')).toBe(true);
   });
 
   test('server-renders warmed inbox and PR pages from shared API cache', async () => {
@@ -1154,6 +1154,62 @@ describe('createWorker', () => {
     expect(prHtml).toContain('id="diff-cockpit-initial-etag"');
     expect(prHtml).toContain('warmed server page');
     expect(calls).toBe(callsAfterRefresh);
+  });
+
+
+  test('refresh stores homepage snapshots in durable shared storage for cross-device first paint', async () => {
+    const snapshotStore = new Map<string, string>();
+    const snapshots = {
+      async get(key: string): Promise<string | null> {
+        return snapshotStore.get(key) || null;
+      },
+      async put(key: string, value: string): Promise<void> {
+        snapshotStore.set(key, value);
+      },
+    };
+    let calls = 0;
+    const warmingFetcher = async (input: string | URL): Promise<Response> => {
+      calls += 1;
+      const url = String(input);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) {
+        return Response.json([
+          { number: 1162, title: 'shared snapshot diffs homepage', html_url: 'https://github.com/consuelohq/opensaas/pull/1162', state: 'open', draft: false, updated_at: '2026-06-20T16:00:00Z', created_at: '2026-06-20T15:59:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/shared-snapshot-diffs-homepage', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } },
+        ]);
+      }
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls/1162')) return Response.json({ number: 1162, title: 'shared snapshot diffs homepage', html_url: 'https://github.com/consuelohq/opensaas/pull/1162', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 10, deletions: 1, changed_files: 2, updated_at: '2026-06-20T16:00:00Z', created_at: '2026-06-20T15:59:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/shared-snapshot-diffs-homepage', sha: 'headsha' }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/headsha/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error('unexpected snapshot warm url ' + url);
+    };
+    const warmingWorker = createWorker({ fetcher: warmingFetcher, snapshotStore: snapshots });
+    const refresh = await warmingWorker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh?wait=1', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', pulls: [1162], reason: 'webhook.pull_request' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    expect(refresh.status).toBe(200);
+    expect(snapshotStore.size > 0).toBe(true);
+
+    const coldWorker = createWorker({ fetcher: async (input: string | URL): Promise<Response> => { throw new Error('cold worker should read durable snapshot, not GitHub: ' + String(input)); }, snapshotStore: snapshots });
+    const homepage = await coldWorker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pulls'));
+    const htmlPage = await coldWorker.fetch(new Request('https://diffs.consuelohq.com/consuelohq/opensaas'));
+    const homepagePayload = await homepage.json() as { pulls: Array<{ number: number; title: string }> };
+    const html = await htmlPage.text();
+
+    expect(homepage.status).toBe(200);
+    expect(homepage.headers.get('x-diff-cockpit-cache')).toBe('snapshot');
+    expect(homepagePayload.pulls[0]).toMatchObject({ number: 1162, title: 'shared snapshot diffs homepage' });
+    expect(html).toContain('shared snapshot diffs homepage');
+    expect(html).toContain('id="diff-cockpit-index-initial-data"');
+    expect(calls > 0).toBe(true);
   });
 
   test('refresh endpoint protects and prewarms homepage and PR API cache entries', async () => {
@@ -1245,11 +1301,87 @@ describe('createWorker', () => {
 
     expect(first.status).toBe(200);
     expect(first.headers.get('cache-control') || '').toContain('public');
-    expect(first.headers.get('cache-control') || '').toContain('s-maxage');
-    expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(first.headers.get('cache-control') || '').toContain('s-maxage=30');
+    expect(first.headers.get('cache-control') || '').not.toContain('stale-while-revalidate');
+    expect(first.headers.get('cache-control') || '').toContain('must-revalidate');
     expect(first.headers.get('vary') || '').toBe('Accept');
     expect(etag).toContain('W/');
     expect(second.status).toBe(304);
+  });
+
+  test('prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided', async () => {
+    const cacheStore = new Map<string, Response>();
+    const cache = {
+      async match(request: Request): Promise<Response | undefined> {
+        const hit = cacheStore.get(request.url);
+        return hit ? hit.clone() : undefined;
+      },
+      async put(request: Request, response: Response): Promise<void> {
+        cacheStore.set(request.url, response.clone());
+      },
+      async delete(request: Request): Promise<boolean> {
+        return cacheStore.delete(request.url);
+      },
+    };
+    const openPulls = Array.from({ length: 25 }, (_, index) => {
+      const number = 900 + index;
+      return { number, title: 'hot pr ' + number, html_url: 'https://github.com/consuelohq/opensaas/pull/' + number, state: 'open', draft: false, updated_at: '2026-06-21T00:' + String(index).padStart(2, '0') + ':00Z', created_at: '2026-06-20T00:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/hot-' + number, sha: 'head' + number }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } };
+    });
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=1')) return Response.json(openPulls);
+      if (url.endsWith('/pulls?state=open&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=2')) return Response.json([]);
+      const pullMatch = url.match(/\/pulls\/(\d+)$/);
+      if (pullMatch) {
+        const number = Number(pullMatch[1]);
+        return Response.json({ number, title: 'hot pr ' + number, html_url: 'https://github.com/consuelohq/opensaas/pull/' + number, state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', additions: 1, deletions: 1, changed_files: 1, updated_at: '2026-06-21T00:' + String(number - 900).padStart(2, '0') + ':00Z', created_at: '2026-06-20T00:00:00Z', user: { login: 'ko' }, head: { ref: 'task/diff-cockpit/hot-' + number, sha: 'head' + number }, base: { ref: 'stream/diff-cockpit', sha: 'streamsha' } });
+      }
+      if (url.endsWith('/contents/packages?ref=main')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=1')) return Response.json([]);
+      if (url.endsWith('/commits?sha=main&path=packages&per_page=100&page=2')) return Response.json([]);
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/commits/') && url.includes('/check-runs')) return Response.json({ check_runs: [] });
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error('unexpected hot prewarm url ' + url);
+    };
+    const worker = createWorker({ fetcher, cache });
+
+    const refresh = await worker.fetch(new Request('https://diffs.consuelohq.com/internal/cache/refresh?wait=1', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret', 'content-type': 'application/json' },
+      body: JSON.stringify({ repo: 'consuelohq/opensaas', reason: 'cron.diff-cockpit' }),
+    }), { DIFF_COCKPIT_REFRESH_TOKEN: 'secret' });
+    const payload = await refresh.json() as { refreshed: { pulls: string[] } };
+
+    expect(refresh.status).toBe(200);
+    expect(payload.refreshed.pulls).toHaveLength(20);
+    expect(payload.refreshed.pulls).toContain('/api/consuelohq/opensaas/pull/924');
+    expect(payload.refreshed.pulls).not.toContain('/api/consuelohq/opensaas/pull/904');
+  });
+
+  test('uses strict shared cache headers for open PR details and long cache headers for inactive PR details', async () => {
+    const fetcher = async (input: string | URL): Promise<Response> => {
+      const url = String(input);
+      if (url.endsWith('/pulls/708')) return Response.json({ number: 708, title: 'hot open pr', html_url: 'https://github.com/consuelohq/opensaas/pull/708', state: 'open', draft: false, mergeable: true, mergeable_state: 'clean', updated_at: '2026-06-21T00:00:00Z', user: { login: 'ko' }, head: { ref: 'task/hot-open-pr', sha: 'abc123' }, base: { ref: 'main', sha: 'def456' } });
+      if (url.endsWith('/pulls/709')) return Response.json({ number: 709, title: 'inactive closed pr', html_url: 'https://github.com/consuelohq/opensaas/pull/709', state: 'closed', draft: false, mergeable: false, mergeable_state: 'dirty', updated_at: '2020-01-01T00:00:00Z', user: { login: 'ko' }, head: { ref: 'task/inactive-closed-pr', sha: 'ghi123' }, base: { ref: 'main', sha: 'jkl456' } });
+      if (url.includes('/files?')) return Response.json([]);
+      if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+      throw new Error('unexpected PR cache policy url ' + url);
+    };
+    const worker = createWorker({ fetcher });
+    const open = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/708'));
+    const closed = await worker.fetch(new Request('https://diffs.consuelohq.com/api/consuelohq/opensaas/pull/709'));
+
+    expect(open.status).toBe(200);
+    expect(open.headers.get('cache-control') || '').toContain('s-maxage=30');
+    expect(open.headers.get('cache-control') || '').toContain('must-revalidate');
+    expect(open.headers.get('cache-control') || '').not.toContain('stale-while-revalidate');
+    expect(closed.status).toBe(200);
+    expect(closed.headers.get('cache-control') || '').toContain('s-maxage=300');
+    expect(closed.headers.get('cache-control') || '').toContain('stale-while-revalidate');
   });
 
   test('returns PR API cache headers and 304 for unchanged ETags', async () => {
@@ -1287,8 +1419,9 @@ describe('createWorker', () => {
 
     expect(first.status).toBe(200);
     expect(first.headers.get('cache-control') || '').toContain('public');
-    expect(first.headers.get('cache-control') || '').toContain('s-maxage');
-    expect(first.headers.get('cache-control') || '').toContain('stale-while-revalidate');
+    expect(first.headers.get('cache-control') || '').toContain('s-maxage=30');
+    expect(first.headers.get('cache-control') || '').toContain('must-revalidate');
+    expect(first.headers.get('cache-control') || '').not.toContain('stale-while-revalidate');
     expect(first.headers.get('vary') || '').toBe('Accept');
     expect(etag).toContain('W/');
     expect(second.status).toBe(304);

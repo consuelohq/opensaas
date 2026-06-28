@@ -86,6 +86,7 @@ describe('workspace device-login HTTP client', () => {
         connector_id: 'connector_123',
         connector_bootstrap_token: 'bootstrap_token_123',
         connector_bootstrap_expires_at: '2026-06-13T00:10:00.000Z',
+        cloudflare_tunnel_token: 'cloudflared_tunnel_token_fixture',
         device_public_key_thumbprint: 'dpk_123',
         device_public_key_bound: true,
       });
@@ -107,6 +108,7 @@ describe('workspace device-login HTTP client', () => {
       connectorId: 'connector_123',
       connectorBootstrapToken: 'bootstrap_token_123',
       connectorBootstrapExpiresAt: '2026-06-13T00:10:00.000Z',
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
     });
     expect(calls[0].url).toBe(CONSUELO_OAUTH_ACCESS_TOKEN_URL);
     expect(calls[0].init?.method).toBe('POST');
