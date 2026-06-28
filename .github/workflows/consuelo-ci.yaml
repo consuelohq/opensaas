@@ -171,12 +171,9 @@ jobs:
         if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
         uses: ./.github/actions/yarn-install
 
-      - name: Run workspace contract tests
+      - name: Run workspace contract gate
         if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
-        run: |
-          bun test packages/workspace/tests/facade/facade.test.ts --test-name-pattern "validates input"
-          bun test packages/workspace/tests/task-session.test.js packages/workspace/tests/task-meta.test.ts
-          bun x vitest run packages/workspace/tests/verification.test.js packages/workspace/tests/test-selection.test.js
+        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests
 
   os-contracts:
     name: Consuelo / OS contracts
