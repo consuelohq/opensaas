@@ -7,7 +7,7 @@ type Props = {
 
 const { sectionId } = Astro.props as Props;
 const osPortalHref = 'https://os.consuelohq.com';
-const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
+const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
@@ -256,11 +256,11 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     min-height: 2.35rem;
     justify-content: center;
     gap: var(--site-space-2);
-    border-color: var(--site-color-line);
+    border: 0;
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
     color: var(--site-color-ink);
-    box-shadow: var(--site-shadow-control);
+    box-shadow: none;
     padding: calc(var(--site-space-2) + var(--site-space-1)) var(--site-space-5);
   }
 
@@ -279,9 +279,10 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
   .home-hero__install {
     overflow: hidden;
     padding: 0;
+    border: 0;
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
-    box-shadow: var(--site-shadow-control);
+    box-shadow: none;
   }
 
   .home-hero__tabs {
@@ -289,7 +290,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     gap: var(--site-space-2);
     overflow-x: auto;
     overflow-y: hidden;
-    border-bottom: 1px solid var(--site-color-line);
+    border-bottom: 0;
     padding: var(--site-space-2) var(--site-space-3) 0;
     scrollbar-width: none;
   }
@@ -514,12 +515,18 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     }
 
     .home-hero__value {
-      --home-hero-value-size: clamp(0.56rem, 2.35vw, 0.72rem);
+      --home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);
+      letter-spacing: -0.04em;
     }
 
     .home-hero__panel {
       gap: var(--site-space-2);
-      padding: var(--site-space-3) var(--site-space-4);
+      padding: var(--site-space-3) clamp(var(--site-space-3), 3.6vw, var(--site-space-4));
+    }
+
+    .home-hero__panel-action {
+      width: var(--site-space-4);
+      height: var(--site-space-4);
     }
   }
 </style>
