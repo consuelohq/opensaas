@@ -82,16 +82,6 @@
                     "root": "user-guide/data-migration/overview"
                   },
                   {
-                    "group": "AI",
-                    "pages": [
-                      "user-guide/ai/capabilities/ai-chatbot",
-                      "user-guide/ai/capabilities/ai-agents",
-                      "user-guide/ai/capabilities/permissions-access-control",
-                      "user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "user-guide/ai/overview"
-                  },
-                  {
                     "group": "Workflows",
                     "pages": [
                       "user-guide/workflows/capabilities/workflow-triggers",
@@ -619,16 +609,6 @@
                     "root": "l/fr/user-guide/workflows/overview"
                   },
                   {
-                    "group": "IA",
-                    "pages": [
-                      "l/fr/user-guide/ai/capabilities/ai-chatbot",
-                      "l/fr/user-guide/ai/capabilities/ai-agents",
-                      "l/fr/user-guide/ai/capabilities/permissions-access-control",
-                      "l/fr/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/fr/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Vues et pipelines",
                     "pages": [
                       "l/fr/user-guide/views-pipelines/overview",
@@ -999,16 +979,6 @@
                       "l/ar/user-guide/workflows/how-tos/need-more-help/professional-services"
                     ],
                     "root": "l/ar/user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "الذكاء الاصطناعي",
-                    "pages": [
-                      "l/ar/user-guide/ai/capabilities/ai-chatbot",
-                      "l/ar/user-guide/ai/capabilities/ai-agents",
-                      "l/ar/user-guide/ai/capabilities/permissions-access-control",
-                      "l/ar/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/ar/user-guide/ai/overview"
                   },
                   {
                     "group": "طرق العرض والمسارات",
@@ -1383,16 +1353,6 @@
                     "root": "l/cs/user-guide/workflows/overview"
                   },
                   {
-                    "group": "AI",
-                    "pages": [
-                      "l/cs/user-guide/ai/capabilities/ai-chatbot",
-                      "l/cs/user-guide/ai/capabilities/ai-agents",
-                      "l/cs/user-guide/ai/capabilities/permissions-access-control",
-                      "l/cs/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/cs/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Zobrazení a pipeline",
                     "pages": [
                       "l/cs/user-guide/views-pipelines/capabilities/table-views",
@@ -1763,16 +1723,6 @@
                       "l/de/user-guide/workflows/how-tos/need-more-help/professional-services"
                     ],
                     "root": "l/de/user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "KI",
-                    "pages": [
-                      "l/de/user-guide/ai/capabilities/ai-chatbot",
-                      "l/de/user-guide/ai/capabilities/ai-agents",
-                      "l/de/user-guide/ai/capabilities/permissions-access-control",
-                      "l/de/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/de/user-guide/ai/overview"
                   },
                   {
                     "group": "Ansichten & Pipelines",
@@ -2147,16 +2097,6 @@
                     "root": "l/es/user-guide/workflows/overview"
                   },
                   {
-                    "group": "IA",
-                    "pages": [
-                      "l/es/user-guide/ai/capabilities/ai-chatbot",
-                      "l/es/user-guide/ai/capabilities/ai-agents",
-                      "l/es/user-guide/ai/capabilities/permissions-access-control",
-                      "l/es/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/es/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Vistas y canalizaciones",
                     "pages": [
                       "l/es/user-guide/views-pipelines/capabilities/table-views",
@@ -2527,16 +2467,6 @@
                       "l/it/user-guide/workflows/how-tos/need-more-help/professional-services"
                     ],
                     "root": "l/it/user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "AI",
-                    "pages": [
-                      "l/it/user-guide/ai/capabilities/ai-chatbot",
-                      "l/it/user-guide/ai/capabilities/ai-agents",
-                      "l/it/user-guide/ai/capabilities/permissions-access-control",
-                      "l/it/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/it/user-guide/ai/overview"
                   },
                   {
                     "group": "Viste & Pipeline",
@@ -2911,16 +2841,6 @@
                     "root": "l/ja/user-guide/workflows/overview"
                   },
                   {
-                    "group": "AI",
-                    "pages": [
-                      "l/ja/user-guide/ai/capabilities/ai-chatbot",
-                      "l/ja/user-guide/ai/capabilities/ai-agents",
-                      "l/ja/user-guide/ai/capabilities/permissions-access-control",
-                      "l/ja/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/ja/user-guide/ai/overview"
-                  },
-                  {
                     "group": "ビューとパイプライン",
                     "pages": [
                       "l/ja/user-guide/views-pipelines/capabilities/table-views",
@@ -3293,16 +3213,6 @@
                     "root": "l/ko/user-guide/workflows/overview"
                   },
                   {
-                    "group": "AI",
-                    "pages": [
-                      "l/ko/user-guide/ai/capabilities/ai-chatbot",
-                      "l/ko/user-guide/ai/capabilities/ai-agents",
-                      "l/ko/user-guide/ai/capabilities/permissions-access-control",
-                      "l/ko/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/ko/user-guide/ai/overview"
-                  },
-                  {
                     "group": "뷰 및 파이프라인",
                     "pages": [
                       "l/ko/user-guide/views-pipelines/capabilities/table-views",
@@ -3665,16 +3575,6 @@
                     "root": "l/pt/user-guide/workflows/overview"
                   },
                   {
-                    "group": "IA",
-                    "pages": [
-                      "l/pt/user-guide/ai/capabilities/ai-chatbot",
-                      "l/pt/user-guide/ai/capabilities/ai-agents",
-                      "l/pt/user-guide/ai/capabilities/permissions-access-control",
-                      "l/pt/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/pt/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Visualizações e pipelines",
                     "pages": [
                       "l/pt/user-guide/views-pipelines/capabilities/table-views",
@@ -4035,16 +3935,6 @@
                       "l/ro/user-guide/workflows/how-tos/need-more-help/professional-services"
                     ],
                     "root": "l/ro/user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "AI",
-                    "pages": [
-                      "l/ro/user-guide/ai/capabilities/ai-chatbot",
-                      "l/ro/user-guide/ai/capabilities/ai-agents",
-                      "l/ro/user-guide/ai/capabilities/permissions-access-control",
-                      "l/ro/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/ro/user-guide/ai/overview"
                   },
                   {
                     "group": "Vizualizări și fluxuri",
@@ -4419,16 +4309,6 @@
                     "root": "l/ru/user-guide/workflows/overview"
                   },
                   {
-                    "group": "ИИ",
-                    "pages": [
-                      "l/ru/user-guide/ai/capabilities/ai-chatbot",
-                      "l/ru/user-guide/ai/capabilities/ai-agents",
-                      "l/ru/user-guide/ai/capabilities/permissions-access-control",
-                      "l/ru/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/ru/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Представления и воронки",
                     "pages": [
                       "l/ru/user-guide/views-pipelines/capabilities/table-views",
@@ -4801,16 +4681,6 @@
                     "root": "l/tr/user-guide/workflows/overview"
                   },
                   {
-                    "group": "AI",
-                    "pages": [
-                      "l/tr/user-guide/ai/capabilities/ai-chatbot",
-                      "l/tr/user-guide/ai/capabilities/ai-agents",
-                      "l/tr/user-guide/ai/capabilities/permissions-access-control",
-                      "l/tr/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/tr/user-guide/ai/overview"
-                  },
-                  {
                     "group": "Görünümler ve Boru Hatları",
                     "pages": [
                       "l/tr/user-guide/views-pipelines/capabilities/table-views",
@@ -5181,16 +5051,6 @@
                       "l/zh/user-guide/workflows/how-tos/need-more-help/professional-services"
                     ],
                     "root": "l/zh/user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "AI",
-                    "pages": [
-                      "l/zh/user-guide/ai/capabilities/ai-chatbot",
-                      "l/zh/user-guide/ai/capabilities/ai-agents",
-                      "l/zh/user-guide/ai/capabilities/permissions-access-control",
-                      "l/zh/user-guide/ai/how-tos/ai-faq"
-                    ],
-                    "root": "l/zh/user-guide/ai/overview"
                   },
                   {
                     "group": "视图与管道",

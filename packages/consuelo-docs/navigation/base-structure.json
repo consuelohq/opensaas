@@ -305,29 +305,6 @@
               ]
             },
             {
-              "key": "ai",
-              "label": "AI",
-              "pages": [
-                "user-guide/ai/overview",
-                {
-                  "key": "aiCapabilities",
-                  "label": "Capabilities",
-                  "pages": [
-                    "user-guide/ai/capabilities/ai-chatbot",
-                    "user-guide/ai/capabilities/ai-agents",
-                    "user-guide/ai/capabilities/permissions-access-control"
-                  ]
-                },
-                {
-                  "key": "aiHowTos",
-                  "label": "How-Tos",
-                  "pages": [
-                    "user-guide/ai/how-tos/ai-faq"
-                  ]
-                }
-              ]
-            },
-            {
               "key": "viewsPipelines",
               "label": "Views & Pipelines",
               "pages": [
