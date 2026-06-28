@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-design",
+  "stream": "stream/consuelo-design",
+  "taskBranch": "task/consuelo-design/polish-trace-explorer-summaries-and-scroll-behavior",
+  "baseBranch": "stream/consuelo-design",
+  "sourceBranch": "stream/consuelo-design",
+  "startFrom": "stream",
+  "prNumber": 1258,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1258",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1258",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1258/polish-trace-explorer-summaries-and-scroll-behavior",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1258",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1258/polish-trace-explorer-summaries-and-scroll-behavior",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-design-polish-trace-explorer-summaries-and-scroll-behavior",
+  "taskSession": "tsk_487d7aac1d99",
+  "tmuxSession": "opensaas-consuelo-design-polish-trace-explorer-summaries-and-scroll-behav-487d7aac",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-design-polish-trace-explorer-summaries-and-scroll-behavior/.task/consuelo-design/polish-trace-explorer-summaries-and-scroll-behavior/session.json",
+  "createdAt": "2026-06-28T04:48:44.794Z"
+}
