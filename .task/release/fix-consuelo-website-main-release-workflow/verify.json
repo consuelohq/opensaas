@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/release/fix-consuelo-website-main-release-workflow",
+  "base": "origin/stream/release",
+  "headSha": "0291292426154648974121f58a863a4e61b81789",
+  "changeHash": "af4cde3be73e5d7fd6f099b0ffb5a640416605621cdfc4948395216239de63df",
+  "changedFiles": [
+    ".github/workflows/cd-deploy-main.yaml",
+    ".github/workflows/cd-deploy-tag.yaml",
+    ".github/workflows/consuelo-website-deploy.yaml",
+    ".github/workflows/preview-env-dispatch.yaml",
+    ".github/workflows/preview-env-keepalive.yaml",
+    "packages/os/scripts/website-deploy.js",
+    "packages/workspace/scripts/website-deploy.js"
+  ],
+  "verifiedAt": "2026-06-28T05:15:57.392Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/cd-deploy-main.yaml",
+        ".github/workflows/cd-deploy-tag.yaml",
+        ".github/workflows/consuelo-website-deploy.yaml",
+        ".github/workflows/preview-env-dispatch.yaml",
+        ".github/workflows/preview-env-keepalive.yaml",
+        ".task/release/fix-consuelo-website-main-release-workflow/current.json",
+        ".task/release/fix-consuelo-website-main-release-workflow/session.json",
+        ".task/release/fix-consuelo-website-main-release-workflow/workpad.md",
+        ".task/tasks/release/fix-consuelo-website-main-release-workflow.json",
+        "packages/os/scripts/website-deploy.js",
+        "packages/workspace/scripts/website-deploy.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
