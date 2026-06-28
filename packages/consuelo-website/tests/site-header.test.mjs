@@ -153,42 +153,58 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
       'Consuelo',
     );
 
-    const desktopLayout = await desktopPage.evaluate(() => {
-      const brand = document.querySelector('[data-header-brand]');
-      const center = document.querySelector('.launch-header__center');
-      const nav = document.querySelector('.launch-header__desktop-nav');
+    const getDesktopSlots = async (page) =>
+      page
+        .locator('[data-header-brand], [data-desktop-header-slot]')
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const rect = element.getBoundingClientRect();
+            const style = window.getComputedStyle(element);
 
-      if (
-        !(brand instanceof HTMLElement) ||
-        !(center instanceof HTMLElement) ||
-        !(nav instanceof HTMLElement)
-      ) {
-        throw new Error('Desktop header elements were not found');
-      }
+            return {
+              text: element.textContent?.replace(/\s+/g, ' ').trim(),
+              visible:
+                style.display !== 'none' &&
+                style.visibility !== 'hidden' &&
+                rect.width > 0 &&
+                rect.height > 0,
+              center: rect.left + rect.width / 2,
+            };
+          }),
+        );
 
-      const toPacket = (element) => {
-        const rect = element.getBoundingClientRect();
-
-        return {
-          left: rect.left,
-          center: rect.left + rect.width / 2,
-          right: rect.right,
-        };
-      };
-
-      return {
-        brand: toPacket(brand),
-        center: toPacket(center),
-        nav: toPacket(nav),
-        viewportCenter: window.innerWidth / 2,
-      };
-    });
-
-    assert.ok(desktopLayout.brand.center < desktopLayout.center.center);
-    assert.ok(desktopLayout.center.center < desktopLayout.nav.center);
-    assert.ok(
-      Math.abs(desktopLayout.center.center - desktopLayout.viewportCenter) < 64,
+    const desktopSlots = await getDesktopSlots(desktopPage);
+    assert.deepEqual(
+      desktopSlots.map((slot) => slot.text),
+      ['Consuelo', 'Docs', 'Consuelo OS', 'Portal', 'Install →'],
     );
+    assert.equal(
+      desktopSlots.every((slot) => slot.visible),
+      true,
+    );
+    for (let index = 1; index < desktopSlots.length; index += 1) {
+      assert.ok(desktopSlots[index - 1].center < desktopSlots[index].center);
+    }
+    assert.ok(Math.abs(desktopSlots[2].center - 720) < 64);
+
+    const tabletPage = await browser.newPage({
+      viewport: { width: 820, height: 1180 },
+      isMobile: true,
+    });
+    await tabletPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    const tabletSlots = await getDesktopSlots(tabletPage);
+    assert.deepEqual(
+      tabletSlots.map((slot) => slot.text),
+      ['Consuelo', 'Docs', 'Consuelo OS', 'Portal', 'Install →'],
+    );
+    assert.equal(
+      tabletSlots.every((slot) => slot.visible),
+      true,
+    );
+    for (let index = 1; index < tabletSlots.length; index += 1) {
+      assert.ok(tabletSlots[index - 1].center < tabletSlots[index].center);
+    }
+    assert.ok(Math.abs(tabletSlots[2].center - 410) < 48);
 
     const headerPosition = await header.evaluate(
       (element) => window.getComputedStyle(element).position,

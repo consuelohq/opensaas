@@ -36,6 +36,8 @@ started: 2026-06-28
 ## workspace-owned: validation evidence
 
 - 2026-06-28 18:22:30 `review.run`: passed — OK
+- 2026-06-28 18:25:53 `review.run`: passed — OK
+- 2026-06-28 18:37:55 `review.run`: passed — OK
 
 ## key decisions
 

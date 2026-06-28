@@ -17,20 +17,23 @@ const installHref = 'https://os.consuelohq.com/install.sh'
 ---
 
 <header class="launch-header" data-launch-header data-motion="hero-header">
-	<div class="launch-content launch-content--wide launch-header__desktop">
+	<nav class="launch-content launch-content--wide launch-header__desktop" aria-label="Primary">
 		<a class="launch-header__brand" data-header-brand href="/">Consuelo</a>
-
-		<a class="launch-header__center" href="/" aria-label="Consuelo OS home"> Consuelo OS </a>
-
-		<nav class="launch-header__desktop-nav" aria-label="Primary">
-			<a class="launch-header__link" href={portalHref}>Portal</a>
-			<a class="launch-header__link" href={siteLinks.docs}>Docs</a>
-			<a class="launch-header__link" href={installHref}>
-				<span>Install</span>
-				<span aria-hidden="true">→</span>
-			</a>
-		</nav>
-	</div>
+		<a class="launch-header__link" data-desktop-header-slot href={siteLinks.docs}>Docs</a>
+		<a
+			class="launch-header__center"
+			data-desktop-header-slot
+			href="/"
+			aria-label="Consuelo OS home"
+		>
+			Consuelo OS
+		</a>
+		<a class="launch-header__link" data-desktop-header-slot href={portalHref}>Portal</a>
+		<a class="launch-header__link" data-desktop-header-slot href={installHref}>
+			<span>Install</span>
+			<span aria-hidden="true">→</span>
+		</a>
+	</nav>
 
 	<nav
 		class="launch-content launch-content--wide launch-header__mobile"
@@ -90,14 +93,14 @@ const installHref = 'https://os.consuelohq.com/install.sh'
 	.launch-header__desktop {
 		min-height: 5.75rem;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		align-items: start;
-		gap: 1.5rem;
+		gap: 1rem;
 		padding-block: 1.35rem 1rem;
 	}
 
 	.launch-header__brand,
-	.launch-header__desktop-nav,
+	.launch-header__link,
 	.launch-header__mobile-link,
 	.launch-header__page-link {
 		font-family: var(--site-font-mono);
@@ -117,13 +120,14 @@ const installHref = 'https://os.consuelohq.com/install.sh'
 			opacity 160ms ease;
 	}
 
-	.launch-header__brand {
-		justify-self: start;
+	.launch-header__brand,
+	.launch-header__link,
+	.launch-header__center {
+		justify-self: center;
 		white-space: nowrap;
 	}
 
 	.launch-header__center {
-		justify-self: center;
 		color: var(--launch-fg);
 		font-family: var(--site-font-display);
 		font-size: 1.7rem;
@@ -131,22 +135,12 @@ const installHref = 'https://os.consuelohq.com/install.sh'
 		letter-spacing: 0;
 		line-height: 0.95;
 		text-align: center;
-		white-space: nowrap;
-	}
-
-	.launch-header__desktop-nav {
-		justify-self: end;
-		display: flex;
-		align-items: flex-start;
-		gap: 2rem;
-		color: var(--launch-fg);
 	}
 
 	.launch-header__link {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.28rem;
-		white-space: nowrap;
 	}
 
 	.launch-header__brand:hover,
@@ -204,7 +198,7 @@ const installHref = 'https://os.consuelohq.com/install.sh'
 		white-space: nowrap;
 	}
 
-	@media (max-width: 720px) {
+	@media (max-width: 640px) {
 		.launch-header__desktop {
 			display: none;
 		}
