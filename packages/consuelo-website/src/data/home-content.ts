@@ -125,24 +125,6 @@ export const homeTabs: HomeTab[] = [
     darkImageSrc: '/images/gifs/demo-dark.gif',
     imageAlt: 'Consuelo ChatGPT workspace preview',
   },
-  {
-    id: 'claude',
-    label: 'Claude',
-    kind: 'command',
-    value: 'consuelo connect claude --workspace os-cloud',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo Claude workspace preview',
-  },
-  {
-    id: 'cursor',
-    label: 'Cursor',
-    kind: 'command',
-    value: 'consuelo connect cursor --workspace os-cloud',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo Cursor workspace preview',
-  },
 ];
 
 export const homeOverview: HomeOverviewContent = {
