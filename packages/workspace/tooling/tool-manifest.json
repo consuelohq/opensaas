@@ -6098,5 +6098,109 @@
       "workspaceOnly": "preferred"
     },
     "sessionRequired": false
+  },
+  {
+    "name": "media.svg",
+    "methodPath": [
+      "media",
+      "svg"
+    ],
+    "description": "primitive SVG structure/render/measure/edit/verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering; does not interpret creative prompts",
+    "category": "media",
+    "underlying": "workspace media:svg",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": true,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "MediaSvgInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "media:svg",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value"
+        },
+        {
+          "source": "input",
+          "flag": "--input",
+          "kind": "value"
+        },
+        {
+          "source": "output",
+          "flag": "--output",
+          "kind": "value"
+        },
+        {
+          "source": "svg",
+          "flag": "--svg",
+          "kind": "value"
+        },
+        {
+          "source": "svgFile",
+          "flag": "--svg-file",
+          "kind": "value"
+        },
+        {
+          "source": "documentJson",
+          "flag": "--document-json",
+          "kind": "value"
+        },
+        {
+          "source": "operationsJson",
+          "flag": "--operations-json",
+          "kind": "value"
+        },
+        {
+          "source": "checksJson",
+          "flag": "--checks-json",
+          "kind": "value"
+        },
+        {
+          "source": "renderJson",
+          "flag": "--render-json",
+          "kind": "value"
+        },
+        {
+          "source": "selectorsJson",
+          "flag": "--selectors-json",
+          "kind": "value"
+        },
+        {
+          "source": "snapshot",
+          "flag": "--snapshot",
+          "kind": "boolean"
+        },
+        {
+          "source": "snapshotName",
+          "flag": "--snapshot-name",
+          "kind": "value"
+        },
+        {
+          "source": "restoreFrom",
+          "flag": "--restore-from",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "verify",
+      "input": "asset.svg",
+      "checks": [
+        {
+          "check": "renderable"
+        }
+      ],
+      "render": {
+        "colorScheme": "light"
+      }
+    },
+    "sessionRequired": false
   }
 ]

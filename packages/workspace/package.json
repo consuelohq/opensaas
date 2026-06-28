@@ -55,7 +55,8 @@
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
     "office": "bun ./scripts/office.ts",
-    "task-intent": "bun ./scripts/task-intent.js"
+    "task-intent": "bun ./scripts/task-intent.js",
+    "media:svg": "python3 ./scripts/media-svg.py"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

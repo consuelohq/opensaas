@@ -45,7 +45,7 @@ const releaseHeroMotionGate = (): void => {
   delete document.documentElement.dataset[HERO_READY_ATTRIBUTE];
 };
 
-export const bootLaunchHeroMotion = (): void => {
+export const bootHomeHeroMotion = (): void => {
   const isReady = document.documentElement.dataset[HERO_READY_ATTRIBUTE] === 'true';
   const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
 
