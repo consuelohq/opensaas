@@ -19,7 +19,7 @@ export const siteMetadata = {
   defaultOgImage: '/og.png',
   robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
   themeColorLight: '#FAF7F2',
-  themeColorDark: '#211915',
+  themeColorDark: '#0F0F0D',
   twitterHandle: '@consuelohq',
   docsUrl: 'https://docs.consuelohq.com',
   appUrl: 'https://app.consuelohq.com',
