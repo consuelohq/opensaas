@@ -36,7 +36,7 @@ Use one accent color per screen. A page with a terracotta hero should keep secon
 
 Do not invent new hex values. Add a semantic token when a new value is genuinely required.
 
-Dark mode uses `--site-color-dark-paper` as the same near-black Office canvas so Consuelo web surfaces do not drift into a separate brown shell on mobile.
+Dark mode uses the Office archive canvas (`--paper: #0f0f0d`) through `--site-color-dark-paper`; compact hero controls use lighter controls on light mode and the darker Office `--surface`/`--soft` variation on dark mode.
 
 ## Typography
 

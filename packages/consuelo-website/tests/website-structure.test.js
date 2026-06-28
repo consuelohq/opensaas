@@ -238,9 +238,14 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('font-size: 0.72rem;');
     expect(hero).toContain('padding: var(--site-space-3) var(--site-space-4);');
 
-    expect(tokens).toContain('--site-color-dark-paper: #0B0D0C;');
-    expect(tokens).toContain('--site-color-dark-surface: #15110F;');
-    expect(tokens).toContain('--site-color-dark-surface-raised: #211915;');
+    expect(tokens).toContain('--site-color-dark-paper: #0F0F0D;');
+    expect(tokens).toContain('--site-color-dark-surface: #191814;');
+    expect(tokens).toContain('--site-color-dark-surface-raised: #221F1A;');
+    expect(tokens).toContain('--site-color-dark-control: #191814;');
+    expect(tokens).toContain('--site-color-dark-control-panel: #221F1A;');
+    expect(tokens).toContain('--site-color-control: var(--site-color-dark-control);');
+    expect(tokens).toContain('--site-color-control-panel: var(--site-color-dark-control-panel);');
+    expect(tokens).not.toContain('--site-color-dark-paper: #0B0D0C;');
     expect(tokens).not.toContain('--site-color-dark-paper: #211915;');
   });
 
@@ -253,6 +258,8 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('justify-content: center;');
     expect(hero).toContain('gap: var(--site-space-2);');
     expect(hero).toContain('box-shadow: var(--site-shadow-control);');
+    expect(hero).toContain('background: var(--site-color-control);');
+    expect(hero).toContain('background: var(--site-color-control-panel);');
     expect(hero).toContain('width: min(100%, 32rem);');
     expect(hero).toContain('font: 700 var(--site-text-xs) / 1 var(--site-font-mono);');
     expect(hero).toContain('font: 500 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);');
@@ -263,6 +270,8 @@ describe('Consuelo website structure', () => {
     expect(hero).not.toContain('min-height: 3.5rem;');
 
     expect(tokens).toContain('--site-shadow-control:');
+    expect(tokens).toContain('--site-color-control: #FFFFFF;');
+    expect(tokens).toContain('--site-color-control-panel: #FBF7F0;');
   });
 
   test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {
@@ -274,6 +283,9 @@ describe('Consuelo website structure', () => {
     const seoHead = readSource('src/components/SeoHead.astro');
     expect(seoHead).toContain('../lib/site-seo');
     expect(seoHead).toContain('application/ld+json');
+
+    const siteSeo = readSource('src/lib/site-seo.ts');
+    expect(siteSeo).toContain("themeColorDark: '#0F0F0D'");
 
     const { siteLinks, ghlMarketplaceUrl } = await import(pathToFileURL(join(sourceRoot, 'data/site-links.ts')).href);
     expect(siteLinks.app).toBe('https://app.consuelohq.com');
