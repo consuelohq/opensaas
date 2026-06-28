@@ -3,6 +3,9 @@
     "userGuide": {
       "label": "User Guide",
       "groups": {
+        "userStoriesUseCases": {
+          "label": "User Stories & Use Cases"
+        },
         "gettingStarted": {
           "label": "Getting Started",
           "groups": {
@@ -14,34 +17,87 @@
             }
           }
         },
-        "documentation": {
-          "label": "Documentation",
+        "usingConsueloOs": {
+          "label": "Using Consuelo OS",
           "groups": {
-            "osDocumentation": {
-              "label": "OS",
+            "osOverview": {
+              "label": "Overview"
+            },
+            "osConcepts": {
+              "label": "Concepts"
+            }
+          }
+        },
+        "features": {
+          "label": "Features"
+        },
+        "userGuideTools": {
+          "label": "Tools"
+        },
+        "integrations": {
+          "label": "Integrations"
+        },
+        "guidesTutorials": {
+          "label": "Guides & Tutorials"
+        },
+        "developerGuide": {
+          "label": "Developer Guide",
+          "groups": {
+            "developerAgent": {
+              "label": "Agent Development"
+            },
+            "developerApi": {
+              "label": "API"
+            }
+          }
+        },
+        "reference": {
+          "label": "Reference",
+          "groups": {
+            "osTools": {
+              "label": "Tools"
+            },
+            "osAgentContext": {
+              "label": "Agent Context"
+            },
+            "osSkills": {
+              "label": "Skills",
               "groups": {
-                "osOverview": {
-                  "label": "Overview"
-                },
-                "osConcepts": {
-                  "label": "Concepts"
-                },
-                "osAgentContext": {
-                  "label": "Agent Context"
-                },
-                "osTools": {
-                  "label": "Tools"
-                },
-                "osSkills": {
-                  "label": "Skills",
-                  "groups": {
-                    "osPlannedSkills": {
-                      "label": "Planned Skills"
-                    }
-                  }
+                "osPlannedSkills": {
+                  "label": "Planned Skills"
                 }
               }
             },
+            "twentyUi": {
+              "label": "Consuelo UI",
+              "groups": {
+                "display": {
+                  "label": "Display"
+                },
+                "feedback": {
+                  "label": "Feedback"
+                },
+                "input": {
+                  "label": "Input"
+                },
+                "navigation": {
+                  "label": "Navigation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "label": "Tools",
+      "groups": {
+        "toolsOverview": {
+          "label": "Overview"
+        },
+        "sitesTools": {
+          "label": "Sites",
+          "groups": {
             "dataModel": {
               "label": "Data Model",
               "groups": {
@@ -179,33 +235,11 @@
                   "label": "How-Tos"
                 }
               }
-            },
-            "twentyUi": {
-              "label": "Consuelo UI",
-              "groups": {
-                "display": {
-                  "label": "Display"
-                },
-                "feedback": {
-                  "label": "Feedback"
-                },
-                "input": {
-                  "label": "Input"
-                },
-                "navigation": {
-                  "label": "Navigation"
-                }
-              }
             }
           }
-        }
-      }
-    },
-    "tools": {
-      "label": "Tools",
-      "groups": {
-        "toolsOverview": {
-          "label": "Overview"
+        },
+        "officeTools": {
+          "label": "Office"
         },
         "mediaTools": {
           "label": "Media",
@@ -217,9 +251,6 @@
               "label": "Reference"
             }
           }
-        },
-        "officeTools": {
-          "label": "Office"
         },
         "browserTools": {
           "label": "Browser"
