@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/first-pass-consuelo-website-hero",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1248,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1248",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1248",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1248/first-pass-consuelo-website-hero",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1248",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1248/first-pass-consuelo-website-hero",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-first-pass-consuelo-website-hero",
+  "taskSession": "tsk_8c281749ff7b",
+  "tmuxSession": "opensaas-sites-first-pass-consuelo-website-hero-8c281749",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-first-pass-consuelo-website-hero/.task/sites/first-pass-consuelo-website-hero/session.json",
+  "createdAt": "2026-06-28T02:32:09.498Z"
+}

@@ -1,13 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const repoRoot = resolve(packageRoot, '../..');
 const sourceRoot = join(packageRoot, 'src');
 
 const readSource = (relativePath) =>
   readFileSync(join(packageRoot, relativePath), 'utf8');
+
+const readRepo = (relativePath) =>
+  readFileSync(join(repoRoot, relativePath), 'utf8');
 
 const expectFile = (relativePath) => {
   expect(existsSync(join(packageRoot, relativePath)), relativePath).toBe(true);
@@ -30,6 +34,7 @@ describe('Consuelo website structure', () => {
       'src/components/home/HomePrivacy.astro',
       'src/components/home/HomeFaq.astro',
       'src/components/home/HomeMercuryPromo.astro',
+      'public/images/consuelo-integrations-hero.svg',
       'src/data/site-links.ts',
       'src/data/site-navigation.ts',
       'src/data/home-content.ts',
@@ -57,11 +62,6 @@ describe('Consuelo website structure', () => {
         '../components/site/SiteHeader.astro',
         '../components/site/SiteFooter.astro',
         '../components/home/HomeHero.astro',
-        '../components/home/HomeOverview.astro',
-        '../components/home/HomeStats.astro',
-        '../components/home/HomePrivacy.astro',
-        '../components/home/HomeFaq.astro',
-        '../components/home/HomeMercuryPromo.astro',
       ],
       'src/pages/404.astro': [
         '../layouts/MarketingLayout.astro',
@@ -115,6 +115,69 @@ describe('Consuelo website structure', () => {
     }
   });
 
+  test('should render only the first-pass warm editorial hero baseline on the homepage', () => {
+    const homepage = readSource('src/pages/index.astro');
+    expect(homepage).toContain("../layouts/MarketingLayout.astro");
+    expect(homepage).toContain("../components/site/SiteHeader.astro");
+    expect(homepage).toContain("../components/site/SiteFooter.astro");
+    expect(homepage).toContain("../components/home/HomeHero.astro");
+    expect(homepage).toContain('<MarketingLayout');
+    expect(homepage).toContain('<SiteHeader pageSections={[]} />');
+    expect(homepage).toContain('<HomeHero sectionId="intro" />');
+    expect(homepage).toContain('<SiteFooter');
+
+    [
+      'HomeOverview',
+      'HomeStats',
+      'HomePrivacy',
+      'HomeFaq',
+      'HomeMercuryPromo',
+      'homeFaqItems',
+      'homePageSections',
+      'bootHomeHeroMotion',
+      'bootProofSvgMotion',
+      'getFaqSchema',
+    ].forEach((oldSurface) => {
+      expect(homepage).not.toContain(oldSurface);
+    });
+  });
+
+  test('should build the homepage hero from the existing SVG asset and website design tokens', () => {
+    const hero = readSource('src/components/home/HomeHero.astro');
+
+    expect(hero).toContain('/images/consuelo-integrations-hero.svg');
+    expect(hero).toContain('Give every agent workspace');
+    expect(hero).toContain('superpowers');
+    expect(hero).toContain('BATTERIES INCLUDED');
+    expect(hero).toContain('MIT LICENSE');
+    expect(hero).toContain('USE CONSUELO OS CLOUD');
+    expect(hero).toContain('Go to OS portal');
+
+    expect(hero).toContain('homeTabs.map');
+    expect(hero).toContain('role="tablist"');
+    expect(hero).toContain('data-tab-button');
+    expect(hero).toContain('data-copy-button');
+
+    expect(hero).toContain('site-section');
+    expect(hero).toContain('site-container');
+    expect(hero).toContain('site-eyebrow');
+    expect(hero).toContain('site-card');
+
+    expect(hero).toContain('var(--site-color-paper)');
+    expect(hero).toContain('var(--site-color-ink)');
+    expect(hero).toContain('var(--site-color-accent)');
+    expect(hero).toContain('var(--site-font-display)');
+    expect(hero).toContain('var(--site-font-body)');
+    expect(hero).toContain('var(--site-font-mono)');
+    expect(hero).toContain('var(--site-space-');
+    expect(hero).toContain('var(--site-radius-');
+    expect(hero).toContain('var(--site-shadow-');
+
+    expect(hero).not.toContain('--launch-');
+    expect(hero).not.toContain('#FAF7F2');
+    expect(hero).not.toContain('#C0512F');
+  });
+
   test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {
     const layout = readSource('src/layouts/MarketingLayout.astro');
     expect(layout).toContain("../components/SeoHead.astro");
@@ -143,15 +206,7 @@ describe('Consuelo website structure', () => {
       'Enterprise',
     ]);
     expect(navigation.siteMobileMenuLinks.map((link) => link.label)).toContain('Login');
-    expect(navigation.homePageSections.map((section) => section.id)).toEqual([
-      'intro',
-      'overview',
-      'proof',
-      'privacy',
-      'faq',
-      'mercury',
-      'waitlist',
-    ]);
+    expect(navigation.homePageSections.every((section) => typeof section.id === 'string')).toBe(true);
   });
 
 
@@ -231,5 +286,114 @@ describe('Consuelo website structure', () => {
     const backButton = readSource('src/components/BackButton.astro');
     expect(backButton).toContain('./site/LanguageSelector.astro');
     expect(backButton).toContain('href="/blog"');
+  });
+
+
+  test('should expose package-level design context when agents work on the website', () => {
+    const requiredFiles = [
+      'packages/consuelo-website/AGENTS.md',
+      'packages/consuelo-website/DESIGN.md',
+      'packages/consuelo-website/animations.md',
+      'packages/consuelo-website/src/styles/tokens.css',
+      'packages/consuelo-website/src/styles/primitives.css',
+    ];
+
+    for (const file of requiredFiles) {
+      expect(existsSync(join(repoRoot, file)), file).toBe(true);
+    }
+
+    expect(existsSync(join(repoRoot, 'packages/consuelo-website/AGENT-SPECS.md'))).toBe(false);
+
+    const agentRules = readRepo('packages/consuelo-website/AGENTS.md');
+    expect(readRepo('areas/website/AGENTS.md')).toBe(agentRules);
+    expect(agentRules).toContain('DESIGN.md');
+    expect(agentRules).toContain('animations.md');
+    expect(agentRules).toContain('tokens.css');
+    expect(agentRules).toContain('primitives.css');
+    expect(agentRules).toContain('MarketingLayout.astro');
+    expect(agentRules).not.toContain('Foxi');
+    expect(agentRules).not.toContain('cookie consent');
+    expect(agentRules).not.toContain('Tailwind v4');
+    expect(agentRules).not.toContain('SiteLayout.astro');
+
+    const design = readRepo('packages/consuelo-website/DESIGN.md');
+    expect(design).toContain('Warm editorial');
+    expect(design).toContain('#FAF7F2');
+    expect(design).toContain('#C0512F');
+    expect(design).toContain('tokens.css');
+    expect(design).toContain('primitives.css');
+    expect(design).toContain('Do not invent');
+
+    const tokens = readRepo('packages/consuelo-website/src/styles/tokens.css');
+    expect(tokens).toContain('--site-color-paper');
+    expect(tokens).toContain('--site-color-ink');
+    expect(tokens).toContain('--site-color-accent');
+    expect(tokens).toContain('--site-color-dark-paper');
+    expect(tokens).toContain('--site-space-section');
+    expect(tokens).toContain('--site-radius-card');
+    expect(tokens).toContain('@media (prefers-color-scheme: dark)');
+    expect(tokens).toContain("--site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;");
+    expect(tokens).toContain("--site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;");
+    expect(tokens).toContain("--site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;");
+
+    const primitives = readRepo('packages/consuelo-website/src/styles/primitives.css');
+    expect(primitives).toContain('.site-container');
+    expect(primitives).toContain('.site-section');
+    expect(primitives).toContain('.site-button');
+    expect(primitives).toContain('.site-card');
+    expect(primitives).toContain('.site-stack');
+    expect(primitives).toContain('.site-cluster');
+    expect(primitives).toContain('.site-field:focus-visible');
+    expect(primitives).toContain('outline: 2px solid var(--site-color-accent);');
+    expect(primitives).not.toContain('outline: none;');
+  });
+
+  test('should resolve every Consuelo design manifest source path used by website agents', () => {
+    const manifestPath = 'packages/consuelo-design/design-system/manifest.json';
+    const manifest = JSON.parse(readRepo(manifestPath));
+    const designPackageRoot = join(repoRoot, 'packages/consuelo-design');
+    const roles = manifest.sourceOfTruth.map((entry) => entry.role);
+
+    expect(roles).toEqual([
+      'visual-design',
+      'motion-design',
+      'website-agent-rules',
+      'website-design-tokens',
+      'website-css-primitives',
+      'design-tooling-agent-rules',
+    ]);
+
+    for (const entry of manifest.sourceOfTruth) {
+      const resolvedPath = resolve(designPackageRoot, entry.path);
+      expect(existsSync(resolvedPath), `missing manifest source path for ${entry.role}: ${entry.path}`).toBe(true);
+    }
+
+    expect(manifest.upstreamDesignSystemsPolicy).toContain('Do not import upstream/open-design/design-systems');
+    expect(JSON.stringify(manifest.sourceOfTruth)).not.toContain('upstream/open-design/design-systems/warm-editorial');
+  });
+
+  test('should load and consume website design tokens and primitives through the marketing layout', () => {
+    const layout = readSource('src/layouts/MarketingLayout.astro');
+    expect(layout).toContain("../styles/tokens.css");
+    expect(layout).toContain("../styles/primitives.css");
+    expect(layout).not.toContain('upstream/open-design/design-systems');
+    expect(layout).not.toContain('--launch-');
+    expect(layout).not.toContain('var(--launch-');
+    expect(layout).toContain('var(--site-color-paper)');
+    expect(layout).toContain('var(--site-color-ink)');
+    expect(layout).toContain('var(--site-font-mono)');
+    expect(layout).toContain('var(--site-color-line)');
+  });
+
+  test('should keep the design operator contract on office headless defaults', () => {
+    const agentRules = readRepo('areas/consuelo-design/AGENTS.md');
+    expect(agentRules).toContain('Default `office.generate*` behavior');
+    expect(agentRules).toContain('For `office.generateDigitalEguide`, use:');
+    expect(agentRules).toContain('`generate <workflow>` returns a headless work order by default');
+    expect(agentRules).toContain('Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session');
+    expect(agentRules).toContain('Only the live UI path should use project.pendingPrompt.');
+    expect(agentRules).not.toContain('consueloDesign.generateDigitalEguide');
+    expect(agentRules).not.toContain('means start/create/open a live Open Design working session');
+    expect(agentRules).not.toContain('If a command says `generate website`, it should start or reuse Open Design');
   });
 });

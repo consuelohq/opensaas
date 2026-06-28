@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8c281749ff7b",
+  "tmuxSession": "opensaas-sites-first-pass-consuelo-website-hero-8c281749",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/first-pass-consuelo-website-hero",
+  "branch": "task/sites/first-pass-consuelo-website-hero",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-first-pass-consuelo-website-hero",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-first-pass-consuelo-website-hero",
+  "prNumber": 1248,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1248",
+  "createdAt": "2026-06-28T02:32:09.496Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-first-pass-consuelo-website-hero/.task/sites/first-pass-consuelo-website-hero/session.json"
+}
