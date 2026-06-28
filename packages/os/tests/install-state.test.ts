@@ -88,7 +88,6 @@ describe('local OS install state', () => {
       'logs',
       'runs',
       'cache',
-      'runtime',
       'steering',
       'bin',
       'tmp',
@@ -113,6 +112,15 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'runtime'))).toBe(false);
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    expect(chatgptMcp).toMatchObject({
+      auth: 'bearer',
+      url: 'https://local.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:8960/mcp',
+    });
+    expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
+    expect(chatgptMcp.scopes).toEqual(expect.arrayContaining(['route:/mcp:read', 'tool:*:read']));
     expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'intent.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'dispatcher.js'))).toBe(true);

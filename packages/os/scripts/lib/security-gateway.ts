@@ -1,7 +1,9 @@
 import {
+  createHash,
   createPrivateKey,
   createPublicKey,
   generateKeyPairSync,
+  randomBytes,
   randomUUID,
   sign as cryptoSign,
   verify as cryptoVerify,
@@ -47,6 +49,7 @@ export type AgentAppToken = {
   scopes: string[];
   expiresAt: string;
   secret: string;
+  bearerToken?: string;
 };
 
 export type AgentAppCredentialStatus = {
@@ -150,10 +153,11 @@ type OutboundConnectorConfig = {
   cloudflare: { managedHostname: string; publicRoutes: string[] };
 };
 
-type StoredToken = Omit<AgentAppToken, 'secret'> & {
+type StoredToken = Omit<AgentAppToken, 'secret' | 'bearerToken'> & {
   status: 'active' | 'rotated' | 'revoked';
   signatureAlgorithm: SignatureAlgorithm;
   publicKey: string;
+  bearerTokenHash?: string;
   createdAt: string;
   updatedAt: string;
   rotatedAt?: string;
@@ -210,6 +214,23 @@ function fallbackConnectionId(tokenId: string): string {
   return `connection:${tokenId}`;
 }
 
+function bearerTokenHash(value: string): string {
+  return `sha256:${Buffer.from(createHash('sha256').update(value).digest()).toString('base64url')}`;
+}
+
+function generateOpaqueBearerToken(): string {
+  return `cst_${randomBytes(32).toString('base64url')}`;
+}
+
+function hasGrantedScope(scopes: string[], requiredScope: string): boolean {
+  if (scopes.includes(requiredScope)) return true;
+  const parts = requiredScope.split(':');
+  if (parts.length === 3 && parts[0] === 'tool') {
+    return scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*');
+  }
+  return false;
+}
+
 function generateCredentialKeyPair(): { privateKey: string; publicKey: string } {
   const { privateKey, publicKey } = generateKeyPairSync('ed25519');
   return {
@@ -218,7 +239,7 @@ function generateCredentialKeyPair(): { privateKey: string; publicKey: string } 
   };
 }
 
-function publicTokenFromStored(token: StoredToken, secret: string): AgentAppToken {
+function publicTokenFromStored(token: StoredToken, secret: string, bearerToken?: string): AgentAppToken {
   return {
     tokenId: token.tokenId,
     workspaceId: token.workspaceId,
@@ -231,6 +252,7 @@ function publicTokenFromStored(token: StoredToken, secret: string): AgentAppToke
     scopes: [...token.scopes],
     expiresAt: token.expiresAt,
     secret,
+    ...(bearerToken ? { bearerToken } : {}),
   };
 }
 
@@ -374,6 +396,7 @@ function normalizeStoredTokens(value: unknown, fallbackTimestamp: string): Recor
       expiresAt: candidate.expiresAt,
       signatureAlgorithm: SIGNATURE_ALGORITHM,
       publicKey: candidate.publicKey,
+      ...(typeof candidate.bearerTokenHash === 'string' ? { bearerTokenHash: candidate.bearerTokenHash } : {}),
       status,
       createdAt,
       updatedAt,
@@ -689,6 +712,7 @@ export function issueAgentAppToken(input: {
 }): AgentAppToken {
   const stored = readStoredAuth(input.config);
   const keyPair = generateCredentialKeyPair();
+  const bearerToken = generateOpaqueBearerToken();
   const timestamp = nowIso();
   const tokenId = `tok_${randomUUID()}`;
   const token: StoredToken = {
@@ -704,6 +728,7 @@ export function issueAgentAppToken(input: {
     expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
     signatureAlgorithm: SIGNATURE_ALGORITHM,
     publicKey: keyPair.publicKey,
+    bearerTokenHash: bearerTokenHash(bearerToken),
     status: 'active',
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -711,7 +736,7 @@ export function issueAgentAppToken(input: {
   recordCredentialAuditEvent(input.config, token, 'gateway.credential.issued', 'issued');
   stored.tokens[token.tokenId] = token;
   writeStoredAuth(input.config, stored);
-  return publicTokenFromStored(token, keyPair.privateKey);
+  return publicTokenFromStored(token, keyPair.privateKey, bearerToken);
 }
 
 export function rotateAgentAppToken(input: {
@@ -725,6 +750,7 @@ export function rotateAgentAppToken(input: {
   }
   const timestamp = nowIso();
   const keyPair = generateCredentialKeyPair();
+  const bearerToken = generateOpaqueBearerToken();
   const rotatedExisting: StoredToken = {
     ...existing,
     status: 'rotated',
@@ -744,6 +770,7 @@ export function rotateAgentAppToken(input: {
     expiresAt: existing.expiresAt,
     signatureAlgorithm: SIGNATURE_ALGORITHM,
     publicKey: keyPair.publicKey,
+    bearerTokenHash: bearerTokenHash(bearerToken),
     status: 'active',
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -754,7 +781,7 @@ export function rotateAgentAppToken(input: {
   stored.tokens[rotatedExisting.tokenId] = rotatedExisting;
   stored.tokens[rotated.tokenId] = rotated;
   writeStoredAuth(input.config, stored);
-  return publicTokenFromStored(rotated, keyPair.privateKey);
+  return publicTokenFromStored(rotated, keyPair.privateKey, bearerToken);
 }
 
 export function revokeAgentAppToken(input: {
@@ -1060,7 +1087,7 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  if (!token.scopes.includes(input.requiredScope)) {
+  if (!hasGrantedScope(token.scopes, input.requiredScope)) {
     return denyCredentialUse({
       config: input.config,
       token,
@@ -1084,6 +1111,52 @@ export function verifyMachineRequest(input: {
     'allowed',
     input.path,
   );
+  writeStoredAuth(input.config, stored);
+  return {
+    ok: true,
+    caller: {
+      workspaceId: token.workspaceId,
+      subjectId: token.subjectId,
+      deviceId: token.deviceId,
+      connectorId: token.connectorId,
+      connectionId: token.connectionId,
+      callerId: token.callerId,
+      appId: token.appId,
+      scopes: [...token.scopes],
+    },
+  };
+}
+
+
+export function verifyBearerMcpRequest(input: {
+  config: GatewaySecurityConfig;
+  bearerToken: string;
+  path: string;
+  requiredScope: string;
+  now: string;
+}): VerificationResult {
+  const stored = readStoredAuth(input.config);
+  const tokenHash = bearerTokenHash(input.bearerToken);
+  const token = Object.values(stored.tokens).find((candidate) => candidate.bearerTokenHash === tokenHash);
+  if (!token) return safeError(401, 'UNKNOWN_TOKEN', 'Gateway bearer token is not recognized.');
+  if (token.status === 'rotated') {
+    return denyCredentialUse({ config: input.config, token, status: 401, code: 'TOKEN_ROTATED', message: 'Gateway token has been rotated.', decision: 'token_rotated', route: input.path });
+  }
+  if (token.status === 'revoked') {
+    return denyCredentialUse({ config: input.config, token, status: 401, code: 'TOKEN_REVOKED', message: 'Gateway token has been revoked.', decision: 'token_revoked', route: input.path });
+  }
+  const nowTime = Date.parse(input.now);
+  const expiresAt = Date.parse(token.expiresAt);
+  if (!Number.isFinite(nowTime) || !Number.isFinite(expiresAt) || expiresAt <= nowTime) {
+    return denyCredentialUse({ config: input.config, token, status: 401, code: 'TOKEN_EXPIRED', message: 'Gateway token has expired.', decision: 'token_expired', route: input.path });
+  }
+  if (!hasGrantedScope(token.scopes, input.requiredScope)) {
+    return denyCredentialUse({ config: input.config, token, status: 403, code: 'MISSING_SCOPE', message: 'Gateway token does not grant the required scope.', decision: 'missing_scope', route: input.path });
+  }
+  const verifiedAt = new Date(nowTime).toISOString();
+  token.lastUsedAt = verifiedAt;
+  token.updatedAt = verifiedAt;
+  recordCredentialAuditEvent(input.config, token, 'gateway.bearer.used', 'verified', 'allowed', input.path);
   writeStoredAuth(input.config, stored);
   return {
     ok: true,

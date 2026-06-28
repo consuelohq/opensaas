@@ -6,6 +6,7 @@ import path from 'node:path';
 import {
   loadGatewaySecurityConfig,
   resolveToolScope,
+  verifyBearerMcpRequest,
   verifyMachineRequest,
   type VerificationResult,
 } from './lib/security-gateway';
@@ -53,8 +54,31 @@ function textResponse(body: string, status = 200): Response {
   });
 }
 
-function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized'): Response {
-  return jsonResponse({ error: { code, message } }, 401);
+function unauthorized(code = 'UNAUTHORIZED', message = 'Unauthorized', headers: HeadersInit = {}): Response {
+  const response = jsonResponse({ error: { code, message } }, 401);
+  for (const [key, value] of new Headers(headers).entries()) response.headers.set(key, value);
+  return response;
+}
+
+
+function workspaceHostFromRequest(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  const explicit = request.headers.get('x-consuelo-hostname')?.trim();
+  if (explicit) return explicit.toLowerCase();
+  if (config?.workspaceHost) return config.workspaceHost;
+  const host = request.headers.get('host')?.trim();
+  return host ? host.toLowerCase() : 'localhost';
+}
+
+function protectedResourceMetadataUrl(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  const workspaceHost = workspaceHostFromRequest(request, config);
+  if (workspaceHost === 'localhost' || workspaceHost.startsWith('127.')) {
+    return 'https://os.consuelohq.com/.well-known/oauth-protected-resource';
+  }
+  return `https://${workspaceHost}/.well-known/oauth-protected-resource`;
+}
+
+function oauthDiscoveryChallenge(request: Request, config?: ReturnType<typeof loadGatewaySecurityConfig>): string {
+  return `Bearer realm="Consuelo OS MCP", resource_metadata="${protectedResourceMetadataUrl(request, config)}"`;
 }
 
 function loadOsRuntime(): Promise<typeof import('./os')> {
@@ -150,6 +174,101 @@ async function authorizeSignedRequest(input: {
   });
 
   return result.ok ? null : verificationResponse(result);
+}
+
+
+function bearerTokenFromRequest(request: Request): string | null {
+  const value = request.headers.get('authorization') ?? '';
+  const match = value.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
+
+async function authorizeBearerMcpRequest(input: {
+  request: Request;
+  path: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  const bearerToken = bearerTokenFromRequest(input.request);
+  if (!bearerToken) {
+    let config: ReturnType<typeof loadGatewaySecurityConfig> | undefined;
+    try { config = loadAuthConfigForRequest(); } catch { config = undefined; }
+    return unauthorized('MISSING_BEARER', 'Bearer token is required.', {
+      'www-authenticate': oauthDiscoveryChallenge(input.request, config),
+    });
+  }
+  let config: ReturnType<typeof loadGatewaySecurityConfig>;
+  try {
+    config = loadAuthConfigForRequest();
+  } catch {
+    return unauthorized('AUTH_CONFIG_REQUIRED', 'Generated Consuelo OS auth config is required.');
+  }
+  const result = verifyBearerMcpRequest({
+    config,
+    bearerToken,
+    path: input.path,
+    requiredScope: input.requiredScope,
+    now: new Date().toISOString(),
+  });
+  if (result.ok) return null;
+  if (result.error.code !== 'UNKNOWN_TOKEN') return verificationResponse(result);
+
+  const oauthResult = await authorizeConsueloOAuthMcpRequest({
+    config,
+    bearerToken,
+    requiredScope: input.requiredScope,
+  });
+  return oauthResult;
+}
+
+function scopeAllowed(scopes: string[], requiredScope: string): boolean {
+  if (scopes.includes(requiredScope)) return true;
+  const parts = requiredScope.split(':');
+  return parts.length === 3 && parts[0] === 'tool' && (
+    scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')
+  );
+}
+
+async function authorizeConsueloOAuthMcpRequest(input: {
+  config: ReturnType<typeof loadGatewaySecurityConfig>;
+  bearerToken: string;
+  requiredScope: string;
+}): Promise<Response | null> {
+  const endpoint = process.env.CONSUELO_OS_OAUTH_INTROSPECTION_URL ?? 'https://os.consuelohq.com/oauth/introspect';
+  const resource = `https://${input.config.workspaceHost}/mcp`;
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: input.bearerToken,
+        resource,
+        scope: input.requiredScope,
+      }).toString(),
+    });
+  } catch {
+    return unauthorized('OAUTH_INTROSPECTION_UNAVAILABLE', 'Consuelo OAuth introspection is unavailable.');
+  }
+  const payload = await response.json().catch(() => null) as Record<string, unknown> | null;
+  if (!response.ok || !payload || payload.active !== true) {
+    return unauthorized('UNKNOWN_TOKEN', 'Gateway bearer token is not recognized.');
+  }
+  const workspaceHost = typeof payload.workspace_host === 'string' ? payload.workspace_host : '';
+  if (workspaceHost !== input.config.workspaceHost) {
+    return jsonResponse({ error: { code: 'WORKSPACE_MISMATCH', message: 'OAuth token is not bound to this workspace.' } }, 403);
+  }
+  const scopes = Array.isArray(payload.scopes)
+    ? payload.scopes.filter((scope): scope is string => typeof scope === 'string')
+    : typeof payload.scope === 'string'
+      ? payload.scope.split(/\s+/).filter(Boolean)
+      : [];
+  if (!scopeAllowed(scopes, input.requiredScope)) {
+    return jsonResponse({ error: { code: 'MISSING_SCOPE', message: 'OAuth token does not grant the required scope.' } }, 403);
+  }
+  return null;
 }
 
 function parseCallInput(body: string): CallInput {
@@ -289,9 +408,6 @@ async function handleRequest(request: Request): Promise<Response> {
       const rawMaterialDenied = admitRawMcpBody(body);
       if (rawMaterialDenied) return rawMaterialDenied;
 
-      const preflightDenied = authPreflight(request);
-      if (preflightDenied) return preflightDenied;
-
       const decodedMaterialDenied = admitDecodedMcpBody(body);
       if (decodedMaterialDenied) return decodedMaterialDenied;
 
@@ -300,12 +416,19 @@ async function handleRequest(request: Request): Promise<Response> {
         return jsonResponse({ ok: false, error: mcpScope.error }, mcpScope.status);
       }
 
-      const denied = await authorizeSignedRequest({
-        request,
-        path: '/mcp',
-        body,
-        requiredScope: mcpScope.requiredScope,
-      });
+      const headers = requestHeaders(request);
+      const denied = hasSignedGatewayHeaders(headers)
+        ? await authorizeSignedRequest({
+            request,
+            path: '/mcp',
+            body,
+            requiredScope: mcpScope.requiredScope,
+          })
+        : await authorizeBearerMcpRequest({
+            request,
+            path: '/mcp',
+            requiredScope: mcpScope.requiredScope,
+          });
       if (denied) return denied;
 
       const result = await handleMcpGatewayJsonRpc(body, {
