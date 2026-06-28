@@ -165,6 +165,34 @@
         }
       }
     },
+    "tools": {
+      "label": "Tools",
+      "groups": {
+        "toolsOverview": {
+          "label": "Overview"
+        },
+        "mediaTools": {
+          "label": "Media",
+          "groups": {
+            "mediaWorkflows": {
+              "label": "Workflows"
+            },
+            "mediaReference": {
+              "label": "Reference"
+            }
+          }
+        },
+        "officeTools": {
+          "label": "Office"
+        },
+        "browserTools": {
+          "label": "Browser"
+        },
+        "workspaceTools": {
+          "label": "Workspace"
+        }
+      }
+    },
     "os": {
       "label": "OS",
       "groups": {
