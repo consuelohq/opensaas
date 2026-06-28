@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "הודעת דוא\"ל מבחן"
-
-#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -74,44 +69,9 @@ msgid "Update your subscription"
 msgstr "עדכן את המנוי שלך"
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
-msgstr "אמת את כתובת האימייל שלך"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
-msgstr "אמת דוא\"ל"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "הסיסמה עודכנה"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "זוהי אישור שהסיסמה לחשבון שלך ({email}) שונתה בהצלחה ב-{formattedDate}."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "אם לא אתה התחלת את השינוי הזה, אנא פנה מיד לבעל מרחב העבודה שלך."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "הודעת דוא\"ל מבחן"
 
 #. js-lingui-explicit-id
 #: src/emails/send-invite-link.email.tsx
@@ -154,6 +114,26 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "הקישור הזה תקף רק ל-{duration} הבאים. אם הקישור לא עובד, תוכל להשתמש בקישור אימות ההתחברות ישירות:"
 
 #. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "הסיסמה עודכנה"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "זוהי אישור שהסיסמה לחשבון שלך ({email}) שונתה בהצלחה ב-{formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "אם לא אתה התחלת את השינוי הזה, אנא פנה מיד לבעל מרחב העבודה שלך."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "מרחב עבודה שנמחק"
@@ -187,6 +167,26 @@ msgstr ""
 #: src/components/WhatIsTwenty.tsx
 msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "אמת את כתובת האימייל שלך"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "אמת דוא\"ל"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
