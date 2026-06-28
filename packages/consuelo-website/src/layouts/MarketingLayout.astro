@@ -113,38 +113,25 @@ const {
 <style is:global>
   :root {
     color-scheme: light;
-    --launch-bg: #ffffff;
-    --launch-fg: #000000;
-    --launch-muted: rgba(0, 0, 0, 0.62);
-    --launch-soft: rgba(0, 0, 0, 0.04);
-    --launch-line: rgba(0, 0, 0, 0.12);
-    --launch-panel: rgba(0, 0, 0, 0.03);
-    --launch-panel-strong: rgba(0, 0, 0, 0.06);
-    --launch-dropdown-bg: #fbfbfa;
-    --launch-dropdown-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
-    --launch-shimmer-stop-1: rgba(0, 0, 0, 0.18);
-    --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
-    --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
-    --launch-success: #6fdd92;
-    --launch-mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --launch-bg: var(--site-color-paper);
+    --launch-fg: var(--site-color-ink);
+    --launch-muted: var(--site-color-muted);
+    --launch-soft: var(--site-color-soft);
+    --launch-line: var(--site-color-line);
+    --launch-panel: var(--site-color-surface);
+    --launch-panel-strong: color-mix(in srgb, var(--site-color-ink) 6%, var(--site-color-surface));
+    --launch-dropdown-bg: var(--site-color-surface);
+    --launch-dropdown-shadow: var(--site-shadow-raised);
+    --launch-shimmer-stop-1: color-mix(in srgb, var(--site-color-ink) 18%, transparent);
+    --launch-shimmer-stop-2: color-mix(in srgb, var(--site-color-ink) 40%, transparent);
+    --launch-shimmer-stop-3: color-mix(in srgb, var(--site-color-ink) 82%, transparent);
+    --launch-success: var(--site-color-secondary);
+    --launch-mono-font: var(--site-font-mono);
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       color-scheme: dark;
-      --launch-bg: #000000;
-      --launch-fg: #ffffff;
-      --launch-muted: rgba(255, 255, 255, 0.68);
-      --launch-soft: rgba(255, 255, 255, 0.04);
-      --launch-line: rgba(255, 255, 255, 0.1);
-      --launch-panel: #0e0e10;
-      --launch-panel-strong: rgba(255, 255, 255, 0.08);
-      --launch-dropdown-bg: #111111;
-      --launch-dropdown-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-      --launch-shimmer-stop-1: rgba(255, 255, 255, 0.22);
-      --launch-shimmer-stop-2: rgba(255, 255, 255, 0.52);
-      --launch-shimmer-stop-3: rgba(255, 255, 255, 0.88);
-      --launch-success: #82e8a4;
     }
   }
 
@@ -153,7 +140,7 @@ const {
   }
 
   html {
-    background: var(--launch-bg);
+    background: var(--site-color-paper);
     scroll-behavior: smooth;
   }
 
@@ -163,9 +150,9 @@ const {
     background:
       linear-gradient(var(--launch-soft), var(--launch-soft)) left top / 1px 100% no-repeat,
       linear-gradient(var(--launch-soft), var(--launch-soft)) right top / 1px 100% no-repeat,
-      var(--launch-bg);
-    color: var(--launch-fg);
-    font-family: var(--launch-mono-font);
+      var(--site-color-paper);
+    color: var(--site-color-ink);
+    font-family: var(--site-font-body);
     font-size: 0.9rem;
     line-height: 1.55;
     text-rendering: optimizeLegibility;

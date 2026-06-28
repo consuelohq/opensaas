@@ -10,6 +10,14 @@
   --site-color-line: rgba(28, 26, 23, 0.14);
   --site-color-line-strong: rgba(28, 26, 23, 0.28);
   --site-color-soft: rgba(28, 26, 23, 0.045);
+  --site-color-dark-paper: #211915;
+  --site-color-dark-ink: #F7EFE7;
+  --site-color-dark-surface: #2B211B;
+  --site-color-dark-surface-raised: #342820;
+  --site-color-dark-muted: #C3B4A7;
+  --site-color-dark-accent: #E06B3E;
+  --site-color-dark-accent-ink: #211915;
+  --site-color-dark-secondary: #A5B8A7;
 
   --site-font-display: Georgia, ui-serif, 'Times New Roman', serif;
   --site-font-body: Geist, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -62,6 +70,24 @@
   --site-z-header: 40;
   --site-z-popover: 60;
   --site-z-modal: 80;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --site-color-paper: var(--site-color-dark-paper);
+    --site-color-ink: var(--site-color-dark-ink);
+    --site-color-surface: var(--site-color-dark-surface);
+    --site-color-surface-raised: var(--site-color-dark-surface-raised);
+    --site-color-muted: var(--site-color-dark-muted);
+    --site-color-accent: var(--site-color-dark-accent);
+    --site-color-accent-ink: var(--site-color-dark-accent-ink);
+    --site-color-secondary: var(--site-color-dark-secondary);
+    --site-color-line: rgba(247, 239, 231, 0.16);
+    --site-color-line-strong: rgba(247, 239, 231, 0.30);
+    --site-color-soft: rgba(247, 239, 231, 0.055);
+    --site-shadow-raised: 0 0 0 1px rgba(247, 239, 231, 0.10), 0 18px 52px rgba(0, 0, 0, 0.24);
+    --site-shadow-hover: 0 0 0 1px rgba(247, 239, 231, 0.16), 0 22px 64px rgba(0, 0, 0, 0.30);
+  }
 }
 
 @media (max-width: 760px) {
