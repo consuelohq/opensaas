@@ -104,6 +104,9 @@ declare const workspace: {
     search: (input: { pattern: string; path?: string; include?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     write: (input: { path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  media: {
+    svg: (input: { action: "create" | "inspect" | "render" | "measure" | "edit" | "verify" | "snapshot" | "restore"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: "png"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: "light" | "dark" | "no-preference" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   office: {
     check: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     generateDemo: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
