@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_47e147926beb",
+  "tmuxSession": "opensaas-workspace-agents-add-invalid-timestamp-tests-47e14792",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-invalid-timestamp-tests",
+  "branch": "task/workspace-agents/add-invalid-timestamp-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-invalid-timestamp-tests",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-invalid-timestamp-tests",
+  "prNumber": 1242,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1242",
+  "createdAt": "2026-06-28T00:30:16.739Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-invalid-timestamp-tests/.task/workspace-agents/add-invalid-timestamp-tests/session.json"
+}
