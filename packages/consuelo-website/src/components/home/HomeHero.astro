@@ -36,7 +36,6 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
             <path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z" />
           </svg>
           <span>Go to OS portal</span>
-          <span class="home-hero__portal-arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
@@ -240,49 +239,45 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
 
   .home-hero__actions {
     display: grid;
-    gap: var(--site-space-3);
-    width: min(100%, 18.5rem);
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: fit-content;
   }
 
   .home-hero__action-label,
   .home-hero__install-label {
-    color: var(--site-color-accent);
+    color: var(--site-color-muted);
   }
 
   .home-hero__portal {
-    min-height: 3.5rem;
-    justify-content: space-between;
+    min-height: 2.35rem;
+    justify-content: center;
+    gap: var(--site-space-2);
     border-color: var(--site-color-line);
-    border-radius: var(--site-radius-sm);
-    background: color-mix(in srgb, var(--site-color-surface) 70%, transparent);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: color-mix(in srgb, var(--site-color-surface-raised) 84%, var(--site-color-paper));
     color: var(--site-color-ink);
-    box-shadow: var(--site-shadow-border);
+    box-shadow: var(--site-shadow-control);
+    padding: calc(var(--site-space-2) + var(--site-space-1)) var(--site-space-5);
   }
 
   .home-hero__portal svg {
-    width: var(--site-space-5);
-    height: var(--site-space-5);
+    width: var(--site-space-4);
+    height: var(--site-space-4);
     fill: currentColor;
-  }
-
-  .home-hero__portal-arrow {
-    color: var(--site-color-accent);
-    font-family: var(--site-font-mono);
-    font-weight: 700;
   }
 
   .home-hero__install-wrap {
     display: grid;
-    gap: var(--site-space-3);
-    width: min(100%, 39rem);
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: min(100%, 32rem);
   }
 
   .home-hero__install {
     overflow: hidden;
     padding: 0;
-    border-radius: var(--site-radius-sm);
-    background: color-mix(in srgb, var(--site-color-surface) 70%, transparent);
-    box-shadow: var(--site-shadow-border);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: color-mix(in srgb, var(--site-color-surface-raised) 82%, var(--site-color-paper));
+    box-shadow: var(--site-shadow-control);
   }
 
   .home-hero__tabs {
@@ -291,7 +286,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     overflow-x: auto;
     overflow-y: hidden;
     border-bottom: 1px solid var(--site-color-line);
-    padding: var(--site-space-2) var(--site-space-4) 0;
+    padding: var(--site-space-2) var(--site-space-3) 0;
     scrollbar-width: none;
   }
 
@@ -304,9 +299,9 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--site-color-muted);
-    font: 700 var(--site-text-sm) / 1 var(--site-font-mono);
+    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
     letter-spacing: -0.03em;
-    padding: var(--site-space-3) var(--site-space-4);
+    padding: var(--site-space-2) var(--site-space-3) calc(var(--site-space-2) + var(--site-space-1));
     white-space: nowrap;
   }
 
@@ -330,12 +325,12 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    gap: var(--site-space-4);
+    gap: var(--site-space-3);
     border: 0;
     background: transparent;
     color: var(--site-color-ink);
     cursor: pointer;
-    padding: var(--site-space-5) var(--site-space-5);
+    padding: var(--site-space-4) var(--site-space-4);
     text-align: left;
     text-decoration: none;
     transition:
@@ -356,13 +351,13 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
   .home-hero__value {
     min-width: 0;
     color: var(--site-color-ink);
-    font: 500 var(--site-text-sm) / var(--site-leading-body) var(--site-font-mono);
+    font: 500 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);
     overflow-wrap: anywhere;
   }
 
   .home-hero__panel-action {
-    width: var(--site-space-6);
-    height: var(--site-space-6);
+    width: var(--site-space-5);
+    height: var(--site-space-5);
     border-radius: calc(var(--site-radius-sm) * 0.75);
     color: var(--site-color-muted);
     display: inline-flex;

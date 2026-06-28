@@ -87,6 +87,8 @@ Required primitives:
 - `.site-prose`
 - `.site-field`
 
+Compact hero controls may use `--site-shadow-control` when they need the slight raised feel of the Hermes reference without becoming full cards. Reserve `--site-shadow-raised` for larger editorial surfaces.
+
 Components can add local selectors for unique structure, but those selectors should compose these primitives and tokens.
 
 ## Motion
