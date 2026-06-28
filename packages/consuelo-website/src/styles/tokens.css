@@ -80,6 +80,7 @@
   --site-radius-pill: 999px;
 
   --site-shadow-border: 0 0 0 1px var(--site-color-line);
+  --site-shadow-control: 0 0 0 1px rgba(28, 26, 23, 0.16), 0 7px 18px rgba(28, 26, 23, 0.08);
   --site-shadow-raised: 0 0 0 1px rgba(28, 26, 23, 0.08), 0 18px 52px rgba(28, 26, 23, 0.10);
   --site-shadow-hover: 0 0 0 1px rgba(28, 26, 23, 0.12), 0 22px 64px rgba(28, 26, 23, 0.14);
   --site-shadow-dropdown: 0 18px 45px rgba(28, 26, 23, 0.12);
@@ -124,6 +125,7 @@
     --site-color-shimmer-stop-1: rgba(255, 247, 235, 0.22);
     --site-color-shimmer-stop-2: rgba(255, 247, 235, 0.52);
     --site-color-shimmer-stop-3: rgba(255, 247, 235, 0.88);
+    --site-shadow-control: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 7px 18px rgba(0, 0, 0, 0.22);
     --site-shadow-raised: 0 0 0 1px rgba(255, 247, 235, 0.1), 0 18px 52px rgba(0, 0, 0, 0.32);
     --site-shadow-hover: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 22px 64px rgba(0, 0, 0, 0.42);
     --site-shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.45);
