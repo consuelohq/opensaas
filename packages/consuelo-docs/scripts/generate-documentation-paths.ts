@@ -57,7 +57,7 @@ for (const tab of baseStructure.tabs) {
   }
 }
 
-const sortedPaths = [...allPaths].sort();
+const sortedPaths = [...new Set(allPaths)].sort();
 
 const AUTO_GENERATED_HEADER = `/*
  * _____                    _
