@@ -156,13 +156,6 @@ export const DOCUMENTATION_PATHS = {
     '/tools/media/workflows/youtube-clip-breakdown',
   TOOLS_OFFICE: '/tools/office',
   TOOLS_OVERVIEW: '/tools/overview',
-  USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
-  USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
-    '/user-guide/ai/capabilities/ai-chatbot',
-  USER_GUIDE_AI_CAPABILITIES_PERMISSIONS_ACCESS_CONTROL:
-    '/user-guide/ai/capabilities/permissions-access-control',
-  USER_GUIDE_AI_HOW_TOS_AI_FAQ: '/user-guide/ai/how-tos/ai-faq',
-  USER_GUIDE_AI_OVERVIEW: '/user-guide/ai/overview',
   USER_GUIDE_BILLING_CAPABILITIES_PRICING_PLANS:
     '/user-guide/billing/capabilities/pricing-plans',
   USER_GUIDE_BILLING_CAPABILITIES_WORKFLOW_CREDITS:
