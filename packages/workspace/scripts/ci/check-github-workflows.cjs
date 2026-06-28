@@ -52,6 +52,7 @@ const pullRequestTargetAllowlist = new Set([
 ]);
 
 const writePermissionAllowlist = new Set([
+  '.github/workflows/ci-utils.yaml',
   '.github/workflows/cd-deploy-main.yaml',
   '.github/workflows/cd-deploy-tag.yaml',
   '.github/workflows/ci-release-create.yaml',
