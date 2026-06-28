@@ -1070,11 +1070,11 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
       :root {
         --label: #F8FAFC;
         --muted: #94A3B8;
-        --wire: rgba(224, 107, 62, 0.22);
-        --tile-bg: #0F0F0D;
-        --tile-stroke: rgba(247, 239, 231, 0.20);
-        --center-stroke: #E66F43;
-        --icon: #F7EFE7;
+        --wire: rgba(148, 163, 184, 0.22);
+        --tile-bg: #0F172A;
+        --tile-stroke: rgba(148, 163, 184, 0.24);
+        --center-stroke: #8B5CF6;
+        --icon: #F8FAFC;
         --consuelo: #F8FAFC;
         --portrait-fill: #F7F1E8;
         --portrait-ink: #E66F43;
@@ -1135,7 +1135,7 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
   </g>
   <g id="center-node" filter="url(#softShadow)">
     <rect x="332" y="160" width="96" height="96" rx="14" class="center-bg"/>
-    <svg id="center-consuelo-logo" x="336" y="162" width="88" height="88" viewBox="80 20 1090 1210" aria-hidden="true"><use href="#consuelo-mark"/></svg>
+    <svg id="center-consuelo-logo" x="339.5" y="166" width="80" height="80" viewBox="0 0 1254 1254" aria-hidden="true"><use href="#consuelo-mark"/></svg>
   </g>
   <g id="right-nodes">
 <text x="630" y="67" class="label right">GitHub</text>
@@ -1165,7 +1165,7 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
 <text x="630" y="361" class="label right">Sites</text>
   <g class="tile" transform="translate(648 326)">
   <rect width="60" height="60" rx="14" class="tile-bg"/>
-  <svg id="sites-consuelo-logo" x="6" y="5" width="48" height="48" viewBox="80 20 1090 1210" aria-hidden="true"><use href="#consuelo-mark"/></svg>
+  <svg id="sites-consuelo-logo" x="5.5" y="5.5" width="48" height="48" viewBox="0 0 1254 1254" aria-hidden="true"><use href="#consuelo-mark"/></svg>
 </g>
   </g>
 </svg>

@@ -95,7 +95,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
     <figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
       <img
-        src="/images/consuelo-integrations-hero.svg"
+        src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
         alt="Developer tools and work surfaces connected to Consuelo"
         loading="eager"
         decoding="async"
@@ -269,7 +269,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
     color: var(--site-color-ink);
-    box-shadow: none;
+    box-shadow: var(--site-shadow-control);
     font-family: var(--site-font-mono);
     font-size: var(--site-text-xs);
     font-weight: 400;
@@ -296,7 +296,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     border: 1px solid var(--site-color-line);
     border-radius: calc(var(--site-radius-sm) * 0.25);
     background: var(--site-color-control);
-    box-shadow: none;
+    box-shadow: var(--site-shadow-control);
   }
 
   .home-hero__tabs {
@@ -511,7 +511,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   @media (max-width: 560px) {
     .home-hero {
-      padding-block: var(--site-space-6) var(--site-space-7);
+      padding-block: clamp(4.75rem, 18vw, 6.5rem) var(--site-space-7);
     }
 
     .home-hero__eyebrow {
@@ -537,7 +537,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     }
 
     .home-hero__title {
-      font-size: clamp(3.15rem, 13.2vw, 4.25rem);
+      font-size: clamp(3.35rem, 14.2vw, 4.7rem);
       letter-spacing: -0.054em;
       line-height: 0.9;
     }
