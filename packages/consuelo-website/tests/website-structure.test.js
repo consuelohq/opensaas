@@ -211,6 +211,8 @@ describe('Consuelo website structure', () => {
     expect(svg).toContain('--wire: rgba(192, 81, 47, 0.28);');
     expect(svg).not.toContain('--tile-bg: #FFFFFF;');
     expect(svg).not.toContain('--label: #0B1F3A;');
+    expect(svg).toContain(".label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
+    expect(svg).not.toContain('Inter, ui-sans-serif');
   });
 
   test('should keep the next hero pass responsive and visually quieter', () => {
@@ -238,7 +240,7 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('font-size: clamp(2.6rem, 11.2vw, 3.35rem);');
     expect(hero).toContain('padding-block: var(--site-space-6) var(--site-space-7);');
     expect(hero).toContain('font-size: clamp(0.64rem, 2.6vw, 0.72rem);');
-    expect(hero).toContain('padding: 0.8rem clamp(var(--site-space-3), 3.6vw, var(--site-space-4));');
+    expect(hero).toContain('padding: 0.72rem clamp(0.85rem, 3.8vw, 1rem);');
 
     expect(tokens).toContain('--site-color-dark-paper: #0F0F0D;');
     expect(tokens).toContain('--site-color-dark-surface: #191814;');
@@ -266,6 +268,12 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('border-bottom-color: transparent;');
     expect(hero).toContain('width: min(100%, 30rem);');
     expect(hero).toContain('--home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);');
+    expect(hero).toContain('gap: clamp(0.85rem, 3.4vw, 1.15rem);');
+    expect(hero).toContain('padding: 0.64rem 0.95rem;');
+    expect(hero).toContain('gap: clamp(1.25rem, 8vw, 1.85rem);');
+    expect(hero).toContain('padding: 0.62rem clamp(0.85rem, 3.8vw, 1rem) 0;');
+    expect(hero).toContain('padding: 0 0 0.62rem;');
+    expect(hero).toContain('padding: 0.72rem clamp(0.85rem, 3.8vw, 1rem);');
 
     expect(hero).not.toContain('box-shadow: var(--site-shadow-control);');
     expect(hero).not.toContain('background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);');
