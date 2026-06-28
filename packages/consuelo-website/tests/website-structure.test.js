@@ -217,7 +217,7 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('grid-template-columns: minmax(0, 39rem) minmax(38rem, 1fr);');
     expect(hero).toContain('color: var(--site-color-muted);');
     expect(hero).toContain('font-size: clamp(3.4rem, 5.8vw, 6rem);');
-    expect(hero).toContain('border-radius: var(--site-radius-sm);');
+    expect(hero).toContain('border-radius: calc(var(--site-radius-sm) * 0.25);');
     expect(hero).toContain('@media (max-width: 1180px)');
     expect(hero).toContain('@media (max-width: 860px)');
     expect(hero).toContain('@media (max-width: 560px)');
@@ -225,6 +225,27 @@ describe('Consuelo website structure', () => {
     expect(hero).not.toContain('max-width: 54rem;');
     expect(hero).not.toContain("'Claude'");
     expect(hero).not.toContain("'Cursor'");
+  });
+
+  test('should keep hero controls sharp, compact, and muted like the Hermes reference', () => {
+    const hero = readSource('src/components/home/HomeHero.astro');
+    const tokens = readSource('src/styles/tokens.css');
+
+    expect(hero).toContain('width: fit-content;');
+    expect(hero).toContain('min-height: 2.35rem;');
+    expect(hero).toContain('justify-content: center;');
+    expect(hero).toContain('gap: var(--site-space-2);');
+    expect(hero).toContain('box-shadow: var(--site-shadow-control);');
+    expect(hero).toContain('width: min(100%, 32rem);');
+    expect(hero).toContain('font: 700 var(--site-text-xs) / 1 var(--site-font-mono);');
+    expect(hero).toContain('font: 500 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);');
+    expect(hero).toContain('padding: var(--site-space-4) var(--site-space-4);');
+    expect(hero).not.toContain('home-hero__portal-arrow');
+    expect(hero).not.toContain('width: min(100%, 18.5rem);');
+    expect(hero).not.toContain('width: min(100%, 39rem);');
+    expect(hero).not.toContain('min-height: 3.5rem;');
+
+    expect(tokens).toContain('--site-shadow-control:');
   });
 
   test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {

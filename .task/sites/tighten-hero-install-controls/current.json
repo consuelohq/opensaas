@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/tighten-hero-install-controls",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1264,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1264",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1264",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1264/tighten-hero-install-controls",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1264",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1264/tighten-hero-install-controls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-tighten-hero-install-controls",
+  "taskSession": "tsk_c008878e7841",
+  "tmuxSession": "opensaas-sites-tighten-hero-install-controls-c008878e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-tighten-hero-install-controls/.task/sites/tighten-hero-install-controls/session.json",
+  "createdAt": "2026-06-28T06:02:11.191Z"
+}
