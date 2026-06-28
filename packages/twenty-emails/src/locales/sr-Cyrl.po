@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Тест имејл"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Суспендован радни простор"
@@ -74,6 +69,11 @@ msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow
 msgstr "{senderName} (<0>{senderEmail}</0>): Потврдите овај домен да бисте дозволили корисницима са <1>@{domain}</1> имејл адресама да се придруже вашем радном простору без потребе за позивницом."
 
 #. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Тест имејл"
+
+#. js-lingui-explicit-id
 #: src/emails/send-invite-link.email.tsx
 msgid "Join your team on Consuelo"
 msgstr ""
@@ -87,26 +87,6 @@ msgstr "{senderName} (<0>{senderEmail}</0>) вас је позвао да се �
 #: src/emails/send-invite-link.email.tsx
 msgid "Accept invite"
 msgstr "Прихвати позив"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
-msgstr "Потврдите вашу е-адресу"
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
-msgstr "Потврдите е-адресу"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
@@ -154,6 +134,16 @@ msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "Избрисан радни простор"
@@ -179,14 +169,24 @@ msgid "Create a new workspace"
 msgstr "Креирај нови радни простор"
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "Потврдите вашу е-адресу"
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "Потврдите е-адресу"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
