@@ -1,13 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const repoRoot = resolve(packageRoot, '../..');
 const sourceRoot = join(packageRoot, 'src');
 
 const readSource = (relativePath) =>
   readFileSync(join(packageRoot, relativePath), 'utf8');
+
+const readRepo = (relativePath) =>
+  readFileSync(join(repoRoot, relativePath), 'utf8');
 
 const expectFile = (relativePath) => {
   expect(existsSync(join(packageRoot, relativePath)), relativePath).toBe(true);
@@ -231,5 +235,91 @@ describe('Consuelo website structure', () => {
     const backButton = readSource('src/components/BackButton.astro');
     expect(backButton).toContain('./site/LanguageSelector.astro');
     expect(backButton).toContain('href="/blog"');
+  });
+
+
+  test('should expose package-level design context when agents work on the website', () => {
+    const requiredFiles = [
+      'packages/consuelo-website/AGENTS.md',
+      'packages/consuelo-website/DESIGN.md',
+      'packages/consuelo-website/animations.md',
+      'packages/consuelo-website/src/styles/tokens.css',
+      'packages/consuelo-website/src/styles/primitives.css',
+    ];
+
+    for (const file of requiredFiles) {
+      expect(existsSync(join(repoRoot, file)), file).toBe(true);
+    }
+
+    expect(existsSync(join(repoRoot, 'packages/consuelo-website/AGENT-SPECS.md'))).toBe(false);
+
+    const areaAgentPath = join(repoRoot, 'areas/website/AGENTS.md');
+    expect(lstatSync(areaAgentPath).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(areaAgentPath).replaceAll('\\', '/')).toBe('../../packages/consuelo-website/AGENTS.md');
+
+    const agentRules = readRepo('packages/consuelo-website/AGENTS.md');
+    expect(agentRules).toContain('DESIGN.md');
+    expect(agentRules).toContain('animations.md');
+    expect(agentRules).toContain('tokens.css');
+    expect(agentRules).toContain('primitives.css');
+    expect(agentRules).toContain('MarketingLayout.astro');
+    expect(agentRules).not.toContain('Foxi');
+    expect(agentRules).not.toContain('cookie consent');
+    expect(agentRules).not.toContain('Tailwind v4');
+    expect(agentRules).not.toContain('SiteLayout.astro');
+
+    const design = readRepo('packages/consuelo-website/DESIGN.md');
+    expect(design).toContain('Warm editorial');
+    expect(design).toContain('#FAF7F2');
+    expect(design).toContain('#C0512F');
+    expect(design).toContain('tokens.css');
+    expect(design).toContain('primitives.css');
+    expect(design).toContain('Do not invent');
+
+    const tokens = readRepo('packages/consuelo-website/src/styles/tokens.css');
+    expect(tokens).toContain('--site-color-paper');
+    expect(tokens).toContain('--site-color-ink');
+    expect(tokens).toContain('--site-color-accent');
+    expect(tokens).toContain('--site-space-section');
+    expect(tokens).toContain('--site-radius-card');
+
+    const primitives = readRepo('packages/consuelo-website/src/styles/primitives.css');
+    expect(primitives).toContain('.site-container');
+    expect(primitives).toContain('.site-section');
+    expect(primitives).toContain('.site-button');
+    expect(primitives).toContain('.site-card');
+    expect(primitives).toContain('.site-stack');
+    expect(primitives).toContain('.site-cluster');
+  });
+
+  test('should resolve every Consuelo design manifest source path used by website agents', () => {
+    const manifestPath = 'packages/consuelo-design/design-system/manifest.json';
+    const manifest = JSON.parse(readRepo(manifestPath));
+    const designPackageRoot = join(repoRoot, 'packages/consuelo-design');
+    const roles = manifest.sourceOfTruth.map((entry) => entry.role);
+
+    expect(roles).toEqual([
+      'visual-design',
+      'motion-design',
+      'website-agent-rules',
+      'website-design-tokens',
+      'website-css-primitives',
+      'design-tooling-agent-rules',
+    ]);
+
+    for (const entry of manifest.sourceOfTruth) {
+      const resolvedPath = resolve(designPackageRoot, entry.path);
+      expect(existsSync(resolvedPath), `missing manifest source path for ${entry.role}: ${entry.path}`).toBe(true);
+    }
+
+    expect(manifest.upstreamDesignSystemsPolicy).toContain('Do not import upstream/open-design/design-systems');
+    expect(JSON.stringify(manifest.sourceOfTruth)).not.toContain('upstream/open-design/design-systems/warm-editorial');
+  });
+
+  test('should load website design tokens and primitives through the marketing layout', () => {
+    const layout = readSource('src/layouts/MarketingLayout.astro');
+    expect(layout).toContain("../styles/tokens.css");
+    expect(layout).toContain("../styles/primitives.css");
+    expect(layout).not.toContain('upstream/open-design/design-systems');
   });
 });
