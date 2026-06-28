@@ -44,3 +44,25 @@ Docs-only/navigation-only removal. Validation replaces runtime tests:
 
 ## Scope note
 This task removes the AI docs section completely from User Guide and deletes the underlying route files so direct `/user-guide/ai/*` URLs stop resolving from repo source.
+
+
+## Final publishing note
+State: The AI User Guide section removal was pushed to `task/docs/remove-ai-user-guide-section`.
+
+Delta:
+- Deleted English and localized `user-guide/ai` docs pages.
+- Removed AI group from docs navigation source and generated `docs.json`.
+- Removed AI cards/list entries from English and localized User Guide entry pages.
+- Removed AI redirects and stale shared/website navigation references.
+- Fixed malformed `navigation-schema.json` JSON discovered during same-package build triage.
+
+Evidence:
+- No `/user-guide/ai` or `user-guide/ai/` references remain in repo files outside `.task`.
+- No `user-guide/ai` files remain on disk.
+- No missing generated navigation targets.
+- Edited JSON files parse.
+- Modified MDX files have frontmatter and balanced code fences.
+- `bun --check packages/twenty-shared/src/constants/DocumentationPaths.ts` passed.
+- Mintlify build did not complete cleanly locally: existing parser issues remain and the follow-up build hit the command timeout. Focused AI-removal validation passed.
+
+Next: promote PR #1253 into `stream/docs`, then merge the stream to `main` if GitHub allows it.
