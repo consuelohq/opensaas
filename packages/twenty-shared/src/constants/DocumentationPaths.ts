@@ -163,12 +163,50 @@ export const DOCUMENTATION_PATHS = {
   OS_SKILLS_TASK: '/os/skills/task',
   OS_SKILLS_TEACH: '/os/skills/teach',
   OS_TOOLS_BROWSER_TOOLS: '/os/tools/browser-tools',
+  OS_TOOLS_BROWSER_TOOLS: '/os/tools/browser-tools',
+  OS_TOOLS_EXPLORATION_TOOLS: '/os/tools/exploration-tools',
   OS_TOOLS_EXPLORATION_TOOLS: '/os/tools/exploration-tools',
   OS_TOOLS_FILESYSTEM_TOOLS: '/os/tools/filesystem-tools',
+  OS_TOOLS_FILESYSTEM_TOOLS: '/os/tools/filesystem-tools',
+  OS_TOOLS_GITHUB_AND_REVIEW_TOOLS: '/os/tools/github-and-review-tools',
   OS_TOOLS_GITHUB_AND_REVIEW_TOOLS: '/os/tools/github-and-review-tools',
   OS_TOOLS_OVERVIEW: '/os/tools/overview',
+  OS_TOOLS_OVERVIEW: '/os/tools/overview',
+  OS_TOOLS_TASK_AND_STREAM_TOOLS: '/os/tools/task-and-stream-tools',
   OS_TOOLS_TASK_AND_STREAM_TOOLS: '/os/tools/task-and-stream-tools',
   OS_TOOLS_TOOL_SEARCH: '/os/tools/tool-search',
+  OS_TOOLS_TOOL_SEARCH: '/os/tools/tool-search',
+  TOOLS_MEDIA_CAPABILITIES: '/tools/media/capabilities',
+  TOOLS_MEDIA_GETTING_STARTED: '/tools/media/getting-started',
+  TOOLS_MEDIA_REFERENCE_MEDIA_BREAKDOWN_PLAN:
+    '/tools/media/reference/media-breakdown-plan',
+  TOOLS_MEDIA_REFERENCE_MEDIA_COMPOSE: '/tools/media/reference/media-compose',
+  TOOLS_MEDIA_REFERENCE_MEDIA_EXPORT: '/tools/media/reference/media-export',
+  TOOLS_MEDIA_REFERENCE_MEDIA_FRAMES_EXTRACT:
+    '/tools/media/reference/media-frames-extract',
+  TOOLS_MEDIA_REFERENCE_MEDIA_INGEST: '/tools/media/reference/media-ingest',
+  TOOLS_MEDIA_REFERENCE_MEDIA_MOTION_TRACK:
+    '/tools/media/reference/media-motion-track',
+  TOOLS_MEDIA_REFERENCE_MEDIA_OVERLAY_RENDER:
+    '/tools/media/reference/media-overlay-render',
+  TOOLS_MEDIA_REFERENCE_MEDIA_POSE_ESTIMATE:
+    '/tools/media/reference/media-pose-estimate',
+  TOOLS_MEDIA_REFERENCE_MEDIA_PROBE: '/tools/media/reference/media-probe',
+  TOOLS_MEDIA_REFERENCE_MEDIA_QA: '/tools/media/reference/media-qa',
+  TOOLS_MEDIA_REFERENCE_MEDIA_SCENE_DETECT:
+    '/tools/media/reference/media-scene-detect',
+  TOOLS_MEDIA_REFERENCE_MEDIA_SVG_CONVERT:
+    '/tools/media/reference/media-svg-convert',
+  TOOLS_MEDIA_REFERENCE_MEDIA_TIMELINE_VALIDATE:
+    '/tools/media/reference/media-timeline-validate',
+  TOOLS_MEDIA_REFERENCE_MEDIA_TRANSCRIBE:
+    '/tools/media/reference/media-transcribe',
+  TOOLS_MEDIA_WORKFLOWS_FIRST_VIDEO: '/tools/media/workflows/first-video',
+  TOOLS_MEDIA_WORKFLOWS_IMAGE_TO_SVG: '/tools/media/workflows/image-to-svg',
+  TOOLS_MEDIA_WORKFLOWS_YOUTUBE_CLIP_BREAKDOWN:
+    '/tools/media/workflows/youtube-clip-breakdown',
+  TOOLS_OFFICE: '/tools/office',
+  TOOLS_OVERVIEW: '/tools/overview',
   USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
   USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
     '/user-guide/ai/capabilities/ai-chatbot',
