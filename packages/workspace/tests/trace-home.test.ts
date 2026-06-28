@@ -157,6 +157,10 @@ describe('trace home', () => {
     expect(formatTime(timestamp)).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
   });
 
+  test('model returns the placeholder timestamp when input is invalid', () => {
+    expect(formatTime('bad-input')).toBe('---- -- -- --:--:--');
+  });
+
   test('renderer prioritizes timestamp, tool-status alignment, and the full branch', () => {
     const timestamp = '2026-06-01T20:00:33.000Z';
     const model = buildTraceHomeModel([

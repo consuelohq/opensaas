@@ -173,6 +173,13 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain(`${expectedLocalTimestamp(timestamp)}  ✓ code.call`);
   });
 
+  test('renders the placeholder timestamp when trace timestamp is invalid', () => {
+    const rendered = captureRow(codeCallRow({ ts: 'bad-input' }));
+
+    expect(rendered).toContain('---- -- -- --:--:--  ');
+    expect(rendered).toContain('code.call');
+  });
+
   test('renders child command rows from code.call JSON stdout results', () => {
     const operations = nestedOperationsForRow(codeCallRow());
 
