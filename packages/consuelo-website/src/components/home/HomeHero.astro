@@ -190,14 +190,14 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   .home-hero__inner {
     display: grid;
-    gap: clamp(var(--site-space-4), 1.6vw, var(--site-space-6));
+    gap: clamp(var(--site-space-4), 1.25vw, var(--site-space-5));
     align-items: center;
   }
 
   .home-hero__content {
     display: grid;
-    gap: clamp(var(--site-space-4), 1.8vw, var(--site-space-6));
-    max-width: 41rem;
+    gap: clamp(var(--site-space-3), 1.45vw, var(--site-space-5));
+    max-width: 36rem;
     position: relative;
     z-index: 1;
   }
@@ -221,10 +221,10 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     margin: 0;
     color: var(--site-color-ink);
     font-family: var(--site-font-display);
-    font-size: clamp(3.4rem, 5.8vw, 6rem);
-    font-weight: 500;
-    letter-spacing: -0.066em;
-    line-height: 0.88;
+    font-size: clamp(3.35rem, 5.75vw, 6.05rem);
+    font-weight: 300;
+    letter-spacing: -0.052em;
+    line-height: 0.91;
     text-wrap: balance;
   }
 
@@ -234,11 +234,11 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   }
 
   .home-hero__title em {
-    color: var(--site-color-accent);
+    color: currentColor;
     font-family: var(--site-font-display);
-    font-style: italic;
-    font-weight: 500;
-    letter-spacing: -0.07em;
+    font-style: normal;
+    font-weight: 300;
+    letter-spacing: -0.052em;
   }
 
   .home-hero__actions {
@@ -273,7 +273,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   .home-hero__install-wrap {
     display: grid;
     gap: calc(var(--site-space-2) + var(--site-space-1));
-    width: min(100%, 32rem);
+    width: min(100%, 30rem);
   }
 
   .home-hero__install {
@@ -304,8 +304,8 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--site-color-muted);
-    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
-    letter-spacing: -0.03em;
+    font: 400 var(--site-text-xs) / 1 var(--site-font-mono);
+    letter-spacing: 0;
     padding: var(--site-space-2) var(--site-space-3) calc(var(--site-space-2) + var(--site-space-1));
     white-space: nowrap;
   }
@@ -356,7 +356,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   .home-hero__value {
     min-width: 0;
     color: var(--site-color-ink);
-    font: 500 var(--home-hero-value-size, var(--site-text-xs)) / var(--site-leading-body) var(--site-font-mono);
+    font: 400 var(--home-hero-value-size, var(--site-text-xs)) / var(--site-leading-body) var(--site-font-mono);
     overflow: hidden;
     overflow-wrap: normal;
     text-overflow: clip;
@@ -422,7 +422,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   .home-hero__diagram img {
     display: block;
-    width: min(100%, 46rem);
+    width: min(100%, 41rem);
     max-width: 100%;
     height: auto;
     margin-inline: auto 0;
@@ -430,7 +430,8 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 
   @media (min-width: 1181px) {
     .home-hero__inner {
-      grid-template-columns: minmax(0, 37rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
+      justify-content: space-between;
     }
   }
 
@@ -446,11 +447,11 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     }
 
     .home-hero__content {
-      max-width: min(100%, 45rem);
+      max-width: min(100%, 42rem);
     }
 
     .home-hero__title {
-      font-size: clamp(3.6rem, 9vw, 6.2rem);
+      font-size: clamp(3.4rem, 8.2vw, 5.8rem);
     }
 
     .home-hero__diagram {
@@ -459,7 +460,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
     }
 
     .home-hero__diagram img {
-      width: min(100%, 46rem);
+      width: min(100%, 41rem);
       margin-inline: auto;
     }
   }
@@ -467,7 +468,7 @@ const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
   @media (max-width: 860px) {
     .home-hero__inner,
     .home-hero__content {
-      gap: var(--site-space-5);
+      gap: var(--site-space-4);
     }
 
     .home-hero__title {
