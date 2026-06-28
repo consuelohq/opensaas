@@ -7,7 +7,26 @@ export function parseJson(value: unknown): unknown { if (typeof value !== 'strin
 function isRecord(value: unknown): value is JsonRecord { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function cleanText(value: unknown): string { return stripWrapperInternals(String(value ?? '')).trim().replace(/\s+/g, ' '); }
 export function numeric(value: unknown, fallback = 0): number { const n = Number(value ?? fallback); return Number.isFinite(n) ? n : fallback; }
-export function formatTime(value: unknown): string { const d = new Date(String(value || '')); if (Number.isNaN(d.getTime())) return '--:--:--'; return new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d).replace(/^24:/, '00:'); }
+const localTimestampFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+function localTimestampParts(date: Date): Record<string, string> {
+  return Object.fromEntries(localTimestampFormatter.formatToParts(date).map((part) => [part.type, part.value])) as Record<string, string>;
+}
+
+export function formatTime(value: unknown): string {
+  const date = new Date(String(value || ''));
+  if (Number.isNaN(date.getTime())) return '---- -- -- --:--:--';
+  const parts = localTimestampParts(date);
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}:${parts.second}`;
+}
 export function formatDuration(ms: unknown): string { const d = numeric(ms, 0); return d >= 1000 ? `${(d / 1000).toFixed(2)}s` : `${Math.round(d)}ms`; }
 export function formatTokens(value: unknown): string { const t = numeric(value, 0); if (t >= 1_000_000) return `${(t / 1_000_000).toFixed(1)}m`; if (t >= 1000) return `${(t / 1000).toFixed(1)}k`; return String(Math.round(t)); }
 function shortBranch(value: unknown): string { return cleanText(value || 'no-branch').replace(/^task\//, '').replace(/^stream\//, 'stream/'); }

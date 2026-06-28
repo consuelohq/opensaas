@@ -136,14 +136,16 @@ export const DOCUMENTATION_PATHS = {
   OS_HOW_IT_WORKS: '/os/how-it-works',
   OS_OVERVIEW: '/os/overview',
   OS_SKILLS_BROWSER: '/os/skills/browser',
-  OS_SKILLS_OFFICE: '/os/skills/office',
-  OS_SKILLS_OFFICE_LANDING_PAGE:
-    '/os/skills/office-landing-page',
+  OS_SKILLS_CONSUELO_DESIGN: '/os/skills/consuelo-design',
+  OS_SKILLS_CONSUELO_DESIGN_LANDING_PAGE:
+    '/os/skills/consuelo-design-landing-page',
   OS_SKILLS_CONSUELO_WORKSPACE_SNAPSHOT:
     '/os/skills/consuelo-workspace-snapshot',
   OS_SKILLS_DAILY_REVENUE_BRIEF: '/os/skills/daily-revenue-brief',
   OS_SKILLS_DEBUGGER: '/os/skills/debugger',
   OS_SKILLS_HANDOFF: '/os/skills/handoff',
+  OS_SKILLS_OFFICE: '/os/skills/office',
+  OS_SKILLS_OFFICE_LANDING_PAGE: '/os/skills/office-landing-page',
   OS_SKILLS_PLANNED_CAMPAIGN_BRIEF: '/os/skills/planned/campaign-brief',
   OS_SKILLS_PLANNED_FOLLOW_UP_GENERATOR:
     '/os/skills/planned/follow-up-generator',

@@ -407,6 +407,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "tools/media/getting-started",
+                  "tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "tools/media/workflows/image-to-svg",
+                      "tools/media/workflows/first-video",
+                      "tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "tools/media/reference/media-svg-convert",
+                      "tools/media/reference/media-ingest",
+                      "tools/media/reference/media-probe",
+                      "tools/media/reference/media-frames-extract",
+                      "tools/media/reference/media-timeline-validate",
+                      "tools/media/reference/media-compose",
+                      "tools/media/reference/media-qa",
+                      "tools/media/reference/media-export",
+                      "tools/media/reference/media-overlay-render",
+                      "tools/media/reference/media-breakdown-plan",
+                      "tools/media/reference/media-transcribe",
+                      "tools/media/reference/media-scene-detect",
+                      "tools/media/reference/media-motion-track",
+                      "tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "os/tools/overview",
+                  "os/tools/tool-search",
+                  "os/tools/filesystem-tools",
+                  "os/tools/task-and-stream-tools",
+                  "os/tools/github-and-review-tools",
+                  "os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -463,12 +536,12 @@
                 "icon": "bolt",
                 "pages": [
                   "os/skills/browser",
-                  "os/skills/consuelo-design",
-                  "os/skills/consuelo-design-landing-page",
                   "os/skills/consuelo-workspace-snapshot",
                   "os/skills/daily-revenue-brief",
                   "os/skills/debugger",
                   "os/skills/handoff",
+                  "os/skills/office",
+                  "os/skills/office-landing-page",
                   "os/skills/research-ingest",
                   "os/skills/senior-engineer",
                   "os/skills/sites",
@@ -1045,6 +1118,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/fr/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/fr/tools/media/getting-started",
+                  "l/fr/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/fr/tools/media/workflows/image-to-svg",
+                      "l/fr/tools/media/workflows/first-video",
+                      "l/fr/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/fr/tools/media/reference/media-svg-convert",
+                      "l/fr/tools/media/reference/media-ingest",
+                      "l/fr/tools/media/reference/media-probe",
+                      "l/fr/tools/media/reference/media-frames-extract",
+                      "l/fr/tools/media/reference/media-timeline-validate",
+                      "l/fr/tools/media/reference/media-compose",
+                      "l/fr/tools/media/reference/media-qa",
+                      "l/fr/tools/media/reference/media-export",
+                      "l/fr/tools/media/reference/media-overlay-render",
+                      "l/fr/tools/media/reference/media-breakdown-plan",
+                      "l/fr/tools/media/reference/media-transcribe",
+                      "l/fr/tools/media/reference/media-scene-detect",
+                      "l/fr/tools/media/reference/media-motion-track",
+                      "l/fr/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/fr/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/fr/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/fr/os/tools/overview",
+                  "l/fr/os/tools/tool-search",
+                  "l/fr/os/tools/filesystem-tools",
+                  "l/fr/os/tools/task-and-stream-tools",
+                  "l/fr/os/tools/github-and-review-tools",
+                  "l/fr/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -1101,12 +1247,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/fr/os/skills/browser",
-                  "l/fr/os/skills/consuelo-design",
-                  "l/fr/os/skills/consuelo-design-landing-page",
                   "l/fr/os/skills/consuelo-workspace-snapshot",
                   "l/fr/os/skills/daily-revenue-brief",
                   "l/fr/os/skills/debugger",
                   "l/fr/os/skills/handoff",
+                  "l/fr/os/skills/office",
+                  "l/fr/os/skills/office-landing-page",
                   "l/fr/os/skills/research-ingest",
                   "l/fr/os/skills/senior-engineer",
                   "l/fr/os/skills/sites",
@@ -1683,6 +1829,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/ar/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/ar/tools/media/getting-started",
+                  "l/ar/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/ar/tools/media/workflows/image-to-svg",
+                      "l/ar/tools/media/workflows/first-video",
+                      "l/ar/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/ar/tools/media/reference/media-svg-convert",
+                      "l/ar/tools/media/reference/media-ingest",
+                      "l/ar/tools/media/reference/media-probe",
+                      "l/ar/tools/media/reference/media-frames-extract",
+                      "l/ar/tools/media/reference/media-timeline-validate",
+                      "l/ar/tools/media/reference/media-compose",
+                      "l/ar/tools/media/reference/media-qa",
+                      "l/ar/tools/media/reference/media-export",
+                      "l/ar/tools/media/reference/media-overlay-render",
+                      "l/ar/tools/media/reference/media-breakdown-plan",
+                      "l/ar/tools/media/reference/media-transcribe",
+                      "l/ar/tools/media/reference/media-scene-detect",
+                      "l/ar/tools/media/reference/media-motion-track",
+                      "l/ar/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/ar/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/ar/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/ar/os/tools/overview",
+                  "l/ar/os/tools/tool-search",
+                  "l/ar/os/tools/filesystem-tools",
+                  "l/ar/os/tools/task-and-stream-tools",
+                  "l/ar/os/tools/github-and-review-tools",
+                  "l/ar/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -1739,12 +1958,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/ar/os/skills/browser",
-                  "l/ar/os/skills/consuelo-design",
-                  "l/ar/os/skills/consuelo-design-landing-page",
                   "l/ar/os/skills/consuelo-workspace-snapshot",
                   "l/ar/os/skills/daily-revenue-brief",
                   "l/ar/os/skills/debugger",
                   "l/ar/os/skills/handoff",
+                  "l/ar/os/skills/office",
+                  "l/ar/os/skills/office-landing-page",
                   "l/ar/os/skills/research-ingest",
                   "l/ar/os/skills/senior-engineer",
                   "l/ar/os/skills/sites",
@@ -2321,6 +2540,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/cs/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/cs/tools/media/getting-started",
+                  "l/cs/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/cs/tools/media/workflows/image-to-svg",
+                      "l/cs/tools/media/workflows/first-video",
+                      "l/cs/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/cs/tools/media/reference/media-svg-convert",
+                      "l/cs/tools/media/reference/media-ingest",
+                      "l/cs/tools/media/reference/media-probe",
+                      "l/cs/tools/media/reference/media-frames-extract",
+                      "l/cs/tools/media/reference/media-timeline-validate",
+                      "l/cs/tools/media/reference/media-compose",
+                      "l/cs/tools/media/reference/media-qa",
+                      "l/cs/tools/media/reference/media-export",
+                      "l/cs/tools/media/reference/media-overlay-render",
+                      "l/cs/tools/media/reference/media-breakdown-plan",
+                      "l/cs/tools/media/reference/media-transcribe",
+                      "l/cs/tools/media/reference/media-scene-detect",
+                      "l/cs/tools/media/reference/media-motion-track",
+                      "l/cs/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/cs/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/cs/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/cs/os/tools/overview",
+                  "l/cs/os/tools/tool-search",
+                  "l/cs/os/tools/filesystem-tools",
+                  "l/cs/os/tools/task-and-stream-tools",
+                  "l/cs/os/tools/github-and-review-tools",
+                  "l/cs/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -2377,12 +2669,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/cs/os/skills/browser",
-                  "l/cs/os/skills/consuelo-design",
-                  "l/cs/os/skills/consuelo-design-landing-page",
                   "l/cs/os/skills/consuelo-workspace-snapshot",
                   "l/cs/os/skills/daily-revenue-brief",
                   "l/cs/os/skills/debugger",
                   "l/cs/os/skills/handoff",
+                  "l/cs/os/skills/office",
+                  "l/cs/os/skills/office-landing-page",
                   "l/cs/os/skills/research-ingest",
                   "l/cs/os/skills/senior-engineer",
                   "l/cs/os/skills/sites",
@@ -2959,6 +3251,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/de/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/de/tools/media/getting-started",
+                  "l/de/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/de/tools/media/workflows/image-to-svg",
+                      "l/de/tools/media/workflows/first-video",
+                      "l/de/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/de/tools/media/reference/media-svg-convert",
+                      "l/de/tools/media/reference/media-ingest",
+                      "l/de/tools/media/reference/media-probe",
+                      "l/de/tools/media/reference/media-frames-extract",
+                      "l/de/tools/media/reference/media-timeline-validate",
+                      "l/de/tools/media/reference/media-compose",
+                      "l/de/tools/media/reference/media-qa",
+                      "l/de/tools/media/reference/media-export",
+                      "l/de/tools/media/reference/media-overlay-render",
+                      "l/de/tools/media/reference/media-breakdown-plan",
+                      "l/de/tools/media/reference/media-transcribe",
+                      "l/de/tools/media/reference/media-scene-detect",
+                      "l/de/tools/media/reference/media-motion-track",
+                      "l/de/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/de/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/de/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/de/os/tools/overview",
+                  "l/de/os/tools/tool-search",
+                  "l/de/os/tools/filesystem-tools",
+                  "l/de/os/tools/task-and-stream-tools",
+                  "l/de/os/tools/github-and-review-tools",
+                  "l/de/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -3015,12 +3380,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/de/os/skills/browser",
-                  "l/de/os/skills/consuelo-design",
-                  "l/de/os/skills/consuelo-design-landing-page",
                   "l/de/os/skills/consuelo-workspace-snapshot",
                   "l/de/os/skills/daily-revenue-brief",
                   "l/de/os/skills/debugger",
                   "l/de/os/skills/handoff",
+                  "l/de/os/skills/office",
+                  "l/de/os/skills/office-landing-page",
                   "l/de/os/skills/research-ingest",
                   "l/de/os/skills/senior-engineer",
                   "l/de/os/skills/sites",
@@ -3597,6 +3962,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/es/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/es/tools/media/getting-started",
+                  "l/es/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/es/tools/media/workflows/image-to-svg",
+                      "l/es/tools/media/workflows/first-video",
+                      "l/es/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/es/tools/media/reference/media-svg-convert",
+                      "l/es/tools/media/reference/media-ingest",
+                      "l/es/tools/media/reference/media-probe",
+                      "l/es/tools/media/reference/media-frames-extract",
+                      "l/es/tools/media/reference/media-timeline-validate",
+                      "l/es/tools/media/reference/media-compose",
+                      "l/es/tools/media/reference/media-qa",
+                      "l/es/tools/media/reference/media-export",
+                      "l/es/tools/media/reference/media-overlay-render",
+                      "l/es/tools/media/reference/media-breakdown-plan",
+                      "l/es/tools/media/reference/media-transcribe",
+                      "l/es/tools/media/reference/media-scene-detect",
+                      "l/es/tools/media/reference/media-motion-track",
+                      "l/es/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/es/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/es/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/es/os/tools/overview",
+                  "l/es/os/tools/tool-search",
+                  "l/es/os/tools/filesystem-tools",
+                  "l/es/os/tools/task-and-stream-tools",
+                  "l/es/os/tools/github-and-review-tools",
+                  "l/es/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -3653,12 +4091,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/es/os/skills/browser",
-                  "l/es/os/skills/consuelo-design",
-                  "l/es/os/skills/consuelo-design-landing-page",
                   "l/es/os/skills/consuelo-workspace-snapshot",
                   "l/es/os/skills/daily-revenue-brief",
                   "l/es/os/skills/debugger",
                   "l/es/os/skills/handoff",
+                  "l/es/os/skills/office",
+                  "l/es/os/skills/office-landing-page",
                   "l/es/os/skills/research-ingest",
                   "l/es/os/skills/senior-engineer",
                   "l/es/os/skills/sites",
@@ -4235,6 +4673,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/it/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/it/tools/media/getting-started",
+                  "l/it/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/it/tools/media/workflows/image-to-svg",
+                      "l/it/tools/media/workflows/first-video",
+                      "l/it/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/it/tools/media/reference/media-svg-convert",
+                      "l/it/tools/media/reference/media-ingest",
+                      "l/it/tools/media/reference/media-probe",
+                      "l/it/tools/media/reference/media-frames-extract",
+                      "l/it/tools/media/reference/media-timeline-validate",
+                      "l/it/tools/media/reference/media-compose",
+                      "l/it/tools/media/reference/media-qa",
+                      "l/it/tools/media/reference/media-export",
+                      "l/it/tools/media/reference/media-overlay-render",
+                      "l/it/tools/media/reference/media-breakdown-plan",
+                      "l/it/tools/media/reference/media-transcribe",
+                      "l/it/tools/media/reference/media-scene-detect",
+                      "l/it/tools/media/reference/media-motion-track",
+                      "l/it/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/it/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/it/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/it/os/tools/overview",
+                  "l/it/os/tools/tool-search",
+                  "l/it/os/tools/filesystem-tools",
+                  "l/it/os/tools/task-and-stream-tools",
+                  "l/it/os/tools/github-and-review-tools",
+                  "l/it/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -4291,12 +4802,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/it/os/skills/browser",
-                  "l/it/os/skills/consuelo-design",
-                  "l/it/os/skills/consuelo-design-landing-page",
                   "l/it/os/skills/consuelo-workspace-snapshot",
                   "l/it/os/skills/daily-revenue-brief",
                   "l/it/os/skills/debugger",
                   "l/it/os/skills/handoff",
+                  "l/it/os/skills/office",
+                  "l/it/os/skills/office-landing-page",
                   "l/it/os/skills/research-ingest",
                   "l/it/os/skills/senior-engineer",
                   "l/it/os/skills/sites",
@@ -4873,6 +5384,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/ja/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/ja/tools/media/getting-started",
+                  "l/ja/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/ja/tools/media/workflows/image-to-svg",
+                      "l/ja/tools/media/workflows/first-video",
+                      "l/ja/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/ja/tools/media/reference/media-svg-convert",
+                      "l/ja/tools/media/reference/media-ingest",
+                      "l/ja/tools/media/reference/media-probe",
+                      "l/ja/tools/media/reference/media-frames-extract",
+                      "l/ja/tools/media/reference/media-timeline-validate",
+                      "l/ja/tools/media/reference/media-compose",
+                      "l/ja/tools/media/reference/media-qa",
+                      "l/ja/tools/media/reference/media-export",
+                      "l/ja/tools/media/reference/media-overlay-render",
+                      "l/ja/tools/media/reference/media-breakdown-plan",
+                      "l/ja/tools/media/reference/media-transcribe",
+                      "l/ja/tools/media/reference/media-scene-detect",
+                      "l/ja/tools/media/reference/media-motion-track",
+                      "l/ja/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/ja/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/ja/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/ja/os/tools/overview",
+                  "l/ja/os/tools/tool-search",
+                  "l/ja/os/tools/filesystem-tools",
+                  "l/ja/os/tools/task-and-stream-tools",
+                  "l/ja/os/tools/github-and-review-tools",
+                  "l/ja/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -4929,12 +5513,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/ja/os/skills/browser",
-                  "l/ja/os/skills/consuelo-design",
-                  "l/ja/os/skills/consuelo-design-landing-page",
                   "l/ja/os/skills/consuelo-workspace-snapshot",
                   "l/ja/os/skills/daily-revenue-brief",
                   "l/ja/os/skills/debugger",
                   "l/ja/os/skills/handoff",
+                  "l/ja/os/skills/office",
+                  "l/ja/os/skills/office-landing-page",
                   "l/ja/os/skills/research-ingest",
                   "l/ja/os/skills/senior-engineer",
                   "l/ja/os/skills/sites",
@@ -5511,6 +6095,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/ko/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/ko/tools/media/getting-started",
+                  "l/ko/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/ko/tools/media/workflows/image-to-svg",
+                      "l/ko/tools/media/workflows/first-video",
+                      "l/ko/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/ko/tools/media/reference/media-svg-convert",
+                      "l/ko/tools/media/reference/media-ingest",
+                      "l/ko/tools/media/reference/media-probe",
+                      "l/ko/tools/media/reference/media-frames-extract",
+                      "l/ko/tools/media/reference/media-timeline-validate",
+                      "l/ko/tools/media/reference/media-compose",
+                      "l/ko/tools/media/reference/media-qa",
+                      "l/ko/tools/media/reference/media-export",
+                      "l/ko/tools/media/reference/media-overlay-render",
+                      "l/ko/tools/media/reference/media-breakdown-plan",
+                      "l/ko/tools/media/reference/media-transcribe",
+                      "l/ko/tools/media/reference/media-scene-detect",
+                      "l/ko/tools/media/reference/media-motion-track",
+                      "l/ko/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/ko/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/ko/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/ko/os/tools/overview",
+                  "l/ko/os/tools/tool-search",
+                  "l/ko/os/tools/filesystem-tools",
+                  "l/ko/os/tools/task-and-stream-tools",
+                  "l/ko/os/tools/github-and-review-tools",
+                  "l/ko/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -5567,12 +6224,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/ko/os/skills/browser",
-                  "l/ko/os/skills/consuelo-design",
-                  "l/ko/os/skills/consuelo-design-landing-page",
                   "l/ko/os/skills/consuelo-workspace-snapshot",
                   "l/ko/os/skills/daily-revenue-brief",
                   "l/ko/os/skills/debugger",
                   "l/ko/os/skills/handoff",
+                  "l/ko/os/skills/office",
+                  "l/ko/os/skills/office-landing-page",
                   "l/ko/os/skills/research-ingest",
                   "l/ko/os/skills/senior-engineer",
                   "l/ko/os/skills/sites",
@@ -6149,6 +6806,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/pt/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/pt/tools/media/getting-started",
+                  "l/pt/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/pt/tools/media/workflows/image-to-svg",
+                      "l/pt/tools/media/workflows/first-video",
+                      "l/pt/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/pt/tools/media/reference/media-svg-convert",
+                      "l/pt/tools/media/reference/media-ingest",
+                      "l/pt/tools/media/reference/media-probe",
+                      "l/pt/tools/media/reference/media-frames-extract",
+                      "l/pt/tools/media/reference/media-timeline-validate",
+                      "l/pt/tools/media/reference/media-compose",
+                      "l/pt/tools/media/reference/media-qa",
+                      "l/pt/tools/media/reference/media-export",
+                      "l/pt/tools/media/reference/media-overlay-render",
+                      "l/pt/tools/media/reference/media-breakdown-plan",
+                      "l/pt/tools/media/reference/media-transcribe",
+                      "l/pt/tools/media/reference/media-scene-detect",
+                      "l/pt/tools/media/reference/media-motion-track",
+                      "l/pt/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/pt/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/pt/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/pt/os/tools/overview",
+                  "l/pt/os/tools/tool-search",
+                  "l/pt/os/tools/filesystem-tools",
+                  "l/pt/os/tools/task-and-stream-tools",
+                  "l/pt/os/tools/github-and-review-tools",
+                  "l/pt/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -6205,12 +6935,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/pt/os/skills/browser",
-                  "l/pt/os/skills/consuelo-design",
-                  "l/pt/os/skills/consuelo-design-landing-page",
                   "l/pt/os/skills/consuelo-workspace-snapshot",
                   "l/pt/os/skills/daily-revenue-brief",
                   "l/pt/os/skills/debugger",
                   "l/pt/os/skills/handoff",
+                  "l/pt/os/skills/office",
+                  "l/pt/os/skills/office-landing-page",
                   "l/pt/os/skills/research-ingest",
                   "l/pt/os/skills/senior-engineer",
                   "l/pt/os/skills/sites",
@@ -6787,6 +7517,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/ro/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/ro/tools/media/getting-started",
+                  "l/ro/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/ro/tools/media/workflows/image-to-svg",
+                      "l/ro/tools/media/workflows/first-video",
+                      "l/ro/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/ro/tools/media/reference/media-svg-convert",
+                      "l/ro/tools/media/reference/media-ingest",
+                      "l/ro/tools/media/reference/media-probe",
+                      "l/ro/tools/media/reference/media-frames-extract",
+                      "l/ro/tools/media/reference/media-timeline-validate",
+                      "l/ro/tools/media/reference/media-compose",
+                      "l/ro/tools/media/reference/media-qa",
+                      "l/ro/tools/media/reference/media-export",
+                      "l/ro/tools/media/reference/media-overlay-render",
+                      "l/ro/tools/media/reference/media-breakdown-plan",
+                      "l/ro/tools/media/reference/media-transcribe",
+                      "l/ro/tools/media/reference/media-scene-detect",
+                      "l/ro/tools/media/reference/media-motion-track",
+                      "l/ro/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/ro/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/ro/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/ro/os/tools/overview",
+                  "l/ro/os/tools/tool-search",
+                  "l/ro/os/tools/filesystem-tools",
+                  "l/ro/os/tools/task-and-stream-tools",
+                  "l/ro/os/tools/github-and-review-tools",
+                  "l/ro/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -6843,12 +7646,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/ro/os/skills/browser",
-                  "l/ro/os/skills/consuelo-design",
-                  "l/ro/os/skills/consuelo-design-landing-page",
                   "l/ro/os/skills/consuelo-workspace-snapshot",
                   "l/ro/os/skills/daily-revenue-brief",
                   "l/ro/os/skills/debugger",
                   "l/ro/os/skills/handoff",
+                  "l/ro/os/skills/office",
+                  "l/ro/os/skills/office-landing-page",
                   "l/ro/os/skills/research-ingest",
                   "l/ro/os/skills/senior-engineer",
                   "l/ro/os/skills/sites",
@@ -7425,6 +8228,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/ru/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/ru/tools/media/getting-started",
+                  "l/ru/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/ru/tools/media/workflows/image-to-svg",
+                      "l/ru/tools/media/workflows/first-video",
+                      "l/ru/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/ru/tools/media/reference/media-svg-convert",
+                      "l/ru/tools/media/reference/media-ingest",
+                      "l/ru/tools/media/reference/media-probe",
+                      "l/ru/tools/media/reference/media-frames-extract",
+                      "l/ru/tools/media/reference/media-timeline-validate",
+                      "l/ru/tools/media/reference/media-compose",
+                      "l/ru/tools/media/reference/media-qa",
+                      "l/ru/tools/media/reference/media-export",
+                      "l/ru/tools/media/reference/media-overlay-render",
+                      "l/ru/tools/media/reference/media-breakdown-plan",
+                      "l/ru/tools/media/reference/media-transcribe",
+                      "l/ru/tools/media/reference/media-scene-detect",
+                      "l/ru/tools/media/reference/media-motion-track",
+                      "l/ru/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/ru/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/ru/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/ru/os/tools/overview",
+                  "l/ru/os/tools/tool-search",
+                  "l/ru/os/tools/filesystem-tools",
+                  "l/ru/os/tools/task-and-stream-tools",
+                  "l/ru/os/tools/github-and-review-tools",
+                  "l/ru/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -7481,12 +8357,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/ru/os/skills/browser",
-                  "l/ru/os/skills/consuelo-design",
-                  "l/ru/os/skills/consuelo-design-landing-page",
                   "l/ru/os/skills/consuelo-workspace-snapshot",
                   "l/ru/os/skills/daily-revenue-brief",
                   "l/ru/os/skills/debugger",
                   "l/ru/os/skills/handoff",
+                  "l/ru/os/skills/office",
+                  "l/ru/os/skills/office-landing-page",
                   "l/ru/os/skills/research-ingest",
                   "l/ru/os/skills/senior-engineer",
                   "l/ru/os/skills/sites",
@@ -8063,6 +8939,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/tr/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/tr/tools/media/getting-started",
+                  "l/tr/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/tr/tools/media/workflows/image-to-svg",
+                      "l/tr/tools/media/workflows/first-video",
+                      "l/tr/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/tr/tools/media/reference/media-svg-convert",
+                      "l/tr/tools/media/reference/media-ingest",
+                      "l/tr/tools/media/reference/media-probe",
+                      "l/tr/tools/media/reference/media-frames-extract",
+                      "l/tr/tools/media/reference/media-timeline-validate",
+                      "l/tr/tools/media/reference/media-compose",
+                      "l/tr/tools/media/reference/media-qa",
+                      "l/tr/tools/media/reference/media-export",
+                      "l/tr/tools/media/reference/media-overlay-render",
+                      "l/tr/tools/media/reference/media-breakdown-plan",
+                      "l/tr/tools/media/reference/media-transcribe",
+                      "l/tr/tools/media/reference/media-scene-detect",
+                      "l/tr/tools/media/reference/media-motion-track",
+                      "l/tr/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/tr/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/tr/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/tr/os/tools/overview",
+                  "l/tr/os/tools/tool-search",
+                  "l/tr/os/tools/filesystem-tools",
+                  "l/tr/os/tools/task-and-stream-tools",
+                  "l/tr/os/tools/github-and-review-tools",
+                  "l/tr/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -8119,12 +9068,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/tr/os/skills/browser",
-                  "l/tr/os/skills/consuelo-design",
-                  "l/tr/os/skills/consuelo-design-landing-page",
                   "l/tr/os/skills/consuelo-workspace-snapshot",
                   "l/tr/os/skills/daily-revenue-brief",
                   "l/tr/os/skills/debugger",
                   "l/tr/os/skills/handoff",
+                  "l/tr/os/skills/office",
+                  "l/tr/os/skills/office-landing-page",
                   "l/tr/os/skills/research-ingest",
                   "l/tr/os/skills/senior-engineer",
                   "l/tr/os/skills/sites",
@@ -8701,6 +9650,79 @@
             ]
           },
           {
+            "tab": "Tools",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "wrench",
+                "pages": [
+                  "l/zh/tools/overview"
+                ]
+              },
+              {
+                "group": "Media",
+                "icon": "photo-film",
+                "pages": [
+                  "l/zh/tools/media/getting-started",
+                  "l/zh/tools/media/capabilities",
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      "l/zh/tools/media/workflows/image-to-svg",
+                      "l/zh/tools/media/workflows/first-video",
+                      "l/zh/tools/media/workflows/youtube-clip-breakdown"
+                    ]
+                  },
+                  {
+                    "group": "Reference",
+                    "pages": [
+                      "l/zh/tools/media/reference/media-svg-convert",
+                      "l/zh/tools/media/reference/media-ingest",
+                      "l/zh/tools/media/reference/media-probe",
+                      "l/zh/tools/media/reference/media-frames-extract",
+                      "l/zh/tools/media/reference/media-timeline-validate",
+                      "l/zh/tools/media/reference/media-compose",
+                      "l/zh/tools/media/reference/media-qa",
+                      "l/zh/tools/media/reference/media-export",
+                      "l/zh/tools/media/reference/media-overlay-render",
+                      "l/zh/tools/media/reference/media-breakdown-plan",
+                      "l/zh/tools/media/reference/media-transcribe",
+                      "l/zh/tools/media/reference/media-scene-detect",
+                      "l/zh/tools/media/reference/media-motion-track",
+                      "l/zh/tools/media/reference/media-pose-estimate"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Office",
+                "icon": "file-lines",
+                "pages": [
+                  "l/zh/tools/office"
+                ]
+              },
+              {
+                "group": "Browser",
+                "icon": "globe",
+                "pages": [
+                  "l/zh/os/tools/browser-tools"
+                ]
+              },
+              {
+                "group": "Workspace",
+                "icon": "terminal",
+                "pages": [
+                  "l/zh/os/tools/overview",
+                  "l/zh/os/tools/tool-search",
+                  "l/zh/os/tools/filesystem-tools",
+                  "l/zh/os/tools/task-and-stream-tools",
+                  "l/zh/os/tools/github-and-review-tools",
+                  "l/zh/os/tools/exploration-tools"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "OS",
             "groups": [
               {
@@ -8757,12 +9779,12 @@
                 "icon": "bolt",
                 "pages": [
                   "l/zh/os/skills/browser",
-                  "l/zh/os/skills/consuelo-design",
-                  "l/zh/os/skills/consuelo-design-landing-page",
                   "l/zh/os/skills/consuelo-workspace-snapshot",
                   "l/zh/os/skills/daily-revenue-brief",
                   "l/zh/os/skills/debugger",
                   "l/zh/os/skills/handoff",
+                  "l/zh/os/skills/office",
+                  "l/zh/os/skills/office-landing-page",
                   "l/zh/os/skills/research-ingest",
                   "l/zh/os/skills/senior-engineer",
                   "l/zh/os/skills/sites",

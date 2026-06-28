@@ -623,6 +623,14 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, mine: true };
   }
 
+  if (toolName === "media.svg") {
+    const normalized: ToolInput = { ...input };
+    for (const key of ["document", "operations", "checks", "render", "selectors"] as const) {
+      if (normalized[key] !== undefined) normalized[`${key}Json`] = JSON.stringify(normalized[key]);
+    }
+    return normalized;
+  }
+
   return input;
 }
 async function executeInternalTool<TData>(
