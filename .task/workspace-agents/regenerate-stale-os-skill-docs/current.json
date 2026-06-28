@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/regenerate-stale-os-skill-docs",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1241,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1241",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1241",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1241/regenerate-stale-os-skill-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1241",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1241/regenerate-stale-os-skill-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-regenerate-stale-os-skill-docs",
+  "taskSession": "tsk_4a8e3da459e7",
+  "tmuxSession": "opensaas-workspace-agents-regenerate-stale-os-skill-docs-4a8e3da4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-regenerate-stale-os-skill-docs/.task/workspace-agents/regenerate-stale-os-skill-docs/session.json",
+  "createdAt": "2026-06-28T00:29:09.320Z"
+}

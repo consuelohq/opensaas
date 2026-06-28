@@ -1,0 +1,44 @@
+---
+title: media.pose.estimate
+description: Estimate human pose landmarks for sports-science analysis.
+---
+
+# media.pose.estimate
+
+Estimate human pose landmarks for sports-science analysis.
+
+## When to use it
+
+Use this when body mechanics, joint positions, posture, or movement form need structured evidence.
+
+## Mental model
+
+Pose estimation produces landmark tracks. Downstream tools can measure angles, compare movement phases, or create data-backed overlays from those landmarks.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Source video or frame sequence. |
+| `range` | Time range to analyze. |
+| `out` | Optional pose-track artifact path. |
+
+## Output
+
+Returns pose landmarks, confidence values, source references, and frame or timestamp alignment.
+
+## Good agent instruction
+
+```text
+Use `media.pose.estimate` before making body-mechanics claims.
+Return JSON.
+Verify pose landmarks exist for the frames or timestamps being discussed.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Landmarks | Pose landmarks are present for selected frames. |
+| Confidence | Low-confidence landmarks are visible in the result. |
+| Source | Pose data references the source media. |

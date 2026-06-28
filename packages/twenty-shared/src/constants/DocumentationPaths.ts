@@ -37,56 +37,6 @@ export const DOCUMENTATION_PATHS = {
     '/consuelo-ui/navigation/navigation-bar',
   CONSUELO_UI_NAVIGATION_STEP_BAR: '/consuelo-ui/navigation/step-bar',
   CONSUELO_UI_PROGRESS_BAR: '/consuelo-ui/progress-bar',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_BEST_PRACTICES_SERVER:
-    '/developers/contribute/capabilities/backend-development/best-practices-server',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_CUSTOM_OBJECTS:
-    '/developers/contribute/capabilities/backend-development/custom-objects',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_FEATURE_FLAGS:
-    '/developers/contribute/capabilities/backend-development/feature-flags',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_FOLDER_ARCHITECTURE_SERVER:
-    '/developers/contribute/capabilities/backend-development/folder-architecture-server',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_QUEUE:
-    '/developers/contribute/capabilities/backend-development/queue',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_SERVER_COMMANDS:
-    '/developers/contribute/capabilities/backend-development/server-commands',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_ZAPIER:
-    '/developers/contribute/capabilities/backend-development/zapier',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_BUG_AND_REQUESTS:
-    '/developers/contribute/capabilities/bug-and-requests',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_BEST_PRACTICES_FRONT:
-    '/developers/contribute/capabilities/frontend-development/best-practices-front',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_FOLDER_ARCHITECTURE_FRONT:
-    '/developers/contribute/capabilities/frontend-development/folder-architecture-front',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_FRONTEND_COMMANDS:
-    '/developers/contribute/capabilities/frontend-development/frontend-commands',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_HOTKEYS:
-    '/developers/contribute/capabilities/frontend-development/hotkeys',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_STORYBOOK:
-    '/developers/contribute/capabilities/frontend-development/storybook',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_STYLE_GUIDE:
-    '/developers/contribute/capabilities/frontend-development/style-guide',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_FRONTEND_DEVELOPMENT_WORK_WITH_FIGMA:
-    '/developers/contribute/capabilities/frontend-development/work-with-figma',
-  DEVELOPERS_CONTRIBUTE_CAPABILITIES_LOCAL_SETUP:
-    '/developers/contribute/capabilities/local-setup',
-  DEVELOPERS_CONTRIBUTE_CONTRIBUTE: '/developers/contribute/contribute',
-  DEVELOPERS_EXTEND_CAPABILITIES_APIS: '/developers/extend/capabilities/apis',
-  DEVELOPERS_EXTEND_CAPABILITIES_APPS: '/developers/extend/capabilities/apps',
-  DEVELOPERS_EXTEND_CAPABILITIES_WEBHOOKS:
-    '/developers/extend/capabilities/webhooks',
-  DEVELOPERS_EXTEND_EXTEND: '/developers/extend/extend',
-  DEVELOPERS_INTRODUCTION: '/developers/introduction',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_CLOUD_PROVIDERS:
-    '/developers/self-host/capabilities/cloud-providers',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_DOCKER_COMPOSE:
-    '/developers/self-host/capabilities/docker-compose',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_SETUP:
-    '/developers/self-host/capabilities/setup',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_TROUBLESHOOTING:
-    '/developers/self-host/capabilities/troubleshooting',
-  DEVELOPERS_SELF_HOST_CAPABILITIES_UPGRADE_GUIDE:
-    '/developers/self-host/capabilities/upgrade-guide',
-  DEVELOPERS_SELF_HOST_SELF_HOST: '/developers/self-host/self-host',
   GRAPHQL_API_ANALYTICS_CONNECTING_EXTERNAL_ANALYTICS:
     '/graphql-api/analytics/connecting-external-analytics',
   GRAPHQL_API_ANALYTICS_GROWTH_METRICS_DASHBOARDS:
@@ -136,14 +86,13 @@ export const DOCUMENTATION_PATHS = {
   OS_HOW_IT_WORKS: '/os/how-it-works',
   OS_OVERVIEW: '/os/overview',
   OS_SKILLS_BROWSER: '/os/skills/browser',
-  OS_SKILLS_OFFICE: '/os/skills/office',
-  OS_SKILLS_OFFICE_LANDING_PAGE:
-    '/os/skills/office-landing-page',
   OS_SKILLS_CONSUELO_WORKSPACE_SNAPSHOT:
     '/os/skills/consuelo-workspace-snapshot',
   OS_SKILLS_DAILY_REVENUE_BRIEF: '/os/skills/daily-revenue-brief',
   OS_SKILLS_DEBUGGER: '/os/skills/debugger',
   OS_SKILLS_HANDOFF: '/os/skills/handoff',
+  OS_SKILLS_OFFICE: '/os/skills/office',
+  OS_SKILLS_OFFICE_LANDING_PAGE: '/os/skills/office-landing-page',
   OS_SKILLS_PLANNED_CAMPAIGN_BRIEF: '/os/skills/planned/campaign-brief',
   OS_SKILLS_PLANNED_FOLLOW_UP_GENERATOR:
     '/os/skills/planned/follow-up-generator',
@@ -169,13 +118,37 @@ export const DOCUMENTATION_PATHS = {
   OS_TOOLS_OVERVIEW: '/os/tools/overview',
   OS_TOOLS_TASK_AND_STREAM_TOOLS: '/os/tools/task-and-stream-tools',
   OS_TOOLS_TOOL_SEARCH: '/os/tools/tool-search',
-  USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
-  USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
-    '/user-guide/ai/capabilities/ai-chatbot',
-  USER_GUIDE_AI_CAPABILITIES_PERMISSIONS_ACCESS_CONTROL:
-    '/user-guide/ai/capabilities/permissions-access-control',
-  USER_GUIDE_AI_HOW_TOS_AI_FAQ: '/user-guide/ai/how-tos/ai-faq',
-  USER_GUIDE_AI_OVERVIEW: '/user-guide/ai/overview',
+  TOOLS_MEDIA_CAPABILITIES: '/tools/media/capabilities',
+  TOOLS_MEDIA_GETTING_STARTED: '/tools/media/getting-started',
+  TOOLS_MEDIA_REFERENCE_MEDIA_BREAKDOWN_PLAN:
+    '/tools/media/reference/media-breakdown-plan',
+  TOOLS_MEDIA_REFERENCE_MEDIA_COMPOSE: '/tools/media/reference/media-compose',
+  TOOLS_MEDIA_REFERENCE_MEDIA_EXPORT: '/tools/media/reference/media-export',
+  TOOLS_MEDIA_REFERENCE_MEDIA_FRAMES_EXTRACT:
+    '/tools/media/reference/media-frames-extract',
+  TOOLS_MEDIA_REFERENCE_MEDIA_INGEST: '/tools/media/reference/media-ingest',
+  TOOLS_MEDIA_REFERENCE_MEDIA_MOTION_TRACK:
+    '/tools/media/reference/media-motion-track',
+  TOOLS_MEDIA_REFERENCE_MEDIA_OVERLAY_RENDER:
+    '/tools/media/reference/media-overlay-render',
+  TOOLS_MEDIA_REFERENCE_MEDIA_POSE_ESTIMATE:
+    '/tools/media/reference/media-pose-estimate',
+  TOOLS_MEDIA_REFERENCE_MEDIA_PROBE: '/tools/media/reference/media-probe',
+  TOOLS_MEDIA_REFERENCE_MEDIA_QA: '/tools/media/reference/media-qa',
+  TOOLS_MEDIA_REFERENCE_MEDIA_SCENE_DETECT:
+    '/tools/media/reference/media-scene-detect',
+  TOOLS_MEDIA_REFERENCE_MEDIA_SVG_CONVERT:
+    '/tools/media/reference/media-svg-convert',
+  TOOLS_MEDIA_REFERENCE_MEDIA_TIMELINE_VALIDATE:
+    '/tools/media/reference/media-timeline-validate',
+  TOOLS_MEDIA_REFERENCE_MEDIA_TRANSCRIBE:
+    '/tools/media/reference/media-transcribe',
+  TOOLS_MEDIA_WORKFLOWS_FIRST_VIDEO: '/tools/media/workflows/first-video',
+  TOOLS_MEDIA_WORKFLOWS_IMAGE_TO_SVG: '/tools/media/workflows/image-to-svg',
+  TOOLS_MEDIA_WORKFLOWS_YOUTUBE_CLIP_BREAKDOWN:
+    '/tools/media/workflows/youtube-clip-breakdown',
+  TOOLS_OFFICE: '/tools/office',
+  TOOLS_OVERVIEW: '/tools/overview',
   USER_GUIDE_BILLING_CAPABILITIES_PRICING_PLANS:
     '/user-guide/billing/capabilities/pricing-plans',
   USER_GUIDE_BILLING_CAPABILITIES_WORKFLOW_CREDITS:

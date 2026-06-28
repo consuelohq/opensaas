@@ -1,7 +1,7 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 import feedData from '../data/json-files/changelogData.json';
 
 const description = "See what's new in Consuelo — latest updates, features, and improvements.";
@@ -24,8 +24,8 @@ const formatDate = (date: string) => {
 };
 ---
 
-<LaunchLayout title="Changelog" description={description} image="/changelog-og.png">
-  <LaunchHeader />
+<MarketingLayout title="Changelog" description={description} image="/changelog-og.png">
+  <SiteHeader />
   
   <main class="launch-main">
     <section class="launch-section">
@@ -54,8 +54,8 @@ const formatDate = (date: string) => {
     </section>
   </main>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .cl-header {

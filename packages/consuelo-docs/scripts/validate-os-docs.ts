@@ -30,8 +30,32 @@ const docsRoot = path.resolve(path.dirname(thisFile), '..');
 const docsJsonPath = path.join(docsRoot, 'docs.json');
 const docsConfig = JSON.parse(fs.readFileSync(docsJsonPath, 'utf8')) as DocsConfig;
 
+const isGroup = (page: Page): page is Group => typeof page !== 'string';
+
 const flattenPages = (pages: Page[] = []): string[] =>
   pages.flatMap((page) => (typeof page === 'string' ? [page] : flattenPages(page.pages)));
+
+const findGroup = (groups: Group[], predicate: (group: Group) => boolean): Group | null => {
+  for (const group of groups) {
+    if (predicate(group)) return group;
+    const nestedMatch = findGroup((group.pages ?? []).filter(isGroup), predicate);
+    if (nestedMatch) return nestedMatch;
+  }
+  return null;
+};
+
+const osGroupsForLanguage = (language: LanguageEntry): Group[] => {
+  const topLevelOsTab = language.tabs.find((tab) => tab.tab === 'OS');
+  if (topLevelOsTab) return topLevelOsTab.groups;
+
+  const osRootGroup = findGroup(
+    language.tabs.flatMap((tab) => tab.groups),
+    (group) => group.group === 'OS',
+  );
+  if (osRootGroup) return (osRootGroup.pages ?? []).filter(isGroup);
+
+  throw new Error(`${language.language}: missing OS navigation group`);
+};
 
 const readPageTitle = (content: string, slug: string): string => {
   const match = content.match(/^title: (.+)$/m);
@@ -51,11 +75,7 @@ if (!english) {
   throw new Error('docs.json is missing the English navigation entry.');
 }
 
-const osTab = english.tabs.find((tab) => tab.tab === 'OS');
-if (!osTab) {
-  throw new Error('docs.json is missing the OS tab.');
-}
-
+const osGroups = osGroupsForLanguage(english);
 
 const placeholderHits: string[] = [];
 const scanForPlaceholders = (dir: string): void => {
@@ -83,13 +103,13 @@ if (placeholderHits.length) {
 ${placeholderHits.join('\n')}`);
 }
 
-const skillsGroup = osTab.groups.find((group) => group.group === 'Skills');
+const skillsGroup = findGroup(osGroups, (group) => flattenPages(group.pages ?? []).some((slug) => slug.startsWith('os/skills/') || slug.includes('/os/skills/')));
 if (!skillsGroup) {
-  throw new Error('OS tab is missing the Skills group.');
+  throw new Error('OS navigation is missing the Skills group.');
 }
 
-if (osTab.groups.some((group) => group.group === 'Runbooks')) {
-  throw new Error('OS tab still contains a Runbooks group.');
+if (osGroups.some((group) => group.group === 'Runbooks')) {
+  throw new Error('OS navigation still contains a Runbooks group.');
 }
 
 const skillPages = skillsGroup.pages?.filter((page): page is string => typeof page === 'string') ?? [];
@@ -104,17 +124,12 @@ if (titles.join('\n') !== sortedTitles.join('\n')) {
   throw new Error('Skill docs are not sorted alphabetically.');
 }
 
-const osMissing = docsConfig.navigation.languages.flatMap((language) => {
-  const localizedOsTab = language.tabs.find((tab) => tab.tab === 'OS');
-  if (!localizedOsTab) {
-    return [`${language.language}: missing OS tab`];
-  }
-
-  return localizedOsTab.groups
+const osMissing = docsConfig.navigation.languages.flatMap((language) =>
+  osGroupsForLanguage(language)
     .flatMap((group) => flattenPages(group.pages ?? []))
     .filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)))
-    .map((slug) => `${language.language}: ${slug}`);
-});
+    .map((slug) => `${language.language}: ${slug}`),
+);
 
 if (osMissing.length) {
   throw new Error(`OS docs nav has missing pages:\n${osMissing.join('\n')}`);
@@ -122,9 +137,9 @@ if (osMissing.length) {
 
 
 const agentTddSlug = 'os/agent-context/test-driven-agent-work';
-const agentContextGroup = osTab.groups.find((group) => group.group === 'Agent Context');
+const agentContextGroup = findGroup(osGroups, (group) => flattenPages(group.pages ?? []).includes(agentTddSlug));
 if (!agentContextGroup) {
-  throw new Error('OS tab is missing the Agent Context group.');
+  throw new Error('OS navigation is missing the Agent Context group.');
 }
 
 const agentContextPages = flattenPages(agentContextGroup.pages ?? []);

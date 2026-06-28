@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/address-website-review-comments",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1228,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1228",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1228",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1228/address-website-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1228",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1228/address-website-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-website-review-comments",
+  "taskSession": "tsk_34c76eee72e1",
+  "tmuxSession": "opensaas-sites-address-website-review-comments-34c76eee",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-website-review-comments/.task/sites/address-website-review-comments/session.json",
+  "createdAt": "2026-06-27T21:50:41.554Z"
+}
