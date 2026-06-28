@@ -190,8 +190,10 @@ const osGroups = (structure: BaseStructure): BaseGroup[] => {
 
 const syncNavigation = (skills: SkillJson[]): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
-  const groups = osGroups(structure);
-  const skillsGroup = groups.find((group) => group.key === 'osSkills');
+  const skillsGroup = findGroupByKey(
+    structure.tabs.flatMap((tab) => tab.groups),
+    'osSkills',
+  );
   if (!skillsGroup) {
     throw new Error('navigation/base-structure.json is missing osSkills.');
   }
@@ -229,7 +231,10 @@ const writeLocalizedFallback = (slug: string): void => {
 const syncLocalizedOsPages = (): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
 
-  for (const slug of osGroups(structure).flatMap((group) => collectPageSlugs(group.pages))) {
+  for (const slug of structure.tabs
+    .flatMap((tab) => tab.groups)
+    .flatMap((group) => collectPageSlugs(group.pages))
+    .filter((slug) => slug.startsWith('os/'))) {
     writeLocalizedFallback(slug);
   }
 };
