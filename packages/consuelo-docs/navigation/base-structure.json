@@ -487,6 +487,60 @@
                   ]
                 }
               ]
+            },
+            {
+              "key": "twentyUi",
+              "label": "Consuelo UI",
+              "pages": [
+                "consuelo-ui/introduction",
+                {
+                  "key": "display",
+                  "label": "Display",
+                  "pages": [
+                    "consuelo-ui/display/checkmark",
+                    "consuelo-ui/display/chip",
+                    "consuelo-ui/display/icons",
+                    "consuelo-ui/display/soon-pill",
+                    "consuelo-ui/display/tag",
+                    "consuelo-ui/display/app-tooltip"
+                  ]
+                },
+                {
+                  "key": "feedback",
+                  "label": "Feedback",
+                  "pages": [
+                    "consuelo-ui/progress-bar"
+                  ]
+                },
+                {
+                  "key": "input",
+                  "label": "Input",
+                  "pages": [
+                    "consuelo-ui/input/buttons",
+                    "consuelo-ui/input/color-scheme",
+                    "consuelo-ui/input/text",
+                    "consuelo-ui/input/checkbox",
+                    "consuelo-ui/input/icon-picker",
+                    "consuelo-ui/input/image-input",
+                    "consuelo-ui/input/radio",
+                    "consuelo-ui/input/select",
+                    "consuelo-ui/input/toggle",
+                    "consuelo-ui/input/block-editor"
+                  ]
+                },
+                {
+                  "key": "navigation",
+                  "label": "Navigation",
+                  "pages": [
+                    "consuelo-ui/navigation",
+                    "consuelo-ui/navigation/breadcrumb",
+                    "consuelo-ui/navigation/links",
+                    "consuelo-ui/navigation/menu-item",
+                    "consuelo-ui/navigation/navigation-bar",
+                    "consuelo-ui/navigation/step-bar"
+                  ]
+                }
+              ]
             }
           ]
         }

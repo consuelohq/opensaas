@@ -474,6 +474,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "consuelo-ui/introduction",
+                      {
+                        "group": "Display",
+                        "pages": [
+                          "consuelo-ui/display/checkmark",
+                          "consuelo-ui/display/chip",
+                          "consuelo-ui/display/icons",
+                          "consuelo-ui/display/soon-pill",
+                          "consuelo-ui/display/tag",
+                          "consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Feedback",
+                        "pages": [
+                          "consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Input",
+                        "pages": [
+                          "consuelo-ui/input/buttons",
+                          "consuelo-ui/input/color-scheme",
+                          "consuelo-ui/input/text",
+                          "consuelo-ui/input/checkbox",
+                          "consuelo-ui/input/icon-picker",
+                          "consuelo-ui/input/image-input",
+                          "consuelo-ui/input/radio",
+                          "consuelo-ui/input/select",
+                          "consuelo-ui/input/toggle",
+                          "consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigation",
+                        "pages": [
+                          "consuelo-ui/navigation",
+                          "consuelo-ui/navigation/breadcrumb",
+                          "consuelo-ui/navigation/links",
+                          "consuelo-ui/navigation/menu-item",
+                          "consuelo-ui/navigation/navigation-bar",
+                          "consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -1028,6 +1077,55 @@
                         "group": "Guides pratiques",
                         "pages": [
                           "l/fr/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/fr/consuelo-ui/introduction",
+                      {
+                        "group": "Afficher",
+                        "pages": [
+                          "l/fr/consuelo-ui/display/checkmark",
+                          "l/fr/consuelo-ui/display/chip",
+                          "l/fr/consuelo-ui/display/icons",
+                          "l/fr/consuelo-ui/display/soon-pill",
+                          "l/fr/consuelo-ui/display/tag",
+                          "l/fr/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Retour d'information",
+                        "pages": [
+                          "l/fr/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Entrée ",
+                        "pages": [
+                          "l/fr/consuelo-ui/input/buttons",
+                          "l/fr/consuelo-ui/input/color-scheme",
+                          "l/fr/consuelo-ui/input/text",
+                          "l/fr/consuelo-ui/input/checkbox",
+                          "l/fr/consuelo-ui/input/icon-picker",
+                          "l/fr/consuelo-ui/input/image-input",
+                          "l/fr/consuelo-ui/input/radio",
+                          "l/fr/consuelo-ui/input/select",
+                          "l/fr/consuelo-ui/input/toggle",
+                          "l/fr/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigation",
+                        "pages": [
+                          "l/fr/consuelo-ui/navigation",
+                          "l/fr/consuelo-ui/navigation/breadcrumb",
+                          "l/fr/consuelo-ui/navigation/links",
+                          "l/fr/consuelo-ui/navigation/menu-item",
+                          "l/fr/consuelo-ui/navigation/navigation-bar",
+                          "l/fr/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -1588,6 +1686,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/ar/consuelo-ui/introduction",
+                      {
+                        "group": "عرض",
+                        "pages": [
+                          "l/ar/consuelo-ui/display/checkmark",
+                          "l/ar/consuelo-ui/display/chip",
+                          "l/ar/consuelo-ui/display/icons",
+                          "l/ar/consuelo-ui/display/soon-pill",
+                          "l/ar/consuelo-ui/display/tag",
+                          "l/ar/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "التغذية الراجعة",
+                        "pages": [
+                          "l/ar/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "إدخال",
+                        "pages": [
+                          "l/ar/consuelo-ui/input/buttons",
+                          "l/ar/consuelo-ui/input/color-scheme",
+                          "l/ar/consuelo-ui/input/text",
+                          "l/ar/consuelo-ui/input/checkbox",
+                          "l/ar/consuelo-ui/input/icon-picker",
+                          "l/ar/consuelo-ui/input/image-input",
+                          "l/ar/consuelo-ui/input/radio",
+                          "l/ar/consuelo-ui/input/select",
+                          "l/ar/consuelo-ui/input/toggle",
+                          "l/ar/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "التنقل",
+                        "pages": [
+                          "l/ar/consuelo-ui/navigation",
+                          "l/ar/consuelo-ui/navigation/breadcrumb",
+                          "l/ar/consuelo-ui/navigation/links",
+                          "l/ar/consuelo-ui/navigation/menu-item",
+                          "l/ar/consuelo-ui/navigation/navigation-bar",
+                          "l/ar/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -2142,6 +2289,55 @@
                         "group": "Návody",
                         "pages": [
                           "l/cs/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/cs/consuelo-ui/introduction",
+                      {
+                        "group": "Zobrazit",
+                        "pages": [
+                          "l/cs/consuelo-ui/display/checkmark",
+                          "l/cs/consuelo-ui/display/chip",
+                          "l/cs/consuelo-ui/display/icons",
+                          "l/cs/consuelo-ui/display/soon-pill",
+                          "l/cs/consuelo-ui/display/tag",
+                          "l/cs/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Zpětná vazba",
+                        "pages": [
+                          "l/cs/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Vstup",
+                        "pages": [
+                          "l/cs/consuelo-ui/input/buttons",
+                          "l/cs/consuelo-ui/input/color-scheme",
+                          "l/cs/consuelo-ui/input/text",
+                          "l/cs/consuelo-ui/input/checkbox",
+                          "l/cs/consuelo-ui/input/icon-picker",
+                          "l/cs/consuelo-ui/input/image-input",
+                          "l/cs/consuelo-ui/input/radio",
+                          "l/cs/consuelo-ui/input/select",
+                          "l/cs/consuelo-ui/input/toggle",
+                          "l/cs/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigace",
+                        "pages": [
+                          "l/cs/consuelo-ui/navigation",
+                          "l/cs/consuelo-ui/navigation/breadcrumb",
+                          "l/cs/consuelo-ui/navigation/links",
+                          "l/cs/consuelo-ui/navigation/menu-item",
+                          "l/cs/consuelo-ui/navigation/navigation-bar",
+                          "l/cs/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -2702,6 +2898,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/de/consuelo-ui/introduction",
+                      {
+                        "group": "Anzeigen",
+                        "pages": [
+                          "l/de/consuelo-ui/display/checkmark",
+                          "l/de/consuelo-ui/display/chip",
+                          "l/de/consuelo-ui/display/icons",
+                          "l/de/consuelo-ui/display/soon-pill",
+                          "l/de/consuelo-ui/display/tag",
+                          "l/de/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Rückmeldung",
+                        "pages": [
+                          "l/de/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Eingabe",
+                        "pages": [
+                          "l/de/consuelo-ui/input/buttons",
+                          "l/de/consuelo-ui/input/color-scheme",
+                          "l/de/consuelo-ui/input/text",
+                          "l/de/consuelo-ui/input/checkbox",
+                          "l/de/consuelo-ui/input/icon-picker",
+                          "l/de/consuelo-ui/input/image-input",
+                          "l/de/consuelo-ui/input/radio",
+                          "l/de/consuelo-ui/input/select",
+                          "l/de/consuelo-ui/input/toggle",
+                          "l/de/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigation",
+                        "pages": [
+                          "l/de/consuelo-ui/navigation",
+                          "l/de/consuelo-ui/navigation/breadcrumb",
+                          "l/de/consuelo-ui/navigation/links",
+                          "l/de/consuelo-ui/navigation/menu-item",
+                          "l/de/consuelo-ui/navigation/navigation-bar",
+                          "l/de/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -3256,6 +3501,55 @@
                         "group": "Guías prácticas",
                         "pages": [
                           "l/es/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/es/consuelo-ui/introduction",
+                      {
+                        "group": "Mostrar",
+                        "pages": [
+                          "l/es/consuelo-ui/display/checkmark",
+                          "l/es/consuelo-ui/display/chip",
+                          "l/es/consuelo-ui/display/icons",
+                          "l/es/consuelo-ui/display/soon-pill",
+                          "l/es/consuelo-ui/display/tag",
+                          "l/es/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Retroalimentación",
+                        "pages": [
+                          "l/es/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Entrada",
+                        "pages": [
+                          "l/es/consuelo-ui/input/buttons",
+                          "l/es/consuelo-ui/input/color-scheme",
+                          "l/es/consuelo-ui/input/text",
+                          "l/es/consuelo-ui/input/checkbox",
+                          "l/es/consuelo-ui/input/icon-picker",
+                          "l/es/consuelo-ui/input/image-input",
+                          "l/es/consuelo-ui/input/radio",
+                          "l/es/consuelo-ui/input/select",
+                          "l/es/consuelo-ui/input/toggle",
+                          "l/es/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navegación",
+                        "pages": [
+                          "l/es/consuelo-ui/navigation",
+                          "l/es/consuelo-ui/navigation/breadcrumb",
+                          "l/es/consuelo-ui/navigation/links",
+                          "l/es/consuelo-ui/navigation/menu-item",
+                          "l/es/consuelo-ui/navigation/navigation-bar",
+                          "l/es/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -3816,6 +4110,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/it/consuelo-ui/introduction",
+                      {
+                        "group": "Mostra",
+                        "pages": [
+                          "l/it/consuelo-ui/display/checkmark",
+                          "l/it/consuelo-ui/display/chip",
+                          "l/it/consuelo-ui/display/icons",
+                          "l/it/consuelo-ui/display/soon-pill",
+                          "l/it/consuelo-ui/display/tag",
+                          "l/it/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Feedback",
+                        "pages": [
+                          "l/it/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Input",
+                        "pages": [
+                          "l/it/consuelo-ui/input/buttons",
+                          "l/it/consuelo-ui/input/color-scheme",
+                          "l/it/consuelo-ui/input/text",
+                          "l/it/consuelo-ui/input/checkbox",
+                          "l/it/consuelo-ui/input/icon-picker",
+                          "l/it/consuelo-ui/input/image-input",
+                          "l/it/consuelo-ui/input/radio",
+                          "l/it/consuelo-ui/input/select",
+                          "l/it/consuelo-ui/input/toggle",
+                          "l/it/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigazione",
+                        "pages": [
+                          "l/it/consuelo-ui/navigation",
+                          "l/it/consuelo-ui/navigation/breadcrumb",
+                          "l/it/consuelo-ui/navigation/links",
+                          "l/it/consuelo-ui/navigation/menu-item",
+                          "l/it/consuelo-ui/navigation/navigation-bar",
+                          "l/it/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -4370,6 +4713,55 @@
                         "group": "ハウツー",
                         "pages": [
                           "l/ja/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/ja/consuelo-ui/introduction",
+                      {
+                        "group": "表示",
+                        "pages": [
+                          "l/ja/consuelo-ui/display/checkmark",
+                          "l/ja/consuelo-ui/display/chip",
+                          "l/ja/consuelo-ui/display/icons",
+                          "l/ja/consuelo-ui/display/soon-pill",
+                          "l/ja/consuelo-ui/display/tag",
+                          "l/ja/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "フィードバック",
+                        "pages": [
+                          "l/ja/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "入力",
+                        "pages": [
+                          "l/ja/consuelo-ui/input/buttons",
+                          "l/ja/consuelo-ui/input/color-scheme",
+                          "l/ja/consuelo-ui/input/text",
+                          "l/ja/consuelo-ui/input/checkbox",
+                          "l/ja/consuelo-ui/input/icon-picker",
+                          "l/ja/consuelo-ui/input/image-input",
+                          "l/ja/consuelo-ui/input/radio",
+                          "l/ja/consuelo-ui/input/select",
+                          "l/ja/consuelo-ui/input/toggle",
+                          "l/ja/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "ナビゲーション",
+                        "pages": [
+                          "l/ja/consuelo-ui/navigation",
+                          "l/ja/consuelo-ui/navigation/breadcrumb",
+                          "l/ja/consuelo-ui/navigation/links",
+                          "l/ja/consuelo-ui/navigation/menu-item",
+                          "l/ja/consuelo-ui/navigation/navigation-bar",
+                          "l/ja/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -4930,6 +5322,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/ko/consuelo-ui/introduction",
+                      {
+                        "group": "표시",
+                        "pages": [
+                          "l/ko/consuelo-ui/display/checkmark",
+                          "l/ko/consuelo-ui/display/chip",
+                          "l/ko/consuelo-ui/display/icons",
+                          "l/ko/consuelo-ui/display/soon-pill",
+                          "l/ko/consuelo-ui/display/tag",
+                          "l/ko/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "피드백",
+                        "pages": [
+                          "l/ko/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "입력",
+                        "pages": [
+                          "l/ko/consuelo-ui/input/buttons",
+                          "l/ko/consuelo-ui/input/color-scheme",
+                          "l/ko/consuelo-ui/input/text",
+                          "l/ko/consuelo-ui/input/checkbox",
+                          "l/ko/consuelo-ui/input/icon-picker",
+                          "l/ko/consuelo-ui/input/image-input",
+                          "l/ko/consuelo-ui/input/radio",
+                          "l/ko/consuelo-ui/input/select",
+                          "l/ko/consuelo-ui/input/toggle",
+                          "l/ko/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "네비게이션",
+                        "pages": [
+                          "l/ko/consuelo-ui/navigation",
+                          "l/ko/consuelo-ui/navigation/breadcrumb",
+                          "l/ko/consuelo-ui/navigation/links",
+                          "l/ko/consuelo-ui/navigation/menu-item",
+                          "l/ko/consuelo-ui/navigation/navigation-bar",
+                          "l/ko/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -5484,6 +5925,55 @@
                         "group": "How-Tos",
                         "pages": [
                           "l/pt/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/pt/consuelo-ui/introduction",
+                      {
+                        "group": "Exibir",
+                        "pages": [
+                          "l/pt/consuelo-ui/display/checkmark",
+                          "l/pt/consuelo-ui/display/chip",
+                          "l/pt/consuelo-ui/display/icons",
+                          "l/pt/consuelo-ui/display/soon-pill",
+                          "l/pt/consuelo-ui/display/tag",
+                          "l/pt/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Feedback",
+                        "pages": [
+                          "l/pt/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Entrada",
+                        "pages": [
+                          "l/pt/consuelo-ui/input/buttons",
+                          "l/pt/consuelo-ui/input/color-scheme",
+                          "l/pt/consuelo-ui/input/text",
+                          "l/pt/consuelo-ui/input/checkbox",
+                          "l/pt/consuelo-ui/input/icon-picker",
+                          "l/pt/consuelo-ui/input/image-input",
+                          "l/pt/consuelo-ui/input/radio",
+                          "l/pt/consuelo-ui/input/select",
+                          "l/pt/consuelo-ui/input/toggle",
+                          "l/pt/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navegação",
+                        "pages": [
+                          "l/pt/consuelo-ui/navigation",
+                          "l/pt/consuelo-ui/navigation/breadcrumb",
+                          "l/pt/consuelo-ui/navigation/links",
+                          "l/pt/consuelo-ui/navigation/menu-item",
+                          "l/pt/consuelo-ui/navigation/navigation-bar",
+                          "l/pt/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -6044,6 +6534,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/ro/consuelo-ui/introduction",
+                      {
+                        "group": "Afișare",
+                        "pages": [
+                          "l/ro/consuelo-ui/display/checkmark",
+                          "l/ro/consuelo-ui/display/chip",
+                          "l/ro/consuelo-ui/display/icons",
+                          "l/ro/consuelo-ui/display/soon-pill",
+                          "l/ro/consuelo-ui/display/tag",
+                          "l/ro/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Feedback",
+                        "pages": [
+                          "l/ro/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Intrare",
+                        "pages": [
+                          "l/ro/consuelo-ui/input/buttons",
+                          "l/ro/consuelo-ui/input/color-scheme",
+                          "l/ro/consuelo-ui/input/text",
+                          "l/ro/consuelo-ui/input/checkbox",
+                          "l/ro/consuelo-ui/input/icon-picker",
+                          "l/ro/consuelo-ui/input/image-input",
+                          "l/ro/consuelo-ui/input/radio",
+                          "l/ro/consuelo-ui/input/select",
+                          "l/ro/consuelo-ui/input/toggle",
+                          "l/ro/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Navigare",
+                        "pages": [
+                          "l/ro/consuelo-ui/navigation",
+                          "l/ro/consuelo-ui/navigation/breadcrumb",
+                          "l/ro/consuelo-ui/navigation/links",
+                          "l/ro/consuelo-ui/navigation/menu-item",
+                          "l/ro/consuelo-ui/navigation/navigation-bar",
+                          "l/ro/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -6598,6 +7137,55 @@
                         "group": "Инструкции",
                         "pages": [
                           "l/ru/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/ru/consuelo-ui/introduction",
+                      {
+                        "group": "Отображение",
+                        "pages": [
+                          "l/ru/consuelo-ui/display/checkmark",
+                          "l/ru/consuelo-ui/display/chip",
+                          "l/ru/consuelo-ui/display/icons",
+                          "l/ru/consuelo-ui/display/soon-pill",
+                          "l/ru/consuelo-ui/display/tag",
+                          "l/ru/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Обратная связь",
+                        "pages": [
+                          "l/ru/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Ввод",
+                        "pages": [
+                          "l/ru/consuelo-ui/input/buttons",
+                          "l/ru/consuelo-ui/input/color-scheme",
+                          "l/ru/consuelo-ui/input/text",
+                          "l/ru/consuelo-ui/input/checkbox",
+                          "l/ru/consuelo-ui/input/icon-picker",
+                          "l/ru/consuelo-ui/input/image-input",
+                          "l/ru/consuelo-ui/input/radio",
+                          "l/ru/consuelo-ui/input/select",
+                          "l/ru/consuelo-ui/input/toggle",
+                          "l/ru/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Навигация",
+                        "pages": [
+                          "l/ru/consuelo-ui/navigation",
+                          "l/ru/consuelo-ui/navigation/breadcrumb",
+                          "l/ru/consuelo-ui/navigation/links",
+                          "l/ru/consuelo-ui/navigation/menu-item",
+                          "l/ru/consuelo-ui/navigation/navigation-bar",
+                          "l/ru/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
@@ -7158,6 +7746,55 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/tr/consuelo-ui/introduction",
+                      {
+                        "group": "Görüntüle",
+                        "pages": [
+                          "l/tr/consuelo-ui/display/checkmark",
+                          "l/tr/consuelo-ui/display/chip",
+                          "l/tr/consuelo-ui/display/icons",
+                          "l/tr/consuelo-ui/display/soon-pill",
+                          "l/tr/consuelo-ui/display/tag",
+                          "l/tr/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "Geri Bildirim",
+                        "pages": [
+                          "l/tr/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "Girdi",
+                        "pages": [
+                          "l/tr/consuelo-ui/input/buttons",
+                          "l/tr/consuelo-ui/input/color-scheme",
+                          "l/tr/consuelo-ui/input/text",
+                          "l/tr/consuelo-ui/input/checkbox",
+                          "l/tr/consuelo-ui/input/icon-picker",
+                          "l/tr/consuelo-ui/input/image-input",
+                          "l/tr/consuelo-ui/input/radio",
+                          "l/tr/consuelo-ui/input/select",
+                          "l/tr/consuelo-ui/input/toggle",
+                          "l/tr/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "Gezinme",
+                        "pages": [
+                          "l/tr/consuelo-ui/navigation",
+                          "l/tr/consuelo-ui/navigation/breadcrumb",
+                          "l/tr/consuelo-ui/navigation/links",
+                          "l/tr/consuelo-ui/navigation/menu-item",
+                          "l/tr/consuelo-ui/navigation/navigation-bar",
+                          "l/tr/consuelo-ui/navigation/step-bar"
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -7712,6 +8349,55 @@
                         "group": "操作指南",
                         "pages": [
                           "l/zh/user-guide/settings/how-tos/settings-faq"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Consuelo UI",
+                    "pages": [
+                      "l/zh/consuelo-ui/introduction",
+                      {
+                        "group": "展示",
+                        "pages": [
+                          "l/zh/consuelo-ui/display/checkmark",
+                          "l/zh/consuelo-ui/display/chip",
+                          "l/zh/consuelo-ui/display/icons",
+                          "l/zh/consuelo-ui/display/soon-pill",
+                          "l/zh/consuelo-ui/display/tag",
+                          "l/zh/consuelo-ui/display/app-tooltip"
+                        ]
+                      },
+                      {
+                        "group": "反馈",
+                        "pages": [
+                          "l/zh/consuelo-ui/progress-bar"
+                        ]
+                      },
+                      {
+                        "group": "输入",
+                        "pages": [
+                          "l/zh/consuelo-ui/input/buttons",
+                          "l/zh/consuelo-ui/input/color-scheme",
+                          "l/zh/consuelo-ui/input/text",
+                          "l/zh/consuelo-ui/input/checkbox",
+                          "l/zh/consuelo-ui/input/icon-picker",
+                          "l/zh/consuelo-ui/input/image-input",
+                          "l/zh/consuelo-ui/input/radio",
+                          "l/zh/consuelo-ui/input/select",
+                          "l/zh/consuelo-ui/input/toggle",
+                          "l/zh/consuelo-ui/input/block-editor"
+                        ]
+                      },
+                      {
+                        "group": "导航",
+                        "pages": [
+                          "l/zh/consuelo-ui/navigation",
+                          "l/zh/consuelo-ui/navigation/breadcrumb",
+                          "l/zh/consuelo-ui/navigation/links",
+                          "l/zh/consuelo-ui/navigation/menu-item",
+                          "l/zh/consuelo-ui/navigation/navigation-bar",
+                          "l/zh/consuelo-ui/navigation/step-bar"
                         ]
                       }
                     ]
