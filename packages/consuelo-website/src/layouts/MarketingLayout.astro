@@ -118,14 +118,14 @@ const {
     --launch-muted: var(--site-color-muted);
     --launch-soft: var(--site-color-soft);
     --launch-line: var(--site-color-line);
-    --launch-panel: var(--site-color-surface);
-    --launch-panel-strong: color-mix(in srgb, var(--site-color-ink) 6%, var(--site-color-surface));
-    --launch-dropdown-bg: var(--site-color-surface);
-    --launch-dropdown-shadow: var(--site-shadow-raised);
-    --launch-shimmer-stop-1: color-mix(in srgb, var(--site-color-ink) 18%, transparent);
-    --launch-shimmer-stop-2: color-mix(in srgb, var(--site-color-ink) 40%, transparent);
-    --launch-shimmer-stop-3: color-mix(in srgb, var(--site-color-ink) 82%, transparent);
-    --launch-success: var(--site-color-secondary);
+    --launch-panel: var(--site-color-panel);
+    --launch-panel-strong: var(--site-color-panel-strong);
+    --launch-dropdown-bg: var(--site-color-dropdown-bg);
+    --launch-dropdown-shadow: var(--site-shadow-dropdown);
+    --launch-shimmer-stop-1: var(--site-color-shimmer-stop-1);
+    --launch-shimmer-stop-2: var(--site-color-shimmer-stop-2);
+    --launch-shimmer-stop-3: var(--site-color-shimmer-stop-3);
+    --launch-success: var(--site-color-success);
     --launch-mono-font: var(--site-font-mono);
   }
 
@@ -148,8 +148,8 @@ const {
     margin: 0;
     min-height: 100vh;
     background:
-      linear-gradient(var(--launch-soft), var(--launch-soft)) left top / 1px 100% no-repeat,
-      linear-gradient(var(--launch-soft), var(--launch-soft)) right top / 1px 100% no-repeat,
+      linear-gradient(var(--site-color-soft), var(--site-color-soft)) left top / 1px 100% no-repeat,
+      linear-gradient(var(--site-color-soft), var(--site-color-soft)) right top / 1px 100% no-repeat,
       var(--site-color-paper);
     color: var(--site-color-ink);
     font-family: var(--site-font-body);
@@ -173,11 +173,11 @@ const {
     color: transparent !important;
     background-image: linear-gradient(
       90deg,
-      var(--launch-shimmer-stop-1) 0%,
-      var(--launch-shimmer-stop-2) 30%,
-      var(--launch-shimmer-stop-3) 50%,
-      var(--launch-shimmer-stop-2) 70%,
-      var(--launch-shimmer-stop-1) 100%
+      var(--site-color-shimmer-stop-1) 0%,
+      var(--site-color-shimmer-stop-2) 30%,
+      var(--site-color-shimmer-stop-3) 50%,
+      var(--site-color-shimmer-stop-2) 70%,
+      var(--site-color-shimmer-stop-1) 100%
     );
     background-size: 220% 100%;
     background-position: 200% 50%;
@@ -192,11 +192,11 @@ const {
     color: transparent !important;
     background-image: linear-gradient(
       90deg,
-      var(--launch-shimmer-stop-1) 0%,
-      var(--launch-shimmer-stop-2) 30%,
-      var(--launch-shimmer-stop-3) 50%,
-      var(--launch-shimmer-stop-2) 70%,
-      var(--launch-shimmer-stop-1) 100%
+      var(--site-color-shimmer-stop-1) 0%,
+      var(--site-color-shimmer-stop-2) 30%,
+      var(--site-color-shimmer-stop-3) 50%,
+      var(--site-color-shimmer-stop-2) 70%,
+      var(--site-color-shimmer-stop-1) 100%
     );
     background-size: 220% 100%;
     background-position: 200% 50%;
@@ -239,13 +239,13 @@ const {
   .launch-shell {
     width: min(100%, 1600px);
     margin: 0 auto;
-    border-left: 1px solid var(--launch-line);
-    border-right: 1px solid var(--launch-line);
+    border-left: 1px solid var(--site-color-line);
+    border-right: 1px solid var(--site-color-line);
     min-height: 100vh;
   }
 
   .launch-section {
-    border-top: 1px solid var(--launch-line);
+    border-top: 1px solid var(--site-color-line);
     scroll-margin-top: 8.5rem;
   }
 
@@ -258,21 +258,21 @@ const {
   }
 
   .launch-mono {
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
   }
 
   .launch-eyebrow {
     margin: 0 0 0.7rem;
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     font-weight: 700;
-    color: var(--launch-fg);
+    color: var(--site-color-ink);
   }
 
   .launch-title {
     margin: 0;
-    font-family: var(--launch-mono-font);
+    font-family: var(--site-font-mono);
     font-size: clamp(1.35rem, 0.9rem + 1.8vw, 2rem);
     font-weight: 700;
     line-height: 1.02;
@@ -283,7 +283,7 @@ const {
   .launch-copy {
     margin: 0;
     max-width: 48rem;
-    color: var(--launch-muted);
+    color: var(--site-color-muted);
     font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
     line-height: 1.72;
     text-wrap: pretty;
@@ -297,7 +297,7 @@ const {
     justify-content: center;
     gap: 0.42rem;
     border-radius: 0.2rem;
-    border: 1px solid var(--launch-line);
+    border: 1px solid var(--site-color-line);
     min-height: 2.2rem;
     padding: 0 0.78rem;
     transition: background 160ms ease, color 160ms ease, border-color 160ms ease, opacity 160ms ease;
@@ -305,9 +305,9 @@ const {
   }
 
   .launch-button {
-    background: var(--launch-fg);
-    color: var(--launch-bg);
-    border-color: var(--launch-fg);
+    background: var(--site-color-ink);
+    color: var(--site-color-paper);
+    border-color: var(--site-color-ink);
   }
 
   .launch-button:hover,
@@ -325,22 +325,22 @@ const {
 
   .launch-button--ghost {
     background: transparent;
-    color: var(--launch-fg);
+    color: var(--site-color-ink);
   }
 
   .launch-button--ghost:hover,
   .launch-button--quiet:hover {
-    background: var(--launch-panel);
+    background: var(--site-color-panel);
   }
 
   .launch-button--quiet {
     background: transparent;
-    color: var(--launch-muted);
+    color: var(--site-color-muted);
   }
 
   .launch-card {
-    border: 1px solid var(--launch-line);
-    background: var(--launch-panel);
+    border: 1px solid var(--site-color-line);
+    background: var(--site-color-panel);
   }
 
   .launch-inline-link {

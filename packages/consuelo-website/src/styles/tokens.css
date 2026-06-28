@@ -10,6 +10,13 @@
   --site-color-line: rgba(28, 26, 23, 0.14);
   --site-color-line-strong: rgba(28, 26, 23, 0.28);
   --site-color-soft: rgba(28, 26, 23, 0.045);
+  --site-color-panel: rgba(28, 26, 23, 0.035);
+  --site-color-panel-strong: rgba(28, 26, 23, 0.07);
+  --site-color-dropdown-bg: #FBF7EF;
+  --site-color-success: #2F8F52;
+  --site-color-shimmer-stop-1: rgba(28, 26, 23, 0.18);
+  --site-color-shimmer-stop-2: rgba(28, 26, 23, 0.4);
+  --site-color-shimmer-stop-3: rgba(28, 26, 23, 0.82);
   --site-color-dark-paper: #211915;
   --site-color-dark-ink: #F7EFE7;
   --site-color-dark-surface: #2B211B;
@@ -19,9 +26,9 @@
   --site-color-dark-accent-ink: #211915;
   --site-color-dark-secondary: #A5B8A7;
 
-  --site-font-display: Georgia, ui-serif, 'Times New Roman', serif;
-  --site-font-body: Geist, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --site-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;
+  --site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+  --site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 
   --site-text-xs: 0.75rem;
   --site-text-sm: 0.875rem;
@@ -60,6 +67,7 @@
   --site-shadow-border: 0 0 0 1px var(--site-color-line);
   --site-shadow-raised: 0 0 0 1px rgba(28, 26, 23, 0.08), 0 18px 52px rgba(28, 26, 23, 0.10);
   --site-shadow-hover: 0 0 0 1px rgba(28, 26, 23, 0.12), 0 22px 64px rgba(28, 26, 23, 0.14);
+  --site-shadow-dropdown: 0 18px 45px rgba(28, 26, 23, 0.12);
 
   --site-motion-fast: 140ms;
   --site-motion-medium: 220ms;
@@ -72,8 +80,17 @@
   --site-z-modal: 80;
 }
 
+@media (max-width: 760px) {
+  :root {
+    --site-text-3xl: 2.5rem;
+    --site-text-4xl: 3.5rem;
+    --site-space-section: 3rem;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --site-color-paper: var(--site-color-dark-paper);
     --site-color-ink: var(--site-color-dark-ink);
     --site-color-surface: var(--site-color-dark-surface);
@@ -82,18 +99,18 @@
     --site-color-accent: var(--site-color-dark-accent);
     --site-color-accent-ink: var(--site-color-dark-accent-ink);
     --site-color-secondary: var(--site-color-dark-secondary);
-    --site-color-line: rgba(247, 239, 231, 0.16);
-    --site-color-line-strong: rgba(247, 239, 231, 0.30);
-    --site-color-soft: rgba(247, 239, 231, 0.055);
-    --site-shadow-raised: 0 0 0 1px rgba(247, 239, 231, 0.10), 0 18px 52px rgba(0, 0, 0, 0.24);
-    --site-shadow-hover: 0 0 0 1px rgba(247, 239, 231, 0.16), 0 22px 64px rgba(0, 0, 0, 0.30);
-  }
-}
-
-@media (max-width: 760px) {
-  :root {
-    --site-text-3xl: 2.5rem;
-    --site-text-4xl: 3.5rem;
-    --site-space-section: 3rem;
+    --site-color-line: rgba(255, 247, 235, 0.14);
+    --site-color-line-strong: rgba(255, 247, 235, 0.28);
+    --site-color-soft: rgba(255, 247, 235, 0.05);
+    --site-color-panel: rgba(255, 247, 235, 0.06);
+    --site-color-panel-strong: rgba(255, 247, 235, 0.1);
+    --site-color-dropdown-bg: var(--site-color-dark-surface);
+    --site-color-success: #82E8A4;
+    --site-color-shimmer-stop-1: rgba(255, 247, 235, 0.22);
+    --site-color-shimmer-stop-2: rgba(255, 247, 235, 0.52);
+    --site-color-shimmer-stop-3: rgba(255, 247, 235, 0.88);
+    --site-shadow-raised: 0 0 0 1px rgba(255, 247, 235, 0.1), 0 18px 52px rgba(0, 0, 0, 0.32);
+    --site-shadow-hover: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 22px 64px rgba(0, 0, 0, 0.42);
+    --site-shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.45);
   }
 }
