@@ -146,7 +146,8 @@ describe('Consuelo website structure', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
 
     expect(hero).toContain('/images/consuelo-integrations-hero.svg');
-    expect(hero).toContain('Give every agent workspace');
+    expect(hero).toContain('Give every agent');
+    expect(hero).toContain('workspace <em>superpowers</em>.');
     expect(hero).toContain('superpowers');
     expect(hero).toContain('BATTERIES INCLUDED');
     expect(hero).toContain('MIT LICENSE');
@@ -176,6 +177,38 @@ describe('Consuelo website structure', () => {
     expect(hero).not.toContain('--launch-');
     expect(hero).not.toContain('#FAF7F2');
     expect(hero).not.toContain('#C0512F');
+  });
+
+  test('should tune the homepage hero toward the Hermes-inspired editorial layout', async () => {
+    const hero = readSource('src/components/home/HomeHero.astro');
+    const layout = readSource('src/layouts/MarketingLayout.astro');
+    const svg = readSource('public/images/consuelo-integrations-hero.svg');
+    const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
+
+    expect(hero).toContain('<span class="home-hero__title-line">Give every agent</span>');
+    expect(hero).toContain('<span class="home-hero__title-line">workspace <em>superpowers</em>.</span>');
+    expect(hero).toContain('INSTALL VIA TERMINAL');
+    expect(hero).toContain('<figure class="home-hero__diagram"');
+    expect(hero).not.toContain('<figure class="home-hero__diagram site-card"');
+    expect(hero).not.toContain('radial-gradient');
+    expect(hero).not.toContain('var(--site-shadow-raised)');
+
+    expect(layout).toContain('width: 100%;');
+    expect(layout).not.toContain('border-left: 1px solid var(--site-color-line);');
+    expect(layout).not.toContain('border-right: 1px solid var(--site-color-line);');
+
+    expect(homeTabs.map((tab) => tab.label)).toEqual([
+      'macOS / Linux',
+      'ChatGPT',
+      'Claude',
+      'Cursor',
+    ]);
+    expect(homeTabs[0].value).toContain('curl -fsSL https://os.consuelohq.com/install.sh | bash');
+
+    expect(svg).toContain('--tile-bg: #FAF7F2;');
+    expect(svg).toContain('--wire: rgba(192, 81, 47, 0.28);');
+    expect(svg).not.toContain('--tile-bg: #FFFFFF;');
+    expect(svg).not.toContain('--label: #0B1F3A;');
   });
 
   test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {

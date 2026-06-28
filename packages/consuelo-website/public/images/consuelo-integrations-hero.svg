@@ -35,19 +35,19 @@
 45 149 82 239 172 314 314 22 42 43 73 47 71 4 -3 21 -32 38 -65z" fill="currentColor"/></g>
     </symbol>
     <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#10233F" flood-opacity="0.07"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#1C1A17" flood-opacity="0.08"/>
     </filter>
   </defs>
   <style>
     :root {
-      --label: #0B1F3A;
-      --muted: #8B98A8;
-      --wire: #E9EDF4;
-      --tile-bg: #FFFFFF;
-      --tile-stroke: #E5E9F0;
-      --center-stroke: #635BFF;
-      --icon: #0B0F19;
-      --consuelo: #0B0F19;
+      --label: #1C1A17;
+      --muted: #8A817A;
+      --wire: rgba(192, 81, 47, 0.28);
+      --tile-bg: #FAF7F2;
+      --tile-stroke: rgba(28, 26, 23, 0.14);
+      --center-stroke: #C0512F;
+      --icon: #1C1A17;
+      --consuelo: #1C1A17;
       --github-bg: #0B0F19;
       --github-fg: #FFFFFF;
     }
