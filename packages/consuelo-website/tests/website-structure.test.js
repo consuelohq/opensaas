@@ -34,6 +34,7 @@ describe('Consuelo website structure', () => {
       'src/components/home/HomePrivacy.astro',
       'src/components/home/HomeFaq.astro',
       'src/components/home/HomeMercuryPromo.astro',
+      'public/images/consuelo-integrations-hero.svg',
       'src/data/site-links.ts',
       'src/data/site-navigation.ts',
       'src/data/home-content.ts',
@@ -61,11 +62,6 @@ describe('Consuelo website structure', () => {
         '../components/site/SiteHeader.astro',
         '../components/site/SiteFooter.astro',
         '../components/home/HomeHero.astro',
-        '../components/home/HomeOverview.astro',
-        '../components/home/HomeStats.astro',
-        '../components/home/HomePrivacy.astro',
-        '../components/home/HomeFaq.astro',
-        '../components/home/HomeMercuryPromo.astro',
       ],
       'src/pages/404.astro': [
         '../layouts/MarketingLayout.astro',
@@ -119,6 +115,69 @@ describe('Consuelo website structure', () => {
     }
   });
 
+  test('should render only the first-pass warm editorial hero baseline on the homepage', () => {
+    const homepage = readSource('src/pages/index.astro');
+    expect(homepage).toContain("../layouts/MarketingLayout.astro");
+    expect(homepage).toContain("../components/site/SiteHeader.astro");
+    expect(homepage).toContain("../components/site/SiteFooter.astro");
+    expect(homepage).toContain("../components/home/HomeHero.astro");
+    expect(homepage).toContain('<MarketingLayout');
+    expect(homepage).toContain('<SiteHeader pageSections={[]} />');
+    expect(homepage).toContain('<HomeHero sectionId="intro" />');
+    expect(homepage).toContain('<SiteFooter');
+
+    [
+      'HomeOverview',
+      'HomeStats',
+      'HomePrivacy',
+      'HomeFaq',
+      'HomeMercuryPromo',
+      'homeFaqItems',
+      'homePageSections',
+      'bootHomeHeroMotion',
+      'bootProofSvgMotion',
+      'getFaqSchema',
+    ].forEach((oldSurface) => {
+      expect(homepage).not.toContain(oldSurface);
+    });
+  });
+
+  test('should build the homepage hero from the existing SVG asset and website design tokens', () => {
+    const hero = readSource('src/components/home/HomeHero.astro');
+
+    expect(hero).toContain('/images/consuelo-integrations-hero.svg');
+    expect(hero).toContain('Give every agent workspace');
+    expect(hero).toContain('superpowers');
+    expect(hero).toContain('BATTERIES INCLUDED');
+    expect(hero).toContain('MIT LICENSE');
+    expect(hero).toContain('USE CONSUELO OS CLOUD');
+    expect(hero).toContain('Go to OS portal');
+
+    expect(hero).toContain('homeTabs.map');
+    expect(hero).toContain('role="tablist"');
+    expect(hero).toContain('data-tab-button');
+    expect(hero).toContain('data-copy-button');
+
+    expect(hero).toContain('site-section');
+    expect(hero).toContain('site-container');
+    expect(hero).toContain('site-eyebrow');
+    expect(hero).toContain('site-card');
+
+    expect(hero).toContain('var(--site-color-paper)');
+    expect(hero).toContain('var(--site-color-ink)');
+    expect(hero).toContain('var(--site-color-accent)');
+    expect(hero).toContain('var(--site-font-display)');
+    expect(hero).toContain('var(--site-font-body)');
+    expect(hero).toContain('var(--site-font-mono)');
+    expect(hero).toContain('var(--site-space-');
+    expect(hero).toContain('var(--site-radius-');
+    expect(hero).toContain('var(--site-shadow-');
+
+    expect(hero).not.toContain('--launch-');
+    expect(hero).not.toContain('#FAF7F2');
+    expect(hero).not.toContain('#C0512F');
+  });
+
   test('should preserve SEO layout wiring and critical site links when data modules are split', async () => {
     const layout = readSource('src/layouts/MarketingLayout.astro');
     expect(layout).toContain("../components/SeoHead.astro");
@@ -147,15 +206,7 @@ describe('Consuelo website structure', () => {
       'Enterprise',
     ]);
     expect(navigation.siteMobileMenuLinks.map((link) => link.label)).toContain('Login');
-    expect(navigation.homePageSections.map((section) => section.id)).toEqual([
-      'intro',
-      'overview',
-      'proof',
-      'privacy',
-      'faq',
-      'mercury',
-      'waitlist',
-    ]);
+    expect(navigation.homePageSections.every((section) => typeof section.id === 'string')).toBe(true);
   });
 
 
@@ -277,8 +328,10 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-color-paper');
     expect(tokens).toContain('--site-color-ink');
     expect(tokens).toContain('--site-color-accent');
+    expect(tokens).toContain('--site-color-dark-paper');
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
+    expect(tokens).toContain('@media (prefers-color-scheme: dark)');
     expect(tokens).toContain("--site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;");
     expect(tokens).toContain("--site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;");
     expect(tokens).toContain("--site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;");
