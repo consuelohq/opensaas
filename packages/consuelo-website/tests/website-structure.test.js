@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = resolve(packageRoot, '../..');
@@ -253,11 +253,8 @@ describe('Consuelo website structure', () => {
 
     expect(existsSync(join(repoRoot, 'packages/consuelo-website/AGENT-SPECS.md'))).toBe(false);
 
-    const areaAgentPath = join(repoRoot, 'areas/website/AGENTS.md');
-    expect(lstatSync(areaAgentPath).isSymbolicLink()).toBe(true);
-    expect(readlinkSync(areaAgentPath).replaceAll('\\', '/')).toBe('../../packages/consuelo-website/AGENTS.md');
-
     const agentRules = readRepo('packages/consuelo-website/AGENTS.md');
+    expect(readRepo('areas/website/AGENTS.md')).toBe(agentRules);
     expect(agentRules).toContain('DESIGN.md');
     expect(agentRules).toContain('animations.md');
     expect(agentRules).toContain('tokens.css');
