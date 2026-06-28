@@ -302,7 +302,8 @@
     "artifact:render": "bun run --cwd packages/os artifact:render --",
     "artifact:publish": "bun run --cwd packages/os artifact:publish --",
     "artifact:validate": "bun run --cwd packages/os artifact:validate --",
-    "task-intent": "bun packages/workspace/scripts/task-intent.js"
+    "task-intent": "bun packages/workspace/scripts/task-intent.js",
+    "media:svg": "python3 packages/os/scripts/media-svg.py"
   },
   "workspaces": {
     "packages": [

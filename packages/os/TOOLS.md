@@ -38,6 +38,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
+| media | 1 |
 | office | 21 |
 | review | 4 |
 | sentry | 7 |
@@ -2449,6 +2450,76 @@ await workspace.call({
     "path": "/tmp/example.txt",
     "content": "hello",
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## media
+
+### workspace.media.svg
+
+Primitive SVG structure, render, measure, edit, and verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering.
+
+| Field | Value |
+| --- | --- |
+| Category | media |
+| Signature | `workspace.media.svg({ action: "create" &#124; "inspect" &#124; "render" &#124; "measure" &#124; "edit" &#124; "verify" &#124; "snapshot" &#124; "restore"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: "png"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: "light" &#124; "dark" &#124; "no-preference" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `os media:svg` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "media.svg",
+  "input": {
+    "action": "verify",
+    "input": "asset.svg",
+    "checks": [
+      {
+        "check": "renderable"
+      }
+    ],
+    "render": {
+      "colorScheme": "light"
+    }
   }
 });
 ```
