@@ -7,6 +7,7 @@ type Props = {
 
 const { sectionId } = Astro.props as Props;
 const osPortalHref = 'https://os.consuelohq.com';
+const heroTitleText = 'Give every agent\nworkspace\nsuperpowers.';
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
@@ -18,9 +19,14 @@ const osPortalHref = 'https://os.consuelohq.com';
         <span>MIT LICENSE</span>
       </p>
 
-      <h1 class="home-hero__title">
+      <h1
+        class="home-hero__title"
+        data-pretext-title={heroTitleText}
+        data-pretext-lines="3"
+      >
         <span class="home-hero__title-line">Give every agent</span>
-        <span class="home-hero__title-line">workspace <em>superpowers</em>.</span>
+        <span class="home-hero__title-line">workspace</span>
+        <span class="home-hero__title-line"><em>superpowers</em>.</span>
       </h1>
 
       <div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
@@ -136,6 +142,41 @@ const osPortalHref = 'https://os.consuelohq.com';
   }
 </script>
 
+<script>
+  import { prepare, layout } from '@chenglou/pretext';
+  import type { PreparedText } from '@chenglou/pretext';
+
+  const title = document.querySelector('[data-pretext-title]');
+
+  if (title instanceof HTMLElement) {
+    let prepared: PreparedText | undefined;
+    let preparedFont = '';
+
+    const measureTitle = () => {
+      const style = window.getComputedStyle(title);
+      const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const text = title.dataset.pretextTitle ?? title.textContent ?? '';
+
+      if (!prepared || preparedFont !== font) {
+        prepared = prepare(text, font, { whiteSpace: 'pre-wrap' });
+        preparedFont = font;
+      }
+
+      const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize);
+      const result = layout(prepared, title.clientWidth, lineHeight);
+
+      title.dataset.pretextLines = String(result.lineCount);
+      title.style.setProperty('--home-hero-title-height', `${result.height}px`);
+    };
+
+    const scheduleMeasure = () => window.requestAnimationFrame(measureTitle);
+
+    window.addEventListener('resize', scheduleMeasure, { passive: true });
+    document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle());
+    scheduleMeasure();
+  }
+</script>
+
 <style>
   .home-hero {
     min-height: calc(100svh - var(--site-space-8));
@@ -144,26 +185,26 @@ const osPortalHref = 'https://os.consuelohq.com';
     background: var(--site-color-paper);
     color: var(--site-color-ink);
     font-family: var(--site-font-body);
-    padding-block: clamp(4rem, 9vw, 8rem) var(--site-space-8);
-    overflow: hidden;
+    padding-block: clamp(3rem, 6vw, 5.25rem) var(--site-space-7);
+    overflow: clip;
   }
 
   .home-hero__inner {
     display: grid;
-    gap: clamp(var(--site-space-5), 4vw, var(--site-space-8));
+    gap: clamp(var(--site-space-4), 2.5vw, var(--site-space-7));
     align-items: center;
   }
 
   .home-hero__content {
     display: grid;
-    gap: clamp(var(--site-space-5), 2.2vw, var(--site-space-7));
-    max-width: 54rem;
+    gap: clamp(var(--site-space-4), 1.8vw, var(--site-space-6));
+    max-width: 41rem;
     position: relative;
     z-index: 1;
   }
 
   .home-hero__eyebrow {
-    color: var(--site-color-accent);
+    color: var(--site-color-muted);
     display: flex;
     gap: var(--site-space-4);
     align-items: center;
@@ -177,10 +218,10 @@ const osPortalHref = 'https://os.consuelohq.com';
     margin: 0;
     color: var(--site-color-ink);
     font-family: var(--site-font-display);
-    font-size: clamp(4.2rem, 8.8vw, 8.5rem);
+    font-size: clamp(3.4rem, 5.8vw, 6rem);
     font-weight: 500;
-    letter-spacing: -0.075em;
-    line-height: 0.9;
+    letter-spacing: -0.066em;
+    line-height: 0.88;
     text-wrap: balance;
   }
 
@@ -200,7 +241,7 @@ const osPortalHref = 'https://os.consuelohq.com';
   .home-hero__actions {
     display: grid;
     gap: var(--site-space-3);
-    width: min(100%, 19rem);
+    width: min(100%, 18.5rem);
   }
 
   .home-hero__action-label,
@@ -209,10 +250,11 @@ const osPortalHref = 'https://os.consuelohq.com';
   }
 
   .home-hero__portal {
-    min-height: calc(var(--site-space-7) + var(--site-space-2));
+    min-height: 3.5rem;
     justify-content: space-between;
     border-color: var(--site-color-line);
-    background: color-mix(in srgb, var(--site-color-surface) 82%, transparent);
+    border-radius: var(--site-radius-sm);
+    background: color-mix(in srgb, var(--site-color-surface) 70%, transparent);
     color: var(--site-color-ink);
     box-shadow: var(--site-shadow-border);
   }
@@ -232,13 +274,14 @@ const osPortalHref = 'https://os.consuelohq.com';
   .home-hero__install-wrap {
     display: grid;
     gap: var(--site-space-3);
-    width: min(100%, 42rem);
+    width: min(100%, 39rem);
   }
 
   .home-hero__install {
     overflow: hidden;
     padding: 0;
-    background: color-mix(in srgb, var(--site-color-surface) 74%, transparent);
+    border-radius: var(--site-radius-sm);
+    background: color-mix(in srgb, var(--site-color-surface) 70%, transparent);
     box-shadow: var(--site-shadow-border);
   }
 
@@ -320,7 +363,7 @@ const osPortalHref = 'https://os.consuelohq.com';
   .home-hero__panel-action {
     width: var(--site-space-6);
     height: var(--site-space-6);
-    border-radius: var(--site-radius-sm);
+    border-radius: calc(var(--site-radius-sm) * 0.75);
     color: var(--site-color-muted);
     display: inline-flex;
     flex: 0 0 auto;
@@ -363,6 +406,7 @@ const osPortalHref = 'https://os.consuelohq.com';
 
   .home-hero__diagram {
     position: relative;
+    z-index: 0;
     margin: 0;
     padding: 0;
     overflow: visible;
@@ -376,39 +420,68 @@ const osPortalHref = 'https://os.consuelohq.com';
     width: min(58vw, 52rem);
     max-width: none;
     height: auto;
-    margin-inline-start: clamp(-5rem, -5vw, -2rem);
+    margin-inline-start: 0;
   }
 
-  @media (min-width: 940px) {
+  @media (min-width: 1181px) {
     .home-hero__inner {
-      grid-template-columns: minmax(0, 1.02fr) minmax(30rem, 0.98fr);
+      grid-template-columns: minmax(0, 39rem) minmax(38rem, 1fr);
     }
   }
 
-  @media (max-width: 1080px) {
+  @media (max-width: 1180px) {
+    .home-hero {
+      min-height: auto;
+      padding-block: clamp(var(--site-space-7), 8vw, var(--site-space-8));
+    }
+
+    .home-hero__inner {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .home-hero__content {
+      max-width: min(100%, 45rem);
+    }
+
     .home-hero__title {
-      font-size: clamp(3.4rem, 9vw, 6rem);
+      font-size: clamp(3.6rem, 9vw, 6.2rem);
+    }
+
+    .home-hero__diagram {
+      order: 2;
+      margin-block-start: var(--site-space-2);
+    }
+
+    .home-hero__diagram img {
+      width: min(100%, 52rem);
+      margin-inline-start: 0;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .home-hero__inner,
+    .home-hero__content {
+      gap: var(--site-space-5);
+    }
+
+    .home-hero__title {
+      font-size: clamp(3.2rem, 13vw, 5.5rem);
     }
 
     .home-hero__title-line {
       white-space: normal;
     }
 
-    .home-hero__diagram img {
+    .home-hero__actions,
+    .home-hero__install-wrap {
       width: 100%;
-      margin-inline-start: 0;
     }
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 560px) {
     .home-hero {
-      min-height: auto;
       padding-block: var(--site-space-7);
-    }
-
-    .home-hero__inner,
-    .home-hero__content {
-      gap: var(--site-space-5);
     }
 
     .home-hero__eyebrow {
@@ -422,7 +495,11 @@ const osPortalHref = 'https://os.consuelohq.com';
     }
 
     .home-hero__title {
-      font-size: clamp(3rem, 16vw, 4.8rem);
+      font-size: clamp(2.8rem, 16vw, 4.5rem);
+    }
+
+    .home-hero__panel {
+      padding: var(--site-space-4);
     }
   }
 </style>
