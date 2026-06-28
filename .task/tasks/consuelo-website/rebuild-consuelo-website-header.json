@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/rebuild-consuelo-website-header",
+  "baseBranch": "stream/consuelo-website",
+  "sourceBranch": "stream/consuelo-website",
+  "startFrom": "stream",
+  "prNumber": 1274,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1274",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1274",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1274/rebuild-consuelo-website-header",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1274",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1274/rebuild-consuelo-website-header",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-rebuild-consuelo-website-header",
+  "taskSession": "tsk_a11097948adf",
+  "tmuxSession": "opensaas-consuelo-website-rebuild-consuelo-website-header-a1109794",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-rebuild-consuelo-website-header/.task/consuelo-website/rebuild-consuelo-website-header/session.json",
+  "createdAt": "2026-06-28T18:13:00.051Z"
+}
