@@ -7,6 +7,7 @@ type Props = {
 
 const { sectionId } = Astro.props as Props;
 const osPortalHref = 'https://os.consuelohq.com';
+const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
@@ -18,8 +19,14 @@ const osPortalHref = 'https://os.consuelohq.com';
         <span>MIT LICENSE</span>
       </p>
 
-      <h1 class="home-hero__title">
-        Give every agent workspace <em>superpowers</em>.
+      <h1
+        class="home-hero__title"
+        data-pretext-title={heroTitleText}
+        data-pretext-lines="3"
+      >
+        <span class="home-hero__title-line">Give every agent</span>
+        <span class="home-hero__title-line">workspace</span>
+        <span class="home-hero__title-line"><em>superpowers</em></span>
       </h1>
 
       <div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
@@ -29,12 +36,13 @@ const osPortalHref = 'https://os.consuelohq.com';
             <path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z" />
           </svg>
           <span>Go to OS portal</span>
-          <span class="home-hero__portal-arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
-      <div class="home-hero__install site-card" data-hero-install>
-        <div class="home-hero__tabs" role="tablist" aria-label="Consuelo install and workspace surfaces">
+      <div class="home-hero__install-wrap">
+        <p class="home-hero__install-label site-eyebrow">INSTALL VIA TERMINAL</p>
+        <div class="home-hero__install site-card" data-hero-install>
+          <div class="home-hero__tabs" role="tablist" aria-label="Consuelo install and workspace surfaces">
           {homeTabs.map((tab, index) => (
             <button
               class:list={['home-hero__tab', { 'is-active': index === 0 }]}
@@ -48,7 +56,7 @@ const osPortalHref = 'https://os.consuelohq.com';
           ))}
         </div>
 
-        <div class="home-hero__panels">
+          <div class="home-hero__panels">
           {homeTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
             <a
               href={tab.href}
@@ -77,11 +85,12 @@ const osPortalHref = 'https://os.consuelohq.com';
               </span>
             </button>
           ))}
+          </div>
         </div>
       </div>
     </div>
 
-    <figure class="home-hero__diagram site-card" aria-label="Consuelo integrations diagram">
+    <figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
       <img
         src="/images/consuelo-integrations-hero.svg"
         alt="Developer tools and work surfaces connected to Consuelo"
@@ -132,105 +141,164 @@ const osPortalHref = 'https://os.consuelohq.com';
   }
 </script>
 
+<script>
+  import { prepare, layout } from '@chenglou/pretext';
+  import type { PreparedText } from '@chenglou/pretext';
+
+  const title = document.querySelector('[data-pretext-title]');
+
+  if (title instanceof HTMLElement) {
+    let prepared: PreparedText | undefined;
+    let preparedFont = '';
+
+    const measureTitle = () => {
+      const style = window.getComputedStyle(title);
+      const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const text = title.dataset.pretextTitle ?? title.textContent ?? '';
+
+      if (!prepared || preparedFont !== font) {
+        prepared = prepare(text, font, { whiteSpace: 'pre-wrap' });
+        preparedFont = font;
+      }
+
+      const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize);
+      const result = layout(prepared, title.clientWidth, lineHeight);
+
+      title.dataset.pretextLines = String(result.lineCount);
+      title.style.setProperty('--home-hero-title-height', `${result.height}px`);
+    };
+
+    const scheduleMeasure = () => window.requestAnimationFrame(measureTitle);
+
+    window.addEventListener('resize', scheduleMeasure, { passive: true });
+    document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle());
+    scheduleMeasure();
+  }
+</script>
+
 <style>
   .home-hero {
     min-height: calc(100svh - var(--site-space-8));
     display: grid;
     align-items: center;
-    background:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--site-color-accent) 9%, transparent), transparent 34rem),
-      var(--site-color-paper);
+    background: var(--site-color-paper);
     color: var(--site-color-ink);
-    padding-block: var(--site-space-section) var(--site-space-8);
+    font-family: var(--site-font-body);
+    padding-block: clamp(3rem, 6vw, 5.25rem) var(--site-space-7);
+    overflow: clip;
   }
 
   .home-hero__inner {
     display: grid;
-    gap: var(--site-space-8);
+    gap: clamp(var(--site-space-4), 1.25vw, var(--site-space-5));
     align-items: center;
   }
 
   .home-hero__content {
     display: grid;
-    gap: var(--site-space-6);
-    max-width: 46rem;
+    gap: clamp(var(--site-space-3), 1.45vw, var(--site-space-5));
+    max-width: 36rem;
+    position: relative;
+    z-index: 1;
   }
 
   .home-hero__eyebrow {
-    color: var(--site-color-accent);
+    color: var(--site-color-ink);
     display: flex;
-    gap: var(--site-space-4);
+    gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
     align-items: center;
+    font-size: clamp(0.56rem, 0.85vw, 0.68rem);
+    letter-spacing: 0.2em;
+    white-space: nowrap;
   }
 
   .home-hero__eyebrow-dot {
-    color: var(--site-color-muted);
+    color: currentColor;
+    opacity: 0.72;
   }
 
   .home-hero__title {
     margin: 0;
     color: var(--site-color-ink);
-    font-family: var(--site-font-body);
-    font-size: clamp(var(--site-text-3xl), 7vw, var(--site-text-4xl));
-    font-weight: 800;
-    letter-spacing: var(--site-tracking-display);
-    line-height: var(--site-leading-tight);
+    font-family: var(--site-font-display);
+    font-size: clamp(3.35rem, 5.75vw, 6.05rem);
+    font-weight: 300;
+    letter-spacing: -0.052em;
+    line-height: 0.91;
     text-wrap: balance;
   }
 
+  .home-hero__title-line {
+    display: block;
+    white-space: nowrap;
+  }
+
   .home-hero__title em {
-    color: var(--site-color-accent);
+    color: currentColor;
     font-family: var(--site-font-display);
-    font-style: italic;
-    font-weight: 500;
-    letter-spacing: var(--site-tracking-tight);
+    font-style: normal;
+    font-weight: 300;
+    letter-spacing: -0.052em;
   }
 
   .home-hero__actions {
     display: grid;
-    gap: var(--site-space-4);
-    width: min(100%, 20rem);
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: fit-content;
   }
 
-  .home-hero__action-label {
-    color: var(--site-color-accent);
+  .home-hero__action-label,
+  .home-hero__install-label {
+    color: var(--site-color-muted);
   }
 
   .home-hero__portal {
-    min-height: calc(var(--site-space-7) + var(--site-space-2));
-    justify-content: space-between;
-    border-color: var(--site-color-line);
-    background: color-mix(in srgb, var(--site-color-surface) 86%, transparent);
+    width: fit-content;
+    min-height: 2.45rem;
+    justify-content: center;
+    justify-self: start;
+    gap: var(--site-space-2);
+    border: 1px solid var(--site-color-line);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: var(--site-color-control);
     color: var(--site-color-ink);
-    box-shadow: var(--site-shadow-border);
+    box-shadow: none;
+    font-family: var(--site-font-mono);
+    font-size: var(--site-text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
+    padding: 0.72rem 1.15rem;
   }
 
   .home-hero__portal svg {
-    width: var(--site-space-5);
-    height: var(--site-space-5);
+    width: var(--site-space-4);
+    height: var(--site-space-4);
     fill: currentColor;
   }
 
-  .home-hero__portal-arrow {
-    color: var(--site-color-accent);
-    font-family: var(--site-font-mono);
-    font-weight: 700;
+  .home-hero__install-wrap {
+    display: grid;
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: min(100%, 30rem);
   }
 
   .home-hero__install {
     overflow: hidden;
     padding: 0;
-    background: var(--site-color-surface);
-    box-shadow: var(--site-shadow-border);
+    border: 1px solid var(--site-color-line);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: var(--site-color-control);
+    box-shadow: none;
   }
 
   .home-hero__tabs {
     display: flex;
-    gap: var(--site-space-1);
+    gap: var(--site-space-2);
     overflow-x: auto;
     overflow-y: hidden;
     border-bottom: 1px solid var(--site-color-line);
-    padding: var(--site-space-2) var(--site-space-3) 0;
+    padding: 0.72rem var(--site-space-4) 0;
     scrollbar-width: none;
   }
 
@@ -240,11 +308,12 @@ const osPortalHref = 'https://os.consuelohq.com';
 
   .home-hero__tab {
     border: 0;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     background: transparent;
     color: var(--site-color-muted);
-    font: 700 var(--site-text-sm) / 1 var(--site-font-body);
-    padding: var(--site-space-3) var(--site-space-4);
+    font: 400 var(--site-text-xs) / 1 var(--site-font-mono);
+    letter-spacing: 0;
+    padding: 0 0 0.72rem;
     white-space: nowrap;
   }
 
@@ -255,12 +324,12 @@ const osPortalHref = 'https://os.consuelohq.com';
   }
 
   .home-hero__tab.is-active {
-    border-bottom-color: var(--site-color-accent);
+    border-bottom-color: transparent;
     color: var(--site-color-ink);
   }
 
   .home-hero__panels {
-    background: color-mix(in srgb, var(--site-color-ink) 3%, var(--site-color-surface));
+    background: var(--site-color-control);
   }
 
   .home-hero__panel {
@@ -268,12 +337,12 @@ const osPortalHref = 'https://os.consuelohq.com';
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    gap: var(--site-space-4);
+    gap: var(--site-space-3);
     border: 0;
     background: transparent;
     color: var(--site-color-ink);
     cursor: pointer;
-    padding: var(--site-space-5) var(--site-space-5);
+    padding: 0.86rem var(--site-space-4);
     text-align: left;
     text-decoration: none;
     transition:
@@ -287,21 +356,24 @@ const osPortalHref = 'https://os.consuelohq.com';
 
   .home-hero__panel:hover,
   .home-hero__panel:focus-visible {
-    background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);
+    background: transparent;
     outline: none;
   }
 
   .home-hero__value {
     min-width: 0;
     color: var(--site-color-ink);
-    font: 500 var(--site-text-sm) / var(--site-leading-body) var(--site-font-mono);
-    overflow-wrap: anywhere;
+    font: 400 var(--home-hero-value-size, var(--site-text-xs)) / var(--site-leading-body) var(--site-font-mono);
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: clip;
+    white-space: nowrap;
   }
 
   .home-hero__panel-action {
-    width: var(--site-space-6);
-    height: var(--site-space-6);
-    border-radius: var(--site-radius-sm);
+    width: var(--site-space-5);
+    height: var(--site-space-5);
+    border-radius: calc(var(--site-radius-sm) * 0.75);
     color: var(--site-color-muted);
     display: inline-flex;
     flex: 0 0 auto;
@@ -312,8 +384,8 @@ const osPortalHref = 'https://os.consuelohq.com';
 
   .home-hero__panel:hover .home-hero__panel-action,
   .home-hero__panel:focus-visible .home-hero__panel-action {
-    color: var(--site-color-accent);
-    background: color-mix(in srgb, var(--site-color-accent) 9%, transparent);
+    color: var(--site-color-ink);
+    background: transparent;
   }
 
   .home-hero__panel-action svg {
@@ -344,48 +416,129 @@ const osPortalHref = 'https://os.consuelohq.com';
 
   .home-hero__diagram {
     position: relative;
+    z-index: 0;
+    min-width: 0;
     margin: 0;
-    padding: var(--site-space-6);
-    overflow: hidden;
-    background: color-mix(in srgb, var(--site-color-surface) 80%, transparent);
-    border-radius: var(--site-radius-card);
-    box-shadow: var(--site-shadow-raised);
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .home-hero__diagram img {
-    width: 100%;
+    display: block;
+    width: min(100%, 41rem);
+    max-width: 100%;
     height: auto;
+    margin-inline: auto 0;
   }
 
-  @media (min-width: 940px) {
+  @media (min-width: 1181px) {
     .home-hero__inner {
-      grid-template-columns: minmax(0, 0.95fr) minmax(28rem, 1.05fr);
+      grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
+      justify-content: space-between;
     }
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 1180px) {
     .home-hero {
       min-height: auto;
-      padding-block: var(--site-space-7);
+      padding-block: clamp(var(--site-space-7), 8vw, var(--site-space-8));
     }
 
-    .home-hero__inner,
+    .home-hero__inner {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+
     .home-hero__content {
-      gap: var(--site-space-5);
+      max-width: min(100%, 42rem);
     }
 
-    .home-hero__eyebrow {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: var(--site-space-2);
-    }
-
-    .home-hero__eyebrow-dot {
-      display: none;
+    .home-hero__title {
+      font-size: clamp(3.4rem, 8.2vw, 5.8rem);
     }
 
     .home-hero__diagram {
-      padding: var(--site-space-3);
+      order: 2;
+      margin-block-start: var(--site-space-2);
+    }
+
+    .home-hero__diagram img {
+      width: min(100%, 41rem);
+      margin-inline: auto;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .home-hero__inner,
+    .home-hero__content {
+      gap: var(--site-space-4);
+    }
+
+    .home-hero__title {
+      font-size: clamp(2.95rem, 10vw, 4.7rem);
+      letter-spacing: -0.058em;
+      line-height: 0.92;
+    }
+
+    .home-hero__title-line {
+      white-space: normal;
+    }
+
+    .home-hero__actions,
+    .home-hero__install-wrap {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .home-hero {
+      padding-block: var(--site-space-6) var(--site-space-7);
+    }
+
+    .home-hero__eyebrow {
+      align-items: center;
+      flex-direction: row;
+      gap: clamp(0.45rem, 2vw, var(--site-space-3));
+      font-size: clamp(0.54rem, 2.1vw, 0.62rem);
+      letter-spacing: 0.18em;
+    }
+
+    .home-hero__eyebrow-dot {
+      display: inline;
+    }
+
+    .home-hero__title {
+      font-size: clamp(2.6rem, 11.2vw, 3.35rem);
+      letter-spacing: -0.052em;
+      line-height: 0.94;
+    }
+
+    .home-hero__tab {
+      font-size: clamp(0.64rem, 2.6vw, 0.72rem);
+      padding-inline: clamp(0.6rem, 2.8vw, var(--site-space-3));
+    }
+
+    .home-hero__value {
+      --home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);
+      letter-spacing: -0.04em;
+    }
+
+    .home-hero__portal {
+      width: fit-content;
+    }
+
+    .home-hero__panel {
+      gap: var(--site-space-2);
+      padding: 0.8rem clamp(var(--site-space-3), 3.6vw, var(--site-space-4));
+    }
+
+    .home-hero__panel-action {
+      width: var(--site-space-4);
+      height: var(--site-space-4);
     }
   }
 </style>

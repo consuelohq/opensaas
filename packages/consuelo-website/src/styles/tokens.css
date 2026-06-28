@@ -3,6 +3,8 @@
   --site-color-ink: #1C1A17;
   --site-color-surface: #FFFAF3;
   --site-color-surface-raised: #FFFFFF;
+  --site-color-control: #FFFFFF;
+  --site-color-control-panel: #FBF7F0;
   --site-color-muted: #8A817A;
   --site-color-accent: #C0512F;
   --site-color-accent-ink: #FFFAF3;
@@ -17,10 +19,12 @@
   --site-color-shimmer-stop-1: rgba(28, 26, 23, 0.18);
   --site-color-shimmer-stop-2: rgba(28, 26, 23, 0.4);
   --site-color-shimmer-stop-3: rgba(28, 26, 23, 0.82);
-  --site-color-dark-paper: #211915;
+  --site-color-dark-paper: #0F0F0D;
   --site-color-dark-ink: #F7EFE7;
-  --site-color-dark-surface: #2B211B;
-  --site-color-dark-surface-raised: #342820;
+  --site-color-dark-surface: #191814;
+  --site-color-dark-surface-raised: #221F1A;
+  --site-color-dark-control: #191814;
+  --site-color-dark-control-panel: #221F1A;
   --site-color-dark-muted: #C3B4A7;
   --site-color-dark-accent: #E06B3E;
   --site-color-dark-accent-ink: #211915;
@@ -41,9 +45,9 @@
   --launch-success: var(--site-color-success);
   --launch-mono-font: var(--site-font-mono);
 
-  --site-font-display: 'Georgia', ui-serif, 'Times New Roman', serif;
-  --site-font-body: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
-  --site-font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+  --site-font-display: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
+  --site-font-body: var(--site-font-display);
+  --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
 
   --site-text-xs: 0.75rem;
   --site-text-sm: 0.875rem;
@@ -71,8 +75,8 @@
   --site-space-section: clamp(3rem, 7vw, 5rem);
 
   --site-container-max: 75rem;
-  --site-container-wide: 96rem;
-  --site-gutter: clamp(1.25rem, 4vw, 2rem);
+  --site-container-wide: 82rem;
+  --site-gutter: clamp(1.25rem, 4.8vw, 3rem);
 
   --site-radius-sm: 0.5rem;
   --site-radius-md: 0.75rem;
@@ -80,6 +84,7 @@
   --site-radius-pill: 999px;
 
   --site-shadow-border: 0 0 0 1px var(--site-color-line);
+  --site-shadow-control: 0 0 0 1px rgba(28, 26, 23, 0.16), 0 7px 18px rgba(28, 26, 23, 0.08);
   --site-shadow-raised: 0 0 0 1px rgba(28, 26, 23, 0.08), 0 18px 52px rgba(28, 26, 23, 0.10);
   --site-shadow-hover: 0 0 0 1px rgba(28, 26, 23, 0.12), 0 22px 64px rgba(28, 26, 23, 0.14);
   --site-shadow-dropdown: 0 18px 45px rgba(28, 26, 23, 0.12);
@@ -110,6 +115,8 @@
     --site-color-ink: var(--site-color-dark-ink);
     --site-color-surface: var(--site-color-dark-surface);
     --site-color-surface-raised: var(--site-color-dark-surface-raised);
+    --site-color-control: var(--site-color-dark-control);
+    --site-color-control-panel: var(--site-color-dark-control-panel);
     --site-color-muted: var(--site-color-dark-muted);
     --site-color-accent: var(--site-color-dark-accent);
     --site-color-accent-ink: var(--site-color-dark-accent-ink);
@@ -117,13 +124,14 @@
     --site-color-line: rgba(255, 247, 235, 0.14);
     --site-color-line-strong: rgba(255, 247, 235, 0.28);
     --site-color-soft: rgba(255, 247, 235, 0.05);
-    --site-color-panel: rgba(255, 247, 235, 0.06);
-    --site-color-panel-strong: rgba(255, 247, 235, 0.1);
+    --site-color-panel: rgba(255, 247, 235, 0.055);
+    --site-color-panel-strong: rgba(255, 247, 235, 0.095);
     --site-color-dropdown-bg: var(--site-color-dark-surface);
     --site-color-success: #82E8A4;
     --site-color-shimmer-stop-1: rgba(255, 247, 235, 0.22);
     --site-color-shimmer-stop-2: rgba(255, 247, 235, 0.52);
     --site-color-shimmer-stop-3: rgba(255, 247, 235, 0.88);
+    --site-shadow-control: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 7px 18px rgba(0, 0, 0, 0.22);
     --site-shadow-raised: 0 0 0 1px rgba(255, 247, 235, 0.1), 0 18px 52px rgba(0, 0, 0, 0.32);
     --site-shadow-hover: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 22px 64px rgba(0, 0, 0, 0.42);
     --site-shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.45);
