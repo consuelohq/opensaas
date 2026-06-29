@@ -80,7 +80,7 @@ describe('TransientTokenService', () => {
         },
         expect.objectContaining({
           secret: 'mocked-secret',
-          expiresIn: mockExpiresIn,
+          expiresIn: 15 * 60 * 1000,
         }),
       );
     });

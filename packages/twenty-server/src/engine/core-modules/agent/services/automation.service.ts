@@ -61,15 +61,17 @@ export class AutomationService {
       >
     >,
   ): Promise<AgentAutomationEntity> {
-    await this.automationRepository.update(id, input);
+    const automation = await this.automationRepository.findOne({
+      where: { id },
+    });
 
-    const updated = await this.automationRepository.findOne({ where: { id } });
-
-    if (!updated) {
+    if (!automation) {
       throw new Error(`Automation ${id} not found`);
     }
 
-    return updated;
+    const updated = this.automationRepository.merge(automation, input);
+
+    return this.automationRepository.save(updated);
   }
 
   async delete(id: string): Promise<void> {

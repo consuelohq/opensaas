@@ -5,7 +5,17 @@ import { fileFolderConfigs } from 'src/engine/core-modules/file/interfaces/file-
 import { checkFileFolder } from 'src/engine/core-modules/file/utils/check-file-folder.utils';
 import { checkFilename } from 'src/engine/core-modules/file/utils/check-file-name.utils';
 
-export const extractFileInfoFromRequest = (request: Request) => {
+export type ExtractedFileInfo = {
+  filename: string;
+  fileSignature: string;
+  rawFolder: string;
+  fileFolder: keyof typeof fileFolderConfigs;
+  ignoreExpirationToken: boolean;
+};
+
+export function extractFileInfoFromRequest(
+  request: Request,
+): ExtractedFileInfo {
   // Ex: /files/profile-picture/original/TOKEN/file.jpg
   const pathSegments = request.path.split('/').filter((segment) => segment);
 

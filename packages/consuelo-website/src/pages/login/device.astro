@@ -1,42 +1,50 @@
 ---
-import LaunchFooter from '../../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../../layouts/LaunchLayout.astro';
-
+const title = 'Sign in to Consuelo OS';
 const description = 'Authorize Consuelo OS on this device.';
 ---
 
-<LaunchLayout title="Authorize Consuelo OS" description={description}>
-  <LaunchHeader />
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main class="device-auth" data-device-auth>
+      <section class="device-auth__copy-pane" aria-labelledby="device-auth-title">
+        <a class="device-auth__brand" href="/" aria-label="Consuelo OS home">Consuelo OS</a>
 
-  <section class="launch-section device-auth">
-    <div class="launch-content device-auth__content">
-      <p class="device-auth__eyebrow launch-mono">Consuelo OS</p>
-      <h1 class="device-auth__title launch-mono">Authorize this device</h1>
-      <p class="launch-copy device-auth__copy">
-        Consuelo OS is asking to connect this Mac to your workspace. Confirm the code below matches the code shown in your terminal.
-      </p>
+        <div class="device-auth__form">
+          <h1 id="device-auth-title">Sign in to Consuelo OS</h1>
+          <p class="device-auth__instruction">Enter the code shown in your terminal.</p>
 
-      <div class="device-auth__card">
-        <span class="device-auth__label launch-mono">Device code</span>
-        <strong class="device-auth__code launch-mono" data-device-code>Waiting for code</strong>
-      </div>
+          <div class="device-auth__code-box" aria-live="polite">
+            <strong class="device-auth__code" data-device-code>Waiting for code</strong>
+          </div>
 
-      <p class="launch-copy device-auth__copy">
-        Approve this device with your Google-backed Consuelo account, then return to your terminal to finish setup.
-      </p>
-      <a
-        class="device-auth__button launch-mono"
-        data-os-device-approve-link
-        href="https://app.consuelohq.com/auth/google?action=os-device-approval"
-      >
-        Approve with Google
-      </a>
-    </div>
-  </section>
+          <p class="device-auth__guardrail">
+            Only continue if you just initiated a sign-in from your device.
+          </p>
 
-  <LaunchFooter />
-</LaunchLayout>
+          <a
+            class="device-auth__button"
+            data-device-continue
+            data-os-device-approve-link
+            href="https://app.consuelohq.com/auth/google?action=os-device-approval"
+          >
+            Continue with Google
+          </a>
+        </div>
+      </section>
+
+      <aside class="device-auth__visual" aria-hidden="true">
+        <div class="device-auth__mark">OS</div>
+      </aside>
+    </main>
+  </body>
+</html>
 
 <script is:inline>
   const deviceCodeNode = document.querySelector('[data-device-code]');
@@ -55,74 +63,161 @@ const description = 'Authorize Consuelo OS on this device.';
 </script>
 
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    min-height: 100vh;
+    background: #ffffff;
+    color: #171717;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
   .device-auth {
-    min-height: 70vh;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 52%) minmax(0, 48%);
+    background: #ffffff;
+    color: #171717;
+  }
+
+  .device-auth__copy-pane {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 2.65rem clamp(1.5rem, 6vw, 5.5rem) 4rem;
+  }
+
+  .device-auth__brand {
+    width: fit-content;
+    color: #171717;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .device-auth__form {
+    width: min(100%, 42rem);
+    align-self: center;
+    display: grid;
+    gap: 1.45rem;
+  }
+
+  .device-auth__form h1 {
+    margin: 0 0 1.6rem;
+    color: #171717;
+    font-size: 2.35rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.08;
+  }
+
+  .device-auth__instruction,
+  .device-auth__guardrail {
+    margin: 0;
+    max-width: 34rem;
+    color: #6d6d6d;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .device-auth__code-box {
+    min-height: 3.7rem;
     display: grid;
     place-items: center;
-  }
-
-  .device-auth__content {
-    max-width: 720px;
-    text-align: center;
-  }
-
-  .device-auth__eyebrow {
-    color: var(--color-accent, #7c3aed);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .device-auth__title {
-    font-size: clamp(2.5rem, 7vw, 5rem);
-    line-height: 0.9;
-    margin: 1rem 0;
-  }
-
-  .device-auth__copy {
-    max-width: 58ch;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .device-auth__card {
-    margin: 2rem auto;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
-  }
-
-  .device-auth__label {
-    display: block;
-    margin-bottom: 0.75rem;
-    opacity: 0.72;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
+    background: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.12) 0 0 0 1px;
   }
 
   .device-auth__code {
-    display: block;
-    font-size: clamp(2rem, 8vw, 4.5rem);
-    letter-spacing: 0.08em;
+    color: #171717;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 1.2rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 1;
   }
 
   .device-auth__button {
+    min-height: 4.6rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0.5rem;
-    padding: 0.95rem 1.25rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    color: inherit;
+    margin-top: 0.15rem;
+    padding: 0 1.25rem;
+    border-radius: 8px;
+    background: #000000;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
     text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: rgba(255, 255, 255, 0.12);
+    transition: opacity 160ms ease;
   }
 
   .device-auth__button:hover {
-    background: rgba(255, 255, 255, 0.18);
+    opacity: 0.82;
+  }
+
+  .device-auth__visual {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 82% 48%, rgba(255, 255, 255, 0.32), transparent 0 28%, transparent 46%),
+      linear-gradient(125deg, #050505 0%, #0c0d10 48%, #26313e 100%);
+  }
+
+  .device-auth__mark {
+    position: absolute;
+    right: -4rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(-18deg);
+    color: rgba(255, 255, 255, 0.11);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 17rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 0.85;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 860px) {
+    .device-auth {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .device-auth__copy-pane {
+      min-height: 68vh;
+      padding: 1.4rem 1.2rem 2.5rem;
+    }
+
+    .device-auth__form {
+      align-self: end;
+      gap: 1.15rem;
+    }
+
+    .device-auth__form h1 {
+      margin-bottom: 1rem;
+      font-size: 2.15rem;
+    }
+
+    .device-auth__button {
+      min-height: 3.6rem;
+    }
+
+    .device-auth__visual {
+      min-height: 32vh;
+    }
+
+    .device-auth__mark {
+      right: 1rem;
+      font-size: 9rem;
+    }
   }
 </style>

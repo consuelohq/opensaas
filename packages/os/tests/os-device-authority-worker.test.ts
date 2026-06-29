@@ -155,7 +155,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
 
     const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
       method: 'POST',
@@ -216,7 +216,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
   });
 
   it('should reject Google OAuth callback when state is unknown', async () => {
@@ -337,7 +337,7 @@ describe('os device authority worker', () => {
 
     const page = await handler(new Request(String(codeJson.verification_uri_complete)));
     expect(page.status).toBe(200);
-    await expect(page.text()).resolves.toContain('Approve this Mac');
+    await expect(page.text()).resolves.toContain('Sign in to Consuelo OS');
 
     const forgedApprove = await handler(new Request(`${origin}/login/device/approve`, {
       method: 'POST',

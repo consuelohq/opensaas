@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/polish-os-device-oauth-ux",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1276,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1276",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1276",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1276/polish-os-device-oauth-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1276",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1276/polish-os-device-oauth-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-device-oauth-ux",
+  "taskSession": "tsk_9e2d40dee68a",
+  "tmuxSession": "opensaas-security-polish-os-device-oauth-ux-9e2d40de",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-device-oauth-ux/.task/security/polish-os-device-oauth-ux/session.json",
+  "createdAt": "2026-06-29T21:02:57.083Z"
+}
