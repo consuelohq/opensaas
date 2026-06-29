@@ -6,10 +6,32 @@ import {
 } from './get-config-variable.query-factory.util';
 import { makeAdminPanelAPIRequest } from './make-admin-panel-api-request.util';
 
+type ConfigVariableGraphQLError = {
+  message: string;
+};
+
+type GetConfigVariableResponseData = {
+  getDatabaseConfigVariable: {
+    source: string;
+    value: unknown;
+  };
+};
+
+type ConfigVariableQueryResult = {
+  data: GetConfigVariableResponseData;
+  errors: ConfigVariableGraphQLError[];
+  rawResponse: {
+    body: {
+      data: GetConfigVariableResponseData;
+      errors: ConfigVariableGraphQLError[];
+    };
+  };
+};
+
 export const getConfigVariable = async ({
   input,
   expectToFail = false,
-}: PerformTwentyConfigQueryParams<GetConfigVariableFactoryInput>) => {
+}: PerformTwentyConfigQueryParams<GetConfigVariableFactoryInput>): Promise<ConfigVariableQueryResult> => {
   const graphqlOperation = getConfigVariableQueryFactory({
     key: input.key,
   });

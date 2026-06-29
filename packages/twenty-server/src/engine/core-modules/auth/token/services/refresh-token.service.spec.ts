@@ -158,7 +158,7 @@ describe('RefreshTokenService', () => {
         },
         expect.objectContaining({
           secret: 'mock-secret',
-          expiresIn: mockExpiresIn,
+          expiresIn: 7 * 24 * 60 * 60 * 1000,
           jwtid: 'new-token-id',
         }),
       );

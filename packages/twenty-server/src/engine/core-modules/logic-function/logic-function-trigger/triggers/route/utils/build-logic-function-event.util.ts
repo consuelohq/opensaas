@@ -36,7 +36,7 @@ export const filterRequestHeaders = ({
  * Express body-parser middleware parses JSON bodies automatically
  * Returns null if body is empty/undefined
  */
-export const extractBody = (request: Request): object | null => {
+export function extractBody(request: Request): object | null {
   if (request.body === undefined || request.body === null) {
     return null;
   }
@@ -62,7 +62,7 @@ export const extractBody = (request: Request): object | null => {
   }
 
   return { raw: String(request.body) };
-};
+}
 
 /**
  * Converts Express query parameters to a normalized string format
@@ -122,7 +122,7 @@ export const normalizePathParameters = (
  * Builds an AWS HTTP API v2 compatible event from an Express request
  * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
  */
-export const buildLogicFunctionEvent = ({
+export function buildLogicFunctionEvent({
   request,
   pathParameters,
   forwardedRequestHeaders,
@@ -130,7 +130,7 @@ export const buildLogicFunctionEvent = ({
   request: Request;
   pathParameters: Record<string, string | string[] | undefined>;
   forwardedRequestHeaders: string[];
-}): LogicFunctionEvent => {
+}): LogicFunctionEvent {
   return {
     headers: filterRequestHeaders({
       requestHeaders: request.headers,
@@ -147,4 +147,4 @@ export const buildLogicFunctionEvent = ({
       },
     },
   };
-};
+}
