@@ -7,6 +7,7 @@ import {
   groupMultiselect,
   isCancel,
   multiselect,
+  note,
   select,
   text,
 } from '@clack/prompts';
@@ -382,6 +383,63 @@ async function openDeviceVerificationUrl(url: string): Promise<boolean> {
   }
 }
 
+
+async function copyDeviceVerificationUrl(url: string): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+
+  try {
+    const proc = Bun.spawn(['pbcopy'], {
+      stdin: 'pipe',
+      stdout: 'ignore',
+      stderr: 'ignore',
+    });
+    proc.stdin.write(url);
+    proc.stdin.end();
+    const exitCode = await proc.exited;
+
+    return exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+function terminalLink(label: string, url: string): string {
+  const safeUrl = url.replace(/[\u0000-\u001f\u007f]/g, '');
+
+  return `\u001B]8;;${safeUrl}\u0007${label}\u001B]8;;\u0007`;
+}
+
+async function printDeviceLoginPrompt(input: {
+  userCode: string;
+  verificationUrl: string;
+}): Promise<void> {
+  try {
+    const copied = await copyDeviceVerificationUrl(input.verificationUrl);
+    const formattedCode = input.userCode.replace(/[^a-z0-9]/gi, '').toUpperCase().replace(/(.{4})(?=.)/g, '$1-');
+    const openLink = terminalLink('click here', input.verificationUrl);
+    const copyState = copied ? 'Auth URL copied to clipboard.' : 'Copying not available; use the full URL below.';
+
+    note(
+      [
+        'Approve in your browser to finish signing in.',
+        '',
+        `    ${formattedCode}`,
+        '',
+        'Make sure your browser shows this code.',
+        copyState,
+        `Open link: ${openLink}`,
+        `Full URL: ${input.verificationUrl}`,
+      ].join('\n'),
+      'Consuelo OS',
+    );
+  } catch (error: unknown) {
+    const reason = error instanceof Error ? error.message : String(error);
+
+    info(`authorize Consuelo OS in your browser: ${input.verificationUrl}`);
+    info(`device login prompt fell back to plain URL: ${reason}`);
+  }
+}
+
 async function attemptWorkspaceDeviceLogin(input: {
   workspaceName: string;
   workspaceSlug: string;
@@ -404,7 +462,10 @@ async function attemptWorkspaceDeviceLogin(input: {
     }
 
     const session = liveDeviceCode.session;
-    info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
+    await printDeviceLoginPrompt({
+      userCode: session.userCode,
+      verificationUrl: session.verificationUriComplete,
+    });
     await openDeviceVerificationUrl(session.verificationUriComplete);
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
