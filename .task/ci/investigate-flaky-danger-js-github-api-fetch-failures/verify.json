@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/investigate-flaky-danger-js-github-api-fetch-failures",
+  "base": "origin/task/ci/investigate-flaky-danger-js-github-api-fetch-failures",
+  "headSha": "25fa81729d841e31084f10da30f55fa11588c9c5",
+  "changeHash": "0cf74ba03792a1e97aeeefbde6d7e32aa3c1ff303fc9f8512065f0b24844bc80",
+  "changedFiles": [
+    ".github/workflows/ci-utils.yaml"
+  ],
+  "verifiedAt": "2026-06-27T20:35:30.768Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/ci-utils.yaml",
+        ".task/ci/investigate-flaky-danger-js-github-api-fetch-failures/current.json",
+        ".task/ci/investigate-flaky-danger-js-github-api-fetch-failures/session.json",
+        ".task/ci/investigate-flaky-danger-js-github-api-fetch-failures/workpad.md",
+        ".task/tasks/ci/investigate-flaky-danger-js-github-api-fetch-failures.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
