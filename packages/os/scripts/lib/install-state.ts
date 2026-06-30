@@ -11,7 +11,14 @@ import { validateBundledSkills } from './skills';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
-export type AgentName = 'codex' | 'claude' | 'opencode' | 'factory';
+export type AgentName =
+  | 'codex'
+  | 'cursor'
+  | 'claude'
+  | 'opencode'
+  | 'factory'
+  | 'gemini'
+  | 'pi';
 export type HealthStatus =
   | 'connected'
   | 'not_configured'
@@ -28,11 +35,17 @@ export type AgentDetection = {
   name: AgentName;
   label: string;
   homePath: string;
+  detectionPaths: string[];
   configPath: string;
   detected: boolean;
   connected: boolean;
   status: HealthStatus;
 };
+
+type AgentDetectionCandidate = Omit<
+  AgentDetection,
+  'detected' | 'connected' | 'status'
+>;
 
 export type WorkspaceBootstrap = {
   workspaceId: string;
@@ -734,49 +747,12 @@ export function detectAgents(home?: string): AgentDetection[] {
       .filter((agent) => agent.connected)
       .map((agent) => agent.name),
   );
-  const userHome = os.homedir();
-  const candidates: Array<
-    Omit<AgentDetection, 'detected' | 'connected' | 'status'>
-  > = [
-    {
-      name: 'codex',
-      label: 'Codex',
-      homePath: path.join(userHome, '.codex'),
-      configPath: path.join(userHome, '.codex', 'consuelo-os.json'),
-    },
-    {
-      name: 'claude',
-      label: 'Claude',
-      homePath: path.join(userHome, '.claude'),
-      configPath: path.join(userHome, '.claude', 'consuelo-os.json'),
-    },
-    {
-      name: 'opencode',
-      label: 'OpenCode',
-      homePath: path.join(userHome, '.opencode'),
-      configPath: path.join(userHome, '.opencode', 'consuelo-os.json'),
-    },
-    {
-      name: 'opencode',
-      label: 'OpenCode config',
-      homePath: path.join(userHome, '.config', 'opencode'),
-      configPath: path.join(
-        userHome,
-        '.config',
-        'opencode',
-        'consuelo-os.json',
-      ),
-    },
-    {
-      name: 'factory',
-      label: 'Factory',
-      homePath: path.join(userHome, '.factory'),
-      configPath: path.join(userHome, '.factory', 'consuelo-os.json'),
-    },
-  ];
+  const candidates = getAgentDetectionCandidates(os.homedir());
 
   return candidates.map((candidate) => {
-    const detected = fs.existsSync(candidate.homePath);
+    const detected = candidate.detectionPaths.some((candidatePath) =>
+      fs.existsSync(candidatePath),
+    );
     const isConnected =
       connected.has(candidate.name) || fs.existsSync(candidate.configPath);
     return {
@@ -790,6 +766,82 @@ export function detectAgents(home?: string): AgentDetection[] {
         : 'missing_capability',
     };
   });
+}
+
+export function getAgentDetectionCandidates(
+  userHome: string = os.homedir(),
+): AgentDetectionCandidate[] {
+  return [
+    {
+      name: 'codex',
+      label: 'Codex',
+      homePath: path.join(userHome, '.codex'),
+      detectionPaths: [path.join(userHome, '.codex')],
+      configPath: path.join(userHome, '.codex', 'consuelo-os.json'),
+    },
+    {
+      name: 'cursor',
+      label: 'Cursor',
+      homePath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
+      detectionPaths: [
+        path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
+        path.join(userHome, '.cursor'),
+      ],
+      configPath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User', 'consuelo-os.json'),
+    },
+    {
+      name: 'claude',
+      label: 'Claude',
+      homePath: path.join(userHome, '.claude'),
+      detectionPaths: [
+        path.join(userHome, '.claude'),
+        path.join(userHome, 'Library', 'Application Support', 'Claude'),
+      ],
+      configPath: path.join(userHome, '.claude', 'consuelo-os.json'),
+    },
+    {
+      name: 'opencode',
+      label: 'OpenCode',
+      homePath: path.join(userHome, '.config', 'opencode'),
+      detectionPaths: [
+        path.join(userHome, '.config', 'opencode'),
+        path.join(userHome, '.opencode'),
+      ],
+      configPath: path.join(
+        userHome,
+        '.config',
+        'opencode',
+        'consuelo-os.json',
+      ),
+    },
+    {
+      name: 'factory',
+      label: 'Factory',
+      homePath: path.join(userHome, '.factory'),
+      detectionPaths: [path.join(userHome, '.factory')],
+      configPath: path.join(userHome, '.factory', 'consuelo-os.json'),
+    },
+    {
+      name: 'gemini',
+      label: 'Gemini',
+      homePath: path.join(userHome, '.gemini'),
+      detectionPaths: [
+        path.join(userHome, '.gemini'),
+        path.join(userHome, '.config', 'gemini'),
+      ],
+      configPath: path.join(userHome, '.gemini', 'consuelo-os.json'),
+    },
+    {
+      name: 'pi',
+      label: 'Pi',
+      homePath: path.join(userHome, 'Library', 'Application Support', 'Pi'),
+      detectionPaths: [
+        path.join(userHome, 'Library', 'Application Support', 'Pi'),
+        path.join(userHome, '.config', 'pi'),
+      ],
+      configPath: path.join(userHome, 'Library', 'Application Support', 'Pi', 'consuelo-os.json'),
+    },
+  ];
 }
 
 function openCodeGlobalConfigPath(): string {
@@ -1509,7 +1561,6 @@ export function provisionLocalOs(
       }),
     );
   }
-  actions.push(...materializeSites({ home, dbPath, dryRun, workspaceHost: workspaceIdentity.workspaceHost }).actions);
   config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
@@ -1530,6 +1581,8 @@ export function provisionLocalOs(
     config.updatedAt = nowIso();
     writeJsonFile(configPath, config, false);
   }
+
+  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
 
   return { home, configPath, dbPath, actions, agents: detectAgents(home) };
 }

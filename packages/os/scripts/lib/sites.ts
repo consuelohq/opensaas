@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import {
+  renderLauncherOnboarding,
+  type LauncherLocalAgent,
+} from './launcher-onboarding';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -645,130 +649,64 @@ function baseStyles(): string {
   `;
 }
 
-const DEFAULT_SITES_PUBLIC_ORIGIN = 'https://sites.consuelohq.com';
-const GTM_URL = 'https://app.consuelohq.com/welcome';
-const CONTACT_URL = 'https://consuelohq.com/contact/';
-const DOCUMENTATION_URL = 'https://docs.consuelohq.com/';
-const DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
-
-type MarkdownLinkOptions = {
-  label: string;
-  href: string;
-  text: string;
-  hotkey?: string;
-  routePath?: string;
+type LauncherConfig = {
+  workspace?: { host?: string };
+  agents?: Array<{ name?: string; connected?: boolean }>;
 };
 
-function normalizeSitesPublicOrigin(workspaceHost?: string | null): string {
-  const trimmed = workspaceHost?.trim().replace(/\/$/, '');
-  if (!trimmed) return DEFAULT_SITES_PUBLIC_ORIGIN;
-  if (/^https?:\/\//.test(trimmed)) return trimmed;
-  return `https://${trimmed}`;
+type ChatGptMcpConfig = {
+  url?: string;
+};
+
+const agentLabels: Record<string, string> = {
+  codex: 'Codex',
+  cursor: 'Cursor',
+  claude: 'Claude',
+  opencode: 'OpenCode',
+  factory: 'Factory',
+  gemini: 'Gemini',
+  pi: 'Pi',
+};
+
+function readJsonFile<TData>(filePath: string): TData | null {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as TData;
+  } catch {
+    return null;
+  }
 }
 
-function workspaceRouteHref(publicOrigin: string, routePath: string): string {
-  return `${publicOrigin}${routePath}`;
+function launcherMcpUrl(home: string): string {
+  const mcpConfig = readJsonFile<ChatGptMcpConfig>(path.join(home, 'security', 'generated', 'chatgpt-mcp.json'));
+  if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
+    return mcpConfig.url;
+  }
+
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  const workspaceHost = config?.workspace?.host;
+  return typeof workspaceHost === 'string' && workspaceHost.length > 0
+    ? `https://${workspaceHost}/mcp`
+    : 'https://os.consuelohq.com/mcp';
 }
 
-function buildMarkdownLink(options: MarkdownLinkOptions): string {
-  const hotkeyAttribute = options.hotkey ? ` data-hotkey="${escapeHtml(options.hotkey)}"` : '';
-  const routePathAttribute = options.routePath ? ` data-route-path="${escapeHtml(options.routePath)}"` : '';
-  return `<li><span class="md-label">[${escapeHtml(options.label)}](</span><a href="${escapeHtml(options.href)}"${hotkeyAttribute}${routePathAttribute} target="_blank" rel="noopener noreferrer">${escapeHtml(options.text)}</a><span class="md-label">)</span></li>`;
+function launcherLocalAgents(home: string): LauncherLocalAgent[] {
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  return (config?.agents ?? [])
+    .filter((agent): agent is { name: string; connected: boolean } =>
+      typeof agent.name === 'string' && agent.connected === true,
+    )
+    .map((agent) => ({
+      name: agent.name,
+      label: agentLabels[agent.name] ?? agent.name,
+      connected: true,
+    }));
 }
 
-function buildSitesIndex(options: { workspaceHost?: string | null } = {}): string {
-  const publicOrigin = normalizeSitesPublicOrigin(options.workspaceHost);
-  const routeLinks = [
-    { label: 'Office', routePath: '/office', hotkey: '2' },
-    { label: 'Tracing', routePath: '/traces', hotkey: '3' },
-    { label: 'Diffs', routePath: '/diffs', hotkey: '4' },
-  ].map((link) => ({
-    label: link.label,
-    href: workspaceRouteHref(publicOrigin, link.routePath),
-    text: workspaceRouteHref(publicOrigin, link.routePath),
-    routePath: link.routePath,
-    hotkey: link.hotkey,
-  }));
-  const siteLinks = [
-    { label: 'GTM', href: GTM_URL, text: GTM_URL, hotkey: '1' },
-    ...routeLinks,
-    { label: 'Documentation', href: DOCUMENTATION_URL, text: DOCUMENTATION_URL, hotkey: '5' },
-  ].map(buildMarkdownLink).join('\n        ');
-  const siteHotkeys = {
-    '1': GTM_URL,
-    '2': '/office',
-    '3': '/traces',
-    '4': '/diffs',
-    '5': DOCUMENTATION_URL,
-  };
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo OS Sites</title>
-  <style>${baseStyles()}</style>
-</head>
-<body>
-  <main>
-    <h1>CONSUELO OS █</h1>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Profile">
-      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
-      <p><span class="label">LOCATION:</span> USA</p>
-      <p><span class="label">STATUS:</span> ONLINE</p>
-      <p><span class="label">OPEN POSITION:</span></p>
-      <ul>
-        ${buildMarkdownLink({ label: 'Systems Engineer', href: CONTACT_URL, text: '/careers/systems-engineer' })}
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Sites">
-      <p class="label">SITES:</p>
-      <ul>
-        ${siteLinks}
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Writing">
-      <p class="label">WRITING:</p>
-      <ul>
-        ${buildMarkdownLink({ label: 'On Decision Loops', href: DECISION_INFRASTRUCTURE_URL, text: '/writing/on-decision-loops' })}
-      </ul>
-    </section>
-  </main>
-  <script>
-    const fallbackSitesOrigin = ${JSON.stringify(publicOrigin)};
-    const siteHotkeys = ${JSON.stringify(siteHotkeys, null, 6)};
-    const resolveWorkspaceHref = (routePath) => {
-      const isWebOrigin = window.location.protocol === "http:" || window.location.protocol === "https:";
-      const origin = isWebOrigin ? window.location.origin : fallbackSitesOrigin;
-      return origin + routePath;
-    };
-
-    for (const anchor of document.querySelectorAll("a[data-route-path]")) {
-      const routePath = anchor.getAttribute("data-route-path");
-      if (!routePath) continue;
-      const href = resolveWorkspaceHref(routePath);
-      anchor.setAttribute("href", href);
-      anchor.textContent = href;
-    }
-
-    document.addEventListener("keydown", (event) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-      const target = event.target;
-      const tagName = target && target.tagName ? target.tagName.toLowerCase() : "";
-      if (tagName === "input" || tagName === "textarea" || (target && target.isContentEditable)) return;
-      const href = siteHotkeys[event.key];
-      if (!href) return;
-      event.preventDefault();
-      window.location.assign(href.startsWith("/") ? resolveWorkspaceHref(href) : href);
-    });
-  </script>
-</body>
-</html>
-`;
+function buildSitesIndex(home: string): string {
+  return renderLauncherOnboarding({
+    mcpUrl: launcherMcpUrl(home),
+    localAgents: launcherLocalAgents(home),
+  });
 }
 
 function buildPagesIndex(registry: SitePageRegistry): string {
@@ -855,7 +793,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.officeIndexPath, options.dryRun, 'Office site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex({ workspaceHost: options.workspaceHost }), { mode: 0o600 });
+    fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });

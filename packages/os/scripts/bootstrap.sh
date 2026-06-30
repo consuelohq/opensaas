@@ -250,11 +250,18 @@ run_with_loading_dots() {
   return "$status"
 }
 
-prompt_enter() {
+prompt_select() {
   local message="$1"
-  local rerun_hint="$2"
+  local default_choice="$2"
+  local first_choice="$3"
+  local second_choice="$4"
+  local rerun_hint="$5"
+  local selected=0
+  local key=""
+  local rest=""
 
   if [ "$YES" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
+    printf '%s\n' "$default_choice"
     return 0
   fi
 
@@ -265,8 +272,43 @@ This shell is non-interactive. Re-run with:
   $rerun_hint"
   fi
 
-  printf '%s\n' "$message" > /dev/tty
-  IFS= read -r _ < /dev/tty
+  if [ "$default_choice" = "$second_choice" ]; then
+    selected=1
+  fi
+
+  while true; do
+    printf '%s\n' "$message" > /dev/tty
+    if [ "$selected" -eq 0 ]; then
+      printf '◆ %s\n' "$first_choice" > /dev/tty
+      printf '○ %s\n' "$second_choice" > /dev/tty
+    else
+      printf '○ %s\n' "$first_choice" > /dev/tty
+      printf '◆ %s\n' "$second_choice" > /dev/tty
+    fi
+    printf '%s' "Use arrow keys and Enter." > /dev/tty
+
+    IFS= read -rsn1 key < /dev/tty || key=""
+    printf '\n' > /dev/tty
+    case "$key" in
+      "")
+        if [ "$selected" -eq 0 ]; then
+          printf '%s\n' "$first_choice"
+        else
+          printf '%s\n' "$second_choice"
+        fi
+        return 0
+        ;;
+      $'\033')
+        IFS= read -rsn2 rest < /dev/tty || rest=""
+        case "$rest" in
+          "[A"|"[D") selected=0 ;;
+          "[B"|"[C") selected=1 ;;
+        esac
+        ;;
+      [YyLl]) selected=0 ;;
+      [NnCc]) selected=1 ;;
+    esac
+  done
 }
 
 open_url() {
@@ -320,51 +362,7 @@ or:
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
   fi
 
-  local selected=0
-  local key=""
-  local sequence=""
-  local rendered=0
-  local old_tty
-  old_tty="$(stty -g < /dev/tty)"
-
-  stty -echo -icanon min 1 time 0 < /dev/tty
-  printf '\033[?25l' > /dev/tty
-  trap 'stty "$old_tty" < /dev/tty; printf "\033[?25h" > /dev/tty; exit 130' INT TERM
-
-  while true; do
-    if [ "$rendered" -eq 1 ]; then
-      printf '\033[3A' > /dev/tty
-    fi
-    render_os_mode_select "$selected"
-    rendered=1
-
-    IFS= read -r -s -n 1 key < /dev/tty || key=""
-    case "$key" in
-      $'\033')
-        IFS= read -r -s -n 2 -t 1 sequence < /dev/tty || sequence=""
-        case "$sequence" in
-          "[A"|"[B")
-            if [ "$selected" -eq 0 ]; then
-              selected=1
-            else
-              selected=0
-            fi
-            ;;
-        esac
-        ;;
-      ""|$'\n'|$'\r')
-        if [ "$selected" -eq 0 ]; then
-          OS_MODE="local"
-        else
-          OS_MODE="cloud"
-        fi
-        stty "$old_tty" < /dev/tty
-        printf '\033[?25h\n' > /dev/tty
-        trap - INT TERM
-        return 0
-        ;;
-    esac
-  done
+  OS_MODE="$(prompt_select "Choose Consuelo OS mode:" "local" "local" "cloud" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local")"
 }
 
 handle_cloud_mode() {
@@ -389,9 +387,12 @@ render_dependency_progress() {
 }
 
 prompt_dependency_setup() {
-  prompt_enter "Consuelo OS needs its dependencies to continue.
-
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
+  local dependency_choice
+  dependency_choice="$(prompt_select "Consuelo OS needs its dependencies to continue." "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes")"
+  if [ "$dependency_choice" = "no" ]; then
+    DEPENDENCY_STATUS="cancelled"
+    fail "Consuelo OS setup cancelled."
+  fi
 }
 require_command() {
   local tool="$1"
@@ -951,7 +952,7 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
-  local install_args=(--home "$os_home" --mode "${OS_MODE:-local}")
+  local install_args=(./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}")
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -959,7 +960,7 @@ run_install_with_script_pty() {
     install_args+=(--skip-daemons)
   fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts "${install_args[@]}" < /dev/tty
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty
 }
 
 run_install_with_tty() {
@@ -1075,13 +1076,13 @@ maybe_install_daemons() {
   fi
 
   if [ "$INSTALL_DAEMONS" -eq 0 ]; then
-    prompt_enter "Consuelo OS can install user LaunchAgents so it starts at login and restarts if it crashes.
-Labels:
-- com.consuelo.system
-- com.consuelo.watchdog
-- com.consuelo.portless.system, only when portless is configured
-
-Press Enter to install these user LaunchAgents, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+    local daemon_choice
+    daemon_choice="$(prompt_select "Install Consuelo OS user LaunchAgents?" "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons")"
+    if [ "$daemon_choice" = "no" ]; then
+      DAEMON_STATUS="skipped"
+      log "Skipping Consuelo OS user LaunchAgent setup."
+      return 0
+    fi
   fi
 
   if [ "$DEBUG" = "1" ]; then

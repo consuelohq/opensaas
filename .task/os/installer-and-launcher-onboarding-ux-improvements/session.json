@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2b4aeb2392de",
+  "tmuxSession": "opensaas-os-installer-and-launcher-onboarding-ux-improvement-2b4aeb23",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/installer-and-launcher-onboarding-ux-improvements",
+  "branch": "task/os/installer-and-launcher-onboarding-ux-improvements",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-and-launcher-onboarding-ux-improvements",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-and-launcher-onboarding-ux-improvements",
+  "prNumber": 1290,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1290",
+  "createdAt": "2026-06-30T19:46:53.197Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-and-launcher-onboarding-ux-improvements/.task/os/installer-and-launcher-onboarding-ux-improvements/session.json"
+}
