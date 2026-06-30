@@ -647,6 +647,7 @@ function baseStyles(): string {
 
 const DEFAULT_SITES_PUBLIC_ORIGIN = 'https://sites.consuelohq.com';
 const GTM_URL = 'https://app.consuelohq.com/welcome';
+const CONTACT_URL = 'https://consuelohq.com/contact/';
 const DOCUMENTATION_URL = 'https://docs.consuelohq.com/';
 const DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
 
@@ -719,7 +720,7 @@ function buildSitesIndex(options: { workspaceHost?: string | null } = {}): strin
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        ${buildMarkdownLink({ label: 'Systems Engineer', href: '/careers/systems-engineer', text: '/careers/systems-engineer' })}
+        ${buildMarkdownLink({ label: 'Systems Engineer', href: CONTACT_URL, text: '/careers/systems-engineer' })}
       </ul>
     </section>
     <p class="rule">~~~</p>
@@ -733,7 +734,7 @@ function buildSitesIndex(options: { workspaceHost?: string | null } = {}): strin
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        ${buildMarkdownLink({ label: 'On Decision Loops', href: DECISION_INFRASTRUCTURE_URL, text: DECISION_INFRASTRUCTURE_URL })}
+        ${buildMarkdownLink({ label: 'On Decision Loops', href: DECISION_INFRASTRUCTURE_URL, text: '/writing/on-decision-loops' })}
       </ul>
     </section>
   </main>
