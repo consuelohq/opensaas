@@ -20,8 +20,8 @@ import {
   printEnd,
   printOsBanner,
   spinner,
-  stepComplete,
   success,
+  type OsBannerStep,
 } from './lib/cli-ui';
 import {
   detectAgents,
@@ -37,6 +37,14 @@ import {
 } from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
+type InstallerProgressStep =
+  | 'dependencies'
+  | 'workspace'
+  | 'security'
+  | 'skills'
+  | 'agents'
+  | 'service'
+  | 'health';
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -76,12 +84,52 @@ type InstallPlatformProvisioningPayload =
       message: string;
     };
 
-const AGENT_NAMES = new Set<AgentName>([
+const AGENT_NAME_LIST: AgentName[] = [
   'codex',
+  'cursor',
   'claude',
   'opencode',
   'factory',
-]);
+  'gemini',
+  'pi',
+];
+const AGENT_NAMES = new Set<AgentName>(AGENT_NAME_LIST);
+const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
+  'dependencies',
+  'workspace',
+  'security',
+  'skills',
+  'agents',
+  'service',
+  'health',
+];
+
+export function createInstallerProgressSteps(
+  activeStep: InstallerProgressStep | null,
+): OsBannerStep[] {
+  if (activeStep === null) {
+    return INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' }));
+  }
+
+  const activeIndex = INSTALLER_PROGRESS_STEPS.indexOf(activeStep);
+  return INSTALLER_PROGRESS_STEPS.map((label, index) => ({
+    label,
+    state:
+      index < activeIndex
+        ? 'complete'
+        : index === activeIndex
+          ? 'active'
+          : 'pending',
+  }));
+}
+
+export function formatLocalAgentsPromptMessage(count: number): string {
+  return `${count} agents found — press Space to not connect to this workspace, Enter to continue`;
+}
+
+function renderInstallerProgress(activeStep: InstallerProgressStep | null): void {
+  printOsBanner(createInstallerProgressSteps(activeStep));
+}
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
@@ -212,11 +260,11 @@ function parseArgs(argv: string[]): InstallOptions {
       index += 1;
       if (!AGENT_NAMES.has(agent))
         throw new Error(
-          '--connect-agent must be codex, claude, opencode, or factory',
+          `--connect-agent must be ${AGENT_NAME_LIST.join(', ')}`,
         );
       options.connectAgents.push(agent);
     } else if (arg === '--connect-agents') {
-      options.connectAgents = ['codex', 'claude', 'opencode'];
+      options.connectAgents = [...AGENT_NAME_LIST];
     } else if (arg === '--help' || arg === '-h') {
       writeStdout(
         [
@@ -230,8 +278,8 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
           '  --workspace-name <name> workspace name',
-          '  --connect-agent <id>  connect codex, claude, opencode, or factory',
-          '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
+          `  --connect-agent <id>  connect ${AGENT_NAME_LIST.join(', ')}`,
+          '  --connect-agents      connect detected local agents',
           '  --json                machine-readable output',
           '  --quiet               reduce human output',
           '  --check-tty          print safe terminal diagnostics',
@@ -450,15 +498,8 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner([
-      { label: 'dependencies', state: 'complete' },
-      { label: 'workspace', state: 'active' },
-      'skills',
-      'artifacts',
-      'agents',
-      'health',
-    ]);
-    info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
+    renderInstallerProgress('workspace');
+    info('finish workspace identity, security, skills, agents, service, and health.');
     const clackIo = getClackIo();
 
     let mode: OsMode = options.mode ?? 'local';
@@ -499,6 +540,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    renderInstallerProgress('security');
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       workspaceName,
       workspaceSlug,
@@ -508,6 +550,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
     const home = resolveOsHome(options.home);
 
+    renderInstallerProgress('skills');
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
       ...clackIo,
@@ -523,21 +566,22 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
     const artifactMode = options.artifactMode;
 
+    renderInstallerProgress('agents');
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
-      const shouldConnect = await confirm({ ...clackIo, message: 'connect detected agents to the OS portal?', initialValue: true });
-      if (!isCancel(shouldConnect) && shouldConnect) {
-        const selectedAgents = await multiselect({
-          ...clackIo,
-          message: 'select agents to connect — Use Space to select agents, press Enter to continue',
-          options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
-          required: false,
-        });
-        if (!isCancel(selectedAgents)) connectAgents = selectedAgents as AgentName[];
-      }
+      const selectedAgents = await multiselect({
+        ...clackIo,
+        message: formatLocalAgentsPromptMessage(detectedAgents.length),
+        options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
+        initialValues: detectedAgents.map((agent) => agent.name),
+        required: false,
+      });
+      if (isCancel(selectedAgents)) { cancel('setup cancelled.'); process.exit(0); }
+      connectAgents = selectedAgents as AgentName[];
     }
 
+    renderInstallerProgress('service');
     let installDaemons = false;
     if (options.installDaemons) {
       installDaemons = true;
@@ -548,6 +592,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
       installDaemons = selectedInstallDaemons;
     }
+    renderInstallerProgress('health');
     return {
       ...options,
       mode,
@@ -625,6 +670,10 @@ async function main(): Promise<void> {
     }
 
     spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');
+
+    if (!options.quiet && !options.json) {
+      renderInstallerProgress(null);
+    }
 
     if (options.json) {
       writeStdout(`${JSON.stringify(payload, null, 2)}\n`);

@@ -163,48 +163,31 @@ describe('Sites CLI', () => {
   });
 
 
-  it('renders the Sites launcher with the public Markdown terminal UI and local OS routes', () => {
+  it('renders the first-install launcher onboarding with the local OS connection URL', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
     for (const marker of [
-      '<title>Consuelo OS Sites</title>',
-      'CONSUELO OS █',
-      'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-      'LOCATION:</span> USA',
-      'STATUS:</span> ONLINE',
-      'OPEN POSITION:',
-      '[Systems Engineer](</span><a href="/jobs"',
-      '>/careers/systems-engineer</a>',
-      'SITES:',
-      '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
-      '>https://sites.consuelohq.com/gtm</a>',
-      '[Office](</span><a href="office/"',
-      '>https://sites.consuelohq.com/office</a>',
-      '[Tracing](</span><a href="traces/"',
-      '>https://sites.consuelohq.com/tracing</a>',
-      '[Diffs](</span><a href="diffs/"',
-      '>https://sites.consuelohq.com/diffs</a>',
-      '[Documentation](</span><a href="docs/"',
-      '>https://docs.consuelohq.com/</a>',
-      'WRITING:',
-      '[On Decision Loops](</span><a href="/writing/on-decision-loops"',
-      'font-family: "Geist Mono", "Geist", ui-monospace',
-      'font-weight: 400',
-      'letter-spacing: 0.02em',
-      '@media (max-width: 430px)',
-      'const siteHotkeys = {',
-      '"2": "office/"',
-      '"3": "traces/"',
-      '"4": "diffs/"',
-      '"5": "docs/"',
-      'window.location.assign(href)',
+      '<title>Consuelo OS</title>',
+      '<div class="identity">Consuelo OS</div>',
+      'Welcome to Consuelo OS',
+      'Here is your URL to connect to',
+      'https://chatgpt.com/apps#settings/Connectors',
+      '<code id="mcp-url">https://os.consuelohq.com/mcp</code>',
+      'aria-label="Copy MCP URL"',
+      'Connect to your cloud agents',
+      'Connected to 0 local agents',
+      'No local agents connected yet.',
+      'navigator.clipboard.writeText(value)',
     ]) {
       expect(html).toContain(marker);
     }
 
-    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(7);
+    expect(html.match(/target="_blank"/g)?.length).toBe(1);
     expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).not.toContain('Consuelo OS Sites');
+    expect(html).not.toContain('https://sites.consuelohq.com');
+    expect(html).not.toContain('const siteHotkeys = {');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
   });
