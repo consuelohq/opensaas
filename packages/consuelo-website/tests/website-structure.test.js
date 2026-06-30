@@ -115,6 +115,17 @@ describe('Consuelo website structure', () => {
     }
   });
 
+  test('should support weekly changelog entries while preserving legacy entries', () => {
+    const changelog = readSource('src/pages/changelog.astro');
+
+    expect(changelog).toContain('type ChangelogWeek');
+    expect(changelog).toContain('item.weeks');
+    expect(changelog).toContain("set:html={item.text ?? ''}");
+    expect(changelog).toContain('cl-week__header');
+    expect(changelog).toContain('overflow-wrap: anywhere');
+    expect(changelog).toContain('grid-template-columns: 160px minmax(0, 1fr)');
+  });
+
   test('should render only the first-pass warm editorial hero baseline on the homepage', () => {
     const homepage = readSource('src/pages/index.astro');
     expect(homepage).toContain("../layouts/MarketingLayout.astro");
