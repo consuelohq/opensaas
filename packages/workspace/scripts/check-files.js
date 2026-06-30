@@ -2,6 +2,7 @@
 'use strict';
 
 const { execFileSync, spawnSync } = require('child_process');
+const path = require('path');
 
 function writeStdout(value = '') { process.stdout.write(`${value}\n`); }
 function writeStderr(value = '') { process.stderr.write(`${value}\n`); }
@@ -31,16 +32,43 @@ function readFlagValue(argv, index, flag) {
 function showHelp() {
   writeStdout('usage: bun run check-files -- --branch task/... --files src/a.js src/b.js --json');
   writeStdout('');
-  writeStdout('runs node --check for each file through task:exec.');
+  writeStdout('runs node --check for each file in the resolved task worktree.');
+}
+
+function resolveControllerRoot() {
+  try {
+    const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const match = output.match(/^worktree (.+)$/m);
+    return match?.[1] || process.cwd();
+  } catch {
+    return process.cwd();
+  }
+}
+
+function resolveBranchWorktree(branch) {
+  if (!branch) return process.cwd();
+  const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+    cwd: resolveControllerRoot(),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const records = output.trim().split(/\n(?=worktree )/g).filter(Boolean);
+  for (const record of records) {
+    const worktree = record.match(/^worktree (.+)$/m)?.[1];
+    const branchLine = record.match(/^branch refs\/heads\/(.+)$/m)?.[1];
+    if (worktree && branchLine === branch) return worktree;
+  }
+  throw new Error(`worktree not found for branch ${branch}`);
 }
 
 function runCheck(args, file) {
-  const command = ['run', 'task:exec', '--'];
-  if (args.branch) command.push('--branch', args.branch);
-  command.push('node', '--check', file);
-
-  const result = spawnSync('bun', command, {
-    cwd: resolveControllerRoot(),
+  const cwd = resolveBranchWorktree(args.branch);
+  const result = spawnSync('node', ['--check', file], {
+    cwd,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -51,6 +79,7 @@ function runCheck(args, file) {
     exitCode: result.status || (result.error ? 1 : 0),
     stdout: result.stdout || '',
     stderr: result.stderr || (result.error ? result.error.message : ''),
+    cwd: path.relative(resolveControllerRoot(), cwd) || '.',
   };
 }
 
@@ -87,20 +116,6 @@ function main() {
   }
 
   if (!output.ok) process.exitCode = 1;
-}
-
-function resolveControllerRoot() {
-  try {
-    const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    const match = output.match(/^worktree (.+)$/m);
-    return match?.[1] || process.cwd();
-  } catch {
-    return process.cwd();
-  }
 }
 
 try {

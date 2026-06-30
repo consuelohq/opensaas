@@ -6,7 +6,7 @@
       "label": "workspace-tooling",
       "kind": "facade-tool",
       "path": "packages/workspace/tooling/tool-manifest.json",
-      "entryCount": 126
+      "entryCount": 124
     }
   ],
   "tools": [
@@ -1539,14 +1539,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "composed",
-      "description": "run syntax checks over a set of files through task:exec",
+      "description": "run node --check syntax checks over a set of files in the resolved task worktree",
       "core": false,
       "definition": {
         "name": "checkFiles",
         "methodPath": [
           "checkFiles"
         ],
-        "description": "run syntax checks over a set of files through task:exec",
+        "description": "run node --check syntax checks over a set of files in the resolved task worktree",
         "category": "composed",
         "underlying": "workspace checkFiles",
         "capabilities": {
@@ -6235,56 +6235,6 @@
       }
     },
     {
-      "name": "task.call",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "run a command inside a task worktree",
-      "core": false,
-      "definition": {
-        "name": "task.call",
-        "methodPath": [
-          "task",
-          "call"
-        ],
-        "description": "run a command inside a task worktree",
-        "category": "task lifecycle",
-        "underlying": "workspace task.call",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "TaskExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:exec",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "commandArray",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "command": [
-            "git",
-            "status",
-            "--short"
-          ],
-          "dryRun": true
-        },
-        "sessionRequired": true
-      }
-    },
-    {
       "name": "task.cleanup",
       "kind": "facade-tool",
       "source": "workspace-tooling",
@@ -6425,56 +6375,6 @@
           "branch": "task/workspace-agents/example"
         },
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.exec",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "task lifecycle",
-      "description": "legacy alias for task.call; run a command inside a task worktree",
-      "core": false,
-      "definition": {
-        "name": "task.exec",
-        "methodPath": [
-          "task",
-          "exec"
-        ],
-        "description": "legacy alias for task.call; run a command inside a task worktree",
-        "category": "task lifecycle",
-        "underlying": "workspace task.exec",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "TaskExecInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "task:exec",
-          "branchMode": "required",
-          "branchArgumentStyle": "prefix",
-          "arguments": [
-            {
-              "source": "command",
-              "kind": "commandArray",
-              "required": true
-            }
-          ]
-        },
-        "exampleInput": {
-          "branch": "task/workspace-agents/example",
-          "command": [
-            "git",
-            "status",
-            "--short"
-          ],
-          "dryRun": true
-        },
-        "sessionRequired": true
       }
     },
     {

@@ -32,8 +32,6 @@
     "excludeNames": [
       "mac.call",
       "mac.exec",
-      "task.call",
-      "task.exec",
       "fs.list",
       "fs.write",
       "gh",
