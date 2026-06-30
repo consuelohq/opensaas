@@ -109,6 +109,9 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    'href="https://consuelohq.com/contact/"',
+    '>/careers/systems-engineer</a>',
+    '>/writing/on-decision-loops</a>',
     'function officePathForArchiveEntry',
     'function renderSitesLauncher',
     'CONSUELO OS █',
@@ -155,6 +158,9 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
     '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
     '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
     'On Decision Loops',
+    'href="https://consuelohq.com/contact/"',
+    '>/careers/systems-engineer</a>',
+    '>/writing/on-decision-loops</a>',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);

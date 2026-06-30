@@ -914,7 +914,9 @@ resolve_source() {
 }
 install_runtime_dependencies() {
   local os_dir="$1"
+  log "Installing Consuelo OS runtime dependencies..."
   (cd "$os_dir" && "$BUN_BIN" install)
+  log "Installing Consuelo OS runtime dependencies... done"
 }
 
 ensure_dependencies() {
@@ -930,7 +932,7 @@ ensure_dependencies() {
     return 0
   fi
 
-  run_with_loading_dots "Installing Consuelo OS runtime dependencies" install_runtime_dependencies "$os_dir"
+  install_runtime_dependencies "$os_dir"
   DEPENDENCY_STATUS="installed"
 }
 
@@ -971,7 +973,6 @@ run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
   local os_home="$OS_HOME"
 
-  log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$BUN_BIN" ]; then

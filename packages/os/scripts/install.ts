@@ -590,9 +590,11 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
+      const agentCount = detectedAgents.length;
+      const agentPromptSubject = agentCount === 1 ? '1 agent' : `${agentCount} agents`;
       const selectedAgents = await multiselect({
         ...clackIo,
-        message: 'select agents to connect — Use Space to select agents, press Enter to continue',
+        message: `${agentPromptSubject} found — press Space to not connect to this workspace, Enter to continue`,
         options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
         initialValues: options.connectAgents.length > 0
           ? options.connectAgents
