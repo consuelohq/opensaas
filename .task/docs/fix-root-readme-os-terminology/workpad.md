@@ -41,3 +41,28 @@ Docs-only README edit. Run static README checks, inspect diff, run scoped review
 - Static README validation passed: logo path exists, no `packages/workspace`, no `openworkspace`, no `workspace MCP server`, no `local files`, no dry-run install text, no tool-family wording, tool categories present, tool bundles explained, security split present, relative links valid, fences balanced, no em or en dash, no curly quotes.
 - Diff inspected with `git.diff`: only README plus task metadata/workpad changed.
 - Scoped review passed with zero issues from this README change. Pre-existing eslint/typecheck debt remains outside this docs-only edit.
+
+
+## Final change summary
+Updated README to keep the public story on Consuelo OS and remove the internal package reference. Added the website logo, changed the intro to file system, removed the dry-run install block, and kept the runtime pointer to packages/os.
+
+Separated hosted routing from security. Hosted routing now covers Cloudflare-backed published surfaces. Security now covers the OS gateway, generated files, scoped credentials, signed requests, audit records, and Caddy config.
+
+Changed tool families to tool categories. Added a separate tool bundles section for workflow and runbook bundles that include tools plus just-in-time agent instructions.
+
+## Publish summary
+Changed README.md and validated the README constraints. Scoped review passed with zero issues from this change.
+
+- 2026-06-30 03:12:14 append: `.task/docs/fix-root-readme-os-terminology/workpad.md`
+
+## files changed
+
+- none yet
+
+## workspace-owned: files changed
+
+- none yet
+
+## workspace-owned: activity log
+
+- 2026-06-30 03:12:14 fs.write: `.task/docs/fix-root-readme-os-terminology/workpad.md`
