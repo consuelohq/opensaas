@@ -78,7 +78,7 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('We can install/setup this now.');
   });
 
-  it('pins cloudflared darwin archive checksums to the currently served release assets', () => {
+  it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain(

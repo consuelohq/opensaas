@@ -82,7 +82,7 @@ describe('LoginTokenService', () => {
           authProvider: AuthProviderEnum.Password,
           impersonatorUserId: undefined,
         },
-        { secret: mockSecret, expiresIn: 60 * 60 * 1000 },
+        { secret: mockSecret, expiresIn: mockExpiresIn },
       );
     });
   });
@@ -124,7 +124,7 @@ describe('LoginTokenService', () => {
           authProvider: AuthProviderEnum.Impersonation,
           impersonatorUserWorkspaceId,
         },
-        { secret: mockSecret, expiresIn: expect.any(Number) },
+        { secret: mockSecret, expiresIn: '1h' },
       );
     });
   });

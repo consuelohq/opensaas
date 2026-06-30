@@ -5,6 +5,21 @@ import { Repository } from 'typeorm';
 
 import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
 
+type UpdateAutomationInput = Partial<
+  Omit<
+    AgentAutomationEntity,
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'skill'
+    | 'workspace'
+    | 'lastRunAt'
+    | 'lastRunStatus'
+    | 'consecutiveFailures'
+    | 'disabledReason'
+  >
+>;
+
 @Injectable()
 export class AutomationService {
   constructor(
@@ -54,24 +69,37 @@ export class AutomationService {
 
   async update(
     id: string,
-    input: Partial<
-      Omit<
-        AgentAutomationEntity,
-        'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace'
-      >
-    >,
+    input: UpdateAutomationInput,
   ): Promise<AgentAutomationEntity> {
-    const automation = await this.automationRepository.findOne({
-      where: { id },
-    });
+    try {
+      const automation = await this.automationRepository.findOne({
+        where: { id },
+      });
 
-    if (!automation) {
-      throw new Error(`Automation ${id} not found`);
+      if (!automation) {
+        throw new Error(`Automation ${id} not found`);
+      }
+
+      await this.automationRepository.update(id, input);
+
+      const updatedAutomation = await this.automationRepository.findOne({
+        where: { id },
+      });
+
+      if (!updatedAutomation) {
+        throw new Error(`Automation ${id} not found after update`);
+      }
+
+      return updatedAutomation;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      throw new Error(`Automation ${id} update failed with non-error value`, {
+        cause: error,
+      });
     }
-
-    const updated = this.automationRepository.merge(automation, input);
-
-    return this.automationRepository.save(updated);
   }
 
   async delete(id: string): Promise<void> {

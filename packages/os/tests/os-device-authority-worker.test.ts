@@ -178,6 +178,37 @@ describe('os device authority worker', () => {
     });
   });
 
+
+  it('should hide the device code box when terminal-return pages are rendered', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const { codeJson } = await startGrant(handler);
+
+    const start = await handler(
+      new Request(
+        `${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`,
+      ),
+    );
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+    const html = await callback.text();
+
+    expect(html).toContain('Device authorized');
+    expect(html).toContain('return to your terminal');
+    expect(html).not.toContain('data-device-code');
+    expect(html).not.toContain(String(codeJson.user_code));
+  });
+
   it('should call the default global fetch with the Cloudflare global receiver', async () => {
     const originalFetch = globalThis.fetch;
     vi.stubGlobal('fetch', async function (this: unknown, input: RequestInfo | URL) {

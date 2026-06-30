@@ -403,20 +403,24 @@ async function copyDeviceVerificationUrl(url: string): Promise<boolean> {
   }
 }
 
-function terminalLink(label: string, url: string): string {
-  const safeUrl = url.replace(/[\u0000-\u001f\u007f]/g, '');
+function sanitizeTerminalOutput(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f]/g, '');
+}
 
-  return `\u001B]8;;${safeUrl}\u0007${label}\u001B]8;;\u0007`;
+function terminalLink(label: string, url: string): string {
+  return `\u001B]8;;${url}\u0007${label}\u001B]8;;\u0007`;
 }
 
 async function printDeviceLoginPrompt(input: {
   userCode: string;
   verificationUrl: string;
 }): Promise<void> {
+  const sanitizedVerificationUrl = sanitizeTerminalOutput(input.verificationUrl);
+
   try {
-    const copied = await copyDeviceVerificationUrl(input.verificationUrl);
+    const copied = await copyDeviceVerificationUrl(sanitizedVerificationUrl);
     const formattedCode = input.userCode.replace(/[^a-z0-9]/gi, '').toUpperCase().replace(/(.{4})(?=.)/g, '$1-');
-    const openLink = terminalLink('click here', input.verificationUrl);
+    const openLink = terminalLink('click here', sanitizedVerificationUrl);
     const copyState = copied ? 'Auth URL copied to clipboard.' : 'Copying not available; use the full URL below.';
 
     note(
@@ -428,14 +432,14 @@ async function printDeviceLoginPrompt(input: {
         'Make sure your browser shows this code.',
         copyState,
         `Open link: ${openLink}`,
-        `Full URL: ${input.verificationUrl}`,
+        `Full URL: ${sanitizedVerificationUrl}`,
       ].join('\n'),
       'Consuelo OS',
     );
   } catch (error: unknown) {
     const reason = error instanceof Error ? error.message : String(error);
 
-    info(`authorize Consuelo OS in your browser: ${input.verificationUrl}`);
+    info(`authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}`);
     info(`device login prompt fell back to plain URL: ${reason}`);
   }
 }

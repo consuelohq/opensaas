@@ -11,16 +11,16 @@ const description = 'Authorize Consuelo OS on this device.';
     <meta name="description" content={description} />
     <title>{title}</title>
   </head>
-  <body>
-    <main class="device-auth" data-device-auth>
-      <section class="device-auth__copy-pane" aria-labelledby="device-auth-title">
+  <body class="site-auth-body">
+    <main class="device-auth site-auth-shell" data-device-auth>
+      <section class="device-auth__copy-pane site-auth-copy-pane" aria-labelledby="device-auth-title">
         <a class="device-auth__brand" href="/" aria-label="Consuelo OS home">Consuelo OS</a>
 
-        <div class="device-auth__form">
+        <div class="device-auth__form site-auth-form">
           <h1 id="device-auth-title">Sign in to Consuelo OS</h1>
           <p class="device-auth__instruction">Enter the code shown in your terminal.</p>
 
-          <div class="device-auth__code-box" aria-live="polite">
+          <div class="device-auth__code-box site-auth-code-box" aria-live="polite">
             <strong class="device-auth__code" data-device-code>Waiting for code</strong>
           </div>
 
@@ -29,7 +29,7 @@ const description = 'Authorize Consuelo OS on this device.';
           </p>
 
           <a
-            class="device-auth__button"
+            class="device-auth__button site-auth-primary-action"
             data-device-continue
             data-os-device-approve-link
             href="https://app.consuelohq.com/auth/google?action=os-device-approval"
@@ -39,8 +39,8 @@ const description = 'Authorize Consuelo OS on this device.';
         </div>
       </section>
 
-      <aside class="device-auth__visual" aria-hidden="true">
-        <div class="device-auth__mark">OS</div>
+      <aside class="device-auth__visual site-auth-visual" aria-hidden="true">
+        <div class="device-auth__mark site-auth-visual-mark">OS</div>
       </aside>
     </main>
   </body>
@@ -62,37 +62,25 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 </script>
 
-<style>
+<style is:global>
+  @import '../../styles/tokens.css';
+  @import '../../styles/primitives.css';
+
   * {
     box-sizing: border-box;
   }
 
-  :global(body) {
-    margin: 0;
-    min-height: 100vh;
-    background: #ffffff;
-    color: #171717;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
   .device-auth {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: minmax(0, 52%) minmax(0, 48%);
-    background: #ffffff;
-    color: #171717;
+    grid-template-columns: minmax(0, var(--site-auth-copy-column)) minmax(0, var(--site-auth-visual-column));
   }
 
   .device-auth__copy-pane {
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    padding: 2.65rem clamp(1.5rem, 6vw, 5.5rem) 4rem;
+    padding: var(--site-space-12) clamp(var(--site-space-9), 6vw, var(--site-space-14)) var(--site-space-13);
   }
 
   .device-auth__brand {
     width: fit-content;
-    color: #171717;
+    color: var(--site-color-text-primary);
     font-size: 0.88rem;
     font-weight: 600;
     letter-spacing: 0;
@@ -101,15 +89,14 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   .device-auth__form {
-    width: min(100%, 42rem);
+    width: min(100%, var(--site-auth-form-width));
     align-self: center;
-    display: grid;
-    gap: 1.45rem;
+    gap: var(--site-space-8);
   }
 
   .device-auth__form h1 {
-    margin: 0 0 1.6rem;
-    color: #171717;
+    margin: var(--site-space-0) var(--site-space-0) var(--site-space-10);
+    color: var(--site-color-text-primary);
     font-size: 2.35rem;
     font-weight: 400;
     letter-spacing: 0;
@@ -118,24 +105,20 @@ const description = 'Authorize Consuelo OS on this device.';
 
   .device-auth__instruction,
   .device-auth__guardrail {
-    margin: 0;
-    max-width: 34rem;
-    color: #6d6d6d;
+    margin: var(--site-space-0);
+    max-width: var(--site-auth-text-width);
+    color: var(--site-color-text-secondary);
     font-size: 1rem;
     line-height: 1.55;
   }
 
   .device-auth__code-box {
-    min-height: 3.7rem;
-    display: grid;
-    place-items: center;
-    background: #ffffff;
-    box-shadow: rgba(0, 0, 0, 0.12) 0 0 0 1px;
+    min-height: var(--site-auth-code-height);
   }
 
   .device-auth__code {
-    color: #171717;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    color: var(--site-color-text-primary);
+    font-family: var(--site-font-mono);
     font-size: 1.2rem;
     font-weight: 650;
     letter-spacing: 0;
@@ -143,21 +126,14 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   .device-auth__button {
-    min-height: 4.6rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 0.15rem;
-    padding: 0 1.25rem;
-    border-radius: 8px;
-    background: #000000;
-    color: #ffffff;
+    min-height: var(--site-auth-button-height);
+    margin-top: var(--site-space-1);
+    padding: var(--site-space-0) var(--site-space-6);
+    border-radius: var(--site-radius-action);
     font-size: 1.05rem;
     font-weight: 500;
     letter-spacing: 0;
-    line-height: 1;
-    text-decoration: none;
-    transition: opacity 160ms ease;
+    transition: opacity var(--site-motion-fast);
   }
 
   .device-auth__button:hover {
@@ -165,26 +141,20 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   .device-auth__visual {
-    position: relative;
     min-height: 100vh;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 82% 48%, rgba(255, 255, 255, 0.32), transparent 0 28%, transparent 46%),
-      linear-gradient(125deg, #050505 0%, #0c0d10 48%, #26313e 100%);
+    background: var(--site-auth-visual-background);
   }
 
   .device-auth__mark {
-    position: absolute;
-    right: -4rem;
+    right: var(--site-auth-visual-mark-offset);
     top: 50%;
     transform: translateY(-50%) rotate(-18deg);
-    color: rgba(255, 255, 255, 0.11);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size: 17rem;
+    color: var(--site-color-auth-visual-mark);
+    font-family: var(--site-font-mono);
+    font-size: var(--site-auth-visual-mark-size);
     font-weight: 700;
     letter-spacing: 0;
     line-height: 0.85;
-    white-space: nowrap;
   }
 
   @media (max-width: 860px) {
@@ -193,8 +163,8 @@ const description = 'Authorize Consuelo OS on this device.';
     }
 
     .device-auth__copy-pane {
-      min-height: 68vh;
-      padding: 1.4rem 1.2rem 2.5rem;
+      min-height: var(--site-auth-mobile-copy-height);
+      padding: var(--site-space-7) var(--site-space-5) var(--site-space-11);
     }
 
     .device-auth__form {
@@ -203,21 +173,21 @@ const description = 'Authorize Consuelo OS on this device.';
     }
 
     .device-auth__form h1 {
-      margin-bottom: 1rem;
+      margin-bottom: var(--site-space-4);
       font-size: 2.15rem;
     }
 
     .device-auth__button {
-      min-height: 3.6rem;
+      min-height: var(--site-auth-button-height-mobile);
     }
 
     .device-auth__visual {
-      min-height: 32vh;
+      min-height: var(--site-auth-mobile-visual-height);
     }
 
     .device-auth__mark {
-      right: 1rem;
-      font-size: 9rem;
+      right: var(--site-auth-visual-mark-mobile-offset);
+      font-size: var(--site-auth-visual-mark-mobile-size);
     }
   }
 </style>
