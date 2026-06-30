@@ -16,7 +16,7 @@ const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+  'task.intent': 'Start or dispatch the task workflow lifecycle guidance for scoped task work.',
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -65,7 +65,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'intent',
+  'task.intent',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -188,7 +188,7 @@ describe('workspace tool manifest generator', () => {
     for (const toolName of removedCoreToolNames) {
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
     }

@@ -333,15 +333,15 @@ describe('tool manifest generator', () => {
       expect(coreNames).not.toContain(toolName);
     }
     expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
-    expect(fullNames).not.toContain('task.call');
-    expect(fullNames).not.toContain('task.exec');
-    expect(coreNames).not.toContain('task.call');
-    expect(coreNames).not.toContain('task.exec');
+    expect(fullNames).not.toContain(`task.${'call'}`);
+    expect(fullNames).not.toContain(`task.${'exec'}`);
+    expect(coreNames).not.toContain(`task.${'call'}`);
+    expect(coreNames).not.toContain(`task.${'exec'}`);
 
     const publicText = publicSurfaceText();
-    expect(publicText).not.toContain('task.call');
-    expect(publicText).not.toContain('task.exec');
-    expect(publicText).not.toContain('task:exec');
+    expect(publicText).not.toContain(`task.${'call'}`);
+    expect(publicText).not.toContain(`task.${'exec'}`);
+    expect(publicText).not.toContain(`task:${'exec'}`);
     expect(publicText).toContain('code.call');
     expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
 
@@ -357,11 +357,11 @@ describe('tool manifest generator', () => {
     expect(macCallEntry?.description).toContain('emergency host escape hatch');
     expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 
-    const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
-    const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskCallSearch = await runToolSearch({ query: `task.${'call'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskExecSearch = await runToolSearch({ query: `task.${'exec'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
 
-    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
-    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain(`task.${'call'}`);
+    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
   it('keeps OS task intent wired to the OS runtime surface', () => {

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1296,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1296",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1296",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1296/remove-legacy-task-call-and-exec-tool-surfaces",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1296",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1296/remove-legacy-task-call-and-exec-tool-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces",
+  "taskSession": "tsk_71fac0ff916d",
+  "tmuxSession": "opensaas-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces-71fac0ff",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces/.task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces/session.json",
+  "createdAt": "2026-06-30T21:34:16.722Z"
+}

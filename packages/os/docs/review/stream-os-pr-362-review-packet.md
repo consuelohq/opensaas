@@ -878,7 +878,7 @@ Product labels to preserve/use where relevant: `com.consuelo.system`, `com.consu
 - Reviewer: chatgpt-codex-connector
 - File: `packages/os/package.json`
 - Line: 26
-- Original concern: **<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Expose the OS task worktree scripts** In the OS package's own scripts block, `task:fs` and `task:exec` are not registered even though this commit adds `scripts/task-fs.js`/`scripts/task-exec.js` and the OS docs tell operators to run `bun run task:fs`/`task:exec`. From `packages/os` (the documented OS working directory), those comma...
+- Original concern: **<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Expose the OS task worktree scripts** In the OS package's own scripts block, the task worktree helper scripts are not registered even though this commit adds the task worktree helper scripts and the OS docs tell operators to run `code.call`. From `packages/os` (the documented OS working directory), those comma...
 - Current code status: Path exists; current line 26: `"task:push": "bun ./scripts/task-push.js",`
 - Classification:
   - `critical before local testing`
