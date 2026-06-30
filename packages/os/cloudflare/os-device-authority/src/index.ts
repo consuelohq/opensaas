@@ -165,6 +165,20 @@ function workspaceHostFromMcpResource(resource: string): string { const url = ne
 function normalizeScopes(value: string): string[] { const requested = value.split(/\s+/).map(scope => scope.trim()).filter(Boolean); const allowed = requested.filter(scope => MCP_OAUTH_SCOPES.includes(scope)); return allowed.length > 0 ? [...new Set(allowed)] : ['mcp:read', 'mcp:call', 'tool:*:read']; }
 function hasGrantedScope(scopes: string[], requiredScope: string): boolean { if (!requiredScope || scopes.includes(requiredScope)) return true; const parts = requiredScope.split(':'); return parts.length === 3 && parts[0] === 'tool' && (scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')); }
 function validChatGptRedirectUri(value: string): boolean { try { return value.startsWith(CHATGPT_REDIRECT_PREFIX) && new URL(value).origin === 'https://chatgpt.com'; } catch { return false; } }
+function validChatGptClientId(value: string): boolean {
+  if (value === CHATGPT_OAUTH_CLIENT_ID) return true;
+  try {
+    const url = new URL(value);
+    return url.origin === 'https://chatgpt.com' &&
+      url.username === '' &&
+      url.password === '' &&
+      url.hash === '' &&
+      url.pathname.startsWith('/oauth/') &&
+      url.pathname.endsWith('/client.json');
+  } catch {
+    return false;
+  }
+}
 function cleanCode(value: string): string { return value.trim().replace(/[^a-z0-9]/gi, '').toUpperCase(); }
 function showCode(value: string): string { return cleanCode(value).replace(/(.{4})(?=.)/g, '$1-'); }
 function htmlEscape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c)); }
@@ -351,6 +365,7 @@ function authorizationServerMetadata(origin: string): Record<string, unknown> {
     grant_types_supported: ['authorization_code'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none'],
+    client_id_metadata_document_supported: true,
     scopes_supported: MCP_OAUTH_SCOPES,
   };
 }
@@ -392,7 +407,7 @@ async function startMcpOAuthAuthorization(input: {
   const codeChallenge = url.searchParams.get('code_challenge') ?? '';
   const codeChallengeMethod = url.searchParams.get('code_challenge_method') ?? '';
   if (responseType !== 'code') return invalidOauthRequest('unsupported_response_type', 'Only authorization code is supported.');
-  if (clientId !== CHATGPT_OAUTH_CLIENT_ID) return invalidOauthRequest('unauthorized_client', 'OAuth client is not allowed.');
+  if (!validChatGptClientId(clientId)) return invalidOauthRequest('unauthorized_client', 'OAuth client is not allowed.');
   if (!validChatGptRedirectUri(redirectUriValue)) return invalidOauthRequest('invalid_request', 'redirect_uri is not allowed.');
   if (!codeChallenge || codeChallengeMethod !== 'S256') return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;
@@ -479,10 +494,12 @@ async function exchangeMcpOAuthToken(input: {
     const redirectUriValue = p.get('redirect_uri') ?? '';
     const code = p.get('code') ?? '';
     const verifier = p.get('code_verifier') ?? '';
+    const resource = p.get('resource') ?? '';
     const authCode = await input.store.byMcpOAuthCode(await hash(code));
     if (!authCode) return invalidOauthRequest('invalid_grant', 'Authorization code was not found.');
     if (input.nowMs >= authCode.expiresAt) return invalidOauthRequest('invalid_grant', 'Authorization code expired.');
     if (authCode.clientId !== clientId || authCode.redirectUri !== redirectUriValue) return invalidOauthRequest('invalid_grant', 'Authorization code binding mismatch.');
+    if (resource && resource !== authCode.resource) return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
     if (!verifier || await hashChallenge(verifier) !== authCode.codeChallenge) return invalidOauthRequest('invalid_grant', 'PKCE verification failed.');
     const accessToken = rand('coa', 32);
     await input.store.putMcpOAuthAccessToken({

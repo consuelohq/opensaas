@@ -1,0 +1,62 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-dynamic-mcp-oauth-discovery",
+  "base": "origin/stream/security",
+  "headSha": "544a052e85d055fc9f3247f6de4ea3475911f05c",
+  "changeHash": "4248c38a0357df96b8f8f0b55353015e9658a6c44b095f37919537daf0f07263",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T20:08:32.773Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-dynamic-mcp-oauth-discovery/current.json",
+        ".task/security/fix-dynamic-mcp-oauth-discovery/evidence-log.json",
+        ".task/security/fix-dynamic-mcp-oauth-discovery/read-log.json",
+        ".task/security/fix-dynamic-mcp-oauth-discovery/session.json",
+        ".task/security/fix-dynamic-mcp-oauth-discovery/verify.json",
+        ".task/security/fix-dynamic-mcp-oauth-discovery/workpad.md",
+        ".task/tasks/security/fix-dynamic-mcp-oauth-discovery.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/server.ts",
+        "packages/os/tests/cloudflare-edge-router.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
