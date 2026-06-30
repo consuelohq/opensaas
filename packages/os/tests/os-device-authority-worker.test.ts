@@ -171,12 +171,102 @@ describe('os device authority worker', () => {
       authorization_endpoint: `${origin}/oauth/authorize`,
       token_endpoint: `${origin}/oauth/token`,
       introspection_endpoint: `${origin}/oauth/introspect`,
+      client_id_metadata_document_supported: true,
       response_types_supported: ['code'],
       grant_types_supported: ['authorization_code'],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
     expect(body).not.toHaveProperty('registration_endpoint');
+  });
+
+  it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const verifier = 'test-cimd-pkce-verifier';
+    const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+    const clientId = 'https://chatgpt.com/oauth/consuelo-os/dynamic-workspace/client.json';
+    const redirectUri = 'https://chatgpt.com/connector/oauth/callback';
+    const workspaceHost = 'dynamic-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
+    const resource = 'https://' + workspaceHost + '/mcp';
+
+    const authorize = await handler(new Request(`${origin}/oauth/authorize?${new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: 'mcp:read mcp:call tool:*:read',
+      resource,
+      state: 'chatgpt-state',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+    })}`));
+
+    expect(authorize.status).toBe(302);
+    const googleLocation = authorize.headers.get('location') ?? '';
+    expect(googleLocation).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+    const state = new URL(googleLocation).searchParams.get('state');
+    expect(state).toMatch(/^mcp_oauth_state_/);
+
+    const callback = await handler(new Request(`${origin}/oauth/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(302);
+    const callbackLocation = new URL(callback.headers.get('location') ?? '');
+    expect(callbackLocation.origin + callbackLocation.pathname).toBe(redirectUri);
+    const code = callbackLocation.searchParams.get('code') ?? '';
+    expect(code).toMatch(/^coa_code_/);
+
+    const mismatchedTokenResponse = await handler(new Request(`${origin}/oauth/token`, {
+      method: 'POST',
+      ...form({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code,
+        code_verifier: verifier,
+        resource: 'https://other-workspace.consuelohq.com/mcp',
+      }),
+    }));
+    await expect(mismatchedTokenResponse.json()).resolves.toMatchObject({
+      error: 'invalid_grant',
+    });
+
+    const tokenResponse = await handler(new Request(`${origin}/oauth/token`, {
+      method: 'POST',
+      ...form({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code,
+        code_verifier: verifier,
+        resource,
+      }),
+    }));
+    const tokenJson = await tokenResponse.json() as Record<string, unknown>;
+    expect(tokenResponse.status).toBe(200);
+    expect(tokenJson).toMatchObject({ token_type: 'Bearer', scope: 'mcp:read mcp:call tool:*:read' });
+    expect(tokenJson.access_token).toMatch(/^coa_/);
+
+    const introspection = await handler(new Request(`${origin}/oauth/introspect`, {
+      method: 'POST',
+      ...form({
+        token: String(tokenJson.access_token),
+        resource,
+        scope: 'tool:get_raw_steering:read',
+      }),
+    }));
+    await expect(introspection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: clientId,
+      workspace_host: workspaceHost,
+      resource,
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read'],
+      sub: 'google:google-sub-123',
+    });
   });
 
   it('should issue and introspect OAuth access tokens for workspace MCP resources through Google approval', async () => {

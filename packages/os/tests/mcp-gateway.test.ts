@@ -344,6 +344,23 @@ describe('MCP gateway adapter', () => {
     expect(fetchCalls[0].body).toContain('resource=https%3A%2F%2Fmcp-test.consuelohq.com%2Fmcp');
   });
 
+  it('advertises OAuth discovery for non-POST MCP probes on dynamic workspace hosts', async () => {
+    createConfig();
+    const dynamicHost = 'probe-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
+
+    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+      method: 'GET',
+      headers: { 'x-consuelo-hostname': dynamicHost },
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(401);
+    expect(json).toMatchObject({ error: { code: 'MISSING_BEARER' } });
+    expect(response.headers.get('www-authenticate')).toContain(
+      'resource_metadata="https://' + dynamicHost + '/.well-known/oauth-protected-resource"',
+    );
+  });
+
   it('filters non-callable facade tools out of the MCP surface', async () => {
     const listResponse = await handleMcpGatewayJsonRpc(JSON.stringify({
       jsonrpc: '2.0',

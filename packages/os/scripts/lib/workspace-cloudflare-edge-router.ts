@@ -550,6 +550,9 @@ const isOAuthProtectedResourceMetadataRequest = (pathname: string): boolean =>
   pathname === '/.well-known/oauth-protected-resource' ||
   pathname === '/.well-known/oauth-protected-resource/mcp';
 
+const isOAuthAuthorizationServerMetadataRequest = (pathname: string): boolean =>
+  pathname === '/.well-known/oauth-authorization-server';
+
 const createOAuthProtectedResourceMetadataResponse = (input: {
   hostname: string;
 }): Response =>
@@ -559,6 +562,29 @@ const createOAuthProtectedResourceMetadataResponse = (input: {
       authorization_servers: [OAUTH_AUTHORIZATION_SERVER],
       scopes_supported: MCP_OAUTH_SCOPES,
       bearer_methods_supported: ['header'],
+    },
+    {
+      status: 200,
+      headers: {
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    },
+  );
+
+const createOAuthAuthorizationServerMetadataResponse = (): Response =>
+  Response.json(
+    {
+      issuer: OAUTH_AUTHORIZATION_SERVER,
+      authorization_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/authorize`,
+      token_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/token`,
+      introspection_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/introspect`,
+      response_types_supported: ['code'],
+      grant_types_supported: ['authorization_code'],
+      code_challenge_methods_supported: ['S256'],
+      token_endpoint_auth_methods_supported: ['none'],
+      client_id_metadata_document_supported: true,
+      scopes_supported: MCP_OAUTH_SCOPES,
     },
     {
       status: 200,
@@ -607,6 +633,28 @@ export const createWorkspaceCloudflareEdgeRouter = (
           return createOAuthProtectedResourceMetadataResponse({
             hostname: inboundUrl.hostname,
           });
+        }
+        if (isOAuthAuthorizationServerMetadataRequest(inboundUrl.pathname)) {
+          const mcpResolution = await input.registry.resolve({
+            host: inboundUrl.hostname,
+            path: '/mcp',
+            method: 'POST',
+          });
+          if (!mcpResolution.allowed) {
+            return createSafeErrorResponse({
+              status: mcpResolution.status,
+              code: mcpResolution.errorCode,
+              request,
+            });
+          }
+          if (mcpResolution.target.kind !== 'os-connector') {
+            return createSafeErrorResponse({
+              status: 404,
+              code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+              request,
+            });
+          }
+          return createOAuthAuthorizationServerMetadataResponse();
         }
         const resolution = await input.registry.resolve({
           host: inboundUrl.hostname,
