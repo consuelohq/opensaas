@@ -199,11 +199,12 @@ jobs:
 
       - name: Run OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
+        working-directory: packages/os
         run: |
           bun x vitest run \
-            packages/os/tests/tool-manifest.test.ts \
-            packages/os/tests/security-gateway.test.ts \
-            packages/os/tests/workspace-gateway-contract.test.ts
+            tests/tool-manifest.test.ts \
+            tests/security-gateway.test.ts \
+            tests/workspace-gateway-contract.test.ts
 
   dialer:
     name: Consuelo / dialer

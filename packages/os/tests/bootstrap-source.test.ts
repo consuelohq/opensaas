@@ -134,7 +134,7 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('emit_json_summary')).toBeGreaterThan(main.indexOf('open_workspace_launcher'));
   });
 
-  it('pins cloudflared darwin archive checksums to the currently served release assets', () => {
+  it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain(
