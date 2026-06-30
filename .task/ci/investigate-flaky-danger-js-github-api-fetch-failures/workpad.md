@@ -143,4 +143,3 @@ No-test waiver: active for read-only investigation. Any implementation will add 
 - Initial full verify failed because unrelated global test suites failed and workflow-only changes selected zero test suites. Review still reported yourIssues 0 and mustFixTotal 0.
 - Reran verify with supported review argument `--no-tests` after workflow-specific validation. Captured stdout reported review pass, db guard pass, and publish-valid stamp written.
 - Verified stamp file directly: `.task/ci/investigate-flaky-danger-js-github-api-fetch-failures/verify.json` exists with `publishValid: true`, changedFiles [`.github/workflows/ci-utils.yaml`], review passed, db passed.
-

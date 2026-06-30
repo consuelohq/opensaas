@@ -8,6 +8,8 @@ const mockParticipantsList = jest.fn();
 const mockConferencesList = jest.fn();
 const mockCallsCreate = jest.fn();
 const mockCallUpdate = jest.fn();
+const mockRecordingFetch = jest.fn();
+const mockRecordingsList = jest.fn();
 
 const mockClient = {
   conferences: Object.assign(
@@ -31,6 +33,10 @@ const mockClient = {
     (sid: string) => ({ update: mockCallUpdate }),
     { create: mockCallsCreate },
   ),
+  recordings: Object.assign(
+    (sid: string) => ({ fetch: mockRecordingFetch }),
+    { list: mockRecordingsList },
+  ),
 };
 
 jest.mock('twilio', () => ({
@@ -42,7 +48,15 @@ describe('ConferenceService', () => {
   let service: ConferenceService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    mockParticipantUpdate.mockReset().mockResolvedValue({});
+    mockParticipantRemove.mockReset().mockResolvedValue({});
+    mockParticipantsCreate.mockReset();
+    mockParticipantsList.mockReset();
+    mockConferencesList.mockReset();
+    mockCallsCreate.mockReset();
+    mockCallUpdate.mockReset();
+    mockRecordingFetch.mockReset();
+    mockRecordingsList.mockReset();
     service = new ConferenceService({ accountSid: 'AC_test', authToken: 'test_token' });
   });
 
@@ -103,8 +117,11 @@ describe('ConferenceService', () => {
 
     it('should throw 404 when conference not found', async () => {
       mockConferencesList.mockResolvedValue([]);
-      await expect(service.addParticipant('missing', '+15551234567', '+15559876543'))
-        .rejects.toThrow('not found or not in-progress');
+      await expect(
+        service.addParticipant('missing', '+15551234567', '+15559876543', {
+          conferenceLookupTimeoutMs: 1,
+        }),
+      ).rejects.toThrow('not found or not in-progress');
     });
 
     it('should use custom label and endConferenceOnExit', async () => {
@@ -273,8 +290,13 @@ describe('ConferenceService', () => {
   });
 
   describe('getRecording', () => {
-    it('should throw NOT_IMPLEMENTED', async () => {
-      await expect(service.getRecording('RE_123')).rejects.toThrow('NOT_IMPLEMENTED');
+    it('should return a recording URL and numeric duration', async () => {
+      mockRecordingFetch.mockResolvedValue({ duration: '42' });
+
+      await expect(service.getRecording('RE_123')).resolves.toEqual({
+        url: 'https://api.twilio.com/2010-04-01/Accounts/AC_test/Recordings/RE_123.mp3',
+        duration: 42,
+      });
     });
   });
 });

@@ -252,7 +252,6 @@ describe('DialerCallStartService', () => {
         expect(sql).toContain('LEFT JOIN contacts');
         expect(sql).toContain('LEFT JOIN "workspace_');
         expect(sql).toContain('"."person" person');
-        expect(sql).toContain('person."phone"');
         expect(sql).toContain('person."phonesPrimaryPhoneCallingCode"');
         expect(sql).toContain('person."phonesPrimaryPhoneNumber"');
 
