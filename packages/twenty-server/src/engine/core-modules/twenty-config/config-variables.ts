@@ -613,6 +613,7 @@ export class ConfigVariables {
     type: ConfigVariableType.STRING,
   })
   @IsOptional()
+  @IsUrl({ require_tld: false, require_protocol: true })
   POSTHOG_HOST?: string;
 
   @ConfigVariablesMetadata({

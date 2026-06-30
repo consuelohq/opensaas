@@ -1,0 +1,51 @@
+.site-auth-body {
+  margin: var(--site-space-0);
+  min-height: 100vh;
+  background: var(--site-color-surface);
+  color: var(--site-color-text-primary);
+  font-family: var(--site-font-sans);
+}
+
+.site-auth-shell {
+  min-height: 100vh;
+  display: grid;
+  background: var(--site-color-surface);
+  color: var(--site-color-text-primary);
+}
+
+.site-auth-copy-pane {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.site-auth-form {
+  display: grid;
+}
+
+.site-auth-code-box {
+  display: grid;
+  place-items: center;
+  background: var(--site-color-surface);
+  box-shadow: var(--site-shadow-hairline);
+}
+
+.site-auth-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--site-color-action-primary);
+  color: var(--site-color-action-primary-text);
+  line-height: 1;
+  text-decoration: none;
+}
+
+.site-auth-visual {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-auth-visual-mark {
+  position: absolute;
+  white-space: nowrap;
+}

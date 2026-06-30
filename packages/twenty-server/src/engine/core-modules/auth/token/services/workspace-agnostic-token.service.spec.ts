@@ -100,7 +100,7 @@ describe('WorkspaceAgnosticToken', () => {
         },
         expect.objectContaining({
           secret: 'mocked-secret',
-          expiresIn: 15 * 60 * 1000,
+          expiresIn: mockExpiresIn,
         }),
       );
     });

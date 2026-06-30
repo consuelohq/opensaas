@@ -108,7 +108,7 @@ function page(input: { code: string; origin: string; message?: string; error?: s
       ? htmlEscape(input.error ?? 'Return to your terminal and restart device approval.')
       : 'Enter the code shown in your terminal.';
   const detail = state === 'authorized' && input.message ? `<p class="detail">${htmlEscape(input.message)}</p>` : '';
-  const codeBox = state === 'signin' || shown
+  const codeBox = state === 'signin'
     ? `<div class="code-box" aria-live="polite"><strong class="code" data-device-code>${shown || 'Waiting for code'}</strong></div>`
     : '';
   const guardrail = state === 'signin' ? '<p class="guardrail">Only continue if you just initiated a sign-in from your device.</p>' : '';

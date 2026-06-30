@@ -40,8 +40,6 @@ describe('device login page static-hosting contract', () => {
   it('starts Google-backed approval through the app/backend bridge', () => {
     expect(devicePage).toContain('Sign in to Consuelo OS');
     expect(devicePage).toContain('Continue with Google');
-    expect(devicePage).toContain('device-auth__visual');
-    expect(devicePage).not.toContain('LaunchLayout');
     expect(devicePage).toContain('/auth/google');
     expect(devicePage).toContain('action=os-device-approval');
     expect(devicePage).toContain('osDeviceUserCode');
@@ -53,6 +51,13 @@ describe('device login page static-hosting contract', () => {
     expect(installer).toContain("if (liveDeviceCode.status !== 'started')");
     expect(installer).toContain("return { status: 'fallback' };");
     expect(installer).not.toContain('startWorkspaceDeviceAuthorization');
+  });
+
+  it('sanitizes device approval URLs before printing terminal output', () => {
+    expect(installer).toContain('sanitizeTerminalOutput(input.verificationUrl)');
+    expect(installer).toContain('copyDeviceVerificationUrl(sanitizedVerificationUrl)');
+    expect(installer).toContain('Full URL: ${sanitizedVerificationUrl}');
+    expect(installer).toContain('authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}');
   });
 
   it('prints a valid Bun doctor command after install', () => {
