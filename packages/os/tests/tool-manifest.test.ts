@@ -39,6 +39,7 @@ const removedCoreToolNames = [
   'exploit',
   'confidenceScore',
   'confirm',
+  'code.run',
   'context.list',
   'context.categories',
   'audit',
@@ -72,7 +73,6 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'code.run',
   'context',
   'explore',
   'fs.apply_patch',
@@ -252,6 +252,7 @@ describe('tool manifest generator', () => {
 
     expect(generatedNames).toEqual(expectedNames);
     expect(generatedNames).toContain('batch');
+    expect(generatedNames).toContain('code.run');
     expect(registry.full.tools).toHaveLength(expectedNames.length);
     expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
     expect(registry.report.oldDevToolCount).toBe(devEntries.length);
