@@ -66,8 +66,6 @@ Changed README.md and validated the README constraints. Scoped review passed wit
 ## workspace-owned: activity log
 
 - 2026-06-30 03:12:14 fs.write: `.task/docs/fix-root-readme-os-terminology/workpad.md`
-<<<<<<< Updated upstream
-=======
 - 2026-06-30 03:13:42 fs.write: `.task/docs/fix-root-readme-os-terminology/workpad.md`
 
 ## Ready for review
@@ -80,4 +78,3 @@ Validation: static README checks passed for logo path, relative links, fenced co
 Follow-up: the root LICENSE file still contains inherited license text and was not changed in this README terminology pass.
 
 - 2026-06-30 03:13:42 append: `.task/docs/fix-root-readme-os-terminology/workpad.md`
->>>>>>> Stashed changes
