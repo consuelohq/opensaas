@@ -47,8 +47,8 @@ describe('onboarding skill choices', () => {
       CORE_SKILL_GROUP_LABEL,
       OPTIONAL_SKILL_GROUP_LABEL,
     ]);
-    expect(grouped.cursorAt).toBe(CORE_SKILL_GROUP_LABEL);
-    expect(grouped.initialValues).toEqual([]);
+    expect(grouped.cursorAt).toBe(grouped.options[CORE_SKILL_GROUP_LABEL][0].value);
+    expect(grouped.initialValues).toEqual(getCoreSelectedSkillNames());
     expect(grouped.selectableGroups).toBe(true);
     expect(grouped.groupSpacing).toBeGreaterThan(0);
 

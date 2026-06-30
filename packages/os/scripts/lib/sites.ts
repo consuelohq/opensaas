@@ -107,6 +107,7 @@ export type MaterializeSitesOptions = {
   home: string;
   dbPath: string;
   dryRun: boolean;
+  workspaceHost?: string | null;
 };
 
 export type MaterializeSitesResult = {
@@ -644,25 +645,60 @@ function baseStyles(): string {
   `;
 }
 
-function buildMarkdownLink(options: { label: string; href: string; text: string; hotkey?: string }): string {
-  const hotkeyAttribute = options.hotkey ? ` data-hotkey="${escapeHtml(options.hotkey)}"` : '';
-  return `<li><span class="md-label">[${escapeHtml(options.label)}](</span><a href="${escapeHtml(options.href)}"${hotkeyAttribute} target="_blank" rel="noopener noreferrer">${escapeHtml(options.text)}</a><span class="md-label">)</span></li>`;
+const DEFAULT_SITES_PUBLIC_ORIGIN = 'https://sites.consuelohq.com';
+const GTM_URL = 'https://app.consuelohq.com/welcome';
+const DOCUMENTATION_URL = 'https://docs.consuelohq.com/';
+const DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
+
+type MarkdownLinkOptions = {
+  label: string;
+  href: string;
+  text: string;
+  hotkey?: string;
+  routePath?: string;
+};
+
+function normalizeSitesPublicOrigin(workspaceHost?: string | null): string {
+  const trimmed = workspaceHost?.trim().replace(/\/$/, '');
+  if (!trimmed) return DEFAULT_SITES_PUBLIC_ORIGIN;
+  if (/^https?:\/\//.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
 }
 
-function buildSitesIndex(): string {
+function workspaceRouteHref(publicOrigin: string, routePath: string): string {
+  return `${publicOrigin}${routePath}`;
+}
+
+function buildMarkdownLink(options: MarkdownLinkOptions): string {
+  const hotkeyAttribute = options.hotkey ? ` data-hotkey="${escapeHtml(options.hotkey)}"` : '';
+  const routePathAttribute = options.routePath ? ` data-route-path="${escapeHtml(options.routePath)}"` : '';
+  return `<li><span class="md-label">[${escapeHtml(options.label)}](</span><a href="${escapeHtml(options.href)}"${hotkeyAttribute}${routePathAttribute} target="_blank" rel="noopener noreferrer">${escapeHtml(options.text)}</a><span class="md-label">)</span></li>`;
+}
+
+function buildSitesIndex(options: { workspaceHost?: string | null } = {}): string {
+  const publicOrigin = normalizeSitesPublicOrigin(options.workspaceHost);
+  const routeLinks = [
+    { label: 'Office', routePath: '/office', hotkey: '2' },
+    { label: 'Tracing', routePath: '/traces', hotkey: '3' },
+    { label: 'Diffs', routePath: '/diffs', hotkey: '4' },
+  ].map((link) => ({
+    label: link.label,
+    href: workspaceRouteHref(publicOrigin, link.routePath),
+    text: workspaceRouteHref(publicOrigin, link.routePath),
+    routePath: link.routePath,
+    hotkey: link.hotkey,
+  }));
   const siteLinks = [
-    { label: 'GTM', href: 'https://app.consuelohq.com/welcome', text: 'https://sites.consuelohq.com/gtm', hotkey: '1' },
-    { label: 'Office', href: 'office/', text: 'https://sites.consuelohq.com/office', hotkey: '2' },
-    { label: 'Tracing', href: 'traces/', text: 'https://sites.consuelohq.com/tracing', hotkey: '3' },
-    { label: 'Diffs', href: 'diffs/', text: 'https://sites.consuelohq.com/diffs', hotkey: '4' },
-    { label: 'Documentation', href: 'docs/', text: 'https://docs.consuelohq.com/', hotkey: '5' },
+    { label: 'GTM', href: GTM_URL, text: GTM_URL, hotkey: '1' },
+    ...routeLinks,
+    { label: 'Documentation', href: DOCUMENTATION_URL, text: DOCUMENTATION_URL, hotkey: '5' },
   ].map(buildMarkdownLink).join('\n        ');
   const siteHotkeys = {
-    '1': 'https://app.consuelohq.com/welcome',
-    '2': 'office/',
-    '3': 'traces/',
-    '4': 'diffs/',
-    '5': 'docs/',
+    '1': GTM_URL,
+    '2': '/office',
+    '3': '/traces',
+    '4': '/diffs',
+    '5': DOCUMENTATION_URL,
   };
 
   return `<!doctype html>
@@ -683,7 +719,7 @@ function buildSitesIndex(): string {
       <p><span class="label">STATUS:</span> ONLINE</p>
       <p><span class="label">OPEN POSITION:</span></p>
       <ul>
-        ${buildMarkdownLink({ label: 'Systems Engineer', href: '/jobs', text: '/careers/systems-engineer' })}
+        ${buildMarkdownLink({ label: 'Systems Engineer', href: '/careers/systems-engineer', text: '/careers/systems-engineer' })}
       </ul>
     </section>
     <p class="rule">~~~</p>
@@ -697,12 +733,26 @@ function buildSitesIndex(): string {
     <section class="block" aria-label="Writing">
       <p class="label">WRITING:</p>
       <ul>
-        ${buildMarkdownLink({ label: 'On Decision Loops', href: '/writing/on-decision-loops', text: '/writing/on-decision-loops' })}
+        ${buildMarkdownLink({ label: 'On Decision Loops', href: DECISION_INFRASTRUCTURE_URL, text: DECISION_INFRASTRUCTURE_URL })}
       </ul>
     </section>
   </main>
   <script>
+    const fallbackSitesOrigin = ${JSON.stringify(publicOrigin)};
     const siteHotkeys = ${JSON.stringify(siteHotkeys, null, 6)};
+    const resolveWorkspaceHref = (routePath) => {
+      const isWebOrigin = window.location.protocol === "http:" || window.location.protocol === "https:";
+      const origin = isWebOrigin ? window.location.origin : fallbackSitesOrigin;
+      return origin + routePath;
+    };
+
+    for (const anchor of document.querySelectorAll("a[data-route-path]")) {
+      const routePath = anchor.getAttribute("data-route-path");
+      if (!routePath) continue;
+      const href = resolveWorkspaceHref(routePath);
+      anchor.setAttribute("href", href);
+      anchor.textContent = href;
+    }
 
     document.addEventListener("keydown", (event) => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
@@ -712,7 +762,7 @@ function buildSitesIndex(): string {
       const href = siteHotkeys[event.key];
       if (!href) return;
       event.preventDefault();
-      window.location.assign(href);
+      window.location.assign(href.startsWith("/") ? resolveWorkspaceHref(href) : href);
     });
   </script>
 </body>
@@ -804,7 +854,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.officeIndexPath, options.dryRun, 'Office site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex(), { mode: 0o600 });
+    fs.writeFileSync(paths.indexPath, buildSitesIndex({ workspaceHost: options.workspaceHost }), { mode: 0o600 });
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });

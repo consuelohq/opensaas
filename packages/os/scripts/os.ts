@@ -34,6 +34,7 @@ import {
   sitePageLeaseStatus,
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
+import { loadOsConfig } from './lib/install-state';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -231,6 +232,12 @@ function readGeneratedOfficeSiteData(dataPath: string): GeneratedOfficeSiteData 
   return parsed as GeneratedOfficeSiteData;
 }
 
+
+function workspaceHostForSites(home: string): string | null {
+  const config = loadOsConfig(home);
+  return config?.workspace?.host ?? config?.security?.gateway?.workspaceHost ?? null;
+}
+
 function sitesStatusResult(command: string, home: string, dbPath: string): SitesCommandResult {
   const sitesPaths = getSitesPaths(home);
   const generated = readGeneratedOfficeSiteData(sitesPaths.officeDataPath);
@@ -278,6 +285,7 @@ export async function runSitesCommand(
       home: paths.home,
       dbPath: paths.dbPath,
       dryRun: hasFlag(args, '--dry-run'),
+      workspaceHost: workspaceHostForSites(paths.home),
     });
     return {
       ...sitesStatusResult(command, paths.home, paths.dbPath),
@@ -443,7 +451,7 @@ export async function runSitesCommand(
   }
 
   if (command === 'open') {
-    const result = materializeSites({ home: paths.home, dbPath: paths.dbPath, dryRun: false });
+    const result = materializeSites({ home: paths.home, dbPath: paths.dbPath, dryRun: false, workspaceHost: workspaceHostForSites(paths.home) });
     if (options.openUrl !== false) {
       const openProcess = Bun.spawn(['open', result.indexPath], {
         stdout: 'ignore',

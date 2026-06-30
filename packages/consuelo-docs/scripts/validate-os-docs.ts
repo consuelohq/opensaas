@@ -50,7 +50,11 @@ const osGroupsForLanguage = (language: LanguageEntry): Group[] => {
 
   const osRootGroup = findGroup(
     language.tabs.flatMap((tab) => tab.groups),
-    (group) => group.group === 'OS',
+    (group) =>
+      group.group === 'OS' ||
+      flattenPages(group.pages ?? []).some(
+        (slug) => slug === 'os/overview' || slug.endsWith('/os/overview'),
+      ),
   );
   if (osRootGroup) return (osRootGroup.pages ?? []).filter(isGroup);
 
@@ -76,6 +80,7 @@ if (!english) {
 }
 
 const osGroups = osGroupsForLanguage(english);
+const allEnglishGroups = english.tabs.flatMap((tab) => tab.groups);
 
 const placeholderHits: string[] = [];
 const scanForPlaceholders = (dir: string): void => {
@@ -103,12 +108,14 @@ if (placeholderHits.length) {
 ${placeholderHits.join('\n')}`);
 }
 
-const skillsGroup = findGroup(osGroups, (group) => flattenPages(group.pages ?? []).some((slug) => slug.startsWith('os/skills/') || slug.includes('/os/skills/')));
+const skillsGroup = findGroup(allEnglishGroups, (group) =>
+  (group.pages ?? []).some((page) => typeof page === 'string' && page.startsWith('os/skills/')),
+);
 if (!skillsGroup) {
   throw new Error('OS navigation is missing the Skills group.');
 }
 
-if (osGroups.some((group) => group.group === 'Runbooks')) {
+if (findGroup(allEnglishGroups, (group) => group.group === 'Runbooks')) {
   throw new Error('OS navigation still contains a Runbooks group.');
 }
 
@@ -125,8 +132,10 @@ if (titles.join('\n') !== sortedTitles.join('\n')) {
 }
 
 const osMissing = docsConfig.navigation.languages.flatMap((language) =>
-  osGroupsForLanguage(language)
+  language.tabs
+    .flatMap((tab) => tab.groups)
     .flatMap((group) => flattenPages(group.pages ?? []))
+    .filter((slug) => slug.startsWith('os/') || slug.includes('/os/'))
     .filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)))
     .map((slug) => `${language.language}: ${slug}`),
 );
@@ -137,7 +146,9 @@ if (osMissing.length) {
 
 
 const agentTddSlug = 'os/agent-context/test-driven-agent-work';
-const agentContextGroup = findGroup(osGroups, (group) => flattenPages(group.pages ?? []).includes(agentTddSlug));
+const agentContextGroup = findGroup(allEnglishGroups, (group) =>
+  (group.pages ?? []).some((page) => page === agentTddSlug),
+);
 if (!agentContextGroup) {
   throw new Error('OS navigation is missing the Agent Context group.');
 }

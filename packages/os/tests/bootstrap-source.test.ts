@@ -48,8 +48,12 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('choose_os_mode');
     expect(bootstrap).toContain('Choose Consuelo OS mode:');
-    expect(bootstrap).toContain('1) local');
-    expect(bootstrap).toContain('2) cloud');
+    expect(bootstrap).toContain('render_os_mode_select');
+    expect(bootstrap).toContain('> local');
+    expect(bootstrap).toContain('> cloud');
+    expect(bootstrap).not.toContain('Enter 1 or 2:');
+    expect(bootstrap).not.toContain('1) local');
+    expect(bootstrap).not.toContain('2) cloud');
     expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
     expect(bootstrap).toContain('open_contact_url');
 
@@ -83,15 +87,17 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('Consuelo OS needs its dependencies to continue.');
     expect(bootstrap).toContain('render_dependency_progress');
-    expect(bootstrap).toContain('CONSUELO  OS');
+    expect(bootstrap).toContain('CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health');
     expect(bootstrap).not.toContain('C O N S U E L O  O S');
     expect(bootstrap).not.toContain('C O N S U E L O   O S');
     expect(bootstrap).toContain('● dependencies');
     expect(bootstrap).not.toContain('○ home');
     expect(bootstrap).toContain('○ workspace');
+    expect(bootstrap).toContain('○ security');
     expect(bootstrap).toContain('○ skills');
-    expect(bootstrap).toContain('○ artifacts');
+    expect(bootstrap).not.toContain('○ artifacts');
     expect(bootstrap).toContain('○ agents');
+    expect(bootstrap).toContain('○ service');
     expect(bootstrap).toContain('○ health');
     expect(bootstrap).not.toContain('Consuelo OS needs the local runtime source to continue.');
     expect(bootstrap).not.toContain('Consuelo OS needs its local runtime dependencies to continue.');
@@ -134,7 +140,7 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('emit_json_summary')).toBeGreaterThan(main.indexOf('open_workspace_launcher'));
   });
 
-  it('pins cloudflared darwin archive checksums to the currently served release assets', () => {
+  it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain(

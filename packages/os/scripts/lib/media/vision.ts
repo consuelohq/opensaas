@@ -507,4 +507,3 @@ export function angleMeasureForCli(input: Record<string, unknown>) {
 export function sportsScienceMetricsForCli(input: Record<string, unknown>) {
   return Effect.map(sportsScienceMetricsEffect(input), (data) => ({ schema: sportsScienceMetricsOutputSchema, ok: true, data }));
 }
-

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5c0b6f77fff5",
+  "tmuxSession": "opensaas-ci-audit-and-align-github-actions-for-consuelo-ci-5c0b6f77",
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/audit-and-align-github-actions-for-consuelo-ci",
+  "branch": "task/ci/audit-and-align-github-actions-for-consuelo-ci",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-audit-and-align-github-actions-for-consuelo-ci",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-audit-and-align-github-actions-for-consuelo-ci",
+  "prNumber": 1233,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1233",
+  "createdAt": "2026-06-27T23:13:17.566Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-audit-and-align-github-actions-for-consuelo-ci/.task/ci/audit-and-align-github-actions-for-consuelo-ci/session.json"
+}

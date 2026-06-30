@@ -5,6 +5,13 @@
       "label": "User Guide",
       "groups": [
         {
+          "key": "userStoriesUseCases",
+          "label": "User Stories & Use Cases",
+          "pages": [
+            "user-guide/user-stories-use-cases"
+          ]
+        },
+        {
           "key": "gettingStarted",
           "label": "Getting Started",
           "pages": [
@@ -31,98 +38,232 @@
           ]
         },
         {
-          "key": "documentation",
-          "label": "Documentation",
+          "key": "usingConsueloOs",
+          "label": "Using Consuelo OS",
           "pages": [
             {
-              "key": "osDocumentation",
-              "label": "OS",
+              "key": "osOverview",
+              "label": "Overview",
               "pages": [
+                "os/overview",
+                "os/how-it-works",
+                "os/glossary"
+              ]
+            },
+            {
+              "key": "osConcepts",
+              "label": "Concepts",
+              "pages": [
+                "os/concepts/portal",
+                "os/concepts/skills",
+                "os/concepts/scripts",
+                "os/concepts/files-and-artifacts",
+                "os/concepts/approvals",
+                "os/concepts/data-model-and-graphql",
+                "os/concepts/context-and-memory",
+                "os/concepts/integrations-and-capabilities",
+                "os/concepts/observability",
+                "os/concepts/local-and-cloud"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "features",
+          "label": "Features",
+          "pages": [
+            "user-guide/features/overview"
+          ]
+        },
+        {
+          "key": "userGuideTools",
+          "label": "Tools",
+          "pages": [
+            "tools/sites/overview",
+            "tools/office",
+            "tools/media/getting-started",
+            "os/tools/browser-tools",
+            "os/tools/overview"
+          ]
+        },
+        {
+          "key": "integrations",
+          "label": "Integrations",
+          "pages": [
+            "user-guide/integrations/overview"
+          ]
+        },
+        {
+          "key": "guidesTutorials",
+          "label": "Guides & Tutorials",
+          "pages": [
+            "user-guide/guides-tutorials/overview"
+          ]
+        },
+        {
+          "key": "developerGuide",
+          "label": "Developer Guide",
+          "pages": [
+            "developers/introduction",
+            {
+              "key": "developerAgent",
+              "label": "Agent Development",
+              "pages": [
+                "developers/agent/overview",
+                "developers/agent/tool-system",
+                "developers/agent/crm-tools",
+                "developers/agent/integrations"
+              ]
+            },
+            {
+              "key": "developerApi",
+              "label": "API",
+              "pages": [
+                "developers/api/overview",
+                "developers/api/auth",
+                "developers/api/graphql",
+                "developers/api/contacts",
+                "developers/api/voice"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "reference",
+          "label": "Reference",
+          "pages": [
+            {
+              "key": "osTools",
+              "label": "Tools",
+              "pages": [
+                "os/tools/overview",
+                "os/tools/tool-search",
+                "os/tools/filesystem-tools",
+                "os/tools/task-and-stream-tools",
+                "os/tools/github-and-review-tools",
+                "os/tools/exploration-tools",
+                "os/tools/browser-tools"
+              ]
+            },
+            {
+              "key": "osAgentContext",
+              "label": "Agent Context",
+              "pages": [
+                "os/agent-context/steering",
+                "os/agent-context/decision",
+                "os/agent-context/tools",
+                "os/agent-context/scripts",
+                "os/agent-context/test-driven-agent-work"
+              ]
+            },
+            {
+              "key": "osSkills",
+              "label": "Skills",
+              "pages": [
+                "os/skills/browser",
+                "os/skills/consuelo-workspace-snapshot",
+                "os/skills/daily-revenue-brief",
+                "os/skills/debugger",
+                "os/skills/handoff",
+                "os/skills/office",
+                "os/skills/office-landing-page",
+                "os/skills/research-ingest",
+                "os/skills/senior-engineer",
+                "os/skills/sites",
+                "os/skills/skill-creator",
+                "os/skills/task",
+                "os/skills/teach",
                 {
-                  "key": "osOverview",
-                  "label": "Overview",
+                  "key": "osPlannedSkills",
+                  "label": "Planned Skills",
                   "pages": [
-                    "os/overview",
-                    "os/how-it-works",
-                    "os/glossary"
-                  ]
-                },
-                {
-                  "key": "osConcepts",
-                  "label": "Concepts",
-                  "pages": [
-                    "os/concepts/portal",
-                    "os/concepts/skills",
-                    "os/concepts/scripts",
-                    "os/concepts/files-and-artifacts",
-                    "os/concepts/approvals",
-                    "os/concepts/data-model-and-graphql",
-                    "os/concepts/context-and-memory",
-                    "os/concepts/integrations-and-capabilities",
-                    "os/concepts/observability",
-                    "os/concepts/local-and-cloud"
-                  ]
-                },
-                {
-                  "key": "osAgentContext",
-                  "label": "Agent Context",
-                  "pages": [
-                    "os/agent-context/steering",
-                    "os/agent-context/decision",
-                    "os/agent-context/tools",
-                    "os/agent-context/scripts",
-                    "os/agent-context/test-driven-agent-work"
-                  ]
-                },
-                {
-                  "key": "osTools",
-                  "label": "Tools",
-                  "pages": [
-                    "os/tools/overview",
-                    "os/tools/tool-search",
-                    "os/tools/filesystem-tools",
-                    "os/tools/task-and-stream-tools",
-                    "os/tools/github-and-review-tools",
-                    "os/tools/exploration-tools",
-                    "os/tools/browser-tools"
-                  ]
-                },
-                {
-                  "key": "osSkills",
-                  "label": "Skills",
-                  "pages": [
-                    "os/skills/browser",
-                    "os/skills/consuelo-workspace-snapshot",
-                    "os/skills/daily-revenue-brief",
-                    "os/skills/debugger",
-                    "os/skills/handoff",
-                    "os/skills/office",
-                    "os/skills/office-landing-page",
-                    "os/skills/research-ingest",
-                    "os/skills/senior-engineer",
-                    "os/skills/sites",
-                    "os/skills/skill-creator",
-                    "os/skills/task",
-                    "os/skills/teach",
-                    {
-                      "key": "osPlannedSkills",
-                      "label": "Planned Skills",
-                      "pages": [
-                        "os/skills/planned/campaign-brief",
-                        "os/skills/planned/follow-up-generator",
-                        "os/skills/planned/google-ads-review",
-                        "os/skills/planned/landing-page-builder",
-                        "os/skills/planned/lead-prioritizer",
-                        "os/skills/planned/meta-ads-review",
-                        "os/skills/planned/post-call-analysis",
-                        "os/skills/planned/sales-coaching",
-                        "os/skills/planned/weekly-manager-report"
-                      ]
-                    }
+                    "os/skills/planned/campaign-brief",
+                    "os/skills/planned/follow-up-generator",
+                    "os/skills/planned/google-ads-review",
+                    "os/skills/planned/landing-page-builder",
+                    "os/skills/planned/lead-prioritizer",
+                    "os/skills/planned/meta-ads-review",
+                    "os/skills/planned/post-call-analysis",
+                    "os/skills/planned/sales-coaching",
+                    "os/skills/planned/weekly-manager-report"
                   ]
                 }
               ]
             },
+            {
+              "key": "twentyUi",
+              "label": "Consuelo UI",
+              "pages": [
+                "consuelo-ui/introduction",
+                {
+                  "key": "display",
+                  "label": "Display",
+                  "pages": [
+                    "consuelo-ui/display/checkmark",
+                    "consuelo-ui/display/chip",
+                    "consuelo-ui/display/icons",
+                    "consuelo-ui/display/soon-pill",
+                    "consuelo-ui/display/tag",
+                    "consuelo-ui/display/app-tooltip"
+                  ]
+                },
+                {
+                  "key": "feedback",
+                  "label": "Feedback",
+                  "pages": [
+                    "consuelo-ui/progress-bar"
+                  ]
+                },
+                {
+                  "key": "input",
+                  "label": "Input",
+                  "pages": [
+                    "consuelo-ui/input/buttons",
+                    "consuelo-ui/input/color-scheme",
+                    "consuelo-ui/input/text",
+                    "consuelo-ui/input/checkbox",
+                    "consuelo-ui/input/icon-picker",
+                    "consuelo-ui/input/image-input",
+                    "consuelo-ui/input/radio",
+                    "consuelo-ui/input/select",
+                    "consuelo-ui/input/toggle",
+                    "consuelo-ui/input/block-editor"
+                  ]
+                },
+                {
+                  "key": "navigation",
+                  "label": "Navigation",
+                  "pages": [
+                    "consuelo-ui/navigation",
+                    "consuelo-ui/navigation/breadcrumb",
+                    "consuelo-ui/navigation/links",
+                    "consuelo-ui/navigation/menu-item",
+                    "consuelo-ui/navigation/navigation-bar",
+                    "consuelo-ui/navigation/step-bar"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "tools",
+      "label": "Tools",
+      "groups": [
+        {
+          "key": "toolsOverview",
+          "label": "Overview",
+          "pages": [
+            "tools/overview"
+          ]
+        },
+        {
+          "key": "sitesTools",
+          "label": "Sites",
+          "pages": [
+            "tools/sites/overview",
             {
               "key": "dataModel",
               "label": "Data Model",
@@ -464,74 +605,14 @@
                   ]
                 }
               ]
-            },
-            {
-              "key": "twentyUi",
-              "label": "Consuelo UI",
-              "pages": [
-                "consuelo-ui/introduction",
-                {
-                  "key": "display",
-                  "label": "Display",
-                  "pages": [
-                    "consuelo-ui/display/checkmark",
-                    "consuelo-ui/display/chip",
-                    "consuelo-ui/display/icons",
-                    "consuelo-ui/display/soon-pill",
-                    "consuelo-ui/display/tag",
-                    "consuelo-ui/display/app-tooltip"
-                  ]
-                },
-                {
-                  "key": "feedback",
-                  "label": "Feedback",
-                  "pages": [
-                    "consuelo-ui/progress-bar"
-                  ]
-                },
-                {
-                  "key": "input",
-                  "label": "Input",
-                  "pages": [
-                    "consuelo-ui/input/buttons",
-                    "consuelo-ui/input/color-scheme",
-                    "consuelo-ui/input/text",
-                    "consuelo-ui/input/checkbox",
-                    "consuelo-ui/input/icon-picker",
-                    "consuelo-ui/input/image-input",
-                    "consuelo-ui/input/radio",
-                    "consuelo-ui/input/select",
-                    "consuelo-ui/input/toggle",
-                    "consuelo-ui/input/block-editor"
-                  ]
-                },
-                {
-                  "key": "navigation",
-                  "label": "Navigation",
-                  "pages": [
-                    "consuelo-ui/navigation",
-                    "consuelo-ui/navigation/breadcrumb",
-                    "consuelo-ui/navigation/links",
-                    "consuelo-ui/navigation/menu-item",
-                    "consuelo-ui/navigation/navigation-bar",
-                    "consuelo-ui/navigation/step-bar"
-                  ]
-                }
-              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "tools",
-      "label": "Tools",
-      "groups": [
+        },
         {
-          "key": "toolsOverview",
-          "label": "Overview",
+          "key": "officeTools",
+          "label": "Office",
           "pages": [
-            "tools/overview"
+            "tools/office"
           ]
         },
         {
@@ -569,13 +650,6 @@
                 "tools/media/reference/media-pose-estimate"
               ]
             }
-          ]
-        },
-        {
-          "key": "officeTools",
-          "label": "Office",
-          "pages": [
-            "tools/office"
           ]
         },
         {

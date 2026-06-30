@@ -124,7 +124,7 @@ describe('LoginTokenService', () => {
           authProvider: AuthProviderEnum.Impersonation,
           impersonatorUserWorkspaceId,
         },
-        { secret: mockSecret, expiresIn: expect.any(String) },
+        { secret: mockSecret, expiresIn: '1h' },
       );
     });
   });

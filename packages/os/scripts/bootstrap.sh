@@ -288,6 +288,19 @@ open_contact_url() {
   open_url "$CONTACT_URL"
 }
 
+render_os_mode_select() {
+  local selected="$1"
+
+  printf '\033[2KChoose Consuelo OS mode:\n' > /dev/tty
+  if [ "$selected" -eq 0 ]; then
+    printf '\033[2K> local\n' > /dev/tty
+    printf '\033[2K  cloud\n' > /dev/tty
+  else
+    printf '\033[2K  local\n' > /dev/tty
+    printf '\033[2K> cloud\n' > /dev/tty
+  fi
+}
+
 choose_os_mode() {
   if [ -n "$OS_MODE" ]; then
     return 0
@@ -307,17 +320,49 @@ or:
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
   fi
 
-  while true; do
-    printf '%s\n' "Choose Consuelo OS mode:" > /dev/tty
-    printf '%s\n' "1) local" > /dev/tty
-    printf '%s\n' "2) cloud" > /dev/tty
-    printf '%s' "Enter 1 or 2: " > /dev/tty
-    IFS= read -r mode_choice < /dev/tty
+  local selected=0
+  local key=""
+  local sequence=""
+  local rendered=0
+  local old_tty
+  old_tty="$(stty -g < /dev/tty)"
 
-    case "$mode_choice" in
-      ""|1|local) OS_MODE="local"; return 0 ;;
-      2|cloud) OS_MODE="cloud"; return 0 ;;
-      *) printf '%s\n' "Enter 1 for local or 2 for cloud." > /dev/tty ;;
+  stty -echo -icanon min 1 time 0 < /dev/tty
+  printf '\033[?25l' > /dev/tty
+  trap 'stty "$old_tty" < /dev/tty; printf "\033[?25h" > /dev/tty; exit 130' INT TERM
+
+  while true; do
+    if [ "$rendered" -eq 1 ]; then
+      printf '\033[3A' > /dev/tty
+    fi
+    render_os_mode_select "$selected"
+    rendered=1
+
+    IFS= read -r -s -n 1 key < /dev/tty || key=""
+    case "$key" in
+      $'\033')
+        IFS= read -r -s -n 2 -t 1 sequence < /dev/tty || sequence=""
+        case "$sequence" in
+          "[A"|"[B")
+            if [ "$selected" -eq 0 ]; then
+              selected=1
+            else
+              selected=0
+            fi
+            ;;
+        esac
+        ;;
+      ""|$'\n'|$'\r')
+        if [ "$selected" -eq 0 ]; then
+          OS_MODE="local"
+        else
+          OS_MODE="cloud"
+        fi
+        stty "$old_tty" < /dev/tty
+        printf '\033[?25h\n' > /dev/tty
+        trap - INT TERM
+        return 0
+        ;;
     esac
   done
 }
@@ -339,14 +384,7 @@ handle_cloud_mode() {
 render_dependency_progress() {
   [ "$JSON" -eq 0 ] || return 0
 
-  log "CONSUELO  OS"
-  log "│"
-  log "● dependencies"
-  log "○ workspace"
-  log "○ skills"
-  log "○ artifacts"
-  log "○ agents"
-  log "○ health"
+  log "CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health"
   log ""
 }
 
