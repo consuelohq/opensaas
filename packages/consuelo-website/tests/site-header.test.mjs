@@ -105,6 +105,7 @@ const getHeaderText = async (page) =>
 const disallowedHeaderText = [
   'NOUS',
   'Hermes Agent',
+  'HERMES AGENT',
   'Mercury',
   'Enterprise',
   'Login',
@@ -127,11 +128,11 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
     const headerText = await getHeaderText(desktopPage);
 
     for (const expectedText of [
-      'Consuelo',
-      'Consuelo OS',
-      'Portal',
-      'Docs',
-      'Install',
+      'CONSUELO',
+      'CONSUELO OS',
+      'PORTAL',
+      'DOCS',
+      'INSTALL',
     ]) {
       assert.equal(
         headerText.includes(expectedText),
@@ -150,7 +151,7 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
 
     assert.equal(
       await desktopPage.locator('[data-header-brand]').innerText(),
-      'Consuelo',
+      'CONSUELO',
     );
 
     const getDesktopSlots = async (page) =>
@@ -176,7 +177,7 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
     const desktopSlots = await getDesktopSlots(desktopPage);
     assert.deepEqual(
       desktopSlots.map((slot) => slot.text),
-      ['Consuelo', 'Docs', 'Consuelo OS', 'Portal', 'Install →'],
+      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PORTAL', 'INSTALL →'],
     );
     assert.equal(
       desktopSlots.every((slot) => slot.visible),
@@ -195,7 +196,7 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
     const tabletSlots = await getDesktopSlots(tabletPage);
     assert.deepEqual(
       tabletSlots.map((slot) => slot.text),
-      ['Consuelo', 'Docs', 'Consuelo OS', 'Portal', 'Install →'],
+      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PORTAL', 'INSTALL →'],
     );
     assert.equal(
       tabletSlots.every((slot) => slot.visible),
@@ -226,8 +227,14 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
     const heroHeading = (await desktopPage.locator('h1').first().innerText())
       .replace(/\s+/g, ' ')
       .trim();
-    assert.doesNotMatch(heroHeading, /superpowers\.$/);
-    assert.doesNotMatch(heroHeading, /superpowers\./);
+    assert.equal(heroHeading, 'GIVE EVERY AGENT WORKSPACE SUPERPOWERS');
+    assert.doesNotMatch(heroHeading, /SUPERPOWERS\.$/);
+
+    const heroEyebrow = await desktopPage
+      .locator('.home-hero__eyebrow')
+      .innerText();
+    assert.match(heroEyebrow, /OPEN SOURCE/);
+    assert.doesNotMatch(heroEyebrow, /BATTERIES INCLUDED/);
 
     const mobilePage = await browser.newPage({
       viewport: { width: 390, height: 844 },
@@ -257,7 +264,7 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
 
     assert.deepEqual(
       mobileSlots.map((slot) => slot.text),
-      ['Portal', 'Consuelo OS', 'Docs'],
+      ['PORTAL', 'CONSUELO OS', 'DOCS'],
     );
     assert.equal(
       mobileSlots.every((slot) => slot.visible),
