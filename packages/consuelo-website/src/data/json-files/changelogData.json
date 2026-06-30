@@ -1,5 +1,208 @@
 [
   {
+    "title": "v0.5.0",
+    "date": "Apr 30, 2026",
+    "summary": "April turned the dialer into a more reliable queue-driven calling system while expanding workspace-agent tooling, docs, CSV and list imports, file surfaces, and website polish.",
+    "weeks": [
+      {
+        "label": "Week of Mar 27 through Apr 3",
+        "summary": "The first April backlog closed the dialer redesign and Consuelo Docs relaunch, with predictive dialing, phone-number caching, and website/blog fixes landing together.",
+        "sections": [
+          {
+            "title": "Dialer",
+            "items": [
+              "Redesigned the dialer home page as a single guided setup form with source-mode toggles, line-count controls, and cleaner start actions.",
+              "Defaulted queue starts to predictive dialing and added Redis-backed phone-number caching with instant local paint after mutations.",
+              "Stabilized the setup flow by fixing Lingui runtime crashes, Twilio status imports, missing icons, empty-state flashes, and story/type regressions.",
+              "Moved CSV upload into the page header, persisted microphone permission state, and cleaned up the Ask AI and support-modal release paths."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Renamed and rebranded the docs as Consuelo Docs with updated sparkle logos, favicon assets, SEO metadata, and a clearer introduction.",
+              "Rebuilt the docs sidebar into collapsible Railway-style groups and restored HighLevel, CLI, Chrome Extension, Dialer, Data Model, and GraphQL placement.",
+              "Published a complete Dialer documentation rewrite with 18 capability and how-to pages."
+            ]
+          },
+          {
+            "title": "Website",
+            "items": [
+              "Fixed social links, RSS feed location, the All Posts button, launch overview CTA arrow alignment, and header/back-button type errors.",
+              "Cleaned up the help dropdown, moved the old tags route out of the blog flow, and preserved the public blog navigation behavior."
+            ]
+          },
+          {
+            "title": "Auth and Navigation",
+            "items": [
+              "Improved CLI authentication with Google SSO support.",
+              "Registered the Home route, fixed mobile navigation during upgrade flows, and polished the sidebar support hub interactions."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Apr 3 through Apr 10",
+        "summary": "Queues, CSV list import, and authenticated API surfaces became usable end to end while the public website received analytics, SEO, and favicon polish.",
+        "sections": [
+          {
+            "title": "Dialer and Queues",
+            "items": [
+              "Added queue infrastructure for eligibility checks, cadence suppression, retry policy, and parallel dialing strategy support.",
+              "Wired list queues into the voice flow and normalized queue payloads, retry metadata, export identifiers, and workspace checks.",
+              "Expanded dialer unit coverage and fixed queue creation defaults, call initiation, Twilio signature typing, and disposition updates."
+            ]
+          },
+          {
+            "title": "API and Security",
+            "items": [
+              "Scaffolded NestJS controllers for calls, queues, and parallel dialing under the v1 API.",
+              "Added workspace-scoped API guards and hardened encryption, database constraints, transaction handling, and Twilio request validation.",
+              "Fixed API type errors across queue creation, phone initiation, token module wiring, and TwiML response handling."
+            ]
+          },
+          {
+            "title": "Lists and CSV Import",
+            "items": [
+              "Added CSV import for list members from the home page, including list creation, contact-count updates, and listMember relation support.",
+              "Fixed import hook closures, spreadsheet context wiring, localized default names, and i18n loading for translated CSV flows."
+            ]
+          },
+          {
+            "title": "Navigation and Docs",
+            "items": [
+              "Tracked the last visited page path for Home support and defaulted navigation safely when no previous page exists.",
+              "Fixed plan-pill visibility, help dropdown styling/imports, docs translations, and sidebar label capitalization."
+            ]
+          },
+          {
+            "title": "Website",
+            "items": [
+              "Added PostHog analytics, email tracking, and a glass-style cookie banner.",
+              "Overhauled SEO with apex canonicals, shared metadata, robots and llms text, schema markup, tighter favicons, and the Geist Mono font."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Apr 10 through Apr 17",
+        "summary": "Dialer intelligence deepened with local presence, Bayesian retry strategy, and Pi-native analysis while Files, CSV matching, keyboard shortcuts, and sync commands landed.",
+        "sections": [
+          {
+            "title": "Dialer",
+            "items": [
+              "Added notification sounds and custom ringback behavior while suppressing duplicate Twilio audio.",
+              "Added Bayesian posterior strategy types, Thompson sampling, hazard-based retry timing, optimal stopping thresholds, and telemetry-backed posterior updates.",
+              "Added learned cadence policy, double-dial retry, Whittle-index queue prioritization, and a People tab with Called and Up Next sections.",
+              "Fixed call-result duplication, route prefixes, workspace strategy wiring, local presence, missing workspace configs, queue N+1 queries, and build type regressions."
+            ]
+          },
+          {
+            "title": "CSV Mapping",
+            "items": [
+              "Added AI-powered CSV column matching through the Pi agent skill executor with an AI-first path and Fuse fallback.",
+              "Registered authenticated CSV mapping API routes, fixed multi-tenant CORS and request shapes, accepted both columns and headers, and detected the real header row from raw CSV data.",
+              "Guarded CSV import default names and defaulted imported lists to sequential names."
+            ]
+          },
+          {
+            "title": "Files and Knowledge Base",
+            "items": [
+              "Added a Files keyboard shortcut, file preview widget, attachment record-page layout, and server-signed file URLs.",
+              "Fixed knowledge-base guard imports and file-storage dependency injection crashes, then documented the File System surface."
+            ]
+          },
+          {
+            "title": "Workspace",
+            "items": [
+              "Added a workspace:sync-standard command with detailed sync and migration logging.",
+              "Replaced the internal-brain package with openworkspace and removed stale docs, artifacts, and the old website package."
+            ]
+          },
+          {
+            "title": "Navigation",
+            "items": [
+              "Added Home and Files keyboard shortcuts and cleaned up sidebar naming, ordering, and record-relation filters."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Apr 17 through Apr 24",
+        "summary": "Production calling stabilized around queue failure handling and Redis isolation while workspace tasks became a publishable flow with deploy, browser, logs, and review automation.",
+        "sections": [
+          {
+            "title": "Dialer",
+            "items": [
+              "Made post-call analysis Pi-native and wired live coaching hooks with analysis persistence.",
+              "Recovered stale voice preflight locks, aligned hosted Twilio caller-id fallback behavior, and instrumented preflight failures.",
+              "Stopped queue auto-dial retry loops, gated dialing on Twilio device readiness, persisted local preflight failures, and surfaced browser call failures before ringing.",
+              "Preserved predictive queue parallel handoff, normalized predictive queue numbers, restored raw-number fallbacks, and unblocked queue-runner handoff."
+            ]
+          },
+          {
+            "title": "Redis and API Reliability",
+            "items": [
+              "Centralized Redis client lifecycle, isolated queue connections, kept pubsub clients alive, and deduped repeated Redis Sentry captures.",
+              "Fixed hosted Twilio settings nullability, lane typing, and queue-selection behavior when dialer config columns are missing."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Added task and stream workflow scripts for push, PR, review, merge, root aliases, safer task starts, and automatic workpad creation.",
+              "Migrated task metadata into .task, saved workpads during task push, and added Supabase-backed stream context and context lookup previews.",
+              "Added browser automation, Railway logs with boot-noise filtering, deployment watch helpers, and a Cloudflare Pages website deploy script.",
+              "Rewrote workflow documentation around publish flow, TMP handling, task lifecycle, link formatting, memory use, and coding standards."
+            ]
+          },
+          {
+            "title": "Website",
+            "items": [
+              "Removed the legacy website v1 package and unused feed image assets."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Apr 24 through May 1",
+        "summary": "The month closed with the workspace facade and decision engine becoming the main agent substrate, plus fixes for parallel-dialer failure modes and CSV import naming.",
+        "sections": [
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Added a typed workspace facade with standard envelopes, top-level HTTP and Linear tools, browser aliases, filesystem helpers, task commands, doctor/status commands, and PR/review helpers.",
+              "Added an evidence decision system with belief and confidence ranking, token estimates, LangSmith trace grouping, OpenRouter Qwen embeddings with local fallback, and AI code review confidence.",
+              "Hardened publish workflow behavior with task pin persistence, current.json writes, metadata conflict resolution, stream sync push selection, root publish commands, and a verify safety gate.",
+              "Improved Railway and deployment tooling with active deployment targeting, network and HTTP logs, commit metadata, deploy watch behavior, and portable agent scripts."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Fixed parallel caller-id self-locks, conflict loops, result typing, provider/autostart errors, active queue start loops, queue state drift, phone validation, and create-failure surfacing.",
+              "Added the CSV import naming modal and resolved review findings around import naming behavior.",
+              "Preserved double-dial fallback attempts and released parallel caller-id locks when the winning call completes."
+            ]
+          },
+          {
+            "title": "Docs and Steering",
+            "items": [
+              "Expanded agent steering for mandatory bootstrap, Codex and MCP setup, sub-agent usage, shell-command construction, link formatting, exploration, and documentation habits.",
+              "Added token-file gitignore coverage and stripped internal runtime noise from facade envelopes, logs, and docs."
+            ]
+          },
+          {
+            "title": "Infrastructure",
+            "items": [
+              "Kept local index dependencies out of Railway, downgraded tree-sitter for Node 24 compatibility, and tightened tailnet-only auth behavior for local agents."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "v0.4.2",
     "date": "Mar 25, 2026",
     "text": "<h4>Web</h4><ul><li>chore(i18n): extract and compile lingui catalogs for new strings</li></ul><h4>Dialer</h4><ul><li>restructure settings — remove dialer sidebar, merge config into profile, phone numbers under accounts with header tabs, notifications to other</li></ul><h4>Auth</h4><ul><li>add create account link and fix branding</li></ul><h4>Settings</h4><ul><li>chore(front): regenerate lingui catalogs for settings restructure</li></ul><h4>Agent</h4><ul><li>sidebar alignment, conversations panel, lingui extraction</li><li>align computer nav item, wire agent page to piagent</li><li>reconnect piagent, fix sidebar indentation, fix chat scroll</li></ul><h4>Website</h4><ul><li>match blog theme to main site — monospace font, pure black bg</li><li>restyle blog OG images to match dark minimal theme</li><li>wire remark-toc/collapse plugins, fix back button to /blog</li><li>nav active state uses exact path match</li><li>isolate blog css from old site styles, remove old tag route</li><li>import tailwind in blog Layout, remove old tag route</li><li>restore Layout.astro, add prerender to blog pages, switch to static output</li><li>integrate astropaper for blog layout</li><li>add branded changelog OG image</li><li>redesign changelog to match opencode style</li><li>add dark mode preview image to landing page hero</li></ul>"
