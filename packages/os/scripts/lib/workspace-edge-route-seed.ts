@@ -31,6 +31,15 @@ const DEFAULT_SITE_ID = 'launcher';
 const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
 const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
+const SITE_SNAPSHOT_ROUTES = [
+  { pathPrefix: '/', siteId: 'launcher' },
+  { pathPrefix: '/office', siteId: 'office' },
+  { pathPrefix: '/traces', siteId: 'traces' },
+  { pathPrefix: '/tracing', siteId: 'traces' },
+  { pathPrefix: '/diffs', siteId: 'diffs' },
+  { pathPrefix: '/docs', siteId: 'docs' },
+] as const;
+type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
 const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase();
 
@@ -59,8 +68,25 @@ const sqlText = (value: string): string => `'${escapeSqlText(value)}'`;
 const sqlNullableText = (value: string | null): string =>
   value === null ? 'NULL' : sqlText(value);
 
-const buildSiteSnapshotRoute = (input: {
-  pathPrefix: '/' | '/traces';
+const siteVersionFromSnapshotKey = (siteSnapshotKey: string | undefined): string | undefined => {
+  const match = trimmedValue(siteSnapshotKey)?.match(/^sites\/[^/]+\/[^/]+\/([^/]+)\/index\.html$/);
+  return match?.[1];
+};
+
+const siteManifestKey = (input: {
+  workspaceId: string;
+  siteId: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
+}): string => {
+  const versionId = trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID;
+  const snapshotKey = trimmedValue(input.siteSnapshotKey);
+  const snapshotMatch = snapshotKey?.match(/^(sites\/[^/]+)\/[^/]+\/[^/]+\/index\.html$/);
+  if (snapshotMatch) return `${snapshotMatch[1]}/${input.siteId}/${versionId}/index.html`;
+  return `sites/${input.workspaceId}/${input.siteId}/${versionId}/index.html`;
+};
+
+const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   workspaceId: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
@@ -71,12 +97,14 @@ const buildSiteSnapshotRoute = (input: {
   status: 'active',
   target: {
     kind: 'site-snapshot',
-    siteId: DEFAULT_SITE_ID,
-    versionId: trimmedOrDefault(input.siteVersionId, DEFAULT_SITE_VERSION_ID),
-    manifestKey: trimmedOrDefault(
-      input.siteSnapshotKey,
-      DEFAULT_SITE_MANIFEST_KEY.replace(DEFAULT_WORKSPACE_ID, input.workspaceId),
-    ),
+    siteId: input.siteId,
+    versionId: trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID,
+    manifestKey: siteManifestKey({
+      workspaceId: input.workspaceId,
+      siteId: input.siteId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+    }),
     contentType: DEFAULT_SITE_CONTENT_TYPE,
     cachePolicy: 'static-shell',
   },
@@ -180,18 +208,12 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
   const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
   const routes: WorkspaceRouteD1Route[] = [
-    buildSiteSnapshotRoute({
-      pathPrefix: '/',
+    ...SITE_SNAPSHOT_ROUTES.map((route) => buildSiteSnapshotRoute({
+      ...route,
       workspaceId,
       siteSnapshotKey: input.siteSnapshotKey,
       siteVersionId: input.siteVersionId,
-    }),
-    buildSiteSnapshotRoute({
-      pathPrefix: '/traces',
-      workspaceId,
-      siteSnapshotKey: input.siteSnapshotKey,
-      siteVersionId: input.siteVersionId,
-    }),
+    })),
     ...buildTraceGatewayRoutes(),
   ];
 

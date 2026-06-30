@@ -1509,7 +1509,7 @@ export function provisionLocalOs(
       }),
     );
   }
-  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
+  actions.push(...materializeSites({ home, dbPath, dryRun, workspaceHost: workspaceIdentity.workspaceHost }).actions);
   config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
