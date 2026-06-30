@@ -370,10 +370,10 @@ function authorizationServerMetadata(origin: string): Record<string, unknown> {
   };
 }
 
-function mcpOAuthGoogleRedirect(input: { origin: string; clientId: string; state: string }): string {
+function mcpOAuthGoogleRedirect(input: { clientId: string; state: string; googleRedirectUri: string }): string {
   const url = new URL(GOOGLE_AUTH_URL);
   url.searchParams.set('client_id', input.clientId);
-  url.searchParams.set('redirect_uri', new URL('/oauth/google/callback', input.origin).toString());
+  url.searchParams.set('redirect_uri', input.googleRedirectUri);
   url.searchParams.set('response_type', 'code');
   url.searchParams.set('scope', GOOGLE_SCOPE);
   url.searchParams.set('state', input.state);
@@ -430,7 +430,11 @@ async function startMcpOAuthAuthorization(input: {
     codeChallenge,
     expiresAt: input.nowMs + TTL_MS,
   });
-  return Response.redirect(mcpOAuthGoogleRedirect({ origin: input.origin, clientId: input.googleClientId, state }), 302);
+  return Response.redirect(mcpOAuthGoogleRedirect({
+    clientId: input.googleClientId,
+    state,
+    googleRedirectUri: redirectUri(input.origin),
+  }), 302);
 }
 
 async function finishMcpOAuthGoogleCallback(input: {
@@ -440,6 +444,7 @@ async function finishMcpOAuthGoogleCallback(input: {
   googleClientId: string;
   googleClientSecret: string;
   fetchImpl: typeof fetch;
+  googleRedirectUri: string;
   nowMs: number;
 }): Promise<Response> {
   const url = new URL(input.request.url);
@@ -456,7 +461,7 @@ async function finishMcpOAuthGoogleCallback(input: {
       clientId: input.googleClientId,
       clientSecret: input.googleClientSecret,
       fetchImpl: input.fetchImpl,
-      redirectUri: new URL('/oauth/google/callback', input.origin).toString(),
+      redirectUri: input.googleRedirectUri,
     });
   } catch (error: unknown) {
     return invalidOauthRequest('access_denied', googleApprovalErrorMessage(error), 502);
@@ -653,6 +658,7 @@ export function createOsDeviceAuthorityHandler(input: {
           googleClientId: google.clientId,
           googleClientSecret: google.clientSecret,
           fetchImpl,
+          googleRedirectUri: new URL('/oauth/google/callback', origin).toString(),
           nowMs: now(),
         });
       }
@@ -687,6 +693,19 @@ export function createOsDeviceAuthorityHandler(input: {
         }
         const stateValue = url.searchParams.get('state') ?? '';
         const authCode = url.searchParams.get('code') ?? '';
+        const mcpOAuthState = stateValue ? await input.store.byMcpOAuthState(stateValue) : undefined;
+        if (authCode && mcpOAuthState) {
+          return await finishMcpOAuthGoogleCallback({
+            request,
+            store: input.store,
+            origin,
+            googleClientId: google.clientId,
+            googleClientSecret: google.clientSecret,
+            fetchImpl,
+            googleRedirectUri: redirectUri(origin),
+            nowMs: now(),
+          });
+        }
         const oauthState = await input.store.byOAuthState(stateValue);
         if (!stateValue || !authCode || !oauthState) return text(page({ code: '', origin, error: 'Google approval session was not found.' }), { status: 400 });
         if (now() >= oauthState.expiresAt) return text(page({ code: oauthState.userCode, origin, error: 'Google approval session expired. Restart the installer.' }), { status: 410 });
