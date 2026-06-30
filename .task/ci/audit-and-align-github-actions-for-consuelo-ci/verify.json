@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/audit-and-align-github-actions-for-consuelo-ci",
+  "base": "origin/task/ci/audit-and-align-github-actions-for-consuelo-ci",
+  "headSha": "0b6baac5e703114bf429cdd0e5be3514feddbd5e",
+  "changeHash": "5271abd4c5c9cf4742c0d0cf3d0dae15c3088df37e1bb401cd092d7b913073fc",
+  "changedFiles": [
+    ".github/CI_ALIGNMENT.md"
+  ],
+  "verifiedAt": "2026-06-27T23:21:35.240Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/CI_ALIGNMENT.md",
+        ".task/ci/audit-and-align-github-actions-for-consuelo-ci/current.json",
+        ".task/ci/audit-and-align-github-actions-for-consuelo-ci/session.json",
+        ".task/ci/audit-and-align-github-actions-for-consuelo-ci/workpad.md",
+        ".task/tasks/ci/audit-and-align-github-actions-for-consuelo-ci.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0fa60c7514b5",
+  "tmuxSession": "opensaas-ci-implement-consuelo-ci-phases-0fa60c75",
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/implement-consuelo-ci-phases",
+  "branch": "task/ci/implement-consuelo-ci-phases",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-implement-consuelo-ci-phases",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-implement-consuelo-ci-phases",
+  "prNumber": 1236,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1236",
+  "createdAt": "2026-06-27T23:40:52.548Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-implement-consuelo-ci-phases/.task/ci/implement-consuelo-ci-phases/session.json"
+}
