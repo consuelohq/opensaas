@@ -156,3 +156,11 @@ Fallback: if checks remain pending after 60s, document pending state and do not 
 
 Observed result: after one 20s poll, PR #1154 checks completed with 45 total checks, 1 failed, 0 pending. The failed check is `Workers Builds: opensaas`, Cloudflare build `558b0877-fe78-4549-9c4d-970bea3792ce`, started/completed 2026-06-21T01:22:37Z.
 Next decision: do not mark release-ready; external Workers build remains red.
+
+
+## hotfix: cloudflared upstream archive checksum drift
+
+- Public Intel Mac install failed because the currently served `cloudflared-darwin-amd64.tgz` release asset hashes to `d7a66b525fe76820da6e5406611b61e48b40de682368ac00454d9158f085be4b`, while bootstrap pinned the older `3f74d697...` checksum.
+- Direct release asset verification on 2026-06-22 also showed arm64 hashes to `f6d4c439c6c782b83264951d327989ce5e23373acc5942b872411601fedb020d`, while bootstrap pinned the older `ae6ee901...` checksum.
+- Added `packages/os/tests/bootstrap-source.test.ts` coverage for the Darwin checksum constants.
+- Validation: focused bootstrap source test passed, installer runtime dependency suite passed, `bash -n packages/os/scripts/bootstrap.sh` passed, and direct live archive verification matched the new pins.

@@ -165,6 +165,20 @@ function workspaceHostFromMcpResource(resource: string): string { const url = ne
 function normalizeScopes(value: string): string[] { const requested = value.split(/\s+/).map(scope => scope.trim()).filter(Boolean); const allowed = requested.filter(scope => MCP_OAUTH_SCOPES.includes(scope)); return allowed.length > 0 ? [...new Set(allowed)] : ['mcp:read', 'mcp:call', 'tool:*:read']; }
 function hasGrantedScope(scopes: string[], requiredScope: string): boolean { if (!requiredScope || scopes.includes(requiredScope)) return true; const parts = requiredScope.split(':'); return parts.length === 3 && parts[0] === 'tool' && (scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')); }
 function validChatGptRedirectUri(value: string): boolean { try { return value.startsWith(CHATGPT_REDIRECT_PREFIX) && new URL(value).origin === 'https://chatgpt.com'; } catch { return false; } }
+function validChatGptClientId(value: string): boolean {
+  if (value === CHATGPT_OAUTH_CLIENT_ID) return true;
+  try {
+    const url = new URL(value);
+    return url.origin === 'https://chatgpt.com' &&
+      url.username === '' &&
+      url.password === '' &&
+      url.hash === '' &&
+      url.pathname.startsWith('/oauth/') &&
+      url.pathname.endsWith('/client.json');
+  } catch {
+    return false;
+  }
+}
 function cleanCode(value: string): string { return value.trim().replace(/[^a-z0-9]/gi, '').toUpperCase(); }
 function showCode(value: string): string { return cleanCode(value).replace(/(.{4})(?=.)/g, '$1-'); }
 function htmlEscape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c)); }
@@ -178,7 +192,21 @@ function page(input: { code: string; origin: string; message?: string; error?: s
   const hidden = shown.replace(/-/g, '');
   const approveUrl = new URL('/login/google/start', input.origin);
   approveUrl.searchParams.set('user_code', hidden);
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Authorize Consuelo OS</title><style>body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7f5;color:#080808}main{text-align:center;width:min(720px,calc(100vw - 32px))}.card{background:white;border-radius:28px;margin:28px auto;padding:56px;box-shadow:0 24px 90px #0002}.eyebrow{letter-spacing:.24em;text-transform:uppercase;color:#777}.code{display:block;font-size:clamp(44px,12vw,96px);letter-spacing:.08em}.button{display:inline-block;border:0;border-radius:12px;background:#050505;color:white;padding:14px 22px;font:inherit;text-decoration:none}.notice{color:#066b36}.error{color:#9f1239}</style></head><body><main><p class="eyebrow">Consuelo OS</p><h1>Authorize this Mac</h1><p>Confirm this code matches your terminal before approving.</p><section class="card"><span class="eyebrow">Device code</span><strong class="code" data-device-code>${shown || 'Waiting'}</strong></section>${input.message ? `<p class="notice">${htmlEscape(input.message)}</p>` : ''}${input.error ? `<p class="error">${htmlEscape(input.error)}</p>` : ''}<a class="button" href="${htmlEscape(approveUrl.toString())}">Approve this Mac with Google</a><p>Approval requires a Consuelo account session backed by Google, passkey, magic link, hardware key, or admin invite.</p></main></body></html>`;
+  const state = input.error ? 'failed' : input.message ? 'authorized' : 'signin';
+  const title = state === 'authorized' ? 'Device authorized' : state === 'failed' ? 'Device authorization failed' : 'Sign in to Consuelo OS';
+  const message = state === 'authorized'
+    ? 'Your device has been authorized. You can close this window and return to your terminal.'
+    : state === 'failed'
+      ? htmlEscape(input.error ?? 'Return to your terminal and restart device approval.')
+      : 'Enter the code shown in your terminal.';
+  const detail = state === 'authorized' && input.message ? `<p class="detail">${htmlEscape(input.message)}</p>` : '';
+  const codeBox = state === 'signin'
+    ? `<div class="code-box" aria-live="polite"><strong class="code" data-device-code>${shown || 'Waiting for code'}</strong></div>`
+    : '';
+  const guardrail = state === 'signin' ? '<p class="guardrail">Only continue if you just initiated a sign-in from your device.</p>' : '';
+  const action = state === 'signin' ? `<a class="button" href="${htmlEscape(approveUrl.toString())}">Continue with Google</a>` : '';
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fff;color:#171717;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{min-height:100vh;display:grid;grid-template-columns:minmax(0,52%) minmax(0,48%)}.copy{min-height:100vh;display:grid;grid-template-rows:auto 1fr;padding:42px clamp(24px,6vw,88px) 64px}.brand{width:fit-content;color:#171717;font-size:14px;font-weight:600;letter-spacing:0;line-height:1;text-decoration:none}.form{align-self:center;width:min(100%,680px);display:grid;gap:23px}.form h1{margin:0 0 26px;color:#171717;font-size:34px;font-weight:400;letter-spacing:0;line-height:1.06}.instruction,.guardrail,.message{margin:0;color:#777;font-size:16px;line-height:1.6}.detail{margin:0;color:#999;font-size:14px;line-height:1.5}.code-box{min-height:58px;display:grid;place-items:center;background:#fff;box-shadow:rgba(0,0,0,.1) 0 0 0 1px}.code{color:#171717;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:19px;font-weight:650;letter-spacing:0;line-height:1}.button{min-height:74px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#000;color:#fff;font-size:17px;font-weight:500;line-height:1;text-decoration:none}.visual{position:relative;min-height:100vh;overflow:hidden;background:radial-gradient(circle at 82% 48%,rgba(255,255,255,.32),transparent 0 28%,transparent 46%),linear-gradient(125deg,#050505 0%,#0c0d10 48%,#26313e 100%)}.mark{position:absolute;right:-64px;top:50%;transform:translateY(-50%) rotate(-18deg);color:rgba(255,255,255,.11);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:272px;font-weight:700;letter-spacing:0;line-height:.85;white-space:nowrap}@media(max-width:860px){.shell{grid-template-columns:1fr}.copy{min-height:68vh;padding:22px 20px 42px}.form{align-self:end;gap:18px}.form h1{margin-bottom:16px;font-size:34px}.button{min-height:58px}.visual{min-height:32vh}.mark{right:16px;font-size:144px}}</style></head><body><main class="shell" data-os-device-page-state="${state}"><section class="copy"><a class="brand" href="/" aria-label="Consuelo OS home">Consuelo OS</a><div class="form"><h1>${title}</h1><p class="${state === 'signin' ? 'instruction' : 'message'}">${message}</p>${codeBox}${guardrail}${action}${detail}</div></section><aside class="visual" aria-hidden="true"><div class="mark">OS</div></aside></main></body></html>`;
 }
 
 class DurableStore implements Store {
@@ -337,6 +365,7 @@ function authorizationServerMetadata(origin: string): Record<string, unknown> {
     grant_types_supported: ['authorization_code'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none'],
+    client_id_metadata_document_supported: true,
     scopes_supported: MCP_OAUTH_SCOPES,
   };
 }
@@ -378,7 +407,7 @@ async function startMcpOAuthAuthorization(input: {
   const codeChallenge = url.searchParams.get('code_challenge') ?? '';
   const codeChallengeMethod = url.searchParams.get('code_challenge_method') ?? '';
   if (responseType !== 'code') return invalidOauthRequest('unsupported_response_type', 'Only authorization code is supported.');
-  if (clientId !== CHATGPT_OAUTH_CLIENT_ID) return invalidOauthRequest('unauthorized_client', 'OAuth client is not allowed.');
+  if (!validChatGptClientId(clientId)) return invalidOauthRequest('unauthorized_client', 'OAuth client is not allowed.');
   if (!validChatGptRedirectUri(redirectUriValue)) return invalidOauthRequest('invalid_request', 'redirect_uri is not allowed.');
   if (!codeChallenge || codeChallengeMethod !== 'S256') return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;
@@ -465,10 +494,12 @@ async function exchangeMcpOAuthToken(input: {
     const redirectUriValue = p.get('redirect_uri') ?? '';
     const code = p.get('code') ?? '';
     const verifier = p.get('code_verifier') ?? '';
+    const resource = p.get('resource') ?? '';
     const authCode = await input.store.byMcpOAuthCode(await hash(code));
     if (!authCode) return invalidOauthRequest('invalid_grant', 'Authorization code was not found.');
     if (input.nowMs >= authCode.expiresAt) return invalidOauthRequest('invalid_grant', 'Authorization code expired.');
     if (authCode.clientId !== clientId || authCode.redirectUri !== redirectUriValue) return invalidOauthRequest('invalid_grant', 'Authorization code binding mismatch.');
+    if (resource && resource !== authCode.resource) return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
     if (!verifier || await hashChallenge(verifier) !== authCode.codeChallenge) return invalidOauthRequest('invalid_grant', 'PKCE verification failed.');
     const accessToken = rand('coa', 32);
     await input.store.putMcpOAuthAccessToken({

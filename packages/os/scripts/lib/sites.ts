@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import {
+  renderLauncherOnboarding,
+  type LauncherLocalAgent,
+} from './launcher-onboarding';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -107,6 +111,7 @@ export type MaterializeSitesOptions = {
   home: string;
   dbPath: string;
   dryRun: boolean;
+  workspaceHost?: string | null;
 };
 
 export type MaterializeSitesResult = {
@@ -644,80 +649,64 @@ function baseStyles(): string {
   `;
 }
 
-function buildMarkdownLink(options: { label: string; href: string; text: string; hotkey?: string }): string {
-  const hotkeyAttribute = options.hotkey ? ` data-hotkey="${escapeHtml(options.hotkey)}"` : '';
-  return `<li><span class="md-label">[${escapeHtml(options.label)}](</span><a href="${escapeHtml(options.href)}"${hotkeyAttribute} target="_blank" rel="noopener noreferrer">${escapeHtml(options.text)}</a><span class="md-label">)</span></li>`;
+type LauncherConfig = {
+  workspace?: { host?: string };
+  agents?: Array<{ name?: string; connected?: boolean }>;
+};
+
+type ChatGptMcpConfig = {
+  url?: string;
+};
+
+const agentLabels: Record<string, string> = {
+  codex: 'Codex',
+  cursor: 'Cursor',
+  claude: 'Claude',
+  opencode: 'OpenCode',
+  factory: 'Factory',
+  gemini: 'Gemini',
+  pi: 'Pi',
+};
+
+function readJsonFile<TData>(filePath: string): TData | null {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as TData;
+  } catch {
+    return null;
+  }
 }
 
-function buildSitesIndex(): string {
-  const siteLinks = [
-    { label: 'GTM', href: 'https://app.consuelohq.com/welcome', text: 'https://sites.consuelohq.com/gtm', hotkey: '1' },
-    { label: 'Office', href: 'office/', text: 'https://sites.consuelohq.com/office', hotkey: '2' },
-    { label: 'Tracing', href: 'traces/', text: 'https://sites.consuelohq.com/tracing', hotkey: '3' },
-    { label: 'Diffs', href: 'diffs/', text: 'https://sites.consuelohq.com/diffs', hotkey: '4' },
-    { label: 'Documentation', href: 'docs/', text: 'https://docs.consuelohq.com/', hotkey: '5' },
-  ].map(buildMarkdownLink).join('\n        ');
-  const siteHotkeys = {
-    '1': 'https://app.consuelohq.com/welcome',
-    '2': 'office/',
-    '3': 'traces/',
-    '4': 'diffs/',
-    '5': 'docs/',
-  };
+function launcherMcpUrl(home: string): string {
+  const mcpConfig = readJsonFile<ChatGptMcpConfig>(path.join(home, 'security', 'generated', 'chatgpt-mcp.json'));
+  if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
+    return mcpConfig.url;
+  }
 
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo OS Sites</title>
-  <style>${baseStyles()}</style>
-</head>
-<body>
-  <main>
-    <h1>CONSUELO OS █</h1>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Profile">
-      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
-      <p><span class="label">LOCATION:</span> USA</p>
-      <p><span class="label">STATUS:</span> ONLINE</p>
-      <p><span class="label">OPEN POSITION:</span></p>
-      <ul>
-        ${buildMarkdownLink({ label: 'Systems Engineer', href: '/jobs', text: '/careers/systems-engineer' })}
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Sites">
-      <p class="label">SITES:</p>
-      <ul>
-        ${siteLinks}
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Writing">
-      <p class="label">WRITING:</p>
-      <ul>
-        ${buildMarkdownLink({ label: 'On Decision Loops', href: '/writing/on-decision-loops', text: '/writing/on-decision-loops' })}
-      </ul>
-    </section>
-  </main>
-  <script>
-    const siteHotkeys = ${JSON.stringify(siteHotkeys, null, 6)};
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  const workspaceHost = config?.workspace?.host;
+  return typeof workspaceHost === 'string' && workspaceHost.length > 0
+    ? `https://${workspaceHost}/mcp`
+    : 'https://os.consuelohq.com/mcp';
+}
 
-    document.addEventListener("keydown", (event) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-      const target = event.target;
-      const tagName = target && target.tagName ? target.tagName.toLowerCase() : "";
-      if (tagName === "input" || tagName === "textarea" || (target && target.isContentEditable)) return;
-      const href = siteHotkeys[event.key];
-      if (!href) return;
-      event.preventDefault();
-      window.location.assign(href);
-    });
-  </script>
-</body>
-</html>
-`;
+function launcherLocalAgents(home: string): LauncherLocalAgent[] {
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  return (config?.agents ?? [])
+    .filter((agent): agent is { name: string; connected: boolean } =>
+      typeof agent.name === 'string' && agent.connected === true,
+    )
+    .map((agent) => ({
+      name: agent.name,
+      label: agentLabels[agent.name] ?? agent.name,
+      connected: true,
+    }));
+}
+
+function buildSitesIndex(home: string): string {
+  return renderLauncherOnboarding({
+    mcpUrl: launcherMcpUrl(home),
+    localAgents: launcherLocalAgents(home),
+  });
 }
 
 function buildPagesIndex(registry: SitePageRegistry): string {
@@ -804,7 +793,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.officeIndexPath, options.dryRun, 'Office site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex(), { mode: 0o600 });
+    fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });

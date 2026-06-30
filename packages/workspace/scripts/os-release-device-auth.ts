@@ -1,7 +1,12 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
 
 const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
@@ -9,6 +14,10 @@ const HEALTH_URL = 'https://os.consuelohq.com/health';
 const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
+const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
+const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
+const DEFAULT_SNAPSHOT_HOST = 'sites.consuelohq.com';
+const SNAPSHOT_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 type Options = {
   dryRun: boolean;
@@ -78,6 +87,65 @@ function parseArgs(argv: string[]): Options {
   }
 
   return options;
+}
+
+
+type DefaultSiteSnapshot = {
+  key: string;
+  versionId: string;
+};
+
+function snapshotVersionId(html: string): string {
+  return `sha256-${createHash('sha256').update(html).digest('hex').slice(0, 16)}`;
+}
+
+function releaseDefaultSiteSnapshots(dryRun: boolean): DefaultSiteSnapshot {
+  const tempHome = mkdtempSync(join(tmpdir(), 'consuelo-os-device-auth-sites-'));
+  const dbPath = join(tempHome, 'empty.sqlite');
+  try {
+    materializeSites({
+      home: tempHome,
+      dbPath,
+      dryRun: false,
+      workspaceHost: DEFAULT_SNAPSHOT_HOST,
+    });
+    const paths = getSitesPaths(tempHome);
+    const rootHtml = readFileSync(paths.indexPath, 'utf8');
+    const versionId = snapshotVersionId(rootHtml);
+    const snapshots = [
+      { siteId: 'launcher', filePath: paths.indexPath },
+      { siteId: 'office', filePath: paths.officeIndexPath },
+      { siteId: 'traces', filePath: paths.tracesIndexPath },
+      { siteId: 'diffs', filePath: paths.diffsIndexPath },
+      { siteId: 'docs', filePath: paths.docsIndexPath },
+    ];
+
+    for (const snapshot of snapshots) {
+      const key = `sites/${DEFAULT_SNAPSHOT_WORKSPACE_ID}/${snapshot.siteId}/${versionId}/index.html`;
+      if (dryRun) {
+        writeOut(`plannedSnapshot=r2://${SNAPSHOT_BUCKET}/${key}`);
+        continue;
+      }
+      run('wrangler', [
+        'r2',
+        'object',
+        'put',
+        `${SNAPSHOT_BUCKET}/${key}`,
+        '--remote',
+        '--file',
+        snapshot.filePath,
+        '--content-type',
+        SNAPSHOT_CONTENT_TYPE,
+      ], { cwd: WORKER_DIR });
+    }
+
+    return {
+      key: `sites/${DEFAULT_SNAPSHOT_WORKSPACE_ID}/launcher/${versionId}/index.html`,
+      versionId,
+    };
+  } finally {
+    rmSync(tempHome, { recursive: true, force: true });
+  }
 }
 
 function run(command: string, args: string[], options: { cwd?: string } = {}): void {
@@ -183,7 +251,18 @@ async function main(): Promise<void> {
   writeOut('route=os.consuelohq.com/*');
 
   if (!options.verifyOnly) {
-    const deployArgs = ['deploy'];
+    const defaultSiteSnapshot = releaseDefaultSiteSnapshots(options.dryRun);
+    writeOut(`defaultSiteSnapshotKey=${defaultSiteSnapshot.key}`);
+    writeOut(`defaultSiteSnapshotVersion=${defaultSiteSnapshot.versionId}`);
+
+    const deployArgs = [
+      'deploy',
+      '--keep-vars',
+      '--var',
+      `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY:${defaultSiteSnapshot.key}`,
+      '--var',
+      `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID:${defaultSiteSnapshot.versionId}`,
+    ];
     if (options.dryRun) deployArgs.push('--dry-run');
     run('wrangler', deployArgs, { cwd: WORKER_DIR });
   }

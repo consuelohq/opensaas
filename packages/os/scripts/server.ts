@@ -403,6 +403,22 @@ async function handleRequest(request: Request): Promise<Response> {
       return traceGatewayEndpoints().handle(request);
     }
 
+    if (url.pathname === '/mcp' && request.method !== 'POST') {
+      const denied = await authorizeBearerMcpRequest({
+        request,
+        path: '/mcp',
+        requiredScope: 'route:/mcp:read',
+      });
+      if (denied) return denied;
+      return new Response('Method not allowed\n', {
+        status: 405,
+        headers: {
+          allow: 'POST',
+          'content-type': 'text/plain; charset=utf-8',
+        },
+      });
+    }
+
     if (url.pathname === '/mcp' && request.method === 'POST') {
       const body = await request.clone().text();
       const rawMaterialDenied = admitRawMcpBody(body);

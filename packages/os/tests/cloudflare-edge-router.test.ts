@@ -306,6 +306,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     const resolvedPaths: string[] = [];
+    const dynamicHost = 'fresh-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
     const router = createWorkspaceCloudflareEdgeRouter({
       registry: {
         async resolve(input) {
@@ -313,7 +314,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
           return {
             allowed: true,
             workspaceId: 'workspace_123',
-            hostname: 'kokayi.consuelohq.com',
+            hostname: dynamicHost,
             route: '/mcp',
             surface: 'os',
             auth: 'required',
@@ -330,7 +331,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     });
 
     const response = await router.fetch(
-      new Request('https://kokayi.consuelohq.com/.well-known/oauth-protected-resource'),
+      new Request('https://' + dynamicHost + '/.well-known/oauth-protected-resource'),
     );
     const body = await response.json() as {
       resource: string;
@@ -340,10 +341,58 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('application/json');
-    expect(body.resource).toBe('https://kokayi.consuelohq.com/mcp');
+    expect(body.resource).toBe('https://' + dynamicHost + '/mcp');
     expect(body.authorization_servers).toEqual(['https://os.consuelohq.com']);
     expect(body.scopes_supported).toEqual(expect.arrayContaining(['mcp:read', 'mcp:call', 'tool:*:read']));
     expect(resolvedPaths).toEqual(['/mcp']);
+    expect(JSON.stringify(body)).not.toMatch(/connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i);
+  });
+
+  it('should expose OAuth authorization-server metadata for dynamic workspace MCP hosts', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const dynamicHost = 'oauth-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
+    const resolvedPaths: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          resolvedPaths.push(input.path);
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: dynamicHost,
+            route: '/mcp',
+            surface: 'os',
+            auth: 'required',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_123',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            },
+          };
+        },
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://' + dynamicHost + '/.well-known/oauth-authorization-server'),
+    );
+    const body = await response.json() as Record<string, unknown>;
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      issuer: 'https://os.consuelohq.com',
+      authorization_endpoint: 'https://os.consuelohq.com/oauth/authorize',
+      token_endpoint: 'https://os.consuelohq.com/oauth/token',
+      introspection_endpoint: 'https://os.consuelohq.com/oauth/introspect',
+      client_id_metadata_document_supported: true,
+      token_endpoint_auth_methods_supported: ['none'],
+      code_challenge_methods_supported: ['S256'],
+    });
+    expect(resolvedPaths).toEqual(['/mcp']);
+    expect(JSON.stringify(body)).not.toMatch(/connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i);
   });
 
   it('should not advertise OAuth protected-resource metadata for hosts without an MCP connector route', async () => {

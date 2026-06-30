@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/release/align-public-gateway-docs-route-contract",
+  "base": "origin/task/release/align-public-gateway-docs-route-contract",
+  "headSha": "e925804e42c0042f6cd15f7eedff64bef16d9075",
+  "changeHash": "a4b639353cd80ba89b02ee29186cbc6c302e51a15fc2afa54e8e1e13b70a04ef",
+  "changedFiles": [
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T15:40:45.148Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/release/align-public-gateway-docs-route-contract/current.json",
+        ".task/release/align-public-gateway-docs-route-contract/session.json",
+        ".task/release/align-public-gateway-docs-route-contract/workpad.md",
+        ".task/tasks/release/align-public-gateway-docs-route-contract.json",
+        "packages/os/tests/security-gateway.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

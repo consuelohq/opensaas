@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/fix-consuelo-workspace-contracts-gate",
+  "base": "origin/stream/ci",
+  "headSha": "d6c4bc7d10d702ab931c096b79eebaf2c1471095",
+  "changeHash": "4bc8bba753f148b6b1d4c3ec3206a5ba0d9946a69fc94189c9442c8a9d03d211",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml"
+  ],
+  "verifiedAt": "2026-06-28T00:35:22.192Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/ci/fix-consuelo-workspace-contracts-gate/current.json",
+        ".task/ci/fix-consuelo-workspace-contracts-gate/session.json",
+        ".task/ci/fix-consuelo-workspace-contracts-gate/workpad.md",
+        ".task/tasks/ci/fix-consuelo-workspace-contracts-gate.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
