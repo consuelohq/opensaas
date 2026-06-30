@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
 import { intro, outro, log as clackLog } from '@clack/prompts';
 
-type OsBannerStep =
+export type OsBannerStep =
   | string
   | {
       label: string;
@@ -13,17 +13,18 @@ const stepLabel = (step: OsBannerStep): string =>
   typeof step === 'string' ? step : step.label;
 
 const stepSymbol = (step: OsBannerStep): string => {
-  if (typeof step === 'string') return chalk.dim('o');
-  if (step.state === 'active' || step.state === 'complete') return chalk.white('●');
-  return chalk.dim('o');
+  if (typeof step === 'string') return chalk.dim('○');
+  if (step.state === 'active') return chalk.white('◆');
+  if (step.state === 'complete') return chalk.white('●');
+  return chalk.dim('○');
 };
 
-export function printOsBanner(steps?: OsBannerStep[]): void {
+export function createOsBannerLines(steps?: OsBannerStep[]): string[] {
   const lines: string[] = [];
   lines.push('');
-  lines.push(chalk.bold.white('C O N S U E L O  O S'));
+  lines.push(chalk.bold.white('CONSUELO OS'));
   lines.push(chalk.dim('|'));
-  lines.push(`${chalk.dim('|')}  ${chalk.white('make your company agent-ready.')}`);
+  lines.push(`${chalk.dim('|')}  ${chalk.white('One workspace. Any agent.')}`);
   if (steps?.length) {
     lines.push(chalk.dim('|'));
     for (const step of steps) {
@@ -32,7 +33,11 @@ export function printOsBanner(steps?: OsBannerStep[]): void {
     }
   }
   lines.push(chalk.dim('|'));
-  process.stdout.write(`${lines.join('\n')}\n`);
+  return lines;
+}
+
+export function printOsBanner(steps?: OsBannerStep[]): void {
+  process.stdout.write(`${createOsBannerLines(steps).join('\n')}\n`);
 }
 
 export function startIntro(): void {
