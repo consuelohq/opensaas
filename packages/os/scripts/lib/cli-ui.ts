@@ -2,7 +2,23 @@ import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
 import { intro, outro, log as clackLog } from '@clack/prompts';
 
-export function printOsBanner(steps?: string[]): void {
+type OsBannerStep =
+  | string
+  | {
+      label: string;
+      state?: 'pending' | 'active' | 'complete';
+    };
+
+const stepLabel = (step: OsBannerStep): string =>
+  typeof step === 'string' ? step : step.label;
+
+const stepSymbol = (step: OsBannerStep): string => {
+  if (typeof step === 'string') return chalk.dim('o');
+  if (step.state === 'active' || step.state === 'complete') return chalk.white('●');
+  return chalk.dim('o');
+};
+
+export function printOsBanner(steps?: OsBannerStep[]): void {
   const lines: string[] = [];
   lines.push('');
   lines.push(chalk.bold.white('C O N S U E L O  O S'));
@@ -11,7 +27,8 @@ export function printOsBanner(steps?: string[]): void {
   if (steps?.length) {
     lines.push(chalk.dim('|'));
     for (const step of steps) {
-      lines.push(`${chalk.dim('|')}  ${chalk.dim('o')}  ${chalk.dim(step)}`);
+      const label = stepLabel(step);
+      lines.push(`${chalk.dim('|')}  ${stepSymbol(step)}  ${chalk.dim(label)}`);
     }
   }
   lines.push(chalk.dim('|'));

@@ -6,7 +6,7 @@
       "label": "workspace-tooling",
       "kind": "facade-tool",
       "path": "packages/workspace/tooling/tool-manifest.json",
-      "entryCount": 125
+      "entryCount": 126
     }
   ],
   "tools": [
@@ -2595,12 +2595,11 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/workspace-agents/example",
           "path": "packages/workspace/scripts/fs.js",
           "offset": 1,
           "limit": 120
         },
-        "sessionRequired": true,
+        "sessionRequired": false,
         "examples": [
           {
             "label": "single paged file",
@@ -2690,11 +2689,10 @@
           ]
         },
         "exampleInput": {
-          "branch": "task/workspace-agents/example",
           "pattern": "task:fs",
           "path": "packages/workspace/SCRIPTS.md"
         },
-        "sessionRequired": true,
+        "sessionRequired": false,
         "examples": [
           {
             "label": "search a directory",
@@ -3292,77 +3290,6 @@
           "url": "https://example.com"
         },
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "intent",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "workflow",
-      "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
-      "core": true,
-      "definition": {
-        "name": "intent",
-        "methodPath": [
-          "intent"
-        ],
-        "description": "Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.",
-        "category": "workflow",
-        "underlying": "workspace intent",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
-        "outputSchema": "RawOutput",
-        "workflowRole": "intent.start",
-        "command": {
-          "script": "intent",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "flag": "--title",
-              "kind": "value"
-            },
-            {
-              "source": "eventFile",
-              "flag": "--event-json",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "workspace-agents",
-          "title": "example task intent"
-        }
       }
     },
     {
@@ -4272,6 +4199,119 @@
           "path": "/tmp/example.txt",
           "content": "hello",
           "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "media.svg",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "media",
+      "description": "primitive SVG structure/render/measure/edit/verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering; does not interpret creative prompts",
+      "core": false,
+      "definition": {
+        "name": "media.svg",
+        "methodPath": [
+          "media",
+          "svg"
+        ],
+        "description": "primitive SVG structure/render/measure/edit/verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering; does not interpret creative prompts",
+        "category": "media",
+        "underlying": "workspace media:svg",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaSvgInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "media:svg",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "dryRunFlag": "--dry-run",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "input",
+              "flag": "--input",
+              "kind": "value"
+            },
+            {
+              "source": "output",
+              "flag": "--output",
+              "kind": "value"
+            },
+            {
+              "source": "svg",
+              "flag": "--svg",
+              "kind": "value"
+            },
+            {
+              "source": "svgFile",
+              "flag": "--svg-file",
+              "kind": "value"
+            },
+            {
+              "source": "documentJson",
+              "flag": "--document-json",
+              "kind": "value"
+            },
+            {
+              "source": "operationsJson",
+              "flag": "--operations-json",
+              "kind": "value"
+            },
+            {
+              "source": "checksJson",
+              "flag": "--checks-json",
+              "kind": "value"
+            },
+            {
+              "source": "renderJson",
+              "flag": "--render-json",
+              "kind": "value"
+            },
+            {
+              "source": "selectorsJson",
+              "flag": "--selectors-json",
+              "kind": "value"
+            },
+            {
+              "source": "snapshot",
+              "flag": "--snapshot",
+              "kind": "boolean"
+            },
+            {
+              "source": "snapshotName",
+              "flag": "--snapshot-name",
+              "kind": "value"
+            },
+            {
+              "source": "restoreFrom",
+              "flag": "--restore-from",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "verify",
+          "input": "asset.svg",
+          "checks": [
+            {
+              "check": "renderable"
+            }
+          ],
+          "render": {
+            "colorScheme": "light"
+          }
         },
         "sessionRequired": false
       }
@@ -6545,6 +6585,78 @@
           "dryRun": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "task.intent",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "workflow",
+      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+      "core": true,
+      "definition": {
+        "name": "task.intent",
+        "methodPath": [
+          "task",
+          "intent"
+        ],
+        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+        "category": "workflow",
+        "underlying": "workspace task.intent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "sessionRequired": false,
+        "inputSchema": "WorkflowIntentInput",
+        "outputSchema": "RawOutput",
+        "workflowRole": "intent.start",
+        "command": {
+          "script": "task-intent",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "action",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "taskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "eventFile",
+              "flag": "--event-json",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "action": "start",
+          "workflow": "task",
+          "area": "workspace-agents",
+          "title": "example task-intent flow"
+        }
       }
     },
     {

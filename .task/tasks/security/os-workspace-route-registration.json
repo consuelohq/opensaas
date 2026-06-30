@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/os-workspace-route-registration",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1181,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1181",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1181",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1181/os-workspace-route-registration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1181",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1181/os-workspace-route-registration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-os-workspace-route-registration",
+  "taskSession": "tsk_98ac4e9f0f8e",
+  "tmuxSession": "opensaas-security-os-workspace-route-registration-98ac4e9f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-os-workspace-route-registration/.task/security/os-workspace-route-registration/session.json",
+  "createdAt": "2026-06-23T03:32:32.407Z"
+}

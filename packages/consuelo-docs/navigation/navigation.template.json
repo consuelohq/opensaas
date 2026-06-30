@@ -3,8 +3,11 @@
     "userGuide": {
       "label": "User Guide",
       "groups": {
-        "discoverTwenty": {
-          "label": "Discover Consuelo",
+        "userStoriesUseCases": {
+          "label": "User Stories & Use Cases"
+        },
+        "gettingStarted": {
+          "label": "Getting Started",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Capabilities"
@@ -14,234 +17,71 @@
             }
           }
         },
-        "dataModel": {
-          "label": "Data Model",
+        "usingConsueloOs": {
+          "label": "Using Consuelo OS",
           "groups": {
-            "dataModelCapabilities": {
-              "label": "Capabilities"
+            "osOverview": {
+              "label": "Overview"
             },
-            "dataModelHowTos": {
-              "label": "How-Tos"
+            "osConcepts": {
+              "label": "Concepts"
             }
           }
         },
-        "dataMigration": {
-          "label": "Data Migration",
-          "groups": {
-            "dataMigrationCapabilities": {
-              "label": "Capabilities"
-            },
-            "dataMigrationHowTos": {
-              "label": "How-Tos"
-            }
-          }
+        "features": {
+          "label": "Features"
         },
-        "fileSystem": {
-          "label": "File System",
-          "groups": {
-            "fileSystemCapabilities": {
-              "label": "Capabilities"
-            },
-            "fileSystemHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "calendarEmails": {
-          "label": "Calendar & Emails",
-          "groups": {
-            "calendarEmailsCapabilities": {
-              "label": "Capabilities"
-            },
-            "calendarEmailsHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "workflows": {
-          "label": "Workflows",
-          "groups": {
-            "workflowsCapabilities": {
-              "label": "Capabilities"
-            },
-            "workflowsHowTos": {
-              "label": "How-Tos",
-              "groups": {
-                "crmAutomations": {
-                  "label": "CRM Automations"
-                },
-                "connectToOtherTools": {
-                  "label": "Connect to Other Tools"
-                },
-                "advancedConfigurations": {
-                  "label": "Advanced Configurations"
-                },
-                "needMoreHelp": {
-                  "label": "Need More Help"
-                }
-              }
-            }
-          }
-        },
-        "ai": {
-          "label": "AI",
-          "groups": {
-            "aiCapabilities": {
-              "label": "Capabilities"
-            },
-            "aiHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "viewsPipelines": {
-          "label": "Views & Pipelines",
-          "groups": {
-            "viewsPipelinesCapabilities": {
-              "label": "Capabilities"
-            },
-            "viewsPipelinesHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "dashboards": {
-          "label": "Dashboards",
-          "groups": {
-            "dashboardsCapabilities": {
-              "label": "Capabilities"
-            },
-            "dashboardsHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "permissionsAccess": {
-          "label": "Permissions & Access",
-          "groups": {
-            "permissionsAccessCapabilities": {
-              "label": "Capabilities"
-            },
-            "permissionsAccessHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "billing": {
-          "label": "Billing",
-          "groups": {
-            "billingCapabilities": {
-              "label": "Capabilities"
-            },
-            "billingHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "dialer": {
-          "label": "Dialer"
-        },
-        "discordBot": {
-          "label": "Discord Bot",
-          "groups": {
-            "discordBotCapabilities": {
-              "label": "Capabilities"
-            },
-            "dialerHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
-        "settings": {
-          "label": "Settings",
-          "groups": {
-            "settingsCapabilities": {
-              "label": "Capabilities"
-            },
-            "settingsHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        }
-      }
-    },
-    "os": {
-      "label": "OS",
-      "groups": {
-        "osOverview": {
-          "label": "Overview"
-        },
-        "osConcepts": {
-          "label": "Concepts"
-        },
-        "osAgentContext": {
-          "label": "Agent Context"
-        },
-        "osTools": {
+        "userGuideTools": {
           "label": "Tools"
         },
-        "osSkills": {
-          "label": "Skills",
-          "groups": {
-            "osPlannedSkills": {
-              "label": "Planned Skills"
-            }
-          }
-        }
-      }
-    },
-    "developers": {
-      "label": "Developers",
-      "groups": {
-        "developersGroup": {
-          "label": "Developers"
+        "integrations": {
+          "label": "Integrations"
         },
-        "extend": {
-          "label": "Extend",
+        "guidesTutorials": {
+          "label": "Guides & Tutorials"
+        },
+        "developerGuide": {
+          "label": "Developer Guide",
           "groups": {
-            "extendCapabilities": {
-              "label": "Capabilities"
+            "developerAgent": {
+              "label": "Agent Development"
+            },
+            "developerApi": {
+              "label": "API"
             }
           }
         },
-        "selfHost": {
-          "label": "Self-Host",
+        "reference": {
+          "label": "Reference",
           "groups": {
-            "selfHostCapabilities": {
-              "label": "Capabilities"
-            }
-          }
-        },
-        "contribute": {
-          "label": "Contribute",
-          "groups": {
-            "contributeCapabilities": {
-              "label": "Capabilities",
+            "osTools": {
+              "label": "Tools"
+            },
+            "osAgentContext": {
+              "label": "Agent Context"
+            },
+            "osSkills": {
+              "label": "Skills",
               "groups": {
-                "frontendDevelopment": {
-                  "label": "Frontend Development",
-                  "groups": {
-                    "twentyUi": {
-                      "label": "Consuelo UI",
-                      "groups": {
-                        "display": {
-                          "label": "Display"
-                        },
-                        "feedback": {
-                          "label": "Feedback"
-                        },
-                        "input": {
-                          "label": "Input"
-                        },
-                        "navigation": {
-                          "label": "Navigation"
-                        }
-                      }
-                    }
-                  }
+                "osPlannedSkills": {
+                  "label": "Planned Skills"
+                }
+              }
+            },
+            "twentyUi": {
+              "label": "Consuelo UI",
+              "groups": {
+                "display": {
+                  "label": "Display"
                 },
-                "backendDevelopment": {
-                  "label": "Backend Development"
+                "feedback": {
+                  "label": "Feedback"
+                },
+                "input": {
+                  "label": "Input"
+                },
+                "navigation": {
+                  "label": "Navigation"
                 }
               }
             }
@@ -249,23 +89,194 @@
         }
       }
     },
-    "graphqlApi": {
-      "label": "GraphQL API",
+    "tools": {
+      "label": "Tools",
       "groups": {
-        "graphqlOverview": {
+        "toolsOverview": {
           "label": "Overview"
         },
-        "graphqlAnalytics": {
-          "label": "Analytics"
+        "sitesTools": {
+          "label": "Sites",
+          "groups": {
+            "dataModel": {
+              "label": "Data Model",
+              "groups": {
+                "dataModelCapabilities": {
+                  "label": "Capabilities"
+                },
+                "dataModelHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "dataMigration": {
+              "label": "Data Migration",
+              "groups": {
+                "dataMigrationCapabilities": {
+                  "label": "Capabilities"
+                },
+                "dataMigrationHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "fileSystem": {
+              "label": "File System",
+              "groups": {
+                "fileSystemCapabilities": {
+                  "label": "Capabilities"
+                },
+                "fileSystemHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "calendarEmails": {
+              "label": "Calendar & Emails",
+              "groups": {
+                "calendarEmailsCapabilities": {
+                  "label": "Capabilities"
+                },
+                "calendarEmailsHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "workflows": {
+              "label": "Workflows",
+              "groups": {
+                "workflowsCapabilities": {
+                  "label": "Capabilities"
+                },
+                "workflowsHowTos": {
+                  "label": "How-Tos",
+                  "groups": {
+                    "crmAutomations": {
+                      "label": "CRM Automations"
+                    },
+                    "connectToOtherTools": {
+                      "label": "Connect to Other Tools"
+                    },
+                    "advancedConfigurations": {
+                      "label": "Advanced Configurations"
+                    },
+                    "needMoreHelp": {
+                      "label": "Need More Help"
+                    }
+                  }
+                }
+              }
+            },
+            "viewsPipelines": {
+              "label": "Views & Pipelines",
+              "groups": {
+                "viewsPipelinesCapabilities": {
+                  "label": "Capabilities"
+                },
+                "viewsPipelinesHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "dashboards": {
+              "label": "Dashboards",
+              "groups": {
+                "dashboardsCapabilities": {
+                  "label": "Capabilities"
+                },
+                "dashboardsHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "permissionsAccess": {
+              "label": "Permissions & Access",
+              "groups": {
+                "permissionsAccessCapabilities": {
+                  "label": "Capabilities"
+                },
+                "permissionsAccessHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "billing": {
+              "label": "Billing",
+              "groups": {
+                "billingCapabilities": {
+                  "label": "Capabilities"
+                },
+                "billingHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "dialer": {
+              "label": "Dialer"
+            },
+            "discordBot": {
+              "label": "Discord Bot",
+              "groups": {
+                "discordBotCapabilities": {
+                  "label": "Capabilities"
+                },
+                "dialerHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
+            "settings": {
+              "label": "Settings",
+              "groups": {
+                "settingsCapabilities": {
+                  "label": "Capabilities"
+                },
+                "settingsHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            }
+          }
         },
-        "graphqlAutomation": {
-          "label": "Automation"
+        "officeTools": {
+          "label": "Office"
         },
-        "graphqlGeneral": {
-          "label": "General"
+        "mediaTools": {
+          "label": "Media",
+          "groups": {
+            "mediaWorkflows": {
+              "label": "Workflows"
+            },
+            "mediaReference": {
+              "label": "Reference"
+            }
+          }
         },
-        "graphqlTroubleshooting": {
-          "label": "Troubleshooting"
+        "browserTools": {
+          "label": "Browser"
+        },
+        "workspaceTools": {
+          "label": "Workspace"
+        },
+        "graphqlTools": {
+          "label": "GraphQL API",
+          "groups": {
+            "graphqlOverview": {
+              "label": "Overview"
+            },
+            "graphqlAnalytics": {
+              "label": "Analytics"
+            },
+            "graphqlAutomation": {
+              "label": "Automation"
+            },
+            "graphqlGeneral": {
+              "label": "General"
+            },
+            "graphqlTroubleshooting": {
+              "label": "Troubleshooting"
+            }
+          }
         }
       }
     }

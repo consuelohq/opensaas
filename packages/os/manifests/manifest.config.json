@@ -10,6 +10,11 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json"
+    },
+    {
+      "label": "media-tooling",
+      "kind": "facade-tool",
+      "path": "packages/os/tooling/media-tool-manifest.json"
     }
   ],
   "outputs": {
@@ -25,7 +30,7 @@
       "context",
       "explore",
       "github",
-      "intent",
+      "task.intent",
       "review.run",
       "tools.search",
       "tmp"

@@ -1,0 +1,599 @@
+---
+import { homeTabs } from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+const osPortalHref = 'https://os.consuelohq.com';
+const heroTitleText = 'Give every agent\nworkspace\nsuperpowers';
+---
+
+<section class="home-hero site-section" id={sectionId} data-section="hero">
+  <div class="home-hero__inner site-container site-container--wide">
+    <div class="home-hero__content">
+      <p class="home-hero__eyebrow site-eyebrow" aria-label="Batteries included and MIT licensed">
+        <span>BATTERIES INCLUDED</span>
+        <span class="home-hero__eyebrow-dot" aria-hidden="true">•</span>
+        <span>MIT LICENSE</span>
+      </p>
+
+      <h1
+        class="home-hero__title"
+        data-pretext-title={heroTitleText}
+        data-pretext-lines="3"
+        aria-label="Give every agent workspace superpowers"
+      >
+        <span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true">Give every agent</span>
+        <span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true">Give every</span>
+        <span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true">agent</span>
+        <span class="home-hero__title-line" aria-hidden="true">workspace</span>
+        <span class="home-hero__title-line" aria-hidden="true"><em>superpowers</em></span>
+      </h1>
+
+      <div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
+        <p class="home-hero__action-label site-eyebrow">USE CONSUELO OS CLOUD</p>
+        <a class="home-hero__portal site-button site-button--secondary" href={osPortalHref}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z" />
+          </svg>
+          <span>Go to OS portal</span>
+        </a>
+      </div>
+
+      <div class="home-hero__install-wrap">
+        <p class="home-hero__install-label site-eyebrow">INSTALL VIA TERMINAL</p>
+        <div class="home-hero__install site-card" data-hero-install>
+          <div class="home-hero__tabs" role="tablist" aria-label="Consuelo install and workspace surfaces">
+          {homeTabs.map((tab, index) => (
+            <button
+              class:list={['home-hero__tab', { 'is-active': index === 0 }]}
+              type="button"
+              role="tab"
+              aria-selected={index === 0 ? 'true' : 'false'}
+              data-tab-button={tab.id}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+          <div class="home-hero__panels">
+          {homeTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
+            <a
+              href={tab.href}
+              class:list={['home-hero__panel', { 'is-active': index === 0 }]}
+              data-tab-panel={tab.id}
+            >
+              <span class="home-hero__value">{tab.value}</span>
+              <span class="home-hero__panel-action" aria-hidden="true">→</span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              class:list={['home-hero__panel', { 'is-active': index === 0 }]}
+              data-tab-panel={tab.id}
+              data-copy-button={tab.id}
+            >
+              <code class="home-hero__value">{tab.value}</code>
+              <span class="home-hero__panel-action" aria-hidden="true">
+                <svg class="home-hero__copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+                <svg class="home-hero__check-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            </button>
+          ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
+      <img
+        src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
+        alt="Developer tools and work surfaces connected to Consuelo"
+        loading="eager"
+        decoding="async"
+      />
+    </figure>
+  </div>
+</section>
+
+<script define:vars={{ homeTabs }}>
+  const root = document.querySelector('[data-hero-install]');
+
+  if (root instanceof HTMLElement) {
+    const buttons = Array.from(root.querySelectorAll('[data-tab-button]'));
+    const panels = Array.from(root.querySelectorAll('[data-tab-panel]'));
+    const copyButtons = Array.from(root.querySelectorAll('[data-copy-button]'));
+
+    const sync = (nextIndex) => {
+      buttons.forEach((button, index) => {
+        const isActive = index === nextIndex;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      panels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
+    };
+
+    buttons.forEach((button, index) => {
+      button.addEventListener('click', () => sync(index));
+    });
+
+    copyButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const tabId = button.getAttribute('data-copy-button');
+        const entry = homeTabs.find((tab) => tab.id === tabId);
+
+        if (!entry || !navigator.clipboard) {
+          return;
+        }
+
+        await navigator.clipboard.writeText(entry.value);
+        button.classList.add('is-copied');
+        window.setTimeout(() => button.classList.remove('is-copied'), 1400);
+      });
+    });
+
+    sync(0);
+  }
+</script>
+
+<script>
+  import { prepare, layout } from '@chenglou/pretext';
+  import type { PreparedText } from '@chenglou/pretext';
+
+  const title = document.querySelector('[data-pretext-title]');
+
+  if (title instanceof HTMLElement) {
+    let prepared: PreparedText | undefined;
+    let preparedFont = '';
+
+    const measureTitle = () => {
+      const style = window.getComputedStyle(title);
+      const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const text = title.dataset.pretextTitle ?? title.textContent ?? '';
+
+      if (!prepared || preparedFont !== font) {
+        prepared = prepare(text, font, { whiteSpace: 'pre-wrap' });
+        preparedFont = font;
+      }
+
+      const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize);
+      const result = layout(prepared, title.clientWidth, lineHeight);
+
+      title.dataset.pretextLines = String(result.lineCount);
+      title.style.setProperty('--home-hero-title-height', `${result.height}px`);
+    };
+
+    const scheduleMeasure = () => window.requestAnimationFrame(measureTitle);
+
+    window.addEventListener('resize', scheduleMeasure, { passive: true });
+    document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle());
+    scheduleMeasure();
+  }
+</script>
+
+<style>
+  .home-hero {
+    min-height: calc(100svh - var(--site-space-8));
+    display: grid;
+    align-items: center;
+    background: var(--site-color-paper);
+    color: var(--site-color-ink);
+    font-family: var(--site-font-body);
+    padding-block: clamp(3rem, 6vw, 5.25rem) var(--site-space-7);
+    overflow: clip;
+  }
+
+  .home-hero__inner {
+    display: grid;
+    gap: clamp(var(--site-space-4), 1.25vw, var(--site-space-5));
+    align-items: center;
+  }
+
+  .home-hero__content {
+    display: grid;
+    gap: clamp(var(--site-space-3), 1.45vw, var(--site-space-5));
+    max-width: 36rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .home-hero__eyebrow {
+    color: var(--site-color-ink);
+    display: flex;
+    gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
+    align-items: center;
+    font-size: clamp(0.56rem, 0.85vw, 0.68rem);
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+  }
+
+  .home-hero__eyebrow-dot {
+    color: currentColor;
+    opacity: 0.72;
+  }
+
+  .home-hero__title {
+    margin: 0;
+    color: var(--site-color-ink);
+    font-family: var(--site-font-display);
+    font-size: clamp(3.35rem, 5.75vw, 6.05rem);
+    font-weight: 300;
+    letter-spacing: -0.052em;
+    line-height: 0.91;
+    text-wrap: balance;
+  }
+
+  .home-hero__title-line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .home-hero__title-line--mobile {
+    display: none;
+  }
+
+  .home-hero__title em {
+    color: currentColor;
+    font-family: var(--site-font-display);
+    font-style: normal;
+    font-weight: 300;
+    letter-spacing: -0.052em;
+  }
+
+  .home-hero__actions {
+    display: grid;
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: fit-content;
+  }
+
+  .home-hero__action-label,
+  .home-hero__install-label {
+    color: var(--site-color-muted);
+  }
+
+  .home-hero__portal {
+    width: fit-content;
+    min-height: 2.45rem;
+    justify-content: center;
+    justify-self: start;
+    gap: var(--site-space-2);
+    border: 1px solid var(--site-color-line);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: var(--site-color-control);
+    color: var(--site-color-ink);
+    box-shadow: var(--site-shadow-control);
+    font-family: var(--site-font-mono);
+    font-size: var(--site-text-xs);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
+    padding: 0.72rem 1.15rem;
+  }
+
+  .home-hero__portal svg {
+    width: var(--site-space-4);
+    height: var(--site-space-4);
+    fill: currentColor;
+  }
+
+  .home-hero__install-wrap {
+    display: grid;
+    gap: calc(var(--site-space-2) + var(--site-space-1));
+    width: min(100%, 30rem);
+  }
+
+  .home-hero__install {
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--site-color-line);
+    border-radius: calc(var(--site-radius-sm) * 0.25);
+    background: var(--site-color-control);
+    box-shadow: var(--site-shadow-control);
+  }
+
+  .home-hero__tabs {
+    display: flex;
+    gap: var(--site-space-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid var(--site-color-line);
+    padding: 0.72rem var(--site-space-4) 0;
+    scrollbar-width: none;
+  }
+
+  .home-hero__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-hero__tab {
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    color: var(--site-color-muted);
+    font: 400 var(--site-text-xs) / 1 var(--site-font-mono);
+    letter-spacing: 0;
+    padding: 0 0 0.72rem;
+    white-space: nowrap;
+  }
+
+  .home-hero__tab:hover,
+  .home-hero__tab:focus-visible {
+    color: var(--site-color-ink);
+    outline: none;
+  }
+
+  .home-hero__tab.is-active {
+    border-bottom-color: transparent;
+    color: var(--site-color-ink);
+  }
+
+  .home-hero__panels {
+    background: var(--site-color-control);
+  }
+
+  .home-hero__panel {
+    display: none;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--site-space-3);
+    border: 0;
+    background: transparent;
+    color: var(--site-color-ink);
+    cursor: pointer;
+    padding: 0.86rem var(--site-space-4);
+    text-align: left;
+    text-decoration: none;
+    transition:
+      background var(--site-motion-fast) var(--site-ease-standard),
+      color var(--site-motion-fast) var(--site-ease-standard);
+  }
+
+  .home-hero__panel.is-active {
+    display: flex;
+  }
+
+  .home-hero__panel:hover,
+  .home-hero__panel:focus-visible {
+    background: transparent;
+    outline: none;
+  }
+
+  .home-hero__value {
+    min-width: 0;
+    color: var(--site-color-ink);
+    font: 400 var(--home-hero-value-size, var(--site-text-xs)) / var(--site-leading-body) var(--site-font-mono);
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .home-hero__panel-action {
+    width: var(--site-space-5);
+    height: var(--site-space-5);
+    border-radius: calc(var(--site-radius-sm) * 0.75);
+    color: var(--site-color-muted);
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--site-font-mono);
+  }
+
+  .home-hero__panel:hover .home-hero__panel-action,
+  .home-hero__panel:focus-visible .home-hero__panel-action {
+    color: var(--site-color-ink);
+    background: transparent;
+  }
+
+  .home-hero__panel-action svg {
+    width: var(--site-space-4);
+    height: var(--site-space-4);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+  }
+
+  .home-hero__check-icon {
+    display: none;
+  }
+
+  .home-hero__panel.is-copied .home-hero__panel-action {
+    color: var(--site-color-secondary);
+  }
+
+  .home-hero__panel.is-copied .home-hero__copy-icon {
+    display: none;
+  }
+
+  .home-hero__panel.is-copied .home-hero__check-icon {
+    display: block;
+  }
+
+  .home-hero__diagram {
+    position: relative;
+    z-index: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .home-hero__diagram img {
+    display: block;
+    width: min(100%, 41rem);
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto 0;
+  }
+
+  @media (min-width: 1181px) {
+    .home-hero__inner {
+      grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
+      justify-content: space-between;
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .home-hero {
+      min-height: auto;
+      padding-block: clamp(var(--site-space-7), 8vw, var(--site-space-8));
+    }
+
+    .home-hero__inner {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .home-hero__content {
+      max-width: min(100%, 42rem);
+    }
+
+    .home-hero__title {
+      font-size: clamp(3.4rem, 8.2vw, 5.8rem);
+    }
+
+    .home-hero__diagram {
+      order: 2;
+      margin-block-start: 0;
+    }
+
+    .home-hero__diagram img {
+      width: min(100%, 41rem);
+      margin-inline: auto;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .home-hero__inner,
+    .home-hero__content {
+      gap: var(--site-space-4);
+    }
+
+    .home-hero__actions {
+      gap: var(--site-space-2);
+    }
+
+    .home-hero__install-wrap {
+      gap: var(--site-space-2);
+    }
+
+    .home-hero__title {
+      font-size: clamp(2.95rem, 10vw, 4.7rem);
+      letter-spacing: -0.058em;
+      line-height: 0.92;
+    }
+
+    .home-hero__title-line {
+      white-space: normal;
+    }
+
+    .home-hero__actions,
+    .home-hero__install-wrap {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .home-hero {
+      padding-block: clamp(4.75rem, 18vw, 6.5rem) var(--site-space-7);
+    }
+
+    .home-hero__eyebrow {
+      align-items: center;
+      flex-direction: row;
+      gap: clamp(0.45rem, 2vw, var(--site-space-3));
+      font-size: clamp(0.54rem, 2.1vw, 0.62rem);
+      letter-spacing: 0.18em;
+    }
+
+    .home-hero__eyebrow-dot {
+      display: inline;
+    }
+
+    .home-hero__inner,
+    .home-hero__content {
+      gap: clamp(1.45rem, 5.8vw, 2.15rem);
+    }
+
+    .home-hero__actions,
+    .home-hero__install-wrap {
+      gap: clamp(0.82rem, 3.2vw, 1rem);
+    }
+
+    .home-hero__title {
+      font-size: clamp(3.35rem, 14.2vw, 4.7rem);
+      letter-spacing: -0.054em;
+      line-height: 0.9;
+    }
+
+    .home-hero__title-line--desktop {
+      display: none;
+    }
+
+    .home-hero__title-line--mobile {
+      display: block;
+    }
+
+    .home-hero__title-line {
+      white-space: nowrap;
+    }
+
+    .home-hero__tabs {
+      gap: clamp(1.55rem, 8.6vw, 2.05rem);
+      padding: 0.82rem clamp(1rem, 4.2vw, 1.18rem) 0;
+    }
+
+    .home-hero__tab {
+      font-size: clamp(0.64rem, 2.6vw, 0.72rem);
+      padding: 0 0 0.82rem;
+    }
+
+    .home-hero__value {
+      --home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);
+      letter-spacing: -0.04em;
+    }
+
+    .home-hero__portal {
+      width: fit-content;
+      min-height: 2.58rem;
+      gap: 0.7rem;
+      padding: 0.78rem 1.22rem;
+      font-size: clamp(0.68rem, 2.7vw, 0.78rem);
+    }
+
+    .home-hero__portal svg {
+      width: 0.95rem;
+      height: 0.95rem;
+    }
+
+    .home-hero__panel {
+      gap: var(--site-space-2);
+      padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);
+    }
+
+    .home-hero__panel-action {
+      width: var(--site-space-4);
+      height: var(--site-space-4);
+    }
+
+    .home-hero__diagram {
+      margin-block-start: clamp(1.4rem, 7vw, 2.4rem);
+    }
+  }
+</style>

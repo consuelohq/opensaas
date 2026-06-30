@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-5-audio-transcription",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1202,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1202",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1202",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1202/media-branch-5-audio-transcription",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1202",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1202/media-branch-5-audio-transcription",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-5-audio-transcription",
+  "taskSession": "tsk_d4083e488032",
+  "tmuxSession": "opensaas-media-media-branch-5-audio-transcription-d4083e48",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-5-audio-transcription/.task/media/media-branch-5-audio-transcription/session.json",
+  "createdAt": "2026-06-24T00:45:29.737Z"
+}

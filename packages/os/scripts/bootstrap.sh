@@ -34,7 +34,7 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
-REFRESH_SOURCE=0
+REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 
 BUN_BIN=""
@@ -68,6 +68,7 @@ Repo-local testing:
   bash packages/os/scripts/bootstrap.sh --yes --install-daemons
   bash packages/os/scripts/bootstrap.sh --yes --skip-daemons
   bash packages/os/scripts/bootstrap.sh --yes --refresh-source
+  bash packages/os/scripts/bootstrap.sh --yes --use-existing-source
 
 Options:
   --dry-run          print what would happen without installing Bun or LaunchAgents
@@ -75,7 +76,8 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
-  --refresh-source  refresh an existing hosted source checkout/archive before onboarding
+  --refresh-source  refresh an existing hosted source checkout/archive before onboarding; default for hosted installs
+  --use-existing-source reuse an existing hosted source checkout when present
   --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
@@ -175,6 +177,7 @@ parse_args() {
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
       --refresh-source) REFRESH_SOURCE=1 ;;
+      --use-existing-source) REFRESH_SOURCE=0 ;;
       --mode)
         shift
         if [ "$#" -eq 0 ]; then
@@ -266,17 +269,23 @@ This shell is non-interactive. Re-run with:
   IFS= read -r _ < /dev/tty
 }
 
-open_contact_url() {
+open_url() {
+  local url="$1"
+
   if [ "$DRY_RUN" -eq 1 ]; then
-    log "dry-run: would open $CONTACT_URL"
+    log "dry-run: would open $url"
     return 0
   fi
 
   if command -v open >/dev/null 2>&1; then
-    open "$CONTACT_URL"
+    open "$url"
   else
-    log "Open $CONTACT_URL"
+    log "Open $url"
   fi
+}
+
+open_contact_url() {
+  open_url "$CONTACT_URL"
 }
 
 choose_os_mode() {
@@ -330,10 +339,10 @@ handle_cloud_mode() {
 render_dependency_progress() {
   [ "$JSON" -eq 0 ] || return 0
 
-  log "C O N S U E L O   O S"
+  log "CONSUELO  OS"
   log "│"
   log "● dependencies"
-  log "○ home"
+  log "○ workspace"
   log "○ skills"
   log "○ artifacts"
   log "○ agents"
@@ -835,8 +844,8 @@ download_source() {
     fi
 
     REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="present"
-    log "Using existing Consuelo OS source: $REPO_DIR (pass --refresh-source to refresh it)"
+    SOURCE_STATUS="reused"
+    log "Using existing Consuelo OS source: $REPO_DIR"
     return 0
   fi
 
@@ -902,8 +911,15 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
+  local install_args=(--home "$os_home" --mode "${OS_MODE:-local}")
+  if [ "$INSTALL_DAEMONS" -eq 1 ]; then
+    install_args+=(--install-daemons)
+  fi
+  if [ "$SKIP_DAEMONS" -eq 1 ]; then
+    install_args+=(--skip-daemons)
+  fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}" < /dev/tty
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts "${install_args[@]}" < /dev/tty
 }
 
 run_install_with_tty() {
@@ -959,6 +975,30 @@ run_onboarding() { # run_onboarding_json
     fi
   fi
   ONBOARDING_STATUS="installed"
+}
+
+onboarding_workspace_host() {
+  [ -n "$ONBOARDING_JSON" ] || return 1
+  [ -n "$BUN_BIN" ] || return 1
+
+  ONBOARDING_JSON_PAYLOAD="$ONBOARDING_JSON" "$BUN_BIN" --print '
+const payload = JSON.parse(process.env.ONBOARDING_JSON_PAYLOAD || "{}");
+const host = payload?.onboarding?.workspaceHost || payload?.platformProvisioning?.workspaceHost || "";
+if (typeof host === "string") host;
+' 2>/dev/null
+}
+
+open_workspace_launcher() {
+  [ "$JSON" -eq 0 ] || return 0
+  [ "$DRY_RUN" -eq 0 ] || return 0
+  [ "$YES" -eq 0 ] || return 0
+  [ "$ONBOARDING_STATUS" = "installed" ] || return 0
+
+  local workspace_host
+  workspace_host="$(onboarding_workspace_host || true)"
+  [ -n "$workspace_host" ] || return 0
+
+  open_url "https://$workspace_host"
 }
 
 run_daemon_dry_run() {
@@ -1019,35 +1059,10 @@ print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
   local os_home="$OS_HOME"
-  local config_file="$os_home/config.json"
-  local db_file="$os_home/consuelo.db"
-  local log_dir="$os_home/logs"
-  local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"
 
   log ""
   log "Consuelo OS setup complete"
   log "Home: $os_home"
-  log "Package: $os_home"
-  log "Config: $config_file"
-  log "Database: $db_file"
-  log "Logs: $log_dir"
-
-  case "$DAEMON_STATUS" in
-    installed)
-      if [ -n "$PORTLESS_BIN" ]; then
-        log "Services: com.consuelo.system, com.consuelo.portless.system, com.consuelo.watchdog"
-      else
-        log "Services: com.consuelo.system, com.consuelo.watchdog"
-      fi
-      ;;
-    skipped)
-      log "Services: skipped"
-      log "Install services later: $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-      ;;
-  esac
-
-  log "Doctor: $doctor_cmd"
-  log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
 main() {
@@ -1066,6 +1081,7 @@ main() {
   run_onboarding
   maybe_install_daemons
   print_success_summary
+  open_workspace_launcher
   emit_json_summary
 }
 

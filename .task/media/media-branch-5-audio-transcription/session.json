@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d4083e488032",
+  "tmuxSession": "opensaas-media-media-branch-5-audio-transcription-d4083e48",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-5-audio-transcription",
+  "branch": "task/media/media-branch-5-audio-transcription",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-5-audio-transcription",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-5-audio-transcription",
+  "prNumber": 1202,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1202",
+  "createdAt": "2026-06-24T00:45:29.737Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-5-audio-transcription/.task/media/media-branch-5-audio-transcription/session.json"
+}

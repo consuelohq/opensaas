@@ -1,0 +1,44 @@
+---
+title: media.scene.detect
+description: Detect scene boundaries and candidate moments in a video.
+---
+
+# media.scene.detect
+
+Detect scene boundaries and candidate moments in a video.
+
+## When to use it
+
+Use this to find cuts, scene changes, and candidate highlights before choosing frames or writing a timeline.
+
+## Mental model
+
+Scene detection is a vision-light analysis step. It helps agents find candidate moments without manually scrubbing the whole source.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Source video path or media asset reference. |
+| `range` | Optional time range to analyze. |
+| `out` | Optional path for the result artifact. |
+
+## Output
+
+Returns scene boundaries, candidate moments, confidence values, and source references.
+
+## Good agent instruction
+
+```text
+Use `media.scene.detect` to find candidate moments.
+Return JSON.
+Verify the result references the source video and timestamps.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Boundaries | Scene or moment timestamps are returned. |
+| Source | The result references the source media. |
+| Next use | Candidate moments can feed frames, timelines, or breakdown plans. |

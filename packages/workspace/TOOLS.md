@@ -40,6 +40,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
+| media | 1 |
 | office | 21 |
 | review | 4 |
 | sentry | 7 |
@@ -932,7 +933,6 @@ read bounded text or supported media from files with pagination, MIME metadata, 
 await workspace.call({
   "tool": "fs.read",
   "input": {
-    "branch": "task/workspace-agents/example",
     "path": "packages/workspace/scripts/fs.js",
     "offset": 1,
     "limit": 120
@@ -994,7 +994,6 @@ search file contents with ripgrep and return structured bounded matches for agen
 await workspace.call({
   "tool": "fs.search",
   "input": {
-    "branch": "task/workspace-agents/example",
     "pattern": "task:fs",
     "path": "packages/workspace/SCRIPTS.md"
   }
@@ -2453,6 +2452,76 @@ await workspace.call({
     "path": "/tmp/example.txt",
     "content": "hello",
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## media
+
+### workspace.media.svg
+
+primitive SVG structure/render/measure/edit/verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering; does not interpret creative prompts
+
+| Field | Value |
+| --- | --- |
+| Category | media |
+| Signature | `workspace.media.svg({ action: "create" &#124; "inspect" &#124; "render" &#124; "measure" &#124; "edit" &#124; "verify" &#124; "snapshot" &#124; "restore"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: "png"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: "light" &#124; "dark" &#124; "no-preference" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace media:svg` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "media.svg",
+  "input": {
+    "action": "verify",
+    "input": "asset.svg",
+    "checks": [
+      {
+        "check": "renderable"
+      }
+    ],
+    "render": {
+      "colorScheme": "light"
+    }
   }
 });
 ```
@@ -7598,15 +7667,15 @@ await workspace.call({
 
 ## workflow
 
-### workspace.intent
+### workspace.task.intent
 
-Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.
+Start or dispatch the task workflow lifecycle guidance for scoped task work.
 
 | Field | Value |
 | --- | --- |
 | Category | workflow |
-| Signature | `workspace.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace intent` |
+| Signature | `workspace.task.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace task.intent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
 
@@ -7614,12 +7683,12 @@ Start a task workflow for scoped write access. It dispatches progressively discl
 
 ```ts
 await workspace.call({
-  "tool": "intent",
+  "tool": "task.intent",
   "input": {
     "action": "start",
     "workflow": "task",
     "area": "workspace-agents",
-    "title": "example task intent"
+    "title": "example task-intent flow"
   }
 });
 ```

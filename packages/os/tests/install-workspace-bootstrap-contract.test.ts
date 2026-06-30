@@ -213,4 +213,80 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(installSource).not.toMatch(/publishWorkspaceEdgeSnapshot|edgePublish|wrangler/);
     expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
   });
+
+
+  it('should show workspace progress and slug workspace names before device authorization', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+    const cliUiSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'lib', 'cli-ui.ts'),
+      'utf8',
+    );
+
+    expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
+    expect(installSource).toContain("{ label: 'workspace', state: 'active' }");
+    expect(installSource).toContain("message: 'enter workspace name'");
+    expect(installSource).not.toContain('spaces become hyphens');
+    expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
+    expect(installSource).not.toContain('workspace slug:');
+    expect(installSource.indexOf('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);')).toBeLessThan(
+      installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
+    );
+    expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete'");
+    expect(cliUiSource).toContain("if (step.state === 'active' || step.state === 'complete') return chalk.white('●');");
+  });
+
+
+
+  it('should avoid duplicate final step rows after local OS save', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    const afterSave = installSource.slice(installSource.indexOf("spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');"));
+    expect(afterSave).not.toContain("stepComplete('skills')");
+    expect(afterSave).not.toContain("stepComplete('artifacts')");
+    expect(afterSave).not.toContain("stepComplete('agents')");
+    expect(afterSave).toContain("success(options.dryRun ? 'dry run complete' : 'configuration saved')");
+  });
+
+  it('should not print background-service explanatory copy when daemon choice was preselected', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).not.toContain('background service is the final setup step; tokens and secrets stay local and are not printed.');
+  });
+
+  it('should honor preselected daemon flags without reprompting during interactive setup', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).toContain('if (options.installDaemons) {');
+    expect(installSource).toContain('installDaemons = true;');
+    expect(installSource).toContain('} else if (options.skipDaemons) {');
+    expect(installSource).toContain('installDaemons = false;');
+    expect(installSource.indexOf('if (options.installDaemons) {')).toBeLessThan(
+      installSource.indexOf("message: 'install local background service?'"),
+    );
+  });
+
+  it('should resolve OS home silently instead of prompting for it in interactive setup', () => {
+    const installSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'install.ts'),
+      'utf8',
+    );
+
+    expect(installSource).not.toContain("message: 'OS home'");
+    expect(installSource).not.toContain("'workspace', 'home', 'skills'");
+    expect(installSource).not.toContain("stepComplete('home')");
+    expect(installSource).toContain('const home = resolveOsHome(options.home);');
+    expect(installSource).toContain('home,');
+  });
 });

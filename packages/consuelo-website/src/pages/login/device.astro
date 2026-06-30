@@ -1,50 +1,43 @@
 ---
-const title = 'Sign in to Consuelo OS';
+import SiteFooter from '../../components/site/SiteFooter.astro';
+import SiteHeader from '../../components/site/SiteHeader.astro';
+import MarketingLayout from '../../layouts/MarketingLayout.astro';
+
 const description = 'Authorize Consuelo OS on this device.';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
-  </head>
-  <body class="site-auth-body">
-    <main class="device-auth site-auth-shell" data-device-auth>
-      <section class="device-auth__copy-pane site-auth-copy-pane" aria-labelledby="device-auth-title">
-        <a class="device-auth__brand" href="/" aria-label="Consuelo OS home">Consuelo OS</a>
+<MarketingLayout title="Authorize Consuelo OS" description={description}>
+  <SiteHeader />
 
-        <div class="device-auth__form site-auth-form">
-          <h1 id="device-auth-title">Sign in to Consuelo OS</h1>
-          <p class="device-auth__instruction">Enter the code shown in your terminal.</p>
+  <section class="launch-section device-auth" aria-labelledby="device-auth-title">
+    <div class="launch-content device-auth__content">
+      <p class="device-auth__eyebrow launch-mono">Consuelo OS</p>
+      <h1 id="device-auth-title" class="device-auth__title launch-mono">Authorize this device</h1>
+      <p class="launch-copy device-auth__copy">
+        Consuelo OS is asking to connect this Mac to your workspace. Confirm the code below matches the code shown in your terminal.
+      </p>
 
-          <div class="device-auth__code-box site-auth-code-box" aria-live="polite">
-            <strong class="device-auth__code" data-device-code>Waiting for code</strong>
-          </div>
+      <div class="device-auth__card" aria-live="polite">
+        <span class="device-auth__label launch-mono">Device code</span>
+        <strong class="device-auth__code launch-mono" data-device-code>Waiting for code</strong>
+      </div>
 
-          <p class="device-auth__guardrail">
-            Only continue if you just initiated a sign-in from your device.
-          </p>
+      <p class="launch-copy device-auth__copy">
+        Approve this device with your Google-backed Consuelo account, then return to your terminal to finish setup.
+      </p>
+      <a
+        class="device-auth__button launch-mono"
+        data-device-continue
+        data-os-device-approve-link
+        href="https://app.consuelohq.com/auth/google?action=os-device-approval"
+      >
+        Approve with Google
+      </a>
+    </div>
+  </section>
 
-          <a
-            class="device-auth__button site-auth-primary-action"
-            data-device-continue
-            data-os-device-approve-link
-            href="https://app.consuelohq.com/auth/google?action=os-device-approval"
-          >
-            Continue with Google
-          </a>
-        </div>
-      </section>
-
-      <aside class="device-auth__visual site-auth-visual" aria-hidden="true">
-        <div class="device-auth__mark site-auth-visual-mark">OS</div>
-      </aside>
-    </main>
-  </body>
-</html>
+  <SiteFooter />
+</MarketingLayout>
 
 <script is:inline>
   const deviceCodeNode = document.querySelector('[data-device-code]');
@@ -62,132 +55,76 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 </script>
 
-<style is:global>
-  @import '../../styles/tokens.css';
-  @import '../../styles/primitives.css';
-
-  * {
-    box-sizing: border-box;
-  }
-
+<style>
   .device-auth {
-    grid-template-columns: minmax(0, var(--site-auth-copy-column)) minmax(0, var(--site-auth-visual-column));
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
   }
 
-  .device-auth__copy-pane {
-    padding: var(--site-space-12) clamp(var(--site-space-9), 6vw, var(--site-space-14)) var(--site-space-13);
+  .device-auth__content {
+    max-width: 720px;
+    text-align: center;
   }
 
-  .device-auth__brand {
-    width: fit-content;
-    color: var(--site-color-text-primary);
-    font-size: 0.88rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1;
-    text-decoration: none;
+  .device-auth__eyebrow {
+    color: var(--site-color-accent);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
-  .device-auth__form {
-    width: min(100%, var(--site-auth-form-width));
-    align-self: center;
-    gap: var(--site-space-8);
+  .device-auth__title {
+    font-size: clamp(var(--site-text-2xl), 7vw, var(--site-text-4xl));
+    line-height: 0.9;
+    margin: var(--site-space-4) 0;
   }
 
-  .device-auth__form h1 {
-    margin: var(--site-space-0) var(--site-space-0) var(--site-space-10);
-    color: var(--site-color-text-primary);
-    font-size: 2.35rem;
-    font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.08;
+  .device-auth__copy {
+    max-width: 58ch;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .device-auth__instruction,
-  .device-auth__guardrail {
-    margin: var(--site-space-0);
-    max-width: var(--site-auth-text-width);
-    color: var(--site-color-text-secondary);
-    font-size: 1rem;
-    line-height: 1.55;
+  .device-auth__card {
+    margin: var(--site-space-6) auto;
+    padding: clamp(var(--site-space-5), 4vw, var(--site-space-7));
+    border: 1px solid var(--site-color-line);
+    border-radius: var(--site-radius-card);
+    background: var(--site-color-panel);
+    box-shadow: var(--site-shadow-raised);
   }
 
-  .device-auth__code-box {
-    min-height: var(--site-auth-code-height);
+  .device-auth__label {
+    display: block;
+    margin-bottom: var(--site-space-3);
+    color: var(--site-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
   }
 
   .device-auth__code {
-    color: var(--site-color-text-primary);
-    font-family: var(--site-font-mono);
-    font-size: 1.2rem;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1;
+    display: block;
+    color: var(--site-color-ink);
+    font-size: clamp(var(--site-text-xl), 8vw, var(--site-text-4xl));
+    letter-spacing: 0.08em;
   }
 
   .device-auth__button {
-    min-height: var(--site-auth-button-height);
-    margin-top: var(--site-space-1);
-    padding: var(--site-space-0) var(--site-space-6);
-    border-radius: var(--site-radius-action);
-    font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: 0;
-    transition: opacity var(--site-motion-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--site-space-2);
+    padding: 0.95rem 1.25rem;
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: var(--site-radius-pill);
+    background: var(--site-color-panel-strong);
+    color: var(--site-color-ink);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 
   .device-auth__button:hover {
-    opacity: 0.82;
-  }
-
-  .device-auth__visual {
-    min-height: 100vh;
-    background: var(--site-auth-visual-background);
-  }
-
-  .device-auth__mark {
-    right: var(--site-auth-visual-mark-offset);
-    top: 50%;
-    transform: translateY(-50%) rotate(-18deg);
-    color: var(--site-color-auth-visual-mark);
-    font-family: var(--site-font-mono);
-    font-size: var(--site-auth-visual-mark-size);
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 0.85;
-  }
-
-  @media (max-width: 860px) {
-    .device-auth {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .device-auth__copy-pane {
-      min-height: var(--site-auth-mobile-copy-height);
-      padding: var(--site-space-7) var(--site-space-5) var(--site-space-11);
-    }
-
-    .device-auth__form {
-      align-self: end;
-      gap: 1.15rem;
-    }
-
-    .device-auth__form h1 {
-      margin-bottom: var(--site-space-4);
-      font-size: 2.15rem;
-    }
-
-    .device-auth__button {
-      min-height: var(--site-auth-button-height-mobile);
-    }
-
-    .device-auth__visual {
-      min-height: var(--site-auth-mobile-visual-height);
-    }
-
-    .device-auth__mark {
-      right: var(--site-auth-visual-mark-mobile-offset);
-      font-size: var(--site-auth-visual-mark-mobile-size);
-    }
+    background: var(--site-color-soft);
   }
 </style>

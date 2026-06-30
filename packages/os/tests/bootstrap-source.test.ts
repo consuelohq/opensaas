@@ -4,6 +4,20 @@ import { describe, expect, it } from 'vitest';
 
 const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
 
+function extractShellFunction(source: string, name: string): string {
+  const lines = source.split('\n');
+  const start = lines.findIndex((line) => line === `${name}() {`);
+  if (start === -1) {
+    throw new Error(`missing shell function: ${name}`);
+  }
+  for (let index = start + 1; index < lines.length; index += 1) {
+    if (lines[index] === '}') {
+      return lines.slice(start, index + 1).join('\n');
+    }
+  }
+  throw new Error(`unterminated shell function: ${name}`);
+}
+
 describe('bootstrap source refresh controls', () => {
   it('should declare the public installer dependency model explicitly', () => {
     const bootstrap = readBootstrap();
@@ -18,12 +32,15 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('wrangler');
   });
 
-  it('documents an explicit source refresh option', () => {
+  it('refreshes hosted source by default with an explicit reuse escape hatch', () => {
     const bootstrap = readBootstrap();
 
+    expect(bootstrap).toContain('REFRESH_SOURCE=1');
     expect(bootstrap).toContain('--refresh-source');
-    expect(bootstrap).toContain('REFRESH_SOURCE');
+    expect(bootstrap).toContain('--use-existing-source');
     expect(bootstrap).toContain('SOURCE_STATUS="refreshed"');
+    expect(bootstrap).toContain('SOURCE_STATUS="reused"');
+    expect(bootstrap).not.toContain('pass --refresh-source to refresh it');
   });
 
   it('asks for local or cloud before dependency setup', () => {
@@ -66,8 +83,12 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('Consuelo OS needs its dependencies to continue.');
     expect(bootstrap).toContain('render_dependency_progress');
+    expect(bootstrap).toContain('CONSUELO  OS');
+    expect(bootstrap).not.toContain('C O N S U E L O  O S');
+    expect(bootstrap).not.toContain('C O N S U E L O   O S');
     expect(bootstrap).toContain('● dependencies');
-    expect(bootstrap).toContain('○ home');
+    expect(bootstrap).not.toContain('○ home');
+    expect(bootstrap).toContain('○ workspace');
     expect(bootstrap).toContain('○ skills');
     expect(bootstrap).toContain('○ artifacts');
     expect(bootstrap).toContain('○ agents');
@@ -76,6 +97,41 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('Consuelo OS needs its local runtime dependencies to continue.');
     expect(bootstrap).not.toContain('We can download/setup this now.');
     expect(bootstrap).not.toContain('We can install/setup this now.');
+  });
+
+
+  it('forwards daemon decisions into interactive onboarding', () => {
+    const bootstrap = readBootstrap();
+    const runner = extractShellFunction(bootstrap, 'run_install_with_script_pty');
+
+    expect(runner).toContain('local install_args=');
+    expect(runner).toContain('install_args+=(--install-daemons)');
+    expect(runner).toContain('install_args+=(--skip-daemons)');
+    expect(runner).toContain('"${install_args[@]}"');
+  });
+
+  it('keeps the human success summary minimal and opens the launcher last', () => {
+    const bootstrap = readBootstrap();
+    const summary = extractShellFunction(bootstrap, 'print_success_summary');
+    const main = extractShellFunction(bootstrap, 'main');
+
+    expect(summary).toContain('Consuelo OS setup complete');
+    expect(summary).toContain('Home: $os_home');
+    expect(summary).not.toContain('Package:');
+    expect(summary).not.toContain('Config:');
+    expect(summary).not.toContain('Database:');
+    expect(summary).not.toContain('Logs:');
+    expect(summary).not.toContain('Services:');
+    expect(summary).not.toContain('Doctor:');
+    expect(summary).not.toContain('Tokens and secrets');
+
+    expect(bootstrap).toContain('open_workspace_launcher');
+    expect(bootstrap).toContain('[ "$YES" -eq 0 ] || return 0');
+    expect(bootstrap).toContain('[ "$DRY_RUN" -eq 0 ] || return 0');
+    expect(bootstrap).toContain('[ "$JSON" -eq 0 ] || return 0');
+    expect(main.indexOf('print_success_summary')).toBeGreaterThan(-1);
+    expect(main.indexOf('open_workspace_launcher')).toBeGreaterThan(main.indexOf('print_success_summary'));
+    expect(main.indexOf('emit_json_summary')).toBeGreaterThan(main.indexOf('open_workspace_launcher'));
   });
 
   it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {
