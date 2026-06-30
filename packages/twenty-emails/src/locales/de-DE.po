@@ -19,11 +19,6 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Test E-Mail"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Ausgesetzter Arbeitsbereich"
@@ -63,19 +58,9 @@ msgid "Update your subscription"
 msgstr "Aktualisieren Sie Ihr Abonnement"
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr "{senderName} (<0>{senderEmail}</0>) hat Sie eingeladen, einem Arbeitsbereich namens <1>{workspaceName}</1> beizutreten."
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr "Einladung akzeptieren"
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Test E-Mail"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -109,24 +94,19 @@ msgid "Verify Email"
 msgstr "E-Mail verifizieren"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Passwort wurde aktualisiert"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Dies ist eine Bestätigung, dass das Passwort für Ihr Konto ({email}) am {formattedDate} erfolgreich geändert wurde."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Wenn Sie diese Änderung nicht veranlasst haben, kontaktieren Sie bitte umgehend den Eigentümer Ihres Workspaces."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>) hat Sie eingeladen, einem Arbeitsbereich namens <1>{workspaceName}</1> beizutreten."
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "Einladung akzeptieren"
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
@@ -177,6 +157,26 @@ msgstr "Setzen"
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
 msgstr "Dieser Link ist nur für die nächsten {duration} gültig. Wenn der Link nicht funktioniert, können Sie den Anmeldebestätigungslink direkt verwenden:"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Passwort wurde aktualisiert"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Dies ist eine Bestätigung, dass das Passwort für Ihr Konto ({email}) am {formattedDate} erfolgreich geändert wurde."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Wenn Sie diese Änderung nicht veranlasst haben, kontaktieren Sie bitte umgehend den Eigentümer Ihres Workspaces."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/WhatIsTwenty.tsx
