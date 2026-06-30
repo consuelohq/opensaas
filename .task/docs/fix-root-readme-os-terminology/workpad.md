@@ -66,3 +66,18 @@ Changed README.md and validated the README constraints. Scoped review passed wit
 ## workspace-owned: activity log
 
 - 2026-06-30 03:12:14 fs.write: `.task/docs/fix-root-readme-os-terminology/workpad.md`
+<<<<<<< Updated upstream
+=======
+- 2026-06-30 03:13:42 fs.write: `.task/docs/fix-root-readme-os-terminology/workpad.md`
+
+## Ready for review
+What changed: README.md now has the website logo, points readers to packages/os, removes the internal package reference, removes the dry-run install block, and replaces local files with file system.
+
+Why: Ko clarified that the internal implementation package should not be part of the public README, and that OS workspaces are a product concept separate from implementation details.
+
+Validation: static README checks passed for logo path, relative links, fenced code blocks, prohibited old terms, package reference removal, dry-run removal, and dash/quote rules. Scoped review passed with zero issues on the diff.
+
+Follow-up: the root LICENSE file still contains inherited license text and was not changed in this README terminology pass.
+
+- 2026-06-30 03:13:42 append: `.task/docs/fix-root-readme-os-terminology/workpad.md`
+>>>>>>> Stashed changes
