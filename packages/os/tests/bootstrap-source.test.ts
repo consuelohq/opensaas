@@ -49,9 +49,11 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('choose_os_mode');
     expect(bootstrap).toContain('Choose Consuelo OS mode:');
     expect(bootstrap).toContain('prompt_select');
-    expect(bootstrap).toContain('local');
-    expect(bootstrap).toContain('cloud');
+    expect(bootstrap).toContain('render_os_mode_select');
+    expect(bootstrap).toContain('> local');
+    expect(bootstrap).toContain('> cloud');
     expect(bootstrap).toContain('read -rsn1');
+    expect(bootstrap).toContain('read -r -s -n 1 key');
     expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
     expect(bootstrap).toContain('open_contact_url');
     expect(bootstrap).not.toContain('Enter 1 or 2:');
@@ -70,7 +72,7 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('handle_cloud_mode');
     expect(bootstrap).toContain('Consuelo cloud is handled by the Consuelo team. Opening the contact page.');
     expect(bootstrap).toContain('exit 0');
-    expect(bootstrap).toContain('OS_MODE="$1"');
+    expect(bootstrap).toContain('OS_MODE="cloud"');
     expect(bootstrap).toContain('handle_cloud_mode');
 
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(

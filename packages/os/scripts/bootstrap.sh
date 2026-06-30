@@ -362,7 +362,51 @@ or:
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
   fi
 
-  OS_MODE="$(prompt_select "Choose Consuelo OS mode:" "local" "local" "cloud" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local")"
+  local selected=0
+  local key=""
+  local sequence=""
+  local rendered=0
+  local old_tty
+  old_tty="$(stty -g < /dev/tty)"
+
+  stty -echo -icanon min 1 time 0 < /dev/tty
+  printf '\033[?25l' > /dev/tty
+  trap 'stty "$old_tty" < /dev/tty; printf "\033[?25h" > /dev/tty; exit 130' INT TERM
+
+  while true; do
+    if [ "$rendered" -eq 1 ]; then
+      printf '\033[3A' > /dev/tty
+    fi
+    render_os_mode_select "$selected"
+    rendered=1
+
+    IFS= read -r -s -n 1 key < /dev/tty || key=""
+    case "$key" in
+      $'\033')
+        IFS= read -r -s -n 2 -t 1 sequence < /dev/tty || sequence=""
+        case "$sequence" in
+          "[A"|"[B")
+            if [ "$selected" -eq 0 ]; then
+              selected=1
+            else
+              selected=0
+            fi
+            ;;
+        esac
+        ;;
+      ""|$'\n'|$'\r')
+        if [ "$selected" -eq 0 ]; then
+          OS_MODE="local"
+        else
+          OS_MODE="cloud"
+        fi
+        stty "$old_tty" < /dev/tty
+        printf '\033[?25h\n' > /dev/tty
+        trap - INT TERM
+        return 0
+        ;;
+    esac
+  done
 }
 
 handle_cloud_mode() {
