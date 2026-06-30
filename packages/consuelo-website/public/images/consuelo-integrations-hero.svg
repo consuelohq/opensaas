@@ -1070,11 +1070,11 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
       :root {
         --label: #F8FAFC;
         --muted: #94A3B8;
-        --wire: rgba(224, 107, 62, 0.22);
-        --tile-bg: #0F0F0D;
-        --tile-stroke: rgba(247, 239, 231, 0.20);
-        --center-stroke: #E66F43;
-        --icon: #F7EFE7;
+        --wire: rgba(148, 163, 184, 0.22);
+        --tile-bg: #0F172A;
+        --tile-stroke: rgba(148, 163, 184, 0.24);
+        --center-stroke: #8B5CF6;
+        --icon: #F8FAFC;
         --consuelo: #F8FAFC;
         --portrait-fill: #F7F1E8;
         --portrait-ink: #E66F43;
@@ -1082,7 +1082,7 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
         --github-fg: #0B0F19;
       }
     }
-    .label { font: 650 16px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--label); }
+    .label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace; fill: var(--label); }
     .right { text-anchor: end; }
     .wire { stroke: var(--wire); stroke-width: 1.15; fill: none; stroke-linecap: round; }
     .tile-bg { fill: var(--tile-bg); stroke: var(--tile-stroke); stroke-width: 1; }
