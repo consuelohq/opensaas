@@ -89,26 +89,6 @@ msgid "Accept invite"
 msgstr "Αποδοχή πρόσκλησης"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Ο κωδικός έχει ενημερωθεί"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Αυτό είναι ένα επιβεβαίωση ότι ο κωδικός για τον λογαριασμό σας ({email}) άλλαξε με επιτυχία στις {formattedDate}."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Εάν δεν έχετε προβεί εσείς σε αυτήν την αλλαγή, παρακαλώ επικοινωνήστε άμεσα με τον ιδιοκτήτη του χώρου εργασίας σας."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Confirm your new email address"
 msgstr ""
@@ -127,6 +107,26 @@ msgstr ""
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Verify Email"
 msgstr "Επαληθεύστε το Email"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Ο κωδικός έχει ενημερωθεί"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Αυτό είναι ένα επιβεβαίωση ότι ο κωδικός για τον λογαριασμό σας ({email}) άλλαξε με επιτυχία στις {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Εάν δεν έχετε προβεί εσείς σε αυτήν την αλλαγή, παρακαλώ επικοινωνήστε άμεσα με τον ιδιοκτήτη του χώρου εργασίας σας."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
