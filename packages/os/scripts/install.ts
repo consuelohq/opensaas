@@ -3,7 +3,6 @@
 import fs from 'node:fs';
 import {
   cancel,
-  confirm,
   groupMultiselect,
   isCancel,
   multiselect,
@@ -21,7 +20,6 @@ import {
   printEnd,
   printOsBanner,
   spinner,
-  stepComplete,
   success,
 } from './lib/cli-ui';
 import {
@@ -515,15 +513,6 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner([
-      { label: 'dependencies', state: 'complete' },
-      { label: 'workspace', state: 'active' },
-      'skills',
-      'artifacts',
-      'agents',
-      'health',
-    ]);
-    info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
     const clackIo = getClackIo();
 
     let mode: OsMode = options.mode ?? 'local';
@@ -571,6 +560,16 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       dryRun: options.dryRun,
     });
 
+    printOsBanner([
+      { label: 'dependencies', state: 'complete' },
+      { label: 'workspace', state: 'complete' },
+      { label: 'security', state: 'complete' },
+      { label: 'skills', state: 'active' },
+      'agents',
+      'service',
+      'health',
+    ]);
+
     const home = resolveOsHome(options.home);
 
     const skillPrompt = getGroupedOnboardingSkillOptions();
@@ -591,16 +590,17 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
-      const shouldConnect = await confirm({ ...clackIo, message: 'connect detected agents to the OS portal?', initialValue: true });
-      if (!isCancel(shouldConnect) && shouldConnect) {
-        const selectedAgents = await multiselect({
-          ...clackIo,
-          message: 'select agents to connect — Use Space to select agents, press Enter to continue',
-          options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
-          required: false,
-        });
-        if (!isCancel(selectedAgents)) connectAgents = selectedAgents as AgentName[];
-      }
+      const selectedAgents = await multiselect({
+        ...clackIo,
+        message: 'select agents to connect — Use Space to select agents, press Enter to continue',
+        options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
+        initialValues: options.connectAgents.length > 0
+          ? options.connectAgents
+          : detectedAgents.map((agent) => agent.name),
+        required: false,
+      });
+      if (isCancel(selectedAgents)) { cancel('setup cancelled.'); process.exit(0); }
+      connectAgents = selectedAgents as AgentName[];
     }
 
     let installDaemons = false;
@@ -609,9 +609,17 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     } else if (options.skipDaemons) {
       installDaemons = false;
     } else {
-      const selectedInstallDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
+      const selectedInstallDaemons = await select({
+        ...clackIo,
+        message: 'install local background service?',
+        initialValue: 'yes',
+        options: [
+          { value: 'yes' as const, label: 'Yes' },
+          { value: 'no' as const, label: 'No' },
+        ],
+      });
       if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
-      installDaemons = selectedInstallDaemons;
+      installDaemons = selectedInstallDaemons === 'yes';
     }
     return {
       ...options,

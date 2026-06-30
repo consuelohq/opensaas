@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/align-os-installer-selection-and-progress-ux",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1282,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1282",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1282",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1282/align-os-installer-selection-and-progress-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1282",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1282/align-os-installer-selection-and-progress-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-installer-selection-and-progress-ux",
+  "taskSession": "tsk_e2df4e9f092b",
+  "tmuxSession": "opensaas-security-align-os-installer-selection-and-progress-ux-e2df4e9f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-installer-selection-and-progress-ux/.task/security/align-os-installer-selection-and-progress-ux/session.json",
+  "createdAt": "2026-06-30T03:13:47.705Z"
+}

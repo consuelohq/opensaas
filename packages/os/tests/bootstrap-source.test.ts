@@ -48,8 +48,12 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('choose_os_mode');
     expect(bootstrap).toContain('Choose Consuelo OS mode:');
-    expect(bootstrap).toContain('1) local');
-    expect(bootstrap).toContain('2) cloud');
+    expect(bootstrap).toContain('render_os_mode_select');
+    expect(bootstrap).toContain('> local');
+    expect(bootstrap).toContain('> cloud');
+    expect(bootstrap).not.toContain('Enter 1 or 2:');
+    expect(bootstrap).not.toContain('1) local');
+    expect(bootstrap).not.toContain('2) cloud');
     expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
     expect(bootstrap).toContain('open_contact_url');
 
@@ -83,15 +87,17 @@ describe('bootstrap source refresh controls', () => {
 
     expect(bootstrap).toContain('Consuelo OS needs its dependencies to continue.');
     expect(bootstrap).toContain('render_dependency_progress');
-    expect(bootstrap).toContain('CONSUELO  OS');
+    expect(bootstrap).toContain('CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health');
     expect(bootstrap).not.toContain('C O N S U E L O  O S');
     expect(bootstrap).not.toContain('C O N S U E L O   O S');
     expect(bootstrap).toContain('● dependencies');
     expect(bootstrap).not.toContain('○ home');
     expect(bootstrap).toContain('○ workspace');
+    expect(bootstrap).toContain('○ security');
     expect(bootstrap).toContain('○ skills');
-    expect(bootstrap).toContain('○ artifacts');
+    expect(bootstrap).not.toContain('○ artifacts');
     expect(bootstrap).toContain('○ agents');
+    expect(bootstrap).toContain('○ service');
     expect(bootstrap).toContain('○ health');
     expect(bootstrap).not.toContain('Consuelo OS needs the local runtime source to continue.');
     expect(bootstrap).not.toContain('Consuelo OS needs its local runtime dependencies to continue.');
