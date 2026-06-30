@@ -1,18 +1,11 @@
 ---
-import HomeFaq from '../components/home/HomeFaq.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import HomeHero from '../components/home/HomeHero.astro';
-import HomeMercuryPromo from '../components/home/HomeMercuryPromo.astro';
-import HomeOverview from '../components/home/HomeOverview.astro';
-import HomePrivacy from '../components/home/HomePrivacy.astro';
-import HomeStats from '../components/home/HomeStats.astro';
-import { homeFaqItems } from '../data/home-content';
-import { homePageSections } from '../data/site-navigation';
-import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
+import { getSoftwareApplicationSchema } from '../lib/site-seo';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 
-const description = 'Sales infrastructure for insurance sales teams with a connected crm, dialer, real-time ai coaching, and workflow surfaces that integrate everywhere your team works.';
+const description = 'Give every agent workspace superpowers with Consuelo OS, the open workspace layer for agents, teams, and tools.';
 
 const schemaEntries = [
   getSoftwareApplicationSchema({
@@ -24,36 +17,17 @@ const schemaEntries = [
       offerCount: '2',
     },
   }),
-  getFaqSchema(homeFaqItems),
 ];
 ---
 
 <MarketingLayout
-  title="Consuelo | Sales Infrastructure for Insurance Sales Teams"
+  title="Consuelo | Workspace superpowers for every agent"
   description={description}
   canonicalPath="/"
   image="/og.png"
   schemaEntries={schemaEntries}
 >
-  <script is:inline>
-    (() => {
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.documentElement.dataset.heroMotionReady = 'true';
-      }
-    })();
-  </script>
-  <SiteHeader pageSections={homePageSections} />
+  <SiteHeader pageSections={[]} />
   <HomeHero sectionId="intro" />
-  <script>
-    import { bootHomeHeroMotion, bootProofSvgMotion } from "../lib/motion";
-
-    bootHomeHeroMotion();
-    bootProofSvgMotion();
-  </script>
-  <HomeOverview sectionId="overview" />
-  <HomeStats sectionId="proof" />
-  <HomePrivacy sectionId="privacy" />
-  <HomeFaq sectionId="faq" items={homeFaqItems} />
-  <HomeMercuryPromo sectionId="mercury" />
-  <SiteFooter sectionId="waitlist" />
+  <SiteFooter />
 </MarketingLayout>

@@ -1,398 +1,633 @@
 ---
-import {
-  homeAnnouncement,
-  homeHero,
-  homeTabs,
-} from '../../data/home-content';
+import { homeTabs } from '../../data/home-content'
 
 type Props = {
-  sectionId?: string;
-};
+	sectionId?: string
+}
 
-const { sectionId } = Astro.props as Props;
+const { sectionId } = Astro.props as Props
+const osPortalHref = 'https://os.consuelohq.com'
+const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 ---
 
-<section class="launch-section" id={sectionId} data-motion-section="hero">
-  <div class="launch-content launch-content--wide launch-hero">
-    <a href={homeAnnouncement.linkHref} class="launch-hero__announcement launch-mono" data-motion="hero-eyebrow">
-      <span class="launch-hero__badge">{homeAnnouncement.badge}</span>
-      <span class="launch-hero__announcement-text">
-        {homeAnnouncement.text} <span class="launch-inline-link">{homeAnnouncement.linkLabel}</span>
-      </span>
-    </a>
+<section class="home-hero site-section" id={sectionId} data-section="hero">
+	<div class="home-hero__inner site-container site-container--wide">
+		<div class="home-hero__content">
+			<p class="home-hero__eyebrow site-eyebrow" aria-label="Open source and MIT licensed">
+				<span>OPEN SOURCE</span>
+				<span class="home-hero__eyebrow-dot" aria-hidden="true">•</span>
+				<span>MIT LICENSE</span>
+			</p>
 
-    <div class="launch-hero__copy">
-      <h1 class="launch-title" data-motion="hero-title">{homeHero.title}</h1>
-      <p class="launch-copy" data-motion="hero-copy">{homeHero.description}</p>
-    </div>
+			<h1
+				class="home-hero__title"
+				data-pretext-title={heroTitleText}
+				data-pretext-lines="3"
+				aria-label="GIVE EVERY AGENT WORKSPACE SUPERPOWERS"
+			>
+				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
+					>GIVE EVERY AGENT</span
+				>
+				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
+					>GIVE EVERY</span
+				>
+				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
+					>AGENT</span
+				>
+				<span class="home-hero__title-line" aria-hidden="true">WORKSPACE</span>
+				<span class="home-hero__title-line" aria-hidden="true"><em>SUPERPOWERS</em></span>
+			</h1>
 
-    <div class="launch-hero__snippet launch-card" data-launch-hero data-motion="product-frame">
-      <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces">
-        {homeTabs.map((tab, index) => (
-          <button
-            class:list={['launch-hero__tab', { 'is-active': index === 0 }]}
-            type="button"
-            role="tab"
-            aria-selected={index === 0 ? 'true' : 'false'}
-            data-tab-button={tab.id}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+			<div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
+				<p class="home-hero__action-label site-eyebrow">USE CONSUELO OS CLOUD</p>
+				<a class="home-hero__portal site-button site-button--secondary" href={osPortalHref}>
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z"
+						></path>
+					</svg>
+					<span>Go to OS portal</span>
+				</a>
+			</div>
 
-      <div class="launch-hero__snippet-panels">
-        {homeTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
-          <a
-            href={tab.href}
-            class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]}
-            data-tab-panel={tab.id}
-          >
-            <span class="launch-hero__snippet-value launch-mono">{tab.value}</span>
-            <span class="launch-hero__snippet-action" aria-hidden="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 17L17 7" />
-                <path d="M7 7h10v10" />
-              </svg>
-            </span>
-          </a>
-        ) : (
-          <div 
-            class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]} 
-            data-tab-panel={tab.id}
-            data-copy-button={tab.id}
-          >
-            <code class="launch-hero__snippet-value launch-mono">{tab.value}</code>
-            <span class="launch-hero__snippet-action" aria-hidden="true">
-              <svg class="launch-hero__copy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-              </svg>
-              <svg class="launch-hero__check-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+			<div class="home-hero__install-wrap">
+				<p class="home-hero__install-label site-eyebrow">INSTALL VIA TERMINAL</p>
+				<div class="home-hero__install site-card" data-hero-install>
+					<div
+						class="home-hero__tabs"
+						role="tablist"
+						aria-label="Consuelo install and workspace surfaces"
+					>
+						{
+							homeTabs.map((tab, index) => (
+								<button
+									class:list={['home-hero__tab', { 'is-active': index === 0 }]}
+									type="button"
+									role="tab"
+									aria-selected={index === 0 ? 'true' : 'false'}
+									data-tab-button={tab.id}
+								>
+									{tab.label}
+								</button>
+							))
+						}
+					</div>
 
-    <div class="launch-hero__media launch-card" data-launch-media data-motion="product-frame">
-      {homeTabs.map((tab, index) => (
-        <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
-          <picture>
-            {tab.darkImageSrc && <source srcset={tab.darkImageSrc} media="(prefers-color-scheme: dark)" />}
-            <img src={tab.imageSrc} alt={tab.imageAlt} loading={index === 0 ? 'eager' : 'lazy'} />
-          </picture>
-        </figure>
-      ))}
-      <span class="launch-hero__scanline" data-motion="hero-scanline" aria-hidden="true"></span>
-    </div>
-  </div>
+					<div class="home-hero__panels">
+						{
+							homeTabs.map((tab, index) =>
+								tab.kind === 'link' && tab.href ? (
+									<a
+										href={tab.href}
+										class:list={['home-hero__panel', { 'is-active': index === 0 }]}
+										data-tab-panel={tab.id}
+									>
+										<span class="home-hero__value">{tab.value}</span>
+										<span class="home-hero__panel-action" aria-hidden="true">
+											→
+										</span>
+									</a>
+								) : (
+									<button
+										type="button"
+										class:list={['home-hero__panel', { 'is-active': index === 0 }]}
+										data-tab-panel={tab.id}
+										data-copy-button={tab.id}
+									>
+										<code class="home-hero__value">{tab.value}</code>
+										<span class="home-hero__panel-action" aria-hidden="true">
+											<svg class="home-hero__copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+												<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+											</svg>
+											<svg class="home-hero__check-icon" viewBox="0 0 24 24" aria-hidden="true">
+												<polyline points="20 6 9 17 4 12" />
+											</svg>
+										</span>
+									</button>
+								)
+							)
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
+			<img
+				src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
+				alt="Developer tools and work surfaces connected to Consuelo"
+				loading="eager"
+				decoding="async"
+			/>
+		</figure>
+	</div>
 </section>
 
 <script define:vars={{ homeTabs }}>
-  const root = document.querySelector('[data-launch-hero]');
-  const mediaRoot = document.querySelector('[data-launch-media]');
+	const root = document.querySelector('[data-hero-install]')
 
-  if (root instanceof HTMLElement && mediaRoot instanceof HTMLElement) {
-    const buttons = Array.from(root.querySelectorAll('[data-tab-button]'));
-    const panels = Array.from(root.querySelectorAll('[data-tab-panel]'));
-    const mediaPanels = Array.from(mediaRoot.querySelectorAll('[data-media-panel]'));
-    const copyButtons = Array.from(root.querySelectorAll('[data-copy-button]'));
-    let activeIndex = 0;
+	if (root instanceof HTMLElement) {
+		const buttons = Array.from(root.querySelectorAll('[data-tab-button]'))
+		const panels = Array.from(root.querySelectorAll('[data-tab-panel]'))
+		const copyButtons = Array.from(root.querySelectorAll('[data-copy-button]'))
 
-    const sync = (nextIndex) => {
-      activeIndex = nextIndex;
-      buttons.forEach((button, index) => {
-        const isActive = index === nextIndex;
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      });
-      panels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
-      mediaPanels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
-    };
+		const sync = (nextIndex) => {
+			buttons.forEach((button, index) => {
+				const isActive = index === nextIndex
+				button.classList.toggle('is-active', isActive)
+				button.setAttribute('aria-selected', isActive ? 'true' : 'false')
+			})
+			panels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex))
+		}
 
-    buttons.forEach((button, index) => {
-      button.addEventListener('click', () => {
-        sync(index);
-      });
-    });
+		buttons.forEach((button, index) => {
+			button.addEventListener('click', () => sync(index))
+		})
 
-    copyButtons.forEach((button) => {
-      button.addEventListener('click', async () => {
-        const tabId = button.getAttribute('data-copy-button');
-        const entry = homeTabs.find((tab) => tab.id === tabId);
+		copyButtons.forEach((button) => {
+			button.addEventListener('click', async () => {
+				const tabId = button.getAttribute('data-copy-button')
+				const entry = homeTabs.find((tab) => tab.id === tabId)
 
-        if (!entry) {
-          return;
-        }
+				if (!entry || !navigator.clipboard) {
+					return
+				}
 
-        await navigator.clipboard.writeText(entry.value);
-        button.classList.add('is-copied');
-        window.setTimeout(() => {
-          button.classList.remove('is-copied');
-        }, 1400);
-      });
-    });
+				await navigator.clipboard.writeText(entry.value)
+				button.classList.add('is-copied')
+				window.setTimeout(() => button.classList.remove('is-copied'), 1400)
+			})
+		})
 
-    sync(0);
-  }
+		sync(0)
+	}
+</script>
+
+<script>
+	import { prepare, layout } from '@chenglou/pretext'
+	import type { PreparedText } from '@chenglou/pretext'
+
+	const title = document.querySelector('[data-pretext-title]')
+
+	if (title instanceof HTMLElement) {
+		let prepared: PreparedText | undefined
+		let preparedFont = ''
+
+		const measureTitle = () => {
+			const style = window.getComputedStyle(title)
+			const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+			const text = title.dataset.pretextTitle ?? title.textContent ?? ''
+
+			if (!prepared || preparedFont !== font) {
+				prepared = prepare(text, font, { whiteSpace: 'pre-wrap' })
+				preparedFont = font
+			}
+
+			const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize)
+			const result = layout(prepared, title.clientWidth, lineHeight)
+
+			title.dataset.pretextLines = String(result.lineCount)
+			title.style.setProperty('--home-hero-title-height', `${result.height}px`)
+		}
+
+		const scheduleMeasure = () => window.requestAnimationFrame(measureTitle)
+
+		window.addEventListener('resize', scheduleMeasure, { passive: true })
+		document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle())
+		scheduleMeasure()
+	}
 </script>
 
 <style>
-  .launch-hero {
-    display: grid;
-    gap: 1.25rem;
-    padding-top: clamp(2rem, 1.5rem + 2vw, 3.5rem);
-    padding-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
-  }
+	.home-hero {
+		min-height: calc(100svh - var(--site-space-8));
+		display: grid;
+		align-items: center;
+		background: var(--site-color-paper);
+		color: var(--site-color-ink);
+		font-family: var(--site-font-body);
+		--home-hero-control-bg: #fffdf8;
+		--home-hero-control-line: rgba(28, 26, 23, 0.16);
+		--home-hero-control-shadow:
+			0 0 0 1px rgba(28, 26, 23, 0.08), 0 12px 28px rgba(28, 26, 23, 0.08);
+		padding-block: clamp(4.5rem, 7.2vw, 6.6rem) var(--site-space-7);
+		overflow: clip;
+	}
 
-  .launch-hero__announcement {
-    display: inline-flex;
-    text-decoration: none;
-    width: fit-content;
-    align-items: center;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    color: var(--launch-muted);
-    font-size: 0.78rem;
-  }
+	.home-hero__inner {
+		display: grid;
+		gap: clamp(var(--site-space-4), 1.25vw, var(--site-space-5));
+		align-items: center;
+	}
 
-  .launch-hero__badge {
-    border: 1px solid color-mix(in srgb, var(--launch-line) 40%, transparent);
-    padding: 0.08rem 0.28rem;
-    color: var(--launch-fg);
-    background: var(--launch-panel);
-    transition: border-color 160ms ease;
-  }
+	.home-hero__content {
+		display: grid;
+		gap: clamp(1.35rem, 1.35vw, 2rem);
+		max-width: 36rem;
+		position: relative;
+		z-index: 1;
+	}
 
-  .launch-hero__announcement:hover .launch-hero__badge {
-    border-color: var(--launch-line);
-  }
+	.home-hero__eyebrow {
+		color: var(--site-color-ink);
+		display: flex;
+		gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
+		align-items: center;
+		font-size: clamp(0.62rem, 0.9vw, 0.76rem);
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		white-space: nowrap;
+	}
 
-  .launch-hero__copy {
-    display: grid;
-    gap: 0.85rem;
-    max-width: 37rem;
-  }
+	.home-hero__eyebrow-dot {
+		color: currentColor;
+		opacity: 0.72;
+	}
 
-  :global(html[data-hero-motion-ready='true']) [data-motion='hero-eyebrow'],
-  :global(html[data-hero-motion-ready='true']) [data-motion='hero-copy'],
-  :global(html[data-hero-motion-ready='true']) [data-motion='product-frame'] {
-    opacity: 0;
-    transform: translate3d(0, 0.85rem, 0);
-    will-change: opacity, transform;
-  }
+	.home-hero__title {
+		margin: 0;
+		color: var(--site-color-ink);
+		font-family: var(--site-font-display);
+		font-size: clamp(3.2rem, 5.35vw, 5.65rem);
+		font-weight: 300;
+		letter-spacing: 0;
+		line-height: 0.86;
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
 
-  :global(html[data-hero-motion-ready='true']) [data-motion='hero-title'] {
-    opacity: 0;
-    will-change: opacity;
-  }
+	.home-hero__title-line {
+		display: block;
+		white-space: nowrap;
+	}
 
-  :global(html[data-hero-motion-ready='true']) [data-motion='product-frame'] {
-    transform: translate3d(0, 1rem, 0) scale(0.992);
-  }
+	.home-hero__title-line--mobile {
+		display: none;
+	}
 
-  @media (prefers-reduced-motion: reduce) {
-    :global(html[data-hero-motion-ready='true']) [data-motion='hero-eyebrow'],
-    :global(html[data-hero-motion-ready='true']) [data-motion='hero-title'],
-    :global(html[data-hero-motion-ready='true']) [data-motion='hero-copy'],
-    :global(html[data-hero-motion-ready='true']) [data-motion='product-frame'] {
-      opacity: 1;
-      transform: none;
-      will-change: auto;
-    }
-  }
+	.home-hero__title em {
+		color: currentColor;
+		font-family: var(--site-font-display);
+		font-style: normal;
+		font-weight: 300;
+		letter-spacing: 0;
+	}
 
-  .launch-hero__snippet {
-    overflow: hidden;
-  }
+	.home-hero__actions {
+		display: grid;
+		gap: 0.58rem;
+		width: fit-content;
+	}
 
-  .launch-hero__tabs {
-    display: flex;
-    gap: 0.15rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    overscroll-behavior-y: none;
-    touch-action: pan-x;
-    -webkit-overflow-scrolling: touch;
-    border-bottom: 1px solid var(--launch-line);
-    padding: 0.15rem 0.28rem 0;
-    scrollbar-width: none;
-  }
+	.home-hero__action-label,
+	.home-hero__install-label {
+		color: var(--site-color-muted);
+	}
 
-  .launch-hero__tabs::-webkit-scrollbar {
-    display: none;
-  }
+	.home-hero__portal {
+		width: fit-content;
+		min-height: 2.45rem;
+		justify-content: center;
+		justify-self: start;
+		gap: var(--site-space-2);
+		border: 1px solid var(--home-hero-control-line);
+		border-radius: calc(var(--site-radius-sm) * 0.25);
+		background: var(--home-hero-control-bg);
+		color: var(--site-color-ink);
+		box-shadow: var(--home-hero-control-shadow);
+		font-family: var(--site-font-mono);
+		font-size: clamp(0.78rem, 0.95vw, 0.88rem);
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1;
+		padding: 0.72rem 1.15rem;
+	}
 
-  .launch-hero__tab {
-    border: 0;
-    background: transparent;
-    color: var(--launch-muted);
-    padding: 0.45rem 0.78rem;
-    white-space: nowrap;
-    font-size: 0.88rem;
-    outline: none;
-  }
-  
-  .launch-hero__tab:focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-  
-  .launch-hero__tab:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-  }
+	.home-hero__portal svg {
+		width: var(--site-space-4);
+		height: var(--site-space-4);
+		fill: currentColor;
+	}
 
-  .launch-hero__tab.is-active {
-    background: transparent;
-    color: var(--launch-fg);
-    border-bottom: 2px dotted var(--launch-fg);
-    margin-bottom: -1px;
-  }
+	.home-hero__install-wrap {
+		display: grid;
+		gap: 0.62rem;
+		width: min(100%, 30rem);
+	}
 
-  .launch-hero__snippet-panels {
-    background: var(--launch-panel);
-  }
+	.home-hero__install {
+		overflow: hidden;
+		padding: 0;
+		border: 1px solid var(--home-hero-control-line);
+		border-radius: calc(var(--site-radius-sm) * 0.25);
+		background: var(--home-hero-control-bg);
+		box-shadow: var(--home-hero-control-shadow);
+	}
 
-  .launch-hero__snippet-panel {
-    display: none;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    padding: 0.6rem 0.85rem;
-    cursor: pointer;
-    transition: background 160ms ease;
-    text-decoration: none;
-  }
+	.home-hero__tabs {
+		display: flex;
+		gap: clamp(1.35rem, 2.2vw, 2rem);
+		overflow-x: auto;
+		overflow-y: hidden;
+		border-bottom: 1px solid var(--home-hero-control-line);
+		padding: 0.72rem var(--site-space-4) 0;
+		scrollbar-width: none;
+	}
 
-  .launch-hero__snippet-panel.is-active {
-    display: flex;
-  }
+	.home-hero__tabs::-webkit-scrollbar {
+		display: none;
+	}
 
-  .launch-hero__snippet-panel:hover {
-    background: color-mix(in srgb, var(--launch-fg) 3%, transparent);
-  }
+	.home-hero__tab {
+		border: 0;
+		border-bottom: 1px solid transparent;
+		background: transparent;
+		color: var(--site-color-muted);
+		font: 400 clamp(0.78rem, 0.95vw, 0.88rem) / 1 var(--site-font-mono);
+		letter-spacing: 0;
+		padding: 0 0 0.72rem;
+		white-space: nowrap;
+	}
 
-  .launch-hero__snippet-panel:hover .launch-hero__snippet-action {
-    color: var(--launch-fg);
-    background: color-mix(in srgb, var(--launch-fg) 8%, transparent);
-  }
+	.home-hero__tab:hover,
+	.home-hero__tab:focus-visible {
+		color: var(--site-color-ink);
+		outline: none;
+	}
 
-  .launch-hero__snippet-value {
-    margin: 0;
-    min-width: 0;
-    display: block;
-    color: var(--launch-fg);
-    font-size: 0.72rem;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-  }
+	.home-hero__tab.is-active {
+		border-bottom-color: transparent;
+		color: var(--site-color-ink);
+	}
 
-  .launch-hero__snippet-action {
-    width: 1.6rem;
-    height: 1.6rem;
-    border: none;
-    border-radius: 0.35rem;
-    background: transparent;
-    color: var(--launch-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 160ms ease, background 160ms ease;
-  }
+	.home-hero__panels {
+		background: var(--home-hero-control-bg);
+	}
 
-  .launch-hero__snippet-action svg {
-    width: 0.96rem;
-    height: 0.96rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+	.home-hero__panel {
+		display: none;
+		width: 100%;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--site-space-3);
+		border: 0;
+		background: transparent;
+		color: var(--site-color-ink);
+		cursor: pointer;
+		padding: 0.86rem var(--site-space-4);
+		text-align: left;
+		text-decoration: none;
+		transition:
+			background var(--site-motion-fast) var(--site-ease-standard),
+			color var(--site-motion-fast) var(--site-ease-standard);
+	}
 
-  .launch-hero__check-icon {
-    display: none;
-  }
+	.home-hero__panel.is-active {
+		display: flex;
+	}
 
-  .launch-hero__snippet-panel.is-copied .launch-hero__snippet-action {
-    color: var(--launch-success);
-  }
+	.home-hero__panel:hover,
+	.home-hero__panel:focus-visible {
+		background: transparent;
+		outline: none;
+	}
 
-  .launch-hero__snippet-panel.is-copied .launch-hero__copy-icon {
-    display: none;
-  }
+	.home-hero__value {
+		min-width: 0;
+		color: var(--site-color-ink);
+		font: 400 var(--home-hero-value-size, 0.82rem) / 1.28 var(--site-font-mono);
+		overflow: visible;
+		overflow-wrap: anywhere;
+		text-overflow: clip;
+		white-space: normal;
+	}
 
-  .launch-hero__snippet-panel.is-copied .launch-hero__check-icon {
-    display: block;
-  }
+	.home-hero__panel-action {
+		width: var(--site-space-5);
+		height: var(--site-space-5);
+		border-radius: calc(var(--site-radius-sm) * 0.75);
+		color: var(--site-color-muted);
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--site-font-mono);
+	}
 
-  .launch-hero__media {
-    position: relative;
-    overflow: hidden;
-    background: var(--launch-panel);
-  }
+	.home-hero__panel:hover .home-hero__panel-action,
+	.home-hero__panel:focus-visible .home-hero__panel-action {
+		color: var(--site-color-ink);
+		background: transparent;
+	}
 
-  .launch-hero__scanline {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: min(42%, 18rem);
-    pointer-events: none;
-    opacity: 0;
-    transform: translate3d(-120%, 0, 0);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      color-mix(in srgb, var(--launch-fg) 16%, transparent),
-      transparent
-    );
-    will-change: opacity, transform;
-  }
+	.home-hero__panel-action svg {
+		width: var(--site-space-4);
+		height: var(--site-space-4);
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+	}
 
-  @media (prefers-reduced-motion: reduce) {
-    .launch-hero__scanline {
-      display: none;
-    }
-  }
+	.home-hero__check-icon {
+		display: none;
+	}
 
-  .launch-hero__media-panel {
-    display: none;
-    margin: 0;
-  }
+	.home-hero__panel.is-copied .home-hero__panel-action {
+		color: var(--site-color-secondary);
+	}
 
-  .launch-hero__media-panel.is-active {
-    display: block;
-  }
+	.home-hero__panel.is-copied .home-hero__copy-icon {
+		display: none;
+	}
 
-  .launch-hero__media-panel img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
+	.home-hero__panel.is-copied .home-hero__check-icon {
+		display: block;
+	}
 
-  .launch-hero__media-panel picture {
-    display: contents;
-  }
+	.home-hero__diagram {
+		position: relative;
+		z-index: 0;
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		overflow: visible;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
 
-  @media (max-width: 720px) {
-    .launch-hero__announcement {
-      gap: 0.4rem;
-      font-size: 0.63rem;
-    }
+	.home-hero__diagram img {
+		display: block;
+		width: min(100%, 41rem);
+		max-width: 100%;
+		height: auto;
+		margin-inline: auto 0;
+	}
 
-    .launch-hero__badge {
-      padding: 0.04rem 0.22rem;
-    }
+	@media (prefers-color-scheme: dark) {
+		.home-hero {
+			--home-hero-control-bg: #14130f;
+			--home-hero-control-line: rgba(247, 239, 231, 0.18);
+			--home-hero-control-shadow:
+				0 0 0 1px rgba(247, 239, 231, 0.08), 0 18px 38px rgba(0, 0, 0, 0.36);
+		}
+	}
 
-    .launch-hero__snippet-panel {
-      padding: 0.82rem 0.9rem;
-    }
+	@media (min-width: 1181px) {
+		.home-hero__inner {
+			grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
+			justify-content: space-between;
+		}
+	}
 
-    .launch-hero__media {
-    }
-  }
+	@media (max-width: 1180px) {
+		.home-hero {
+			min-height: auto;
+			padding-block: clamp(5.5rem, 10vw, 7.5rem) var(--site-space-7);
+		}
+
+		.home-hero__inner {
+			grid-template-columns: minmax(0, 1fr);
+			align-items: start;
+		}
+
+		.home-hero__content {
+			max-width: min(100%, 42rem);
+		}
+
+		.home-hero__title {
+			font-size: clamp(3.05rem, 7.4vw, 5.35rem);
+		}
+
+		.home-hero__diagram {
+			order: 2;
+			margin-block-start: 0;
+		}
+
+		.home-hero__diagram img {
+			width: min(100%, 41rem);
+			margin-inline: auto;
+		}
+	}
+
+	@media (max-width: 860px) {
+		.home-hero__inner,
+		.home-hero__content {
+			gap: var(--site-space-4);
+		}
+
+		.home-hero__actions {
+			gap: var(--site-space-2);
+		}
+
+		.home-hero__install-wrap {
+			gap: var(--site-space-2);
+		}
+
+		.home-hero__title {
+			font-size: clamp(2.8rem, 9.2vw, 4.45rem);
+			letter-spacing: 0;
+			line-height: 0.86;
+		}
+
+		.home-hero__title-line {
+			white-space: normal;
+		}
+
+		.home-hero__actions,
+		.home-hero__install-wrap {
+			width: 100%;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.home-hero {
+			padding-block: clamp(5.75rem, 20vw, 7.4rem) var(--site-space-7);
+		}
+
+		.home-hero__eyebrow {
+			align-items: center;
+			flex-direction: row;
+			gap: clamp(0.45rem, 2vw, var(--site-space-3));
+			font-size: clamp(0.62rem, 2.4vw, 0.72rem);
+			letter-spacing: 0.18em;
+		}
+
+		.home-hero__eyebrow-dot {
+			display: inline;
+		}
+
+		.home-hero__inner,
+		.home-hero__content {
+			gap: clamp(1.3rem, 5.2vw, 1.95rem);
+		}
+
+		.home-hero__actions,
+		.home-hero__install-wrap {
+			gap: clamp(0.55rem, 2.4vw, 0.72rem);
+		}
+
+		.home-hero__title {
+			font-size: clamp(2.84rem, 12.25vw, 3.95rem);
+			letter-spacing: 0;
+			line-height: 0.84;
+		}
+
+		.home-hero__title-line--desktop {
+			display: none;
+		}
+
+		.home-hero__title-line--mobile {
+			display: block;
+		}
+
+		.home-hero__title-line {
+			white-space: nowrap;
+		}
+
+		.home-hero__tabs {
+			gap: clamp(1.55rem, 8.6vw, 2.05rem);
+			padding: 0.82rem clamp(1rem, 4.2vw, 1.18rem) 0;
+		}
+
+		.home-hero__tab {
+			font-size: clamp(0.64rem, 2.6vw, 0.72rem);
+			padding: 0 0 0.82rem;
+		}
+
+		.home-hero__value {
+			--home-hero-value-size: clamp(0.72rem, 3.2vw, 0.9rem);
+			letter-spacing: 0;
+		}
+
+		.home-hero__portal {
+			width: fit-content;
+			min-height: 2.58rem;
+			gap: 0.7rem;
+			padding: 0.78rem 1.22rem;
+			font-size: clamp(0.78rem, 3vw, 0.9rem);
+		}
+
+		.home-hero__portal svg {
+			width: 0.95rem;
+			height: 0.95rem;
+		}
+
+		.home-hero__panel {
+			gap: var(--site-space-2);
+			padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);
+		}
+
+		.home-hero__panel-action {
+			width: var(--site-space-4);
+			height: var(--site-space-4);
+		}
+
+		.home-hero__diagram {
+			margin-block-start: clamp(1.4rem, 7vw, 2.4rem);
+		}
+	}
 </style>

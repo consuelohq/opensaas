@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e2df4e9f092b",
+  "tmuxSession": "opensaas-security-align-os-installer-selection-and-progress-ux-e2df4e9f",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/align-os-installer-selection-and-progress-ux",
+  "branch": "task/security/align-os-installer-selection-and-progress-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-installer-selection-and-progress-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-installer-selection-and-progress-ux",
+  "prNumber": 1282,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1282",
+  "createdAt": "2026-06-30T03:13:47.704Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-align-os-installer-selection-and-progress-ux/.task/security/align-os-installer-selection-and-progress-ux/session.json"
+}

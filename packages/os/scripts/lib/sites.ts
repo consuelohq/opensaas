@@ -111,6 +111,7 @@ export type MaterializeSitesOptions = {
   home: string;
   dbPath: string;
   dryRun: boolean;
+  workspaceHost?: string | null;
 };
 
 export type MaterializeSitesResult = {

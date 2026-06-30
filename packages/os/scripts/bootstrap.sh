@@ -330,6 +330,19 @@ open_contact_url() {
   open_url "$CONTACT_URL"
 }
 
+render_os_mode_select() {
+  local selected="$1"
+
+  printf '\033[2KChoose Consuelo OS mode:\n' > /dev/tty
+  if [ "$selected" -eq 0 ]; then
+    printf '\033[2K> local\n' > /dev/tty
+    printf '\033[2K  cloud\n' > /dev/tty
+  else
+    printf '\033[2K  local\n' > /dev/tty
+    printf '\033[2K> cloud\n' > /dev/tty
+  fi
+}
+
 choose_os_mode() {
   if [ -n "$OS_MODE" ]; then
     return 0
@@ -369,15 +382,7 @@ handle_cloud_mode() {
 render_dependency_progress() {
   [ "$JSON" -eq 0 ] || return 0
 
-  log "CONSUELO OS"
-  log "│"
-  log "● dependencies"
-  log "○ workspace"
-  log "○ security"
-  log "○ skills"
-  log "○ agents"
-  log "○ service"
-  log "○ health"
+  log "CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health"
   log ""
 }
 
@@ -910,7 +915,9 @@ resolve_source() {
 }
 install_runtime_dependencies() {
   local os_dir="$1"
+  log "Installing Consuelo OS runtime dependencies..."
   (cd "$os_dir" && "$BUN_BIN" install)
+  log "Installing Consuelo OS runtime dependencies... done"
 }
 
 ensure_dependencies() {
@@ -926,7 +933,6 @@ ensure_dependencies() {
     return 0
   fi
 
-  log "Installing Consuelo OS runtime dependencies..."
   install_runtime_dependencies "$os_dir"
   DEPENDENCY_STATUS="installed"
 }
@@ -968,7 +974,6 @@ run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
   local os_home="$OS_HOME"
 
-  log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$BUN_BIN" ]; then

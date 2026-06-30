@@ -6,17 +6,25 @@ export type OsBannerStep =
   | string
   | {
       label: string;
-      state?: 'pending' | 'active' | 'complete';
+      state?: 'pending' | 'active' | 'complete' | 'failed';
     };
 
 const stepLabel = (step: OsBannerStep): string =>
   typeof step === 'string' ? step : step.label;
 
 const stepSymbol = (step: OsBannerStep): string => {
-  if (typeof step === 'string') return chalk.dim('○');
-  if (step.state === 'active') return chalk.white('◆');
-  if (step.state === 'complete') return chalk.white('●');
-  return chalk.dim('○');
+  if (typeof step === 'string' || step.state === 'pending') return chalk.dim('○');
+  if (step.state === 'active') return chalk.blue('◆');
+  if (step.state === 'failed') return chalk.red('×');
+  return chalk.green('●');
+};
+
+const stepText = (step: OsBannerStep): string => {
+  const label = stepLabel(step);
+  if (typeof step === 'string' || step.state === 'pending') return chalk.dim(label);
+  if (step.state === 'complete') return chalk.green(label);
+  if (step.state === 'failed') return chalk.red(label);
+  return chalk.white(label);
 };
 
 export function createOsBannerLines(steps?: OsBannerStep[]): string[] {
@@ -28,8 +36,7 @@ export function createOsBannerLines(steps?: OsBannerStep[]): string[] {
   if (steps?.length) {
     lines.push(chalk.dim('|'));
     for (const step of steps) {
-      const label = stepLabel(step);
-      lines.push(`${chalk.dim('|')}  ${stepSymbol(step)}  ${chalk.dim(label)}`);
+      lines.push(`${chalk.dim('|')}  ${stepSymbol(step)}  ${stepText(step)}`);
     }
   }
   lines.push(chalk.dim('|'));

@@ -147,7 +147,7 @@ export class AccessTokenService {
           JwtTokenTypeEnum.ACCESS,
           workspaceId,
         ),
-        expiresIn: ms(expiresIn),
+        expiresIn,
       }),
       expiresAt,
     };

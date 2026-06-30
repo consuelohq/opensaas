@@ -143,12 +143,17 @@ export class ConferenceService {
       label?: string;
       endConferenceOnExit?: boolean;
       statusCallback?: string;
+      conferenceLookupTimeoutMs?: number;
     },
   ): Promise<{ callSid: string; conferenceSid: string }> {
     try {
       const client = await this.getClient();
 
-      const conf = await this.waitForConference(client, conferenceName);
+      const conf = await this.waitForConference(
+        client,
+        conferenceName,
+        opts?.conferenceLookupTimeoutMs,
+      );
 
       const participant = await client
         .conferences(conf.sid)

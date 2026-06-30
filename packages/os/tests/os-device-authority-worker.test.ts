@@ -336,7 +336,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
 
     const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
       method: 'POST',
@@ -357,6 +357,37 @@ describe('os device authority worker', () => {
       workspace_host: 'testing.consuelohq.com',
       device_public_key_bound: true,
     });
+  });
+
+
+  it('should hide the device code box when terminal-return pages are rendered', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const { codeJson } = await startGrant(handler);
+
+    const start = await handler(
+      new Request(
+        `${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`,
+      ),
+    );
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+    const html = await callback.text();
+
+    expect(html).toContain('Device authorized');
+    expect(html).toContain('return to your terminal');
+    expect(html).not.toContain('data-device-code');
+    expect(html).not.toContain(String(codeJson.user_code));
   });
 
   it('should call the default global fetch with the Cloudflare global receiver', async () => {
@@ -397,7 +428,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
   });
 
   it('should reject Google OAuth callback when state is unknown', async () => {
@@ -518,7 +549,7 @@ describe('os device authority worker', () => {
 
     const page = await handler(new Request(String(codeJson.verification_uri_complete)));
     expect(page.status).toBe(200);
-    await expect(page.text()).resolves.toContain('Approve this Mac');
+    await expect(page.text()).resolves.toContain('Sign in to Consuelo OS');
 
     const forgedApprove = await handler(new Request(`${origin}/login/device/approve`, {
       method: 'POST',

@@ -869,6 +869,7 @@ describe('Consuelo OS public gateway security contract', () => {
       '/api',
       '/apps/chatgpt',
       '/diffs',
+      '/docs',
       '/mcp',
       '/office',
       '/tools',

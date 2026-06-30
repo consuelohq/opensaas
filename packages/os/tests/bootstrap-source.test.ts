@@ -96,6 +96,7 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('○ security');
     expect(bootstrap).not.toContain('○ home');
     expect(bootstrap).toContain('○ workspace');
+    expect(bootstrap).toContain('○ security');
     expect(bootstrap).toContain('○ skills');
     expect(bootstrap).toContain('○ agents');
     expect(bootstrap).toContain('○ service');
@@ -144,7 +145,7 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('emit_json_summary')).toBeGreaterThan(main.indexOf('open_workspace_launcher'));
   });
 
-  it('pins cloudflared darwin archive checksums to the currently served release assets', () => {
+  it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain(

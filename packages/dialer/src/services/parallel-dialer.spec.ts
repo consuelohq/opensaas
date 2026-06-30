@@ -265,7 +265,7 @@ describe('ParallelDialerService', () => {
     it('should silently ignore unknown callSid', async () => {
       await expect(
         service.handleStatusCallback('CA_unknown', 'in-progress', 'human'),
-      ).resolves.not.toThrow();
+      ).resolves.toBeUndefined();
     });
 
     it('should record answeredAt timestamp on in-progress', async () => {
@@ -355,7 +355,7 @@ describe('ParallelDialerService', () => {
     it('should handle non-existent group gracefully', async () => {
       await expect(
         service.terminateGroup('pg_nonexistent'),
-      ).resolves.not.toThrow();
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -461,7 +461,7 @@ describe('ParallelDialerService', () => {
     it('should not throw for non-existent group', async () => {
       await expect(
         service.markTelemetryEmitted('pg_nonexistent'),
-      ).resolves.not.toThrow();
+      ).resolves.toBeUndefined();
     });
   });
 
