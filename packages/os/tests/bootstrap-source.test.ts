@@ -49,8 +49,8 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('choose_os_mode');
     expect(bootstrap).toContain('Choose Consuelo OS mode:');
     expect(bootstrap).toContain('prompt_select');
-    expect(bootstrap).toContain('local');
-    expect(bootstrap).toContain('cloud');
+    expect(bootstrap).toContain('◆ %s');
+    expect(bootstrap).toContain('○ %s');
     expect(bootstrap).toContain('read -rsn1');
     expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
     expect(bootstrap).toContain('open_contact_url');
@@ -64,13 +64,25 @@ describe('bootstrap source refresh controls', () => {
     );
   });
 
+  it('redraws selector choices in place instead of duplicating on arrow keys', () => {
+    const bootstrap = readBootstrap();
+    const promptSelect = extractShellFunction(bootstrap, 'prompt_select');
+
+    expect(promptSelect).toContain('prompt_lines=4');
+    expect(promptSelect).toContain('rendered=0');
+    expect(promptSelect).toContain('if [ "$rendered" -eq 1 ]; then');
+    expect(promptSelect).toContain("printf '\\033[%sA' \"$prompt_lines\" > /dev/tty");
+    expect(promptSelect).toContain("printf '\\033[2K%s\\n' \"$message\" > /dev/tty");
+    expect(promptSelect).not.toContain("printf '\\n' > /dev/tty");
+  });
+
   it('exits the cloud path before source download or dependency install', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('handle_cloud_mode');
     expect(bootstrap).toContain('Consuelo cloud is handled by the Consuelo team. Opening the contact page.');
     expect(bootstrap).toContain('exit 0');
-    expect(bootstrap).toContain('OS_MODE="$1"');
+    expect(bootstrap).toContain('OS_MODE="cloud"');
     expect(bootstrap).toContain('handle_cloud_mode');
 
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(

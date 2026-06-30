@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/security/fix-dynamic-mcp-oauth-discovery/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/server.ts"
+  ],
+  "updatedAt": "2026-06-30T20:07:58.191Z"
+}

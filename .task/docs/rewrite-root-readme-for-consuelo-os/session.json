@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ec0bb3c15c0b",
+  "tmuxSession": "opensaas-docs-rewrite-root-readme-for-consuelo-os-ec0bb3c1",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/rewrite-root-readme-for-consuelo-os",
+  "branch": "task/docs/rewrite-root-readme-for-consuelo-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-rewrite-root-readme-for-consuelo-os",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-rewrite-root-readme-for-consuelo-os",
+  "prNumber": 1279,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1279",
+  "createdAt": "2026-06-30T02:07:45.951Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-rewrite-root-readme-for-consuelo-os/.task/docs/rewrite-root-readme-for-consuelo-os/session.json"
+}

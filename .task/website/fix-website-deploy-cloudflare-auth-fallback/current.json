@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-website-deploy-cloudflare-auth-fallback",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1297,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1297",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1297",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1297/fix-website-deploy-cloudflare-auth-fallback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1297",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1297/fix-website-deploy-cloudflare-auth-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-website-deploy-cloudflare-auth-fallback",
+  "taskSession": "tsk_ca561bb3bed9",
+  "tmuxSession": "opensaas-website-fix-website-deploy-cloudflare-auth-fallback-ca561bb3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-website-deploy-cloudflare-auth-fallback/.task/website/fix-website-deploy-cloudflare-auth-fallback/session.json",
+  "createdAt": "2026-06-30T21:36:36.377Z"
+}
