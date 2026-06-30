@@ -210,10 +210,12 @@ describe('os device authority worker', () => {
     expect(authorize.status).toBe(302);
     const googleLocation = authorize.headers.get('location') ?? '';
     expect(googleLocation).toContain('https://accounts.google.com/o/oauth2/v2/auth');
-    const state = new URL(googleLocation).searchParams.get('state');
+    const googleUrl = new URL(googleLocation);
+    expect(googleUrl.searchParams.get('redirect_uri')).toBe(`${origin}/login/google/callback`);
+    const state = googleUrl.searchParams.get('state');
     expect(state).toMatch(/^mcp_oauth_state_/);
 
-    const callback = await handler(new Request(`${origin}/oauth/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(302);
     const callbackLocation = new URL(callback.headers.get('location') ?? '');
     expect(callbackLocation.origin + callbackLocation.pathname).toBe(redirectUri);
@@ -294,10 +296,12 @@ describe('os device authority worker', () => {
     expect(authorize.status).toBe(302);
     const googleLocation = authorize.headers.get('location') ?? '';
     expect(googleLocation).toContain('https://accounts.google.com/o/oauth2/v2/auth');
-    const state = new URL(googleLocation).searchParams.get('state');
+    const googleUrl = new URL(googleLocation);
+    expect(googleUrl.searchParams.get('redirect_uri')).toBe(`${origin}/login/google/callback`);
+    const state = googleUrl.searchParams.get('state');
     expect(state).toMatch(/^mcp_oauth_state_/);
 
-    const callback = await handler(new Request(`${origin}/oauth/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(302);
     const callbackLocation = new URL(callback.headers.get('location') ?? '');
     expect(callbackLocation.origin + callbackLocation.pathname).toBe('https://chatgpt.com/connector/oauth/callback');
