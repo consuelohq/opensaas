@@ -12,6 +12,7 @@ type BaseGroup = {
   key: string;
   label: string;
   icon?: string;
+  expanded?: boolean;
   pages: BasePage[];
 };
 
@@ -59,6 +60,7 @@ type GeneratedTab = {
 type GeneratedGroup = {
   group: string;
   icon?: string;
+  expanded?: boolean;
   pages: Array<string | GeneratedGroup>;
 };
 
@@ -154,6 +156,7 @@ const buildGroup = (
 ): GeneratedGroup => ({
   group: translations.groupLabels.get(group.key) ?? group.label,
   ...(group.icon ? { icon: group.icon } : {}),
+  ...(group.expanded === undefined ? {} : { expanded: group.expanded }),
   pages: group.pages.map((page) =>
     typeof page === 'string'
       ? formatPageSlug(page, language)
