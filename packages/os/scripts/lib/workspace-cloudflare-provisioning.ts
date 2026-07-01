@@ -31,12 +31,35 @@ export type CloudflareRuleset = {
   rules: CloudflareRulesetRule[];
 };
 
+export type TrustedOsMcpProviderIpSourceId =
+  | 'openai_chatgpt_connectors'
+  | 'openai_codex_cloud'
+  | 'anthropic_claude';
+
+export type CloudflareAccountIpListItemInput = {
+  ip: string;
+  comment?: string;
+};
+
+export type TrustedProviderIpAllowlistSyncResult =
+  | {
+      status: 'skipped';
+      reason: 'trusted provider IP allowlist env not configured';
+    }
+  | {
+      status: 'synced';
+      count: number;
+      operationId?: string;
+    };
+
 export type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   zoneId: string;
   customRulesetId?: string;
   baseDomain: string;
   mcpAllowedIpsListName: string;
   temporaryDenyIpCidrs?: string[];
+  trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
+  trustedProviderExtraIpCidrs?: string[];
   reservedHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
@@ -63,6 +86,10 @@ export type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
   getAccountIpList: (input: {
     name: string;
   }) => Promise<{ id: string; name: string } | null>;
+  createAccountIpListItems: (input: {
+    listId: string;
+    items: CloudflareAccountIpListItemInput[];
+  }) => Promise<{ operationId?: string }>;
   getZoneCustomRuleset: (input: {
     zoneId: string;
     rulesetId?: string;
@@ -196,6 +223,8 @@ const MANAGED_OS_MCP_POLICY_ENV_KEYS = [
   'CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF',
   'CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_DESCRIPTION',
   'CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS',
+  'CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES',
+  'CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS',
 ] as const;
 const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'app',
@@ -211,6 +240,44 @@ const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'workspace-edge',
   'workspace',
 ] as const;
+
+type TrustedProviderIpRange = {
+  cidr: string;
+  sourceId: TrustedOsMcpProviderIpSourceId | 'manual_extra';
+};
+
+type TrustedProviderIpSource =
+  | {
+      kind: 'openai-json';
+      id: TrustedOsMcpProviderIpSourceId;
+      url: string;
+    }
+  | {
+      kind: 'static';
+      id: TrustedOsMcpProviderIpSourceId;
+      cidrs: string[];
+    };
+
+const TRUSTED_OS_MCP_PROVIDER_IP_SOURCES: Record<
+  TrustedOsMcpProviderIpSourceId,
+  TrustedProviderIpSource
+> = {
+  openai_chatgpt_connectors: {
+    kind: 'openai-json',
+    id: 'openai_chatgpt_connectors',
+    url: 'https://openai.com/chatgpt-connectors.json',
+  },
+  openai_codex_cloud: {
+    kind: 'openai-json',
+    id: 'openai_codex_cloud',
+    url: 'https://openai.com/chatgpt-agents.json',
+  },
+  anthropic_claude: {
+    kind: 'static',
+    id: 'anthropic_claude',
+    cidrs: ['160.79.104.0/21'],
+  },
+};
 
 const normalizeBaseDomain = (baseDomain: string): string => {
   const normalized = baseDomain
@@ -240,11 +307,39 @@ const normalizeIpCidrLiteral = (value: string): string => {
   const normalized = value.trim();
 
   if (!/^[0-9a-fA-F:.]+\/\d{1,3}$/.test(normalized)) {
-    throw new Error('temporary deny CIDR must be an IPv4 or IPv6 CIDR literal');
+    throw new Error('CIDR must be an IPv4 or IPv6 CIDR literal');
   }
 
   return normalized;
 };
+
+const splitCommaSeparatedValues = (value: string | undefined): string[] =>
+  normalizeOptionalValue(value)
+    ?.split(',')
+    .map((item) => item.trim())
+    .filter(Boolean) ?? [];
+
+const normalizeTrustedProviderIpSourceId = (
+  value: string,
+): TrustedOsMcpProviderIpSourceId => {
+  const normalized = value.trim();
+
+  if (normalized in TRUSTED_OS_MCP_PROVIDER_IP_SOURCES) {
+    return normalized as TrustedOsMcpProviderIpSourceId;
+  }
+
+  throw new Error(`unknown trusted OS MCP provider IP source: ${normalized}`);
+};
+
+const normalizeProviderIpSourceIds = (
+  value: string | undefined,
+): TrustedOsMcpProviderIpSourceId[] => [
+  ...new Set(splitCommaSeparatedValues(value).map(normalizeTrustedProviderIpSourceId)),
+];
+
+const normalizeIpCidrs = (values: string[]): string[] => [
+  ...new Set(values.map(normalizeIpCidrLiteral)),
+];
 
 const normalizeOptionalValue = (value: string | undefined): string | undefined => {
   const normalized = value?.trim();
@@ -278,6 +373,110 @@ const readActionParameters = (
 ): Record<string, unknown> | undefined => {
   const value = input.action_parameters;
   return isRecord(value) ? value : undefined;
+};
+
+const parseOpenAiIpFeed = (input: {
+  payload: unknown;
+  sourceId: TrustedOsMcpProviderIpSourceId;
+}): TrustedProviderIpRange[] => {
+  if (!isRecord(input.payload) || !Array.isArray(input.payload.prefixes)) {
+    throw new Error(`trusted provider IP feed ${input.sourceId} returned invalid JSON`);
+  }
+
+  return input.payload.prefixes.flatMap((prefix): TrustedProviderIpRange[] => {
+    if (!isRecord(prefix)) return [];
+    const cidrs = [
+      readString(prefix, 'ipv4Prefix'),
+      readString(prefix, 'ipv6Prefix'),
+    ].filter((cidr): cidr is string => Boolean(cidr));
+
+    return cidrs.map((cidr) => ({
+      cidr: normalizeIpCidrLiteral(cidr),
+      sourceId: input.sourceId,
+    }));
+  });
+};
+
+const fetchTrustedProviderIpSource = async (input: {
+  source: TrustedProviderIpSource;
+  fetchImpl: typeof fetch;
+}): Promise<TrustedProviderIpRange[]> => {
+  if (input.source.kind === 'static') {
+    return normalizeIpCidrs(input.source.cidrs).map((cidr) => ({
+      cidr,
+      sourceId: input.source.id,
+    }));
+  }
+
+  try {
+    const response = await input.fetchImpl(input.source.url);
+    if (!response.ok) {
+      throw new Error(`status ${response.status}`);
+    }
+
+    const payload = await response.json();
+    return parseOpenAiIpFeed({ payload, sourceId: input.source.id });
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted provider IP source ${input.source.id} fetch failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
+};
+
+const resolveTrustedOsMcpProviderIpRangeDetails = async (input: {
+  sourceIds?: TrustedOsMcpProviderIpSourceId[];
+  extraCidrs?: string[];
+  fetchImpl?: typeof fetch;
+}): Promise<TrustedProviderIpRange[]> => {
+  try {
+    const fetchImpl = input.fetchImpl ?? globalThis.fetch;
+    if (typeof fetchImpl !== 'function') {
+      throw new Error('trusted provider IP source fetch implementation is required');
+    }
+
+    const sourceRanges = await Promise.all(
+      (input.sourceIds ?? []).map((sourceId) =>
+        fetchTrustedProviderIpSource({
+          source: TRUSTED_OS_MCP_PROVIDER_IP_SOURCES[sourceId],
+          fetchImpl,
+        }),
+      ),
+    );
+    const extraRanges = normalizeIpCidrs(input.extraCidrs ?? []).map((cidr) => ({
+      cidr,
+      sourceId: 'manual_extra' as const,
+    }));
+    const ranges: TrustedProviderIpRange[] = [...sourceRanges.flat(), ...extraRanges];
+    const seenCidrs = new Set<string>();
+
+    return ranges.filter((range) => {
+      if (seenCidrs.has(range.cidr)) return false;
+      seenCidrs.add(range.cidr);
+      return true;
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted OS MCP provider IP range resolution failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
+};
+
+export const resolveTrustedOsMcpProviderIpRanges = async (input: {
+  sourceIds?: TrustedOsMcpProviderIpSourceId[];
+  extraCidrs?: string[];
+  fetchImpl?: typeof fetch;
+}): Promise<string[]> => {
+  try {
+    const ranges = await resolveTrustedOsMcpProviderIpRangeDetails(input);
+    return ranges.map((range) => range.cidr);
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted OS MCP provider IP range list resolution failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
 };
 
 const parseCloudflareRule = (value: unknown): CloudflareRulesetRule | null => {
@@ -481,6 +680,7 @@ const assertManagedOsMcpIngressPolicyClient = (
   WorkspaceCloudflareManagedOsMcpIngressPolicyClient => {
   const requiredMethods: Array<keyof WorkspaceCloudflareManagedOsMcpIngressPolicyClient> = [
     'getAccountIpList',
+    'createAccountIpListItems',
     'getZoneCustomRuleset',
     'createZoneCustomRuleset',
     'createZoneCustomRulesetRule',
@@ -493,6 +693,67 @@ const assertManagedOsMcpIngressPolicyClient = (
   if (missingMethods.length > 0) {
     throw new Error(
       `Cloudflare provisioning client is missing managed OS MCP ingress methods: ${missingMethods.join(', ')}`,
+    );
+  }
+};
+
+const createTrustedProviderIpListItems = (
+  ranges: TrustedProviderIpRange[],
+): CloudflareAccountIpListItemInput[] =>
+  ranges.map((range) => ({
+    ip: range.cidr,
+    comment: `Consuelo OS MCP trusted provider: ${range.sourceId}`,
+  }));
+
+export const syncManagedOsMcpTrustedProviderIpAllowlist = async (input: {
+  cloudflare:
+    | WorkspaceCloudflareProvisioningClient
+    | WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
+  config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+  fetchImpl?: typeof fetch;
+}): Promise<TrustedProviderIpAllowlistSyncResult> => {
+  try {
+    const sourceIds = input.config.trustedProviderIpSourceIds ?? [];
+    const extraCidrs = input.config.trustedProviderExtraIpCidrs ?? [];
+
+    if (sourceIds.length === 0 && extraCidrs.length === 0) {
+      return {
+        status: 'skipped',
+        reason: 'trusted provider IP allowlist env not configured',
+      };
+    }
+
+    assertManagedOsMcpIngressPolicyClient(input.cloudflare);
+    const allowedIpsListName = normalizeCloudflareListName(
+      input.config.mcpAllowedIpsListName,
+    );
+    const accountList = await input.cloudflare.getAccountIpList({
+      name: allowedIpsListName,
+    });
+
+    if (!accountList) {
+      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
+    }
+
+    const ranges = await resolveTrustedOsMcpProviderIpRangeDetails({
+      sourceIds,
+      extraCidrs,
+      fetchImpl: input.fetchImpl,
+    });
+    const result = await input.cloudflare.createAccountIpListItems({
+      listId: accountList.id,
+      items: createTrustedProviderIpListItems(ranges),
+    });
+
+    return {
+      status: 'synced',
+      count: ranges.length,
+      ...(result.operationId ? { operationId: result.operationId } : {}),
+    };
+  } catch (error: unknown) {
+    throw new Error(
+      `Cloudflare managed OS MCP trusted provider IP allowlist sync failed: ${getErrorMessage(error)}`,
+      { cause: error },
     );
   }
 };
@@ -560,12 +821,15 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
     throw new Error('CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME is required');
   }
 
-  const temporaryDenyIpCidrs = normalizeOptionalValue(
+  const temporaryDenyIpCidrs = splitCommaSeparatedValues(
     input.env.CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS,
-  )
-    ?.split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
+  );
+  const trustedProviderIpSourceIds = normalizeProviderIpSourceIds(
+    input.env.CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES,
+  );
+  const trustedProviderExtraIpCidrs = normalizeIpCidrs(
+    splitCommaSeparatedValues(input.env.CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS),
+  );
   const config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
     zoneId,
     baseDomain: normalizeBaseDomain(input.baseDomain),
@@ -599,6 +863,8 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
         }
       : {}),
     ...(temporaryDenyIpCidrs?.length ? { temporaryDenyIpCidrs } : {}),
+    ...(trustedProviderIpSourceIds.length ? { trustedProviderIpSourceIds } : {}),
+    ...(trustedProviderExtraIpCidrs.length ? { trustedProviderExtraIpCidrs } : {}),
   };
 
   buildManagedOsMcpIngressPolicyRules(config);
@@ -720,6 +986,33 @@ export const createCloudflareManagedOsMcpIngressPolicyClient = (
         return { id, name };
       } catch (error: unknown) {
         throw createCloudflareManagedPolicyClientError('getAccountIpList', error);
+      }
+    },
+    async createAccountIpListItems(input) {
+      try {
+        const result = await request({
+          operation: 'createAccountIpListItems',
+          method: 'POST',
+          path: createCloudflarePath(
+            'accounts',
+            accountId,
+            'rules',
+            'lists',
+            input.listId,
+            'items',
+          ),
+          body: input.items,
+        });
+
+        if (!isRecord(result)) return {};
+        const operationId = readString(result, 'operation_id');
+
+        return operationId ? { operationId } : {};
+      } catch (error: unknown) {
+        throw createCloudflareManagedPolicyClientError(
+          'createAccountIpListItems',
+          error,
+        );
       }
     },
     async getZoneCustomRuleset(input) {
