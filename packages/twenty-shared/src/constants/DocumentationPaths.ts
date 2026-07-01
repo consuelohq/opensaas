@@ -115,12 +115,8 @@ export const DOCUMENTATION_PATHS = {
   GRAPHQL_API_OVERVIEW: '/graphql-api/overview',
   GRAPHQL_API_TROUBLESHOOTING_COMMON_OPS_ISSUES:
     '/graphql-api/troubleshooting/common-ops-issues',
-  OS_AGENT_CONTEXT_DECISION: '/os/agent-context/decision',
-  OS_AGENT_CONTEXT_SCRIPTS: '/os/agent-context/scripts',
-  OS_AGENT_CONTEXT_STEERING: '/os/agent-context/steering',
   OS_AGENT_CONTEXT_TEST_DRIVEN_AGENT_WORK:
     '/os/agent-context/test-driven-agent-work',
-  OS_AGENT_CONTEXT_TOOLS: '/os/agent-context/tools',
   OS_CONCEPTS_APPROVALS: '/os/concepts/approvals',
   OS_CONCEPTS_CONTEXT_AND_MEMORY: '/os/concepts/context-and-memory',
   OS_CONCEPTS_DATA_MODEL_AND_GRAPHQL: '/os/concepts/data-model-and-graphql',
@@ -168,13 +164,6 @@ export const DOCUMENTATION_PATHS = {
   OS_TOOLS_OVERVIEW: '/os/tools/overview',
   OS_TOOLS_TASK_AND_STREAM_TOOLS: '/os/tools/task-and-stream-tools',
   OS_TOOLS_TOOL_SEARCH: '/os/tools/tool-search',
-  USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
-  USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
-    '/user-guide/ai/capabilities/ai-chatbot',
-  USER_GUIDE_AI_CAPABILITIES_PERMISSIONS_ACCESS_CONTROL:
-    '/user-guide/ai/capabilities/permissions-access-control',
-  USER_GUIDE_AI_HOW_TOS_AI_FAQ: '/user-guide/ai/how-tos/ai-faq',
-  USER_GUIDE_AI_OVERVIEW: '/user-guide/ai/overview',
   USER_GUIDE_BILLING_CAPABILITIES_PRICING_PLANS:
     '/user-guide/billing/capabilities/pricing-plans',
   USER_GUIDE_BILLING_CAPABILITIES_WORKFLOW_CREDITS:
