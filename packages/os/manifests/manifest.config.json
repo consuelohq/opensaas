@@ -26,7 +26,6 @@
     "includeNames": [
       "batch",
       "code.call",
-      "code.run",
       "context",
       "explore",
       "github",

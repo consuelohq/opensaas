@@ -247,14 +247,13 @@ function loadBunSqliteDatabase(): BunSqliteDatabaseConstructor {
 }
 
 type ReservedSite = {
-  slug: 'traces' | 'diffs' | 'docs';
+  slug: 'diffs' | 'docs';
   title: string;
   description: string;
 };
 
 const RESERVED_SITES: ReservedSite[] = [
   { slug: 'diffs', title: 'Diffs', description: 'Review generated changes and decision context.' },
-  { slug: 'traces', title: 'Tracing', description: 'Review execution traces and provenance.' },
   { slug: 'docs', title: 'Documentation', description: 'Open Consuelo OS operating documentation.' },
 ];
 
@@ -744,6 +743,86 @@ function buildReservedSitePage(site: ReservedSite): string {
 `;
 }
 
+function buildTracesSite(): string {
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traces - Sites</title><style>${baseStyles()}
+    .trace-shell { display: grid; gap: 14px; max-width: 1200px; }
+    .trace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(242,238,230,0.16); border-bottom: 1px solid rgba(242,238,230,0.16); padding: 8px 0; }
+    .trace-status { color: #a8a095; }
+    .trace-table td:nth-child(1), .trace-table td:nth-child(2), .trace-table td:nth-child(5) { white-space: nowrap; }
+    .trace-table td:nth-child(6), .trace-table td:nth-child(7) { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style></head>
+<body>
+  <main class="trace-shell">
+    <header>
+      <h1>Traces</h1>
+      <p>Review execution traces and provenance.</p>
+    </header>
+    <section aria-label="Trace stream">
+      <div class="trace-toolbar">
+        <span class="trace-status" id="trace-status">Loading gateway traces...</span>
+        <code>/gateway/traces/recent</code>
+      </div>
+      <div class="table-wrap">
+        <table class="trace-table">
+          <thead><tr><th>Time</th><th>Tool</th><th>Latency</th><th>Tokens</th><th>Branch</th><th>Input</th><th>Output</th></tr></thead>
+          <tbody id="trace-rows"><tr><td colspan="7" class="empty">No traces loaded yet.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    const status = document.getElementById('trace-status');
+    const rows = document.getElementById('trace-rows');
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char] || char);
+    const first = (...values) => values.find((value) => value !== undefined && value !== null && String(value).length > 0) ?? '';
+    const shortTime = (value) => { try { return value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''; } catch { return String(value || ''); } };
+    const summarize = (value) => {
+      if (typeof value === 'string') return value;
+      if (!value || typeof value !== 'object') return '';
+      return first(value.summary, value.command, value.message, value.path, value.input, value.output, value.code, value.error && value.error.message, JSON.stringify(value));
+    };
+    function normalizeTrace(trace) {
+      const input = summarize(first(trace.input, trace.inputSummary, trace.request, trace.args));
+      const output = summarize(first(trace.output, trace.outputSummary, trace.result, trace.response, trace.error));
+      return {
+        id: first(trace.id, trace.traceId, trace.trace_id, trace.idempotencyKey),
+        time: shortTime(first(trace.startedAt, trace.started_at, trace.time, trace.timestamp, trace.createdAt)),
+        tool: first(trace.toolName, trace.tool, trace.name, trace.traceName),
+        latency: first(trace.latency, trace.duration, trace.durationMs ? String(trace.durationMs) + 'ms' : undefined, trace.duration_ms ? String(trace.duration_ms) + 'ms' : undefined),
+        tokens: first(trace.tokens, trace.totalTokens, trace.total_tokens),
+        branch: first(trace.branch, trace.gitBranch, trace.git_branch),
+        input,
+        output,
+      };
+    }
+    function render(events) {
+      if (!events.length) { rows.innerHTML = '<tr><td colspan="7" class="empty">No traces found.</td></tr>'; return; }
+      rows.innerHTML = events.slice(0, 100).map((trace) => {
+        const row = normalizeTrace(trace);
+        return '<tr data-trace-id="' + escapeHtml(row.id) + '"><td>' + escapeHtml(row.time) + '</td><td>' + escapeHtml(row.tool) + '</td><td>' + escapeHtml(row.latency) + '</td><td>' + escapeHtml(row.tokens) + '</td><td>' + escapeHtml(row.branch) + '</td><td title="' + escapeHtml(row.input) + '">' + escapeHtml(row.input) + '</td><td title="' + escapeHtml(row.output) + '">' + escapeHtml(row.output) + '</td></tr>';
+      }).join('');
+    }
+    async function loadRecent() {
+      try {
+        const response = await fetch('/gateway/traces/recent', { headers: { accept: 'application/json' } });
+        if (!response.ok) throw new Error('gateway traces returned ' + response.status);
+        const payload = await response.json();
+        const events = Array.isArray(payload.events) ? payload.events : Array.isArray(payload.rows) ? payload.rows : Array.isArray(payload.traces) ? payload.traces : [];
+        render(events);
+        status.textContent = payload.ok === false ? (payload.code || 'Trace gateway unavailable') : String(events.length) + ' traces';
+      } catch {
+        status.textContent = 'Trace gateway unavailable';
+        rows.innerHTML = '<tr><td colspan="7" class="empty">Unable to load gateway traces.</td></tr>';
+      }
+    }
+    loadRecent();
+  </script>
+</body></html>
+`;
+}
+
 export function getSitesPaths(home: string): SitesPaths {
   const sitesDir = path.join(home, 'sites');
   const pagesDir = path.join(sitesDir, 'pages');
@@ -797,6 +876,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });
+    fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
   }
   return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, data, actions };

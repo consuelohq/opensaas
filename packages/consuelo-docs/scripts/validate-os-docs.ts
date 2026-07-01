@@ -24,7 +24,24 @@ type DocsConfig = {
   navigation: {
     languages: LanguageEntry[];
   };
+  redirects?: Array<{
+    source: string;
+    destination: string;
+  }>;
 };
+
+const removedRawSourceSlugs = [
+  'os/agent-context/steering',
+  'os/agent-context/decision',
+  'os/agent-context/tools',
+  'os/agent-context/scripts',
+  'os/tools/default-steering',
+  'os/tools/decision-engine',
+  'os/tools/tool-manifest',
+  'os/tools/scripts',
+] as const;
+
+const removedRawSourceSlugPattern = /(?:^|\/)os\/(?:agent-context\/(?:steering|decision|tools|scripts)|tools\/(?:default-steering|decision-engine|tool-manifest|scripts))$/;
 
 const thisFile = fileURLToPath(import.meta.url);
 const docsRoot = path.resolve(path.dirname(thisFile), '..');
@@ -141,6 +158,42 @@ if (titles.join('\n') !== sortedTitles.join('\n')) {
   throw new Error('Skill docs are not sorted alphabetically.');
 }
 
+const allNavigationSlugs = docsConfig.navigation.languages.flatMap((language) => {
+  return language.tabs
+    .flatMap((tab) => [...(tab.groups ?? []), ...(tab.pages ?? [])])
+    .flatMap((page) => (typeof page === 'string' ? [page] : flattenPages(page.pages ?? [])));
+});
+
+const rawSourceNavigationHits = allNavigationSlugs.filter((slug) =>
+  removedRawSourceSlugPattern.test(slug),
+);
+if (rawSourceNavigationHits.length) {
+  throw new Error(
+    `OS docs navigation still references removed raw-source pages:\n${rawSourceNavigationHits.join('\n')}`,
+  );
+}
+
+const rawSourceFileHits = removedRawSourceSlugs.filter((slug) =>
+  fs.existsSync(path.join(docsRoot, `${slug}.mdx`)),
+);
+if (rawSourceFileHits.length) {
+  throw new Error(
+    `OS docs still contain removed raw-source pages:\n${rawSourceFileHits.join('\n')}`,
+  );
+}
+
+const rawSourceRedirectHits = (docsConfig.redirects ?? []).filter((redirect) =>
+  removedRawSourceSlugPattern.test(redirect.source) ||
+  removedRawSourceSlugPattern.test(redirect.destination),
+);
+if (rawSourceRedirectHits.length) {
+  throw new Error(
+    `docs.json still redirects removed raw-source pages:\n${rawSourceRedirectHits
+      .map((redirect) => `${redirect.source} -> ${redirect.destination}`)
+      .join('\n')}`,
+  );
+}
+
 const osMissing = docsConfig.navigation.languages.flatMap((language) =>
   language.tabs
     .flatMap((tab) => [...(tab.groups ?? []), ...(tab.pages ?? [])])
@@ -160,7 +213,7 @@ const agentContextGroup = findGroup(allEnglishGroups, (group) =>
   (group.pages ?? []).some((page) => page === agentTddSlug),
 );
 if (!agentContextGroup) {
-  throw new Error('OS navigation is missing the Agent Context group.');
+  throw new Error('OS navigation is missing the Agent Work group.');
 }
 
 const agentContextPages = flattenPages(agentContextGroup.pages ?? []);
@@ -186,4 +239,4 @@ for (const phrase of [
   }
 }
 
-process.stdout.write(`validated ${skillPages.length} generated skill pages and localized OS routes\n`);
+process.stdout.write(`validated ${skillPages.length} generated skill pages and raw-source doc removal\n`);

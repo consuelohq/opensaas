@@ -56,6 +56,9 @@ const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';
 const DESIGN_ARCHIVE_PATH = '/sites';
 const DESIGN_ARCHIVE_OFFICE_PATH = '/office';
+const DESIGN_ARCHIVE_OBSERVABILITY_PATH = '/observability';
+const DESIGN_ARCHIVE_TRACING_LEGACY_PATH = '/tracing';
+const DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH = '/trace-burn-intelligence';
 const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';
 const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
 const DESIGN_WRITING_DECISION_LOOPS_PATH = '/writing/on-decision-loops';
@@ -1079,20 +1082,21 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
       writeArchiveIndex(payload);
     }
     const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
-    const tracingTarget = `${archiveTarget}/trace-burn-intelligence`;
+    const tracingTarget = `${archiveTarget}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`;
     const diffsTarget = `${archiveTarget}/diffs`;
     const launcherCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/', archiveTarget];
     const officeCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OFFICE_PATH, archiveTarget];
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
     const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
-    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/tracing', tracingTarget];
+    const observabilityCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OBSERVABILITY_PATH, tracingTarget];
+    const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_TRACING_LEGACY_PATH, tracingTarget];
     const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', diffsTarget];
     const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_OFFICE_PATH}`;
     const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     const legacyDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     if (args.dryRun) {
-      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, tracingCommand, diffsCommand] });
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, observabilityCommand, tracingCommand, diffsCommand] });
       else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
@@ -1164,7 +1168,8 @@ async function setArchiveServePaths(tailscaleBin: string, target: string): Promi
       [DESIGN_ARCHIVE_OFFICE_PATH, target],
       [DESIGN_ARCHIVE_PATH, target],
       [DESIGN_ARCHIVE_LEGACY_PATH, target],
-      ['/tracing', `${target}/trace-burn-intelligence`],
+      [DESIGN_ARCHIVE_OBSERVABILITY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
+      [DESIGN_ARCHIVE_TRACING_LEGACY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
       ['/diffs', `${target}/diffs`],
     ] as const;
     for (const [archivePath, routeTarget] of routes) {
@@ -1188,7 +1193,7 @@ function renderSitesLauncherHtml(input: { includeHotkeysScript: boolean }): stri
     const siteHotkeys = {
       "1": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm",
       "2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}",
-      "3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing",
+      "3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OBSERVABILITY_PATH}",
       "4": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs",
       "5": "${DESIGN_DOCS_URL}",
     };
@@ -1250,7 +1255,7 @@ function renderSitesLauncherHtml(input: { includeHotkeysScript: boolean }): stri
       <ul>
         <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm" data-hotkey="1" target="_blank" rel="noopener noreferrer">Go to market</a></li>
         <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2" target="_blank" rel="noopener noreferrer">Artifacts</a></li>
-        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3" target="_blank" rel="noopener noreferrer">Observability</a></li>
+        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OBSERVABILITY_PATH}" data-hotkey="3" target="_blank" rel="noopener noreferrer">Observability</a></li>
         <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs" data-hotkey="4" target="_blank" rel="noopener noreferrer">Code review</a></li>
       </ul>
     </section>
@@ -1300,7 +1305,7 @@ function writeArchiveServer(ip: string): void {
     'function pagefindSuffix(pathname){ for (const base of archivePaths){ if (pathname.startsWith(base + "/pagefind/")) return pathname.slice((base + "/pagefind/").length); } if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
     'function stripArtifactAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const base of archivePaths){ if (clean === base) return "/"; if (clean.startsWith(base + "/")) return clean.slice(base.length) || "/"; } return clean; }',
     'function officePathFor(pathname){ const raw = String(pathname || "/"); const clean = raw.startsWith("/") ? raw : "/" + raw.replace(/^\\/+/, ""); return officeArchivePath + (clean === "/" ? "" : clean); }',
-    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; if (clean === "/tracing") return "/trace-burn-intelligence"; return pathname; }',
+    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const alias of ["/observability", "/tracing"]){ if (clean === alias) return "/trace-burn-intelligence"; if (clean.startsWith(alias + "/")) return "/trace-burn-intelligence" + clean.slice(alias.length); } return pathname; }',
     'async function proxyDiffsRoute(request){ const url = new URL(request.url); const clean = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (clean !== "/diffs" && !url.pathname.startsWith("/diffs/")) return null; const target = new URL("https://diffs.consuelohq.com"); target.pathname = clean === "/diffs" ? "/" : url.pathname.slice("/diffs".length); target.search = url.search; return fetch(target, { method: request.method, headers: request.headers }); }',
     "function latestTraceDb(){ try { const root = `${process.env.HOME || \"/Users/kokayi\"}/Library/Application Support/OpenWorkspace/traces`; const entries = Array.from(new Bun.Glob(\"*/traces.db\").scanSync({ cwd: root, absolute: true })); return entries.map((path) => { try { return { path, mtime: Bun.file(path).lastModified || 0 }; } catch { return null; } }).filter(Boolean).sort((left, right) => right.mtime - left.mtime)[0]?.path || \"\"; } catch { return \"\"; } }",
     "function sqlQuote(value){ return \"'\" + String(value || \"\").replaceAll(\"'\", \"''\") + \"'\"; }",
