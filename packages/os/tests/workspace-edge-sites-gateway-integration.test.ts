@@ -129,7 +129,7 @@ type InstallPublisherContract = {
     workspaceSlug: string;
     workspaceHost: string;
     now?: string;
-  }) => { versionId: string; routeSql: string; verifyUrl: string };
+  }) => { versionId: string; routeSql: string; verifyUrl: string; verifiedUrls: string[]; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> };
   publishWorkspaceEdgeSnapshot: (input: {
     home: string;
     workspaceId: string;
@@ -138,7 +138,7 @@ type InstallPublisherContract = {
     now?: string;
     commandRunner?: (command: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
     fetchImpl?: (url: string, init?: RequestInit) => Promise<Response>;
-  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls?: string[]; versionId: string }>;
+  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls: string[]; versionId: string; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> }>;
 };
 
 const forbiddenBrowserLeakPattern = /local trace db|local-trace-db|local agent|local-agent|cloud runner|cloud-runner|trace file|trace-store-file|raw internal service|raw-trace-service|implementation path|implementationPath|backend target|backendTarget|directBackendTarget|tunnelOriginUrl|upstreamUrl|sqlite|\.db/i;
@@ -166,17 +166,27 @@ function signInternalEdgeRequest(input: {
 
 function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>') {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-edge-sites-gateway-'));
-  fs.mkdirSync(path.join(home, 'sites'), { recursive: true });
-  fs.writeFileSync(path.join(home, 'sites', 'index.html'), html, 'utf8');
+  const sitePaths = [
+    ['index.html'],
+    ['office', 'index.html'],
+    ['traces', 'index.html'],
+    ['diffs', 'index.html'],
+    ['docs', 'index.html'],
+  ];
+  for (const sitePath of sitePaths) {
+    const filePath = path.join(home, 'sites', ...sitePath);
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, html, 'utf8');
+  }
   return home;
 }
 
-function traceSnapshotTarget(): SiteSnapshotTarget {
+function siteSnapshotTarget(siteId: 'launcher' | 'office' | 'traces' | 'diffs' | 'docs' = 'launcher'): SiteSnapshotTarget {
   return {
     kind: 'site-snapshot',
-    siteId: 'launcher',
+    siteId,
     versionId: 'version_trace_shell',
-    manifestKey: 'sites/workspace_internal/launcher/version_trace_shell/index.html',
+    manifestKey: `sites/workspace_internal/${siteId}/version_trace_shell/index.html`,
     contentType: 'text/html; charset=utf-8',
     cachePolicy: 'static-shell',
   };
@@ -210,8 +220,12 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
     owner: 'consuelo-os-cloud',
     status: 'active',
     routes: [
-      { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: traceSnapshotTarget() },
-      { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: traceSnapshotTarget() },
+      { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: siteSnapshotTarget('launcher') },
+      { surface: 'sites', pathPrefix: '/office', auth: 'public', status: 'active', target: siteSnapshotTarget('office') },
+      { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
+      { surface: 'sites', pathPrefix: '/tracing', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
+      { surface: 'sites', pathPrefix: '/diffs', auth: 'public', status: 'active', target: siteSnapshotTarget('diffs') },
+      { surface: 'sites', pathPrefix: '/docs', auth: 'public', status: 'active', target: siteSnapshotTarget('docs') },
       { surface: 'sites', pathPrefix: '/gateway/traces/events', auth: 'required', status: 'active', target: gatewayLiveTarget() },
       { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'required', status: 'active', target: gatewayReadTarget() },
       {
@@ -255,8 +269,16 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(traceRoute).toMatchObject({
       surface: 'sites',
       auth: 'public',
-      target: { kind: 'site-snapshot' },
+      target: { kind: 'site-snapshot', siteId: 'traces' },
     });
+    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
+      '/',
+      '/office',
+      '/traces',
+      '/tracing',
+      '/diffs',
+      '/docs',
+    ]);
     expect(mcpRoute).toMatchObject({
       surface: 'os',
       target: { kind: 'os-connector', connectorId: 'connector_internal' },
@@ -297,7 +319,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(body).toContain('Hosted Trace Site shell');
     expect(response.headers.get('x-consuelo-edge-cache-authority')).toBe('sites-snapshot');
     expect(response.headers.get('x-consuelo-site-version')).toBe('version_trace_shell');
-    expect(r2Reads).toEqual(['sites/workspace_internal/launcher/version_trace_shell/index.html']);
+    expect(r2Reads).toEqual(['sites/workspace_internal/traces/version_trace_shell/index.html']);
     expect(upstreamRequests).toHaveLength(0);
     expect(`${body}\n${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPattern);
   });
@@ -438,7 +460,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     }
   });
 
-  it('should make install edge publish verify both root and /traces with the published snapshot version', async () => {
+  it('should make install edge publish verify every launcher route with the published snapshot version', async () => {
     const publisher = await importModule<InstallPublisherContract>('scripts/lib/install-edge-site-publisher.ts');
     const home = makeHome();
     const expectedPlan = publisher.createWorkspaceEdgeSnapshotPlan({
@@ -471,13 +493,28 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     expect(expectedPlan.verifyUrl).toBe('https://internal.consuelohq.com/');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/office"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/traces"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/diffs"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/docs"');
     expect(expectedPlan.routeSql).toContain('"kind":"consuelo-gateway-service"');
-    expect(verificationUrls).toEqual(['https://internal.consuelohq.com/', 'https://internal.consuelohq.com/traces']);
+    expect(verificationUrls).toEqual([
+      'https://internal.consuelohq.com/',
+      'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/traces',
+      'https://internal.consuelohq.com/diffs',
+      'https://internal.consuelohq.com/docs',
+    ]);
     expect(result).toMatchObject({
       status: 'succeeded',
       verifyUrl: 'https://internal.consuelohq.com/',
-      verifiedUrls: ['https://internal.consuelohq.com/', 'https://internal.consuelohq.com/traces'],
+      verifiedUrls: [
+        'https://internal.consuelohq.com/',
+        'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/traces',
+        'https://internal.consuelohq.com/diffs',
+        'https://internal.consuelohq.com/docs',
+      ],
       versionId: expectedPlan.versionId,
     });
   });

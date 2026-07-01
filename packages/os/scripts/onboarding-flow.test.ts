@@ -16,7 +16,9 @@ describe('Consuelo OS hosted onboarding flow', () => {
   test('skills are a real prompt with explicit multiselect instructions', () => {
     expect(install).toContain('selectedSkills');
     expect(install).toContain("message: 'select skills to enable — Use Space to select skills, press Enter to continue'");
-    expect(install).toContain('skills, artifacts, agents, and health');
+    expect(install).toContain("{ label: 'security', state: 'complete' }");
+    expect(install).toContain("'service'");
+    expect(install).toContain("'health'");
   });
 
   test('local artifact storage is automatic after local mode is selected', () => {
@@ -59,15 +61,15 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('connect to cloud OS');
   });
 
-  test('agent multiselect explains Space selection', () => {
-    expect(install).toContain('Use Space to select agents');
-    expect(install).toContain('press Enter to continue');
+  test('agent multiselect explains default-selected detected agents', () => {
+    expect(install).toContain('agentPromptSubject');
+    expect(install).toContain('found — press Space to not connect to this workspace, Enter to continue');
   });
 
-  test('background service confirmation is part of install.ts onboarding intent', () => {
+  test('background service confirmation stays in install.ts onboarding intent', () => {
     expect(install).toContain('installDaemons');
     expect(install).toContain("message: 'install local background service?'");
-    expect(install).toContain('background service is the final setup step');
+    expect(bootstrap).not.toContain('Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work.');
   });
 
   test('human bootstrap consumes install.ts json intent for daemon install', () => {
@@ -92,15 +94,15 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(daemonInstall).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
     expect(daemonGenerator).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
     expect(daemonInstall).not.toContain('$daemon_home/Library/Logs/Consuelo');
-    expect(bootstrap).toContain('local log_dir="$os_home/logs"');
+    expect(bootstrap).not.toContain('$daemon_home/Library/Logs/Consuelo');
   });
 
   test('hosted bootstrap resolves final runtime commands from OS package root', () => {
     expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
     expect(bootstrap).toContain('local os_home="$OS_HOME"');
     expect(bootstrap).toContain('local os_dir="$OS_HOME"');
-    expect(bootstrap).toContain('local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"');
-    expect(bootstrap).toContain('log "Package: $os_home"');
+    expect(bootstrap).toContain('log "Consuelo OS setup complete"');
+    expect(bootstrap).toContain('log "Home: $os_home"');
     expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
     expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
     expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');

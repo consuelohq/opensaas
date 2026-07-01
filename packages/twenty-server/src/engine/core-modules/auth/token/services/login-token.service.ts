@@ -49,7 +49,7 @@ export class LoginTokenService {
     return {
       token: this.jwtWrapperService.sign(jwtPayload, {
         secret,
-        expiresIn: ms(expiresIn),
+        expiresIn,
       }),
       expiresAt,
     };

@@ -42,6 +42,17 @@
       }
     },
     "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/twenty-server",
+        "command": "tsgo -p tsconfig.json --noEmit"
+      },
+      "configurations": {
+        "watch": {
+          "command": "tsgo -p tsconfig.json --noEmit --watch"
+        }
+      },
       "dependsOn": ["^build"]
     },
     "start": {

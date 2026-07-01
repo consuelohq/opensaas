@@ -1071,14 +1071,14 @@ c-232 -118 -435 -244 -610 -379 -100 -77 -121 -107 -76 -107 16 0 61 25 116
         --label: #F8FAFC;
         --muted: #94A3B8;
         --wire: rgba(148, 163, 184, 0.22);
-        --tile-bg: #0F172A;
-        --tile-stroke: rgba(148, 163, 184, 0.24);
-        --center-stroke: #8B5CF6;
+        --tile-bg: transparent;
+        --tile-stroke: rgba(248, 250, 252, 0.18);
+        --center-stroke: rgba(230, 111, 67, 0.66);
         --icon: #F8FAFC;
         --consuelo: #F8FAFC;
         --portrait-fill: #F7F1E8;
         --portrait-ink: #E66F43;
-        --github-bg: #FFFFFF;
+        --github-bg: transparent;
         --github-fg: #0B0F19;
       }
     }

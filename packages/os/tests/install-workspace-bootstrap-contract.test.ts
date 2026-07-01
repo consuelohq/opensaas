@@ -226,7 +226,10 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     );
 
     expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
-    expect(installSource).toContain("{ label: 'workspace', state: 'active' }");
+    expect(installSource).toContain("{ label: 'workspace', state: 'complete' }");
+    expect(installSource).toContain("{ label: 'security', state: 'complete' }");
+    expect(installSource).toContain("{ label: 'skills', state: 'active' }");
+    expect(installSource).not.toContain("'artifacts'");
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
@@ -234,8 +237,10 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(installSource.indexOf('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);')).toBeLessThan(
       installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
     );
-    expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete'");
-    expect(cliUiSource).toContain("if (step.state === 'active' || step.state === 'complete') return chalk.white('●');");
+    expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete' | 'failed'");
+    expect(cliUiSource).toContain("if (step.state === 'active') return chalk.blue('◆');");
+    expect(cliUiSource).toContain("return chalk.green('●');");
+    expect(cliUiSource).toContain("One workspace. Any agent.");
   });
 
 
