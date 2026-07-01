@@ -117,6 +117,22 @@ describe('OS workflow intent bundles', () => {
     expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'tsk_intent_task' }));
   });
 
+  test('should use a branch-shaped task handle when task intent has not started a task yet', () => {
+    const runtime = createWorkflowIntentRuntime({
+      manifest: readManifest(),
+      bundles: readBundles(),
+    });
+
+    const result = runtime.start({
+      workflow: 'task',
+      area: 'os',
+      title: 'intent architecture',
+    });
+
+    expect(result.taskSession).toBe('task/os/intent-architecture');
+    expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'task/os/intent-architecture' }));
+  });
+
   test('should expose task.intent when reading the full and core manifests', () => {
     const intentEntry = readManifest().find((tool) => tool.workflowRole === 'intent.start');
     const coreIntentEntry = readCoreManifest().tools.find((tool) => tool.definition.workflowRole === 'intent.start');

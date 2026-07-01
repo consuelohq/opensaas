@@ -1,0 +1,15 @@
+{
+  "files": [
+    "packages/os/hooks/intent.js",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/batch.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/process-tree.ts",
+    "packages/os/scripts/lib/verification.js",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-07-01T17:08:14.280Z"
+}

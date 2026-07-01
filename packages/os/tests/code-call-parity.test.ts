@@ -68,7 +68,7 @@ describe('OS code.call parity with Workspace PR 846', () => {
       expect(typeSource).toContain(`'${mistakeClass}'`);
     }
 
-    expect(codeCallSource).toContain('const DEFAULT_TIMEOUT_MS = 30_000;');
+    expect(codeCallSource).toContain('const DEFAULT_TIMEOUT_MS = 180_000;');
     expect(codeCallSource).toContain('const DEFAULT_MAX_RESULT_CHARS = 20_000;');
   });
 });
