@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
 import starlight from '@astrojs/starlight';
 
 const sidebar = [
@@ -100,9 +101,13 @@ const sidebar = [
 
 export default defineConfig({
   site: 'https://docs.consuelohq.com',
+  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
   integrations: [
     starlight({
       title: 'Consuelo Docs',
+      components: {
+        LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
+      },
       sidebar,
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/consuelohq/opensaas' }],
     }),

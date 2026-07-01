@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3c3f51f66d10",
+  "tmuxSession": "opensaas-docs-runtime-cached-documentation-translation-3c3f51f6",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/runtime-cached-documentation-translation",
+  "branch": "task/docs/runtime-cached-documentation-translation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-runtime-cached-documentation-translation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-runtime-cached-documentation-translation",
+  "prNumber": 1332,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1332",
+  "createdAt": "2026-07-01T22:35:17.079Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-runtime-cached-documentation-translation/.task/docs/runtime-cached-documentation-translation/session.json"
+}

@@ -54,6 +54,15 @@ const removedSlugs = [
 ];
 
 const adapterNames = ['Note', 'Warning', 'CardGroup', 'Card', 'CardTitle', 'VimeoEmbed', 'AgentContext'];
+const translationInvariantFiles = [
+  'src/components/translation/RuntimeLanguageSelect.astro',
+  'src/lib/translation/cache.ts',
+  'src/lib/translation/languages.ts',
+  'src/lib/translation/provider.ts',
+  'src/lib/translation/source.ts',
+  'src/pages/api/docs/translate.ts',
+  'scripts/test-translation.mjs',
+];
 const failures = [];
 const read = (path) => readFileSync(path, 'utf8');
 const assert = (condition, message) => { if (!condition) failures.push(message); };
@@ -63,6 +72,7 @@ assert(packageJson.name === 'packages-documentation', 'package name must remain 
 assert(Boolean(packageJson.scripts?.build), 'package must expose build script');
 assert(typeof packageJson.packageManager === 'string' && packageJson.packageManager.startsWith('bun@'), 'package must declare Bun packageManager');
 assert(Boolean(packageJson.scripts?.validate), 'package must expose validate script');
+assert(Boolean(packageJson.scripts?.['test:translation']), 'package must expose test:translation script');
 assert(existsSync('bun.lock'), 'bun.lock must exist');
 
 const rootPackageJson = JSON.parse(read('../../package.json'));
@@ -82,9 +92,13 @@ for (const slug of removedSlugs) {
 for (const name of adapterNames) {
   assert(existsSync(`src/components/mintlify/${name}.astro`), `missing Mintlify adapter ${name}.astro`);
 }
+for (const file of translationInvariantFiles) {
+  assert(existsSync(file), `missing runtime translation file ${file}`);
+}
 
 const config = read('astro.config.mjs');
 assert(config.includes("title: 'Consuelo Docs'"), 'Starlight title must be Consuelo Docs');
+assert(config.includes('RuntimeLanguageSelect.astro'), 'Starlight LanguageSelect must use runtime translation selector');
 for (const required of ['user-guide/user-stories-use-cases', 'tools/sites/overview', 'tools/office', 'os/overview', 'developers/introduction']) {
   assert(config.includes(required), `sidebar missing ${required}`);
 }
@@ -97,8 +111,13 @@ assert(!existsSync('src/content/docs/guides/example.md'), 'starter guide must be
 assert(!existsSync('src/content/docs/reference/example.md'), 'starter reference must be removed');
 
 const readme = read('README.md');
-for (const phrase of ['Source of truth', 'Bun-owned', 'Do not edit generated Mintlify files', 'Adding or moving pages']) {
+for (const phrase of ['Source of truth', 'Bun-owned', 'Do not edit generated Mintlify files', 'Adding or moving pages', 'Runtime translation']) {
   assert(readme.includes(phrase), `README missing guidance phrase: ${phrase}`);
+}
+
+const illegalLocaleDirs = ['src/content/docs/es', 'src/content/docs/fr', 'src/content/docs/pt', 'src/content/docs/de', 'src/content/docs/ja', 'src/content/docs/ko', 'src/content/docs/ar', 'src/content/docs/zh'];
+for (const dir of illegalLocaleDirs) {
+  assert(!existsSync(dir), `committed locale docs tree is not allowed: ${dir}`);
 }
 
 const allFiles = [];
@@ -138,6 +157,25 @@ for (const path of allFiles) {
     assert(routeExists(ref), `${path} links to missing internal route ${ref}`);
   }
 }
+if (existsSync('src/components/translation/RuntimeLanguageSelect.astro')) {
+  const translationClient = read('src/components/translation/RuntimeLanguageSelect.astro');
+  assert(translationClient.includes('/api/docs/translate'), 'translation selector must call the docs translation API');
+  assert(!translationClient.includes('GOOGLE_TRANSLATE_API_KEY'), 'translation selector must not reference provider credentials');
+}
+if (existsSync('src/pages/api/docs/translate.ts')) {
+  const translationEndpoint = read('src/pages/api/docs/translate.ts');
+  assert(translationEndpoint.includes('prerender = false'), 'translation API route must be runtime only');
+}
+if (existsSync('src/lib/translation/cache.ts')) {
+  const translationCache = read('src/lib/translation/cache.ts');
+  assert(translationCache.includes('contentHash') && translationCache.includes('targetLanguage') && translationCache.includes('route'), 'translation cache must include route, source content hash, and target language');
+}
+if (existsSync('src/lib/translation/provider.ts')) {
+  const provider = read('src/lib/translation/provider.ts');
+  assert(provider.includes('GOOGLE_TRANSLATE_API_KEY'), 'translation provider must read Google credentials server-side');
+  assert(provider.includes('translation.googleapis.com'), 'translation provider must target Google Cloud Translation API');
+}
+
 if (failures.length) {
   process.stderr.write(`${JSON.stringify({ ok: false, failures }, null, 2)}\n`);
   process.exit(1);
