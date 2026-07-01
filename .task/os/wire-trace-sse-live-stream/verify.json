@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-trace-sse-live-stream",
+  "base": "origin/task/os/wire-trace-sse-live-stream",
+  "headSha": "61e92b7829bc3113a7f1eae990577af83fad8778",
+  "changeHash": "931c1a6a66fbfe168b47c99502e925e451532bce6fc6eaf6bc97adf6464f3945",
+  "changedFiles": [
+    "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-live-stream.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+  ],
+  "verifiedAt": "2026-07-01T20:38:50.766Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-trace-sse-live-stream/current.json",
+        ".task/os/wire-trace-sse-live-stream/session.json",
+        ".task/os/wire-trace-sse-live-stream/workpad.md",
+        ".task/tasks/os/wire-trace-sse-live-stream.json",
+        "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
+        "packages/os/scripts/lib/trace-sites-gateway-live-stream.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
