@@ -1367,11 +1367,11 @@ await workspace.call({
 })
 ```
 
-Bad: legacy `task.call` command shape.
+Bad: removed command-array `code.call` shape.
 
 ```ts
 await workspace.call({
-  tool: "task.call",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"],
@@ -1380,7 +1380,7 @@ await workspace.call({
 })
 ```
 
-Translate that legacy intent to `code.call`:
+Translate that intent to the current `code.call` schema:
 
 ```ts
 await workspace.call({
@@ -1693,7 +1693,7 @@ When raw shell is necessary, keep it minimal and classify it as a tooling gap:
 - return bounded output
 - explain the tooling gap
 
-``code.call` is the preferred command tool for running real package commands, focused tests, build checks, and validation commands when no more specific typed validation tool exists. `task.call` and `task.exec` are not command surfaces.
+``code.call` is the preferred command tool for running real package commands, focused tests, build checks, and validation commands when no more specific typed validation tool exists. `code.call` and `code.call` are not command surfaces.
 
 After using raw shell for a repeated need, propose the missing workspace tool so the workflow becomes typed next time.
 
@@ -1764,7 +1764,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 
 ## Translate legacy command examples into workspace tools
 
-Older handoffs, skills, docs, and workpads may contain raw shell examples such as `gh pr view`, `rg`, `sed`, `git status`, `git merge`, `git restore`, `bun run task:*`, task.call/exec, `railway logs`, or `agent-browser ...`.
+Older handoffs, skills, docs, and workpads may contain raw shell examples such as `gh pr view`, `rg`, `sed`, `git status`, `git merge`, `git restore`, `bun run task:*`, code.call, `railway logs`, or `agent-browser ...`.
 
 Treat those examples as historical intent, not current execution doctrine.
 
@@ -1775,7 +1775,7 @@ Before running any legacy command example, translate it into the current typed w
 | `gh pr view ...` | typed GitHub tool |
 | `git status` | `status` or `task.current` |
 | `git restore`, `git merge`, `rm -rf .task/...` | typed recovery/stream/task tool/fr.trash; if missing, report tooling gap |
-| `task.call`/`mac.call` | `code.call` |
+| `code.call`/`mac.call` | `code.call` |
 | `railway logs ...` | `railway.logs` |
 | browser CLI commands | `browser.*` workspace tools |
 
@@ -1948,7 +1948,7 @@ Recommended defaults:
 | `task.pr` | 300s | p99 is under 10s; stream promotion can still hit GitHub delay. |
 | `task.merge` | 300s | Usually fast; wait/merge state may need follow-up verification. |
 | `task.finish` | 180s | Usually fast; cleanup should still get enough room. |
-| `task.call` simple command | 300s | p99 can spike; package scripts vary. |
+| `code.call` simple command | 300s | p99 can spike; package scripts vary. |
 | docs/type generation | 300s | Generation is bounded but can hit repo/tool startup latency. |
 | focused tests | 600s | Test startup and package-level tests can vary. |
 | full package tests | 900s | Use for broad package test runs. |
@@ -2732,11 +2732,11 @@ For typed facade changes, follow the validation path documented in `packages/wor
 
 ```ts
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-types"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 300 })
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-docs"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 300 })
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "--cwd", "packages/workspace", "run", "test", "tests/facade/facade.test.ts"] }, timeout: 600 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 600 })
 
 await workspace.call({ tool: "audit", taskSession, input: { scripts: true }, timeout: 300 })
 

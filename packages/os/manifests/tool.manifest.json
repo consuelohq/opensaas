@@ -1719,7 +1719,7 @@
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
       "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
-      "core": true,
+      "core": false,
       "definition": {
         "name": "code.run",
         "methodPath": [

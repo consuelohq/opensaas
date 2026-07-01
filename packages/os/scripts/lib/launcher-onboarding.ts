@@ -15,7 +15,7 @@ const launcherLinks = {
   sites: [
     { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
     { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
-    { label: 'Observability', href: 'https://sites.consuelohq.com/tracing' },
+    { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
     { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
   ],
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],

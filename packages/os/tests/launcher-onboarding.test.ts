@@ -33,6 +33,8 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Go to market');
     expect(html).toContain('Artifacts');
     expect(html).toContain('Observability');
+    expect(html).toContain('href="https://sites.consuelohq.com/observability"');
+    expect(html).not.toContain('href="https://sites.consuelohq.com/tracing"');
     expect(html).toContain('Code review');
     expect(html).toContain('Guides and Tips');
     expect(html).toContain('Documentation');

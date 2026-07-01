@@ -11,8 +11,6 @@
     "lint": "eslint **/*.mdx --max-warnings=0",
     "generate-os-skill-docs": "bun scripts/generate-os-skill-docs.ts",
     "check-os-skill-docs": "bun scripts/generate-os-skill-docs.ts --check",
-    "generate-os-source-docs": "bun scripts/generate-os-source-docs.ts",
-    "check-os-source-docs": "bun scripts/generate-os-source-docs.ts --check",
     "validate-os-docs": "bun scripts/validate-os-docs.ts"
   },
   "dependencies": {

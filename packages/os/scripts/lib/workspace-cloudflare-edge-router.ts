@@ -114,7 +114,6 @@ const DEFAULT_RESERVED_HOSTNAMES = [
   'linear.consuelohq.com',
   'api.consuelohq.com',
   'www.consuelohq.com',
-  'sites.consuelohq.com',
 ];
 
 const normalizeHostname = (host: string): string => host.trim().toLowerCase().replace(/\.$/, '');

@@ -34,6 +34,7 @@ const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/', siteId: 'launcher' },
   { pathPrefix: '/office', siteId: 'office' },
+  { pathPrefix: '/observability', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
@@ -150,7 +151,7 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
       kind: 'consuelo-gateway-service',
       serviceName: 'trace-sites-live-endpoints',
       gatewayRouteFamily: '/gateway/traces/*',
-      publicSiteRouteFamily: '/traces/*',
+      publicSiteRouteFamily: '/observability/*',
     },
   },
   {
@@ -162,7 +163,7 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
       kind: 'consuelo-gateway-service',
       serviceName: 'trace-sites-read-layer',
       gatewayRouteFamily: '/gateway/traces/*',
-      publicSiteRouteFamily: '/traces/*',
+      publicSiteRouteFamily: '/observability/*',
     },
   },
 ];

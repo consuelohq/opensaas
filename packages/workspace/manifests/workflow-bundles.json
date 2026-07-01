@@ -188,7 +188,7 @@
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "codemode",
           "description": "run workspace-native codemode JavaScript against allowed workspace tools",
-          "core": true,
+          "core": false,
           "definition": {
             "name": "code.run",
             "methodPath": [

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_72c73fcfbaa1",
+  "tmuxSession": "opensaas-workspace-agents-reconcile-docs-migration-and-remove-generated-pu-72c73fcf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/reconcile-docs-migration-and-remove-generated-public-docs",
+  "branch": "task/workspace-agents/reconcile-docs-migration-and-remove-generated-public-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reconcile-docs-migration-and-remove-generated-public-docs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reconcile-docs-migration-and-remove-generated-public-docs",
+  "prNumber": 1326,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1326",
+  "createdAt": "2026-07-01T18:59:10.983Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reconcile-docs-migration-and-remove-generated-public-docs/.task/workspace-agents/reconcile-docs-migration-and-remove-generated-public-docs/session.json"
+}
