@@ -53,3 +53,24 @@ The prior blank wrapper violated that model. The corrected model keeps `tabs` as
 
 ## Risk
 This is a hotfix for broken deployed docs navigation. Visual confirmation still depends on Mintlify preview/deploy, but the emitted structure now matches documented Mintlify navigation semantics instead of an empty group wrapper.
+
+
+## Final publishing note
+State: Hotfix pushed to `task/docs/fix-mintlify-nav-routes` at `6427541db46c0a19c3af486f0286fa082cdcd47e`.
+
+Delta:
+- Replaced invalid blank group wrappers with documented Mintlify tab-level `pages`.
+- Updated docs generators and OS docs validators to support tab-level pages.
+- Regenerated `docs.json`.
+
+Evidence:
+- Generated docs tabs now use `pages` and no longer use blank `groups`.
+- Recursive scan found zero blank groups in `docs.json`.
+- No missing navigation targets.
+- OS docs validation passed.
+- OS skill docs check passed.
+- Touched docs scripts pass `bun --check`.
+
+Next:
+- Promote task PR #1315 into `stream/docs`.
+- Merge stream/docs to main immediately after GitHub accepts the stream PR.
