@@ -64,14 +64,132 @@ Validation ladder:
 ## files changed
 
 - `packages/documentation/astro.config.mjs`
+- `packages/documentation/package.json`
+- `packages/documentation/public/images/user-guide/create-workspace/choose-plan.png`
+- `packages/documentation/public/images/user-guide/github/github-header.png`
+- `packages/documentation/public/images/user-guide/home/command-menu.png`
+- `packages/documentation/public/images/user-guide/home/main-layout.png`
+- `packages/documentation/public/images/user-guide/home/navigation-bar.png`
+- `packages/documentation/public/images/user-guide/home/search-bar.png`
+- `packages/documentation/public/images/user-guide/home/side-panel.png`
+- `packages/documentation/public/images/user-guide/home/view-menu.png`
+- `packages/documentation/public/images/user-guide/integrations/plug.png`
+- `packages/documentation/public/images/user-guide/what-is-consuelo/20.png`
 - `packages/documentation/README.md`
 - `packages/documentation/scripts/validate-documentation.mjs`
+- `packages/documentation/src/components/mintlify/AgentContext.astro`
+- `packages/documentation/src/components/mintlify/Card.astro`
+- `packages/documentation/src/components/mintlify/CardGroup.astro`
+- `packages/documentation/src/components/mintlify/CardTitle.astro`
+- `packages/documentation/src/components/mintlify/Note.astro`
+- `packages/documentation/src/components/mintlify/VimeoEmbed.astro`
+- `packages/documentation/src/components/mintlify/Warning.astro`
+- `packages/documentation/src/content/docs/developers/agent/crm-tools.mdx`
+- `packages/documentation/src/content/docs/developers/agent/integrations.mdx`
+- `packages/documentation/src/content/docs/developers/agent/overview.mdx`
+- `packages/documentation/src/content/docs/developers/agent/tool-system.mdx`
+- `packages/documentation/src/content/docs/developers/api/auth.mdx`
+- `packages/documentation/src/content/docs/developers/api/contacts.mdx`
+- `packages/documentation/src/content/docs/developers/api/graphql.mdx`
+- `packages/documentation/src/content/docs/developers/api/overview.mdx`
+- `packages/documentation/src/content/docs/developers/api/voice.mdx`
+- `packages/documentation/src/content/docs/developers/introduction.mdx`
+- `packages/documentation/src/content/docs/guides/example.md` (deleted)
+- `packages/documentation/src/content/docs/index.mdx`
+- `packages/documentation/src/content/docs/os/concepts/approvals.mdx`
+- `packages/documentation/src/content/docs/os/concepts/context-and-memory.mdx`
+- `packages/documentation/src/content/docs/os/concepts/data-model-and-graphql.mdx`
+- `packages/documentation/src/content/docs/os/concepts/files-and-artifacts.mdx`
+- `packages/documentation/src/content/docs/os/concepts/integrations-and-capabilities.mdx`
+- `packages/documentation/src/content/docs/os/concepts/local-and-cloud.mdx`
+- `packages/documentation/src/content/docs/os/concepts/observability.mdx`
+- `packages/documentation/src/content/docs/os/concepts/portal.mdx`
+- `packages/documentation/src/content/docs/os/concepts/scripts.mdx`
+- `packages/documentation/src/content/docs/os/concepts/skills.mdx`
+- `packages/documentation/src/content/docs/os/glossary.mdx`
+- `packages/documentation/src/content/docs/os/how-it-works.mdx`
+- `packages/documentation/src/content/docs/os/overview.mdx`
+- `packages/documentation/src/content/docs/os/tools/browser-tools.mdx`
+- `packages/documentation/src/content/docs/os/tools/overview.mdx`
+- `packages/documentation/src/content/docs/reference/example.md` (deleted)
+- `packages/documentation/src/content/docs/tools/media/getting-started.mdx`
+- `packages/documentation/src/content/docs/tools/office.mdx`
+- `packages/documentation/src/content/docs/tools/overview.mdx`
+- `packages/documentation/src/content/docs/tools/sites/overview.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/glossary.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/implementation-services.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/keyboard-shortcuts.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/what-is-consuelo.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/configure-your-workspace.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/create-workspace.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/navigate-around-consuelo.mdx`
+- `packages/documentation/src/content/docs/user-guide/introduction.mdx`
+- `packages/documentation/src/content/docs/user-guide/user-stories-use-cases.mdx`
 
 ## workspace-owned: files changed
 
 - `packages/documentation/astro.config.mjs`
+- `packages/documentation/package.json`
+- `packages/documentation/public/images/user-guide/create-workspace/choose-plan.png`
+- `packages/documentation/public/images/user-guide/github/github-header.png`
+- `packages/documentation/public/images/user-guide/home/command-menu.png`
+- `packages/documentation/public/images/user-guide/home/main-layout.png`
+- `packages/documentation/public/images/user-guide/home/navigation-bar.png`
+- `packages/documentation/public/images/user-guide/home/search-bar.png`
+- `packages/documentation/public/images/user-guide/home/side-panel.png`
+- `packages/documentation/public/images/user-guide/home/view-menu.png`
+- `packages/documentation/public/images/user-guide/integrations/plug.png`
+- `packages/documentation/public/images/user-guide/what-is-consuelo/20.png`
 - `packages/documentation/README.md`
 - `packages/documentation/scripts/validate-documentation.mjs`
+- `packages/documentation/src/components/mintlify/AgentContext.astro`
+- `packages/documentation/src/components/mintlify/Card.astro`
+- `packages/documentation/src/components/mintlify/CardGroup.astro`
+- `packages/documentation/src/components/mintlify/CardTitle.astro`
+- `packages/documentation/src/components/mintlify/Note.astro`
+- `packages/documentation/src/components/mintlify/VimeoEmbed.astro`
+- `packages/documentation/src/components/mintlify/Warning.astro`
+- `packages/documentation/src/content/docs/developers/agent/crm-tools.mdx`
+- `packages/documentation/src/content/docs/developers/agent/integrations.mdx`
+- `packages/documentation/src/content/docs/developers/agent/overview.mdx`
+- `packages/documentation/src/content/docs/developers/agent/tool-system.mdx`
+- `packages/documentation/src/content/docs/developers/api/auth.mdx`
+- `packages/documentation/src/content/docs/developers/api/contacts.mdx`
+- `packages/documentation/src/content/docs/developers/api/graphql.mdx`
+- `packages/documentation/src/content/docs/developers/api/overview.mdx`
+- `packages/documentation/src/content/docs/developers/api/voice.mdx`
+- `packages/documentation/src/content/docs/developers/introduction.mdx`
+- `packages/documentation/src/content/docs/guides/example.md` (deleted)
+- `packages/documentation/src/content/docs/index.mdx`
+- `packages/documentation/src/content/docs/os/concepts/approvals.mdx`
+- `packages/documentation/src/content/docs/os/concepts/context-and-memory.mdx`
+- `packages/documentation/src/content/docs/os/concepts/data-model-and-graphql.mdx`
+- `packages/documentation/src/content/docs/os/concepts/files-and-artifacts.mdx`
+- `packages/documentation/src/content/docs/os/concepts/integrations-and-capabilities.mdx`
+- `packages/documentation/src/content/docs/os/concepts/local-and-cloud.mdx`
+- `packages/documentation/src/content/docs/os/concepts/observability.mdx`
+- `packages/documentation/src/content/docs/os/concepts/portal.mdx`
+- `packages/documentation/src/content/docs/os/concepts/scripts.mdx`
+- `packages/documentation/src/content/docs/os/concepts/skills.mdx`
+- `packages/documentation/src/content/docs/os/glossary.mdx`
+- `packages/documentation/src/content/docs/os/how-it-works.mdx`
+- `packages/documentation/src/content/docs/os/overview.mdx`
+- `packages/documentation/src/content/docs/os/tools/browser-tools.mdx`
+- `packages/documentation/src/content/docs/os/tools/overview.mdx`
+- `packages/documentation/src/content/docs/reference/example.md` (deleted)
+- `packages/documentation/src/content/docs/tools/media/getting-started.mdx`
+- `packages/documentation/src/content/docs/tools/office.mdx`
+- `packages/documentation/src/content/docs/tools/overview.mdx`
+- `packages/documentation/src/content/docs/tools/sites/overview.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/glossary.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/implementation-services.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/keyboard-shortcuts.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/capabilities/what-is-consuelo.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/configure-your-workspace.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/create-workspace.mdx`
+- `packages/documentation/src/content/docs/user-guide/getting-started/how-tos/navigate-around-consuelo.mdx`
+- `packages/documentation/src/content/docs/user-guide/introduction.mdx`
+- `packages/documentation/src/content/docs/user-guide/user-stories-use-cases.mdx`
 
 ## workspace-owned: activity log
 
@@ -88,6 +206,7 @@ Validation ladder:
 - 2026-07-01 20:13:54 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - 2026-07-01 20:17:26 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - 2026-07-01 20:17:57 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
+- 2026-07-01 20:18:53 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - Build note: Starlight prints `Entry docs → 404 was not found.` to stderr while still generating `/404.html` and exiting 0. Sitemap warning was fixed by adding `site: 'https://docs.consuelohq.com'`.
 - Build validation: `bun run --cwd packages/documentation build` passed and generated 40 static pages, including `/user-guide/user-stories-use-cases/`, `/tools/sites/overview/`, `/tools/office/`, `/os/overview/`, and developer/API routes.
 - Green validation: `bun run --cwd packages/documentation validate` passed with 38 curated pages and 7 Mintlify adapters.
@@ -117,3 +236,29 @@ Validation ladder:
 - Workspace verify passed and wrote `.task/docs/wire-starlight-documentation-package/verify.json` as publish-valid. Test selection found zero suites for these docs/static changes; package-local `validate` and `build` are the functional checks for this phase.
 
 - 2026-07-01 20:17:57 append: `.task/docs/wire-starlight-documentation-package/workpad.md`
+
+## Final implementation summary
+
+Changed `packages/documentation` from the starter Starlight app into a working Consuelo documentation app without renaming the package. The package remains `packages-documentation`, declares Bun ownership with `packageManager: bun@1.3.14`, and stays outside the root Yarn workspace list.
+
+Ported 38 curated English MDX pages from legacy Mintlify into `packages/documentation/src/content/docs`, covering User Guide, Consuelo OS, Tools, Developer Guide, and API docs. Removed Starlight starter guide/reference pages. Added the referenced images needed by those curated pages.
+
+Created Starlight sidebar groups for User Guide, Consuelo OS, Tools, and Developer Guide. Kept User Stories as a single page, Sites as the GTM umbrella page, and Office as a separate Tools page.
+
+Added Astro adapters for the Mintlify-ish components used by the curated pages: `Note`, `Warning`, `CardGroup`, `Card`, `CardTitle`, `VimeoEmbed`, and `AgentContext`.
+
+Added `packages/documentation/README.md` as the source-of-truth guidance for future agents and added `packages/documentation/scripts/validate-documentation.mjs` as the package-local regression gate. The validator checks package ownership, curated page presence, forbidden raw-source pages, adapters, sidebar anchors, starter-content removal, README guidance, and broken internal links.
+
+Validation run:
+- Red validation failed as expected before implementation.
+- `bun run --cwd packages/documentation validate` passed after implementation and after internal-link fixes.
+- `bun run --cwd packages/documentation build` passed and generated 40 static pages plus sitemap.
+- `workspace review` passed with zero issues owned by this change; only pre-existing project typecheck-target absence remains.
+- `workspace verify` passed and wrote a publish-valid stamp.
+
+Follow-ups:
+- Phase 3 should add runtime/cached translation UX.
+- Phase 4 should handle deploy cutover, redirects, and deleting `packages/consuelo-docs`.
+- Starlight currently emits `Entry docs → 404 was not found.` on stderr while still exiting 0 and generating `/404.html`; keep an eye on this during deploy preview.
+
+- 2026-07-01 20:18:53 append: `.task/docs/wire-starlight-documentation-package/workpad.md`
