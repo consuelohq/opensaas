@@ -669,6 +669,50 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     ]);
   });
 
+  it('should serve sites.consuelohq.com as a public site snapshot host', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const r2Reads: string[] = [];
+    const siteR2: WorkspaceSitesEdgeR2Bucket = {
+      async get(key) {
+        r2Reads.push(key);
+        if (key !== 'sites/workspace_testing/launcher/version_sites/index.html') return null;
+        return { text: async () => '<!doctype html><title>Consuelo OS Sites</title>' };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_testing',
+            hostname: input.host,
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_sites',
+              manifestKey: 'sites/workspace_testing/launcher/version_sites/index.html',
+              contentType: 'text/html; charset=utf-8',
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      siteSnapshots: { r2: siteR2 },
+    });
+
+    const response = await router.fetch(new Request('https://sites.consuelohq.com/'));
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Consuelo OS Sites');
+    expect(response.headers.get('x-consuelo-site-version')).toBe('version_sites');
+    expect(r2Reads).toEqual(['sites/workspace_testing/launcher/version_sites/index.html']);
+  });
+
   it.each([
     {
       name: 'revoked hostname',
@@ -869,4 +913,3 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body).not.toMatch(/manifestKey|bucket|sites\/workspace_123|secret/i);
   });
 });
-

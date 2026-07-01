@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 
 const source = readFileSync(new URL('../scripts/office.ts', import.meta.url), 'utf8');
+const launcherSource = readFileSync(new URL('../../os/scripts/lib/launcher-onboarding.ts', import.meta.url), 'utf8');
+const rootLauncherSources = `${source}\n${launcherSource}`;
 
 test('keeps the generated sites archive theme and search surfaces styled', () => {
   for (const marker of [
@@ -110,24 +112,18 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     "const DESIGN_WRITING_DECISION_LOOPS_PATH = '/writing/on-decision-loops';",
-    'href="/careers/systems-engineer">Systems Engineer</a>',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}',
+    "import { type LauncherLocalAgent, renderLauncherOnboarding } from '../../os/scripts/lib/launcher-onboarding';",
+    'function sitesLauncherMcpUrl',
+    'function sitesLauncherLocalAgents',
+    "path.join(home, 'security', 'generated', 'chatgpt-mcp.json')",
+    "path.join(home, 'config.json')",
+    'https://os.consuelohq.com/mcp',
+    'LAUNCHER_AGENT_LABELS',
     'function officePathForArchiveEntry',
     'function renderSitesLauncherHtml',
     'function renderSitesLauncher',
     'renderSitesLauncherHtml({ includeHotkeysScript: true })',
     'return renderSitesLauncherHtml({ includeHotkeysScript: false });',
-    'CONSUELO OS █',
-    'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-    'SITES:',
-    '>Go to market</a>',
-    '>Artifacts</a>',
-    '>Observability</a>',
-    '>Code review</a>',
-    'GUIDES AND TIPS:',
-    '>Documentation</a>',
-    'WRITING:',
-    'Decision loops',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -135,6 +131,24 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'const canonicalPathname = stripArtifactAlias(routePathname);',
   ]) {
     expect(source).toContain(marker);
+  }
+
+  for (const marker of [
+    'href="/careers/systems-engineer">Systems Engineer</a>',
+    'Here is the URL to connect <a href="${CHATGPT_CONNECTORS_URL}"',
+    'to your workspace.',
+    'Sites',
+    'Go to market',
+    'Artifacts',
+    'Observability',
+    'Code review',
+    'Guides and Tips',
+    'Documentation',
+    'Writing',
+    'Decision loops',
+    'No local agents connected to workspace yet.',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
   }
 
   for (const oldMarker of [
@@ -147,7 +161,7 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'https://app.consuelohq.com/welcome',
     'href="https://consuelohq.com/contact/"',
   ]) {
-    expect(source).not.toContain(oldMarker);
+    expect(rootLauncherSources).not.toContain(oldMarker);
   }
 });
 
@@ -162,30 +176,29 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
   for (const marker of [
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
-    'CONSUELO OS █',
-    'SITES:',
-    'GUIDES AND TIPS:',
-    'WRITING:',
-    '>Go to market</a>',
-    '>Artifacts</a>',
-    '>Observability</a>',
-    '>Code review</a>',
-    '>Documentation</a>',
-    'Decision loops',
-    'href="/careers/systems-engineer">Systems Engineer</a>',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
+  }
+  for (const marker of [
+    'Welcome to Consuelo OS',
+    'Here is the URL to connect',
+    'Connect to your cloud agents',
+    'href="/careers/systems-engineer">Systems Engineer</a>',
+    'Go to market',
+    'Artifacts',
+    'Observability',
+    'Code review',
+    'Documentation',
+    'Decision loops',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
   }
   expect(source).not.toContain('Legacy wiki</a></div>');
 });
 
 test('keeps launcher routes local and theme-aware', () => {
   for (const marker of [
-    'color-scheme: dark',
-    'background: #070708',
-    'color: #f2eee6',
-    'color: #9aa6ff',
     'function publicRouteAlias',
     'if (clean === "/tracing") return "/trace-burn-intelligence";',
     'function proxyDiffsRoute',
@@ -196,59 +209,57 @@ test('keeps launcher routes local and theme-aware', () => {
   ]) {
     expect(source).toContain(marker);
   }
+  for (const marker of [
+    'color-scheme: light dark',
+    '--site-color-paper: #faf7f2',
+    '--site-color-ink: #1c1a17',
+    '@media (prefers-color-scheme: dark)',
+    '--site-color-paper: #0f0f0d',
+    '--site-color-ink: #f7efe7',
+    'font-family: var(--site-font-body)',
+    'color-mix(in srgb, var(--site-color-accent) 70%, transparent)',
+  ]) {
+    expect(launcherSource).toContain(marker);
+  }
   expect(source).not.toContain('/writing/on-rendering-diffs');
-  expect(source).toContain('font-weight: 400');
-  expect(source).toContain('letter-spacing: 0.02em');
-  expect(source).toContain('white-space: nowrap');
-  expect(source).toContain('class="blog-item"');
-  expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
   expect(source).toContain('renderSitesLauncherHtml({ includeHotkeysScript: true })');
   expect(source).toContain('return renderSitesLauncherHtml({ includeHotkeysScript: false });');
-  expect(source).toContain('${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}');
   expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
 
-test('keeps launcher compact but tappable on phone and tablet viewports', () => {
+test('keeps launcher responsive and tappable on phone and tablet viewports', () => {
   for (const marker of [
-    '@media (max-width: 1024px)',
-    'font-size: clamp(10.3px, 2.62vw, 12.7px)',
-    'main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); }',
-    '.block { margin: 22px 0; }',
-    '.rule { margin: 22px 0; }',
-    'li { margin: 2.35px 0; }',
-    '@media (max-width: 430px)',
-    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
-    'main { padding: 40px 10px; }',
-    'li, .blog-item { white-space: nowrap; }',
+    '@media (max-width: 860px)',
+    'main { grid-template-columns: 1fr; }',
+    '.content { gap: 54px; }',
+    '.panel { border-left: 0; border-top: 1px solid var(--site-color-line); }',
+    '.url-row, .meta-grid { grid-template-columns: 1fr; }',
+    'button { min-height: 44px; }',
   ]) {
-    expect(source).toContain(marker);
+    expect(launcherSource).toContain(marker);
   }
-  expect(source).not.toContain('.blog-item { white-space: normal;');
+  expect(launcherSource).not.toContain('font-size: 100vw');
 });
 
 
 
-test('tunes mobile launcher closer to the Pierre reference', () => {
+test('keeps Sites launcher aligned to the OS onboarding renderer', () => {
   for (const marker of [
-    'main { padding: 40px 10px; }',
-    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
-    '.block { margin: 22px 0; }',
-    '.rule { margin: 22px 0; }',
-    'li { margin: 2.35px 0; }',
+    'renderLauncherOnboarding({',
+    'mcpUrl: sitesLauncherMcpUrl()',
+    'localAgents: sitesLauncherLocalAgents()',
+    'launcherHtml.replace',
+    'CHATGPT_CONNECTORS_URL',
+    'Connected to ${connectedLocalAgentCount} local ${localAgentNoun}',
   ]) {
-    expect(source).toContain(marker);
+    expect(rootLauncherSources).toContain(marker);
   }
 });
 
 
 test('adds numeric launcher hotkeys for Sites navigation', () => {
   for (const marker of [
-    'data-hotkey="1"',
-    'data-hotkey="2"',
-    'data-hotkey="3"',
-    'data-hotkey="4"',
-    'data-hotkey="5"',
     'const siteHotkeys = {',
     '"1": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm"',
     '"2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',

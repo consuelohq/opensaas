@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
+import { createWorkspaceEdgeRouteSeedSql } from '../../os/scripts/lib/workspace-edge-route-seed';
 
 const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
@@ -136,6 +137,27 @@ function releaseDefaultSiteSnapshots(dryRun: boolean): DefaultSiteSnapshot {
         snapshot.filePath,
         '--content-type',
         SNAPSHOT_CONTENT_TYPE,
+      ], { cwd: WORKER_DIR });
+    }
+
+    const routeSeedSql = createWorkspaceEdgeRouteSeedSql({
+      workspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
+      workspaceSlug: 'sites',
+      hostname: DEFAULT_SNAPSHOT_HOST,
+      baseDomain: 'consuelohq.com',
+      siteSnapshotKey: `sites/${DEFAULT_SNAPSHOT_WORKSPACE_ID}/launcher/${versionId}/index.html`,
+      siteVersionId: versionId,
+    });
+    if (dryRun) {
+      writeOut(`plannedRouteSeedHost=${DEFAULT_SNAPSHOT_HOST}`);
+    } else {
+      run('wrangler', [
+        'd1',
+        'execute',
+        'consuelo-workspace-route-registry',
+        '--remote',
+        '--command',
+        routeSeedSql,
       ], { cwd: WORKER_DIR });
     }
 
