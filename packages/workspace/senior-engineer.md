@@ -44,7 +44,7 @@ Preference order:
 
 Examples of typed-tool preference:
 
-- Use `status` instead of `task.exec git status`.
+- Use `status` instead of `code.call git status`.
 - Use `github` for GitHub state instead of ad hoc `gh` shell commands when possible.
 - Use `audit` for workspace scripts/docs/index drift.
 - Use `checkFiles` for JavaScript/TypeScript/Python syntax checks when available.

@@ -64,7 +64,6 @@ const plannedSkills = [
 ] as const;
 
 const generatedNotice = '{/* Generated from packages/os/skills. Do not edit this page directly. */}';
-const localizedFallbackLanguages = ['fr', 'ar', 'cs', 'de', 'es', 'it', 'ja', 'ko', 'pt', 'ro', 'ru', 'tr', 'zh'] as const;
 
 const readJson = <T>(filePath: string): T => JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
 
@@ -223,35 +222,9 @@ const syncNavigation = (skills: SkillJson[]): void => {
   writeOrCheck(templatePath, `${JSON.stringify(template, null, 2)}\n`);
 };
 
-const collectPageSlugs = (pages: BasePage[]): string[] =>
-  pages.flatMap((page) => (typeof page === 'string' ? [page] : collectPageSlugs(page.pages)));
-
-const writeLocalizedFallback = (slug: string): void => {
-  const englishPath = path.join(docsRoot, `${slug}.mdx`);
-  if (!fs.existsSync(englishPath)) {
-    throw new Error(`${slug}.mdx must exist before locale fallbacks are generated.`);
-  }
-
-  const content = fs.readFileSync(englishPath, 'utf8');
-  for (const language of localizedFallbackLanguages) {
-    writeOrCheck(path.join(docsRoot, 'l', language, `${slug}.mdx`), content);
-  }
-};
-
-const syncLocalizedOsPages = (): void => {
-  const structure = readJson<BaseStructure>(baseStructurePath);
-
-  for (const slug of structure.tabs
-    .flatMap((tab) => [...(tab.groups ?? []), ...(tab.pages ?? [])])
-    .flatMap((page) => (typeof page === 'string' ? [page] : collectPageSlugs(page.pages)))
-    .filter((slug) => slug.startsWith('os/'))) {
-    writeLocalizedFallback(slug);
-  }
-};
 
 const skills = loadSkills();
 syncSkillDocs(skills);
 syncNavigation(skills);
-syncLocalizedOsPages();
 
 process.stdout.write(`${checkOnly ? 'checked' : 'generated'} ${skills.length} skill docs\n`);

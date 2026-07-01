@@ -75,12 +75,8 @@ export const DOCUMENTATION_PATHS = {
   GRAPHQL_API_OVERVIEW: '/graphql-api/overview',
   GRAPHQL_API_TROUBLESHOOTING_COMMON_OPS_ISSUES:
     '/graphql-api/troubleshooting/common-ops-issues',
-  OS_AGENT_CONTEXT_DECISION: '/os/agent-context/decision',
-  OS_AGENT_CONTEXT_SCRIPTS: '/os/agent-context/scripts',
-  OS_AGENT_CONTEXT_STEERING: '/os/agent-context/steering',
   OS_AGENT_CONTEXT_TEST_DRIVEN_AGENT_WORK:
     '/os/agent-context/test-driven-agent-work',
-  OS_AGENT_CONTEXT_TOOLS: '/os/agent-context/tools',
   OS_CONCEPTS_APPROVALS: '/os/concepts/approvals',
   OS_CONCEPTS_CONTEXT_AND_MEMORY: '/os/concepts/context-and-memory',
   OS_CONCEPTS_DATA_MODEL_AND_GRAPHQL: '/os/concepts/data-model-and-graphql',

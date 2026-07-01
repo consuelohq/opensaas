@@ -1,101 +1,58 @@
-# Consuelo Documentation
+# Consuelo Mintlify Documentation (Legacy During Migration)
 
-Official documentation for Consuelo, powered by [Mintlify](https://mintlify.com).
+This package currently hosts the live Mintlify documentation site at [docs.consuelohq.com](https://docs.consuelohq.com).
 
-## 🌐 Live Site
+A new Bun/Starlight documentation app has been bootstrapped at `packages/documentation`. Until cutover is complete, this package remains the live Mintlify source, but new architecture work should prefer `packages/documentation`.
 
-Visit the documentation at [docs.consuelohq.com](https://docs.consuelohq.com)
+## Current source of truth
 
-## 📚 Content
+When editing this package, use these rules:
 
-This repository contains:
+1. Edit MDX page content in the relevant content directory.
+2. Edit navigation in `navigation/base-structure.json`.
+3. Treat `docs.json` as generated config. Do not hand-edit navigation inside `docs.json`.
+4. Run `yarn docs:generate` after changing `navigation/base-structure.json`.
+5. Run `yarn docs:generate-paths` after adding, removing, or renaming public page slugs.
+6. Run `yarn docs:validate-os-docs` for OS docs changes.
 
-- **User Guide** (46 pages) - Complete guide for Consuelo users
-- **Developers** (24 pages) - Technical documentation for developers
-- **Consuelo UI** (25 pages) - UI component library documentation
+## What not to add back
 
-## 🚀 Local Development
+Do not add committed locale trees back to this package. Translations are moving to the new `packages/documentation` architecture as runtime/cached translation artifacts, not checked-in MDX copies.
 
-To run the documentation locally:
+Do not regenerate public raw-source pages from OS runtime files. The previous raw-source generated docs were intentionally removed because they made the public docs heavy and confusing:
+
+- `os/agent-context/steering`
+- `os/agent-context/decision`
+- `os/agent-context/tools`
+- `os/agent-context/scripts`
+- legacy `os/tools/default-steering`, `os/tools/decision-engine`, `os/tools/tool-manifest`, and `os/tools/scripts`
+
+Those runtime files may still be useful internally, but they should not be dumped into public Mintlify docs as generated MDX.
+
+## Navigation files
+
+- `navigation/base-structure.json`: source of truth for tabs, groups, and page slugs while Mintlify is live.
+- `navigation/navigation.template.json`: label template for navigation groups.
+- `l/<language>/`: intentionally absent. Do not commit machine-translated fallback page trees.
+- `docs.json`: generated Mintlify config. Keep non-navigation settings here, but regenerate navigation from `base-structure.json`.
+- `packages/twenty-shared/src/constants/DocumentationPaths.ts`: generated from `base-structure.json` by `yarn docs:generate-paths`.
+
+## Local development
 
 ```bash
-# From the consuelo monorepo root
 npx nx run consuelo-docs:dev
 ```
 
-The documentation will be available at `http://localhost:3000`
-
-## 📝 Editing Content
-
-### Adding/Editing Pages
-
-1. Edit MDX files in the appropriate directory:
-   - `user-guide/` - User documentation
-   - `developers/` - Developer documentation
-   - `consuelo-ui/` - Component documentation
-
-2. Update `navigation/base-structure.json` if you need to change the tab/group hierarchy or add/remove pages. This file stays in the repo and is **not** uploaded to Crowdin.
-3. Keep the translation template (`navigation/navigation.template.json`) in sync by running `yarn docs:generate-navigation-template` after editing the base structure. This template is the only file that should be pushed to Crowdin.
-4. For each translated locale pulled from Crowdin, ensure a `packages/consuelo-docs/l/<language>/navigation.json` file exists. These files contain **labels only**; page slugs always come from the base structure.
-5. Run `yarn docs:generate` to rebuild `docs.json` from the base structure + translated labels.
-
-### MDX Format
-
-All documentation pages use MDX format with frontmatter:
-
-```mdx
----
-title: Page Title
-description: Page description
-image: /images/path/to/image.png
----
-
-Your content here...
-```
-
-### Adding Images
-
-1. Place images in the `/images/` directory
-2. Reference them in MDX: `![Alt text](/images/your-image.png)`
-3. Or use Mintlify Frame component:
-
-```mdx
-<Frame>
-  <img src="/images/your-image.png" alt="Description" />
-</Frame>
-```
-
-## 🔧 Configuration
-
-- `navigation/base-structure.json` - Source of truth for tabs, groups, icons, and page slugs (English only, not sent to Crowdin).
-- `navigation/navigation.template.json` - Generated translation template (labels only) that is uploaded to Crowdin.
-- `l/<language>/navigation.json` - Locale-specific label files pulled from Crowdin.
-- `docs.json` - Generated Mintlify configuration (always run `yarn docs:generate` after modifying navigation files).
-- `package.json` - Package dependencies and scripts (`docs:generate`, `docs:generate-navigation-template`, …).
-- `project.json` - Nx workspace configuration
-
-## 📦 Building
+## Build / validation
 
 ```bash
-# Build the documentation
 npx nx run consuelo-docs:build
+yarn docs:generate
+yarn docs:generate-paths
+yarn docs:validate-os-docs
+yarn docs:check-os-skill-docs
 ```
 
-## 🔗 Links
+## Package-manager note
 
-- [Consuelo Website](https://consuelohq.com)
-- [GitHub Repository](https://github.com/consuelohq/opensaas)
-- [Mintlify Documentation](https://mintlify.com/docs)
-
-## 🤝 Contributing
-
-To contribute to the documentation:
-
-1. Fork the repository
-2. Make your changes in the `packages/consuelo-docs` directory
-3. Test locally with `npx nx run consuelo-docs:dev`
-4. Submit a pull request
-
-## 📄 License
-
-This documentation is part of the Consuelo project and is licensed under [AGPL-3.0](../../LICENSE).
+The repository root is still Yarn-owned. The new `packages/documentation` Starlight app is Bun-owned during migration. Do not use this legacy package to decide the final package-manager policy for the new docs app.

@@ -120,6 +120,10 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
+    const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
+    expect(tracesHtml).toContain('<h1>Traces</h1>');
+    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);

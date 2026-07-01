@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/align-deployed-sites-launcher-copy",
+  "base": "HEAD",
+  "headSha": "0cdced371d3482040ded383a4e2bfff065b6c3bf",
+  "changeHash": "f62cd79fa7a857ef9af2f76fd6dc14c82e38860668abf4f8030936bc859811a6",
+  "changedFiles": [
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/tests/office-theme.test.js"
+  ],
+  "verifiedAt": "2026-07-01T06:14:22.812Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/align-deployed-sites-launcher-copy.json",
+        ".task/workspace/align-deployed-sites-launcher-copy/current.json",
+        ".task/workspace/align-deployed-sites-launcher-copy/session.json",
+        ".task/workspace/align-deployed-sites-launcher-copy/verify.json",
+        ".task/workspace/align-deployed-sites-launcher-copy/workpad.md",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/tests/office-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
