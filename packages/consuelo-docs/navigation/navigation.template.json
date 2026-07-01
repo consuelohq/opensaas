@@ -83,17 +83,6 @@
             }
           }
         },
-        "ai": {
-          "label": "AI",
-          "groups": {
-            "aiCapabilities": {
-              "label": "Capabilities"
-            },
-            "aiHowTos": {
-              "label": "How-Tos"
-            }
-          }
-        },
         "viewsPipelines": {
           "label": "Views & Pipelines",
           "groups": {
@@ -175,7 +164,7 @@
           "label": "Concepts"
         },
         "osAgentContext": {
-          "label": "Agent Context"
+          "label": "Agent Work"
         },
         "osTools": {
           "label": "Tools"
