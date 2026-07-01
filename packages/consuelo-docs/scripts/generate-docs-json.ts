@@ -18,7 +18,8 @@ type BaseGroup = {
 type BaseTab = {
   key: string;
   label: string;
-  groups: BaseGroup[];
+  groups?: BaseGroup[];
+  pages?: BasePage[];
 };
 
 type BaseStructure = {
@@ -46,10 +47,13 @@ type TranslationMaps = {
 
 type GeneratedLanguage = {
   language: string;
-  tabs: Array<{
-    tab: string;
-    groups: GeneratedGroup[];
-  }>;
+  tabs: GeneratedTab[];
+};
+
+type GeneratedTab = {
+  tab: string;
+  groups?: GeneratedGroup[];
+  pages?: Array<string | GeneratedGroup>;
 };
 
 type GeneratedGroup = {
@@ -119,12 +123,27 @@ const buildLanguageEntry = (language: string): GeneratedLanguage => {
 
   return {
     language,
-    tabs: baseStructure.tabs.map((tab) => ({
-      tab: translationMaps.tabLabels.get(tab.key) ?? tab.label,
-      groups: tab.groups.map((group) =>
-        buildGroup(group, translationMaps, language),
-      ),
-    })),
+    tabs: baseStructure.tabs.map((tab) => {
+      const generatedTab: GeneratedTab = {
+        tab: translationMaps.tabLabels.get(tab.key) ?? tab.label,
+      };
+
+      if (tab.pages) {
+        generatedTab.pages = tab.pages.map((page) =>
+          typeof page === 'string'
+            ? formatPageSlug(page, language)
+            : buildGroup(page, translationMaps, language),
+        );
+      }
+
+      if (tab.groups) {
+        generatedTab.groups = tab.groups.map((group) =>
+          buildGroup(group, translationMaps, language),
+        );
+      }
+
+      return generatedTab;
+    }),
   };
 };
 
