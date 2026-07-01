@@ -19,6 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Testisähköposti"
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -69,11 +74,6 @@ msgid "Update your subscription"
 msgstr "Päivitä tilauksesi"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Testisähköposti"
-
-#. js-lingui-explicit-id
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Confirm your new email address"
 msgstr ""
@@ -94,21 +94,6 @@ msgid "Verify Email"
 msgstr "Vahvista sähköposti"
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr "{senderName} (<0>{senderEmail}</0>) on kutsunut sinut liittymään työtilaan nimeltä <1>{workspaceName}</1>."
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr "Hyväksy kutsu"
-
-#. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
 msgid "Password updated"
 msgstr "Salasana päivitetty"
@@ -127,6 +112,21 @@ msgstr "Jos et itse aloittanut tätä muutosta, ota heti yhteyttä työtilasi om
 #: src/emails/password-update-notify.email.tsx
 msgid "Connect to Consuelo"
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>) on kutsunut sinut liittymään työtilaan nimeltä <1>{workspaceName}</1>."
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "Hyväksy kutsu"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx

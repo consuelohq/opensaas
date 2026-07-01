@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -64,11 +69,6 @@ msgid "Update your subscription"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Confirm your new email address"
 msgstr ""
@@ -89,21 +89,6 @@ msgid "Verify Email"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
 msgid "Password updated"
 msgstr ""
@@ -121,6 +106,21 @@ msgstr ""
 #. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
 msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
 msgstr ""
 
 #. js-lingui-explicit-id

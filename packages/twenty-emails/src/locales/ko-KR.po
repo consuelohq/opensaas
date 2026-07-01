@@ -19,6 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 27\n"
 
 #. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "테스트 이메일"
+
+#. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "Validate domain"
@@ -69,11 +74,6 @@ msgid "Update your subscription"
 msgstr "구독을 업데이트하세요"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "테스트 이메일"
-
-#. js-lingui-explicit-id
 #: src/emails/send-email-verification-link.email.tsx
 msgid "Confirm your new email address"
 msgstr ""
@@ -94,21 +94,6 @@ msgid "Verify Email"
 msgstr "이메일 인증"
 
 #. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
-msgstr "{senderName} (<0>{senderEmail}</0>)님이 <1>{workspaceName}</1>이라는 워크스페이스에 가입하도록 초대했습니다."
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Accept invite"
-msgstr "초대 수락"
-
-#. js-lingui-explicit-id
 #: src/emails/password-update-notify.email.tsx
 msgid "Password updated"
 msgstr "비밀번호가 업데이트되었습니다"
@@ -127,6 +112,21 @@ msgstr "이 변경을 시작하지 않으셨다면 즉시 워크스페이스 소
 #: src/emails/password-update-notify.email.tsx
 msgid "Connect to Consuelo"
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>)님이 <1>{workspaceName}</1>이라는 워크스페이스에 가입하도록 초대했습니다."
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "초대 수락"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
