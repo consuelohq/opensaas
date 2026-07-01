@@ -156,3 +156,15 @@ bun run task:finish
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## CI wait plan
+
+Start time UTC: 2026-07-01T19:13:00.051Z
+Wait reason: refreshed PR #1324 has Consuelo verify and OS contracts checks in progress.
+Duration: poll every 20s for up to 6 attempts.
+Resume action: run gh pr checks 1324 and summarize failed/pending/passed checks.
+Expected signal: no pending checks and no non-skipped failed checks for active Consuelo checks.
+Fallback: document timeout/pending checks and do not claim CI is fully settled.
+CI wait observed result: first bounded polling command hit the default code-call timeout before completion; immediate follow-up check with explicit timeout completed.
+Observed signal: gh pr checks reported 50 total checks, 30 SUCCESS, 20 SKIPPED, 0 pending, 0 failed.
+Next decision: PR checks are settled with no active failures.
