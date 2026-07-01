@@ -257,7 +257,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.name !== 'worker.call' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => entry.name !== 'subagent' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');

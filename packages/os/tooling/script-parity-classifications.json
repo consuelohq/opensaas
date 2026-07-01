@@ -838,7 +838,7 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/worker.ts": {
+    "scripts/subagent.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },

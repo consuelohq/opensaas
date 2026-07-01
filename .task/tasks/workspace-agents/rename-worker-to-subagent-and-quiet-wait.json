@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-worker-to-subagent-and-quiet-wait",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1314,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1314",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1314",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1314/rename-worker-to-subagent-and-quiet-wait",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1314",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1314/rename-worker-to-subagent-and-quiet-wait",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-worker-to-subagent-and-quiet-wait",
+  "taskSession": "tsk_158d5c36f997",
+  "tmuxSession": "opensaas-workspace-agents-rename-worker-to-subagent-and-quiet-wait-158d5c36",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-worker-to-subagent-and-quiet-wait/.task/workspace-agents/rename-worker-to-subagent-and-quiet-wait/session.json",
+  "createdAt": "2026-07-01T04:24:16.735Z"
+}

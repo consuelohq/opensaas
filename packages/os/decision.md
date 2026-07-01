@@ -1003,7 +1003,7 @@ i think it is probably fine.
 say:
 
 ```text
-confidence is 0.64. the top path is dialer.ts, supported by one read and one connected test. remaining uncertainty is the queue worker path, which has not been read.
+confidence is 0.64. the top path is dialer.ts, supported by one read and one connected test. remaining uncertainty is the queue subagent path, which has not been read.
 ```
 
 precision beats vibes.

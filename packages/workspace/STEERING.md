@@ -1232,7 +1232,7 @@ Good uses:
 * `filesystem patch`
 * `railway logs`
 * `browser screenshot`
-* `codex worker`
+* `codex subagent`
 * `trace logs`
 * `git diff`
 
@@ -2160,7 +2160,7 @@ linear issue
 github pr checks
 file search
 trace logs
-codex worker
+codex subagent
 git diff
 railway logs
 browser screenshot

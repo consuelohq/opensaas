@@ -6,20 +6,22 @@ import { createToolResult } from '../facade/errors';
 import { logToolExecution } from '../facade/logger';
 import type { ExecuteToolOptions, RunnerResult, ToolInput, ToolManifestEntry, ToolResult } from '../facade/types';
 
-export type WorkerProvider = 'cdx' | 'pi' | 'opc' | 'mini';
-export type NormalizedWorkerProvider = 'cdx' | 'pi' | 'opc';
-export type WorkerMode = 'check' | 'step' | 'work';
-export type WorkerPolicy = 'read' | 'safe' | 'edit' | 'ship';
-export type WorkerStatus = 'completed' | 'failed' | 'not_configured' | 'not_supported' | 'timed_out' | 'approval_required';
-export type WorkerWorkspaceOnly = 'preferred' | 'strict' | false;
+export type SubagentProvider = 'codex' | 'pi' | 'opencode' | 'grok';
+export type SubagentBundle = 'core' | 'media';
+export type SubagentMode = 'work';
+export type SubagentPolicy = 'read' | 'edit';
+export type SubagentOutputFormat = 'text' | 'json';
+export type SubagentStatus = 'completed' | 'failed' | 'not_configured' | 'not_supported' | 'timed_out';
+export type SubagentWorkspaceOnly = 'preferred' | 'strict' | false;
 
-export type WorkerCallData = {
-  provider: NormalizedWorkerProvider;
-  requestedProvider?: WorkerProvider;
-  profile?: string;
-  mode: WorkerMode;
-  policy: WorkerPolicy;
-  status: WorkerStatus;
+export type SubagentData = {
+  provider: SubagentProvider;
+  model?: string;
+  bundle: SubagentBundle;
+  outputFormat: SubagentOutputFormat;
+  mode: SubagentMode;
+  policy: SubagentPolicy;
+  status: SubagentStatus;
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -27,7 +29,7 @@ export type WorkerCallData = {
   stderr: string;
   exitCode: number;
   finalMessage?: string;
-  summary?: string;
+  summaryText?: string;
   rawLogPath?: string;
   stdoutLogPath?: string;
   stderrLogPath?: string;
@@ -43,12 +45,12 @@ export type WorkerCallData = {
   audit: {
     taskSession?: string;
     branch?: string;
-    workspaceOnly: WorkerWorkspaceOnly;
+    workspaceOnly: SubagentWorkspaceOnly;
     rawShellUsed: boolean;
   };
 };
 
-type WorkerContext = {
+type SubagentContext = {
   cwd: string;
   env: NodeJS.ProcessEnv;
   startedAt: number;
@@ -57,11 +59,11 @@ type WorkerContext = {
   options: ExecuteToolOptions;
 };
 
-type WorkerProviderConfig = {
+type SubagentProviderConfig = {
   bin: string;
-  defaultMode: WorkerMode;
-  defaultPolicy: WorkerPolicy;
-  workspaceOnly: WorkerWorkspaceOnly;
+  defaultMode: SubagentMode;
+  defaultPolicy: SubagentPolicy;
+  workspaceOnly: SubagentWorkspaceOnly;
   model?: string;
   provider?: string;
   extensionPaths?: string[];
@@ -69,57 +71,62 @@ type WorkerProviderConfig = {
   tools?: string[];
 };
 
-export const WORKER_OUTPUT_LIMIT = 8000;
-const WORKER_COMPACT_OUTPUT_LIMIT = 1200;
-const WORKER_MAX_TIMEOUT_MS = 1_800_000;
+export const SUBAGENT_OUTPUT_LIMIT = 8000;
+const SUBAGENT_COMPACT_OUTPUT_LIMIT = 1200;
+const SUBAGENT_MAX_TIMEOUT_MS = 1_800_000;
 
-const workerDefaults: Record<NormalizedWorkerProvider, {
-  mode: WorkerMode;
-  policy: WorkerPolicy;
-  workspaceOnly: WorkerWorkspaceOnly;
+const subagentDefaults: Record<SubagentProvider, {
+  mode: SubagentMode;
+  policy: SubagentPolicy;
+  workspaceOnly: SubagentWorkspaceOnly;
 }> = {
-  cdx: { mode: 'work', policy: 'edit', workspaceOnly: 'preferred' },
-  pi: { mode: 'step', policy: 'safe', workspaceOnly: 'strict' },
-  opc: { mode: 'work', policy: 'safe', workspaceOnly: 'preferred' },
+  codex: { mode: 'work', policy: 'read', workspaceOnly: 'preferred' },
+  pi: { mode: 'work', policy: 'read', workspaceOnly: 'strict' },
+  opencode: { mode: 'work', policy: 'read', workspaceOnly: 'preferred' },
+  grok: { mode: 'work', policy: 'read', workspaceOnly: 'preferred' },
 };
 
-function normalizeWorkerProvider(input: ToolInput): { provider: NormalizedWorkerProvider; requestedProvider: WorkerProvider; profile?: string; warning?: string } {
-  const requestedProvider = input.provider as WorkerProvider;
-  const profile = typeof input.profile === 'string' ? input.profile : undefined;
-  if (requestedProvider === 'mini') {
-    return { provider: 'pi', requestedProvider, profile: profile || 'mini', warning: 'provider mini is deprecated; use provider pi with profile mini' };
-  }
-  return { provider: requestedProvider as NormalizedWorkerProvider, requestedProvider, profile };
+function normalizeSubagentProvider(input: ToolInput): { provider: SubagentProvider } {
+  return { provider: input.provider as SubagentProvider };
 }
 
-function workerConfig(provider: NormalizedWorkerProvider, profile?: string, env: NodeJS.ProcessEnv = process.env): WorkerProviderConfig {
-  if (provider === 'cdx') return {
-    bin: env.WORKSPACE_WORKER_CDX_BIN || 'codex',
+function subagentConfig(provider: SubagentProvider, input: ToolInput = {}, env: NodeJS.ProcessEnv = process.env): SubagentProviderConfig {
+  const requestedModel = typeof input.model === 'string' ? input.model : undefined;
+  if (provider === 'codex') return {
+    bin: env.WORKSPACE_SUBAGENT_CODEX_BIN || 'codex',
     defaultMode: 'work',
-    defaultPolicy: 'edit',
+    defaultPolicy: 'read',
     workspaceOnly: 'preferred',
+    model: requestedModel || env.WORKSPACE_SUBAGENT_CODEX_MODEL,
   };
-  if (provider === 'opc') return {
-    bin: env.WORKSPACE_WORKER_OPC_BIN || 'opencode',
+  if (provider === 'opencode') return {
+    bin: env.WORKSPACE_SUBAGENT_OPENCODE_BIN || 'opencode',
     defaultMode: 'work',
-    defaultPolicy: 'safe',
+    defaultPolicy: 'read',
     workspaceOnly: 'preferred',
-    model: env.WORKSPACE_WORKER_OPC_MODEL,
+    model: requestedModel || env.WORKSPACE_SUBAGENT_OPENCODE_MODEL,
+  };
+  if (provider === 'grok') return {
+    bin: env.WORKSPACE_SUBAGENT_GROK_BIN || 'grok',
+    defaultMode: 'work',
+    defaultPolicy: 'read',
+    workspaceOnly: 'preferred',
+    model: requestedModel || env.WORKSPACE_SUBAGENT_GROK_MODEL,
   };
   return {
-    bin: env.WORKSPACE_WORKER_PI_BIN || 'pi',
-    defaultMode: profile === 'mini' ? 'step' : 'step',
-    defaultPolicy: profile === 'mini' ? 'safe' : 'safe',
+    bin: env.WORKSPACE_SUBAGENT_PI_BIN || 'pi',
+    defaultMode: 'work',
+    defaultPolicy: 'read',
     workspaceOnly: 'strict',
-    model: env.WORKSPACE_WORKER_PI_MODEL || env.WORKSPACE_WORKER_MINI_MODEL,
-    provider: env.WORKSPACE_WORKER_PI_PROVIDER,
-    extensionPaths: (env.WORKSPACE_WORKER_PI_EXTENSIONS || '').split(',').map((item) => item.trim()).filter(Boolean),
-    mcpConfig: env.WORKSPACE_WORKER_PI_MCP_CONFIG,
-    tools: (env.WORKSPACE_WORKER_PI_TOOLS || '').split(',').map((item) => item.trim()).filter(Boolean),
+    model: requestedModel || env.WORKSPACE_SUBAGENT_PI_MODEL,
+    provider: env.WORKSPACE_SUBAGENT_PI_PROVIDER,
+    extensionPaths: (env.WORKSPACE_SUBAGENT_PI_EXTENSIONS || '').split(',').map((item) => item.trim()).filter(Boolean),
+    mcpConfig: env.WORKSPACE_SUBAGENT_PI_MCP_CONFIG,
+    tools: (env.WORKSPACE_SUBAGENT_PI_TOOLS || '').split(',').map((item) => item.trim()).filter(Boolean),
   };
 }
 
-export async function executeWorkerCall(
+export async function executeSubagent(
   entry: ToolManifestEntry,
   input: ToolInput,
   context: {
@@ -130,13 +137,15 @@ export async function executeWorkerCall(
     requestId?: string;
     options: ExecuteToolOptions;
   },
-): Promise<ToolResult<WorkerCallData>> {
-  const providerInfo = normalizeWorkerProvider(input);
+): Promise<ToolResult<SubagentData>> {
+  const providerInfo = normalizeSubagentProvider(input);
   const provider = providerInfo.provider;
-  const providerConfig = workerConfig(provider, providerInfo.profile, context.env);
+  const providerConfig = subagentConfig(provider, input, context.env);
   const defaults = { mode: providerConfig.defaultMode, policy: providerConfig.defaultPolicy, workspaceOnly: providerConfig.workspaceOnly };
-  const mode = (input.mode as WorkerMode | undefined) || defaults.mode;
-  const policy = (input.policy as WorkerPolicy | undefined) || defaults.policy;
+  const mode: SubagentMode = 'work';
+  const policy = (input.policy as SubagentPolicy | undefined) || defaults.policy;
+  const bundle = normalizeSubagentBundle(input.bundle);
+  const outputFormat = normalizeSubagentOutputFormat(input.outputFormat);
   const workspaceOnly = normalizeWorkspaceOnly(input.workspaceOnly, defaults.workspaceOnly);
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   const branch = typeof input.branch === 'string' ? input.branch : undefined;
@@ -147,57 +156,38 @@ export async function executeWorkerCall(
     rawShellUsed: false,
   };
 
-  const cwdResolution = resolveWorkerCwd(input, context.cwd);
+  const cwdResolution = resolveSubagentCwd(input, context.cwd);
   const instructionResolution = cwdResolution.ok
-    ? resolveWorkerInstructionPath(input, cwdResolution.cwd, context.cwd)
+    ? resolveSubagentInstructionPath(input, cwdResolution.cwd, context.cwd)
     : null;
   const resultBase = {
     provider,
-    ...(providerInfo.requestedProvider !== provider ? { requestedProvider: providerInfo.requestedProvider } : {}),
-    ...(providerInfo.profile ? { profile: providerInfo.profile } : {}),
+    ...(providerConfig.model ? { model: providerConfig.model } : {}),
+    bundle,
+    outputFormat,
     mode,
     policy,
     cwd: cwdResolution.ok ? cwdResolution.cwd : context.cwd,
     instructionPath: instructionResolution?.ok ? instructionResolution.instructionPath : String(input.instructionPath || ''),
   };
 
-  if ((policy === 'edit' || policy === 'ship') && !taskSession) {
-    return workerToolResult(entry, context, {
+  if (policy === 'edit' && !taskSession) {
+    return subagentToolResult(entry, context, {
       ...resultBase,
       status: 'failed',
       command: [],
       stdout: '',
-      stderr: 'policy requires taskSession',
+      stderr: 'edit policy requires taskSession',
       exitCode: 1,
       audit: baseAudit,
       ok: false,
       code: 'TASK_SESSION_REQUIRED',
-      message: 'worker.call requires taskSession for edit and ship policies',
-    });
-  }
-
-  if (policy === 'ship') {
-    const hasApproval = typeof input.approval === 'object' && input.approval !== null;
-    return workerToolResult(entry, context, {
-      ...resultBase,
-      status: hasApproval ? 'not_supported' : 'approval_required',
-      command: [],
-      stdout: '',
-      stderr: hasApproval
-        ? 'ship approval plumbing is not implemented for worker.call'
-        : 'ship policy requires explicit approval',
-      exitCode: 1,
-      audit: baseAudit,
-      ok: true,
-      code: 'OK',
-      message: hasApproval
-        ? 'worker.call ship approval is not supported yet'
-        : 'worker.call ship approval is required',
+      message: 'subagent requires taskSession for edit policy',
     });
   }
 
   if (!cwdResolution.ok) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...resultBase,
       status: 'failed',
       command: [],
@@ -212,7 +202,7 @@ export async function executeWorkerCall(
   }
 
   if (!instructionResolution?.ok) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...resultBase,
       status: 'failed',
       command: [],
@@ -227,9 +217,9 @@ export async function executeWorkerCall(
   }
 
   const instruction = fs.readFileSync(instructionResolution.instructionPath, 'utf8');
-  const dangerous = findDangerousWorkerInstruction(instruction);
+  const dangerous = findDangerousSubagentInstruction(instruction);
   if (dangerous) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...resultBase,
       cwd: cwdResolution.cwd,
       instructionPath: instructionResolution.instructionPath,
@@ -246,7 +236,7 @@ export async function executeWorkerCall(
   }
 
   if (workspaceOnly === 'strict' && provider !== 'pi') {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...resultBase,
       cwd: cwdResolution.cwd,
       instructionPath: instructionResolution.instructionPath,
@@ -258,15 +248,16 @@ export async function executeWorkerCall(
       audit: baseAudit,
       ok: true,
       code: 'OK',
-      message: 'worker.call strict workspaceOnly is not supported by provider',
+      message: 'subagent strict workspaceOnly is not supported by provider',
     });
   }
 
   if (provider === 'pi') {
-    return executePiWorker(entry, context, {
+    return executePiSubagent(entry, context, {
       provider,
-      ...(providerInfo.requestedProvider !== provider ? { requestedProvider: providerInfo.requestedProvider } : {}),
-      ...(providerInfo.profile ? { profile: providerInfo.profile } : {}),
+      ...(providerConfig.model ? { model: providerConfig.model } : {}),
+      bundle,
+      outputFormat,
       mode,
       policy,
       cwd: cwdResolution.cwd,
@@ -274,15 +265,16 @@ export async function executeWorkerCall(
       instruction,
       workspaceOnly,
       audit: baseAudit,
-      timeoutMs: workerTimeoutMs(entry, input),
+      timeoutMs: subagentTimeoutMs(entry, input),
     });
   }
 
-  if (provider === 'opc') {
-    return executeOpcWorker(entry, context, {
+  if (provider === 'opencode') {
+    return executeOpencodeSubagent(entry, context, {
       provider,
-      ...(providerInfo.requestedProvider !== provider ? { requestedProvider: providerInfo.requestedProvider } : {}),
-      ...(providerInfo.profile ? { profile: providerInfo.profile } : {}),
+      ...(providerConfig.model ? { model: providerConfig.model } : {}),
+      bundle,
+      outputFormat,
       mode,
       policy,
       cwd: cwdResolution.cwd,
@@ -290,14 +282,32 @@ export async function executeWorkerCall(
       instruction,
       workspaceOnly,
       audit: baseAudit,
-      timeoutMs: workerTimeoutMs(entry, input),
+      timeoutMs: subagentTimeoutMs(entry, input),
     });
   }
 
-  return executeCdxWorker(entry, context, {
+  if (provider === 'grok') {
+    return executeGrokSubagent(entry, context, {
+      provider,
+      ...(providerConfig.model ? { model: providerConfig.model } : {}),
+      bundle,
+      outputFormat,
+      mode,
+      policy,
+      cwd: cwdResolution.cwd,
+      instructionPath: instructionResolution.instructionPath,
+      instruction,
+      workspaceOnly,
+      audit: baseAudit,
+      timeoutMs: subagentTimeoutMs(entry, input),
+    });
+  }
+
+  return executeCodexSubagent(entry, context, {
     provider,
-    ...(providerInfo.requestedProvider !== provider ? { requestedProvider: providerInfo.requestedProvider } : {}),
-    ...(providerInfo.profile ? { profile: providerInfo.profile } : {}),
+    ...(providerConfig.model ? { model: providerConfig.model } : {}),
+    bundle,
+    outputFormat,
     mode,
     policy,
     cwd: cwdResolution.cwd,
@@ -305,11 +315,11 @@ export async function executeWorkerCall(
     instruction,
     workspaceOnly,
     audit: baseAudit,
-    timeoutMs: workerTimeoutMs(entry, input),
+    timeoutMs: subagentTimeoutMs(entry, input),
   });
 }
 
-async function executeCdxWorker(
+async function executeCodexSubagent(
   entry: ToolManifestEntry,
   context: {
     env: NodeJS.ProcessEnv;
@@ -319,23 +329,24 @@ async function executeCdxWorker(
     options: ExecuteToolOptions;
   },
   input: {
-    provider: NormalizedWorkerProvider;
-    requestedProvider?: WorkerProvider;
-    profile?: string;
-    mode: WorkerMode;
-    policy: WorkerPolicy;
+    provider: SubagentProvider;
+    model?: string;
+    bundle: SubagentBundle;
+    outputFormat: SubagentOutputFormat;
+    mode: SubagentMode;
+    policy: SubagentPolicy;
     cwd: string;
     instructionPath: string;
     instruction: string;
-    workspaceOnly: WorkerWorkspaceOnly;
-    audit: WorkerCallData['audit'];
+    workspaceOnly: SubagentWorkspaceOnly;
+    audit: SubagentData['audit'];
     timeoutMs: number;
   },
-): Promise<ToolResult<WorkerCallData>> {
-  const config = workerConfig('cdx', input.profile, context.env);
+): Promise<ToolResult<SubagentData>> {
+  const config = subagentConfig('codex', input, context.env);
   const codex = findExecutable(config.bin, context.env);
   if (!codex) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_configured',
       command: [config.bin, 'exec'],
@@ -345,13 +356,13 @@ async function executeCdxWorker(
       audit: input.audit,
       ok: true,
       code: 'OK',
-      message: 'cdx provider is not configured',
+      message: 'codex provider is not configured',
     });
   }
 
   const help = readCommandHelp(codex, ['exec', '--help'], context.env);
   if (help && (!help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help))) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_supported',
       command: [codex, 'exec', '--help'],
@@ -361,34 +372,34 @@ async function executeCdxWorker(
       audit: input.audit,
       ok: true,
       code: 'OK',
-      message: 'cdx provider is not supported by this Codex CLI',
+      message: 'codex provider is not supported by this Codex CLI',
     });
   }
 
   const args = ['exec'];
   if (help.includes('--cd')) args.push('--cd', input.cwd);
-  if (help.includes('--sandbox')) args.push('--sandbox', input.policy === 'read' || input.policy === 'safe' ? 'read-only' : 'workspace-write');
+  if (help.includes('--sandbox')) args.push('--sandbox', input.policy === 'read' ? 'read-only' : 'workspace-write');
   if (help.includes('--ask-for-approval')) args.push('--ask-for-approval', 'never');
   if (help.includes('--json')) args.push('--json');
   args.push('-');
 
   const command = [codex, ...args];
   const started = (context.options.now || Date.now)();
-  const run = await runWorkerProcess({
+  const run = await runSubagentProcess({
     command: codex,
     args,
     cwd: input.cwd,
     env: context.env,
-    stdin: workerInstruction(input.instruction, input.workspaceOnly),
+    stdin: subagentInstruction(input),
     timeoutMs: input.timeoutMs,
   });
-  const status: WorkerStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
-  return workerToolResult(entry, context, {
+  const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
+  return subagentToolResult(entry, context, {
     ...input,
     status,
     command,
-    ...compactWorkerOutput({
-      provider: 'cdx',
+    ...compactSubagentOutput({
+      provider: 'codex',
       cwd: input.cwd,
       traceId: context.traceId,
       stdout: run.stdout,
@@ -399,11 +410,11 @@ async function executeCdxWorker(
     audit: { ...input.audit, rawShellUsed: true },
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
-    message: run.timedOut ? 'cdx provider timed out' : run.exitCode === 0 ? 'cdx provider completed' : 'cdx provider failed',
+    message: run.timedOut ? 'codex provider timed out' : run.exitCode === 0 ? 'codex provider completed' : 'codex provider failed',
   });
 }
 
-async function executeOpcWorker(
+async function executeOpencodeSubagent(
   entry: ToolManifestEntry,
   context: {
     env: NodeJS.ProcessEnv;
@@ -413,23 +424,24 @@ async function executeOpcWorker(
     options: ExecuteToolOptions;
   },
   input: {
-    provider: NormalizedWorkerProvider;
-    requestedProvider?: WorkerProvider;
-    profile?: string;
-    mode: WorkerMode;
-    policy: WorkerPolicy;
+    provider: SubagentProvider;
+    model?: string;
+    bundle: SubagentBundle;
+    outputFormat: SubagentOutputFormat;
+    mode: SubagentMode;
+    policy: SubagentPolicy;
     cwd: string;
     instructionPath: string;
     instruction: string;
-    workspaceOnly: WorkerWorkspaceOnly;
-    audit: WorkerCallData['audit'];
+    workspaceOnly: SubagentWorkspaceOnly;
+    audit: SubagentData['audit'];
     timeoutMs: number;
   },
-): Promise<ToolResult<WorkerCallData>> {
-  const config = workerConfig('opc', input.profile, context.env);
+): Promise<ToolResult<SubagentData>> {
+  const config = subagentConfig('opencode', input, context.env);
   const opencode = findExecutable(config.bin, context.env);
   if (!opencode) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_configured',
       command: [config.bin, 'run'],
@@ -439,12 +451,12 @@ async function executeOpcWorker(
       audit: input.audit,
       ok: true,
       code: 'OK',
-      message: 'opc provider is not configured',
+      message: 'opencode provider is not configured',
     });
   }
 
   if (input.policy === 'edit') {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_supported',
       command: [opencode, 'run'],
@@ -454,13 +466,13 @@ async function executeOpcWorker(
       audit: input.audit,
       ok: true,
       code: 'OK',
-      message: 'opc provider edit policy is not supported yet',
+      message: 'opencode provider edit policy is not supported yet',
     });
   }
 
   const help = readCommandHelp(opencode, ['run', '--help'], context.env);
   if (!help || !help.includes('opencode run') || !help.includes('--file') || !help.includes('--dir')) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_supported',
       command: [opencode, 'run', '--help'],
@@ -470,7 +482,7 @@ async function executeOpcWorker(
       audit: input.audit,
       ok: true,
       code: 'OK',
-      message: 'opc provider is not supported by this OpenCode CLI',
+      message: 'opencode provider is not supported by this OpenCode CLI',
     });
   }
 
@@ -478,24 +490,24 @@ async function executeOpcWorker(
   if (config.model) args.push('--model', config.model);
   if (help.includes('--format')) args.push('--format', 'json');
   if (help.includes('--pure')) args.push('--pure');
-  args.push(workerInstruction('Follow the attached instruction file.', input.workspaceOnly));
+  args.push(subagentInstruction({ ...input, instruction: 'Follow the attached instruction file.' }));
 
   const command = [opencode, ...args];
   const started = (context.options.now || Date.now)();
-  const run = await runWorkerProcess({
+  const run = await runSubagentProcess({
     command: opencode,
     args,
     cwd: input.cwd,
     env: context.env,
     timeoutMs: input.timeoutMs,
   });
-  const status: WorkerStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
-  return workerToolResult(entry, context, {
+  const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
+  return subagentToolResult(entry, context, {
     ...input,
     status,
     command,
-    ...compactWorkerOutput({
-      provider: 'opc',
+    ...compactSubagentOutput({
+      provider: 'opencode',
       cwd: input.cwd,
       traceId: context.traceId,
       stdout: run.stdout,
@@ -506,11 +518,11 @@ async function executeOpcWorker(
     audit: { ...input.audit, rawShellUsed: true },
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
-    message: run.timedOut ? 'opc provider timed out' : run.exitCode === 0 ? 'opc provider completed' : 'opc provider failed',
+    message: run.timedOut ? 'opencode provider timed out' : run.exitCode === 0 ? 'opencode provider completed' : 'opencode provider failed',
   });
 }
 
-async function executePiWorker(
+async function executePiSubagent(
   entry: ToolManifestEntry,
   context: {
     env: NodeJS.ProcessEnv;
@@ -520,23 +532,24 @@ async function executePiWorker(
     options: ExecuteToolOptions;
   },
   input: {
-    provider: NormalizedWorkerProvider;
-    requestedProvider?: WorkerProvider;
-    profile?: string;
-    mode: WorkerMode;
-    policy: WorkerPolicy;
+    provider: SubagentProvider;
+    model?: string;
+    bundle: SubagentBundle;
+    outputFormat: SubagentOutputFormat;
+    mode: SubagentMode;
+    policy: SubagentPolicy;
     cwd: string;
     instructionPath: string;
     instruction: string;
-    workspaceOnly: WorkerWorkspaceOnly;
-    audit: WorkerCallData['audit'];
+    workspaceOnly: SubagentWorkspaceOnly;
+    audit: SubagentData['audit'];
     timeoutMs: number;
   },
-): Promise<ToolResult<WorkerCallData>> {
-  const config = workerConfig('pi', input.profile, context.env);
+): Promise<ToolResult<SubagentData>> {
+  const config = subagentConfig('pi', input, context.env);
   const pi = findExecutable(config.bin, context.env);
   if (!pi) {
-    return workerToolResult(entry, context, {
+    return subagentToolResult(entry, context, {
       ...input,
       status: 'not_configured',
       command: [config.bin, '-p'],
@@ -557,23 +570,23 @@ async function executePiWorker(
   for (const extensionPath of config.extensionPaths || []) args.push('--extension', extensionPath);
   if (config.tools?.length) args.push('--tools', config.tools.join(','));
   if (input.workspaceOnly === 'strict' && !config.tools?.length && !config.mcpConfig) args.push('--no-builtin-tools');
-  args.push(workerInstruction(input.instruction, input.workspaceOnly));
+  args.push(subagentInstruction(input));
 
   const command = [pi, ...args];
   const started = (context.options.now || Date.now)();
-  const run = await runWorkerProcess({
+  const run = await runSubagentProcess({
     command: pi,
     args,
     cwd: input.cwd,
     env: context.env,
     timeoutMs: input.timeoutMs,
   });
-  const status: WorkerStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
-  return workerToolResult(entry, context, {
+  const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
+  return subagentToolResult(entry, context, {
     ...input,
     status,
     command,
-    ...compactWorkerOutput({
+    ...compactSubagentOutput({
       provider: 'pi',
       cwd: input.cwd,
       traceId: context.traceId,
@@ -589,7 +602,86 @@ async function executePiWorker(
   });
 }
 
-function workerToolResult(
+
+async function executeGrokSubagent(
+  entry: ToolManifestEntry,
+  context: {
+    env: NodeJS.ProcessEnv;
+    startedAt: number;
+    traceId: string;
+    requestId?: string;
+    options: ExecuteToolOptions;
+  },
+  input: {
+    provider: SubagentProvider;
+    model?: string;
+    bundle: SubagentBundle;
+    outputFormat: SubagentOutputFormat;
+    mode: SubagentMode;
+    policy: SubagentPolicy;
+    cwd: string;
+    instructionPath: string;
+    instruction: string;
+    workspaceOnly: SubagentWorkspaceOnly;
+    audit: SubagentData['audit'];
+    timeoutMs: number;
+  },
+): Promise<ToolResult<SubagentData>> {
+  const config = subagentConfig('grok', input, context.env);
+  const grok = findExecutable(config.bin, context.env);
+  if (!grok) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_configured',
+      command: [config.bin, '-p'],
+      stdout: '',
+      stderr: 'grok CLI was not found on PATH',
+      exitCode: 127,
+      audit: input.audit,
+      ok: true,
+      code: 'OK',
+      message: 'grok provider is not configured',
+    });
+  }
+
+  const prompt = subagentInstruction(input);
+  const args = ['--no-auto-update'];
+  if (config.model) args.push('--model', config.model);
+  args.push('-p', prompt);
+  args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
+
+  const command = [grok, ...args];
+  const started = (context.options.now || Date.now)();
+  const run = await runSubagentProcess({
+    command: grok,
+    args,
+    cwd: input.cwd,
+    env: context.env,
+    timeoutMs: input.timeoutMs,
+  });
+  const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
+  return subagentToolResult(entry, context, {
+    ...input,
+    status,
+    command,
+    ...compactSubagentOutput({
+      provider: 'grok',
+      cwd: input.cwd,
+      traceId: context.traceId,
+      stdout: run.stdout,
+      stderr: run.stderr,
+      audit: input.audit,
+    }),
+    exitCode: run.exitCode,
+    durationMs: elapsedMs(started, context.options.now),
+    audit: input.audit,
+    ok: run.exitCode === 0 && !run.timedOut,
+    code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
+    message: run.timedOut ? 'grok provider timed out' : run.exitCode === 0 ? 'grok provider completed' : 'grok provider failed',
+  });
+}
+
+function subagentToolResult(
   entry: ToolManifestEntry,
   context: {
     startedAt: number;
@@ -597,17 +689,18 @@ function workerToolResult(
     requestId?: string;
     options: ExecuteToolOptions;
   },
-  input: Omit<WorkerCallData, 'durationMs'> & {
+  input: Omit<SubagentData, 'durationMs'> & {
     durationMs?: number;
     ok: boolean;
     code: 'OK' | 'COMMAND_FAILED' | 'TIMEOUT' | 'TASK_SESSION_REQUIRED';
     message: string;
   },
-): ToolResult<WorkerCallData> {
-  const data: WorkerCallData = {
+): ToolResult<SubagentData> {
+  const data: SubagentData = {
     provider: input.provider,
-    ...(input.requestedProvider ? { requestedProvider: input.requestedProvider } : {}),
-    ...(input.profile ? { profile: input.profile } : {}),
+    ...(input.model ? { model: input.model } : {}),
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
     mode: input.mode,
     policy: input.policy,
     status: input.status,
@@ -644,19 +737,44 @@ function workerToolResult(
   return result;
 }
 
-function normalizeWorkspaceOnly(value: unknown, fallback: WorkerWorkspaceOnly): WorkerWorkspaceOnly {
+
+function normalizeSubagentBundle(value: unknown): SubagentBundle {
+  return value === 'media' ? 'media' : 'core';
+}
+
+function normalizeSubagentOutputFormat(value: unknown): SubagentOutputFormat {
+  return value === 'json' ? 'json' : 'text';
+}
+
+function subagentBundleInstruction(bundle: SubagentBundle, outputFormat: SubagentOutputFormat): string {
+  if (bundle === 'media') {
+    return [
+      'Use the media steering bundle only. Do not layer core steering on top of media steering.',
+      'Preserve Ko voice. Do not over-clean wording. Return the requested social/media result in the requested format.',
+      outputFormat === 'json' ? 'Return valid JSON only.' : 'Return concise text only.',
+    ].join('\n');
+  }
+  return [
+    'Use core steering.',
+    'Follow the instruction file exactly. Prefer workspace tooling when available.',
+    outputFormat === 'json' ? 'Return valid JSON only.' : 'Return concise text only.',
+  ].join('\n');
+}
+
+
+function normalizeWorkspaceOnly(value: unknown, fallback: SubagentWorkspaceOnly): SubagentWorkspaceOnly {
   if (value === true || value === 'preferred') return 'preferred';
   if (value === 'strict') return 'strict';
   if (value === false) return false;
   return fallback;
 }
 
-function workerTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
+function subagentTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
   const requested = typeof input.timeoutMs === 'number' ? input.timeoutMs : entry.defaultTimeout;
-  return Math.min(Math.max(1, requested), WORKER_MAX_TIMEOUT_MS);
+  return Math.min(Math.max(1, requested), SUBAGENT_MAX_TIMEOUT_MS);
 }
 
-function resolveWorkerCwd(input: ToolInput, rootCwd: string): { ok: true; cwd: string } | { ok: false; message: string } {
+function resolveSubagentCwd(input: ToolInput, rootCwd: string): { ok: true; cwd: string } | { ok: false; message: string } {
   const repoRoot = resolveGitRoot(rootCwd);
   const taskWorktree = typeof input.taskWorktree === 'string' ? path.resolve(input.taskWorktree) : undefined;
   const defaultCwd = taskWorktree || repoRoot;
@@ -664,15 +782,15 @@ function resolveWorkerCwd(input: ToolInput, rootCwd: string): { ok: true; cwd: s
   const resolved = path.resolve(defaultCwd, requested);
   const roots = [repoRoot, taskWorktree].filter((item): item is string => Boolean(item)).map((item) => path.resolve(item));
   if (!roots.some((root) => isPathWithin(resolved, root))) {
-    return { ok: false, message: 'worker.call cwd must stay inside the repo root or task worktree' };
+    return { ok: false, message: 'subagent cwd must stay inside the repo root or task worktree' };
   }
   if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
-    return { ok: false, message: 'worker.call cwd must be an existing directory' };
+    return { ok: false, message: 'subagent cwd must be an existing directory' };
   }
   return { ok: true, cwd: resolved };
 }
 
-function resolveWorkerInstructionPath(
+function resolveSubagentInstructionPath(
   input: ToolInput,
   cwd: string,
   rootCwd: string,
@@ -683,10 +801,10 @@ function resolveWorkerInstructionPath(
   const taskWorktree = typeof input.taskWorktree === 'string' ? path.resolve(input.taskWorktree) : undefined;
   const roots = [repoRoot, taskWorktree].filter((item): item is string => Boolean(item)).map((item) => path.resolve(item));
   if (!roots.some((root) => isPathWithin(resolved, root))) {
-    return { ok: false, message: 'worker.call instructionPath must stay inside the repo root or task worktree' };
+    return { ok: false, message: 'subagent instructionPath must stay inside the repo root or task worktree' };
   }
   if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
-    return { ok: false, message: 'worker.call instructionPath must point to an existing file' };
+    return { ok: false, message: 'subagent instructionPath must point to an existing file' };
   }
   return { ok: true, instructionPath: resolved };
 }
@@ -696,13 +814,13 @@ function isPathWithin(candidate: string, root: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
-function findDangerousWorkerInstruction(instruction: string): string | null {
+function findDangerousSubagentInstruction(instruction: string): string | null {
   const patterns = [
-    { pattern: /\brm\s+-rf\s+\//i, reason: 'worker.call blocked dangerous instruction: rm -rf /' },
-    { pattern: /\bgit\s+push\b[^\n;]*--force/i, reason: 'worker.call blocked dangerous instruction: git push --force' },
-    { pattern: /\bsudo\b/i, reason: 'worker.call blocked dangerous instruction: sudo' },
-    { pattern: /\bchmod\s+-R\s+777\b/i, reason: 'worker.call blocked dangerous instruction: chmod -R 777' },
-    { pattern: /\bcurl\b[\s\S]{0,120}\|\s*(?:sh|bash)\b/i, reason: 'worker.call blocked dangerous instruction: curl pipe shell' },
+    { pattern: /\brm\s+-rf\s+\//i, reason: 'subagent blocked dangerous instruction: rm -rf /' },
+    { pattern: /\bgit\s+push\b[^\n;]*--force/i, reason: 'subagent blocked dangerous instruction: git push --force' },
+    { pattern: /\bsudo\b/i, reason: 'subagent blocked dangerous instruction: sudo' },
+    { pattern: /\bchmod\s+-R\s+777\b/i, reason: 'subagent blocked dangerous instruction: chmod -R 777' },
+    { pattern: /\bcurl\b[\s\S]{0,120}\|\s*(?:sh|bash)\b/i, reason: 'subagent blocked dangerous instruction: curl pipe shell' },
   ];
   return patterns.find(({ pattern }) => pattern.test(instruction))?.reason || null;
 }
@@ -733,32 +851,38 @@ function readCommandHelp(command: string, args: string[], env: NodeJS.ProcessEnv
   }
 }
 
-function workerInstruction(instruction: string, workspaceOnly: WorkerWorkspaceOnly): string {
-  const guidance = workspaceOnly === 'strict'
+function subagentInstruction(input: { instruction: string; instructionPath: string; workspaceOnly: SubagentWorkspaceOnly; bundle: SubagentBundle; outputFormat: SubagentOutputFormat }): string {
+  const guidance = input.workspaceOnly === 'strict'
     ? 'Use only workspace tooling/MCP/facade operations. Return NOT_SUPPORTED if that cannot be enforced.'
-    : workspaceOnly === 'preferred'
+    : input.workspaceOnly === 'preferred'
       ? 'Use workspace tooling first. Raw shell is allowed only as a fallback and must be reported.'
       : 'Use the provider default execution model.';
-  return `${guidance}\n\n${instruction}`;
+  return [
+    subagentBundleInstruction(input.bundle, input.outputFormat),
+    guidance,
+    `Instruction file: ${input.instructionPath}`,
+    'Read the instruction file before answering. Treat it as the user request.',
+    '',
+    input.instruction,
+  ].join('\n\n');
 }
 
-
-function compactWorkerOutput(input: {
-  provider: NormalizedWorkerProvider;
+function compactSubagentOutput(input: {
+  provider: SubagentProvider;
   cwd: string;
   traceId: string;
   stdout: string;
   stderr: string;
-}): Pick<WorkerCallData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
-  const parsed = parseWorkerOutput(input.provider, input.stdout);
-  const logs = persistWorkerLogs(input);
+}): Pick<SubagentData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
+  const parsed = parseSubagentOutput(input.provider, input.stdout);
+  const logs = persistSubagentLogs(input);
   const finalMessage = parsed.finalMessage?.trim();
   const stderrSummary = compactText(input.stderr);
   return {
     stdout: finalMessage || compactText(input.stdout),
     stderr: stderrSummary,
     ...(finalMessage ? { finalMessage } : {}),
-    ...(parsed.summary ? { summary: parsed.summary } : finalMessage ? { summary: finalMessage } : {}),
+    ...(parsed.summary ? { summary: parsed.summary } : finalMessage ? { summaryText: finalMessage } : {}),
     ...(logs.rawLogPath ? { rawLogPath: logs.rawLogPath } : {}),
     stdoutLogPath: logs.stdoutLogPath,
     stderrLogPath: logs.stderrLogPath,
@@ -768,12 +892,12 @@ function compactWorkerOutput(input: {
   };
 }
 
-export function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: string): {
+export function parseSubagentOutput(provider: SubagentProvider, stdout: string): {
   finalMessage?: string;
-  summary?: string;
-  usage?: WorkerCallData['usage'];
+  summaryText?: string;
+  usage?: SubagentData['usage'];
 } {
-  if (provider === 'cdx') return parseCodexJsonEvents(stdout);
+  if (provider === 'codex') return parseCodexJsonEvents(stdout);
 
   if (provider === 'pi') return parsePiJsonEvents(stdout);
 
@@ -783,20 +907,20 @@ export function parseWorkerOutput(provider: NormalizedWorkerProvider, stdout: st
     const value = JSON.parse(trimmed) as Record<string, unknown>;
     const finalMessage = stringValue(value.finalMessage) || stringValue(value.message) || stringValue(value.text) || stringValue(value.output);
     return {
-      ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+      ...(finalMessage ? { finalMessage, summaryText: finalMessage } : {}),
     };
   } catch {
-    return { finalMessage: trimmed, summary: compactText(trimmed) };
+    return { finalMessage: trimmed, summaryText: compactText(trimmed) };
   }
 }
 
 function parseCodexJsonEvents(stdout: string): {
   finalMessage?: string;
-  summary?: string;
-  usage?: WorkerCallData['usage'];
+  summaryText?: string;
+  usage?: SubagentData['usage'];
 } {
   let finalMessage: string | undefined;
-  let usage: WorkerCallData['usage'] | undefined;
+  let usage: SubagentData['usage'] | undefined;
   for (const line of stdout.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed) continue;
@@ -821,7 +945,7 @@ function parseCodexJsonEvents(stdout: string): {
   }
   if (!finalMessage) finalMessage = extractFirstJsonText(stdout);
   return {
-    ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+    ...(finalMessage ? { finalMessage, summaryText: finalMessage } : {}),
     ...(usage ? { usage } : {}),
   };
 }
@@ -830,11 +954,11 @@ function parseCodexJsonEvents(stdout: string): {
 
 function parsePiJsonEvents(stdout: string): {
   finalMessage?: string;
-  summary?: string;
-  usage?: WorkerCallData['usage'];
+  summaryText?: string;
+  usage?: SubagentData['usage'];
 } {
   let finalMessage: string | undefined;
-  let usage: WorkerCallData['usage'] | undefined;
+  let usage: SubagentData['usage'] | undefined;
   let parsedAny = false;
   for (const line of stdout.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -861,7 +985,7 @@ function parsePiJsonEvents(stdout: string): {
   if (!usage) usage = extractPiUsageFallback(stdout);
   if (!parsedAny && !finalMessage && !usage) return {};
   return {
-    ...(finalMessage ? { finalMessage, summary: finalMessage } : {}),
+    ...(finalMessage ? { finalMessage, summaryText: finalMessage } : {}),
     ...(usage ? { usage } : {}),
   };
 }
@@ -886,7 +1010,7 @@ function extractFirstJsonText(stdout: string): string | undefined {
   return undefined;
 }
 
-function extractPiUsageFallback(stdout: string): WorkerCallData['usage'] | undefined {
+function extractPiUsageFallback(stdout: string): SubagentData['usage'] | undefined {
   const input = stdout.match(/\"input\"\s*:\s*(\d+)/)?.[1];
   const output = stdout.match(/\"output\"\s*:\s*(\d+)/)?.[1];
   const cacheRead = stdout.match(/\"cacheRead\"\s*:\s*(\d+)/)?.[1];
@@ -914,15 +1038,81 @@ function extractMessageText(content: unknown): string | undefined {
 }
 
 
-function persistWorkerLogs(input: {
-  provider: NormalizedWorkerProvider;
+
+function buildSubagentRunSummary(input: {
+  traceId: string;
+  events: SubagentTraceEvent[];
+  finalMessage?: string;
+  stdout: string;
+}): SubagentRunSummary {
+  const toolsCalled = unique(input.events.map((event) => event.facadeTool || event.tool).filter(Boolean));
+  const filesRead = unique(input.events.flatMap((event) => eventLooksRead(event) ? extractPathHints(event) : []));
+  const filesEdited = unique(input.events.flatMap((event) => eventLooksEdit(event) ? extractPathHints(event) : []));
+  const traceEvents = input.events.slice(0, 12).map((event, index) => ({
+    tool: event.facadeTool || event.tool,
+    status: event.status,
+    traceId: `${input.traceId}:subagent:${String(index + 1).padStart(4, '0')}`,
+    ...(event.input !== undefined ? { input: compactText(asJsonText(event.input), 180) } : {}),
+    ...(event.result !== undefined ? { output: compactText(asJsonText(event.result), 180) } : {}),
+  }));
+  const parts = [];
+  if (toolsCalled.length) parts.push(`${toolsCalled.length} tools: ${toolsCalled.slice(0, 5).join(', ')}${toolsCalled.length > 5 ? ', ...' : ''}`);
+  if (filesRead.length) parts.push(`read ${filesRead.slice(0, 4).join(', ')}${filesRead.length > 4 ? ', ...' : ''}`);
+  if (filesEdited.length) parts.push(`edited ${filesEdited.slice(0, 4).join(', ')}${filesEdited.length > 4 ? ', ...' : ''}`);
+  const fallback = input.finalMessage || compactText(input.stdout);
+  const compact = parts.length ? parts.join(' - ') : (fallback || 'completed - no subagent trace events');
+  return { traceId: input.traceId, compact, filesRead, filesEdited, toolsCalled, traceEvents };
+}
+
+function eventLooksRead(event: SubagentTraceEvent): boolean {
+  const tool = `${event.facadeTool || event.tool} ${asJsonText(event.input)}`.toLowerCase();
+  return /fs\.read|read|search|list/.test(tool) && !eventLooksEdit(event);
+}
+
+function eventLooksEdit(event: SubagentTraceEvent): boolean {
+  const tool = `${event.facadeTool || event.tool} ${asJsonText(event.input)} ${asJsonText(event.result)}`.toLowerCase();
+  return /fs\.write|applypatch|apply_patch|edit|changed|fileschanged|files changed/.test(tool);
+}
+
+function extractPathHints(value: unknown): string[] {
+  const out: string[] = [];
+  const visit = (item: unknown): void => {
+    if (typeof item === 'string') {
+      const matches = item.match(/[A-Za-z0-9_.\/-]+\.[A-Za-z0-9_.-]+/g) || [];
+      out.push(...matches.filter((entry) => !entry.startsWith('http')));
+      return;
+    }
+    if (Array.isArray(item)) {
+      for (const child of item) visit(child);
+      return;
+    }
+    if (!isRecord(item)) return;
+    for (const [key, child] of Object.entries(item)) {
+      if (/path|file|files|filesChanged/i.test(key)) visit(child);
+    }
+  };
+  visit(value);
+  return out;
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values.filter(Boolean))).slice(0, 20);
+}
+
+function asJsonText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  try { return JSON.stringify(value ?? ''); } catch { return String(value ?? ''); }
+}
+
+function persistSubagentLogs(input: {
+  provider: SubagentProvider;
   cwd: string;
   traceId: string;
   stdout: string;
   stderr: string;
 }): { rawLogPath?: string; stdoutLogPath: string; stderrLogPath: string } {
   const runId = `${input.traceId}-${input.provider}`.replace(/[^a-zA-Z0-9_.-]+/g, '-');
-  const logDir = path.join(input.cwd, '.task', 'worker-runs', runId);
+  const logDir = path.join(input.cwd, '.task', 'subagent-runs', runId);
   fs.mkdirSync(logDir, { recursive: true });
   const stdoutLogPath = path.join(logDir, 'stdout.log');
   const stderrLogPath = path.join(logDir, 'stderr.log');
@@ -940,10 +1130,10 @@ function persistWorkerLogs(input: {
   return { rawLogPath: summaryPath, stdoutLogPath, stderrLogPath };
 }
 
-function compactText(value: string): string {
+function compactText(value: string, limit = SUBAGENT_COMPACT_OUTPUT_LIMIT): string {
   const trimmed = value.trim();
-  if (trimmed.length <= WORKER_COMPACT_OUTPUT_LIMIT) return trimmed;
-  return `${trimmed.slice(0, WORKER_COMPACT_OUTPUT_LIMIT)}\n... [truncated ${trimmed.length - WORKER_COMPACT_OUTPUT_LIMIT} chars; see worker log path]`;
+  if (trimmed.length <= limit) return trimmed;
+  return `${trimmed.slice(0, limit)}\n... [truncated ${trimmed.length - limit} chars; see subagent log path]`;
 }
 
 function stringValue(value: unknown): string | undefined {
@@ -954,12 +1144,12 @@ function numberValue(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-function boundWorkerOutput(value: string): string {
-  if (value.length <= WORKER_OUTPUT_LIMIT) return value;
-  return `${value.slice(0, WORKER_OUTPUT_LIMIT)}\n... [truncated ${value.length - WORKER_OUTPUT_LIMIT} chars]`;
+function boundSubagentOutput(value: string): string {
+  if (value.length <= SUBAGENT_OUTPUT_LIMIT) return value;
+  return `${value.slice(0, SUBAGENT_OUTPUT_LIMIT)}\n... [truncated ${value.length - SUBAGENT_OUTPUT_LIMIT} chars]`;
 }
 
-async function runWorkerProcess(input: {
+async function runSubagentProcess(input: {
   command: string;
   args: string[];
   cwd: string;

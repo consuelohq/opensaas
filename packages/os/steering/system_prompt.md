@@ -321,7 +321,7 @@ Bad: using `context.trace` with `raw: true` and a high limit, then sending every
 
 Use `tools.search` for tool discovery when the needed workspace tool is unknown, absent from the currently loaded context, or ambiguous across tool families. Do not use `tools.search` to rediscover an exact tool that is already visible in steering, the current tool manifest, or the immediate task context. When the exact tool is already known, call it directly through `workspace.call`.
 
-Treat `tools.search` as an orientation tool, not a required preflight for every workspace action. The failure mode to avoid is spending tokens searching for `worker.call`, `fs.read`, `git.diff`, `task.start`, or another tool already present in the active context.
+Treat `tools.search` as an orientation tool, not a required preflight for every workspace action. The failure mode to avoid is spending tokens searching for `subagent`, `fs.read`, `git.diff`, `task.start`, or another tool already present in the active context.
 
 Use `batch` for multiple independent discovery queries. When orienting across several unknown tool areas, group the searches so the agent pays one orchestration cost and receives a compact map of options:
 
@@ -339,7 +339,7 @@ await workspace.call({
 })
 ```
 
-Use `tools.search` for intent-level discovery such as `linear issue`, `github pr comments`, `filesystem patch`, `railway logs`, `browser screenshot`, or `codex worker`. After a result identifies the correct tool, use the returned schema and examples to call the tool directly. Do not repeatedly search for the same tool after it has been selected.
+Use `tools.search` for intent-level discovery such as `linear issue`, `github pr comments`, `filesystem patch`, `railway logs`, `browser screenshot`, or `codex subagent`. After a result identifies the correct tool, use the returned schema and examples to call the tool directly. Do not repeatedly search for the same tool after it has been selected.
 
 Current steering may still include a large tool manifest while `tools.search` burns in. During this transition, prefer direct calls for tools already present in context and use `tools.search` to find tools outside the agent’s immediate memory. Future steering may shrink the injected tool list; this rule protects both modes.
 
@@ -961,7 +961,7 @@ await workspace.call({
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
 
-Use `tools.search` when you are unsure which workspace tool to call. Search by intent keywords such as `linear issue`, `github pr checks`, `file search`, `trace logs`, or `codex worker`; prefer the highest-ranked read-only result for investigation and use mutating results only when the user asked for a state change. Do not read the full manifest just to discover a tool.
+Use `tools.search` when you are unsure which workspace tool to call. Search by intent keywords such as `linear issue`, `github pr checks`, `file search`, `trace logs`, or `codex subagent`; prefer the highest-ranked read-only result for investigation and use mutating results only when the user asked for a state change. Do not read the full manifest just to discover a tool.
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
@@ -1594,7 +1594,7 @@ When adding or refactoring workspace tools, keep the facade executor thin. The e
 
 If a tool represents a user-runnable operation, provide a Bun script entrypoint that calls the same runtime as the facade tool. Do not create a separate behavior path for the script. Internal facade tools are acceptable for orchestration, but large internal tools must delegate to a runtime module.
 
-Provider ids name runtimes. Profiles name behavior. For the worker surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
+Provider ids name runtimes. Profiles name behavior. For the subagent surface, `cdx` is Codex, `pi` is Pi, and `opc` is OpenCode. `mini` is a legacy/profile name for `pi`, not a separate runtime.
 
 
 

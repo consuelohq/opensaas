@@ -37,9 +37,9 @@ this file should teach agents how to think with the system, what the signals mea
 
 ---
 
-## worker delegation naming decision
+## subagent delegation naming decision
 
-Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `worker.call` is the provider-agnostic delegation contract; `cdx`, `pi`, and `opc` are provider codes. `mini` is a legacy/profile name normalized to `pi` with `profile: mini`. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
+Use neutral workspace tool names to reduce safety-filter collisions and keep provider names abbreviated. `subagent` is the provider-agnostic delegation contract; `cdx`, `pi`, and `opc` are provider codes. `mini` is a legacy/profile name normalized to `pi` with `profile: mini`. Codex App Server, cloud sessions, MCP integration, and A2A integration are intentionally deferred.
 
 ---
 
@@ -1001,7 +1001,7 @@ i think it is probably fine.
 say:
 
 ```text
-confidence is 0.64. the top path is dialer.ts, supported by one read and one connected test. remaining uncertainty is the queue worker path, which has not been read.
+confidence is 0.64. the top path is dialer.ts, supported by one read and one connected test. remaining uncertainty is the queue subagent path, which has not been read.
 ```
 
 precision beats vibes.
@@ -1033,4 +1033,4 @@ i know whether it was right because validation and runtime truth updated the bel
 ```
 
 
-Keep `worker.call` as the neutral facade entrypoint and expose `bun run worker -- call ...` as the human/Codex CLI wrapper. Both paths must call the same worker runtime module; executor-owned provider implementations should be refactored into dedicated runtime modules.
+Keep `subagent` as the neutral facade entrypoint and expose `bun run subagent -- call ...` as the human/Codex CLI wrapper. Both paths must call the same subagent runtime module; executor-owned provider implementations should be refactored into dedicated runtime modules.
