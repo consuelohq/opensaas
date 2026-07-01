@@ -58,16 +58,43 @@ Validation ladder:
 
 ## files changed
 
-- none yet
+- `packages/documentation/.gitignore`
+- `packages/documentation/astro.config.mjs`
+- `packages/documentation/bun.lock`
+- `packages/documentation/package.json`
+- `packages/documentation/README.md`
+- `packages/documentation/scripts/test-translation.mjs`
+- `packages/documentation/scripts/validate-documentation.mjs`
+- `packages/documentation/src/components/translation/RuntimeLanguageSelect.astro`
+- `packages/documentation/src/lib/translation/cache.ts`
+- `packages/documentation/src/lib/translation/languages.ts`
+- `packages/documentation/src/lib/translation/provider.ts`
+- `packages/documentation/src/lib/translation/source.ts`
+- `packages/documentation/src/lib/translation/text.ts`
+- `packages/documentation/src/pages/api/docs/translate.ts`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/documentation/.gitignore`
+- `packages/documentation/astro.config.mjs`
+- `packages/documentation/bun.lock`
+- `packages/documentation/package.json`
+- `packages/documentation/README.md`
+- `packages/documentation/scripts/test-translation.mjs`
+- `packages/documentation/scripts/validate-documentation.mjs`
+- `packages/documentation/src/components/translation/RuntimeLanguageSelect.astro`
+- `packages/documentation/src/lib/translation/cache.ts`
+- `packages/documentation/src/lib/translation/languages.ts`
+- `packages/documentation/src/lib/translation/provider.ts`
+- `packages/documentation/src/lib/translation/source.ts`
+- `packages/documentation/src/lib/translation/text.ts`
+- `packages/documentation/src/pages/api/docs/translate.ts`
 
 ## workspace-owned: activity log
 
 - 2026-07-01 22:36:16 fs.write: `.task/docs/runtime-cached-documentation-translation/workpad.md`
 - 2026-07-01 22:47:55 fs.write: `.task/docs/runtime-cached-documentation-translation/workpad.md`
+- 2026-07-01 22:50:58 fs.write: `.task/docs/runtime-cached-documentation-translation/workpad.md`
 
 ## Implementation notes
 - Added `@astrojs/cloudflare` so the docs app can keep static Starlight pages while serving a runtime API route.
@@ -93,12 +120,22 @@ Validation ladder:
 - 2026-07-01 22:49:20 `review.run`: passed — OK
 - 2026-07-01 22:50:05 `review.run`: passed — OK
 - 2026-07-01 22:50:16 `verify`: passed — OK
+- 2026-07-01 22:57:18 `verify`: failed — COMMAND_FAILED
+- 2026-07-01 22:57:18 `verify`: failed — COMMAND_FAILED
 
 ## workspace-owned: test selection
 
-- changed files: `.task/docs/runtime-cached-documentation-translation/current.json`, `.task/docs/runtime-cached-documentation-translation/session.json`, `.task/docs/runtime-cached-documentation-translation/workpad.md`, `.task/tasks/docs/runtime-cached-documentation-translation.json`, `packages/documentation/.gitignore`, `packages/documentation/README.md`, `packages/documentation/astro.config.mjs`, `packages/documentation/bun.lock`, `packages/documentation/package.json`, `packages/documentation/scripts/test-translation.mjs`, `packages/documentation/scripts/validate-documentation.mjs`, `packages/documentation/src/components/translation/RuntimeLanguageSelect.astro`, `packages/documentation/src/lib/translation/cache.ts`, `packages/documentation/src/lib/translation/languages.ts`, `packages/documentation/src/lib/translation/provider.ts`, `packages/documentation/src/lib/translation/source.ts`, `packages/documentation/src/lib/translation/text.ts`, `packages/documentation/src/pages/api/docs/translate.ts`
+- changed files: `.task/docs/runtime-cached-documentation-translation/workpad.md`
 - matched rules: none
 - selected suites: none
 - run results: none
 - failed suites: none
-- zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+- zero-suite reason: changed files are docs or task metadata
+
+## Publish checkpoint
+- Task branch pushed with commit `67bfde63194189c9bed077481fdfaac91d36ab22`.
+- Workspace review passed with 0 owned issues; one pre-existing project-level typecheck note remains: no projects with a `typecheck` target found.
+- Workspace verify passed and wrote a publish-valid stamp.
+- The task is ready to merge into `stream/docs`.
+
+- 2026-07-01 22:50:58 append: `.task/docs/runtime-cached-documentation-translation/workpad.md`
