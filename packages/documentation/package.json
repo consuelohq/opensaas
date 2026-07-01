@@ -8,9 +8,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "validate": "bun scripts/validate-documentation.mjs"
+    "validate": "bun scripts/validate-documentation.mjs",
+    "test:translation": "bun scripts/test-translation.mjs"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^14.1.0",
     "@astrojs/starlight": "^0.41.2",
     "astro": "^7.0.2",
     "sharp": "^0.34.5"

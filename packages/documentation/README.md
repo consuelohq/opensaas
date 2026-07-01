@@ -70,6 +70,12 @@ Do not bring these back into public docs:
 - legacy Twenty UI reference pages unless they are intentionally rewritten for Consuelo;
 - Starlight starter examples.
 
+## Runtime translation
+
+Runtime translation is Phase 3-owned. The English MDX files remain the only editorial source of truth. Do not add committed translated locale folders under `src/content/docs`. The header language selector calls `/api/docs/translate`, and the server route loads the English source, hashes the content, translates with the configured provider, and caches by route + content hash + target language.
+
+Provider credentials must stay server-side. The client selector must never reference `GOOGLE_TRANSLATE_API_KEY` or any provider token. Use `DOCS_TRANSLATION_PROVIDER=passthrough` only for local/test validation; production translation is configured with `GOOGLE_TRANSLATE_API_KEY`.
+
 ## Phase boundaries
 
 - Phase 2: this package becomes a working Starlight docs app with curated English content.
