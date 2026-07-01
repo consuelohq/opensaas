@@ -5,6 +5,8 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import { type LauncherLocalAgent, renderLauncherOnboarding } from '../../os/scripts/lib/launcher-onboarding';
+
 const CURRENT_FILE = fileURLToPath(import.meta.url);
 const WORKSPACE_ROOT = path.resolve(path.dirname(CURRENT_FILE), '..');
 const REPO_ROOT = path.resolve(WORKSPACE_ROOT, '../..');
@@ -153,10 +155,29 @@ type RuntimeUrls = {
   webUrl: string | null;
 };
 
+type LauncherConfig = {
+  workspace?: { host?: string };
+  agents?: Array<{ name?: string; connected?: boolean }>;
+};
+
+type ChatGptMcpConfig = {
+  url?: string;
+};
+
 type CommandResult = {
   stdout: string;
   stderr: string;
   exitCode: number;
+};
+
+const LAUNCHER_AGENT_LABELS: Record<string, string> = {
+  claude: 'Claude',
+  codex: 'Codex',
+  cursor: 'Cursor',
+  factory: 'Factory',
+  gemini: 'Gemini',
+  opencode: 'OpenCode',
+  pi: 'Pi',
 };
 
 const WORKFLOW_CONFIGS: Record<WorkflowId, WorkflowConfig> = {
@@ -252,6 +273,14 @@ function readText(relativePath: string): string {
   return readFileSync(repoPath(relativePath), 'utf8');
 }
 
+function readJsonFile<TData>(filePath: string): TData | null {
+  try {
+    return JSON.parse(readFileSync(filePath, 'utf8')) as TData;
+  } catch {
+    return null;
+  }
+}
+
 function pathExists(relativePath: string): boolean {
   try {
     statSync(repoPath(relativePath));
@@ -260,6 +289,51 @@ function pathExists(relativePath: string): boolean {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return false;
     throw error;
   }
+}
+
+function consueloOsHome(): string {
+  return path.resolve(
+    process.env.CONSUELO_OS_HOME ??
+    process.env.CONSUELO_HOME ??
+    path.join(process.env.HOME ?? '/tmp', '.consuelo', 'os'),
+  );
+}
+
+function sitesLauncherMcpUrl(): string {
+  const home = consueloOsHome();
+  const mcpConfig = readJsonFile<ChatGptMcpConfig>(path.join(home, 'security', 'generated', 'chatgpt-mcp.json'));
+  if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
+    return mcpConfig.url;
+  }
+
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  const workspaceHost = config?.workspace?.host;
+  return typeof workspaceHost === 'string' && workspaceHost.length > 0
+    ? `https://${workspaceHost}/mcp`
+    : 'https://os.consuelohq.com/mcp';
+}
+
+function sitesLauncherLocalAgents(): LauncherLocalAgent[] {
+  const config = readJsonFile<LauncherConfig>(path.join(consueloOsHome(), 'config.json'));
+  const seenAgentNames = new Set<string>();
+
+  return (config?.agents ?? []).flatMap((agent) => {
+    if (typeof agent.name !== 'string' || agent.name.length === 0 || agent.connected !== true) {
+      return [];
+    }
+
+    const agentName = agent.name.toLowerCase();
+    if (seenAgentNames.has(agentName)) {
+      return [];
+    }
+    seenAgentNames.add(agentName);
+
+    return [{
+      name: agentName,
+      label: LAUNCHER_AGENT_LABELS[agentName] ?? agent.name,
+      connected: true,
+    }];
+  });
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -1205,72 +1279,12 @@ function renderSitesLauncherHtml(input: { includeHotkeysScript: boolean }): stri
     });
   </script>` : '';
 
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo OS Sites</title>
-  <style>
-    :root { color-scheme: dark; background: #070708; color: #f2eee6; font-family: "Geist Mono", "Geist", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #070708; color: #f2eee6; font-size: 13px; line-height: 1.35; font-weight: 400; letter-spacing: 0.02em; }
-    @media (max-width: 1024px) { body { font-size: clamp(10.3px, 2.62vw, 12.7px); line-height: 1.34; } main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); } .block { margin: 22px 0; } .rule { margin: 22px 0; } li { margin: 2.35px 0; } }
-    @media (max-width: 430px) { body { font-size: clamp(9.9px, 2.42vw, 11.5px); line-height: 1.32; } main { padding: 40px 10px; } li, .blog-item { white-space: nowrap; } }
-    main { padding: 32px 30px; max-width: none; }
-    h1, p { margin: 0; font: inherit; }
-    h1 { margin-bottom: 24px; text-transform: uppercase; }
-    .block { margin: 22px 0; }
-    .rule { margin: 22px 0; color: inherit; }
-    .label { text-transform: uppercase; }
-    ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
-    li { margin: 2px 0; white-space: nowrap; }
-    li::before { content: "- "; }
-    a { color: #9aa6ff; text-decoration: underline; text-underline-offset: 2px; }
-    .blog-item { white-space: nowrap; }
-    @media (max-width: 720px) { .blog-item { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.35; } }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>CONSUELO OS █</h1>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Profile">
-      <p><span class="label">CONTACT:</span> SUPPORT@CONSUELOHQ.COM</p>
-      <p><span class="label">LOCATION:</span> USA</p>
-      <p><span class="label">STATUS:</span> ONLINE</p>
-      <p><span class="label">OPEN POSITION:</span></p>
-      <ul>
-        <li><a href="/careers/systems-engineer">Systems Engineer</a></li>
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Sites">
-      <p class="label">SITES:</p>
-      <ul>
-        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm" data-hotkey="1" target="_blank" rel="noopener noreferrer">Go to market</a></li>
-        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}" data-hotkey="2" target="_blank" rel="noopener noreferrer">Artifacts</a></li>
-        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing" data-hotkey="3" target="_blank" rel="noopener noreferrer">Observability</a></li>
-        <li><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs" data-hotkey="4" target="_blank" rel="noopener noreferrer">Code review</a></li>
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Guides and Tips">
-      <p class="label">GUIDES AND TIPS:</p>
-      <ul>
-        <li><a href="${DESIGN_DOCS_URL}" data-hotkey="5" target="_blank" rel="noopener noreferrer">Documentation</a></li>
-      </ul>
-    </section>
-    <p class="rule">~~~</p>
-    <section class="block" aria-label="Writing">
-      <p class="label">WRITING:</p>
-      <ul>
-        <li class="blog-item"><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}" target="_blank" rel="noopener noreferrer">Decision loops</a></li>
-      </ul>
-    </section>
-  </main>${hotkeysScript}
-</body>
-</html>`;
+  const launcherHtml = renderLauncherOnboarding({
+    mcpUrl: sitesLauncherMcpUrl(),
+    localAgents: sitesLauncherLocalAgents(),
+  });
+
+  return launcherHtml.replace('</body>', `${hotkeysScript}\n</body>`);
 }
 
 function writeArchiveServer(ip: string): void {
@@ -2242,4 +2256,3 @@ main().catch((error: unknown) => {
   writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 });
-
