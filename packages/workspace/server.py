@@ -284,7 +284,7 @@ _CACHED_MANIFEST: list[dict[str, Any]] | None = None
 _CACHED_MANIFEST_MTIME: float | None = None
 _SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
 _SAFETY_SUMMARY_LIMIT = 500
-_TRACE_DB_MAX_BYTES = int(os.environ.get('OPENWORKSPACE_TRACE_DB_MAX_BYTES', str(500 * 1024 * 1024)))
+_TRACE_DB_MAX_BYTES = int(os.environ.get('OPENWORKSPACE_TRACE_DB_MAX_BYTES', str(1024 * 1024 * 1024)))
 _STEERING_GUARD_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_GUARD_WINDOW_SECONDS', '300'))
 _STEERING_FORCE_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_FORCE_WINDOW_SECONDS', '300'))
 _STEERING_REQUEST_CONTEXT: contextvars.ContextVar[dict[str, str] | None] = contextvars.ContextVar('steering_request_context', default=None)

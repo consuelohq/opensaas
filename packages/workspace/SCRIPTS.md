@@ -906,7 +906,7 @@ bun run context -- trace --status error --limit 20  # recent failed local tool t
 bun run context -- trace --trace-id trc_abc123 --raw # exact raw payload for one trace
 ```
 
-`context trace` reads the local repo-scoped SQLite trace store at `~/Library/Application Support/OpenWorkspace/traces/<repo-hash>/traces.db` on macOS, or `~/.local/share/openworkspace/traces/<repo-hash>/traces.db` on other systems. Override with `OPENWORKSPACE_TRACE_DB` or `--db`. The server writes raw structured tool payloads into this local database after each workspace tool call and keeps the store under `OPENWORKSPACE_TRACE_DB_MAX_BYTES`, defaulting to 500 MB.
+`context trace` reads the local repo-scoped SQLite trace store at `~/Library/Application Support/OpenWorkspace/traces/<repo-hash>/traces.db` on macOS, or `~/.local/share/openworkspace/traces/<repo-hash>/traces.db` on other systems. Override with `OPENWORKSPACE_TRACE_DB` or `--db`. The server writes raw structured tool payloads into this local database after each workspace tool call and keeps the store under `OPENWORKSPACE_TRACE_DB_MAX_BYTES`, defaulting to 1 GB.
 
 **context failure modes**
 ```text
