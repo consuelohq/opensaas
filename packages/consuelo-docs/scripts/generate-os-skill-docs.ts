@@ -16,6 +16,7 @@ type BaseGroup = {
   key: string;
   label: string;
   icon?: string;
+  expanded?: boolean;
   pages: BasePage[];
 };
 
@@ -163,6 +164,7 @@ const skillPages = (skills: SkillJson[]): Array<string | BaseGroup> => [
   {
     key: 'osPlannedSkills',
     label: 'Planned Skills',
+    expanded: false,
     pages: plannedSkills.map(([slug]) => `os/skills/planned/${slug}`),
   },
 ];

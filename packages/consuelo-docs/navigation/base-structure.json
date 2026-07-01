@@ -18,7 +18,8 @@
                 "user-guide/getting-started/capabilities/implementation-services",
                 "user-guide/getting-started/capabilities/glossary",
                 "user-guide/getting-started/capabilities/keyboard-shortcuts"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "gettingStartedHowTos",
@@ -27,9 +28,11 @@
                 "user-guide/getting-started/how-tos/create-workspace",
                 "user-guide/getting-started/how-tos/navigate-around-consuelo",
                 "user-guide/getting-started/how-tos/configure-your-workspace"
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         },
         {
           "key": "usingConsueloOs",
@@ -42,7 +45,8 @@
                 "os/overview",
                 "os/how-it-works",
                 "os/glossary"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "osConcepts",
@@ -58,17 +62,13 @@
                 "os/concepts/integrations-and-capabilities",
                 "os/concepts/observability",
                 "os/concepts/local-and-cloud"
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         },
-        {
-          "key": "features",
-          "label": "Features",
-          "pages": [
-            "user-guide/features/overview"
-          ]
-        },
+        "user-guide/features/overview",
         {
           "key": "userGuideTools",
           "label": "Tools",
@@ -78,22 +78,11 @@
             "tools/media/getting-started",
             "os/tools/browser-tools",
             "os/tools/overview"
-          ]
+          ],
+          "expanded": false
         },
-        {
-          "key": "integrations",
-          "label": "Integrations",
-          "pages": [
-            "user-guide/integrations/overview"
-          ]
-        },
-        {
-          "key": "guidesTutorials",
-          "label": "Guides & Tutorials",
-          "pages": [
-            "user-guide/guides-tutorials/overview"
-          ]
-        },
+        "user-guide/integrations/overview",
+        "user-guide/guides-tutorials/overview",
         {
           "key": "developerGuide",
           "label": "Developer Guide",
@@ -107,7 +96,8 @@
                 "developers/agent/tool-system",
                 "developers/agent/crm-tools",
                 "developers/agent/integrations"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "developerApi",
@@ -118,9 +108,11 @@
                 "developers/api/graphql",
                 "developers/api/contacts",
                 "developers/api/voice"
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         },
         {
           "key": "reference",
@@ -137,7 +129,8 @@
                 "os/tools/github-and-review-tools",
                 "os/tools/exploration-tools",
                 "os/tools/browser-tools"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "osAgentContext",
@@ -148,7 +141,8 @@
                 "os/agent-context/tools",
                 "os/agent-context/scripts",
                 "os/agent-context/test-driven-agent-work"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "osSkills",
@@ -170,6 +164,7 @@
                 {
                   "key": "osPlannedSkills",
                   "label": "Planned Skills",
+                  "expanded": false,
                   "pages": [
                     "os/skills/planned/campaign-brief",
                     "os/skills/planned/follow-up-generator",
@@ -182,7 +177,8 @@
                     "os/skills/planned/weekly-manager-report"
                   ]
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "twentyUi",
@@ -199,14 +195,16 @@
                     "consuelo-ui/display/soon-pill",
                     "consuelo-ui/display/tag",
                     "consuelo-ui/display/app-tooltip"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "feedback",
                   "label": "Feedback",
                   "pages": [
                     "consuelo-ui/progress-bar"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "input",
@@ -222,7 +220,8 @@
                     "consuelo-ui/input/select",
                     "consuelo-ui/input/toggle",
                     "consuelo-ui/input/block-editor"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "navigation",
@@ -234,11 +233,14 @@
                     "consuelo-ui/navigation/menu-item",
                     "consuelo-ui/navigation/navigation-bar",
                     "consuelo-ui/navigation/step-bar"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         }
       ]
     },
@@ -264,7 +266,8 @@
                     "user-guide/data-model/capabilities/objects",
                     "user-guide/data-model/capabilities/fields",
                     "user-guide/data-model/capabilities/relation-fields"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "dataModelHowTos",
@@ -276,9 +279,11 @@
                     "user-guide/data-model/how-tos/create-many-to-many-relations",
                     "user-guide/data-model/how-tos/customize-your-data-model",
                     "user-guide/data-model/how-tos/data-model-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "dataMigration",
@@ -294,7 +299,8 @@
                     "user-guide/data-migration/capabilities/uniqueness-constraints",
                     "user-guide/data-migration/capabilities/import-relations",
                     "user-guide/data-migration/capabilities/error-handling"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "dataMigrationHowTos",
@@ -311,9 +317,11 @@
                     "user-guide/data-migration/how-tos/upload-csv-programmatically",
                     "user-guide/data-migration/how-tos/migrating-from-other-crms",
                     "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "fileSystem",
@@ -327,16 +335,19 @@
                     "user-guide/file-system/capabilities/file-categories",
                     "user-guide/file-system/capabilities/knowledge-base",
                     "user-guide/file-system/capabilities/auto-indexing"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "fileSystemHowTos",
                   "label": "How-Tos",
                   "pages": [
                     "user-guide/file-system/how-tos/file-system-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "calendarEmails",
@@ -349,7 +360,8 @@
                   "pages": [
                     "user-guide/calendar-emails/capabilities/mailbox",
                     "user-guide/calendar-emails/capabilities/calendar"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "calendarEmailsHowTos",
@@ -361,9 +373,11 @@
                     "user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
                     "user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                     "user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "workflows",
@@ -383,7 +397,8 @@
                     "user-guide/workflows/capabilities/use-branches-in-workflows",
                     "user-guide/workflows/capabilities/use-iterator",
                     "user-guide/workflows/capabilities/send-emails-from-workflows"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "workflowsHowTos",
@@ -400,7 +415,8 @@
                         "user-guide/workflows/how-tos/crm-automations/display-related-record-data",
                         "user-guide/workflows/how-tos/crm-automations/closed-won-automations",
                         "user-guide/workflows/how-tos/crm-automations/detect-stale-opportunities"
-                      ]
+                      ],
+                      "expanded": false
                     },
                     {
                       "key": "connectToOtherTools",
@@ -411,14 +427,16 @@
                         "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
                         "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
                         "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
-                      ]
+                      ],
+                      "expanded": false
                     },
                     {
                       "key": "advancedConfigurations",
                       "label": "Advanced Configurations",
                       "pages": [
                         "user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
-                      ]
+                      ],
+                      "expanded": false
                     },
                     {
                       "key": "needMoreHelp",
@@ -427,11 +445,14 @@
                         "user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
                         "user-guide/workflows/how-tos/need-more-help/workflows-faq",
                         "user-guide/workflows/how-tos/need-more-help/professional-services"
-                      ]
+                      ],
+                      "expanded": false
                     }
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "viewsPipelines",
@@ -448,7 +469,8 @@
                     "user-guide/views-pipelines/capabilities/filters-and-sorting",
                     "user-guide/views-pipelines/capabilities/fields-and-columns",
                     "user-guide/views-pipelines/capabilities/view-settings"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "viewsPipelinesHowTos",
@@ -461,9 +483,11 @@
                     "user-guide/views-pipelines/how-tos/set-up-a-sales-pipeline",
                     "user-guide/views-pipelines/how-tos/show-expected-amount-in-pipeline",
                     "user-guide/views-pipelines/how-tos/track-time-in-stage"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "dashboards",
@@ -477,7 +501,8 @@
                     "user-guide/dashboards/capabilities/dashboards",
                     "user-guide/dashboards/capabilities/widgets",
                     "user-guide/dashboards/capabilities/chart-settings"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "dashboardsHowTos",
@@ -485,9 +510,11 @@
                   "pages": [
                     "user-guide/dashboards/how-tos/dashboards-faq",
                     "user-guide/dashboards/how-tos/widget-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "permissionsAccess",
@@ -500,16 +527,19 @@
                   "pages": [
                     "user-guide/permissions-access/capabilities/permissions",
                     "user-guide/permissions-access/capabilities/sso-configuration"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "permissionsAccessHowTos",
                   "label": "How-Tos",
                   "pages": [
                     "user-guide/permissions-access/how-tos/permissions-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "billing",
@@ -522,16 +552,19 @@
                   "pages": [
                     "user-guide/billing/capabilities/pricing-plans",
                     "user-guide/billing/capabilities/workflow-credits"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "billingHowTos",
                   "label": "How-Tos",
                   "pages": [
                     "user-guide/billing/how-tos/billing-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "dialer",
@@ -541,7 +574,8 @@
                 "user-guide/dialer/making-calls",
                 "user-guide/dialer/transfers",
                 "user-guide/dialer/hold-mute"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "discordBot",
@@ -557,16 +591,19 @@
                     "user-guide/discord-bot/capabilities/call-controls",
                     "user-guide/discord-bot/capabilities/contact-search",
                     "user-guide/discord-bot/capabilities/team-collaboration"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "dialerHowTos",
                   "label": "How-Tos",
                   "pages": [
                     "user-guide/dialer/how-tos/discord-setup"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "settings",
@@ -583,18 +620,22 @@
                     "user-guide/settings/capabilities/experience-settings",
                     "user-guide/settings/capabilities/domains-settings",
                     "user-guide/settings/capabilities/updates-settings"
-                  ]
+                  ],
+                  "expanded": false
                 },
                 {
                   "key": "settingsHowTos",
                   "label": "How-Tos",
                   "pages": [
                     "user-guide/settings/how-tos/settings-faq"
-                  ]
+                  ],
+                  "expanded": false
                 }
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         },
         "tools/office",
         {
@@ -610,7 +651,8 @@
                 "tools/media/workflows/image-to-svg",
                 "tools/media/workflows/first-video",
                 "tools/media/workflows/youtube-clip-breakdown"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "mediaReference",
@@ -630,9 +672,11 @@
                 "tools/media/reference/media-scene-detect",
                 "tools/media/reference/media-motion-track",
                 "tools/media/reference/media-pose-estimate"
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         },
         "os/tools/browser-tools",
         {
@@ -645,7 +689,8 @@
             "os/tools/task-and-stream-tools",
             "os/tools/github-and-review-tools",
             "os/tools/exploration-tools"
-          ]
+          ],
+          "expanded": false
         },
         {
           "key": "graphqlTools",
@@ -657,7 +702,8 @@
               "pages": [
                 "graphql-api/overview",
                 "graphql-api/getting-started/setting-up-internal-workspace"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "graphqlAnalytics",
@@ -666,7 +712,8 @@
                 "graphql-api/analytics/growth-metrics-dashboards",
                 "graphql-api/analytics/connecting-external-analytics",
                 "graphql-api/analytics/scheduled-reports"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "graphqlAutomation",
@@ -676,7 +723,8 @@
                 "graphql-api/automation/data-cleanup-automation",
                 "graphql-api/automation/lead-scoring-setup",
                 "graphql-api/automation/slack-notifications"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "graphqlGeneral",
@@ -687,16 +735,19 @@
                 "graphql-api/general/import-automation",
                 "graphql-api/general/export-analytics",
                 "graphql-api/general/rate-limits-and-best-practices"
-              ]
+              ],
+              "expanded": false
             },
             {
               "key": "graphqlTroubleshooting",
               "label": "Troubleshooting",
               "pages": [
                 "graphql-api/troubleshooting/common-ops-issues"
-              ]
+              ],
+              "expanded": false
             }
-          ]
+          ],
+          "expanded": false
         }
       ]
     }
