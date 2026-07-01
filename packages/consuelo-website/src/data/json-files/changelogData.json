@@ -1,5 +1,206 @@
 [
   {
+    "title": "v0.6.0",
+    "date": "May 31, 2026",
+    "summary": "May expanded Consuelo's internal operating system: workspace agents gained safer facades, richer trace visibility, search, and browser tooling while Consuelo OS, the design wiki, and dialer reliability moved forward together.",
+    "weeks": [
+      {
+        "label": "Week of May 1 through May 8",
+        "summary": "The month opened with dialer reliability fixes around empty queues and GraphQL call starts, plus stronger workspace tooling for reviews, Sentry, Linear, task sessions, and design-system work.",
+        "sections": [
+          {
+            "title": "Dialer",
+            "items": [
+              "Prevented invalid Current Contact displays for empty queues and completed empty queue starts when no callable items are available.",
+              "Unblocked autostart flows when transient Twilio status errors or zero-member queues would otherwise stop calling.",
+              "Added and validated GraphQL call-start scenarios, then hardened the live GraphQL call lifecycle and Storybook test imports.",
+              "Expanded the dialer scenario harness so queue and call-start regressions can be reproduced locally."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Fixed review command handling, made filesystem patches safe for multiline edits, and made verify flows branch-explicit.",
+              "Added typed Sentry facade commands, Linear facade commands, tmux-backed workspace calls, and time beacons in tool result envelopes.",
+              "Cleaned task-session followups and removed steering cache behavior that could leave agents with stale context."
+            ]
+          },
+          {
+            "title": "Design",
+            "items": [
+              "Created the Consuelo design-system guide and added the upstream facade package to the Bun workspace tooling.",
+              "Added workflow-start commands, tools-dev JSON parsing, and restored Open Design artifact helpers."
+            ]
+          },
+          {
+            "title": "Docs and Steering",
+            "items": [
+              "Established Markdown as the default writing format and added syntax, fence-integrity, and steering usage guidance.",
+              "Clarified agent handoff, coding standards, and dialer-specific operating instructions."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of May 8 through May 15",
+        "summary": "Workspace tooling became safer and more research-oriented, Consuelo OS received its first runtime scaffold, and the design wiki moved toward a durable reader/archive surface.",
+        "sections": [
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Added server safety guardrails, scoped audits to task sessions, supported object-wrapped batch inputs, and cleaned up task tmux sessions.",
+              "Improved LangSmith trace summaries, research ingest packets, automatic research bundle saving, and JSON output for context commands.",
+              "Added browser facade primitives, responsive browser flags, target-aware decision reads, tree-sitter target metadata, file-backed writes, and a context trace SQLite store.",
+              "Made Consuelo Design headless by default and selected extracted content during research ingest."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Scaffolded the Consuelo OS runtime and documentation, then aligned OS manifests with the script runtime.",
+              "Started the Bun runtime switch planning for Consuelo OS."
+            ]
+          },
+          {
+            "title": "Design Wiki",
+            "items": [
+              "Added design publish Tailscale links, digital e-guide templates, and the first design wiki reader shell.",
+              "Made the design archive durable and smoothed the reader shell experience.",
+              "Redesigned the Consuelo wiki index and added resume-reading and section-completion rail interactions."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Switched call starts to the metadata client path and addressed review findings around dialer tests."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of May 15 through May 22",
+        "summary": "Tracing moved to Langfuse, code execution became a first-class workspace namespace, OS documentation deepened, and queue calling picked up safer runtime identifiers.",
+        "sections": [
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Switched tracing to Langfuse and wired token usage metadata into trace reporting.",
+              "Preferred Graphite PR links and preserved those links across task PR flows.",
+              "Added native code.run support, namespace helpers for code execution, and routing that keeps code execution inside workspace tools.",
+              "Kept the workspace server responsive during long-running tool calls and hardened Bun orchestration for code execution.",
+              "Namespaced task metadata by task path so concurrent task sessions do not overwrite each other."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Replaced shallow OS docs with real guides, added the OS navigation skeleton, and renamed runbooks into skills.",
+              "Persisted skill artifacts and added the local install wizard plus CLI front door."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Sent explicit runtime queue identifiers for predictive calls and fixed queue eligibility behavior.",
+              "Confirmed metadata route validation around predictive queue execution."
+            ]
+          },
+          {
+            "title": "Auth",
+            "items": [
+              "Bound Redis session and metadata cache failures so authentication survives cache-side outages more predictably."
+            ]
+          },
+          {
+            "title": "Steering",
+            "items": [
+              "Updated agent guidance around Graphite workflows and removed stale task-pin language from steering."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of May 22 through May 29",
+        "summary": "The largest May push added typed GitHub and diff tooling, deeper trace observability, OS capability and skill foundations, stronger design-wiki publishing, and a safer dialer queue-target model.",
+        "sections": [
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Added typed GitHub and git-diff facades, registered the diff schema, and included untracked files in diff output.",
+              "Improved task-session resolution from MCP calls, moved tmux payloads to temporary scripts, and kept facade command formatting lossless.",
+              "Added operator trace analytics, trace watch, trace error reports, compact success rows, Eastern-time rendering, nested operation details, token counts, verify reasons, and batch child trace names.",
+              "Made review runs resumable, hardened verify publish gates, compacted review and verify output, seeded the test-selection registry, and improved explore relevance ranking.",
+              "Added neutral command aliases, tool-not-found recovery, 2560-dimensional embedding benchmarks, worker providers, and clearer explore result interpretation."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Added the capability registry and local guardrails for OS work.",
+              "Added OS skills for the Consuelo Design landing page, design orchestration, workspace snapshots, app-file cloud artifacts, task workflow, and skills registry generation.",
+              "Removed misplaced worker providers from the OS stream and kept the OS skill substrate aligned with workspace tooling."
+            ]
+          },
+          {
+            "title": "Design Wiki",
+            "items": [
+              "Restored design archive publishing and repaired artifact routing, Pagefind publishing, archive ordering, and stale-page refresh behavior.",
+              "Added Pagefind search to the design wiki and republished the archive after routing repairs.",
+              "Investigated Cloudflare sharing for wiki publishing architecture."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Resolved queue targets from person records and added fallbacks for person phone numbers and queue targets.",
+              "Removed invalid target SQL fields and hydrated list queues by person identifier.",
+              "Aligned sidebar keyboard shortcut hints and right-aligned the hint treatment."
+            ]
+          },
+          {
+            "title": "Steering",
+            "items": [
+              "Reworked communication style, workspace tool guidance, timeout budgets, and steering structure for clearer agent execution."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of May 29 through Jun 5",
+        "summary": "May closed with better tool discovery, a compact worker runtime, worker event ingestion, and a richer canonical wiki reader that connects the design surface back to the repo root.",
+        "sections": [
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Extracted the worker runtime, added the Pi provider, compacted worker output, and stabilized compact worker parsing.",
+              "Added tools.search, tightened its ranking, upgraded tool discovery, and addressed review feedback around the search surface.",
+              "Ingested worker events into the trace database and removed temporary worker trace helper files."
+            ]
+          },
+          {
+            "title": "Design Wiki",
+            "items": [
+              "Refreshed the design wiki theme and repaired archive routing.",
+              "Added the canonical wiki reader renderer, exposed wiki rendering at the repo root, and added rich reader section components."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Synced the workspace development tooling substrate into OS."
+            ]
+          },
+          {
+            "title": "Steering",
+            "items": [
+              "Added tool-surface recovery guidance and summarized the explore ranker fixes for future agents."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "v0.5.0",
     "date": "Apr 30, 2026",
     "summary": "April turned the dialer into a more reliable queue-driven calling system while expanding workspace-agent tooling, docs, CSV and list imports, file surfaces, and website polish.",
