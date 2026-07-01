@@ -207,6 +207,7 @@ Validation ladder:
 - 2026-07-01 20:17:26 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - 2026-07-01 20:17:57 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - 2026-07-01 20:18:53 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
+- 2026-07-01 20:21:53 fs.write: `.task/docs/wire-starlight-documentation-package/workpad.md`
 - Build note: Starlight prints `Entry docs → 404 was not found.` to stderr while still generating `/404.html` and exiting 0. Sitemap warning was fixed by adding `site: 'https://docs.consuelohq.com'`.
 - Build validation: `bun run --cwd packages/documentation build` passed and generated 40 static pages, including `/user-guide/user-stories-use-cases/`, `/tools/sites/overview/`, `/tools/office/`, `/os/overview/`, and developer/API routes.
 - Green validation: `bun run --cwd packages/documentation validate` passed with 38 curated pages and 7 Mintlify adapters.
@@ -262,3 +263,9 @@ Follow-ups:
 - Starlight currently emits `Entry docs → 404 was not found.` on stderr while still exiting 0 and generating `/404.html`; keep an eye on this during deploy preview.
 
 - 2026-07-01 20:18:53 append: `.task/docs/wire-starlight-documentation-package/workpad.md`
+
+## Publish note
+
+Ready to publish task PR after final sync. The task branch contains the Starlight docs app wiring, package-local validation, green Astro build, green workspace review, and green workspace verify. The only remaining known item is the non-blocking Starlight stderr line about `Entry docs → 404`, which still exits 0 and generates `/404.html`.
+
+- 2026-07-01 20:21:53 append: `.task/docs/wire-starlight-documentation-package/workpad.md`
