@@ -137,9 +137,28 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
-  it('serves snapshot-first SSE for Trace Sites live events', async () => {
+  it('serves the live stream endpoint for Trace Sites SSE events', async () => {
+    const nextEvent: TraceSitesDashboardEvent = {
+      ...event,
+      traceId: 'trc_live_2',
+      idempotencyKey: 'wrk_live:trc_live_2:00000002',
+      tool: 'trace:finish',
+    };
     const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] }),
+      backend: {
+        resolveHealth() {
+          return {};
+        },
+        readRecentEvents(input) {
+          if (input.cursor === '00000001') {
+            return { cursor: '00000002', events: [nextEvent] };
+          }
+          return { cursor: '00000001', events: [event] };
+        },
+        readCachedAggregate() {
+          return { cursor: '00000001', summary: null };
+        },
+      },
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
@@ -148,11 +167,15 @@ describe('Trace Sites gateway live endpoints', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/event-stream');
-    expect(text).toContain('event: trace-sites-snapshot');
-    expect(text).toContain('id: 00000001');
+    expect(response.headers.get('cache-control')).toContain('no-cache');
+    expect(text).toContain('event: snapshot');
+    expect(text).toContain('event: trace');
+    expect(text).toContain('event: keepalive');
     expect(text).toContain('"publicBoundary":"consuelo-gateway"');
-    expect(text).toContain('"recentEvents"');
+    expect(text).toContain('"traceId":"trc_live_2"');
+    expect(text).not.toContain('event: trace-sites-snapshot');
   });
+
 
   it('returns structured unavailable errors for local off-network without a bridge', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
