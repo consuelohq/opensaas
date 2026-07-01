@@ -23,6 +23,10 @@ type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
   getAccountIpList: (input: {
     name: string;
   }) => Promise<{ id: string; name: string } | null>;
+  createAccountIpListItems?: (input: {
+    listId: string;
+    items: Array<{ ip: string; comment?: string }>;
+  }) => Promise<{ operationId?: string }>;
   getZoneCustomRuleset: (input: {
     zoneId: string;
     rulesetId?: string;
@@ -53,7 +57,13 @@ type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
 type PlatformCloudflareProvisioningResult =
   | { status: 'skipped'; reason: string }
   | { status: 'planned'; zoneId: string; allowedIpsListName: string }
-  | { status: 'provisioned'; rulesetId: string; allowRule: { status: string }; blockRule: { status: string } };
+  | {
+      status: 'provisioned';
+      rulesetId: string;
+      allowRule: { status: string };
+      blockRule: { status: string };
+      trustedProviderIpAllowlist?: { status: 'synced'; count: number; operationId?: string };
+    };
 
 type PlatformCloudflareProvisioningContract = {
   provisionPlatformManagedOsMcpIngressPolicyFromEnv: (input: {
@@ -313,5 +323,115 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
     expect(JSON.stringify(calls.map((call) => call.body ?? {}))).not.toMatch(
       /kokayi\.consuelohq\.com|openai\.consuelohq\.com/,
     );
+  });
+
+  it('should sync trusted provider CIDRs before provisioning managed OS MCP rules', async () => {
+    const { provisionPlatformManagedOsMcpIngressPolicyFromEnv } =
+      await loadPlatformCloudflareProvisioningContract();
+    const calls: Array<{
+      method: string;
+      url: string;
+      path: string;
+      body?: unknown;
+    }> = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      const parsedUrl = new URL(request.url);
+      const body = request.method === 'GET' ? undefined : await request.json();
+      calls.push({
+        method: request.method,
+        url: request.url,
+        path: parsedUrl.pathname,
+        ...(body ? { body } : {}),
+      });
+
+      if (request.url === 'https://openai.com/chatgpt-connectors.json') {
+        return new Response(
+          JSON.stringify({ prefixes: [{ ipv4Prefix: '20.42.10.0/24' }] }),
+        );
+      }
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/acct1/rules/lists')) {
+        return createJsonResponse([{ id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' }]);
+      }
+      if (request.method === 'POST' && parsedUrl.pathname.endsWith('/accounts/acct1/rules/lists/list_123/items')) {
+        return createJsonResponse({ operation_id: 'list_items_operation_123' });
+      }
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123')) {
+        return createJsonResponse({
+          id: 'ruleset_123',
+          phase: 'http_request_firewall_custom',
+          rules: [
+            {
+              id: 'rule_bootstrap',
+              ref: 'allow-install-curl-bootstrap',
+              description: 'Allow install curl bootstrap',
+              expression: 'starts_with(http.request.uri.path, "/install")',
+              action: 'skip',
+              action_parameters: { ruleset: 'current' },
+              enabled: true,
+            },
+          ],
+        });
+      }
+      if (request.method === 'POST' && parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123/rules')) {
+        return createJsonResponse({
+          ...body,
+          id: (body as { ref?: string } | undefined)?.ref === 'consuelo-os-mcp-provider-allow' ? 'rule_allow' : 'rule_block',
+        });
+      }
+
+      return new Response(JSON.stringify({ success: false, errors: [{ message: 'unexpected request' }] }), { status: 500 });
+    };
+
+    const result = await provisionPlatformManagedOsMcpIngressPolicyFromEnv({
+      env: {
+        CLOUDFLARE_ZONE_ID: 'zone_123',
+        CLOUDFLARE_ACCOUNT_ID: 'acct1',
+        CLOUDFLARE_API_TOKEN: 'tok',
+        CLOUDFLARE_CUSTOM_RULESET_ID: 'ruleset_123',
+        CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+        CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF: 'allow-install-curl-bootstrap',
+        CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES:
+          'openai_chatgpt_connectors,anthropic_claude',
+        CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS: '203.0.113.0/24',
+      },
+      baseDomain: 'consuelohq.com',
+      fetchImpl,
+    });
+
+    expect(result).toMatchObject({
+      status: 'provisioned',
+      rulesetId: 'ruleset_123',
+      allowRule: { status: 'created' },
+      blockRule: { status: 'created' },
+      trustedProviderIpAllowlist: {
+        status: 'synced',
+        count: 3,
+        operationId: 'list_items_operation_123',
+      },
+    });
+    expect(calls.map((call) => `${call.method} ${call.path}`)).toEqual([
+      'GET /client/v4/accounts/acct1/rules/lists',
+      'GET /chatgpt-connectors.json',
+      'POST /client/v4/accounts/acct1/rules/lists/list_123/items',
+      'GET /client/v4/accounts/acct1/rules/lists',
+      'GET /client/v4/zones/zone_123/rulesets/ruleset_123',
+      'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
+      'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
+    ]);
+    expect(calls[2]?.body).toEqual([
+      {
+        ip: '20.42.10.0/24',
+        comment: 'Consuelo OS MCP trusted provider: openai_chatgpt_connectors',
+      },
+      {
+        ip: '160.79.104.0/21',
+        comment: 'Consuelo OS MCP trusted provider: anthropic_claude',
+      },
+      {
+        ip: '203.0.113.0/24',
+        comment: 'Consuelo OS MCP trusted provider: manual_extra',
+      },
+    ]);
   });
 });
